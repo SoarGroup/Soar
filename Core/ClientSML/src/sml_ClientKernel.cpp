@@ -56,17 +56,17 @@ Kernel::Kernel(Connection* pConnection)
     m_bIgnoreOutput = false ;
     m_FilteringEnabled = true ;
     m_CommandLineSucceeded = false;
-    
+
     // We're turning on auto commit by default, so clients are a bit slower but easier to write.
     // Power users are free to turn it off and use explicit commit calls.
     m_bAutoCommit   = true ;
-    
+
     ClearError() ;
-    
+
     if (pConnection)
     {
         m_pEventThread = new EventThread(pConnection) ;
-        
+
         // We start the event thread for asynch connections (remote and embedded on a new thread).
         // Synchronous ones don't need it as the kernel can simply call right over to the client directly
         // for those.
@@ -75,7 +75,7 @@ Kernel::Kernel(Connection* pConnection)
             m_pEventThread->Start() ;
         }
     }
-    
+
     /* voigtjr, rmarinie
      *
      * Upon further tinkering, we have discovered that the use of the code within
@@ -83,7 +83,7 @@ Kernel::Kernel(Connection* pConnection)
      * problems, but we are leaving it in in case our analysis turns out to be
      * incorrect.
      */
-    
+
 //#ifdef LINUX_STATIC_LINK
     // On Linux the linker only makes a single pass through the libraries
     // so if we try to statically link all of the code together, it fails to
@@ -131,7 +131,7 @@ void Kernel::InitEvents()
 {
     // Register for init-soar events
     RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
-    
+
     // Register for load-library events (local client only)
     if (!this->GetConnection()->IsRemoteConnection())
     {
@@ -179,7 +179,7 @@ bool Kernel::IsDirectConnection()
 void Kernel::Shutdown()
 {
     m_bShutdown = true ;
-    
+
     // Currently we have no work to do on the kernel side before
     // disconnecting a remote connection.
     if (!GetConnection() || GetConnection()->IsRemoteConnection())
@@ -188,10 +188,10 @@ void Kernel::Shutdown()
         {
             GetConnection()->CloseConnection() ;
         }
-        
+
         return ;
     }
-    
+
     AnalyzeXML response ;
     GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_Shutdown) ;
     GetConnection()->CloseConnection() ;
@@ -212,25 +212,25 @@ Kernel::~Kernel(void)
     {
         Shutdown() ;
     }
-    
+
     // When the agent map is deleted, it will delete its contents (the Agent objects)
     // Do this before we delete the connection, in case we need to send things to the kernel
     // during clean up.
     m_AgentMap.clear() ;
-    
+
     // We also need to close the connection
     if (m_Connection)
     {
         m_Connection->CloseConnection() ;
     }
-    
+
     // Must stop the event thread before deleting the connection
     // as it has a pointer to the connection.
     if (m_pEventThread)
     {
         m_pEventThread->Stop(true) ;
     }
-    
+
     // Clean up any connection info we have stored
     for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
     {
@@ -238,14 +238,14 @@ Kernel::~Kernel(void)
         delete pInfo ;
     }
     m_ConnectionInfoList.clear() ;
-    
+
     delete m_pEventThread ;
-    
+
     delete m_Connection ;
-    
+
     // Deleting this shuts down the socket library if we were using it.
     delete m_SocketLibrary ;
-    
+
     delete m_pEventMap ;
 }
 
@@ -269,9 +269,9 @@ bool Kernel::StartEventThread()
     {
         return false ;
     }
-    
+
     m_pEventThread->Start() ;
-    
+
     return true ;
 }
 
@@ -294,9 +294,9 @@ bool Kernel::StopEventThread()
     {
         return false ;
     }
-    
+
     m_pEventThread->Stop(true) ;
-    
+
     return true ;
 }
 
@@ -310,7 +310,7 @@ void Kernel::SetTraceCommunications(bool state)
     {
         m_Connection->SetTraceCommunications(state) ;
     }
-    
+
     // We keep a local copy of this value so we can check it without
     // calling anywhere.
     m_bTracingCommunications = state ;
@@ -331,7 +331,7 @@ bool Kernel::IsTracingCommunications()
 ElementXML* Kernel::ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
 {
     Kernel* pKernel = static_cast<Kernel*>(pUserData) ;
-    
+
     return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
 }
 
@@ -353,39 +353,39 @@ Agent* Kernel::IsXMLTraceEvent(ElementXML* pIncomingMsg)
     {
         return NULL ;
     }
-    
+
     ElementXML command(NULL) ;
     ElementXML trace(NULL) ;
     pIncomingMsg->GetChild(&command, 0) ;
     pIncomingMsg->GetChild(&trace, 1) ;
-    
+
     if (trace.IsTag(sml_Names::kTagTrace) && command.IsTag(sml_Names::kTagCommand) && command.GetNumberChildren() > 0)
     {
         ElementXML agentArg(NULL) ;
         command.GetChild(&agentArg, 0) ;
-        
+
 #ifdef _DEBUG
         char const* pParam = agentArg.GetAttribute(sml_Names::kArgParam) ;
         assert(pParam && strcmp(pParam, sml_Names::kParamAgent) == 0) ;
 #endif
         // Get the agent's name
         char const* pAgentName = agentArg.GetCharacterData() ;
-        
+
         if (!pAgentName || pAgentName[0] == 0)
         {
             return NULL ;
         }
-        
+
         // Look up the agent
         Agent* pAgent = GetAgent(pAgentName) ;
-        
+
         // If this fails, we got a trace event for a now deleted agent
         // (must have been flushed after the agent was destroyed).
         // Returning null is probably as good as we do here so
         // always return pAgent (even if it's null).
         return pAgent ;
     }
-    
+
     return NULL ;
 }
 
@@ -397,13 +397,13 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 {
     // Create a reply
     ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
-    
+
     // Make sure the connection hasn't been closed along the way
     if (pConnection->IsClosed())
     {
         return pResponse ;
     }
-    
+
     // Special case.  We want to intercept XML trace messages and pass them directly to the handler
     // without analyzing them.  This is just to boost performance for these messages as speed is critical here
     // as they're used for trace output.
@@ -413,22 +413,22 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
         pAgent->ReceivedXMLTraceEvent(smlEVENT_XML_TRACE_OUTPUT, pIncomingMsg, pResponse) ;
         return pResponse ;
     }
-    
+
     // Analyze the message and find important tags
     AnalyzeXML msg ;
     msg.Analyze(pIncomingMsg) ;
-    
+
     // Get the "name" attribute from the <command> tag
     char const* pCommandName = msg.GetCommandName() ;
-    
+
     // Look up the agent name parameter (most commands have this)
     char const* pAgentName = msg.GetArgString(sml_Names::kParamAgent) ;
-    
+
     // Find the client agent structure that matches this agent
     if (pAgentName && pCommandName)
     {
         Agent* pAgent = GetAgent(pAgentName) ;
-        
+
         // If this is a command for a known agent and it's an "output" command
         // then we're interested in it.
         if (pAgent && strcmp(sml_Names::kCommand_Output, pCommandName) == 0)
@@ -436,7 +436,7 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
             // Pass the incoming message over to the agent
             pAgent->ReceivedOutput(&msg, pResponse) ;
         }
-        
+
         // If this is a command for a known agent and it's an "output_init" command
         // then we're interested in it. Note that this is a special case and
         // is not the spot for general init-soar event handling.
@@ -445,7 +445,7 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
             // Remove the output link
             pAgent->GetWM()->InvalidateOutputLink();
         }
-        
+
         if (pAgent && strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
         {
             // This is an event specific to an agent, so handle it there.
@@ -464,23 +464,23 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
             }
         }
     }
-    
+
     return pResponse ;
 }
 
 void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
     char const* pEventName = pIncoming->GetArgString(sml_Names::kParamEventID) ;
-    
+
     // This event had no event id field
     if (!pEventName)
     {
         return ;
     }
-    
+
     // Convert from the string to an event ID
     int id = m_pEventMap->ConvertToEvent(pEventName) ;
-    
+
     if (IsSystemEventID(id))
     {
         ReceivedSystemEvent(smlSystemEventId(id), pIncoming, pResponse) ;
@@ -514,21 +514,21 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* /*pIncoming*/,
 {
     // Look up the handler(s) from the map
     SystemEventMap::ValueList* pHandlers = m_SystemEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (SystemEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         SystemEventHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         SystemEventHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.getUserData() ;
-        
+
         // Call the handler
         handler(id, pUserData, this) ;
     }
@@ -545,24 +545,24 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 {
     // Retrieve the event arguments
     smlRunFlags runFlags = smlRunFlags(pIncoming->GetArgInt(sml_Names::kParamValue, 0)) ;
-    
+
     // Look up the handler(s) from the map
     UpdateEventMap::ValueList* pHandlers = m_UpdateEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (UpdateEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         UpdateEventHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         UpdateEventHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.getUserData() ;
-        
+
         // Call the handler
         handler(id, pUserData, this, runFlags) ;
     }
@@ -578,27 +578,27 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 void Kernel::ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
     char const* pValue = pIncoming->GetArgString(sml_Names::kParamValue) ;
-    
+
     // Look up the handler(s) from the map
     StringEventMap::ValueList* pHandlers = m_StringEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (StringEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ;)
     {
         StringEventHandlerPlusData handlerWithData = *iter ;
         iter++ ;
-        
+
         StringEventHandler handler = handlerWithData.m_Handler ;
         void* pUserData = handlerWithData.getUserData() ;
-        
+
         // Call the handler
         std::string result = handler(id, pUserData, this, pValue) ;
-        
+
         // If we got back a result then fill in the value in the response message.
         GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
     }
@@ -615,19 +615,19 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 {
     // Get the name of the agent this event refers to.
     char const* pAgentName = pIncoming->GetArgString(sml_Names::kParamName) ;
-    
+
     // Look up the handler(s) from the map
     AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // See if we already have an Agent* for this agent.
     // We may not, because "agent created" events are included in the list that come here.
     Agent* pAgent = GetAgent(pAgentName) ;
-    
+
     // Agent name can be null for some agent manager events
     if (!pAgent && pAgentName)
     {
@@ -635,14 +635,14 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
         // We have to do this now because we'll be passing it back to the caller in a minute
         pAgent = MakeAgent(pAgentName) ;
     }
-    
+
     // Go through the list of event handlers calling each in turn
     for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
     {
         AgentEventHandlerPlusData handlerPlus = *iter ;
         AgentEventHandler handler = handlerPlus.m_Handler ;
         void* pUserData = handlerPlus.getUserData() ;
-        
+
         // Call the handler
         handler(id, pUserData, pAgent) ;
     }
@@ -662,44 +662,44 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
     char const* pFunctionName = pIncoming->GetArgString(sml_Names::kParamFunction) ;
     char const* pArgument     = pIncoming->GetArgString(sml_Names::kParamValue) ;
     char const* pAgentName    = pIncoming->GetArgString(sml_Names::kParamName) ;
-    
+
     if (!pFunctionName)
     {
         // Should always include a function name
         SetError(Error::kInvalidArgument) ;
         return ;
     }
-    
+
     // Look up the handler(s) from the map
     RhsEventMap::ValueList* pHandlers = m_RhsEventMap.getList(pFunctionName) ;
-    
+
     if (!pHandlers)
     {
         return ;
     }
-    
+
     // Look up the agent
     Agent* pAgent = pAgentName ? GetAgent(pAgentName) : NULL ;
-    
+
     // Go through the list of event handlers calling each in turn...except
     // we only execute the first handler (registering multipler handlers for the same RHS function is not supported
     // because these functions return a value -- it wouldn't be clear which to use.  We could change this to call all
     // registered handlers and only use the first or last value returned.)
     RhsEventMap::ValueListIter iter = pHandlers->begin() ;
-    
+
     if (iter == pHandlers->end())
     {
         return ;
     }
-    
+
     RhsEventHandlerPlusData handlerWithData = *iter ;
-    
+
     RhsEventHandler handler = handlerWithData.m_Handler ;
     void* pUserData = handlerWithData.getUserData() ;
-    
+
     // Call the handler
     std::string result = handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
-    
+
     // If we got back a result then fill in the value in the response message.
     GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 }
@@ -724,7 +724,7 @@ inline Soar_Instance* instantiate_singletons()
      *    before the kernel and CommandLineInterface objects.  This is
      *    is important since the output manager might be needed to print
      *    debug output during initialization.  -- */
-    
+
     Output_Manager::Get_OM();
     return (&Soar_Instance::Get_Soar_Instance());
 }
@@ -749,30 +749,30 @@ inline Soar_Instance* instantiate_singletons()
 Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn)
 {
     ErrorCode errorCode = 0 ;
-    
+
     /* -- Create Soar_Instance and Output_Manager singletons -- */
     Soar_Instance* lSoarInstance = instantiate_singletons();
     Connection* pConnection = Connection::CreateEmbeddedConnection(clientThread, optimized, portToListenOn, &errorCode) ;
-    
+
     // Even if pConnection is NULL, we still build a kernel object, so we have
     // a clean way to pass the error code back to the caller.
     Kernel* pKernel = new Kernel(pConnection) ;
-    
+
     // Transfer any errors over to the kernel object, so the caller can retrieve them.
     pKernel->SetError(errorCode) ;
-    
+
     // Register for "calls" from the kernel.
     if (pConnection)
     {
         lSoarInstance->init_Soar_Instance(pKernel);
-        
+
         pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
-        
+
         pKernel->InitializeTimeTagCounter() ;
-        
+
         pKernel->InitEvents() ;
     }
-    
+
     return pKernel ;
 }
 
@@ -792,46 +792,46 @@ int Kernel::GetListenerPort()
 Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port, bool ignoreOutput)
 {
     ErrorCode errorCode = 0 ;
-    
+
     /* -- Create Soar_Instance and Output_Manager singletons -- */
     Soar_Instance* lSoarInstance = instantiate_singletons();
-    
+
     // Initialize the socket library before attempting to create a connection
     sock::SocketLib* pLib = new sock::SocketLib() ;
-    
+
     // Connect to the remote socket
     Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, port, &errorCode) ;
-    
+
     // Even if pConnection is NULL, we still build a kernel object, so we have
     // a clean way to pass the error code back to the caller.
     Kernel* pKernel = new Kernel(pConnection) ;
     lSoarInstance->init_Soar_Instance(pKernel);
-    
+
     pKernel->SetSocketLib(pLib) ;
     pKernel->SetError(errorCode) ;
-    
+
     // If this client isn't interested in getting output we can speed things up a bit for them.
     pKernel->m_bIgnoreOutput = ignoreOutput ;
-    
+
     // If we had an error creating the connection, abort before
     // we try to get the current agent list
     if (pKernel->HadError())
     {
         return pKernel;
     }
-    
+
     // Register for "calls" from the kernel.
     pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
-    
+
     // Register for important events
     pKernel->InitEvents();
-    
+
     // Initialize our time tags
     pKernel->InitializeTimeTagCounter();
-    
+
     // Get the current list of active agents
     pKernel->UpdateAgentList();
-    
+
     return pKernel;
 }
 
@@ -863,13 +863,13 @@ void Kernel::InitializeTimeTagCounter()
     if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInitialTimeTag))
     {
         long long initialTimeTag = response.GetResultInt(0) ;
-        
+
         // Client side time tags are negative (to distinguish them from kernel side ones)
         assert(initialTimeTag <= 0) ;
-        
+
         // Start time tags from this value
         m_TimeTagCounter = initialTimeTag ;
-        
+
         // Start IDs from this value too, so they don't collide
         m_IdCounter = -initialTimeTag ;
     }
@@ -887,32 +887,32 @@ void Kernel::UpdateAgentList()
     {
         ElementXML const* pResult = response.GetResultTag() ;
         ElementXML child(NULL) ;
-        
+
         // Keep a record of the agents we find, so we can delete any that have been removed.
         std::list<Agent*>   inUse ;
-        
+
         for (int i = 0 ; i < pResult->GetNumberChildren() ; i++)
         {
             pResult->GetChild(&child, i) ;
-            
+
             // Look for the <name> tags
             if (child.IsTag(sml_Names::kTagName))
             {
                 // Get the agent's name
                 char const* pAgentName = child.GetCharacterData() ;
-                
+
                 // If we don't know about this agent already, then add it to our list.
                 Agent* pAgent = m_AgentMap.find(pAgentName) ;
-                
+
                 if (!pAgent)
                 {
                     pAgent = MakeAgent(pAgentName) ;
                 }
-                
+
                 inUse.push_back(pAgent) ;
             }
         }
-        
+
         // Any agents that are in our map but not in the "inuse" list we should delete
         // as they no longer exist.
         m_AgentMap.keep(&inUse) ;
@@ -928,26 +928,26 @@ void Kernel::UpdateAgentList()
 bool Kernel::GetAllConnectionInfo()
 {
     std::list<ConnectionInfo*> previousList ;
-    
+
     for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
     {
         ConnectionInfo* pInfo = *iter ;
         previousList.push_back(pInfo) ;
     }
     m_ConnectionInfoList.clear() ;
-    
+
     size_t previousConnectionCount = previousList.size() ;
-    
+
     AnalyzeXML response ;
     if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetConnections))
     {
         ElementXML const* pResult = response.GetResultTag() ;
         ElementXML child(NULL) ;
-        
+
         for (int i = 0 ; i < pResult->GetNumberChildren() ; i++)
         {
             pResult->GetChild(&child, i) ;
-            
+
             // Look for the <connection> tags
             if (child.IsTag(sml_Names::kTagConnection))
             {
@@ -956,7 +956,7 @@ bool Kernel::GetAllConnectionInfo()
                 char const* pName   = child.GetAttribute(sml_Names::kConnectionName) ;
                 char const* pStatus = child.GetAttribute(sml_Names::kConnectionStatus) ;
                 char const* pAgentStatus = child.GetAttribute(sml_Names::kAgentStatus) ;
-                
+
                 // If this info is on the previous list move it back to the current list
                 bool foundMatch = false ;
                 for (ConnectionListIter iter = previousList.begin() ; iter != previousList.end() ; iter++)
@@ -973,7 +973,7 @@ bool Kernel::GetAllConnectionInfo()
                         break ;
                     }
                 }
-                
+
                 if (!foundMatch)
                 {
                     ConnectionInfo* info = new ConnectionInfo(pID, pName, pStatus, pAgentStatus) ;
@@ -982,7 +982,7 @@ bool Kernel::GetAllConnectionInfo()
             }
         }
     }
-    
+
     // If we deleted all of the items from the previous list, then each connection we found matched
     // an existing one.
     if (previousList.size() == 0 && previousConnectionCount == m_ConnectionInfoList.size())
@@ -993,14 +993,14 @@ bool Kernel::GetAllConnectionInfo()
     {
         m_ConnectionInfoChanged = true ;
     }
-    
+
     // Clean up any left over information
     for (ConnectionListIter iter = previousList.begin() ; iter != previousList.end() ; iter++)
     {
         ConnectionInfo* pInfo = *iter ;
         delete pInfo ;
     }
-    
+
     return m_ConnectionInfoChanged ;
 }
 
@@ -1025,7 +1025,7 @@ ConnectionInfo const* Kernel::GetConnectionInfo(int i)
         }
         i-- ;
     }
-    
+
     return NULL ;
 }
 
@@ -1039,7 +1039,7 @@ char const* Kernel::GetConnectionStatus(char const* pName)
             return pInfo->GetConnectionStatus() ;
         }
     }
-    
+
     return NULL ;
 }
 
@@ -1053,7 +1053,7 @@ char const* Kernel::GetAgentStatus(char const* pName)
             return pInfo->GetAgentStatus() ;
         }
     }
-    
+
     return NULL ;
 }
 
@@ -1082,7 +1082,7 @@ Agent* Kernel::GetAgent(char const* pAgentName)
     {
         return NULL ;
     }
-    
+
     return m_AgentMap.find(pAgentName) ;
 }
 
@@ -1117,10 +1117,10 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 {
     AnalyzeXML response ;
     Agent* agent = NULL ;
-    
+
     // See if this agent already exists
     agent = GetAgent(pAgentName) ;
-    
+
     // If so, trying to create it fails.
     // (We could pass back agent, but that would hide this error from the client).
     if (agent)
@@ -1128,16 +1128,16 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
         SetError(Error::kAgentExists) ;
         return NULL ;
     }
-    
+
     assert(GetConnection());
     if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CreateAgent, NULL, sml_Names::kParamName, pAgentName))
     {
         agent = MakeAgent(pAgentName) ;
     }
-    
+
     // Set our error state based on what happened during this call.
     SetError(GetConnection()->GetLastError()) ;
-    
+
     return agent ;
 }
 
@@ -1151,29 +1151,29 @@ Agent* Kernel::MakeAgent(char const* pAgentName)
     {
         return NULL ;
     }
-    
+
     // If we already have an agent structure for this name just
     // return it.
     Agent* agent = GetAgent(pAgentName) ;
-    
+
     if (agent)
     {
         return agent ;
     }
-    
+
     // Make a new client side agent object
     agent = new Agent(this, pAgentName) ;
-    
+
     // Record this in our list of agents
     m_AgentMap.add(agent->GetAgentName(), agent) ;
-    
+
     // Register to get output link events.  These won't come back as standard events.
     // Instead we'll get "output" messages which are handled in a special manner.
     if (!m_bIgnoreOutput)
     {
         RegisterForEventWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK, agent->GetAgentName()) ;
     }
-    
+
     return agent ;
 }
 
@@ -1183,14 +1183,14 @@ Agent* Kernel::MakeAgent(char const* pAgentName)
 bool Kernel::DestroyAgent(Agent* pAgent)
 {
     AnalyzeXML response ;
-    
+
     if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_DestroyAgent, pAgent->GetAgentName()))
     {
         // Remove the object from our map and delete it.
         m_AgentMap.remove(pAgent->GetAgentName(), true) ;
         return true ;
     }
-    
+
     return false ;
 }
 
@@ -1218,7 +1218,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 {
     AnalyzeXML response;
     bool wantRawOutput = true ;
-    
+
     // Send the command line to the kernel
     m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response,
                              sml_Names::kCommand_CommandLine, pAgentName,
@@ -1226,7 +1226,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
                              sml_Names::kParamEcho, echoResults ? sml_Names::kTrue : sml_Names::kFalse,
                              sml_Names::kParamNoFiltering, !m_FilteringEnabled || noFilter ? sml_Names::kTrue : sml_Names::kFalse,
                              wantRawOutput);
-                             
+
     if (m_CommandLineSucceeded)
     {
         // Get the result as a string
@@ -1246,7 +1246,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
             m_CommandLineResult += "<No error message returned by command>";
         }
     }
-    
+
     return m_CommandLineResult.c_str();
 }
 
@@ -1267,10 +1267,10 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
     {
         return false ;
     }
-    
+
     m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse->GetAnalyzeXML(), sml_Names::kCommand_CommandLine, pAgentName,
                              sml_Names::kParamLine, pCommandLine, sml_Names::kParamNoFiltering, sml_Names::kTrue);
-                             
+
     return m_CommandLineSucceeded ;
 }
 
@@ -1281,7 +1281,7 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
 void Kernel::CommitAll()
 {
     int numberAgents = GetNumberAgents() ;
-    
+
     for (int i = 0 ; i < numberAgents ; i++)
     {
         Agent* pAgent = GetAgentByIndex(i) ;
@@ -1295,7 +1295,7 @@ void Kernel::CommitAll()
 bool Kernel::IsCommitRequired()
 {
     int numberAgents = GetNumberAgents() ;
-    
+
     for (int i = 0 ; i < numberAgents ; i++)
     {
         Agent* pAgent = GetAgentByIndex(i) ;
@@ -1304,7 +1304,7 @@ bool Kernel::IsCommitRequired()
             return true ;
         }
     }
-    
+
     return false ;
 }
 
@@ -1319,7 +1319,7 @@ bool Kernel::IsCommitRequired()
 char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRunStepSize interleaveStepSize)
 {
     CommitAll();
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
@@ -1328,14 +1328,14 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
         return "DirectRun completed" ;
     }
 #endif
-    
+
     // Convert int to a string
     std::ostringstream ostr ;
     ostr << numberSteps ;
-    
+
     // Create the command line for the run command
     std::string step ;
-    
+
     switch (stepSize)
     {
         case sml_DECISION:
@@ -1353,9 +1353,9 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
         default:
             return "Unrecognized step size parameter passed to RunAllAgents" ;
     }
-    
+
     std::string interleave ;
-    
+
     switch (interleaveStepSize)
     {
         case sml_ELABORATION:
@@ -1373,18 +1373,18 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
         default:
             return "Unrecognized interleave size parameter passed to RunAllAgents" ;
     }
-    
+
     std::string cmd = "run " + step + " " + interleave + " " + ostr.str() ;
-    
+
     // The command line currently requires an agent in order
     // to execute a run command, so we provide one (which one should make no difference).
     if (GetNumberAgents() == 0)
     {
         return "There are no agents to run" ;
     }
-    
+
     Agent* pFirstAgent = GetAgentByIndex(0) ;
-    
+
     // Execute the run command.
     char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
     return pResult ;
@@ -1393,7 +1393,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
 char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 {
     CommitAll();
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
@@ -1402,9 +1402,9 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
         return "DirectRun completed" ;
     }
 #endif
-    
+
     std::string interleave ;
-    
+
     switch (interleaveStepSize)
     {
         case sml_ELABORATION:
@@ -1422,18 +1422,18 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
         default:
             return "Unrecognized interleave size parameter passed to RunAllAgents" ;
     }
-    
+
     std::string cmd = "run " + interleave ;
-    
+
     // The command line currently requires an agent in order
     // to execute a run command, so we provide one (which one should make no difference).
     if (GetNumberAgents() == 0)
     {
         return "There are no agents to run" ;
     }
-    
+
     Agent* pFirstAgent = GetAgentByIndex(0) ;
-    
+
     // Execute the run command.
     char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
     return pResult ;
@@ -1442,7 +1442,7 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
 {
     CommitAll();
-    
+
 #ifdef SML_DIRECT
     if (GetConnection()->IsDirectConnection())
     {
@@ -1451,9 +1451,9 @@ char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
         return "DirectRun completed" ;
     }
 #endif
-    
+
     std::string interleave ;
-    
+
     switch (interleaveStepSize)
     {
         case sml_ELABORATION:
@@ -1471,22 +1471,22 @@ char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
         default:
             return "Unrecognized interleave size parameter passed to RunAllAgents" ;
     }
-    
+
     // Run all agents until each has generated output.  Each agent will stop at the point
     // it has generated output, so they may run for different numbers of decisions.
     // For now, maxDecisions is being ignored.  We should make this a separate call
     // to set this parameter.
     std::string cmd = "run --output " + interleave ;
-    
+
     // The command line currently requires an agent in order
     // to execute a run command, so we provide one (which one should make no difference).
     if (GetNumberAgents() == 0)
     {
         return "There are no agents to run" ;
     }
-    
+
     Agent* pFirstAgent = GetAgentByIndex(0) ;
-    
+
     // Execute the run command.
     char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
     return pResult ;
@@ -1506,16 +1506,16 @@ char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
 char const* Kernel::StopAllAgents()
 {
     std::string cmd = "stop-soar" ;
-    
+
     // The command line currently requires an agent in order
     // to execute a stop-soar command, so we provide one (which one should make no difference).
     if (GetNumberAgents() == 0)
     {
         return "There are no agents to stop" ;
     }
-    
+
     Agent* pFirstAgent = GetAgentByIndex(0) ;
-    
+
     // Execute the command.
     char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
     return pResult ;
@@ -1530,14 +1530,14 @@ char const* Kernel::StopAllAgents()
 bool Kernel::IsSoarRunning()
 {
     AnalyzeXML response ;
-    
+
     bool ok = (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_IsSoarRunning)) ;
-    
+
     if (ok)
     {
         return response.GetResultBool(false) ;
     }
-    
+
     return ok ;
 }
 
@@ -1554,7 +1554,7 @@ bool Kernel::IsSoarRunning()
 bool Kernel::FireStartSystemEvent()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_FireEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_START)) ;
     return ok ;
 }
@@ -1574,7 +1574,7 @@ bool Kernel::FireStartSystemEvent()
 bool Kernel::FireStopSystemEvent()
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_FireEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_STOP)) ;
     return ok ;
 }
@@ -1595,7 +1595,7 @@ bool Kernel::FireStopSystemEvent()
 bool Kernel::SuppressSystemStop(bool state)
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_STOP), sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
     return ok ;
 }
@@ -1627,7 +1627,7 @@ bool Kernel::CheckForIncomingCommands()
     {
         return response.GetResultBool(false) ;
     }
-    
+
     return false ;
 }
 
@@ -1656,9 +1656,9 @@ bool Kernel::CheckForIncomingEvents()
 void Kernel::RegisterForEventWithKernel(int id, char const* pAgentName)
 {
     AnalyzeXML response ;
-    
+
     char const* pEvent = m_pEventMap->ConvertToString(id) ;
-    
+
     // Send the register command
     GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, pAgentName, sml_Names::kParamEventID, pEvent) ;
 }
@@ -1669,9 +1669,9 @@ void Kernel::RegisterForEventWithKernel(int id, char const* pAgentName)
 void Kernel::UnregisterForEventWithKernel(int id, char const* pAgentName)
 {
     AnalyzeXML response ;
-    
+
     char const* pEvent = m_pEventMap->ConvertToString(id) ;
-    
+
     // Send the unregister command
     GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, pAgentName, sml_Names::kParamEventID, pEvent) ;
 }
@@ -1685,7 +1685,7 @@ class Kernel::TestSystemCallback : public SystemEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(SystemEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -1701,7 +1701,7 @@ class Kernel::TestUpdateCallback : public UpdateEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(UpdateEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -1717,7 +1717,7 @@ class Kernel::TestStringCallback : public StringEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(StringEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -1730,7 +1730,7 @@ class Kernel::TestStringCallbackFull : public StringEventMap::ValueTest
         int             m_EventID ;
         StringEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestStringCallbackFull(int id, StringEventHandler handler, void* pUserData)
         {
@@ -1738,7 +1738,7 @@ class Kernel::TestStringCallbackFull : public StringEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(StringEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -1753,7 +1753,7 @@ class Kernel::TestSystemCallbackFull : public SystemEventMap::ValueTest
         int             m_EventID ;
         SystemEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestSystemCallbackFull(int id, SystemEventHandler handler, void* pUserData)
         {
@@ -1761,7 +1761,7 @@ class Kernel::TestSystemCallbackFull : public SystemEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(SystemEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -1776,7 +1776,7 @@ class Kernel::TestUpdateCallbackFull : public UpdateEventMap::ValueTest
         int             m_EventID ;
         UpdateEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestUpdateCallbackFull(int id, UpdateEventHandler handler, void* pUserData)
         {
@@ -1784,7 +1784,7 @@ class Kernel::TestUpdateCallbackFull : public UpdateEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(UpdateEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -1802,7 +1802,7 @@ class Kernel::TestAgentCallback : public AgentEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(AgentEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -1815,7 +1815,7 @@ class Kernel::TestAgentCallbackFull : public AgentEventMap::ValueTest
         int             m_EventID ;
         AgentEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestAgentCallbackFull(int id, AgentEventHandler handler, void* pUserData)
         {
@@ -1823,7 +1823,7 @@ class Kernel::TestAgentCallbackFull : public AgentEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         bool isEqual(AgentEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_EventID == m_EventID &&
@@ -1841,7 +1841,7 @@ class Kernel::TestRhsCallback : public RhsEventMap::ValueTest
         {
             m_ID = id ;
         }
-        
+
         bool isEqual(RhsEventHandlerPlusData handler)
         {
             return handler.m_CallbackID == m_ID ;
@@ -1855,7 +1855,7 @@ class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
         std::string     m_FunctionName ;
         RhsEventHandler m_Handler ;
         void*           m_UserData ;
-        
+
     public:
         TestRhsCallbackFull(int eventID, char const* functionName, RhsEventHandler handler, void* pUserData)
         {
@@ -1864,9 +1864,9 @@ class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
             m_Handler = handler ;
             m_UserData = pUserData ;
         }
-        
+
         virtual ~TestRhsCallbackFull() { } ;
-        
+
         bool isEqual(RhsEventHandlerPlusData handlerPlus)
         {
             return handlerPlus.m_FunctionName.compare(m_FunctionName) == 0 &&
@@ -1902,31 +1902,31 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestSystemCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     SystemEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_SystemEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_SystemEventMap.getListSize(id) == 0)
     {
         RegisterForEventWithKernel(id, NULL) ;
     }
-    
+
     // Record the handler
     // We use a struct rather than a pointer to a struct, so there's no need to new/delete
     // everything as the objects are added and deleted.
     m_CallbackIDCounter++ ;
-    
+
     SystemEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_SystemEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -1948,31 +1948,31 @@ int Kernel::RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handl
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestUpdateCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     UpdateEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_UpdateEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_UpdateEventMap.getListSize(id) == 0)
     {
         RegisterForEventWithKernel(id, NULL) ;
     }
-    
+
     // Record the handler
     // We use a struct rather than a pointer to a struct, so there's no need to new/delete
     // everything as the objects are added and deleted.
     m_CallbackIDCounter++ ;
-    
+
     UpdateEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_UpdateEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -1994,31 +1994,31 @@ int Kernel::RegisterForStringEvent(smlStringEventId id, StringEventHandler handl
 {
     // Start by checking if this id, handler, pUserData combination has already been registered
     TestStringCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     StringEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_StringEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_StringEventMap.getListSize(id) == 0)
     {
         RegisterForEventWithKernel(id, NULL) ;
     }
-    
+
     // Record the handler
     // We use a struct rather than a pointer to a struct, so there's no need to new/delete
     // everything as the objects are added and deleted.
     m_CallbackIDCounter++ ;
-    
+
     StringEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_StringEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -2044,28 +2044,28 @@ int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler,
 {
     // Start by checking if this id, handler, pUSerData combination has already been registered
     TestAgentCallbackFull test(id, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     AgentEventHandlerPlusData plus(0, 0, 0, 0) ;
     bool found = m_AgentEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_AgentEventMap.getListSize(id) == 0)
     {
         RegisterForEventWithKernel(id, NULL) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
     AgentEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
     m_AgentEventMap.add(id, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -2077,34 +2077,34 @@ int Kernel::InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionNam
 {
     // Start by checking if this functionName, handler, pUSerData combination has already been registered
     TestRhsCallbackFull test(id, pRhsFunctionName, handler, pUserData) ;
-    
+
     // See if this handler is already registered
     RhsEventHandlerPlusData plus(0, 0, 0, 0, 0) ;
     bool found = m_RhsEventMap.findFirstValueByTest(&test, &plus) ;
-    
+
     if (found && plus.m_Handler != 0)
     {
         return plus.getCallbackID() ;
     }
-    
+
     // If we have no handlers registered with the kernel, then we need
     // to register for this event.  No need to do this multiple times.
     if (m_RhsEventMap.getListSize(pRhsFunctionName) == 0)
     {
         AnalyzeXML response ;
-        
+
         // The event ID is always the same for RHS functions
         char const* pEvent = m_pEventMap->ConvertToString(id) ;
-        
+
         // Send the register command for this event and this function name
         GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, pEvent, sml_Names::kParamName, pRhsFunctionName) ;
     }
-    
+
     // Record the handler
     m_CallbackIDCounter++ ;
     RhsEventHandlerPlusData handlerPlus(id, pRhsFunctionName, handler, pUserData, m_CallbackIDCounter) ;
     m_RhsEventMap.add(pRhsFunctionName, handlerPlus, addToBack) ;
-    
+
     // Return the ID.  We use this later to unregister the callback
     return m_CallbackIDCounter ;
 }
@@ -2113,29 +2113,29 @@ bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestRhsCallback test(callbackID) ;
-    
+
     // Find the function for this callbackID (for RHS functions the key is a function name not an event id)
     std::string functionName = m_RhsEventMap.findFirstKeyByTest(&test, "") ;
-    
+
     if (functionName.length() == 0)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_RhsEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_RhsEventMap.getListSize(functionName) == 0)
     {
         AnalyzeXML response ;
-        
+
         char const* pEvent = m_pEventMap->ConvertToString(id) ;
-        
+
         // Send the unregister command
         GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, pEvent, sml_Names::kParamName, functionName.c_str()) ;
     }
-    
+
     return true ;
 }
 
@@ -2166,7 +2166,7 @@ bool Kernel::InternalRemoveRhsFunction(smlRhsEventId id, int callbackID)
 int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
 {
     smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
-    
+
     return InternalAddRhsFunction(id, pRhsFunctionName, handler, pUserData, addToBack) ;
 }
 
@@ -2176,7 +2176,7 @@ int Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
 bool Kernel::RemoveRhsFunction(int callbackID)
 {
     smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
-    
+
     return InternalRemoveRhsFunction(id, callbackID) ;
 }
 
@@ -2208,7 +2208,7 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack)
 {
     smlRhsEventId id = smlEVENT_CLIENT_MESSAGE ;
-    
+
     // We actually use the RHS function code internally to process this message (since it's almost exactly like calling a RHS function that's
     // processed on a client).
     return InternalAddRhsFunction(id, pClientName, static_cast<RhsEventHandler>(handler), pUserData, addToBack) ;
@@ -2222,7 +2222,7 @@ int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessage
 bool Kernel::UnregisterForClientMessageEvent(int callbackID)
 {
     smlRhsEventId id = smlEVENT_CLIENT_MESSAGE ;
-    
+
     return InternalRemoveRhsFunction(id, callbackID) ;
 }
 
@@ -2247,15 +2247,15 @@ bool Kernel::UnregisterForClientMessageEvent(int callbackID)
 std::string Kernel::SendClientMessage(Agent* pAgent, char const* pClientName, char const* pMessage)
 {
     AnalyzeXML response ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SendClientMessage, pAgent ? pAgent->GetAgentName() : NULL, sml_Names::kParamName, pClientName, sml_Names::kParamMessage, pMessage) ;
-    
+
     if (ok)
     {
         const char* pResponse = response.GetResultString() ;
         return pResponse ? pResponse : "" ;
     }
-    
+
     return GetLastErrorDescription() ;
 }
 
@@ -2266,24 +2266,24 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestSystemCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, smlSYSTEM_EVENT_BAD) ;
-    
+
     if (id == smlSYSTEM_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_SystemEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_SystemEventMap.getListSize(id) == 0)
     {
         UnregisterForEventWithKernel(id, NULL) ;
     }
-    
+
     return true ;
 }
 
@@ -2295,24 +2295,24 @@ bool Kernel::UnregisterForStringEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestStringCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, smlSTRING_EVENT_BAD) ;
-    
+
     if (id == smlSTRING_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_StringEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_StringEventMap.getListSize(id) == 0)
     {
         UnregisterForEventWithKernel(id, NULL) ;
     }
-    
+
     return true ;
 }
 
@@ -2324,24 +2324,24 @@ bool Kernel::UnregisterForUpdateEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestUpdateCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, smlUPDATE_EVENT_BAD) ;
-    
+
     if (id == smlUPDATE_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_UpdateEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_UpdateEventMap.getListSize(id) == 0)
     {
         UnregisterForEventWithKernel(id, NULL) ;
     }
-    
+
     return true ;
 }
 
@@ -2352,24 +2352,24 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
 {
     // Build a test object for the callbackID we're interested in
     TestAgentCallback test(callbackID) ;
-    
+
     // Find the event ID for this callbackID
     smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, smlAGENT_EVENT_BAD) ;
-    
+
     if (id == smlAGENT_EVENT_BAD)
     {
         return false ;
     }
-    
+
     // Remove the handler from our map
     m_AgentEventMap.removeAllByTest(&test) ;
-    
+
     // If we just removed the last handler, then unregister from the kernel for this event
     if (m_AgentEventMap.getListSize(id) == 0)
     {
         UnregisterForEventWithKernel(id, NULL) ;
     }
-    
+
     return true ;
 }
 
@@ -2395,15 +2395,15 @@ bool Kernel::SetInterruptCheckRate(int newRate)
     {
         return false ;
     }
-    
+
     AnalyzeXML response ;
-    
+
     // Convert int to a string
     std::ostringstream ostr ;
     ostr << newRate ;
-    
+
     bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetInterruptCheckRate, NULL, sml_Names::kParamValue, ostr.str().c_str()) ;
-    
+
     return ok ;
 }
 
@@ -2459,16 +2459,16 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     // We'll break up the command in to this argv array
     std::vector<std::string> vectorArgv;
     Tokenize(pLibraryCommand, vectorArgv);
-    
+
     if (vectorArgv.size() == 0)
     {
         return "No library name.";
     }
-    
+
     // The first index of the argv is the library name
     // Make a copy of the library name so we can work on it.
     std::string libraryName = vectorArgv[0];
-    
+
     // We shouldn't be passed something with an extension
     // but if we are, we'll try to strip the extension to be helpful
     size_t pos = libraryName.find_last_of('.') ;
@@ -2476,14 +2476,14 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     {
         libraryName.erase(pos) ;
     }
-    
+
 #ifdef _WIN32
     // The windows shared library
     libraryName = libraryName + ".dll";
-    
+
     // Now load the library itself.
     HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
-    
+
 #else
     std::string newLibraryName = "lib" + libraryName;
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -2494,9 +2494,9 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     void* hLibrary = 0;
     hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 #endif // !_WIN32
-    
+
     std::string resultString;
-    
+
     if (!hLibrary)
     {
 #ifdef _WIN32
@@ -2508,49 +2508,50 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     else
     {
         InitLibraryFunction pInitLibraryFunction = Dangerous_Pointer_Cast<InitLibraryFunction>::from(GetProcAddress(hLibrary, "sml_InitLibrary"));
-        
+
         if (!pInitLibraryFunction)
         {
             return "Couldn't find sml_InitLibrary in library";
         }
-        
+
         // Create main-style argc/argv (argv is null-terminated);
         int argc = static_cast<int>(vectorArgv.size());
-        
+
         char** charArgv = new char* [vectorArgv.size() + 1]; // plus 1 for null-termination
         for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index)
         {
-        
+
             // copy
             charArgv[index] = new char[vectorArgv[index].size() + 1];
             strncpy(charArgv[index], vectorArgv[index].data(), vectorArgv[index].size());
-            
+
             // verify it is null-terminated
             charArgv[index][ vectorArgv[index].size() ] = 0;
         }
-        
+
         // Null-terminate the whole array
         charArgv[vectorArgv.size()] = 0;
-        
+
         char* result = pInitLibraryFunction(this, argc, charArgv);
         if (result != 0)
         {
             resultString = result;
         }
-        
+
         // First delete the leaves
         for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index)
         {
             delete [] charArgv[index];
         }
-        
+
         // finally, delete the whole array
         delete [] charArgv;
     }
-    
+
     return resultString;
 }
 
+#ifndef NO_SVS
 void Kernel::SendSVSInput(const char* agentName, const std::string& txt)
 {
     AnalyzeXML response;
@@ -2582,3 +2583,4 @@ std::string Kernel::SVSQuery(const char* agentName, const std::string& q)
         return "";
     }
 }
+#endif
