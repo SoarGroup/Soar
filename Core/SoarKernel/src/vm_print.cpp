@@ -143,6 +143,17 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         }
     }
     dprint(mode, "------------------------------------\n");
+    dprint(mode, "         Literal Constraint Map\n");
+    dprint(mode, "------------------------------------\n");
+    if (literal_constraints->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+    for (std::map< uint64_t, Symbol* >::iterator it = literal_constraints->begin(); it != literal_constraints->end(); ++it)
+    {
+        dprint(mode, "%u: %y\n", it->first, static_cast<Symbol*>(it->second));
+    }
+    dprint(mode, "------------------------------------\n");
 }
 /* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
 

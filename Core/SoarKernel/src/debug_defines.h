@@ -60,7 +60,7 @@
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 #define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_MERGE                       false
-#define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_FIX_CONDITIONS              true
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 

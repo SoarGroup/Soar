@@ -137,9 +137,11 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
         t = static_cast<test>(c->first);
         // Should not be possible to be a conjunctive test
         assert(t->type != CONJUNCTIVE_TEST);
-
-        if (t->identity->original_var)
-        {
+        /* MToDo | This check was needed when we added literal equality tests to cached constraints
+         *         Probably won't need, but leaving in for now. Note that having it also caused
+         *         a memory access error, but did not investigate. */
+//        if (t->identity->original_var)
+//        {
             success = variablize_test_by_lookup(&(t), false);
             if (!success)
             {
@@ -163,9 +165,9 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
                 }
                 deallocate_test(thisAgent, t);
             }
-        } else {
-            dprint(DT_CONSTRAINTS, "Will not attempt to variablize cached constraint b/c no original variable.\n");
-        }
+//        } else {
+//            dprint(DT_CONSTRAINTS, "Will not attempt to variablize cached constraint b/c no original variable.\n");
+//        }
         c_last = c;
         c = c_next;
     }
@@ -184,6 +186,9 @@ void Variablization_Manager::clear_cached_constraints()
         free_list(thisAgent, it->second);
     }
     constant_constraints->clear();
+
+    /* We didn't increase refcount on literal constraints, so we just need to clear the list */
+    literal_constraints->clear();
 }
 
 void Variablization_Manager::cache_constraint(test equality_test, test relational_test)
@@ -237,8 +242,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         assert(t->type == EQUALITY_TEST);
         if (t->data.referent->is_constant())
         {
-            dprint(DT_CONSTRAINTS, "...adding equality test as a relational test: %t\n", t);
-            cache_constraint(t, t);
+            dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
+            (*literal_constraints)[t->identity->grounding_id] = t->data.referent;
+//            cache_constraint(t, t);
         }
         return;
     }
@@ -262,8 +268,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
             case EQUALITY_TEST:
                 if (ctest->data.referent->is_constant())
                 {
-                    dprint(DT_CONSTRAINTS, "...adding equality test as a relational test: %t %t\n", equality_test, ctest);
-                    cache_constraint(equality_test, ctest);
+                    dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
+                    (*literal_constraints)[ctest->identity->grounding_id] = ctest->data.referent;
+//                    cache_constraint(equality_test, ctest);
                 }
                 break;
             case GREATER_TEST:
