@@ -138,28 +138,33 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
         // Should not be possible to be a conjunctive test
         assert(t->type != CONJUNCTIVE_TEST);
 
-        success = variablize_test_by_lookup(&(t), false);
-        if (!success)
+        if (t->identity->original_var)
         {
-            /* -- STI identifier that is ungrounded.  Delete. -- */
-            dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
-            if (c_last)
+            success = variablize_test_by_lookup(&(t), false);
+            if (!success)
             {
-                /* -- Not at the head of the list -- */
-                c_last->rest = c->rest;
-                free_cons(thisAgent, c);
-                c = c_last;
+                /* -- STI identifier that is ungrounded.  Delete. -- */
+                dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
+                if (c_last)
+                {
+                    /* -- Not at the head of the list -- */
+                    c_last->rest = c->rest;
+                    free_cons(thisAgent, c);
+                    c = c_last;
+                }
+                else
+                {
+                    /* -- At the head of the list -- */
+                    (*constraint_list) = c->rest;
+                    free_cons(thisAgent, c);
+                    /* -- This will cause c_last to be set to NULL, indicating we're
+                     *    at the head of the list -- */
+                    c = NULL;
+                }
+                deallocate_test(thisAgent, t);
             }
-            else
-            {
-                /* -- At the head of the list -- */
-                (*constraint_list) = c->rest;
-                free_cons(thisAgent, c);
-                /* -- This will cause c_last to be set to NULL, indicating we're
-                 *    at the head of the list -- */
-                c = NULL;
-            }
-            deallocate_test(thisAgent, t);
+        } else {
+            dprint(DT_CONSTRAINTS, "Will not attempt to variablize cached constraint b/c no original variable.\n");
         }
         c_last = c;
         c = c_next;
@@ -324,6 +329,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
                 }
                 free_list(thisAgent, iter->second);
                 (*sti_constraints).erase(iter->first);
+                dprint(DT_CONSTRAINTS, "...final constrained test: %t\n", *t);
             }
             else
             {
@@ -337,7 +343,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     }
     else
     {
-        dprint(DT_CONSTRAINTS, "...identity, so must be constant.  Using g_id to look up.\n");
+        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
         found_variablization = get_variablization(eq_test->identity->grounding_id);
         if (found_variablization)
         {
@@ -357,6 +363,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
                 }
                 free_list(thisAgent, iter->second);
                 (*constant_constraints).erase(iter->first);
+                dprint(DT_CONSTRAINTS, "...final constrained test: %t\n", *t);
             }
             else
             {
