@@ -23,7 +23,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     orig_var_to_g_id_map = new std::map< Symbol*, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
-    literal_constraints = new std::map< uint64_t , Symbol* >();
+    literal_constraints = new std::map< uint64_t , test >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
     substitution_map = new std::map< Symbol*, test >();

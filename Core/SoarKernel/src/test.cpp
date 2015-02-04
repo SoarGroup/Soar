@@ -94,6 +94,11 @@ test copy_test(agent* thisAgent, test t)
     {
         symbol_add_ref(thisAgent, t->identity->original_var);
     }
+    /* Cached eq_test is used by the chunker to avoid repeatedly searching
+     * through conjunctions for the main equality test.  Value set during
+     * chunking, but we had it here at some point for debugging test
+     * and in case we need it to be general in the future. */
+//    cache_eq_test(new_ct);
     new_ct->identity->grounding_id = t->identity->grounding_id;
     new_ct->identity->grounding_field = t->identity->grounding_field;
     new_ct->identity->grounding_wme = t->identity->grounding_wme;

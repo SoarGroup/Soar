@@ -147,7 +147,7 @@ class Variablization_Manager
         /* -- Cache of constraint tests collected during backtracing -- */
         std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
-        std::map< uint64_t, Symbol* >*           literal_constraints;
+        std::map< uint64_t, test >*           literal_constraints;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */

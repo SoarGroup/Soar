@@ -243,7 +243,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         if (t->data.referent->is_constant())
         {
             dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
-            (*literal_constraints)[t->identity->grounding_id] = t->data.referent;
+            (*literal_constraints)[t->identity->grounding_id] = copy_test(thisAgent, t);
 //            cache_constraint(t, t);
         }
         return;
@@ -269,7 +269,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
                 if (ctest->data.referent->is_constant())
                 {
                     dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
-                    (*literal_constraints)[ctest->identity->grounding_id] = ctest->data.referent;
+                    (*literal_constraints)[ctest->identity->grounding_id] = copy_test(thisAgent, ctest);
 //                    cache_constraint(equality_test, ctest);
                 }
                 break;
@@ -440,12 +440,14 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
         if (get_variablization(eq_test->identity->grounding_id))
         {
             dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", eq_test->identity->grounding_id);
-            std::map< uint64_t, Symbol* >::iterator iter = (*literal_constraints).find(eq_test->identity->grounding_id);
+            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(eq_test->identity->grounding_id);
             if (iter != (*literal_constraints).end())
             {
-                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %y. Replacing entire test with literal...\n", eq_test->identity->grounding_id, iter->second);
+                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %t. Replacing entire test with literal...\n", eq_test->identity->grounding_id, iter->second);
                 deallocate_test(thisAgent, *t);
-                *t = make_test(thisAgent, iter->second, EQUALITY_TEST);
+                test temp = iter->second;
+                *t = copy_test(thisAgent, iter->second);
+                cache_eq_test(*t);
                 dprint(DT_CONSTRAINTS, "...final test: %t\n", *t);
             }
             else
