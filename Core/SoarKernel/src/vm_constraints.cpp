@@ -423,11 +423,12 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
 
     test eq_test;
     Symbol* eq_symbol;
+    variablization *found_variablization;
 
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
-    dprint(DT_CONSTRAINTS, "Installing literal constraints for equality test %y  in test %t.\n", eq_symbol, eq_test);
+    dprint(DT_CONSTRAINTS, "Installing literal constraints for equality test %y  in test %t.\n", eq_symbol, *t);
     if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Skipping.\n");
@@ -437,7 +438,8 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
         dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
         /* MToDo | Not sure if the following check is needed, but may speed things up since the variablization
          *         table should be much smaller than the literal constraint table */
-        if (get_variablization(eq_test->identity->grounding_id))
+        found_variablization = get_variablization(eq_test->identity->grounding_id);
+        if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", eq_test->identity->grounding_id);
             std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(eq_test->identity->grounding_id);
@@ -448,6 +450,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
                 test temp = iter->second;
                 *t = copy_test(thisAgent, iter->second);
                 cache_eq_test(*t);
+                found_variablization->variablized_symbol->tc_num = tc_num_literalized;
                 dprint(DT_CONSTRAINTS, "...final test: %t\n", *t);
             }
             else

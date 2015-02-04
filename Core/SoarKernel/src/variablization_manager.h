@@ -131,6 +131,8 @@ class Variablization_Manager
         void install_literal_constraints_for_test(test* t);
         void install_literal_constraints(condition* pCond);
 
+        tc_number tc_num_literalized;
+
         void add_dnvl(Symbol* sym);
         bool is_in_dnvl(Symbol* sym);
         void add_ltis_to_dnvl_for_test(test t);

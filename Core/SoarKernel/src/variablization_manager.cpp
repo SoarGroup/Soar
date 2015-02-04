@@ -189,7 +189,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     }
 
 
-    if (found_variablization)
+    if (found_variablization && (found_variablization->variablized_symbol->tc_num != tc_num_literalized))
     {
         /* --- Grounded symbol that has been variablized before--- */
 

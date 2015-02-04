@@ -246,7 +246,9 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
 
     // get new tc_num to mark any variables that need to be substituted
-    tc_number tc_num = get_new_tc_number(thisAgent);;
+    tc_number tc_num_subst = get_new_tc_number(thisAgent);;
+    // get new tc_num to mark any variables that need to be literals
+    tc_num_literalized = get_new_tc_number(thisAgent);;
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
@@ -255,9 +257,9 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
-            remove_redundancies_and_ungroundeds(&(cond->data.tests.id_test), tc_num, ignore_ungroundeds);
-            remove_redundancies_and_ungroundeds(&(cond->data.tests.attr_test), tc_num, ignore_ungroundeds);
-            remove_redundancies_and_ungroundeds(&(cond->data.tests.value_test), tc_num, ignore_ungroundeds);
+            remove_redundancies_and_ungroundeds(&(cond->data.tests.id_test), tc_num_subst, ignore_ungroundeds);
+            remove_redundancies_and_ungroundeds(&(cond->data.tests.attr_test), tc_num_subst, ignore_ungroundeds);
+            remove_redundancies_and_ungroundeds(&(cond->data.tests.value_test), tc_num_subst, ignore_ungroundeds);
         }
         else
         {
@@ -269,7 +271,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
 //        dprint(DT_FIX_CONDITIONS, "...done finding redundancies in condition.\n");
     }
 
-    consolidate_variables(top_cond, tc_num);
+    consolidate_variables(top_cond, tc_num_subst);
     clear_substitution_map();
 
     install_literal_constraints(top_cond);
