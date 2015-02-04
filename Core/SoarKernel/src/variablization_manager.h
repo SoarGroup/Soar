@@ -128,6 +128,8 @@ class Variablization_Manager
         void cache_constraints_in_test(test t);
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
         void install_cached_constraints_for_test(test* t);
+        void install_literal_constraints_for_test(test* t);
+        void install_literal_constraints(condition* pCond);
 
         void add_dnvl(Symbol* sym);
         bool is_in_dnvl(Symbol* sym);
@@ -140,10 +142,10 @@ class Variablization_Manager
         /* -- Look-up tables for LHS variablization -- */
         std::map< Symbol*, uint64_t >*           orig_var_to_g_id_map;
         std::map< uint64_t, variablization* >*   g_id_to_var_map;
-        std::map< Symbol*, variablization* >*   sym_to_var_map;
+        std::map< Symbol*, variablization* >*    sym_to_var_map;
 
         /* -- Cache of constraint tests collected during backtracing -- */
-        std::map< Symbol*, ::list* >*           sti_constraints;
+        std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
         std::map< uint64_t, Symbol* >*           literal_constraints;
 

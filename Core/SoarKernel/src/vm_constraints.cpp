@@ -414,3 +414,82 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     dprint_header(DT_CONSTRAINTS, PrintAfter, "");
 }
 
+void Variablization_Manager::install_literal_constraints_for_test(test* t)
+{
+    if (!t)
+    {
+        return;
+    }
+
+    test eq_test;
+    Symbol* eq_symbol;
+
+    eq_test = equality_test_found_in_test(*t);
+    assert(eq_test);
+    eq_symbol = eq_test->data.referent;
+    dprint(DT_CONSTRAINTS, "Installing literal constraints for equality test %y  in test %t.\n", eq_symbol, eq_test);
+    if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
+    {
+        dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Skipping.\n");
+    }
+    else
+    {
+        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
+        /* MToDo | Not sure if the following check is needed, but may speed things up since the variablization
+         *         table should be much smaller than the literal constraint table */
+        if (get_variablization(eq_test->identity->grounding_id))
+        {
+            dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", eq_test->identity->grounding_id);
+            std::map< uint64_t, Symbol* >::iterator iter = (*literal_constraints).find(eq_test->identity->grounding_id);
+            if (iter != (*literal_constraints).end())
+            {
+                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %y. Replacing entire test with literal...\n", eq_test->identity->grounding_id, iter->second);
+                deallocate_test(thisAgent, *t);
+                *t = make_test(thisAgent, iter->second, EQUALITY_TEST);
+                dprint(DT_CONSTRAINTS, "...final test: %t\n", *t);
+            }
+            else
+            {
+                dprint(DT_CONSTRAINTS, "...no literal constraints found.\n");
+            }
+        }
+        else
+        {
+            dprint(DT_CONSTRAINTS, "... was never variablized. Skipping...\n");
+        }
+    }
+}
+
+void Variablization_Manager::install_literal_constraints(condition* pCond)
+{
+    dprint_header(DT_CONSTRAINTS, PrintBoth, "install_literal_constraints called...!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_variablization_tables(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
+
+    /* MToDo | Vast majority of constraints will be on value element.  Making this work with a pass for
+     *         values followed by attributes could be faster. */
+
+    if (literal_constraints->size() > 0)
+    {
+        while (pCond)
+        {
+            if (pCond->type == POSITIVE_CONDITION)
+            {
+                dprint(DT_CONSTRAINTS, "Adding for positive condition %l\n", pCond);
+                install_literal_constraints_for_test(&pCond->data.tests.attr_test);
+                install_literal_constraints_for_test(&pCond->data.tests.value_test);
+            }
+            else
+            {
+                dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
+            }
+            pCond = pCond->next;
+        }
+        }
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "install_literal_constraints done adding constraints.\n");
+    print_variablization_tables(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
+    dprint_noprefix(DT_CONSTRAINTS, "%1", pCond);
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
+}
+

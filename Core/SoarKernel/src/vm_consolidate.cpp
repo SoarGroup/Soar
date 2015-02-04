@@ -272,6 +272,8 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     consolidate_variables(top_cond, tc_num);
     clear_substitution_map();
 
+    install_literal_constraints(top_cond);
+
     dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
