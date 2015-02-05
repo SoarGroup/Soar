@@ -250,6 +250,61 @@ char* Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char* 
     return dest;
 }
 
+char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, size_t dest_size)
+{
+
+    cons* c;
+    char* ch;
+
+    ch = dest;
+
+    if (test_is_blank(t))
+    {
+        strcpy(dest, "[BLANK TEST]");
+        dest[dest_size - 1] = 0; /* ensure null termination */
+        return dest;
+    }
+
+    switch (t->type)
+    {
+        case EQUALITY_TEST:
+        case NOT_EQUAL_TEST:
+        case LESS_TEST:
+        case GREATER_TEST:
+        case LESS_OR_EQUAL_TEST:
+        case GREATER_OR_EQUAL_TEST:
+        case SAME_TYPE_TEST:
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u", t->identity->grounding_id);
+            while (*ch) ch++;
+            break;
+        case CONJUNCTIVE_TEST:
+            *(ch++) = '{';
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
+                identity_to_string(thisAgent, static_cast<test>(c->first), ch, dest_size - (ch - dest));
+                while (*ch) ch++;
+                if (c->rest)
+                    *(ch++) = ' ';
+            }
+            *(ch++) = '}';
+            *ch = 0;
+            break;
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case DISJUNCTION_TEST:
+            strcpy(ch, "g0");
+            ch += 2;
+            *ch = 0;
+            break;
+        default:
+            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
+            assert(false);
+            break;
+    }
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    return dest;
+}
+
 char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size)
 {
     char* ch=dest;
@@ -273,11 +328,11 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             while (*ch) ch++;
         }
         if (m_print_identity) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u %s^g%u g%u)",
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%g %s^%g %g)",
                 (m_print_actual || m_print_original) ? ", " : NULL,
-                cond->data.tests.id_test->identity->grounding_id,
+                cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-                cond->data.tests.attr_test->identity->grounding_id, cond->data.tests.value_test->identity->grounding_id);
+                cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
         *(ch++) = 0;

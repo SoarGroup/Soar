@@ -143,6 +143,11 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             test_to_string(va_arg(args, test_info *), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
+        } else if (*(format + 1) == 'g')
+        {
+            identity_to_string(thisAgent, va_arg(args, test_info *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
         } else if (*(format + 1) == 'l')
         {
             condition_to_string(thisAgent, va_arg(args, condition*), ch, dest_size - (ch - dest) );

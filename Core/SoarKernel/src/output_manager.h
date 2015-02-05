@@ -140,6 +140,7 @@ class Output_Manager
         char* cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
         char* cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size);
         char* cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
+        char* identity_to_string(agent* thisAgent, test t, char* dest, size_t dest_size);
         char* instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size);
         char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
         char* preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
