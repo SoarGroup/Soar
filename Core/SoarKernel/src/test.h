@@ -102,29 +102,35 @@ typedef struct test_struct
  *     considered blank when that pointer is nil. --- */
 typedef test_info* test;
 
-
-/* --- Descriptions of these functions can be found in the test.cpp --- */
-inline bool test_is_blank(test t)
-{
-    return (t == 0);
-}
-inline bool test_is_variable(agent* thisAgent, test t);
-inline bool test_has_referent(test t)
-{
-    return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
-            (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
-};
 /* MToDo | Is this really necessary? */
 inline test make_blank_test()
 {
     return static_cast<test>(0);
 }
+inline bool test_is_blank(test t)
+{
+    return (t == 0);
+}
 
+/* ----------------------------------------------------------------
+   Returns true iff the test contains a test for a variable
+   symbol.  Assumes test is not a conjunctive one and does not
+   try to search them.
+---------------------------------------------------------------- */
+inline bool test_has_referent(test t)
+{
+    return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
+};
+
+
+/* --- Descriptions of these functions can be found in the test.cpp --- */
 char first_letter_from_test(test t);
 bool tests_are_equal(test t1, test t2, bool neg);
 bool tests_identical(test t1, test t2, bool considerIdentity = false);
 bool test_includes_equality_test_for_symbol(test t, Symbol* sym);
 bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
+bool test_is_variable(agent* thisAgent, test t);
 test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 void cache_eq_test(test t);
 test equality_test_found_in_test(test t);

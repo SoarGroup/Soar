@@ -421,20 +421,28 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
         return;
     }
 
-    test eq_test;
-    Symbol* eq_symbol;
+    Symbol* t_symbol;
+    uint64_t t_gid;
+
     variablization *found_variablization;
 
-//    if ((*t)->type != EQUALITY_TEST)
-//    {
-//        dprint(DT_CONSTRAINTS, "Not installing literal constraints for non-equality test %t.\n", *t);
-//        return;
-//    }
-    eq_test = equality_test_found_in_test(*t);
-    assert(eq_test);
-    eq_symbol = eq_test->data.referent;
-    dprint(DT_CONSTRAINTS, "Installing literal constraints for equality test %y  in test %t.\n", eq_symbol, *t);
-    if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
+    if ((*t)->type == CONJUNCTIVE_TEST)
+    {
+        dprint(DT_CONSTRAINTS, "Installing literal constraints for conjunctive test %t...\n", *t);
+        cons* c;
+        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            test ctest = static_cast<test>(c->first);
+            install_literal_constraints_for_test(&ctest);
+        }
+        return;
+    }
+    if (!test_has_referent(*t)) return;
+
+    t_symbol = (*t)->data.referent;
+    t_gid = (*t)->identity->grounding_id;
+    dprint(DT_CONSTRAINTS, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
+    if (t_gid == 0)
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Skipping.\n");
     }
@@ -443,14 +451,14 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
         dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
         /* MToDo | Not sure if the following check is needed, but may speed things up since the variablization
          *         table should be much smaller than the literal constraint table */
-        found_variablization = get_variablization(eq_test->identity->grounding_id);
+        found_variablization = get_variablization(t_gid);
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", eq_test->identity->grounding_id);
-            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(eq_test->identity->grounding_id);
+            dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", t_gid);
+            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(t_gid);
             if (iter != (*literal_constraints).end())
             {
-                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %t. Replacing entire test with literal...\n", eq_test->identity->grounding_id, iter->second);
+                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %t. Replacing with literal...\n", t_gid, iter->second);
                 deallocate_test(thisAgent, *t);
                 test temp = iter->second;
                 *t = copy_test(thisAgent, iter->second);
