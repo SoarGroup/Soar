@@ -382,6 +382,55 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
        two args is negative. */
 }
 
+Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+	Symbol* arg1;
+	slot* s;
+	wme* w;
+
+    arg1 = static_cast<symbol_struct*>(args->first);
+
+	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    {
+        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
+        return NIL;
+    }
+	int count = 0;
+
+	for (s = arg1->id->slots; s != NULL; s = s->next)
+    {
+        for (w = s->wmes; w != NULL; w = w->next)
+        {
+            count++;
+        }
+    }
+	return make_int_constant(thisAgent, count);
+}
+Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+	Symbol* arg1;
+	slot* s;
+	wme* w;
+
+    arg1 = static_cast<symbol_struct*>(args->first);
+
+	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    {
+        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
+        return NIL;
+    }
+	int sum = 0;
+
+	for (s = arg1->id->slots; s != NULL; s = s->next)
+    {
+        for (w = s->wmes; w != NULL; w = w->next)
+        {
+            sum+= static_cast<int>(w->value->ic->value);
+        }
+    }
+	return make_int_constant(thisAgent, sum);
+}
+
 /* --------------------------------------------------------------------
                           Integer Modulus
 
@@ -1615,6 +1664,10 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
                      -1, true, false, 0);
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "div"), div_rhs_function_code,
                      2, true, false, 0);
+	add_rhs_function(thisAgent, make_str_constant(thisAgent, "size"), size_rhs_function_code,
+                     1, true, false, 0);
+add_rhs_function(thisAgent, make_str_constant(thisAgent, "sum"), sum_rhs_function_code,
+                     1, true, false, 0);	
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "mod"), mod_rhs_function_code,
                      2, true, false, 0);
                      
@@ -1689,6 +1742,8 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "-"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "/"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "div"));
+	remove_rhs_function(thisAgent, find_str_constant(thisAgent, "size"));
+	remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sum"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "mod"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sin"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "cos"));
