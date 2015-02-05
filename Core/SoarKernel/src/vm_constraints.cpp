@@ -240,9 +240,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
     if (t->type != CONJUNCTIVE_TEST)
     {
         assert(t->type == EQUALITY_TEST);
-        if (t->data.referent->is_constant())
+        if (t->data.referent->is_constant() && !t->identity->original_var)
         {
-            dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
+            dprint(DT_CONSTRAINTS, "...caching equality test into literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
             (*literal_constraints)[t->identity->grounding_id] = copy_test(thisAgent, t);
 //            cache_constraint(t, t);
         }
@@ -266,9 +266,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         switch (ctest->type)
         {
             case EQUALITY_TEST:
-                if (ctest->data.referent->is_constant())
+                if (ctest->data.referent->is_constant() && !t->identity->original_var)
                 {
-                    dprint(DT_CONSTRAINTS, "...caching equality test in literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
+                    dprint(DT_CONSTRAINTS, "...caching equality test from conjunctive test into literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
                     (*literal_constraints)[ctest->identity->grounding_id] = copy_test(thisAgent, ctest);
 //                    cache_constraint(equality_test, ctest);
                 }
@@ -425,6 +425,11 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
     Symbol* eq_symbol;
     variablization *found_variablization;
 
+//    if ((*t)->type != EQUALITY_TEST)
+//    {
+//        dprint(DT_CONSTRAINTS, "Not installing literal constraints for non-equality test %t.\n", *t);
+//        return;
+//    }
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
@@ -490,7 +495,7 @@ void Variablization_Manager::install_literal_constraints(condition* pCond)
             }
             pCond = pCond->next;
         }
-        }
+    }
     dprint_header(DT_CONSTRAINTS, PrintAfter, "install_literal_constraints done adding constraints.\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
