@@ -434,6 +434,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
         {
             test ctest = static_cast<test>(c->first);
             install_literal_constraints_for_test(&ctest);
+            c->first = ctest;
         }
         return;
     }
@@ -444,7 +445,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
     dprint(DT_CONSTRAINTS, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
     if (t_gid == 0)
     {
-        dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Skipping.\n");
+        dprint(DT_CONSTRAINTS, "...no identity, so must be STI or literal relational test.  Skipping.\n");
     }
     else
     {
@@ -496,6 +497,7 @@ void Variablization_Manager::install_literal_constraints(condition* pCond)
                 dprint(DT_CONSTRAINTS, "Adding for positive condition %l\n", pCond);
                 install_literal_constraints_for_test(&pCond->data.tests.attr_test);
                 install_literal_constraints_for_test(&pCond->data.tests.value_test);
+                dprint(DT_CONSTRAINTS, "Resulting in condition %l.\n", pCond);
             }
             else
             {
@@ -504,10 +506,9 @@ void Variablization_Manager::install_literal_constraints(condition* pCond)
             pCond = pCond->next;
         }
     }
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "install_literal_constraints done adding constraints.\n");
+    dprint(DT_CONSTRAINTS, "install_literal_constraints resulted in final condition list %1.\n", pCond);
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
-    dprint_noprefix(DT_CONSTRAINTS, "%1", pCond);
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
 }
 
