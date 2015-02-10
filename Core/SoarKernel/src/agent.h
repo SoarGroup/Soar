@@ -100,7 +100,9 @@ typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
 
 class stats_statement_container;
+#ifndef NO_SVS
 class svs_interface;
+#endif
 
 typedef struct agent_struct
 {
@@ -948,7 +950,9 @@ typedef struct agent_struct
         std::map<std::vector<std::string>, Entry> split;
     };
     std::map<goal_stack_level, RL_Trace> rl_trace;
+#ifndef NO_SVS
     svs_interface* svs;
+#endif
 } agent;
 /*************** end of agent struct *****/
 

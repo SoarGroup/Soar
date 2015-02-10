@@ -8,7 +8,7 @@ class CliAdapter : public cli::Cli
 {
     public:
         virtual ~CliAdapter() {}
-        
+
         virtual bool SetError(const std::string& error)
         {
             return false;
@@ -321,23 +321,25 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
+#ifndef NO_SVS
         virtual bool DoSVS(const std::vector<std::string>& args)
         {
             return false;
         }
+#endif
 };
 
 class CliEcho : public CliAdapter
 {
     public:
         virtual ~CliEcho() {}
-        
+
         void SetExpected(unsigned numArgs, bool newLine)
         {
             this->numArgs = numArgs;
             this->newLine = newLine;
         }
-        
+
         virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
         {
             return (argv.size() == numArgs) && (echoNewline == newLine);
@@ -351,12 +353,12 @@ class CliMaxDCTime : public CliAdapter
 {
     public:
         virtual ~CliMaxDCTime() {}
-        
+
         void SetExpected(int n)
         {
             this->n = n;
         }
-        
+
         virtual bool DoMaxDCTime(const int n)
         {
             return this->n == n;
