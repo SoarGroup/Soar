@@ -25,7 +25,8 @@
 #include "soar_rand.h"
 #include "rhs.h"
 #include "rhs_functions.h"
-
+#include "decide.h"
+#include "wmem.h"
 #include <math.h>
 
 
