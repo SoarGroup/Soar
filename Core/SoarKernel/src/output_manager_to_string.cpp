@@ -463,6 +463,7 @@ char* Output_Manager::action_to_string(agent* thisAgent, action* a, char* dest, 
     else
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(", m_pre_string);
+        while (*ch) ch++;
         rhs_value_to_string(thisAgent, a->id, ch, dest_size - (ch - dest), NULL, NULL);
         while (*ch) ch++;
         strcpy(ch, " ^");
@@ -494,10 +495,8 @@ char* Output_Manager::action_list_to_string(agent* thisAgent, action* action_lis
         action_to_string(thisAgent, a, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         *(ch++) = '\n';
-        *ch = 0;
-
     }
-
+    *ch = 0;
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 }
