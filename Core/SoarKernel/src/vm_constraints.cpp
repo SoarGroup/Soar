@@ -266,7 +266,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         switch (ctest->type)
         {
             case EQUALITY_TEST:
-                if (ctest->data.referent->is_constant() && !t->identity->original_var)
+                if (ctest->data.referent->is_constant() && !ctest->identity->original_var)
                 {
                     dprint(DT_CONSTRAINTS, "...caching equality test from conjunctive test into literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
                     (*literal_constraints)[ctest->identity->grounding_id] = copy_test(thisAgent, ctest);
