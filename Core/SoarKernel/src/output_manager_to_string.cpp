@@ -218,8 +218,7 @@ char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool 
                 *(ch++) = ' ';
             }
             strcpy(ch, "}");
-            ch++;
-            *ch = 0;
+            *(ch++)= 0;
             break;
         case GOAL_ID_TEST:
             strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
@@ -320,11 +319,11 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             while (*ch) ch++;
         }
         if (m_print_original) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y %s^%y %y)",
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)",
                 (m_print_actual) ? ", " : NULL,
-                cond->data.tests.id_test->identity->original_var,
+                cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-                cond->data.tests.attr_test->identity->original_var, cond->data.tests.value_test->identity->original_var);
+                cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
         if (m_print_identity) {
