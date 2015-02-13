@@ -200,10 +200,10 @@ char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool 
                     ch++;
                 }
                 *(ch++) = ' ';
+                *ch = 0;
             }
             strcpy(ch, ">>");
             ch += 2;
-            *ch = 0;
             break;
         case CONJUNCTIVE_TEST:
             strcpy(ch, "{ ");
@@ -217,8 +217,8 @@ char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool 
                 }
                 *(ch++) = ' ';
             }
-            strcpy(ch, "}");
-            *(ch++)= 0;
+            *(ch++) = '}';
+            *ch = 0;
             break;
         case GOAL_ID_TEST:
             strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
@@ -293,7 +293,6 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case DISJUNCTION_TEST:
             strcpy(ch, "g0");
             ch += 2;
-            *ch = 0;
             break;
         default:
             strcpy(ch, "INVALID TEST!");   /* this should never get executed */
@@ -334,7 +333,7 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
                 cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
-        *(ch++) = 0;
+        *ch = 0;
     }
     else
     {
