@@ -1223,7 +1223,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         }
         else
         {
-            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %hi...", w->id->id->level);
+            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %d...", w->id->id->level);
         }
     }
     if (g->grounding_id[f] == 0)
@@ -1431,7 +1431,7 @@ void propagate_identity(agent* thisAgent,
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l", c);
+            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l\n", c);
 
             if (use_negation_lookup)
             {
