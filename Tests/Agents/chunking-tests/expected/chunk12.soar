@@ -1,16 +1,10 @@
-sp {answer*chunk*apply*12*onc*t3-2
-    (state <s1> ^superstate nil ^test-param2 <t3> ^test-item <c1>)
-    (<t3> ^foo <t1> ^foo <t2>)
-    (<t2> ^value <c1>)
-    (<t1> ^value { <> <c1> <d1> })
-    -->
-    (<s1> ^result12a <c1> + ^result12b <d1> + ^test-done 1 +)
-}
-
-sp {answer*chunk*apply*12*onc*t3-1
-    (state <s1> ^superstate nil ^test-param2 <t2> ^test-item <c2>)
-    (<t2> ^foo <t1>)
-    (<t1> ^value <c2> ^value { <> <c2> <c1> })
+sp {answer*apply*12*onc*t3-1
+    (state <s1> ^superstate nil ^test-param2 <p2> ^test-param <p1>
+          ^test-item <c2>)
+    (<p2> ^foo <f1>)
+    (<p1> ^foo <f2>)
+    (<f2> ^value <c2>)
+    (<f1> ^value { <> <c2> <c1> })
     -->
     (<s1> ^result12a <c2> + ^result12b <c1> + ^test-done 1 +)
 }

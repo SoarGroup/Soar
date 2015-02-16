@@ -1,11 +1,5 @@
-sp {answer*chunk*apply3*onc*t3-2
-    (state <s1> ^test-item 7 ^superstate nil ^test-item { < 8 <c1> })
+sp {answer*apply3*onc*t3-1
+    (state <s1> ^test-item2 7 ^superstate nil ^test-item { < 8 <c1> })
     -->
     (<s1> ^result3 <c1> + ^test-done 1 +)
-}
-
-sp {answer*chunk*apply3*onc*t3-1
-    (state <s1> ^test-item { < 8 7 } ^superstate nil)
-    -->
-    (<s1> ^result3 7 + ^test-done 1 +)
 }

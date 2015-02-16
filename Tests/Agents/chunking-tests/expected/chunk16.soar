@@ -1,12 +1,13 @@
-sp {answer*chunk*apply16b*onc*t3-1
-    (state <s1> ^superstate nil)
+sp {answer*apply16b*onc*t3-1
+   (state <s1> ^superstate nil)
     -->
-    (<s1> ^result16a <s2> + ^result16b <n1> + ^test-done 1 +)
-    (<s2> ^operator <o1> + ^name substate + ^ungrounded-identifier2 <n1> +
-           ^ungrounded-identifier1 <s2> +)
+    (<s1> ^result16a <s2> +)
+    (<s2> ^operator <o1> +)
     (<o1> ^name test +)
+    (<s2> ^name substate +)
+    (<s2> ^ungrounded-identifier2 <n1> +)
+    (<s2> ^ungrounded-identifier1 <s2> +)
     (<n1> ^foo bar +)
+    (<s1> ^result16b <n1> +)
+    (<s1> ^test-done 1 +)
 }
-
-
-
