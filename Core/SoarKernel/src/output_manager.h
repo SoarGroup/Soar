@@ -274,4 +274,35 @@ class Output_Manager
 
 };
 
+/* ------------------------------------
+ *    Format strings for Soar printing:
+ *
+ *       %c   character
+ *       %i   int64_t
+ *       %u   uint64_t
+ *       %d   short
+ *       %s   string
+ *       %f   fresh line (adds newline if not at column 1)
+ *
+ *       %a   action
+ *       %l   condition
+ *       %7   instantiation
+ *       %p   preference
+ *       %y   symbol
+ *       %o   symbol's original variable(s)
+ *       %t   test
+ *       %g   identity information for test
+ *       %w   wme
+ *
+ *       %1   condition list
+ *       %2   action list
+ *       %3   cons list of conditions
+ *
+ *       %4   condition action lists (2 args: cond, action)
+ *       %5   condition preference lists (2 args: cond, preference)
+ *       %6   condition results lists (2 args: cond, preference)
+ *
+ *       %8   Working Memory
+ *
+   ------------------------------------*/
 #endif /* OUTPUT_MANAGER_H_ */
