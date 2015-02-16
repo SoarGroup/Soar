@@ -110,15 +110,12 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 
 void Variablization_Manager::merge_conditions(condition* top_cond)
 {
-    dprint(DT_MERGE, "======================\n");
-    dprint(DT_MERGE, "= Merging Conditions =\n");
-    dprint(DT_MERGE, "======================\n");
-    dprint_set_params(DT_MERGE, "          ");
-    dprint(DT_MERGE, "%1", top_cond);
-    dprint_clear_params(DT_MERGE);
+    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n");
+    dprint_set_indents(DT_MERGE, "          ");
+    dprint_noprefix(DT_MERGE, "%1", top_cond);
+    dprint_clear_indents(DT_MERGE);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
-    dprint(DT_MERGE, "# of conditions = %i\n", old_num_conds);
-    dprint(DT_MERGE, "======================\n");
+    dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
 
     condition* found_cond, *next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond; ++current_cond)
@@ -184,17 +181,15 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         cond = next_cond;
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
-    dprint(DT_MERGE, "======================\n");
-    dprint_set_params(DT_MERGE, "          ");
-    dprint(DT_MERGE, "%1", top_cond);
-    dprint_clear_params(DT_MERGE);
+    dprint_header(DT_MERGE, PrintBefore, "");
+    dprint_set_indents(DT_MERGE, "          ");
+    dprint_noprefix(DT_MERGE, "%1", top_cond);
+    dprint_clear_indents(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
     dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %i conditions! (%i - %i)\n" : "No decrease in number of conditions. [%i = (%i - %i)]\n"), cond_diff, old_num_conds, new_num_conds);
 
     clear_merge_map();
-    dprint(DT_MERGE, "===========================\n");
-    dprint(DT_MERGE, "= Done Merging Conditions =\n");
-    dprint(DT_MERGE, "===========================\n");
+    dprint_header(DT_MERGE, PrintBoth, "= Done Merging Conditions =\n");
 }

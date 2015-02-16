@@ -143,61 +143,51 @@ void ChunkTest::tearDown()
 
 void ChunkTest::testChunk1()
 {
-    source("setup.soar");
-    build_and_check_chunk("chunk1.soar", 4, 2);
+    build_and_check_chunk("chunk1.soar", 4, 1);
 }
 
 void ChunkTest::testChunk2()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk2.soar", 8, 1);
 }
 
 void ChunkTest::testChunk3()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk3.soar", 8, 1);
 }
 
 void ChunkTest::testChunk4()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk4.soar", 8, 1);
 }
 
 void ChunkTest::testChunk5()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk5.soar", 8, 1);
 }
 
 void ChunkTest::testChunk6()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk6.soar", 8, 1);
 }
 
 void ChunkTest::testChunk7()
 {
-    source("setup.soar");
-    build_and_check_chunk("chunk7.soar", 8, 3);
+    build_and_check_chunk("chunk7.soar", 8, 2);
 }
 
 void ChunkTest::testChunk8()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk8.soar", 8, 1);
 }
 
 void ChunkTest::testChunk9()
 {
-    source("setup.soar");
-    build_and_check_chunk("chunk9.soar", 8, 2);
+    build_and_check_chunk("chunk9.soar", 8, 1);
 }
 
 void ChunkTest::testChunk10()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk10.soar", 8, 2);
 }
 
@@ -209,8 +199,7 @@ void ChunkTest::testChunk11()
 
 void ChunkTest::testChunk12()
 {
-    source("setup.soar");
-    build_and_check_chunk("chunk12.soar", 8, 2);
+    build_and_check_chunk("chunk12.soar", 8, 1);
 }
 
 void ChunkTest::testChunk13()
@@ -221,7 +210,6 @@ void ChunkTest::testChunk13()
 
 void ChunkTest::testChunk14()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk14.soar", 8, 1);
 }
 
@@ -233,7 +221,6 @@ void ChunkTest::testChunk15()
 
 void ChunkTest::testChunk16()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk16.soar", 8, 1);
 }
 
@@ -293,7 +280,7 @@ void ChunkTest::testChunk25()
 
 void ChunkTest::testChunk26()
 {
-    build_and_check_chunk("chunk26.soar", 8, 8);
+    build_and_check_chunk("chunk26.soar", 8, 5);
 }
 
 void ChunkTest::testChunk27()

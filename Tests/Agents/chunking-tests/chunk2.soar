@@ -1,3 +1,46 @@
+srand 23
+learn --on
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-item 9
+         ^test-item2 7)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
 # disjunction greater than another value, unbound rhs
 
 sp {apply2
@@ -5,10 +48,11 @@ sp {apply2
                ^operator.name test
                ^superstate <ss>)
     (<ss> ^test-item { <test> << 8 9 >> > <min>}
-          ^test-item <min>)
+          ^test-item2 <min>)
 -->
-    (<ss> ^result2a <test>
-          ^result2b <unbound>
+    (<ss> ^big <test>
+          ^small <min>
+          ^unbound <unbound>
           ^test-done 1)
 }
 

@@ -5913,7 +5913,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
     bool new_cue;
 
     bool do_wm_phase = false;
-    dprint(DT_EPMEM_CMD, "===== Starting epmem_respond_to_cmd =====\n");
+    dprint_header(DT_EPMEM_CMD, PrintBefore, "Starting epmem_respond_to_cmd\n");
 
     while (state != NULL)
     {
@@ -6140,7 +6140,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
         thisAgent->epmem_timers->wm_phase->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
-    dprint(DT_EPMEM_CMD, "===== Done excuting epmem_respond_to_cmd =====\n");
+    dprint_header(DT_EPMEM_CMD, PrintAfter, "Done excuting epmem_respond_to_cmd\n");
 }
 
 /***************************************************************************

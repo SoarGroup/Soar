@@ -94,6 +94,11 @@ test copy_test(agent* thisAgent, test t)
     {
         symbol_add_ref(thisAgent, t->identity->original_var);
     }
+    /* Cached eq_test is used by the chunker to avoid repeatedly searching
+     * through conjunctions for the main equality test.  Value set during
+     * chunking, but we had it here at some point for debugging test
+     * and in case we need it to be general in the future. */
+//    cache_eq_test(new_ct);
     new_ct->identity->grounding_id = t->identity->grounding_id;
     new_ct->identity->grounding_field = t->identity->grounding_field;
     new_ct->identity->grounding_wme = t->identity->grounding_wme;
@@ -1218,7 +1223,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         }
         else
         {
-            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %hi...", w->id->id->level);
+            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %d...", w->id->id->level);
         }
     }
     if (g->grounding_id[f] == 0)
@@ -1426,7 +1431,7 @@ void propagate_identity(agent* thisAgent,
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l", c);
+            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l\n", c);
 
             if (use_negation_lookup)
             {
@@ -1445,9 +1450,9 @@ void propagate_identity(agent* thisAgent,
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
                 add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
-            dprint_set_params(DT_IDENTITY_PROP, "          ");
+            dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
-            dprint_clear_params(DT_IDENTITY_PROP);
+            dprint_clear_indents(DT_IDENTITY_PROP);
         }
         else
         {
@@ -1475,9 +1480,9 @@ void propagate_identity(agent* thisAgent,
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
-            dprint_set_params(DT_IDENTITY_PROP, "          ");
+            dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
-            dprint_clear_params(DT_IDENTITY_PROP);
+            dprint_clear_indents(DT_IDENTITY_PROP);
 
         }
     }

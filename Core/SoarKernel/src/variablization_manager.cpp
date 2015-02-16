@@ -23,6 +23,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     orig_var_to_g_id_map = new std::map< Symbol*, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
+    literal_constraints = new std::map< uint64_t , test >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
     substitution_map = new std::map< Symbol*, test >();
@@ -40,7 +41,7 @@ Variablization_Manager::~Variablization_Manager()
     delete orig_var_to_g_id_map;
     delete sti_constraints;
     delete constant_constraints;
-
+    delete literal_constraints;
     delete cond_merge_map;
     delete substitution_map;
     delete dnvl_set;
@@ -194,13 +195,18 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
 
         dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %y.\n", found_variablization->variablized_symbol);
 
-        symbol_remove_ref(thisAgent, rs->referent);
-        rs->referent = found_variablization->variablized_symbol;
-        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
-        rs->g_id = found_variablization->grounding_id;
-        return;
+        if (found_variablization->variablized_symbol->tc_num != tc_num_literalized)
+        {
+            /* --- Variablized symbol was not literalized on LHS --- */
+            symbol_remove_ref(thisAgent, rs->referent);
+            rs->referent = found_variablization->variablized_symbol;
+            symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+            rs->g_id = found_variablization->grounding_id;
+            return;
+        } else {
+            dprint(DT_RHS_VARIABLIZATION, "... skipping variablization of %y because it was literalized on LHS.\n", found_variablization->variablized_symbol);
+        }
     }
-
     /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
      *    Both cases return 0.  Grounding id will be generated if requested by another match. -- */
 
@@ -466,9 +472,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
 
 void Variablization_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
-    dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS condition list:\n");
-    dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+    dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list:\n");
 
     dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing equality tests in positive conditions...\n");
 
@@ -478,14 +482,12 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
         {
             if (cond->type == POSITIVE_CONDITION)
             {
-                dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS positive condition equality tests: %l\n", cond);
-                dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
+                dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
+                dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
                 variablize_equality_tests(&(cond->data.tests.id_test));
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: ");
+                dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
                 variablize_equality_tests(&(cond->data.tests.attr_test));
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
+                dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
                 variablize_equality_tests(&(cond->data.tests.value_test));
             }
         }
@@ -495,38 +497,32 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
             variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: ");
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
             variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
             variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
-            dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing LHS negative condition: %l\n", cond);
-            dprint(DT_LHS_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: ");
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
             variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: ");
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
             variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: ");
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
             variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            dprint(DT_NCC_VARIABLIZATION, "-------------======-----------\n");
-            dprint(DT_NCC_VARIABLIZATION, "Variablizing LHS negative conjunctive condition:\n");
-            dprint(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_condition_list(cond->data.ncc.top, false);
         }
     }
-    dprint(DT_LHS_VARIABLIZATION, "Done variablizing LHS condition list.\n");
-    dprint(DT_LHS_VARIABLIZATION, "==========================================\n");
+    dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
 
@@ -609,9 +605,7 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
 void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
 
-    dprint(DT_RL_VARIABLIZATION, "=============================================\n");
-    dprint(DT_RL_VARIABLIZATION, "Variablizing LHS condition list for template:\n");
-    dprint(DT_RL_VARIABLIZATION, "=============================================\n");
+    dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list for template:\n");
 
     dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing equality tests in positive conditions...\n");
 
@@ -621,9 +615,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
         {
             if (cond->type == POSITIVE_CONDITION)
             {
-                dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
-                dprint(DT_RL_VARIABLIZATION, "Variablizing LHS positive condition equality tests: %l\n", cond);
-                dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+                dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL identifier: ");
                 variablize_rl_test(&(cond->data.tests.id_test));
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL attribute: ");
@@ -638,33 +630,27 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_RL_VARIABLIZATION, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+            dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
             variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
             variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
             variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
-            dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
-            dprint(DT_RL_VARIABLIZATION, "Variablizing LHS negative condition: %l\n", cond);
-            dprint(DT_RL_VARIABLIZATION, "----------------------------------------------------------------------\n");
+            dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
             variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
             variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
             variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            dprint(DT_RL_VARIABLIZATION, "-------------======-----------\n");
-            dprint(DT_RL_VARIABLIZATION, "Variablizing RL LHS negative conjunctive condition:\n");
-            dprint(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RL LHS negative conjunctive condition:\n");
+            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_rl_condition_list(cond->data.ncc.top, false);
         }
     }
 
-    dprint(DT_RL_VARIABLIZATION, "Done variablizing LHS condition list for template.\n");
-    dprint(DT_RL_VARIABLIZATION, "==================================================\n");
+    dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
 action* Variablization_Manager::variablize_results(preference* result, bool variablize)
@@ -689,7 +675,7 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     if (variablize)
     {
-        dprint_set_params(DT_RHS_VARIABLIZATION, "");
+        dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
 
@@ -752,13 +738,12 @@ void Variablization_Manager::add_ltis_to_dnvl_for_conditions(condition* top_cond
         else
         {
             dprint(DT_NCC_VARIABLIZATION, "Adding for negative conjunctive condition:\n");
-            dprint(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             add_ltis_to_dnvl_for_conditions(cond->data.ncc.top);
         }
     }
     dprint_noprefix(DT_IDENTITY_PROP, "\n");
-    dprint(DT_IDENTITY_PROP, "Done adding LTIs to DNVL.\n");
-    dprint(DT_IDENTITY_PROP, "==========================================\n");
+    dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
     print_dnvl_set(DT_IDENTITY_PROP);
 
 }
@@ -767,8 +752,7 @@ void Variablization_Manager::add_ltis_to_dnvl_for_prefs(preference* prefs)
 {
     if (!prefs)
     {
-        dprint(DT_IDENTITY_PROP, "Done adding LTIs to DNVL.\n");
-        dprint(DT_IDENTITY_PROP, "==========================================\n");
+        dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
         print_dnvl_set(DT_IDENTITY_PROP);
         return;
     }

@@ -2425,7 +2425,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
                            cand, cand->id->id->level, cand->inst->match_goal_level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint_set_params(DT_GDS, "           ");
+                    dprint_set_indents(DT_GDS, "           ");
                     dprint(DT_GDS, "%7", cand->inst);
                 }
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);

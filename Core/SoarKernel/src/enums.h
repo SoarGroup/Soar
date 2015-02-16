@@ -96,9 +96,15 @@ enum WME_Field
     ID_ELEMENT = 0,
     ATTR_ELEMENT = 1,
     VALUE_ELEMENT = 2,
-    NO_ELEMENT = 3,
+    NO_ELEMENT = 3
 };
 
+enum Print_Header_Type
+{
+    PrintBoth = 0,
+    PrintAfter = 1,
+    PrintBefore = 2
+};
 /* MToDo | This was moved from soar_module to make it easier to use debug_defines without including soar_module,
  *    since that file is included in many places.  Naming doesn't seem to conflict with other things, but
  *    this seems risky.  Maybe we can move it back and just do some sort of forward declaration or perhaps

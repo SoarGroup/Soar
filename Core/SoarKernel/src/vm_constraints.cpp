@@ -23,8 +23,7 @@ void Variablization_Manager::variablize_relational_constraints()
     std::map< Symbol*, ::list* >* variablized_sti_constraints = new std::map< Symbol*, ::list* >;
     std::map< uint64_t, ::list* >* variablized_constant_constraints = new std::map< uint64_t, ::list* >;
 
-    dprint(DT_CONSTRAINTS, "=============================================\n");
-    dprint(DT_CONSTRAINTS, "Variablizing relational constraints.\n");
+    dprint_header(DT_CONSTRAINTS, PrintBefore, "Variablizing relational constraints.\n");
     dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
     dprint(DT_CONSTRAINTS, "%8"); // Prints all wmes with identities
 
@@ -138,30 +137,37 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
         t = static_cast<test>(c->first);
         // Should not be possible to be a conjunctive test
         assert(t->type != CONJUNCTIVE_TEST);
-
-        success = variablize_test_by_lookup(&(t), false);
-        if (!success)
-        {
-            /* -- STI identifier that is ungrounded.  Delete. -- */
-            dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
-            if (c_last)
+        /* MToDo | This check was needed when we added literal equality tests to cached constraints
+         *         Probably won't need, but leaving in for now. Note that having it also caused
+         *         a memory access error, but did not investigate. */
+//        if (t->identity->original_var)
+//        {
+            success = variablize_test_by_lookup(&(t), false);
+            if (!success)
             {
-                /* -- Not at the head of the list -- */
-                c_last->rest = c->rest;
-                free_cons(thisAgent, c);
-                c = c_last;
+                /* -- STI identifier that is ungrounded.  Delete. -- */
+                dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
+                if (c_last)
+                {
+                    /* -- Not at the head of the list -- */
+                    c_last->rest = c->rest;
+                    free_cons(thisAgent, c);
+                    c = c_last;
+                }
+                else
+                {
+                    /* -- At the head of the list -- */
+                    (*constraint_list) = c->rest;
+                    free_cons(thisAgent, c);
+                    /* -- This will cause c_last to be set to NULL, indicating we're
+                     *    at the head of the list -- */
+                    c = NULL;
+                }
+                deallocate_test(thisAgent, t);
             }
-            else
-            {
-                /* -- At the head of the list -- */
-                (*constraint_list) = c->rest;
-                free_cons(thisAgent, c);
-                /* -- This will cause c_last to be set to NULL, indicating we're
-                 *    at the head of the list -- */
-                c = NULL;
-            }
-            deallocate_test(thisAgent, t);
-        }
+//        } else {
+//            dprint(DT_CONSTRAINTS, "Will not attempt to variablize cached constraint b/c no original variable.\n");
+//        }
         c_last = c;
         c = c_next;
     }
@@ -180,6 +186,9 @@ void Variablization_Manager::clear_cached_constraints()
         free_list(thisAgent, it->second);
     }
     constant_constraints->clear();
+
+    /* We didn't increase refcount on literal constraints, so we just need to clear the list */
+    literal_constraints->clear();
 }
 
 void Variablization_Manager::cache_constraint(test equality_test, test relational_test)
@@ -212,14 +221,14 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
         {
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
         else
         {
             new_list = (*constant_constraints)[equality_test->identity->grounding_id];
             push(thisAgent, (copied_test), new_list);
             (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
     }
 }
@@ -231,6 +240,12 @@ void Variablization_Manager::cache_constraints_in_test(test t)
     if (t->type != CONJUNCTIVE_TEST)
     {
         assert(t->type == EQUALITY_TEST);
+        if (t->data.referent->is_constant() && !t->identity->original_var)
+        {
+            dprint(DT_CONSTRAINTS, "...caching equality test into literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
+            (*literal_constraints)[t->identity->grounding_id] = copy_test(thisAgent, t);
+//            cache_constraint(t, t);
+        }
         return;
     }
 
@@ -251,6 +266,12 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         switch (ctest->type)
         {
             case EQUALITY_TEST:
+                if (ctest->data.referent->is_constant() && !ctest->identity->original_var)
+                {
+                    dprint(DT_CONSTRAINTS, "...caching equality test from conjunctive test into literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
+                    (*literal_constraints)[ctest->identity->grounding_id] = copy_test(thisAgent, ctest);
+//                    cache_constraint(equality_test, ctest);
+                }
                 break;
             case GREATER_TEST:
             case GREATER_OR_EQUAL_TEST:
@@ -272,7 +293,8 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
     /* MToDo| Verify we don't need to do id element.  It should always be an equality test */
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
-    cache_constraints_in_test(c->data.tests.attr_test);
+    /* MToDo| Re-enable attribute constraint caching here.  Disabled just to simplify debugging for now */
+//    cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
 
@@ -314,6 +336,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
                 }
                 free_list(thisAgent, iter->second);
                 (*sti_constraints).erase(iter->first);
+                dprint(DT_CONSTRAINTS, "...final constrained test: %t\n", *t);
             }
             else
             {
@@ -327,7 +350,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     }
     else
     {
-        dprint(DT_CONSTRAINTS, "...identity, so must be constant.  Using g_id to look up.\n");
+        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
         found_variablization = get_variablization(eq_test->identity->grounding_id);
         if (found_variablization)
         {
@@ -347,6 +370,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
                 }
                 free_list(thisAgent, iter->second);
                 (*constant_constraints).erase(iter->first);
+                dprint(DT_CONSTRAINTS, "...final constrained test: %t\n", *t);
             }
             else
             {
@@ -362,8 +386,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
 
 void Variablization_Manager::install_cached_constraints(condition* cond)
 {
-    dprint(DT_CONSTRAINTS, "=============================================\n");
-    dprint(DT_CONSTRAINTS, "install_relational_constraints called...\n");
+    dprint_header(DT_CONSTRAINTS, PrintBefore, "install_relational_constraints called...\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
 
@@ -387,7 +410,121 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
-    dprint(DT_CONSTRAINTS, "%1", cond);
-    dprint(DT_CONSTRAINTS, "=============================================\n");
+    dprint_noprefix(DT_CONSTRAINTS, "%1", cond);
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
+}
+
+void Variablization_Manager::install_literal_constraints_for_test(test* t)
+{
+    if (!t)
+    {
+        return;
+    }
+
+    Symbol* t_symbol;
+    uint64_t t_gid;
+
+    variablization *found_variablization;
+
+    if ((*t)->type == CONJUNCTIVE_TEST)
+    {
+        dprint(DT_CONSTRAINTS, "Installing literal constraints for conjunctive test %t...\n", *t);
+        cons* c;
+        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            test ctest = static_cast<test>(c->first);
+            install_literal_constraints_for_test(&ctest);
+            c->first = ctest;
+        }
+        return;
+    }
+    if (!test_has_referent(*t)) return;
+
+    t_symbol = (*t)->data.referent;
+    t_gid = (*t)->identity->grounding_id;
+    dprint(DT_CONSTRAINTS, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
+    if (t_gid == 0)
+    {
+        dprint(DT_CONSTRAINTS, "...no identity, so must be STI or literal relational test.  Skipping.\n");
+    }
+    else
+    {
+        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
+        /* MToDo | The following may speed things up since the variablization
+         *         table should be much smaller than the literal constraint table */
+//        found_variablization = get_variablization(t_gid);
+//        if (found_variablization)
+//        {
+//            dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", t_gid);
+            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(t_gid);
+            if (iter != (*literal_constraints).end())
+            {
+                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %t. Replacing with literal...\n", t_gid, iter->second);
+                deallocate_test(thisAgent, *t);
+                test temp = iter->second;
+                *t = copy_test(thisAgent, iter->second);
+                cache_eq_test(*t);
+//                if ((*t)->identity->original_var)
+//                {
+//                    symbol_remove_ref(thisAgent, (*t)->identity->original_var);
+//                    (*t)->identity->original_var = NULL;
+//                }
+//                /* MToDo | May not need to copy literal test to original test since probably not used after this point*/
+//                if ((*t)->original_test)
+//                {
+//                    deallocate_test(thisAgent, (*t)->original_test);
+//                    (*t)->original_test = copy_test(thisAgent, *t);
+//                }
+                found_variablization = get_variablization(t_gid);
+                if (found_variablization)
+                {
+                    dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, marking as literal constraint for RHS...\n", t_gid);
+                    found_variablization->variablized_symbol->tc_num = tc_num_literalized;
+                }
+                dprint(DT_CONSTRAINTS, "...final test: %t\n", *t);
+            }
+            else
+            {
+                dprint(DT_CONSTRAINTS, "...no literal constraints found.\n");
+            }
+//        }
+//        else
+//        {
+//            dprint(DT_CONSTRAINTS, "... was never variablized. Skipping...\n");
+//        }
+    }
+}
+
+void Variablization_Manager::install_literal_constraints(condition* pCond)
+{
+    dprint_header(DT_CONSTRAINTS, PrintBoth, "install_literal_constraints called...!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_variablization_tables(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
+
+    /* MToDo | Vast majority of constraints will be on value element.  Making this work with a pass for
+     *         values followed by attributes could be faster. */
+
+    if (literal_constraints->size() > 0)
+    {
+        while (pCond)
+        {
+            if (pCond->type == POSITIVE_CONDITION)
+            {
+                dprint(DT_CONSTRAINTS, "Adding for positive condition %l\n", pCond);
+                install_literal_constraints_for_test(&pCond->data.tests.attr_test);
+                install_literal_constraints_for_test(&pCond->data.tests.value_test);
+                dprint(DT_CONSTRAINTS, "Resulting in condition %l.\n", pCond);
+            }
+            else
+            {
+                dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
+            }
+            pCond = pCond->next;
+        }
+    }
+    dprint(DT_CONSTRAINTS, "install_literal_constraints resulted in final condition list %1.\n", pCond);
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
+    print_variablization_tables(DT_CONSTRAINTS);
+    print_cached_constraints(DT_CONSTRAINTS);
 }
 

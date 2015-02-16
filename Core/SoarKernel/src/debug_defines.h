@@ -40,8 +40,8 @@
 //--
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_PARSER                      false
-#define TRACE_Init_DT_FUNC_PRODUCTIONS            false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_FUNC_PRODUCTIONS            true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
@@ -52,7 +52,7 @@
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_IDENTITY_PROP               false
@@ -67,8 +67,8 @@
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
 #define OM_Init_db_mode           off
-#define OM_Init_callback_mode     on
-#define OM_Init_stdout_mode       off
+#define OM_Init_callback_mode     off
+#define OM_Init_stdout_mode       on
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off

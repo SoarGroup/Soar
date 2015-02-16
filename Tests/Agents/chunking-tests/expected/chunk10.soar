@@ -1,13 +1,13 @@
-sp {answer*chunk*apply10*onc*t3-2
-    (state <s1> ^superstate nil ^test-param <t2> ^test-param <t1>)
+sp {answer*apply10*onc*t3-2
+    (state <s1> ^superstate nil ^test-param2 <p2> ^test-param <p1>)
     -->
-    (<s1> ^result10a <t1> + ^result10b <t2> + ^test-done 1 +)
+    (<s1> ^result10a <p1> + ^result10b <p2> + ^test-done 1 +)
 }
 
-sp {answer*chunk*apply10*onc*t3-1
-    (state <s1> ^superstate nil ^test-param <t1>)
+sp {answer*apply10*onc*t3-1
+    (state <s1> ^superstate nil ^test-param2 <p1> ^test-param <p1>)
     -->
-    (<s1> ^result10a <t1> + ^result10b <t1> + ^test-done 1 +)
+    (<s1> ^result10a <p1> + ^result10b <p1> + ^test-done 1 +)
 }
 
 

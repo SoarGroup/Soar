@@ -1,5 +1,6 @@
-sp {answer*chunk*apply5*onc*t3-1
-    (state <s1> ^superstate nil ^test-item <c2> ^test-item { > <c2> <c1> })
+sp {answer*apply5*onc*t3-1
+    (state <s1> ^superstate nil ^test-item2 { >= <c2> <c2> }
+          ^test-item { > <c2> <c1> })
     -->
     (<s1> ^small5 <c2> + ^big5 <c1> + ^test-done 1 +)
 }

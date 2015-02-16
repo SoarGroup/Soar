@@ -2,10 +2,10 @@
 sp {apply21f1
     (state <s> ^superstate <ss>
                ^operator)
-    (<ss> ^test-item <y>
-          ^test-item { < <y> <x> }
+    (<ss> ^test-item2 <y>
+          ^test-item2 { < <y> <x> }
           ^test-current 1)
-         -{(<ss> ^test-item { <> <x> <> <y> <dupe> })}
+         -{(<ss> ^test-item2 { <> <x> <> <y> <dupe> })}
 -->
     (<s> ^lowest <x>)
 }
@@ -14,10 +14,10 @@ sp {apply21f2
     (state <s> ^superstate <ss>
                ^operator <o>
                ^lowest <low>)
-    (<ss> ^test-item <y>
-          ^test-item { > <y> <x> }
+    (<ss> ^test-item2 <y>
+          ^test-item2 { > <y> <x> }
           ^test-current 1)
-         -{(<ss> ^test-item { <> <x> > <x> <dupe> })}
+         -{(<ss> ^test-item2 { <> <x> > <x> <dupe> })}
 -->
     (<ss> ^highest <x> ^lowest <low>
           ^test-done 1)

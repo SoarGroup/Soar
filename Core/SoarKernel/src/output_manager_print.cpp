@@ -90,6 +90,7 @@ void Output_Manager::print_sf(const char* format, ...)
 void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args)
 {
     char* ch = dest;
+    Symbol* sym;
 
     while (true)
     {
@@ -119,11 +120,47 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 'y')
         {
-            Symbol* sym = va_arg(args, Symbol*);
+            sym = va_arg(args, Symbol*);
             if (sym)
             {
                 (sym)->to_string(true, ch, dest_size - (ch - dest));
                 while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
+            format += 2;
+        } else if (*(format + 1) == 'o')
+        {
+            test t = va_arg(args, test);
+            test ct = NULL;
+            if (t)
+            {
+                if (t->type != CONJUNCTIVE_TEST)
+                {
+                    if (t->identity && t->identity->original_var)
+                    {
+                        t->identity->original_var->to_string(true, ch, dest_size - (ch - dest));
+                        while (*ch) ch++;
+                    } else {
+                        *(ch++) = '#';
+                    }
+                } else {
+                    strcpy(ch, "{ ");
+                    ch += 2;
+                    for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
+                    {
+                        ct = static_cast<test>(c->first);
+                        if (ct && ct->identity && ct->identity->original_var)
+                        {
+                            ct->identity->original_var->to_string(true, ch, dest_size - (ch - dest));
+                            while (*ch) ch++;
+                        } else {
+                            *(ch++) = '#';
+                        }
+                        *(ch++) = ' ';
+                    }
+                    *(ch++) = '}';;
+                }
             } else {
                 *(ch++) = '#';
             }
@@ -141,6 +178,11 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
         } else if (*(format + 1) == 't')
         {
             test_to_string(va_arg(args, test_info *), ch, dest_size - (ch - dest) );
+            while (*ch) ch++;
+            format += 2;
+        } else if (*(format + 1) == 'g')
+        {
+            identity_to_string(thisAgent, va_arg(args, test_info *), ch, dest_size - (ch - dest) );
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 'l')
@@ -264,7 +306,6 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -281,7 +322,6 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     va_list args;
@@ -295,11 +335,32 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 
 }
 
+void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
+{
+    if (!debug_mode_enabled(mode)) return;
+    if (!m_defaultAgent) return;
+
+    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
+        debug_print(mode, "=========================================================\n");
+    va_list args;
+    char buf[PRINT_BUFSIZE];
+
+    strcpy(buf, mode_info[mode].prefix);
+    int s = strlen(buf);
+    va_start(args, format);
+    vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
+    va_end(args);
+    printa(m_defaultAgent, buf);
+    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintAfter))
+        debug_print(mode, "=========================================================\n");
+}
+
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
+
     if ((global_printer_output_column != 1) || (m_defaultAgent->output_settings->printer_output_column != 1))
     {
         printa(m_defaultAgent, "\n");

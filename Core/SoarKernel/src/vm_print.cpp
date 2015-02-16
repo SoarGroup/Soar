@@ -138,9 +138,20 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%u: %t\n ", it->first, static_cast<test>(c->first));
+            dprint(mode, "%u: %t\n", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
+    }
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "         Literal Constraint Map\n");
+    dprint(mode, "------------------------------------\n");
+    if (literal_constraints->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+    for (std::map< uint64_t, test >::iterator it = literal_constraints->begin(); it != literal_constraints->end(); ++it)
+    {
+        dprint(mode, "%u: %t\n", it->first, static_cast<test>(it->second));
     }
     dprint(mode, "------------------------------------\n");
 }

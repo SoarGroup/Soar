@@ -1,11 +1,13 @@
 sp {init-rl
     (state <s> ^superstate nil)
 -->
-    (<s> ^rl-item 0.9 0.7
-         ^rl-id <tp> <tp2>
+    (<s> ^rl-item 0.9 0.6
+         ^rl-item2 0.7
+         ^rl-id <tp> 
+         ^rl-id2 <tp2>
          ^test-done 1)
-    (<tp> ^value 0.9 0.8)
-    (<tp2> ^value <dummy1> <dummy2>)
+    (<tp> ^value 0.9)
+    (<tp2> ^value <dummy1>)
 }
 
 sp {propose
@@ -34,7 +36,8 @@ sp {template3
     :template
     (state <s> ^operator <o> +
                ^rl-item <v>
-               ^rl-id.value <v>)
+               ^rl-id.value <v>
+               ^rl-id2.value {<> <v>})
 -->
     (<s> ^operator <o> = 0)
 #    (<s> ^foo bar)
@@ -47,20 +50,21 @@ sp {template4
     :template
     (state <s> ^operator <o> +
                ^rl-item <i>
-               ^rl-item {<> <i> <i2>}
+               ^rl-item2 {< <i> <i2>}
                ^rl-id <id>
-               ^rl-id {<> <id> <id2> })
+               ^rl-id2 {<> <id> <id2> })
     (<id> ^value <v>)
 -->
-    (<s> ^operator <o> = 0)
+    (<s> ^operator <o> = <i2>)
 }
 
 sp {propose*stop
    (state <s> ^superstate.superstate nil)
 -->
-#    (success)
+    (exec succeeded)
     (halt)
 }
-##
-#run
-#ctf expected/chunk26.soar print -rf
+
+
+run
+ctf expected/chunk26b.soar print -rfi
