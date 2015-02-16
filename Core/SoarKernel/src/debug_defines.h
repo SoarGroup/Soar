@@ -48,11 +48,11 @@
 #define TRACE_Init_DT_SAVEDVARS                   false
 #define TRACE_Init_DT_REORDERER                   false
 //--
-#define TRACE_Init_DT_BACKTRACE                   false
+#define TRACE_Init_DT_BACKTRACE                   true
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_IDENTITY_PROP               false

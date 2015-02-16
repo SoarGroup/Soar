@@ -137,7 +137,7 @@ typedef struct grounding_struct
     uint64_t grounding_id[3];
     goal_stack_level level;
     grounding_struct* next;
-    
+
     grounding_struct(goal_stack_level new_level, grounding_struct* new_next)
         : level(new_level), next(new_next)
     {
@@ -166,18 +166,20 @@ typedef struct wme_struct
     tc_number grounds_tc;                     /* for chunker use only */
     tc_number potentials_tc, locals_tc;
     struct preference_struct* chunker_bt_pref;
-    
+    struct condition_struct* chunker_bt_last_ground_cond;
+
+
     grounding_info* ground_id_list;           /* used for chunking (see struct above) */
-    
+
     struct gds_struct* gds;
     struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
-    
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
-    
+
     wma_decay_element* wma_decay_el;
     tc_number wma_tc_value;
-    
+
 } wme;
 
 inline void wme_add_ref(wme* w)

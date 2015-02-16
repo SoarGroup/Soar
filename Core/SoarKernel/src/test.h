@@ -161,6 +161,7 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
+void add_unification_constraint_for_ground_collision(agent* thisAgent, test* t, test t_add, uint64_t gid);
 
 /* UITODO| Make this method of Test */
 const char* test_type_to_string(byte test_type);

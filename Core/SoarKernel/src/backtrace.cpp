@@ -83,9 +83,6 @@ using namespace soar_TraceNames;
 ==================================================================== */
 
 
-/* -- This version of the add functions combines the tests from two conditions if they both
- *    match the same wme.  Experimental. -- */
-
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
     cons* c;
@@ -95,6 +92,7 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
         (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
     }
     push(thisAgent, (cond), thisAgent->grounds);
+    cond->bt.wme_->chunker_bt_last_ground_cond = cond;
 }
 
 inline void add_to_potentials(agent* thisAgent, condition* cond)
@@ -659,16 +657,43 @@ void trace_grounded_potentials(agent* thisAgent)
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
+                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
+                    dprint(DT_BACKTRACE, "Moved potential to grounds and marked %u: %l\n", tc, pot);
                     need_another_pass = true;
                 }
                 else     /* pot was already in the grounds, do don't add it */
                 {
+                    dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
+//                    dprint(DT_BACKTRACE, " Val: %t\n", pot->data.tests.value_test);
+                    dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
+                    test t_grounds = equality_test_found_in_test(pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test);
+                    test t_rejected = equality_test_found_in_test(pot->data.tests.value_test);
+                    if ((t_rejected->identity->grounding_id != NON_GENERALIZABLE) && t_rejected->identity->original_var &&
+                        t_grounds->identity->original_var && (t_grounds->identity->original_var != t_rejected->identity->original_var))
+                    {
+                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping(t_rejected->identity->original_var, t_grounds->identity->grounding_id);
+                        if (existing_gid)
+                        {
+                            dprint(DT_BACKTRACE, "- Adding unification constraint from %y [%g] to existing g_id %u.\n", t_rejected->identity->original_var, t_rejected, existing_gid);
+                            add_unification_constraint_for_ground_collision(thisAgent, &t_grounds, t_rejected, existing_gid);
+                        } else {
+                            dprint(DT_BACKTRACE, "- Adding unification constraint from %y [%g] to g_id %u.\n", t_rejected->identity->original_var, t_rejected, t_grounds->identity->grounding_id);
+                            add_unification_constraint_for_ground_collision(thisAgent, &t_grounds, t_rejected, t_grounds->identity->grounding_id);
+                        }
+                        pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test = t_grounds;
+                    }
+                    else
+                    {
+                        dprint(DT_BACKTRACE, "- Not adding unification test bc original vars not the same.\n");
+                    }
+
                     free_cons(thisAgent, c);
                 }
             }
             else
             {
+                dprint(DT_BACKTRACE, "Not moving potential to grounds b/c not marked: %l\n", pot);
                 prev_c = c;
             }
         } /* end of for c */

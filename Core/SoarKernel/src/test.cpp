@@ -1280,6 +1280,14 @@ inline void add_unification_constraint(agent* thisAgent, test* t, uint64_t gid)
     dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
 }
 
+void add_unification_constraint_for_ground_collision(agent* thisAgent, test* t, test t_add, uint64_t gid)
+{
+    test new_test = copy_test(thisAgent, t_add);
+    new_test->identity->grounding_id = gid;
+    add_test(thisAgent, t, new_test);
+    dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
+}
+
 inline void add_identity_and_unifications_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
@@ -1322,6 +1330,8 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
+                    /* -- Check if we ned to add a unifying constraint, b/c this original variable
+                     *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);

@@ -990,14 +990,14 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
     }
 
-    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
-    for (condition* c = inst->top_of_instantiated_conditions; c; c = c->next)
-    {
-        if (c->type == POSITIVE_CONDITION)
-        {
-            thisAgent->variablizationManager->cache_constraints_in_cond(c);
-        }
-    }
+//    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
+//    for (condition* c = inst->top_of_instantiated_conditions; c; c = c->next)
+//    {
+//        if (c->type == POSITIVE_CONDITION)
+//        {
+//            thisAgent->variablizationManager->cache_constraints_in_cond(c);
+//        }
+//    }
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
