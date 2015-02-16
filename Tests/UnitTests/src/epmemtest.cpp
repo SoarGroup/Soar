@@ -16,10 +16,8 @@ class EpmemTest : public CPPUNIT_NS::TestCase
 #ifdef DO_EPMEM_TESTS
         CPPUNIT_TEST(testEpmemUnit);
         CPPUNIT_TEST(testHamiltonian);
-#ifndef NO_SVS
         CPPUNIT_TEST(testSVS);
         CPPUNIT_TEST(testSVSHard);
-#endif
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -33,10 +31,8 @@ class EpmemTest : public CPPUNIT_NS::TestCase
 
         void testEpmemUnit();
         void testHamiltonian();
-#ifndef NO_SVS
         void testSVS();
         void testSVSHard();
-#endif
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -88,7 +84,6 @@ void EpmemTest::testHamiltonian()
     CPPUNIT_ASSERT(succeeded);
 }
 
-#ifndef NO_SVS
 void EpmemTest::testSVS()
 {
     source("svs.soar");
@@ -102,4 +97,3 @@ void EpmemTest::testSVSHard()
     pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
-#endif

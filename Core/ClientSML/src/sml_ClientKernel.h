@@ -44,78 +44,78 @@ namespace sml
     class Events ;
     class AnalyzeXML ;
     class ClientAnalyzedXML ;
-
+    
     class SystemEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             SystemEventHandler  m_Handler ;
-
+            
             SystemEventHandlerPlusData() {}
-
+            
             SystemEventHandlerPlusData(int eventID, SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class UpdateEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             UpdateEventHandler  m_Handler ;
-
+            
             UpdateEventHandlerPlusData() {}
-
+            
             UpdateEventHandlerPlusData(int eventID, UpdateEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class StringEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             StringEventHandler  m_Handler ;
-
+            
             StringEventHandlerPlusData() {}
-
+            
             StringEventHandlerPlusData(int eventID, StringEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class AgentEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             AgentEventHandler m_Handler ;
-
+            
             AgentEventHandlerPlusData() {}
-
+            
             AgentEventHandlerPlusData(int eventID, AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class RhsEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             RhsEventHandler m_Handler ;
             std::string     m_FunctionName ;
-
+            
             RhsEventHandlerPlusData() {}
-
+            
             RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
-
+                
                 if (pFunctionName)
                 {
                     m_FunctionName = pFunctionName ;
                 }
             }
     } ;
-
+    
     class ConnectionInfo
     {
         protected:
@@ -123,7 +123,7 @@ namespace sml
             std::string m_Name ;
             std::string m_Status ;
             std::string m_AgentStatus ;
-
+            
         public:
             ConnectionInfo(char const* pID, char const* pName, char const* pStatus, char const* pAgentStatus)
             {
@@ -132,38 +132,38 @@ namespace sml
                 m_Status = (pStatus ? pStatus : "unknown-status") ;
                 m_AgentStatus = (pAgentStatus ? pAgentStatus : "unknown-status") ;
             }
-
+            
             /** The ID is a unique identifier for this connection (machine created) */
             char const* GetID() const
             {
                 return m_ID.c_str() ;
             }
-
+            
             /** The name may be set by the owner of the connection (or not) */
             char const* GetName() const
             {
                 return m_Name.c_str() ;
             }
-
+            
             /** The connection status is a string from a known set of values, again set by the owner of the connection */
             char const* GetConnectionStatus() const
             {
                 return m_Status.c_str() ;
             }
-
+            
             /** The agent status is a string from a known set of values, again set by the owner of the connection and refers to the most recently created agent */
             char const* GetAgentStatus() const
             {
                 return m_AgentStatus.c_str() ;
             }
     } ;
-
+    
     class EXPORT Kernel : public ClientErrors
     {
             // Allow the agent to call to get the connection from the kernel.
             friend class Agent ;
             friend class WorkingMemory ;    // Access to generate next ID methods
-
+            
         public:
             enum
             {
@@ -171,43 +171,43 @@ namespace sml
                 kSuppressListener = 0,
                 kUseAnyPort = -1,
             } ;
-
+            
         protected:
             long long       m_TimeTagCounter ;  // Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
             long long       m_IdCounter ;       // Used to generate unique id names
             int         m_CallbackIDCounter ;   // Used to generate unique callback IDs
-
+            
             // The mapping from event number to a list of handlers to call when that event fires
             typedef sml::ListMap<smlSystemEventId, SystemEventHandlerPlusData>          SystemEventMap ;
             typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>            AgentEventMap ;
             typedef sml::ListMap<std::string, RhsEventHandlerPlusData>                  RhsEventMap ;
             typedef sml::ListMap<smlUpdateEventId, UpdateEventHandlerPlusData>          UpdateEventMap ;
             typedef sml::ListMap<smlStringEventId, StringEventHandlerPlusData>          StringEventMap ;
-
+            
             Connection*         m_Connection ;
             ObjectMap<Agent*>   m_AgentMap ;
             std::string         m_CommandLineResult;
             bool                m_CommandLineSucceeded ;
             sock::SocketLib*    m_SocketLibrary ;
-
+            
             // Info about all connections (have to explicitly request this)
             std::list<ConnectionInfo*> m_ConnectionInfoList ;
             typedef std::list<ConnectionInfo*>::iterator ConnectionListIter ;
             bool                m_ConnectionInfoChanged ;
-
+            
             // When true, commands are sent to external filters (if they are registered) for filtering before execution.
             bool                m_FilteringEnabled ;
-
+            
             // Which handler functions to call when an event comes in
             SystemEventMap      m_SystemEventMap ;
             AgentEventMap       m_AgentEventMap ;
             RhsEventMap         m_RhsEventMap ;
             UpdateEventMap      m_UpdateEventMap ;
             StringEventMap      m_StringEventMap ;
-
+            
             // Class used to map events ids to and from strings
             Events*             m_pEventMap ;
-
+            
             // Utility classes used to test for values in the event maps
             class TestSystemCallbackFull ;
             class TestSystemCallback ;
@@ -219,54 +219,54 @@ namespace sml
             class TestUpdateCallback ;
             class TestStringCallbackFull ;
             class TestStringCallback ;
-
+            
             // Keep a local copy of this flag so we can report
             // information directly about what the client is sending/receiving
             bool m_bTracingCommunications ;
             bool m_bShutdown ;
-
+            
             // If true, don't register to get output link events
             bool m_bIgnoreOutput ;
-
+            
             // If true, commit all changes to working memory immediately after they occur
             // (that is send them over to kernelSML immediately, rather than collecting them up for a single commit)
             bool m_bAutoCommit ;
-
+            
             // This thread is used to check for incoming events when the client goes to sleep
             // It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
             // responsive).
             EventThread*        m_pEventThread ;
-
+            
             // To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
             Kernel(Connection* pConnection);
-
+            
             void InitEvents() ;
-
+            
             /*************************************************************
             * @brief Register for a particular event with the kernel.
             *        (This is a primitive function, should call one of the
             *         higher level methods which will call here if needed)
             *************************************************************/
             void    RegisterForEventWithKernel(int id, char const* pAgentName) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event with the kernel.
             *        (This is a primitive function, should call one of the
             *         higher level methods which will call here if needed)
             *************************************************************/
             void    UnregisterForEventWithKernel(int id, char const* pAgentName) ;
-
+            
             /*************************************************************
             * @brief Creates a new Agent* object (not to be confused
             *        with actually creating a Soar agent -- see CreateAgent for that)
             *************************************************************/
             Agent* MakeAgent(char const* pAgentName) ;
-
+            
             void SetSocketLib(sock::SocketLib* pLibrary)
             {
                 m_SocketLibrary = pLibrary ;
             }
-
+            
             long long   GenerateNextID()
             {
                 return ++m_IdCounter ;
@@ -275,13 +275,13 @@ namespace sml
             {
                 return --m_TimeTagCounter ;    // Count down so different from Soar kernel
             }
-
+            
             /***
             ***   RHS functions and message event handlers use the same internal logic, although they look rather different to the user
             ***/
             int InternalAddRhsFunction(smlRhsEventId id, char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack) ;
             bool InternalRemoveRhsFunction(smlRhsEventId id, int callbackID) ;
-
+            
             /*************************************************************
             * @brief This function is called when an event is received
             *        from the Soar kernel.
@@ -295,7 +295,7 @@ namespace sml
             void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             void ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             void ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
-
+            
             /*************************************************************
             * @brief If this message is an XML trace message returns
             *        the agent pointer this message is for.
@@ -304,9 +304,9 @@ namespace sml
             *        which are really performance critical.
             *************************************************************/
             Agent* IsXMLTraceEvent(soarxml::ElementXML* pIncomingMsg) ;
-
+            
             void InitializeTimeTagCounter() ;
-
+            
         public:
             /*************************************************************
             * @brief Creates a connection to the Soar kernel that is embedded
@@ -337,11 +337,11 @@ namespace sml
             *************************************************************/
             static Kernel* CreateKernelInCurrentThread(bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
             static Kernel* CreateKernelInNewThread(int portToListenOn = kDefaultSMLPort) ;
-
+            
             int GetListenerPort();
-
+            
             Soar_Instance* m_SoarInstance;
-
+            
             /*************************************************************
             * @brief Creates a connection to a receiver that is in a different
             *        process.  The process can be on the same machine or a different machine.
@@ -361,7 +361,7 @@ namespace sml
             *          If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
             *************************************************************/
             static Kernel* CreateRemoteConnection(bool sharedFileSystem = true, char const* pIPaddress = 0, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
-
+            
             /*************************************************************
             * @brief Returns the default port we use for remote connections.
             *************************************************************/
@@ -369,7 +369,7 @@ namespace sml
             {
                 return kDefaultSMLPort ;
             }
-
+            
             /*************************************************************
             * @brief If auto commit is set to false then after making any changes
             *        to working memory elements (adds, updates, deletes) the client
@@ -391,21 +391,21 @@ namespace sml
             {
                 return m_bAutoCommit ;
             }
-
+            
             /*************************************************************
             * @brief True if our connection to the kernel has been closed.
             *        (Generally used for remote connections)
             *************************************************************/
             bool IsConnectionClosed() ;
-
+            
             /*************************************************************
             * @brief True if this is a remote connection to the kernel
             *        (i.e. connected over a socket rather than by loading a library)
             *************************************************************/
             bool IsRemoteConnection() ;
-
+            
             bool IsDirectConnection() ;
-
+            
             /*************************************************************
             * @brief Preparation for deleting the kernel.
             *        Agents are destroyed at this point (if we own the kernel)
@@ -416,7 +416,7 @@ namespace sml
             *        state (while the kernel object still exists).
             *************************************************************/
             void Shutdown() ;
-
+            
             /*************************************************************
             * @brief Delete the kernel (or our connection to the kernel)
             *        releasing all memory owned by the kernel.
@@ -424,14 +424,14 @@ namespace sml
             *        to ensure a clean shutdown.
             *************************************************************/
             virtual ~Kernel();
-
+            
             /*************************************************************
             * @brief Turning this on means we'll start dumping output about messages
             *        being sent and received.
             *************************************************************/
             void SetTraceCommunications(bool state) ;
             bool IsTracingCommunications() ;
-
+            
             /*************************************************************
             * @brief Creates a new Soar agent with the given name.
             *
@@ -440,19 +440,19 @@ namespace sml
             *          kernel is destroyed.
             *************************************************************/
             Agent* CreateAgent(char const* pAgentName) ;
-
+            
             /*************************************************************
             * @brief Get the list of agents currently active in the kernel
             *        and create local Agent objects for each one (if we
             *        don't already have that agent registered).
             *************************************************************/
             void UpdateAgentList() ;
-
+            
             /*************************************************************
             * @brief Returns the number of agents (from our list of known agents).
             *************************************************************/
             int GetNumberAgents() ;
-
+            
             /*************************************************************
             * @brief Destroys an agent in the kernel (and locally).
             *
@@ -465,7 +465,7 @@ namespace sml
             *        event which is called immediately before the deletion occurs.
             *************************************************************/
             bool DestroyAgent(Agent* pAgent) ;
-
+            
             /*************************************************************
             * @brief Looks up an agent by name (from our list of known agents).
             *
@@ -474,19 +474,19 @@ namespace sml
             *          kernel is destroyed.
             *************************************************************/
             Agent* GetAgent(char const* pAgentName) ;
-
+            
             /*************************************************************
             * @brief Returns the n-th agent from our list of known agents.
             *        This is slower than GetAgent(pAgentName).
             *************************************************************/
             Agent* GetAgentByIndex(int index) ;
-
+            
             /*************************************************************
             * @brief Returns true if this agent pointer is still valid and
             *        can be used.
             *************************************************************/
             bool    IsAgentValid(Agent* pAgent) ;
-
+            
             /*************************************************************
             * @brief If filtering is disabled, that means all commands
             *        sent from this client will not be filtered (sent to
@@ -497,7 +497,7 @@ namespace sml
             *        is available on a command by command basis.
             *************************************************************/
             void    EnableFiltering(bool state) ;
-
+            
             /*************************************************************
             * @brief Process a command line command
             *
@@ -508,7 +508,7 @@ namespace sml
             * @returns The string form of output from the command.
             *************************************************************/
             char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false, bool noFilter = false) ;
-
+            
             /*************************************************************
             * @brief Execute a command line command and return the result
             *        as an XML object.
@@ -520,7 +520,7 @@ namespace sml
             * @returns True if the command succeeds.
             *************************************************************/
             bool ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, ClientAnalyzedXML* pResponse) ;
-
+            
             /*************************************************************
             * @brief   Run Soar for the specified number of decisions
             *
@@ -535,7 +535,7 @@ namespace sml
             *************************************************************/
             char const* RunAllAgents(int numberSteps, smlRunStepSize stepSize = sml_DECISION, smlRunStepSize interleaveStepSize = sml_PHASE) ;
             char const* RunAllAgentsForever(smlRunStepSize interleaveStepSize = sml_PHASE) ;
-
+            
             /*************************************************************
             * @brief   Run Soar until either output is generated or
             *          the maximum number of decisions is reached.  This is done
@@ -550,7 +550,7 @@ namespace sml
             * max-nil-output-cycles command).
             *************************************************************/
             char const* RunAllTilOutput(smlRunStepSize interleaveStepSize = sml_PHASE) ;
-
+            
             /*************************************************************
             * @brief Interrupt the currently running Soar agent.
             *
@@ -563,7 +563,7 @@ namespace sml
             * Soar will stop at the next point it is considered safe to do so.
             *************************************************************/
             char const* StopAllAgents() ;
-
+            
             /*************************************************************
             * @brief Returns true if one or more agents are currently running.
             *
@@ -571,7 +571,7 @@ namespace sml
             * all agents have actually terminated their runs.
             *************************************************************/
             bool        IsSoarRunning() ;
-
+            
             /*************************************************************
             * @brief Ask the kernel for the current list of connections
             *        and their status information.
@@ -581,7 +581,7 @@ namespace sml
             *          last time this method was called.
             *************************************************************/
             bool                    GetAllConnectionInfo() ;
-
+            
             /*************************************************************
             * @brief Report number of connections and info about those connections.
             *        These methods report information cached in the last
@@ -594,7 +594,7 @@ namespace sml
             ConnectionInfo const*   GetConnectionInfo(int i) ;
             char const*             GetConnectionStatus(char const* pConnectionName) ;
             char const*             GetAgentStatus(char const* pConnectionName) ;
-
+            
             /*************************************************************
             * @brief Sets the name and current status of this connection.
             *        This information is sent to the kernel and can be requested
@@ -615,7 +615,7 @@ namespace sml
             *  "closing" - client is in the act of shutting down
             *************************************************************/
             bool SetConnectionInfo(char const* pName, char const* pConnectionStatus, char const* pAgentStatus) ;
-
+            
             /*************************************************************
             * @brief   Causes the kernel to issue a SYSTEM_START event.
             *
@@ -627,7 +627,7 @@ namespace sml
             *          but indirectly through a simulation.
             *************************************************************/
             bool FireStartSystemEvent() ;
-
+            
             /*************************************************************
             * @brief   Causes the kernel to issue a SYSTEM_STOP event.
             *
@@ -641,7 +641,7 @@ namespace sml
             *          semantics for "stop-soar".
             *************************************************************/
             bool FireStopSystemEvent() ;
-
+            
             /*************************************************************
             * @brief   Prevents the kernel from sending an smlEVENT_SYSTEM_STOP
             *          event at the of a run.
@@ -656,14 +656,14 @@ namespace sml
             *          request that the kernel fire the event.
             *************************************************************/
             bool SuppressSystemStop(bool state) ;
-
+            
             /*************************************************************
             * @brief Get last command line result
             *
             * @returns True if the last command line call succeeded.
             *************************************************************/
             bool GetLastCommandLineResult();
-
+            
             /*************************************************************
             * @brief If this is an embedded connection using "synchronous execution"
             *        then we need to call this periodically to look for commands
@@ -675,7 +675,7 @@ namespace sml
             *        having to call this).
             *************************************************************/
             bool CheckForIncomingCommands() ;
-
+            
             /*************************************************************
             * @brief See if there are any incoming messages waiting to
             *        be dispatched to event handlers and if so process them.
@@ -691,7 +691,7 @@ namespace sml
             * @return True if processes at least one event
             *************************************************************/
             bool CheckForIncomingEvents() ;
-
+            
             /*************************************************************
             * @brief Start/stop the event thread.
             *
@@ -708,7 +708,7 @@ namespace sml
             *************************************************************/
             bool StartEventThread() ;
             bool StopEventThread() ;
-
+            
             /*************************************************************
             * @brief Register for a "SystemEvent".
             *        Multiple handlers can be registered for the same event.
@@ -732,13 +732,13 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             * @returns True if succeeds
             *************************************************************/
             bool    UnregisterForSystemEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief The smlEVENT_INTERRUPT_CHECK event fires every n-th
             *        step (phase) during a run.  The n is controlled by
@@ -755,7 +755,7 @@ namespace sml
             * @param newRate >= 1
             *************************************************************/
             bool SetInterruptCheckRate(int newRate) ;
-
+            
             /*************************************************************
             * @brief Register a handler for a RHS (right hand side) function.
             *        This function can be called in the RHS of a production firing
@@ -781,14 +781,14 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular rhs function callback
             *        using the ID passed back from AddRhsFunction().
             * @returns True if succeeds
             *************************************************************/
             bool RemoveRhsFunction(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register a handler for receiving generic messages sent from another client.
             *        The content of the messages are up to the client and really aren't related to Soar, but providing the
@@ -816,14 +816,14 @@ namespace sml
             * @returns Unique ID for this callback.  Required when unregistering this callback.
             *************************************************************/
             int RegisterForClientMessageEvent(char const* pClientName, ClientMessageHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular client message
             *        using the ID passed back from RegisterForClientMessageEvent().
             * @returns True if succeeds
             *************************************************************/
             bool UnregisterForClientMessageEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Send a message to another client (not the Soar kernel).
             *        The other client must have registered for this message to receive it.
@@ -843,7 +843,7 @@ namespace sml
             * @returns The response (if any) from the receiving client.  The string "**NONE**" is reserved to indicate nobody was registered for this event.
             *************************************************************/
             std::string SendClientMessage(Agent* pAgent, char const* pClientName, char const* pMessage) ;
-
+            
             /*************************************************************
             * @brief Register for an "AgentEvent".
             *        Multiple handlers can be registered for the same event.
@@ -865,13 +865,13 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             * @returns True if succeeds
             *************************************************************/
             bool    UnregisterForAgentEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for an "UpdateEvent".
             *        Multiple handlers can be registered for the same event.
@@ -886,13 +886,13 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             * @returns True if succeeds
             *************************************************************/
             bool    UnregisterForUpdateEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for a string event.
             *        Multiple handlers can be registered for the same event.
@@ -907,13 +907,13 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForStringEvent(smlStringEventId id, StringEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             * @returns True if succeeds
             *************************************************************/
             bool    UnregisterForStringEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief The Soar kernel version is based on sending a request
             *        to the kernel asking for its version and returning the
@@ -931,18 +931,18 @@ namespace sml
             *        E.g. 8.6.1
             *************************************************************/
             std::string GetSoarKernelVersion() ;
-
+            
             /*************************************************************
             * @brief Calls Commit() for all agents -- sending any queued I/O operations
             *        over to the kernel for processing.
             *************************************************************/
             void CommitAll() ;
-
+            
             /*************************************************************
             * @brief Returns true if at least one agent has uncommitted changes.
             *************************************************************/
             bool IsCommitRequired() ;
-
+            
             /*************************************************************
             * @brief Loads an external library (dll/so/dylib) in the local client for the
             * purpose of event or RHS function registration. This can boost performance over
@@ -952,7 +952,7 @@ namespace sml
             * @return error message or empty string for no error
             *************************************************************/
             std::string LoadExternalLibrary(char const* pLibraryCommand);
-
+            
             /*************************************************************
             * @brief Returns the connection information for this kernel
             *        which is how we communicate with the kernel (e.g. embedded,
@@ -966,33 +966,31 @@ namespace sml
             {
                 return m_Connection ;
             }
-
+            
         protected:
             /*************************************************************
             * @brief This function is called when we receive a "call" SML
             *        message from the kernel.
             *************************************************************/
             static soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* pUserData) ;
-
+            
             /*************************************************************
             * @brief This function is called (indirectly) when we receive a "call" SML
             *        message from the kernel.
             *************************************************************/
             soarxml::ElementXML* ProcessIncomingSML(Connection* pConnection, soarxml::ElementXML* pIncoming) ;
-
+            
             /*************************************************************
             * @brief The workhorse function to create an embedded connection.
             *        The public methods hide a few of these parameters.
             *************************************************************/
             static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
-
-#ifndef NO_SVS
+            
             void        SendSVSInput(const char* agentName, const std::string& txt);
             std::string GetSVSOutput(const char* agentName);
             std::string SVSQuery(const char* agentName, const std::string& q);
-#endif
     };
-
+    
 }//closes namespace
 
 #endif //SML_KERNEL_H

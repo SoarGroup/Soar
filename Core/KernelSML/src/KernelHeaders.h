@@ -30,6 +30,4 @@
 #include "symtab.h"
 #include "io_soar.h"
 #include "wmem.h"
-#ifndef NO_SVS
 #include "svs_interface.h"
-#endif

@@ -1,4 +1,3 @@
-#ifndef NO_SVS
 #include "cli_CommandLineInterface.h"
 #include "sml_AgentSML.h"
 #include "agent.h"
@@ -11,7 +10,7 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
 {
     std::string out;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-
+    
     if (args.size() == 1)
     {
         m_Result << "Spatial Visual System is " << (thisAgent->svs->is_enabled() ? "enabled." : "disabled.");
@@ -65,4 +64,3 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
         return false;
     }
 }
-#endif

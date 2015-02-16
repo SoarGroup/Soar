@@ -29,17 +29,17 @@ namespace sml
             static char const* const kDocType_Notify ;
             static char const* const kSMLVersion ;
             static char const* const kOutputLinkName ;
-
+            
             static const char* const kSoarVersionValue;
             static const char* const kSMLVersionValue;
-
+            
             // <command> tag identifiers
             static char const* const kTagCommand ;
             static char const* const kCommandName ;
             static char const* const kCommandOutput ;
             static char const* const kRawOutput ;
             static char const* const kStructuredOutput ;
-
+            
             // <connection> tag identifiers
             static char const* const kTagConnection ;
             static char const* const kConnectionId ;
@@ -50,34 +50,34 @@ namespace sml
             static char const* const kStatusNotReady ;  // Connection not ready (work needs to be done still)
             static char const* const kStatusReady ;     // Connection ready (registered for events etc.)
             static char const* const kStatusClosing ;   // Connection about to shut down
-
+            
             // <arg> tag identifiers
             static char const* const kTagArg ;
             static char const* const kArgParam ;
             static char const* const kArgType ;
-
+            
             // <error> tag identifiers
             static char const* const kTagError ;
             static char const* const kErrorCode ;
-
+            
             // <name> tag identifiers
             static char const* const kTagName ;
-
+            
             // <result> tag identifiers
             static char const* const kTagResult ;
-
+            
             // input values (for update param)
             static char const* const kValueDelta ;
             static char const* const kValueFull ;
-
+            
             //for RHS output
             static char const* const kTagRHS_write ;
             static char const* const kRHS_String ;
-
+            
             // Tags defined for Trace output at each watch level:
             // <trace> contains the rest.
             static char const* const kTagTrace ;
-
+            
             // <context> tag identifiers for Watch level 1
             static char const* const kTagState ;
             static char const* const kTagOperator ;
@@ -91,7 +91,7 @@ namespace sml
             static char const* const kOperator_Name;
             static char const* const kOperator_DecisionCycleCt;
             static char const* const kOperator_StackLevel ;
-
+            
             // <phase> tag identifiers for Watch level 2
             static char const* const kTagPhase ;
             static char const* const kPhase_Name ;
@@ -110,17 +110,17 @@ namespace sml
             static char const* const kPhaseStatus_End ;
             static char const* const kPhaseFiringType_IE ;
             static char const* const kPhaseFiringType_PE ;
-
+            
             static char const* const kTagSubphase;
             static char const* const kSubphaseName_FiringProductions;
             static char const* const kSubphaseName_ChangingWorkingMemory;
-
+            
             // <prod-firing> tag identifiers for Watch level 3
             static char const* const kTagProduction ;
             static char const* const kProduction_Name ;
             static char const* const kTagProduction_Firing ;
             static char const* const kTagProduction_Retracting ;
-
+            
             // <wme> tag identifiers, also Watch level 4
             static char const* const kTagWME ;
             static char const* const kWME_TimeTag ;
@@ -136,25 +136,25 @@ namespace sml
             static char const* const kValueRemove ;
             static char const* const kTagWMERemove ;
             static char const* const kTagWMEAdd ;
-
+            
             // <preference> tag identifiers, also Watch level 5
             static char const* const kTagPreference ;
             static char const* const kPreference_Type ;
             static char const* const kOSupported ;
             static char const* const kReferent ;
-
+            
             // for warnings controlled by WARNINGS_SYSPARAM
             static char const* const kTagWarning ;
-
+            
             // XML function types for XML output event
             static char const* const kFunctionBeginTag;
             static char const* const kFunctionEndTag;
             static char const* const kFunctionAddAttribute;
-
+            
             // learning stuff
             static char const* const kTagLearning;
             // Tag learning has attribute kTypeString
-
+            
             // filter support
             static char const* const kTagFilter ;
             static char const* const kFilterCommand ;
@@ -162,7 +162,7 @@ namespace sml
             static char const* const kFilterOutput ;
             static char const* const kFilterName ;
             static char const* const kParamNoFiltering ;
-
+            
             //production printing
             static char const* const kTagConditions;
             static char const* const kTagConjunctive_Negation_Condition;
@@ -185,7 +185,7 @@ namespace sml
             static char const* const kAction;
             static char const* const kActionFunction;
             static char const* const kActionId;
-
+            
             //backtrace stuff
             static char const* const kTagBacktrace;
             static char const* const kTagGrounds;
@@ -204,9 +204,9 @@ namespace sml
             static char const* const kBacktracedAlready;
             static char const* const kBacktraceSymbol1;
             static char const* const kBacktraceSymbol2;
-
+            
             static char const* const kTagLocalNegation; // SBW 5/07
-
+            
             // numeric indifference stuff
             static char const* const kTagCandidate;
             static char const* const kCandidateName;
@@ -215,18 +215,18 @@ namespace sml
             static char const* const kCandidateTypeAvg;
             static char const* const kCandidateValue;
             static char const* const kCandidateExpValue;
-
+            
             // output for the verbose command
             static char const* const kTagVerbose;
-
+            
             // support for printing random messages
             static char const* const kTagMessage;
-
+            
             // marker for showing beginning of action-side
             static char const* const kTagActionSideMarker;
-
+            
             // end of tags for Trace output
-
+            
             // Types
             static char const* const kTypeString ;
             static char const* const kTypeInt ;
@@ -235,7 +235,7 @@ namespace sml
             static char const* const kTypeBoolean ;
             static char const* const kTypeID ;
             static char const* const kTypeVariable ;
-
+            
             // Params
             static char const* const kParamAgent ;
             static char const* const kParamKernel ;
@@ -296,12 +296,12 @@ namespace sml
             static char const* const kParamChunkCount;
             static char const* const kParamChunkLongFormat;
             static char const* const kParamPort;
-
+            
             // Parameter names for source command
             static char const* const kParamSourcedProductionCount;
             static char const* const kParamExcisedProductionCount;
             static char const* const kParamIgnoredProductionCount;
-
+            
             // Parameter names for stats command
             static char const* const kParamStatsProductionCountDefault;
             static char const* const kParamStatsProductionCountUser;
@@ -378,7 +378,7 @@ namespace sml
             static char const* const kParamStatsMaxDecisionCycleWMChangesValue;
             static char const* const kParamStatsMaxDecisionCycleFireCountCycle;
             static char const* const kParamStatsMaxDecisionCycleFireCountValue;
-
+            
             // Parameter names for watch command
             static char const* const kParamWatchDecisions;
             static char const* const kParamWatchPhases;
@@ -399,11 +399,11 @@ namespace sml
             static char const* const kParamWatchSMem;
             static char const* const kParamWatchWMA;
             static char const* const kParamWatchGDS;
-
+            
             // Values (these are not case sensitive unlike the rest)
             static char const* const kTrue ;
             static char const* const kFalse ;
-
+            
             // Main command set
             static char const* const kCommand_CreateAgent ;
             static char const* const kCommand_DestroyAgent ;
@@ -437,17 +437,15 @@ namespace sml
             static char const* const kCommand_OutputInit ;
             static char const* const kCommand_ConvertIdentifier ;
             static char const* const kCommand_GetListenerPort ;
-
+            
             // Command line interface
             static char const* const kCommand_CommandLine ;
-
-#ifndef NO_SVS
+            
             static char const* const kCommand_SVSInput ;
             static char const* const kCommand_SVSOutput ;
             static char const* const kCommand_SVSQuery ;
-#endif
     } ;
-
+    
 }
 
 #endif // SML_NAMESH

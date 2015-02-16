@@ -74,11 +74,9 @@ void KernelSML::BuildCommandMap()
     m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
     m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
     m_CommandMap[sml_Names::kCommand_GetListenerPort]   = &sml::KernelSML::HandleGetListenerPort;
-#ifndef NO_SVS
     m_CommandMap[sml_Names::kCommand_SVSInput] = &sml::KernelSML::HandleSVSInput;
     m_CommandMap[sml_Names::kCommand_SVSOutput] = &sml::KernelSML::HandleSVSOutput;
     m_CommandMap[sml_Names::kCommand_SVSQuery] = &sml::KernelSML::HandleSVSQuery;
-#endif
 }
 
 /*************************************************************
@@ -1047,7 +1045,6 @@ bool KernelSML::HandleGetListenerPort(AgentSML* /*pAgentSML*/, char const* /*pCo
     return this->ReturnIntResult(pConnection, pResponse, this->GetListenerPort());
 }
 
-#ifndef NO_SVS
 bool KernelSML::HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
 {
     if (pAgentSML->GetSoarAgent()->svs->is_enabled())
@@ -1085,4 +1082,3 @@ bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Co
     std::string res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
     return this->ReturnResult(pConnection, pResponse, res.c_str());
 }
-#endif

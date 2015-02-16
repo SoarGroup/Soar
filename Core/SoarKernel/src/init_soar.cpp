@@ -44,9 +44,7 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "variablization_manager.h"
-#ifndef NO_SVS
 #include "svs_interface.h"
-#endif
 #include "output_manager.h"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
@@ -628,12 +626,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_INPUT_PHASE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
-#ifndef NO_SVS
                 if (thisAgent->svs->is_enabled())
                 {
                     thisAgent->svs->input_callback();
                 }
-#endif
                 do_input_cycle(thisAgent);
 
                 thisAgent->run_phase_count++ ;
@@ -994,12 +990,10 @@ void do_one_top_level_phase(agent* thisAgent)
                                   BEFORE_OUTPUT_PHASE_CALLBACK,
                                   reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
 
-#ifndef NO_SVS
             if (thisAgent->svs->is_enabled())
             {
                 thisAgent->svs->output_callback();
             }
-#endif
             /** KJC June 05:  moved output function timers into do_output_cycle ***/
 
             do_output_cycle(thisAgent);

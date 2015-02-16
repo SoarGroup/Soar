@@ -36,96 +36,96 @@ namespace sml
     class ClientXML ;
     class ClientAnalyzedXML ;
     struct DebuggerProcessInformation;
-
+    
     class RunEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             RunEventHandler m_Handler ;
-
+            
             RunEventHandlerPlusData() {}
-
+            
             RunEventHandlerPlusData(int eventID, RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class ProductionEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             ProductionEventHandler m_Handler ;
-
+            
             ProductionEventHandlerPlusData() {}
-
+            
             ProductionEventHandlerPlusData(int eventID, ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class PrintEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             PrintEventHandler m_Handler ;
             bool m_IgnoreOwnEchos ;
-
+            
             PrintEventHandlerPlusData()
             {
                 m_IgnoreOwnEchos = true;
             }
-
+            
             PrintEventHandlerPlusData(int eventID, PrintEventHandler handler, void* userData, bool ignoreOwnEchos, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
                 m_IgnoreOwnEchos = ignoreOwnEchos ;
             }
     } ;
-
+    
     class XMLEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             XMLEventHandler m_Handler ;
-
+            
             XMLEventHandlerPlusData() {}
-
+            
             XMLEventHandlerPlusData(int eventID, XMLEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class OutputEventHandlerPlusData : public EventHandlerPlusData
     {
         public:
             OutputEventHandler  m_Handler ;
             std::string         m_AttributeName ;
-
+            
             OutputEventHandlerPlusData() {}
-
+            
             OutputEventHandlerPlusData(int eventID, char const* pAttributeName, OutputEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
-
+                
                 if (pAttributeName)
                 {
                     m_AttributeName = pAttributeName ;
                 }
             }
     } ;
-
+    
     class OutputNotificationHandlerPlusData : public EventHandlerPlusData
     {
         public:
             OutputNotificationHandler   m_Handler ;
-
+            
             OutputNotificationHandlerPlusData() {}
-
+            
             OutputNotificationHandlerPlusData(int eventID, OutputNotificationHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
             {
                 m_Handler = handler ;
             }
     } ;
-
+    
     class EXPORT Agent : public ClientErrors
     {
             // By using a lot of friends we can keep methods from being exposed
@@ -138,7 +138,7 @@ namespace sml
             friend class IntElement ;
             friend class FloatElement ;
             friend class Identifier ;
-
+            
         protected:
             // The mapping from event number to a list of handlers to call when that event fires
             typedef sml::ListMap<smlRunEventId, RunEventHandlerPlusData>                RunEventMap ;
@@ -147,17 +147,17 @@ namespace sml
             typedef sml::ListMap<smlXMLEventId, XMLEventHandlerPlusData>                XMLEventMap ;
             typedef sml::ListMap<std::string, OutputEventHandlerPlusData>               OutputEventMap ;
             typedef sml::ListMap<smlWorkingMemoryEventId, OutputNotificationHandlerPlusData>    OutputNotificationMap ;
-
+            
         protected:
             // We maintain a local copy of working memory so we can just send changes
             WorkingMemory   m_WorkingMemory ;
-
+            
             // The kernel that owns this agent
             Kernel*         m_Kernel ;
-
+            
             // The name of this agent
             std::string     m_Name ;
-
+            
             // Map from event id to handler function(s)
             RunEventMap             m_RunEventMap ;
             ProductionEventMap      m_ProductionEventMap ;
@@ -165,7 +165,7 @@ namespace sml
             XMLEventMap             m_XMLEventMap ;
             OutputEventMap          m_OutputEventMap ;
             OutputNotificationMap   m_OutputNotificationMap ;
-
+            
             // These are little utility classes we define in the .cpp file to help with searching the event maps
             class TestRunCallbackFull ;
             class TestRunCallback ;
@@ -179,30 +179,30 @@ namespace sml
             class TestOutputCallback ;
             class TestOutputNotificationCallbackFull ;
             class TestOutputNotificationCallback ;
-
+            
             // Used to generate unique IDs for callbacks
             int m_CallbackIDCounter ;
-
+            
             // Internally we register a print callback and store its id here.
             int m_XMLCallback ;
-
+            
             // When true, if a wme is updated to the same value as before we "blink" the wme by removing
             // the old wme and adding a new one, causing rules to rematch in Soar.
             bool m_BlinkIfNoChange ;
-
+            
         protected:
             Agent(Kernel* pKernel, char const* pAgentName);
-
+            
             // This is protected so the client doesn't try to delete it.
             // Client should just delete the kernel object (or call Kernel::DestroyAgent() if just want to destroy this agent).
             virtual ~Agent();
-
+            
             Connection* GetConnection() const ;
             WorkingMemory* GetWM()
             {
                 return &m_WorkingMemory ;
             }
-
+            
             /*************************************************************
             * @brief This function is called when output is received
             *        from the Soar kernel.
@@ -211,7 +211,7 @@ namespace sml
             * @param pResponse  The reply (no real need to fill anything in here currently)
             *************************************************************/
             void ReceivedOutput(AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
-
+            
             /*************************************************************
             * @brief This function is called when an event is received
             *        from the Soar kernel.
@@ -224,16 +224,16 @@ namespace sml
             void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             void ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
-
+            
             /** NOTE: Slightly different sig as this is called without analyzing the incoming msg so it's a bit faster */
             void ReceivedXMLTraceEvent(smlXMLEventId id, soarxml::ElementXML* pIncomingMsg, soarxml::ElementXML* pResponse) ;
-
+            
             /*************************************************************
             * @brief This function is called after output has been received
             *        and processed from the kernel.
             *************************************************************/
             void FireOutputNotification() ;
-
+            
             /*************************************************************
             * @brief Call any registered handlers to notify them when
             *        a new working memory element is added to the top
@@ -241,14 +241,14 @@ namespace sml
             *************************************************************/
             void ReceivedOutputEvent(WMElement* pWmeAdded) ;
             bool IsRegisteredForOutputEvent() ;
-
+            
             /*************************************************************
             * @brief Returns true if changes to i/o links should be
             *        committed (sent to kernelSML) immediately when they
             *        occur, so the client doesn't need to remember to call commit.
             *************************************************************/
             bool IsAutoCommitEnabled() ;
-
+            
         public:
             /*************************************************************
             * @brief Returns this agent's name.
@@ -257,7 +257,7 @@ namespace sml
             {
                 return m_Name.c_str() ;
             }
-
+            
             /*************************************************************
             * @brief Returns a pointer to the kernel object that owns this Agent.
             *************************************************************/
@@ -265,7 +265,7 @@ namespace sml
             {
                 return m_Kernel ;
             }
-
+            
             /*************************************************************
             * @brief Load a set of productions from a file.
             *
@@ -277,13 +277,13 @@ namespace sml
             * @returns True if finds file to load successfully.
             *************************************************************/
             bool LoadProductions(char const* pFilename, bool echoResults = true) ;
-
+            
             /*************************************************************
             * @brief Returns the id object for the input link.
             *        The agent retains ownership of this object.
             *************************************************************/
             Identifier* GetInputLink() ;
-
+            
             /*************************************************************
             * @brief An alternative that matches the older SGIO interface.
             *        The agent retains ownership of this object.
@@ -292,7 +292,7 @@ namespace sml
             {
                 return GetInputLink() ;
             }
-
+            
             /*************************************************************
             * @brief Returns the id object for the output link.
             *        The agent retains ownership of this object.
@@ -300,7 +300,7 @@ namespace sml
             *        puts something on the output link.
             *************************************************************/
             Identifier* GetOutputLink() ;
-
+            
             /*************************************************************
             * @brief Builds a new WME that has a string value and schedules
             *        it for addition to Soar's input link.
@@ -324,7 +324,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             StringElement* CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
-
+            
             /*************************************************************
             * @brief Same as CreateStringWME but for a new WME that has
             *        an int as its value.
@@ -339,7 +339,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             IntElement* CreateIntWME(Identifier* parent, char const* pAttribute, long long value) ;
-
+            
             /*************************************************************
             * @brief Same as CreateStringWME but for a new WME that has
             *        a floating point value.
@@ -354,7 +354,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             FloatElement* CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
-
+            
             /*************************************************************
             * @brief Same as CreateStringWME but for a new WME that has
             *        an identifier as its value.
@@ -372,7 +372,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             Identifier*     CreateIdWME(Identifier* parent, char const* pAttribute) ;
-
+            
             /*************************************************************
             * @brief Creates a new WME that has an identifier as its value.
             *        The value in this case is the same as an existing identifier.
@@ -388,7 +388,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             Identifier*     CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
-
+            
             /*************************************************************
             * @brief Update the value of an existing WME.
             *        If "auto commit" is turned off in ClientKernel,
@@ -414,7 +414,7 @@ namespace sml
             void    Update(StringElement* pWME, char const* pValue) ;
             void    Update(IntElement* pWME, long long value) ;
             void    Update(FloatElement* pWME, double value) ;
-
+            
             /*************************************************************
             * @brief This flag controls whether updating a wme to the same
             *        value that it already has causes it to "blink" or not.
@@ -429,7 +429,7 @@ namespace sml
             {
                 return m_BlinkIfNoChange ;
             }
-
+            
             /*************************************************************
             * @brief Schedules a WME from deletion from the input link and removes
             *        it from the client's model of working memory.
@@ -453,7 +453,7 @@ namespace sml
             *        a removed WME causes a segmentation fault.
             *************************************************************/
             bool    DestroyWME(WMElement* pWME) ;
-
+            
             /*************************************************************
             * @brief Reinitialize this Soar agent.
             *        This will also cause the output link structures stored
@@ -461,7 +461,7 @@ namespace sml
             *        to the Soar agent for the start of its next run.
             *************************************************************/
             char const* InitSoar() ;
-
+            
             /*************************************************************
             * @brief Register an "Output event handler".
             *        This is one way to be notified when output occurs on the output link.
@@ -475,12 +475,12 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular output event
             *************************************************************/
             bool RemoveOutputHandler(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for a "RunEvent".
             *        Multiple handlers can be registered for the same event.
@@ -508,12 +508,12 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             *************************************************************/
             bool    UnregisterForRunEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register to be notified when output has been received from the agent.
             *        This event is a bit special, because we ensure that the client side data structures
@@ -522,7 +522,7 @@ namespace sml
             *************************************************************/
             int RegisterForOutputNotification(OutputNotificationHandler handler, void* pUserData, bool addToBack = true) ;
             bool UnregisterForOutputNotification(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for a "ProductionEvent".
             *        Multiple handlers can be registered for the same event.
@@ -541,12 +541,12 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             *************************************************************/
             bool    UnregisterForProductionEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for an "PrintEvent".
             *        Multiple handlers can be registered for the same event.
@@ -562,12 +562,12 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool ignoreOwnEchos = true, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             *************************************************************/
             bool UnregisterForPrintEvent(int callbackID) ;
-
+            
             /*************************************************************
             * @brief Register for an "XMLEvent".
             *        Multiple handlers can be registered for the same event.
@@ -582,12 +582,12 @@ namespace sml
             * @returns A unique ID for this callback (used to unregister the callback later)
             *************************************************************/
             int RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* pUserData, bool addToBack = true) ;
-
+            
             /*************************************************************
             * @brief Unregister for a particular event
             *************************************************************/
             bool UnregisterForXMLEvent(int callbackID) ;
-
+            
             /*==============================================================================
             ===
             === There are a number of different ways to read information from
@@ -629,7 +629,7 @@ namespace sml
             === the list of commands is known in advance (usually not a problem).
             ===
             ==============================================================================*/
-
+            
             /*************************************************************
             * @brief Enable or disable output-link change tracking. Do
             *        NOT use if using Commands, GetCommand,
@@ -639,25 +639,25 @@ namespace sml
             {
                 GetWM()->SetOutputLinkChangeTracking(setting);
             }
-
+            
             /*************************************************************
             * @brief Get number of changes to output link since last cycle.
             *************************************************************/
             int     GetNumberOutputLinkChanges() ;
-
+            
             /*************************************************************
             * @brief Get the n-th wme added or deleted to output link since
             *        last cycle.
             *************************************************************/
             WMElement*  GetOutputLinkChange(int index) ;
-
+            
             /*************************************************************
             * @brief Returns true if the n-th wme change to the output-link
             *        since the last cycle was a wme being added.
             *        (false => it was a wme being deleted)
             *************************************************************/
             bool        IsOutputLinkChangeAdd(int index) ;
-
+            
             /*************************************************************
             * @brief Deprecated: Clears the current list of changes
             *        to the output-link.
@@ -665,7 +665,7 @@ namespace sml
             *        decision cycle.
             *************************************************************/
             void    ClearOutputLinkChanges() ;
-
+            
             /*************************************************************
             * @brief Get the number of "commands".  A command in this context
             *        is an identifier wme that have been added to the top level of
@@ -675,7 +675,7 @@ namespace sml
             *        best to not call it repeatedly.
             *************************************************************/
             int     GetNumberCommands() ;
-
+            
             /*************************************************************
             * @brief Returns true if there are "commands" available.
             *        A command in this context is an identifier wme that
@@ -689,7 +689,7 @@ namespace sml
             {
                 return GetNumberCommands() > 0 ;
             }
-
+            
             /*************************************************************
             * @brief Get the n-th "command".  A command in this context
             *        is an identifier wme that have been added to the top level of
@@ -709,18 +709,18 @@ namespace sml
             * @param index  The 0-based index for which command to get.
             *************************************************************/
             Identifier* GetCommand(int index) ;
-
+            
             /*************************************************************
             * @brief Send the most recent list of changes to working memory
             *        over to the kernel.
             *************************************************************/
             bool Commit() ;
-
+            
             /*************************************************************
             * @brief Returns true if this agent has uncommitted changes.
             *************************************************************/
             bool IsCommitRequired() ;
-
+            
             /*************************************************************
             * @brief   Run one Soar agent for the specified number of decisions
             *
@@ -729,7 +729,7 @@ namespace sml
             *************************************************************/
             char const* RunSelf(int numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
             char const* RunSelfForever() ;
-
+            
             /*************************************************************
             * @brief   Run Soar until either output is generated or
             *          the maximum number of decisions is reached.
@@ -742,19 +742,19 @@ namespace sml
             * max-nil-output-cycles command).
             *************************************************************/
             char const* RunSelfTilOutput() ;
-
+            
             /*************************************************************
             * @brief Returns true if this agent was part of the last set
             *        of agents that was run.
             *************************************************************/
             bool WasAgentOnRunList() ;
-
+            
             /*************************************************************
             * @brief Returns whether the last run for this agent was
             *        interrupted (by a stop call) or completed normally.
             *************************************************************/
             smlRunResult GetResultOfLastRun() ;
-
+            
             /*************************************************************
             * @brief Interrupt the currently running Soar agent.
             *
@@ -769,7 +769,7 @@ namespace sml
             *
             *************************************************************/
             char const* StopSelf() ;
-
+            
             /*************************************************************
             * @brief Resend the complete input link to the kernel
             *        and remove our output link structures.
@@ -777,24 +777,24 @@ namespace sml
             *        There should be no reason for the client to call this method directly.
             *************************************************************/
             void Refresh() ;
-
+            
             /*************************************************************
             * @brief Returns the phase that the agent will execute when next
             *        asked to run.
             *************************************************************/
             smlPhase GetCurrentPhase() ;
-
+            
             /*************************************************************
             * @brief Returns the current decision cycle counter.
             *************************************************************/
             int GetDecisionCycleCounter() ;
-
+            
             /*************************************************************
             * @brief Returns the current run state of the agent.
             *        Mostly of use to determine if agent halted in last run.
             *************************************************************/
             smlRunState GetRunState() ;
-
+            
             /*************************************************************
             * @brief Process a command line command
             *
@@ -804,7 +804,7 @@ namespace sml
             * @returns The string form of output from the command.
             *************************************************************/
             char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false, bool noFilter = false) ;
-
+            
             /*************************************************************
             * @brief Execute a command line command and return the result
             *        as an XML object.
@@ -816,13 +816,11 @@ namespace sml
             * @returns True if the command succeeds.
             *************************************************************/
             bool ExecuteCommandLineXML(char const* pCommandLine, ClientAnalyzedXML* pResponse) ;
-
-#ifndef NO_SVS
+            
             void        SendSVSInput(const std::string& txt);
             std::string GetSVSOutput();
             std::string SVSQuery(const std::string& q);
-#endif
-
+            
             /*************************************************************
             * @brief Get last command line result
             *
@@ -832,13 +830,13 @@ namespace sml
             * @returns True if the last command line call succeeded.
             *************************************************************/
             bool GetLastCommandLineResult();
-
+            
             /*************************************************************
             * @brief Returns true if this string is the name of a production
             *        that is currently loaded in the agent.
             *************************************************************/
             bool IsProductionLoaded(char const* pProductionName) ;
-
+            
             /*************************************************************
             * @brief This method is used to update this client's representation
             *        of the input link to match what is currently on the agent's
@@ -853,7 +851,7 @@ namespace sml
             *        make any guarantees about what will or won't work.
             *************************************************************/
             bool SynchronizeInputLink() ;
-
+            
             /*************************************************************
             * @brief This method is used to update this client's representation
             *        of the output link to match what is currently on the agent's
@@ -867,7 +865,7 @@ namespace sml
             *        and wants to get up to date on the current state of the output link.
             *************************************************************/
             bool SynchronizeOutputLink() ;
-
+            
             /*************************************************************
             * @brief This method spawns a debugger to connect to this agent.
             *        Java must be in the path. If jarpath is NULL, the
@@ -876,23 +874,23 @@ namespace sml
             *        false if the jar is not found or process spawning fails.
             *************************************************************/
             bool SpawnDebugger(int port = -1, const char* jarpath = 0);
-
+            
             /*************************************************************
             * @brief Kills the previously spawned debugger.
             *************************************************************/
             bool KillDebugger();
-
+            
             /*************************************************************
             * @brief Convert a client-side identifier string to kernel-side.
             *************************************************************/
             char const* ConvertIdentifier(char const* pClientIdentifier);
-
+            
         protected:
             // for {Spawn, Kill}Debugger()
             DebuggerProcessInformation* m_pDPI;
-
+            
     };
-
+    
 }//closes namespace
 
 #endif //SML_AGENT_H

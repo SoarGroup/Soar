@@ -30,7 +30,6 @@ print "   kernel cli sml_java debugger headers"
 print "Settings available:"
 print "   --opt, --static, --out, --build, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
-print "   --no-svs"
 print "================================================================================"
 
 def execute(cmd):
@@ -145,8 +144,6 @@ AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable 
 
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 
-AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
-
 msvc_version = "12.0"
 cl_target_architecture = ''
 if sys.platform == 'win32':
@@ -191,8 +188,6 @@ lnflags = []
 libs = ['Soar']
 if compiler == 'g++':
     libs += [ 'pthread', 'dl', 'm' ]
-    if GetOption('nosvs'):
-        cflags.append('-DNO_SVS')
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
 
@@ -227,8 +222,7 @@ if compiler == 'g++':
 
 elif compiler == 'msvc':
     cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
-    if GetOption('nosvs'):
-        cflags.extend(' /D NO_SVS'.split())
+
     if GetOption('defflags'):
         if GetOption('opt'):
             cflags.extend(' /MD /O2 /D NDEBUG'.split())

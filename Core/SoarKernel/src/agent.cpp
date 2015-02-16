@@ -56,9 +56,7 @@
 #include "soar_instance.h"
 #include "variablization_manager.h"
 #include "output_manager.h"
-#ifndef NO_SVS
 #include "svs_interface.h"
-#endif
 
 /* ===================================================================
 
@@ -139,9 +137,7 @@ void init_soar_agent(agent* thisAgent)
 
     reset_statistics(thisAgent);
 
-#ifndef NO_SVS
     thisAgent->svs = make_svs(thisAgent);
-#endif
 
     /* RDF: For gSKI */
     init_agent_memory(thisAgent);
@@ -490,9 +486,7 @@ void destroy_soar_agent(agent* delete_agent)
 
     delete delete_agent->smem_db;
 
-#ifndef NO_SVS
     delete delete_agent->svs;
-#endif
 
     // cleanup statistics db
     stats_close(delete_agent);
