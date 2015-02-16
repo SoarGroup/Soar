@@ -612,8 +612,9 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         condition* c_bottom;
 
 //    p_node_to_conditions_and_rhs( thisAgent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, JUST_INEQUALITIES );
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
 
+        /* MToDo | Seems to be the same call as in recmem.cpp, which is what set up conditions in my_template_instance.  Couldn't we just copy condition list? */
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
     }
 
@@ -659,9 +660,22 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
             // prep conditions
             copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
+            dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
             reset_variable_generator(thisAgent, cond_top, NIL);
             rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
             thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
+
+
+            dprint(DT_RL_VARIABLIZATION, "Polishing variablized conditions...\n");
+
+            /* -- Clean up unification constraints and merge redundant conditions
+             *    Note that this is needed even for justifications -- */
+            thisAgent->variablizationManager->fix_conditions(cond_top);
+
+            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n");
+            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond_top);
+
+            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
 
             // get the preference value
             id = instantiate_rhs_value(thisAgent, my_action->id, -1, 's', tok, w);

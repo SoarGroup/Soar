@@ -189,19 +189,24 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     }
 
 
-    if (found_variablization && (found_variablization->variablized_symbol->tc_num != tc_num_literalized))
+    if (found_variablization)
     {
         /* --- Grounded symbol that has been variablized before--- */
 
         dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %y.\n", found_variablization->variablized_symbol);
 
-        symbol_remove_ref(thisAgent, rs->referent);
-        rs->referent = found_variablization->variablized_symbol;
-        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
-        rs->g_id = found_variablization->grounding_id;
-        return;
+        if (found_variablization->variablized_symbol->tc_num != tc_num_literalized)
+        {
+            /* --- Variablized symbol was not literalized on LHS --- */
+            symbol_remove_ref(thisAgent, rs->referent);
+            rs->referent = found_variablization->variablized_symbol;
+            symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+            rs->g_id = found_variablization->grounding_id;
+            return;
+        } else {
+            dprint(DT_RHS_VARIABLIZATION, "... skipping variablization of %y because it was literalized on LHS.\n", found_variablization->variablized_symbol);
+        }
     }
-
     /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
      *    Both cases return 0.  Grounding id will be generated if requested by another match. -- */
 

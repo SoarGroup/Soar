@@ -247,8 +247,6 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
 
     // get new tc_num to mark any variables that need to be substituted
     tc_number tc_num_subst = get_new_tc_number(thisAgent);;
-    // get new tc_num to mark any variables that need to be literals
-    tc_num_literalized = get_new_tc_number(thisAgent);;
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
@@ -274,6 +272,8 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
     consolidate_variables(top_cond, tc_num_subst);
     clear_substitution_map();
 
+    // get new tc_num to mark any variables that need to be literals
+    tc_num_literalized = get_new_tc_number(thisAgent);;
     install_literal_constraints(top_cond);
 
     dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
