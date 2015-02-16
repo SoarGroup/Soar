@@ -514,10 +514,14 @@ void Variablization_Manager::install_literal_constraints(condition* pCond)
                 install_literal_constraints_for_test(&pCond->data.tests.attr_test);
                 install_literal_constraints_for_test(&pCond->data.tests.value_test);
                 dprint(DT_CONSTRAINTS, "Resulting in condition %l.\n", pCond);
-            }
-            else
-            {
-                dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
+            } else if (pCond->type == NEGATIVE_CONDITION) {
+//                dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
+                dprint(DT_CONSTRAINTS, "Adding for negative condition: %l\n", pCond);
+                install_literal_constraints_for_test(&pCond->data.tests.attr_test);
+                install_literal_constraints_for_test(&pCond->data.tests.value_test);
+            } else if (pCond->type == CONJUNCTIVE_NEGATION_CONDITION) {
+                dprint(DT_CONSTRAINTS, "Adding for NCC with recursive call: %l\n", pCond);
+                install_literal_constraints(pCond->data.ncc.top);
             }
             pCond = pCond->next;
         }
