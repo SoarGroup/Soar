@@ -4,7 +4,8 @@ learn --on
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 9 7
+    (<s> ^test-item 9 7 6
+         ^test-item2 9 7
          ^test-param <tp> <tp2> <tp3>
          ^test-param2 <tp3>
          ^test-current 1
