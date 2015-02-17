@@ -12,6 +12,8 @@ Import('env')
 clone = env.Clone()
 clone['SWIGPATH'] = clone['CPPPATH']
 clone['SWIGFLAGS'] = ['-c++', '-python']
+if GetOption('nosvs'):
+    clone['SWIGFLAGS'].append('-DNO_SVS')
 
 python_exe = GetOption('python')
 if os.name == 'nt':

@@ -91,7 +91,7 @@ def late_java_builder(target, source, env):
     if not os.path.isdir(srcdir.abspath):
         print('source directory does not exist',srcdir.abspath)
         sys.exit(1)
-    
+
     clone.Java(classdir, srcdir)
     clone['JARCHDIR'] = classdir
     smljar = clone.Jar(jar, classdir)
@@ -107,7 +107,10 @@ for d in 'ClientSML ConnectionSML ElementXML'.split():
 
 swig_deps = [interface] + headers
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in clone['CPPPATH'])
-swig_cmd = 'swig %s -o "%s" -c++ -java -Wall -package sml -outdir "%s" "%s"' % (incs, wrapper.abspath, smldir.abspath, interface)
+nosvs = ''
+if GetOption('nosvs'):
+    nosvs = '-DNO_SVS'
+swig_cmd = 'swig %s -o "%s" -c++ -java -Wall -package sml -outdir "%s" %s "%s"' % (incs, wrapper.abspath, smldir.abspath, nosvs, interface)
 if not GetOption('verbose'):
     swig_cmd = '@' + swig_cmd
 clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
