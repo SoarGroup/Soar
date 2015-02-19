@@ -83,7 +83,10 @@ soar_dll = clone.File(os.path.join(lib_install_dir.abspath, 'Soar'))
 
 # Create commands to create SWIG wrapper file and pkgIndex file
 includes = ' '.join('-I%s' % d for d in include_dirs)
-wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (swig_tcl_wrapper_cpp.abspath, includes, swig_tcl_interface)
+nosvs = ''
+if GetOption('nosvs'):
+  nosvs = '-DNO_SVS'
+wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s %s' % (swig_tcl_wrapper_cpp.abspath, includes, nosvs, swig_tcl_interface)
 makepkg_cmd = '%s %s %s' % (os.path.join(tcl_bins.abspath, tcl_shname), makepkg_script, lib_install_dir)
 
 # Set up SWIGScanner to find dependencies for .i file

@@ -48,7 +48,9 @@
 
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#ifndef NO_SVS
 #include "svs_interface.h"
+#endif
 #include "test.h"
 #include "debug.h"
 
@@ -2886,8 +2888,9 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     symbol_remove_ref(thisAgent, goal->id->smem_header);
     free_with_pool(&(thisAgent->smem_info_pool), goal->id->smem_info);
 
+#ifndef NO_SVS
     thisAgent->svs->state_deletion_callback(goal);
-
+#endif
     /* REW: BUG
      * Tentative assertions can exist for removed goals.  However, it looks
      * like the removal forces a tentative retraction, which then leads to
@@ -3018,7 +3021,9 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
                           CREATE_NEW_CONTEXT_CALLBACK,
                           static_cast<soar_call_data>(id));
 
+#ifndef NO_SVS
     thisAgent->svs->state_creation_callback(id);
+#endif
 }
 
 /* ------------------------------------------------------------------
