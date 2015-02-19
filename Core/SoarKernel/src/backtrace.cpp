@@ -660,6 +660,26 @@ void trace_grounded_potentials(agent* thisAgent)
                     pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
                     dprint(DT_BACKTRACE, "Moved potential to grounds and marked %u: %l\n", tc, pot);
+                    test t_grounds = equality_test_found_in_test(pot->data.tests.value_test);
+                    if (t_grounds->identity->grounding_id != NON_GENERALIZABLE)
+                    {
+                        /* -- Check if we ned to add a unifying constraint, b/c this original variable
+                         *    already has a different g_id matched to it -- */
+                        if (t_grounds->identity->original_var)
+                        {
+                            uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping(t_grounds->identity->original_var, t_grounds->identity->grounding_id);
+                            if (existing_gid && (t_grounds->identity->grounding_id != existing_gid))
+                            {
+                                dprint(DT_BACKTRACE, "- Adding unification constraint from %y [%g] to existing g_id %u.\n", t_grounds->identity->original_var, t_grounds, existing_gid);
+                                add_unification_constraint(thisAgent, &(pot->data.tests.value_test), t_grounds, existing_gid);
+                            }
+                        }
+                        else
+                        {
+                            dprint(DT_BACKTRACE, "- Will not look for unification in %t [%g]. No original variable.\n", t_grounds, t_grounds);
+                        }
+                    }
+
                     need_another_pass = true;
                 }
                 else     /* pot was already in the grounds, do don't add it */
@@ -676,12 +696,12 @@ void trace_grounded_potentials(agent* thisAgent)
                         if (existing_gid)
                         {
                             dprint(DT_BACKTRACE, "- Adding unification constraint from %y [%g] to existing g_id %u.\n", t_rejected->identity->original_var, t_rejected, existing_gid);
-                            add_unification_constraint_for_ground_collision(thisAgent, &t_grounds, t_rejected, existing_gid);
+                            add_unification_constraint_for_ground_collision(thisAgent, &(pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test), t_rejected, existing_gid);
                         } else {
                             dprint(DT_BACKTRACE, "- Adding unification constraint from %y [%g] to g_id %u.\n", t_rejected->identity->original_var, t_rejected, t_grounds->identity->grounding_id);
-                            add_unification_constraint_for_ground_collision(thisAgent, &t_grounds, t_rejected, t_grounds->identity->grounding_id);
+                            add_unification_constraint_for_ground_collision(thisAgent, &(pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test), t_rejected, t_grounds->identity->grounding_id);
                         }
-                        pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test = t_grounds;
+//                        pot->bt.wme_->chunker_bt_last_ground_cond->data.tests.value_test = t_grounds;
                     }
                     else
                     {

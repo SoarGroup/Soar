@@ -2428,6 +2428,9 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     dprint_set_indents(DT_GDS, "           ");
                     dprint(DT_GDS, "%7", cand->inst);
                 }
+                dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
+                dprint(DT_BACKTRACE, "   Originals: %y ^%y %y\n", cand->original_symbols.id, cand->original_symbols.attr, cand->original_symbols.value);
+                dprint(DT_BACKTRACE, "   g_ids: %u ^%u %u\n", cand->g_ids.id, cand->g_ids.attr, cand->g_ids.value);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;

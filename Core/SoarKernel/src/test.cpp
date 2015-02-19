@@ -1272,9 +1272,9 @@ inline Symbol* get_wme_element(wme* w, WME_Field f)
     return NULL;
 }
 
-inline void add_unification_constraint(agent* thisAgent, test* t, uint64_t gid)
+void add_unification_constraint(agent* thisAgent, test* t, test t_add, uint64_t gid)
 {
-    test new_test = copy_test(thisAgent, (*t));
+    test new_test = copy_test(thisAgent, t_add);
     new_test->identity->grounding_id = gid;
     add_test(thisAgent, t, new_test);
     dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
@@ -1338,7 +1338,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                         if (existing_gid)
                         {
                             dprint(DT_IDENTITY_PROP, "- %y(%i) already has g_id %i.\n", sym, (*t)->identity->grounding_id, existing_gid);
-                            add_unification_constraint(thisAgent, t, existing_gid);
+                            add_unification_constraint(thisAgent, t, *t, existing_gid);
                         }
                     }
                     else
