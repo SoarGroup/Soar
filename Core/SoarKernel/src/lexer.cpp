@@ -31,27 +31,23 @@ bool Lexer::number_starters[256];
 //initialize them all here
 bool Lexer::initialized = init();
 
-/* ======================================================================
-                             Get next char
-  Get_next_char() gets the next character from the current input file and
-  puts it into the member variable current_char.
-====================================================================== */
-
 void Lexer::get_next_char () {
     char *s;
 
-    if(current_char == EOF)
-        return;
-
-    if (production_string == NULL) {
-        current_char = EOF;
+    if(current_char == EOF) {
+        prev_char = EOF;
         return;
     }
 
+    if (production_string == NULL) {
+        current_char = EOF;
+        prev_char = EOF;
+        return;
+    }
+    prev_char = current_char;
     current_char = *production_string++;
     if (current_char == '\0')
     {
-        production_string = NIL;
         current_char = EOF;
         return;
     }
@@ -282,13 +278,34 @@ void Lexer::lex_less () {
   determine_type_of_constituent_string();
 
 }
-
+/**
+ * Lexes a section of input beginning with a period (".").
+ * Sometimes it is ambiguous whether a string is a floating
+ * point value or a dot followed by a test:
+ * ^number.1 or ^<number>.1 each have a WME named "1", but
+ * ^number .1 and ^number {.1 .2} have floating point values
+ *
+ * This ambiguity is resolved by looking at the previous character
+ * and lexeme. After a space, ".#" may be lexed as a single number
+ * (FLOAT_CONSTANT_LEXEME). Directly after a variable or
+ * string constant with no intervening space, "." is interpreted
+ * as PERIOD_LEXEME and trailing numbers are lexed separately.
+ */
 void Lexer::lex_period () {
+  // Disambiguate floating point numbers from WME names:
+  bool float_disallowed = !isspace(prev_char) &&
+    (current_lexeme.type == STR_CONSTANT_LEXEME ||
+      current_lexeme.type == VARIABLE_LEXEME);
+
   store_and_advance();
-  /* --- if we stopped at '.', it might be a floating-point number, so be
-     careful to check for this case --- */
-  if (isdigit(current_char)) read_rest_of_floating_point_number();
-  if (current_lexeme.length()==1) { current_lexeme.type = PERIOD_LEXEME; return; }
+
+  if (!float_disallowed && isdigit(current_char)) {
+    read_rest_of_floating_point_number();
+  }
+  if (current_lexeme.length()==1) {
+    current_lexeme.type = PERIOD_LEXEME;
+    return;
+  }
   determine_type_of_constituent_string();
 }
 

@@ -149,20 +149,24 @@ namespace soar
           size_t length_of_s,
           bool *possible_id,
           bool *possible_var,
-          bool *possible_sc, //sym constant
-          bool *possible_ic, //int constant
-          bool *possible_fc, //float constant
+          bool *possible_sc,
+          bool *possible_ic,
+          bool *possible_fc,
           bool *rereadable);
 
         /**
-         * The last character read from the input string
+         * The last character read from the input string.
          */
-        int                 current_char;     // holds current input character
+        int current_char;
         /**
          * The last lexeme read from the input string (set by get_lexeme()).
          */
-        Lexeme current_lexeme;   // holds current lexeme
+        Lexeme current_lexeme;
     private:
+        /**
+         * The second-to-last character read from the input string.
+         */
+        int                 prev_char;
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;
@@ -183,6 +187,13 @@ namespace soar
         //initializes all lexing structures once at startup
         static bool init ();
 
+        /**
+         * Get the next character from the current input file
+         * and put it into the member variable current_char.
+         * Set current_char to EOF if the input string is null
+         * or '\0' is found. The old value of current_char is
+         * stored in prev_char.
+         */
         void get_next_char ();
         void consume_whitespace_and_comments();
 
