@@ -508,6 +508,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
         ground = static_cast<condition_struct*>(c->first);
         free_cons(thisAgent, c);
         /* --- make the instantiated condition --- */
+	if(ground->bt.wme_->id->id->smem_lti == NIL){
         allocate_with_pool(thisAgent, &thisAgent->chunk_cond_pool, &cc);
         cc->cond = ground;
         cc->instantiated_cond = copy_condition(thisAgent, cc->cond);
@@ -531,6 +532,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
         prev_cc = cc;
         /* --- add this in to the TC --- */
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
+	}
     }
     
     /* --- scan through negated conditions and check which ones are connected
@@ -1112,6 +1114,17 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
     {
         return false;
     }
+
+	/* if a result is created in a state higher than the immediate		
+	   superstate, don't make chunks for intermediate justifications.		
+	*/		
+	for (p=inst->preferences_generated; p; p=p->inst_next)		
+	  {		
+	    if (p->id->id->level < inst->match_goal_level-1)		
+	      {		
+		return false;		
+	      }		
+	  }
     
     return true;
 }
