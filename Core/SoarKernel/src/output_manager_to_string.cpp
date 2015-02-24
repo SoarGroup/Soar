@@ -79,6 +79,7 @@ char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_siz
     while (*ch) ch++;
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
+        /* MToDo | Remove this.  Just for debugging a particular agent */
         if (!strcmp(w->value->to_string(), "block"))
         {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
