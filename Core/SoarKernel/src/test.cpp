@@ -1280,14 +1280,6 @@ void add_unification_constraint(agent* thisAgent, test* t, test t_add, uint64_t 
     dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
 }
 
-void add_unification_constraint_for_ground_collision(agent* thisAgent, test* t, test t_add, uint64_t gid)
-{
-    test new_test = copy_test(thisAgent, t_add);
-    new_test->identity->grounding_id = gid;
-    add_test(thisAgent, t, new_test);
-    dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
-}
-
 inline void add_identity_and_unifications_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
