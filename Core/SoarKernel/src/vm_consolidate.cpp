@@ -118,7 +118,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
-            dprint_noprefix(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %y = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
+            dprint(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %y = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
             iter->second = survivorSymTest->identity->grounding_id;
         }
     }
@@ -127,7 +127,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 // Requires:  Two equality tests
 void Variablization_Manager::set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num)
 {
-    dprint_noprefix(DT_FIX_CONDITIONS, "Storing substitution %y(g%u)->%y(g%u) (tc_num %u)...\n",
+    dprint(DT_FIX_CONDITIONS, "Storing substitution %y(g%u)->%y(g%u) (tc_num %u)...\n",
                     sacrificeSymTest->data.referent, sacrificeSymTest->identity->grounding_id,
                     survivorSymTest->data.referent, survivorSymTest->identity->grounding_id,
                     tc_num);
@@ -138,7 +138,7 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
     test existing_survivor = get_substitution(survivorSymTest->data.referent);
     if (existing_survivor)
     {
-        dprint_noprefix(DT_FIX_CONDITIONS, "...found existing survivor %y.  Fixing ovar table and deleting entry.\n", existing_survivor->data.referent);
+        dprint(DT_FIX_CONDITIONS, "...found existing survivor %y.  Fixing ovar table and deleting entry.\n", existing_survivor->data.referent);
         update_ovar_table_for_sub(existing_survivor, survivorSymTest);
         existing_survivor->data.referent->tc_num = tc_num;
         substitution_map->erase(survivorSymTest->data.referent);
@@ -149,17 +149,17 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
     sacrificeSymTest->data.referent->tc_num = tc_num;
     survivorSymTest->data.referent->tc_num = 0;
 
-    dprint_noprefix(DT_FIX_CONDITIONS, "...fixing ovar table...\n");
+    dprint(DT_FIX_CONDITIONS, "...fixing ovar table...\n");
     update_ovar_table_for_sub(sacrificeSymTest, survivorSymTest);
 
     // Scan substitution map looking for values that match sacrifice and redirect to survivor
-    dprint_noprefix(DT_FIX_CONDITIONS, "...updating existing substitutions...\n");
+    dprint(DT_FIX_CONDITIONS, "...updating existing substitutions...\n");
     std::map< Symbol*, test >::iterator iter;
     for (iter = substitution_map->begin(); iter != substitution_map->end(); ++iter)
     {
         if (iter->second->data.referent == sacrificeSymTest->data.referent)
         {
-            dprint_noprefix(DT_FIX_CONDITIONS, "...found substitution that needs updated: %y = %y (g%u).\n", iter->first, iter->second->data.referent, survivorSymTest->identity->grounding_id);
+            dprint(DT_FIX_CONDITIONS, "...found substitution that needs updated: %y = %y (g%u).\n", iter->first, iter->second->data.referent, survivorSymTest->identity->grounding_id);
             iter->second = survivorSymTest;
         }
     }
@@ -210,8 +210,8 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
 
                     }
 //                    dprint(DT_FIX_CONDITIONS, "Surviving test = %y, sacrificed test = %y.\n", survivor->data.referent, sacrifice->data.referent);
-                    dprint(DT_FIX_CONDITIONS, "Surviving test = %t", survivor);
-                    dprint(DT_FIX_CONDITIONS, ", sacrificed test = %t\n", sacrifice);
+                    dprint(DT_FIX_CONDITIONS, "Surviving test = %t [%g %y]", survivor, survivor, survivor->identity->original_var);
+                    dprint_noprefix(DT_FIX_CONDITIONS, ", sacrificed test = %t [%g %y]\n", sacrifice, sacrifice, sacrifice->identity->original_var);
                     // MToDo | If there's a problem, make sure we have g_id in this variablized test.
                     set_substitution(sacrifice, survivor, tc_num);
                     c = delete_test_from_conjunct(thisAgent, t, c);

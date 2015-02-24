@@ -350,7 +350,10 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
     va_start(args, format);
     vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
     va_end(args);
-    printa(m_defaultAgent, buf);
+    if (strlen(buf) > s)
+    {
+        printa(m_defaultAgent, buf);
+    }
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintAfter))
         debug_print(mode, "=========================================================\n");
 }
