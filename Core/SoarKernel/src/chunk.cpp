@@ -433,7 +433,10 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
+        /* -- Removed stripping of relational constraints b/c it was losing them in
+         *    non-chunky problem spaces but was needed later for a chunky one. --  */
+//        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
+        c_inst = copy_condition(thisAgent, ground);
         c_vrblz = copy_condition(thisAgent, c_inst);
 
         /*-- Store a link from the variablized condition to the instantiated
@@ -1161,7 +1164,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
         thisAgent->variablizationManager->variablize_relational_constraints();
-
         thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
