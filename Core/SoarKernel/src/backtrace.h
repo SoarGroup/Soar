@@ -47,7 +47,10 @@ extern void backtrace_through_instantiation(agent* thisAgent,
         goal_stack_level grounds_level,
         condition* trace_cond,
         bool* reliable,
-        int indent);
+        int indent,
+        test parent_cond_id,
+        test parent_cond_attr,
+        test parent_cond_value);
 
 // To print out the message similar to: a chunk was not created because...
 void report_local_negation(agent* thisAgent, condition* c);

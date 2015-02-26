@@ -171,7 +171,10 @@ void backtrace_through_instantiation(agent* thisAgent,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
                                      bool* reliable,
-                                     int indent)
+                                     int indent,
+                                     Symbol* parent_cond_id,
+                                     Symbol* parent_cond_attr,
+                                     Symbol* parent_cond_value)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */
@@ -267,6 +270,15 @@ void backtrace_through_instantiation(agent* thisAgent,
     tc2 = get_new_tc_number(thisAgent);
     need_another_pass = false;
     Symbol* thisID, *value;
+    Symbol* old_id_ovar = NULL;
+    Symbol* old_cond_attr_ovar = NULL;
+    Symbol* old_cond_value_ovar = NULL;
+    if (trace_cond)
+    {
+        Symbol* old_id_ovar = trace_cond->data.tests.id_test->identity->original_var;
+        Symbol* old_cond_attr_ovar = trace_cond->data.tests.attr_test->identity->original_var;
+        Symbol* old_cond_value_ovar = trace_cond->data.tests.value_test->identity->original_var;
+    }
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
@@ -514,10 +526,15 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
+            assert(cond->data.tests.id_test->type == EQUALITY_TEST);
+            assert(cond->data.tests.attr_test->type == EQUALITY_TEST);
+            assert(cond->data.tests.value_test->type == EQUALITY_TEST);
 
-            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
+//            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
+            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
+                bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
 
-            /* MMA 8-2012: Check for any CDPS prefs and backtrace through them */
+            /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
             {
                 for (CDPS = cond->bt.CDPS; CDPS != NIL; CDPS = CDPS->rest)
@@ -529,7 +546,8 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         xml_begin_tag(thisAgent, kTagCDPSPreference);
                         print_preference(thisAgent, p);
                     }
-                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6);
+                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
+                        bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -537,7 +555,6 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                     }
                 }
             }
-            /* MMA 8-2012 end */
 
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -768,7 +785,8 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
-        backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0);
+        backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0,
+            bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
 
         /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
@@ -782,7 +800,8 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     xml_begin_tag(thisAgent, kTagCDPSPreference);
                     print_preference(thisAgent, p);
                 }
-                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6);
+                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
+                    bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

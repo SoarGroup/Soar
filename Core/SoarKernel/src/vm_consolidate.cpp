@@ -68,6 +68,13 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 symbol_add_ref(thisAgent, found_test->data.referent);
                 t->data.referent = found_test->data.referent;
                 t->identity->grounding_id = found_test->identity->grounding_id;
+                dprint(DT_FIX_CONDITIONS, "          Copying original vars:: %y %y\n", t->identity->original_var, found_test->identity->original_var);
+                if (t->identity->original_var)
+                {
+                    symbol_remove_ref(thisAgent, t->identity->original_var);
+                }
+                symbol_add_ref(thisAgent, found_test->identity->original_var);
+                t->identity->original_var = found_test->identity->original_var;
             }
             break;
     }
