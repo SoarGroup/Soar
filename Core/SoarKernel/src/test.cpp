@@ -27,7 +27,7 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field);
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t i_id);
 
 /* =================================================================
 
@@ -329,7 +329,7 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
  *           tests for the same symbol, one with and one without the original test,
  *           which caused problems with other aspects of chunking. -- */
 
-void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test)
+void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t i_id)
 {
     // Handle case where relational test is equality test
     if ((*dest_test_address) && new_test && (new_test->type == EQUALITY_TEST))
@@ -352,7 +352,10 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                     if (new_test->original_test->data.referent->is_variable())
                     {
                         destination->identity->original_var =  new_test->original_test->data.referent;
-                        destination->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                        if (i_id)
+                        {
+                            destination->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                        }
 //                        if (destination->identity->original_var)
 //                        {
                             symbol_add_ref(thisAgent, destination->identity->original_var);
@@ -396,7 +399,10 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                             if (new_test->original_test->data.referent->is_variable())
                             {
                                 check_test->identity->original_var =  new_test->original_test->data.referent;
-                                check_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                                if (i_id)
+                                {
+                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, i_id);
+                                }
 //                                if (check_test->identity->original_var)
 //                                {
                                     symbol_add_ref(thisAgent, check_test->identity->original_var);
@@ -1520,6 +1526,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                                         condition* cond,
                                         wme* w,
                                         node_varnames* nvn,
+                                        uint64_t i_id,
                                         AddAdditionalTestsMode additional_tests)
 {
     Symbol* referent = NULL, *original_referent = NULL;
@@ -1761,7 +1768,10 @@ void add_additional_tests_and_originals(agent* thisAgent,
                             {
                                 chunk_test->identity->original_var =  original_referent;
                                 symbol_add_ref(thisAgent, original_referent);
-                                chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(original_referent, thisAgent->newly_created_instantiations->i_id);
+                                if (i_id)
+                                {
+                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(original_referent, i_id);
+                                }
                             }
                         }
                     }
@@ -1771,19 +1781,19 @@ void add_additional_tests_and_originals(agent* thisAgent,
                 {
                     if (rt->right_field_num == 0)
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test);
+                        add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, i_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to id resulting in: %t\n", cond->data.tests.id_test);
                     }
                     else if (rt->right_field_num == 1)
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test);
+                        add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, i_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to attr resulting in: %t\n", cond->data.tests.attr_test);
                     }
                     else
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test);
+                        add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, i_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to value resulting in: %t\n", cond->data.tests.value_test);
                     }
@@ -1825,9 +1835,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): (%t ^%t %t)\n",
         cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
 
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, i_id);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, i_id);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, i_id);
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
@@ -2149,7 +2159,7 @@ void cache_eq_test(test t)
     }
 }
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field)
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t i_id)
 {
     cons* c;
     test orig_test;
@@ -2171,7 +2181,10 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
 //                       (w ? "WME" : "No WME"));
                 t->identity->original_var = orig_test->data.referent;
                 symbol_add_ref(thisAgent, t->identity->original_var);
-                t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(orig_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                if (i_id)
+                {
+                    t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(orig_test->data.referent, i_id);
+                }
             }
         }
         else
@@ -2195,7 +2208,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field);
+            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, i_id);
         }
     }
 }

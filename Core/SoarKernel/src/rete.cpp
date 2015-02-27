@@ -4373,6 +4373,7 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
+                             uint64_t i_id,
                              AddAdditionalTestsMode additional_tests)
 {
     condition* cond;
@@ -4395,6 +4396,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                 tok ? tok->w : NIL,
                                 conds_for_cutoff_and_up,
                                 dest_top_cond, &(cond->prev),
+                                i_id,
                                 additional_tests);
         cond->prev->next = cond;
     }
@@ -4413,6 +4415,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                 cond->prev,
                                 &(cond->data.ncc.top),
                                 &(cond->data.ncc.bottom),
+                                i_id,
                                 additional_tests);
         cond->data.ncc.top->prev = NIL;
     }
@@ -4443,7 +4446,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, i_id, additional_tests);
             }
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4503,7 +4506,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, additional_tests);
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, i_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
@@ -4563,6 +4566,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                                   condition** dest_top_cond,
                                   condition** dest_bottom_cond,
                                   action** dest_rhs,
+                                  uint64_t i_id,
                                   AddAdditionalTestsMode additional_tests)
 {
     cons* c;
@@ -4587,6 +4591,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                             tok, w, NIL,
                             dest_top_cond,
                             dest_bottom_cond,
+                            i_id,
                             additional_tests);
 
     if (additional_tests != DONT_ADD_TESTS)

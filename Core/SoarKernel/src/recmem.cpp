@@ -816,6 +816,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
                                  &(inst->top_of_instantiated_conditions),
                                  &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+                                 inst->i_id,
                                  ((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
 
     /* --- record the level of each of the wmes that was positively tested --- */
