@@ -276,9 +276,12 @@ void backtrace_through_instantiation(agent* thisAgent,
     Symbol* old_cond_value_ovar = NULL;
     if (trace_cond)
     {
-        Symbol* old_id_ovar = trace_cond->data.tests.id_test->identity->original_var;
-        Symbol* old_cond_attr_ovar = trace_cond->data.tests.attr_test->identity->original_var;
-        Symbol* old_cond_value_ovar = trace_cond->data.tests.value_test->identity->original_var;
+        assert(trace_cond->data.tests.id_test);
+        assert(trace_cond->data.tests.attr_test);
+        assert(trace_cond->data.tests.value_test);
+        Symbol* old_id_ovar = equality_test_found_in_test(trace_cond->data.tests.id_test)->identity->original_var;
+        Symbol* old_cond_attr_ovar = equality_test_found_in_test(trace_cond->data.tests.attr_test)->identity->original_var;
+        Symbol* old_cond_value_ovar = equality_test_found_in_test(trace_cond->data.tests.value_test)->identity->original_var;
     }
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
@@ -527,10 +530,6 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-            assert(cond->data.tests.id_test->type == EQUALITY_TEST);
-            assert(cond->data.tests.attr_test->type == EQUALITY_TEST);
-            assert(cond->data.tests.value_test->type == EQUALITY_TEST);
-
 //            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
                 bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);

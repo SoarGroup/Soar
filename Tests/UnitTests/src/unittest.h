@@ -20,7 +20,7 @@
 #define DO_MULTIAGENT_TESTS
 #define DO_SANITY_TESTS
 #define DO_TOKENIZER_TESTS
-//#define SKIP_SLOW_TESTS
+#define SKIP_SLOW_TESTS
 
 #define CPPUNIT_STR_STR(x) #x
 #define CPPUNIT_STR(x) CPPUNIT_STR_STR(x)

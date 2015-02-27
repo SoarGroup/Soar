@@ -34,7 +34,7 @@ alias sms smem -S
 # Soar Settings #
 #################
 
-max-goal-depth 233
+max-goal-depth 23
 default-wme-depth 2
 
 ###################
