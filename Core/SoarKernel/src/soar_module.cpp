@@ -30,6 +30,7 @@
 #include "wma.h"
 #include "test.h"
 #include "wmem.h"
+#include "variablization_manager.h"
 #include "debug.h"
 
 //wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
@@ -96,6 +97,7 @@ namespace soar_module
         inst->reliable = true;
         inst->backtrace_number = 0;
         inst->in_ms = false;
+        inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
         inst->GDS_evaluated_already = false;
         inst->top_of_instantiated_conditions = NULL;
         inst->bottom_of_instantiated_conditions = NULL;

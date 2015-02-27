@@ -1239,7 +1239,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 
         chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
-
+        chunk_inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */

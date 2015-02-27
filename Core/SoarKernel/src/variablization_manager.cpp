@@ -30,7 +30,13 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     dnvl_set = new std::set< Symbol* >;
 
+    ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
+    o_id_substitution_map = new std::map< uint64_t, uint64_t >();
+    o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
+
     ground_id_counter = 0;
+    inst_id_counter = 0;
+    ovar_id_counter = 0;
 }
 
 Variablization_Manager::~Variablization_Manager()
@@ -45,6 +51,10 @@ Variablization_Manager::~Variablization_Manager()
     delete cond_merge_map;
     delete substitution_map;
     delete dnvl_set;
+    delete ovar_to_o_id_map;
+    delete o_id_substitution_map;
+    delete o_id_to_ovar_debug_map;
+
 }
 
 void Variablization_Manager::reinit()
@@ -52,6 +62,8 @@ void Variablization_Manager::reinit()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
     ground_id_counter = 0;
+    inst_id_counter = 0;
+    ovar_id_counter = 0;
 }
 
 /* ============================================================================

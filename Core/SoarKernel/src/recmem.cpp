@@ -789,6 +789,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
+    inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
 
     /*  We want to initialize the GDS_evaluated_already flag
      *  when a new instantiation is created.

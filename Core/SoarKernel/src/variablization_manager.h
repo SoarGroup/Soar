@@ -51,12 +51,12 @@ class Variablization_Manager
     public:
 
         uint64_t get_new_ground_id() { return (++ground_id_counter); };
+        uint64_t get_new_inst_id() { return (++ground_id_counter); };
+        uint64_t get_new_ovar_id() { return (++ground_id_counter); };
 
+        void clear_variablization_tables();
         void clear_ovar_gid_table();
         void clear_cached_constraints();
-        void clear_variablization_tables();
-        void clear_merge_map();
-        void clear_substitution_map();
         void clear_dnvl();
         void clear_data();
         void reinit();
@@ -137,6 +137,12 @@ class Variablization_Manager
         bool is_in_dnvl(Symbol* sym);
         void add_ltis_to_dnvl_for_test(test t);
 
+        void clear_merge_map();
+        void clear_substitution_map();
+        void clear_ovar_to_o_id_map();
+        void clear_o_id_substitution_map();
+        void clear_o_id_to_ovar_debug_map();
+
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
@@ -158,9 +164,17 @@ class Variablization_Manager
 
         std::set< Symbol* >* dnvl_set;
 
+        /* This is a map of original variable symbols to its map of instantiations to o_ids */
+        std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
+        std::map< uint64_t, uint64_t >*                         o_id_substitution_map;
+        std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
+
         /* -- A counter for the next grounding id to assign. 0 is the default
          *    value and not considered a valid grounding id. -- */
         uint64_t ground_id_counter;
+        uint64_t inst_id_counter;
+        uint64_t ovar_id_counter;
+
 };
 
 #endif /* VARIABLIZATION_MANAGER_H_ */

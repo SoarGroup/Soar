@@ -732,15 +732,15 @@ char* Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* i
 
     if (inst->prod)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sMatched %y ", m_pre_string, inst->prod->name);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sInstantiation (i%u) matched %y ", m_pre_string, inst->i_id, inst->prod->name);
         while (*ch) ch++;
     }
     else
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sMatched nothing (dummy production?) \n", m_pre_string);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sInstantiation #%u matched nothing (dummy production?) ", m_pre_string, inst->i_id);
         while (*ch) ch++;
     }
-    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "in state %y (level %i)\n", inst->match_goal, inst->match_goal_level);
+    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "in state %y (level %d)\n", inst->match_goal, inst->match_goal_level);
     while (*ch) ch++;
     cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, ch, dest_size - (ch - dest));
 
@@ -775,7 +775,8 @@ void Output_Manager::print_all_inst(TraceMode mode)
 
     for (int y = 0; y < instantiation_list.size(); y++)
     {
-        print_sf("========================================= Instantiation %d\n", y);
+        print_sf("- Instantiation %d:\n", y);
+        print_sf("%7", instantiation_list[y]);
 //        instantiation_to_string(mode, instantiation_list[y]);
     }
 }
