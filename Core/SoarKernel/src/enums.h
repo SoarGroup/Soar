@@ -57,6 +57,9 @@ enum TraceMode
     DT_MERGE,
     DT_FIX_CONDITIONS,
     DT_EPMEM_CMD,
+    DT_LITERALIZATION,
+    DT_DNVL,
+    DT_OVAR_PROP,
     num_trace_modes
 };
 

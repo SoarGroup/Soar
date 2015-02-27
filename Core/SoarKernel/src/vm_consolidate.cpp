@@ -75,6 +75,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 }
                 symbol_add_ref(thisAgent, found_test->identity->original_var);
                 t->identity->original_var = found_test->identity->original_var;
+                t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(found_test->identity->original_var, 0);
             }
             break;
     }

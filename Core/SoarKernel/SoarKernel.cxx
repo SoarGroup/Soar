@@ -49,6 +49,7 @@
 #include "src/vm_consolidate.cpp"
 #include "src/vm_map.cpp"
 #include "src/vm_merge.cpp"
+#include "src/vm_ovar_prop.cpp"
 #include "src/vm_print.cpp"
 #include "src/wma.cpp"
 #include "src/wmem.cpp"

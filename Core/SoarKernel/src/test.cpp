@@ -90,6 +90,7 @@ test copy_test(agent* thisAgent, test t)
         new_ct->original_test = copy_test(thisAgent, t->original_test);
     }
     new_ct->identity->original_var = t->identity->original_var;
+    new_ct->identity->original_var_id = t->identity->original_var_id;
     if (new_ct->identity->original_var)
     {
         symbol_add_ref(thisAgent, t->identity->original_var);
@@ -351,11 +352,13 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                     if (new_test->original_test->data.referent->is_variable())
                     {
                         destination->identity->original_var =  new_test->original_test->data.referent;
-                        if (destination->identity->original_var)
-                        {
+                        destination->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+//                        if (destination->identity->original_var)
+//                        {
                             symbol_add_ref(thisAgent, destination->identity->original_var);
-                        }
+//                        }
                     }
+                    /* MToDo | Should this be deallocated? */
                     new_test->original_test = NIL;
                     dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %y\n",
                         destination, destination->identity->original_var);
@@ -393,10 +396,11 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                             if (new_test->original_test->data.referent->is_variable())
                             {
                                 check_test->identity->original_var =  new_test->original_test->data.referent;
-                                if (check_test->identity->original_var)
-                                {
+                                check_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+//                                if (check_test->identity->original_var)
+//                                {
                                     symbol_add_ref(thisAgent, check_test->identity->original_var);
-                                }
+//                                }
                             }
                             new_test->original_test = NIL;
                             dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %s\n", check_test, check_test->identity->original_var);
@@ -1757,6 +1761,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                             {
                                 chunk_test->identity->original_var =  original_referent;
                                 symbol_add_ref(thisAgent, original_referent);
+                                chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(original_referent, thisAgent->newly_created_instantiations->i_id);
                             }
                         }
                     }
@@ -2166,6 +2171,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
 //                       (w ? "WME" : "No WME"));
                 t->identity->original_var = orig_test->data.referent;
                 symbol_add_ref(thisAgent, t->identity->original_var);
+                t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(orig_test->data.referent, thisAgent->newly_created_instantiations->i_id);
             }
         }
         else

@@ -61,6 +61,9 @@
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_LITERALIZATION              true
+#define TRACE_Init_DT_DNVL                        true
+#define TRACE_Init_DT_OVAR_PROP                   true
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
@@ -125,6 +128,9 @@
 #define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_MERGE                       true
 #define TRACE_Init_DT_FIX_CONDITIONS              true
+#define TRACE_Init_DT_LITERALIZATION              true
+#define TRACE_Init_DT_DNVL                        true
+#define TRACE_Init_DT_OVAR_PROP                   true
 
 #define TRACE_Init_DT_EPMEM_CMD                   true
 
@@ -188,8 +194,11 @@
 #define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_MERGE                       true
 #define TRACE_Init_DT_FIX_CONDITIONS              true
+#define TRACE_Init_DT_LITERALIZATION              true
+#define TRACE_Init_DT_DNVL                        true
+#define TRACE_Init_DT_OVAR_PROP                   true
 
-#define TRACE_Init_DT_EPMEM_CMD                   false
+#define TRACE_Init_DT_EPMEM_CMD                   true
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -251,6 +260,9 @@
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_LITERALIZATION              false
+#define TRACE_Init_DT_DNVL                        false
+#define TRACE_Init_DT_OVAR_PROP                   false
 
 #define TRACE_Init_DT_EPMEM_CMD                   false
 
