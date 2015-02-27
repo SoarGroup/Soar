@@ -24,8 +24,12 @@ typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;
 typedef struct agent_struct agent;
+typedef struct test_struct test_info;
+typedef test_info* test;
+typedef struct symbol_struct Symbol;
 
 #define BUFFER_PROD_NAME_SIZE 256
+
 typedef struct backtrace_struct
 {
     int result;                    /* 1 when this is a result of the chunk */
@@ -48,9 +52,9 @@ extern void backtrace_through_instantiation(agent* thisAgent,
         condition* trace_cond,
         bool* reliable,
         int indent,
-        test parent_cond_id,
-        test parent_cond_attr,
-        test parent_cond_value);
+        Symbol* parent_cond_id,
+        Symbol* parent_cond_attr,
+        Symbol* parent_cond_value);
 
 // To print out the message similar to: a chunk was not created because...
 void report_local_negation(agent* thisAgent, condition* c);

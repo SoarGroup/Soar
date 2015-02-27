@@ -1066,7 +1066,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
+            pref->original_symbols.value, pref->original_symbols.attr, pref->original_symbols.value);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {

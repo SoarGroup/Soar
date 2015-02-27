@@ -183,7 +183,8 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-
+    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d with orig vars (%y ^%y %y) for condition:\n", grounds_level, parent_cond_id, parent_cond_attr, parent_cond_value);
+    dprint(DT_BACKTRACE, "%l\n", trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
 
