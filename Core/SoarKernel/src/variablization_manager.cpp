@@ -66,12 +66,6 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
-uint64_t Variablization_Manager::get_new_inst_id()
-{
-    dprint(DT_OVAR_PROP, "Increasing instantiation id counter.\n");
-    return (++inst_id_counter);
-};
-
 /* ============================================================================
  *            Variablization_Manager::variablize_lhs_symbol
  *

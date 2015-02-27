@@ -58,6 +58,7 @@ uint64_t Variablization_Manager::get_o_id(Symbol* orig_var, uint64_t inst_id)
     ++ovar_id_counter;
     (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
     symbol_add_ref(thisAgent, orig_var);
+    (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
     dprint(DT_OVAR_PROP, "...Not found.  Stored and returning new o_id %u.\n", ovar_id_counter);
     return ovar_id_counter;
 
