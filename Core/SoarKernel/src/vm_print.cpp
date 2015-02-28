@@ -13,6 +13,13 @@
 #include "print.h"
 #include "debug.h"
 
+void Variablization_Manager::print_o_id_tables(TraceMode mode)
+{
+    print_ovar_to_o_id_map(mode);
+    print_o_id_substitution_map(mode);
+    print_o_id_to_ovar_debug_map(mode);
+
+}
 void Variablization_Manager::print_dnvl_set(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
@@ -54,6 +61,7 @@ void Variablization_Manager::print_substitution_map(TraceMode mode)
     dprint(mode, "------------------------------------\n");
 }
 
+
 void Variablization_Manager::print_merge_map(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
@@ -71,18 +79,91 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
 
     for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
     {
-        dprint(DT_MERGE, "%y conditions: \n", iter_id->first);
+        dprint(mode, "%y conditions: \n", iter_id->first);
         for (iter_attr = iter_id->second.begin(); iter_attr != iter_id->second.end(); ++iter_attr)
         {
             for (iter_value = iter_attr->second.begin(); iter_value != iter_attr->second.end(); ++iter_value)
             {
-                dprint(DT_MERGE, "   %l\n", iter_value->second);
+                dprint(mode, "   %l\n", iter_value->second);
             }
         }
     }
 
     dprint(mode, "------------------------------------\n");
 }
+
+void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
+{
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "        ovar_to_o_id_map Map\n");
+    dprint(mode, "------------------------------------\n");
+
+    if (ovar_to_o_id_map->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+
+    std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
+    std::map< uint64_t, uint64_t >::iterator iter_inst;
+
+    for (iter_sym = ovar_to_o_id_map->begin(); iter_sym != ovar_to_o_id_map->end(); ++iter_sym)
+    {
+        dprint(mode, "o_id's for %y: \n", iter_sym->first);
+        for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
+        {
+                dprint(mode, "   i%u = o%u(%y)\n", iter_inst->first, iter_inst->second,
+                    thisAgent->variablizationManager->get_ovar_for_o_id(iter_inst->second));
+        }
+    }
+
+    dprint(mode, "------------------------------------\n");
+}
+
+
+void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
+{
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "     o_id_substitution_map Map\n");
+    dprint(mode, "------------------------------------\n");
+
+    if (o_id_substitution_map->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+
+    std::map< uint64_t, uint64_t >::iterator iter;
+
+    for (iter = o_id_substitution_map->begin(); iter != o_id_substitution_map->end(); ++iter)
+    {
+        dprint(DT_MERGE, "   o%u(%y) = o%u(%y)\n",
+            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
+            iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
+    }
+
+    dprint(mode, "------------------------------------\n");
+}
+
+void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
+{
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "     o_id_to_ovar_debug_map Map\n");
+    dprint(mode, "------------------------------------\n");
+
+    if (o_id_to_ovar_debug_map->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+
+    std::map< uint64_t, Symbol* >::iterator iter;
+
+    for (iter = o_id_to_ovar_debug_map->begin(); iter != o_id_to_ovar_debug_map->end(); ++iter)
+    {
+        dprint(mode, "   o%u = %y\n",  iter->first, iter->second);
+    }
+
+    dprint(mode, "------------------------------------\n");
+}
+
 void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bool printHeader)
 {
     if (printHeader)
@@ -206,7 +287,8 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     dprint(mode, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_tables()
+void Variablization_Manager::print_tables(TraceMode mode)
 {
-    print_variablization_tables(DT_VARIABLIZATION_MANAGER);
+    print_variablization_tables(mode);
+    print_o_id_tables(mode);
 }

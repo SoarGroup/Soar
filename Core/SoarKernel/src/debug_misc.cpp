@@ -224,7 +224,7 @@ void debug_test(int type)
             dprint_identifiers(DT_DEBUG);
             break;
         case 2:
-            debug_agent->variablizationManager->print_tables();
+            debug_agent->variablizationManager->print_o_id_tables(DT_DEBUG);
             break;
         case 3:
         {

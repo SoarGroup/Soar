@@ -84,14 +84,18 @@ class Variablization_Manager
         action* variablize_results(preference* result, bool variablize);
         action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
-        void print_OSD_table();
+        void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
-        void print_tables();
+        void print_tables(TraceMode mode);
+        void print_o_id_tables(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_substitution_map(TraceMode mode);
         void print_ovar_gid_propogation_table(TraceMode mode, bool printHeader = false);
         void print_dnvl_set(TraceMode mode);
+        void print_ovar_to_o_id_map(TraceMode mode);
+        void print_o_id_substitution_map(TraceMode mode);
+        void print_o_id_to_ovar_debug_map(TraceMode mode);
 
         Variablization_Manager(agent* myAgent);
         ~Variablization_Manager();
