@@ -52,6 +52,7 @@
 #include "svs_interface.h"
 #endif
 #include "test.h"
+#include "variablization_manager.h"
 #include "debug.h"
 
 #include "assert.h"
@@ -2141,6 +2142,7 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->match_goal_level = goal->id->level;
     inst->reliable = true;
     inst->backtrace_number = 0;
+    inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
     inst->in_ms = false;
     /* --- make the fake condition --- */
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
