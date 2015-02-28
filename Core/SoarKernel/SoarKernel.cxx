@@ -47,6 +47,7 @@
 #include "src/variablization_manager.cpp"
 #include "src/vm_constraints.cpp"
 #include "src/vm_consolidate.cpp"
+#include "src/vm_literalization.cpp"
 #include "src/vm_map.cpp"
 #include "src/vm_merge.cpp"
 #include "src/vm_ovar_prop.cpp"
