@@ -64,6 +64,7 @@ class Variablization_Manager
         uint64_t add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id);
         uint64_t get_gid_for_orig_var(Symbol* index_sym);
         uint64_t get_o_id(Symbol* orig_var, uint64_t inst_id);
+        Symbol * get_ovar_for_o_id(uint64_t o_id);
 
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);

@@ -25,6 +25,7 @@
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
+#include "variablization_manager.h"
 #include "test.h"
 
 char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity)
@@ -277,7 +278,9 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case LESS_OR_EQUAL_TEST:
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u", t->identity->grounding_id);
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u/o%u/%y", t->identity->grounding_id,
+                t->identity->original_var_id,
+                thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id));
             while (*ch) ch++;
             break;
         case CONJUNCTIVE_TEST:
@@ -295,7 +298,7 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
-            strcpy(ch, "g0");
+            strcpy(ch, "g0/o0/#");
             ch += 2;
             break;
         default:
@@ -322,11 +325,15 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             while (*ch) ch++;
         }
         if (m_print_original) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)",
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)/(%y %s^%y %y)",
                 (m_print_actual) ? ", " : NULL,
                 cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-                cond->data.tests.attr_test, cond->data.tests.value_test);
+                cond->data.tests.attr_test, cond->data.tests.value_test,
+                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->original_var_id),
+                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.attr_test->identity->original_var_id),
+                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.value_test->identity->original_var_id));
             while (*ch) ch++;
         }
         if (m_print_identity) {

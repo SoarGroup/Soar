@@ -232,11 +232,12 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
 void Variablization_Manager::clear_dnvl()
 {
-    dnvl_set->clear();
+    dprint(DT_DNVL, "Clearing LTI DNVL set.\n");
+     dnvl_set->clear();
 }
 void Variablization_Manager::add_dnvl(Symbol* sym)
 {
-    dprint(DT_IDENTITY_PROP, "...adding symbol %y.\n", sym);
+    dprint(DT_DNVL, "...adding symbol %y to DNVL set.\n", sym);
     dnvl_set->insert(sym);
 }
 
@@ -244,5 +245,7 @@ bool Variablization_Manager::is_in_dnvl(Symbol* sym)
 {
     std::set< Symbol* >::iterator iter;
     iter = dnvl_set->find(sym);
+    dprint(DT_DNVL, "Looking for symbol %y in DNVL set...%s.\n", sym, (iter != dnvl_set->end()) ? "found" : "not found");
+
     return (iter != dnvl_set->end());
 }
