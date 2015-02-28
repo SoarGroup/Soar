@@ -23,9 +23,9 @@ void Variablization_Manager::variablize_relational_constraints()
     std::map< Symbol*, ::list* >* variablized_sti_constraints = new std::map< Symbol*, ::list* >;
     std::map< uint64_t, ::list* >* variablized_constant_constraints = new std::map< uint64_t, ::list* >;
 
-    dprint_header(DT_CONSTRAINTS, PrintBefore, "Variablizing relational constraints.\n");
-    dprint(DT_CONSTRAINTS, "(1) Variablizing relational constraints for short-term identifiers.\n");
-    dprint(DT_CONSTRAINTS, "%8"); // Prints all wmes with identities
+    dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Variablizing relational constraints.\n");
+    dprint(DT_LHS_VARIABLIZATION, "(1) Variablizing relational constraints for short-term identifiers.\n");
+    dprint(DT_LHS_VARIABLIZATION, "%8"); // Prints all wmes with identities
 
 
     /* -- Replace sti constraints with variablized version and delete any ungrounded tests and
@@ -34,12 +34,12 @@ void Variablization_Manager::variablize_relational_constraints()
     for (std::map< Symbol*, ::list* >::iterator it = sti_constraints->begin(); it != sti_constraints->end(); ++it)
     {
 
-        dprint(DT_CONSTRAINTS, "Looking for variablization for equality symbol %y.\n", it->first);
+        dprint(DT_LHS_VARIABLIZATION, "Looking for variablization for equality symbol %y.\n", it->first);
         found_variablization = get_variablization(it->first);
 
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...found grounding.  Variablizing constraint list.\n");
+            dprint(DT_LHS_VARIABLIZATION, "...found grounding.  Variablizing constraint list.\n");
 
             variablize_cached_constraints_for_symbol(&(it->second));
 
@@ -47,18 +47,18 @@ void Variablization_Manager::variablize_relational_constraints()
              *    list, using the variablized equality symbol -- */
             if (it->second)
             {
-                dprint(DT_CONSTRAINTS, "...variablized constraints exist.  Copying to new constraint list.\n");
+                dprint(DT_LHS_VARIABLIZATION, "...variablized constraints exist.  Copying to new constraint list.\n");
                 (*variablized_sti_constraints)[found_variablization->variablized_symbol] = it->second;
             }
         }
         else
         {
             /* -- Delete entire constraint list for ungrounded identifier */
-            dprint(DT_CONSTRAINTS, "...not variablizing constraint list b/c equality symbol not in chunk.  Deallocating tests.\n");
+            dprint(DT_LHS_VARIABLIZATION, "...not variablizing constraint list b/c equality symbol not in chunk.  Deallocating tests.\n");
             c = it->second;
             while (c)
             {
-                dprint(DT_CONSTRAINTS, "...deallocating test %t\n", static_cast<test>(c->first));
+                dprint(DT_LHS_VARIABLIZATION, "...deallocating test %t\n", static_cast<test>(c->first));
                 deallocate_test(thisAgent, static_cast<test>(c->first));
                 c = c->rest;
             }
@@ -72,16 +72,16 @@ void Variablization_Manager::variablize_relational_constraints()
 
     /* -- Replace constant constraints with variablized version.  Delete only constraints whose symbol key
      *    has not been variablized during the equality variablization pass. -- */
-    dprint(DT_CONSTRAINTS, "(2) Variablizing relational constraints for constant symbols.\n");
+    dprint(DT_LHS_VARIABLIZATION, "(2) Variablizing relational constraints for constant symbols.\n");
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
 
-        dprint(DT_CONSTRAINTS, "Looking for variablization for equality g_id %u.\n", it->first);
+        dprint(DT_LHS_VARIABLIZATION, "Looking for variablization for equality g_id %u.\n", it->first);
         found_variablization = get_variablization(it->first);
 
         if (found_variablization)
         {
-            dprint(DT_CONSTRAINTS, "...found grounding for grounding id %u.  Variablizing constraint list.\n", it->first);
+            dprint(DT_LHS_VARIABLIZATION, "...found grounding for grounding id %u.  Variablizing constraint list.\n", it->first);
             variablize_cached_constraints_for_symbol(&(it->second));
 
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
@@ -90,18 +90,18 @@ void Variablization_Manager::variablize_relational_constraints()
             assert(it->second);
             if (it->second)
             {
-                dprint(DT_CONSTRAINTS, "...variablized constraints exist.  Copying to new constraint list.\n");
+                dprint(DT_LHS_VARIABLIZATION, "...variablized constraints exist.  Copying to new constraint list.\n");
                 (*variablized_constant_constraints)[found_variablization->grounding_id] = it->second;
             }
         }
         else
         {
             /* -- Delete entire constraint list for ungrounded identifier -- */
-            dprint(DT_CONSTRAINTS, "...not variablizing constraint list b/c equality g_id not in chunk.  Deallocating tests.\n");
+            dprint(DT_LHS_VARIABLIZATION, "...not variablizing constraint list b/c equality g_id not in chunk.  Deallocating tests.\n");
             c = it->second;
             while (c)
             {
-                dprint(DT_CONSTRAINTS, "...deallocating test %t\n", static_cast<test>(c->first));
+                dprint(DT_LHS_VARIABLIZATION, "...deallocating test %t\n", static_cast<test>(c->first));
                 deallocate_test(thisAgent, static_cast<test>(c->first));
                 c = c->rest;
             }
@@ -114,7 +114,7 @@ void Variablization_Manager::variablize_relational_constraints()
     constant_constraints->clear();
     constant_constraints = variablized_constant_constraints;
 
-    dprint(DT_CONSTRAINTS, "Done variablizing relational constraints.\n");
+    dprint(DT_LHS_VARIABLIZATION, "Done variablizing relational constraints.\n");
 
 }
 
@@ -146,7 +146,7 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
             if (!success)
             {
                 /* -- STI identifier that is ungrounded.  Delete. -- */
-                dprint(DT_CONSTRAINTS, "Deleting constraint b/c STI not in in chunk.\n");
+                dprint(DT_LHS_VARIABLIZATION, "Deleting constraint b/c STI not in in chunk.\n");
                 if (c_last)
                 {
                     /* -- Not at the head of the list -- */
@@ -166,7 +166,7 @@ void Variablization_Manager::variablize_cached_constraints_for_symbol(::list** c
                 deallocate_test(thisAgent, t);
             }
 //        } else {
-//            dprint(DT_CONSTRAINTS, "Will not attempt to variablize cached constraint b/c no original variable.\n");
+//            dprint(DT_LHS_VARIABLIZATION, "Will not attempt to variablize cached constraint b/c no original variable.\n");
 //        }
         c_last = c;
         c = c_next;

@@ -27,7 +27,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
 
     if ((*t)->type == CONJUNCTIVE_TEST)
     {
-        dprint(DT_CONSTRAINTS, "Installing literal constraints for conjunctive test %t...\n", *t);
+        dprint(DT_LITERALIZATION, "Installing literal constraints for conjunctive test %t...\n", *t);
         cons* c;
         for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
         {
@@ -41,24 +41,24 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
 
     t_symbol = (*t)->data.referent;
     t_gid = (*t)->identity->grounding_id;
-    dprint(DT_CONSTRAINTS, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
+    dprint(DT_LITERALIZATION, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
     if (t_gid == 0)
     {
-        dprint(DT_CONSTRAINTS, "...no identity, so must be STI or literal relational test.  Skipping.\n");
+        dprint(DT_LITERALIZATION, "...no identity, so must be STI or literal relational test.  Skipping.\n");
     }
     else
     {
-        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
+        dprint(DT_LITERALIZATION, "...identity exists, so must be constant.  Using g_id to look up.\n");
         /* MToDo | The following may speed things up since the variablization
          *         table should be much smaller than the literal constraint table */
 //        found_variablization = get_variablization(t_gid);
 //        if (found_variablization)
 //        {
-//            dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, looking for literal constraint...\n", t_gid);
+//            dprint(DT_LITERALIZATION, "...grounding id %u was variablized, looking for literal constraint...\n", t_gid);
             std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(t_gid);
             if (iter != (*literal_constraints).end())
             {
-                dprint(DT_CONSTRAINTS, "...literal constraint found for g%u: %t. Replacing with literal...\n", t_gid, iter->second);
+                dprint(DT_LITERALIZATION, "...literal constraint found for g%u: %t. Replacing with literal...\n", t_gid, iter->second);
                 deallocate_test(thisAgent, *t);
                 test temp = iter->second;
                 *t = copy_test(thisAgent, iter->second);
@@ -77,28 +77,28 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
                 found_variablization = get_variablization(t_gid);
                 if (found_variablization)
                 {
-                    dprint(DT_CONSTRAINTS, "...grounding id %u was variablized, marking as literal constraint for RHS...\n", t_gid);
+                    dprint(DT_LITERALIZATION, "...grounding id %u was variablized, marking as literal constraint for RHS...\n", t_gid);
                     found_variablization->variablized_symbol->tc_num = tc_num_literalized;
                 }
-                dprint(DT_CONSTRAINTS, "...final test: %t\n", *t);
+                dprint(DT_LITERALIZATION, "...final test: %t\n", *t);
             }
             else
             {
-                dprint(DT_CONSTRAINTS, "...no literal constraints found.\n");
+                dprint(DT_LITERALIZATION, "...no literal constraints found.\n");
             }
 //        }
 //        else
 //        {
-//            dprint(DT_CONSTRAINTS, "... was never variablized. Skipping...\n");
+//            dprint(DT_LITERALIZATION, "... was never variablized. Skipping...\n");
 //        }
     }
 }
 
 void Variablization_Manager::install_literal_constraints(condition* pCond)
 {
-    dprint_header(DT_CONSTRAINTS, PrintBoth, "install_literal_constraints called...!!!!!!!!!!!!!!!!!!!!!!\n");
-    print_variablization_tables(DT_CONSTRAINTS);
-    print_cached_constraints(DT_CONSTRAINTS);
+    dprint_header(DT_LITERALIZATION, PrintBoth, "install_literal_constraints called...!!!!!!!!!!!!!!!!!!!!!!\n");
+    print_variablization_tables(DT_LITERALIZATION);
+    print_cached_constraints(DT_LITERALIZATION);
 
     /* MToDo | Vast majority of constraints will be on value element.  Making this work with a pass for
      *         values followed by attributes could be faster. */
@@ -109,24 +109,24 @@ void Variablization_Manager::install_literal_constraints(condition* pCond)
         {
             if (pCond->type == POSITIVE_CONDITION)
             {
-                dprint(DT_CONSTRAINTS, "Adding for positive condition %l\n", pCond);
+                dprint(DT_LITERALIZATION, "Adding for positive condition %l\n", pCond);
                 install_literal_constraints_for_test(&pCond->data.tests.attr_test);
                 install_literal_constraints_for_test(&pCond->data.tests.value_test);
-                dprint(DT_CONSTRAINTS, "Resulting in condition %l.\n", pCond);
+                dprint(DT_LITERALIZATION, "Resulting in condition %l.\n", pCond);
             } else if (pCond->type == NEGATIVE_CONDITION) {
-//                dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
-                dprint(DT_CONSTRAINTS, "Adding for negative condition: %l\n", pCond);
+//                dprint(DT_LITERALIZATION, (pCond->type == NEGATIVE_CONDITION) ? "Skipping for negative condition %l\n" : "Skipping for negative conjunctive condition:\n%l", pCond);
+                dprint(DT_LITERALIZATION, "Adding for negative condition: %l\n", pCond);
                 install_literal_constraints_for_test(&pCond->data.tests.attr_test);
                 install_literal_constraints_for_test(&pCond->data.tests.value_test);
             } else if (pCond->type == CONJUNCTIVE_NEGATION_CONDITION) {
-                dprint(DT_CONSTRAINTS, "Adding for NCC with recursive call: %l\n", pCond);
+                dprint(DT_LITERALIZATION, "Adding for NCC with recursive call: %l\n", pCond);
                 install_literal_constraints(pCond->data.ncc.top);
             }
             pCond = pCond->next;
         }
     }
-    dprint(DT_CONSTRAINTS, "install_literal_constraints resulted in final condition list %1.\n", pCond);
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "");
-    print_variablization_tables(DT_CONSTRAINTS);
-    print_cached_constraints(DT_CONSTRAINTS);
+    dprint(DT_LITERALIZATION, "install_literal_constraints resulted in final condition list %1.\n", pCond);
+    dprint_header(DT_LITERALIZATION, PrintAfter, "");
+    print_variablization_tables(DT_LITERALIZATION);
+    print_cached_constraints(DT_LITERALIZATION);
 }

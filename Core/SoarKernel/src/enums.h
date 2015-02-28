@@ -60,6 +60,7 @@ enum TraceMode
     DT_LITERALIZATION,
     DT_DNVL,
     DT_OVAR_PROP,
+    DT_UNIFICATION,
     num_trace_modes
 };
 

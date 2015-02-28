@@ -201,6 +201,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_LITERALIZATION].prefix =             strdup("Literalz| ");
     mode_info[DT_DNVL].prefix =                       strdup("DNV List| ");
     mode_info[DT_OVAR_PROP].prefix =                  strdup("OVarProp| ");
+    mode_info[DT_UNIFICATION].prefix =                strdup("Unify   | ");
 
     mode_info[No_Mode].enabled =                      TRACE_Init_No_Mode;
     mode_info[TM_EPMEM].enabled =                     TRACE_Init_TM_EPMEM;
@@ -240,6 +241,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_LITERALIZATION].enabled =              TRACE_Init_DT_LITERALIZATION;
     mode_info[DT_DNVL].enabled =                        TRACE_Init_DT_DNVL;
     mode_info[DT_OVAR_PROP].enabled =                   TRACE_Init_DT_OVAR_PROP;
+    mode_info[DT_UNIFICATION].enabled =                 TRACE_Init_DT_UNIFICATION;
 
 }
 
