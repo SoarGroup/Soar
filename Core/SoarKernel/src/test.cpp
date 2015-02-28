@@ -1186,7 +1186,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     grounding_info* g = w->ground_id_list;
     if (!g)
     {
-        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %hi.\n", pLevel);
+        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %d.\n", pLevel);
     }
     /* -- See if we already have ground IDs for this goal level -- */
     bool create_grounding_info = true;
