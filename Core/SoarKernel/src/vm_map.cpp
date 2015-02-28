@@ -164,7 +164,6 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
     if (iter == (*orig_var_to_g_id_map).end())
     {
-        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u\n", index_sym, index_g_id);
         (*orig_var_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
         return 0;

@@ -1287,7 +1287,7 @@ void add_unification_constraint(agent* thisAgent, test* t, test t_add, uint64_t 
     test new_test = copy_test(thisAgent, t_add);
     new_test->identity->grounding_id = gid;
     add_test(thisAgent, t, new_test);
-    dprint(DT_FIX_CONDITIONS, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
+    dprint(DT_UNIFICATION, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
 }
 
 inline void add_identity_and_unifications_to_test(agent* thisAgent,
@@ -1336,10 +1336,11 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                      *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
+                        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u.  No unification needed.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
                         if (existing_gid)
                         {
-                            dprint(DT_IDENTITY_PROP, "- %y(%i) already has g_id %i.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
                             add_unification_constraint(thisAgent, t, *t, existing_gid);
                         }
                     }
