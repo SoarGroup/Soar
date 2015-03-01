@@ -415,7 +415,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                             tc_number tc_to_use, bool* reliable)
 {
     cons* c;
-    condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz;
+    condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz, *copy_cond;
 
     c_inst = c_vrblz = NIL; /* unnecessary, but gcc -Wall warns without it */
 
@@ -437,18 +437,8 @@ void build_chunk_conds_for_grounds_and_add_negateds(
          *    non-chunky problem spaces but was needed later for a chunky one. --  */
 //        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
         c_inst = copy_condition(thisAgent, ground);
-        c_vrblz = copy_condition(thisAgent, c_inst);
-
-        /*-- Store a link from the variablized condition to the instantiated
-         *   condition.  Used during merging if the chunker needs
-         *   to delete a redundant condition.  Also used to reorder
-         *   instantiated condition to match the re-ordered variablized
-         *   conditions list (required by the rete.) -- */
-        c_vrblz->counterpart = c_inst;
-        c_inst->counterpart = c_vrblz;
 
         add_cond(&c_inst, &prev_inst, &first_inst);
-        add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
@@ -476,12 +466,8 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 print_condition(thisAgent, cc->cond);
             }
             c_inst = copy_condition(thisAgent, cc->cond);
-            c_vrblz = copy_condition(thisAgent, cc->cond);
-            c_vrblz->counterpart = c_inst;
-            c_inst->counterpart = c_vrblz;
 
             add_cond(&c_inst, &prev_inst, &first_inst);
-            add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
         }
         else
         {
@@ -510,6 +496,27 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     {
         first_inst = NIL;
     }
+
+    *inst_top = first_inst;
+    dprint(DT_UNIFICATION, "Adding unification tests for new conditions from backtracing.\n");
+    goal_stack_level gsl = get_match_goal(*inst_top);
+    add_unifications(thisAgent, *inst_top, gsl);
+
+    copy_cond = *inst_top;
+    while (copy_cond)
+    {
+        c_vrblz = copy_condition(thisAgent, copy_cond);
+
+        /*-- Store a link from the variablized condition to the instantiated
+         *   condition.  Used during merging if the chunker needs
+         *   to delete a redundant condition.  Also used to reorder
+         *   instantiated condition to match the re-ordered variablized
+         *   conditions list (required by the rete.) -- */
+        c_vrblz->counterpart = copy_cond;
+        copy_cond->counterpart = c_vrblz;
+        add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
+        copy_cond = copy_cond->next;
+    }
     if (prev_vrblz)
     {
         prev_vrblz->next = NIL;
@@ -519,13 +526,13 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         first_vrblz = NIL;
     }
 
-    *inst_top = first_inst;
     *vrblz_top = first_vrblz;
 
+    dprint(DT_CONSTRAINTS, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
     dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", *inst_top);
-    dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", *vrblz_top);
+//    dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
+//    dprint_noprefix(DT_CONSTRAINTS, "%1", *vrblz_top);
 }
 
 /* --------------------------------------------------------------------
@@ -579,13 +586,6 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
    after reordering, we have to rearrange the instantiated conditions
    to put them in the same order as the now-scrambled variablized ones.
    This routine does this.
-
-   Okay, so the obvious way is to have each variablized condition (VCond)
-   point to the corresponding instantiated condition (ICond).  Then after
-   reordering the VConds, we'd scan through the VConds and say
-      VCond->Icond->next = VCond->next->Icond
-      VCond->Icond->prev = VCond->prev->Icond
-   (with some extra checks for the first and last VCond in the list).
 
 -------------------------------------------------------------------- */
 

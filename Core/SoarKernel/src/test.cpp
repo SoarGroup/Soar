@@ -1585,7 +1585,7 @@ void add_unifications(agent* thisAgent,
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_UNIFICATION, "Propagating identity for condition: %l\n", c);
+            dprint(DT_UNIFICATION, "Adding unifications for condition: %l\n", c);
             add_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
             add_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
             add_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
