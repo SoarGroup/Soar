@@ -1338,7 +1338,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                     {
                         dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u.  No unification needed.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
-                        if (existing_gid)
+                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
                         {
                             dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
                             add_unification_constraint(thisAgent, t, *t, existing_gid);
@@ -1497,6 +1497,101 @@ void propagate_identity(agent* thisAgent,
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
             dprint_clear_indents(DT_IDENTITY_PROP);
 
+        }
+    }
+}
+
+inline void add_unifications_to_test(agent* thisAgent,
+                                 test* t,
+                                 WME_Field default_f,
+                                 goal_stack_level level)
+{
+    cons* c;
+
+    assert(t);
+    assert((*t));
+
+    switch ((*t)->type)
+    {
+        case DISJUNCTION_TEST:
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+            break;
+
+        case CONJUNCTIVE_TEST:
+            for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+            {
+                test ct = static_cast<test>(c->first);
+                add_unifications_to_test(thisAgent, &ct, default_f, level);
+            }
+            break;
+
+        default:
+
+            assert((*t)->identity->grounding_field != NO_ELEMENT);
+            /* -- Set the grounding id for all variablizable constants, i.e. non short-term identifiers -- */
+            Symbol* sym = get_wme_element((*t)->identity->grounding_wme, (*t)->identity->grounding_field);
+
+            /* -- Do not generate identity for identifier symbols.  This is important in other parts of the
+             *    chunking code, since it is used to determine whether a constant or identifier was variablized -- */
+            if (sym)
+            {
+                if (!sym->is_sti())
+                {
+                    assert((*t)->identity->grounding_id);
+                    /* -- Check if we ned to add a unifying constraint, b/c this original variable
+                     *    already has a different g_id matched to it -- */
+                    if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
+                    {
+                        dprint(DT_OVAR_MAPPINGS, "Checking original variable mappings entry for %y to %u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
+                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
+                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
+                        {
+                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                            add_unification_constraint(thisAgent, t, *t, existing_gid);
+                        } else {
+                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  No unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                        }
+                    }
+                    else
+                    {
+                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
+                            ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
+                    }
+                }
+                else
+                {
+                    dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
+                }
+            }
+            else
+            {
+                dprint(DT_IDENTITY_PROP, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
+            }
+            break;
+    }
+    /* -- We no longer need the wme and didn't increase refcount, so discard reference -- */
+//    (*t)->identity->grounding_wme = NULL;
+}
+
+void add_unifications(agent* thisAgent,
+                        condition* cond,
+                        goal_stack_level level)
+{
+    condition* c;
+
+    dprint(DT_UNIFICATION, "Adding unifications...\n");
+    for (c = cond; c; c = c->next)
+    {
+        if (c->type == POSITIVE_CONDITION)
+        {
+            dprint(DT_UNIFICATION, "Propagating identity for condition: %l\n", c);
+            add_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
+            add_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
+            add_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
+            dprint_set_indents(DT_UNIFICATION, "          ");
+            dprint(DT_UNIFICATION, "Condition is now: %l\n", c);
+            dprint_clear_indents(DT_UNIFICATION);
         }
     }
 }

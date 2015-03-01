@@ -166,12 +166,13 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     {
         (*orig_var_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
+        /* -- returning 0 indicates that the mapping was added -- */
         return 0;
     }
     else
     {
         dprint(DT_OVAR_MAPPINGS,
-               "...%u already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning false.\n",
+               "...%u already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning existing g_id.\n",
                iter->second, index_sym);
     }
     return iter->second;
