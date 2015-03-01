@@ -256,6 +256,35 @@ void find_match_goal(instantiation* inst)
     }
 }
 
+
+goal_stack_level get_match_goal(condition* top_cond)
+{
+    goal_stack_level lowest_level_so_far;
+    condition* cond;
+    Symbol* id;
+
+    lowest_level_so_far = -1;
+    for (cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            id = cond->bt.wme_->id;
+            if (id->id->isa_goal)
+                if (cond->bt.level > lowest_level_so_far)
+                {
+                    lowest_level_so_far = cond->bt.level;
+                }
+        }
+    }
+    if (lowest_level_so_far != -1)
+    {
+        return lowest_level_so_far;
+    }
+    else
+    {
+        return ATTRIBUTE_IMPASSE_LEVEL;
+    }
+}
 /* -----------------------------------------------------------------------
 
  Executing the RHS Actions of an Instantiation
