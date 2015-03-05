@@ -116,6 +116,10 @@ elif sys.platform == 'linux2':
 else:
   clone.Append(LIBS=[tcl_lib])
 
+# Prevent "Command line warning D9025 : overriding '/W2' with '/w'"
+if '/W2' in clone['CPPFLAGS']:
+  clone['CPPFLAGS'].remove('/W2')
+
 # Create the SWIG dll for tcl
 tclstep2 = clone.SharedLibrary(libname, swig_tcl_wrapper_cpp)
 lib = clone.Install(lib_install_dir, tclstep2)
