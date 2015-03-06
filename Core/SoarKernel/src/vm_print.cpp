@@ -178,9 +178,9 @@ void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bo
         dprint(mode, "EMPTY MAP\n");
     }
 
-    for (std::map< Symbol*, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
+    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
     {
-        dprint(mode, "%y -> %u\n", it->first, it->second);
+        dprint(mode, "%u(%y) -> %u\n", it->first, thisAgent->variablizationManager->get_ovar_for_o_id(it->first), it->second);
     }
 
 }

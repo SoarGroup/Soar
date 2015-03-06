@@ -691,7 +691,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             symbol_remove_ref(thisAgent, referent);
 
             // make new action list
-            action* new_action = thisAgent->variablizationManager->make_variablized_rl_action(id, attr, value, referent);
+            action* new_action = thisAgent->variablizationManager->make_variablized_rl_action(id, attr, value, referent, my_template_instance->i_id);
 
             // make new production
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);

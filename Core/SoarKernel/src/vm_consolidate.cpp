@@ -75,7 +75,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 }
                 symbol_add_ref(thisAgent, found_test->identity->original_var);
                 t->identity->original_var = found_test->identity->original_var;
-                t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(found_test->identity->original_var, 0);
+                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(found_test->identity->original_var, 0);
             }
             break;
     }
@@ -118,7 +118,7 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
 
 void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest)
 {
-    std::map< Symbol*, uint64_t >::iterator iter;
+    std::map< uint64_t, uint64_t >::iterator iter;
 
     print_ovar_gid_propogation_table(DT_FIX_CONDITIONS, true);
     for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)

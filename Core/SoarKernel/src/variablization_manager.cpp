@@ -20,7 +20,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     thisAgent = myAgent;
     sym_to_var_map = new std::map< Symbol*, variablization* >();
     g_id_to_var_map = new std::map< uint64_t, variablization* >();
-    o_id_to_g_id_map = new std::map< Symbol*, uint64_t >();
+    o_id_to_g_id_map = new std::map< uint64_t, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
     literal_constraints = new std::map< uint64_t , test >();
@@ -157,7 +157,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
  *
  * ====================================================================================================== */
 
-void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var)
+void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var, uint64_t pI_id)
 {
     char prefix[2];
     Symbol* var;
@@ -182,7 +182,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
         if (original_var)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for original var %y in variablization orig var table...\n", original_var);
-            g_id = get_gid_for_orig_var(original_var);
+            g_id = get_gid_for_orig_var(original_var, pI_id);
             if (g_id != NON_GENERALIZABLE)
             {
                 found_variablization = get_variablization(g_id);
@@ -602,7 +602,7 @@ void Variablization_Manager::variablize_rl_test(test* t)
 
 
 // creates an action for a template instantiation
-action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
+action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym, uint64_t pI_id)
 {
     action* rhs;
 
@@ -616,10 +616,10 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym);
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
-    variablize_rhs_symbol(rhs->id, NULL);
-    variablize_rhs_symbol(rhs->attr, NULL);
-    variablize_rhs_symbol(rhs->value, NULL);
-    variablize_rhs_symbol(rhs->referent, NULL);
+    variablize_rhs_symbol(rhs->id, NULL, pI_id);
+    variablize_rhs_symbol(rhs->attr, NULL, pI_id);
+    variablize_rhs_symbol(rhs->value, NULL, pI_id);
+    variablize_rhs_symbol(rhs->referent, NULL, pI_id);
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
     return rhs;
 }
@@ -675,7 +675,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* Variablization_Manager::variablize_results(preference* result, bool variablize)
+action* Variablization_Manager::variablize_results(preference* result, bool variablize, uint64_t pI_id)
 {
     action* a;
 
@@ -701,12 +701,12 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
 
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->value, result->original_symbols.value);
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id, pI_id);
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr, pI_id);
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->value, result->original_symbols.value, pI_id);
         if (preference_is_binary(result->type))
         {
-            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL);
+            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL, pI_id);
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
@@ -721,7 +721,7 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     a->preference_type = result->type;
 
-    a->next = variablize_results(result->next_result, variablize);
+    a->next = variablize_results(result->next_result, variablize, pI_id);
     return a;
 }
 

@@ -59,7 +59,7 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t in
 
 }
 
-uint64_t Variablization_Manager::get_o_id(Symbol* orig_var, uint64_t inst_id)
+uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t inst_id)
 {
     int64_t existing_o_id = 0;
 

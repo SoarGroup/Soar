@@ -4566,7 +4566,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                                   condition** dest_top_cond,
                                   condition** dest_bottom_cond,
                                   action** dest_rhs,
-                                  uint64_t i_id,
+                                  uint64_t pI_id,
                                   AddAdditionalTestsMode additional_tests)
 {
     cons* c;
@@ -4591,7 +4591,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                             tok, w, NIL,
                             dest_top_cond,
                             dest_bottom_cond,
-                            i_id,
+                            pI_id,
                             additional_tests);
 
     if (additional_tests != DONT_ADD_TESTS)
@@ -4619,7 +4619,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
         match_level = ((lowest_level_so_far != -1) ? lowest_level_so_far : ATTRIBUTE_IMPASSE_LEVEL);
 //        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
 
-        propagate_identity(thisAgent, (*dest_top_cond), match_level);
+        propagate_identity(thisAgent, (*dest_top_cond), match_level, pI_id);
     }
     if (dest_rhs)
     {

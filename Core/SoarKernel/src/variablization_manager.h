@@ -63,11 +63,11 @@ class Variablization_Manager
         void clear_data();
         void reinit();
 
-        uint64_t add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id);
-        uint64_t get_gid_for_orig_var(Symbol* index_sym);
+        uint64_t add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id, uint64_t pI_id);
+        uint64_t get_gid_for_orig_var(Symbol* index_sym, uint64_t pI_id);
 
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t inst_id);
-        uint64_t get_o_id(Symbol* orig_var, uint64_t inst_id);
+        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t inst_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
 
         void cache_constraints_in_cond(condition* c);
@@ -85,8 +85,8 @@ class Variablization_Manager
         void      variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void      variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
-        action* variablize_results(preference* result, bool variablize);
-        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
+        action* variablize_results(preference* result, bool variablize, uint64_t pI_id);
+        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym, uint64_t pI_id);
 
         void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -115,7 +115,7 @@ class Variablization_Manager
         variablization* get_variablization(Symbol* index_sym);
 
         void variablize_lhs_symbol(Symbol** sym, identity_info* identity);
-        void variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var);
+        void variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var, uint64_t pI_id);
 
         void variablize_test(test* t, Symbol* original_referent);
         void variablize_equality_test(test* t);
@@ -158,14 +158,14 @@ class Variablization_Manager
          *    they store is temporary and cleared after use. -- */
 
         /* -- Look-up tables for LHS variablization -- */
-        std::map< Symbol*, uint64_t >*           o_id_to_g_id_map;
+        std::map< uint64_t, uint64_t >*          o_id_to_g_id_map;
         std::map< uint64_t, variablization* >*   g_id_to_var_map;
         std::map< Symbol*, variablization* >*    sym_to_var_map;
 
         /* -- Cache of constraint tests collected during backtracing -- */
         std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
-        std::map< uint64_t, test >*           literal_constraints;
+        std::map< uint64_t, test >*              literal_constraints;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */

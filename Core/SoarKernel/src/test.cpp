@@ -354,7 +354,7 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                         destination->identity->original_var =  new_test->original_test->data.referent;
                         if (i_id)
                         {
-                            destination->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                            destination->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
                         }
 //                        if (destination->identity->original_var)
 //                        {
@@ -401,7 +401,7 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                                 check_test->identity->original_var =  new_test->original_test->data.referent;
                                 if (i_id)
                                 {
-                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(new_test->original_test->data.referent, i_id);
+                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, i_id);
                                 }
 //                                if (check_test->identity->original_var)
 //                                {
@@ -1293,7 +1293,8 @@ void add_unification_constraint(agent* thisAgent, test* t, test t_add, uint64_t 
 inline void add_identity_and_unifications_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
-                                 goal_stack_level level)
+                                 goal_stack_level level,
+                                 uint64_t pI_id)
 {
     cons* c;
 
@@ -1311,7 +1312,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_identity_and_unifications_to_test(thisAgent, &ct, default_f, level);
+                add_identity_and_unifications_to_test(thisAgent, &ct, default_f, level, pI_id);
             }
             break;
 
@@ -1337,7 +1338,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
                         dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u.  No unification needed.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
-                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
+                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
                         if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
                         {
                             dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
@@ -1367,7 +1368,8 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
 
 inline void add_identity_to_negative_test(agent* thisAgent,
         test t,
-        WME_Field default_f)
+        WME_Field default_f,
+        uint64_t pI_id)
 {
     assert(t);
     cons* c;
@@ -1385,7 +1387,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             dprint(DT_IDENTITY_PROP, "Propagating g_ids to NCC...\n");
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                add_identity_to_negative_test(thisAgent, static_cast<test>(c->first), default_f);
+                add_identity_to_negative_test(thisAgent, static_cast<test>(c->first), default_f, pI_id);
             }
             break;
 
@@ -1408,7 +1410,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
                     // Recall grounding id using original var
 //                    if (t->identity->grounding_id != NON_GENERALIZABLE)
 //                    {
-                        t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym);
+                        t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym, pI_id);
                         dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %i.\n", sym, t->identity->grounding_id);
 //                    }
 //                    else
@@ -1434,6 +1436,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
 void propagate_identity(agent* thisAgent,
                         condition* cond,
                         goal_stack_level level,
+                        uint64_t pI_id,
                         bool use_negation_lookup)
 {
     condition* c;
@@ -1449,9 +1452,9 @@ void propagate_identity(agent* thisAgent,
             if (use_negation_lookup)
             {
                 /* -- Positive conditions within an NCC.  This was recursive call. -- */
-                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
-                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
-                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT, pI_id);
             }
             else
             {
@@ -1459,9 +1462,9 @@ void propagate_identity(agent* thisAgent,
                 /* -- The last parameter determines whether to cache g_ids for NCCs.  We
                  *    only need to do this when negative conditions exist (has_negative_conds == true)
                  *    and this isn't a recursive call on an NCC list (use_negation_lookup = true) -- */
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
+                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
             }
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
@@ -1488,9 +1491,9 @@ void propagate_identity(agent* thisAgent,
             else if (c->type == NEGATIVE_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: %l", c);
-                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
-                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
-                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT, pI_id);
             }
 
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
@@ -1504,7 +1507,8 @@ void propagate_identity(agent* thisAgent,
 inline void add_unifications_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
-                                 goal_stack_level level)
+                                 goal_stack_level level,
+                                 uint64_t pI_id)
 {
     cons* c;
 
@@ -1522,7 +1526,7 @@ inline void add_unifications_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_unifications_to_test(thisAgent, &ct, default_f, level);
+                add_unifications_to_test(thisAgent, &ct, default_f, level, pI_id);
             }
             break;
 
@@ -1545,8 +1549,7 @@ inline void add_unifications_to_test(agent* thisAgent,
                     {
                         dprint(DT_UNIFICATION, "Checking original variable mappings entry for %y to %u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         /* MToDo | Consolidate these two calls when we get rid of original vars */
-                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
-//                        uint64_texisting_oid = thisAgent->variablizationManager->
+                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
                         if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
                         {
                             dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
@@ -1578,7 +1581,8 @@ inline void add_unifications_to_test(agent* thisAgent,
 
 void add_unifications(agent* thisAgent,
                         condition* cond,
-                        goal_stack_level level)
+                        goal_stack_level level,
+                        uint64_t pI_id)
 {
     condition* c;
 
@@ -1588,9 +1592,9 @@ void add_unifications(agent* thisAgent,
         if (c->type == POSITIVE_CONDITION)
         {
             dprint(DT_UNIFICATION, "Adding unifications for condition: %l\n", c);
-            add_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
-            add_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
-            add_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
+            add_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
+            add_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
+            add_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
             dprint_set_indents(DT_UNIFICATION, "          ");
             dprint(DT_UNIFICATION, "Condition is now: %l\n", c);
             dprint_clear_indents(DT_UNIFICATION);
@@ -1868,7 +1872,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                                 symbol_add_ref(thisAgent, original_referent);
                                 if (i_id)
                                 {
-                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_o_id(original_referent, i_id);
+                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, i_id);
                                 }
                             }
                         }
@@ -2281,7 +2285,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
                 symbol_add_ref(thisAgent, t->identity->original_var);
                 if (i_id)
                 {
-                    t->identity->original_var_id = thisAgent->variablizationManager->get_o_id(orig_test->data.referent, i_id);
+                    t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, i_id);
                 }
             }
         }

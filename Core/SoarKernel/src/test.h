@@ -154,7 +154,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, boo
 /* --- Some functions related to tests that used to be in rete.cpp */
 
 void add_additional_tests_and_originals(agent* thisAgent, rete_node* node, condition* cond, wme* w, node_varnames* nvn, uint64_t i_id, AddAdditionalTestsMode additional_tests);
-void propagate_identity(agent* thisAgent, condition* cond, goal_stack_level level, bool use_negation_lookup = false);
+void propagate_identity(agent* thisAgent, condition* cond, goal_stack_level level, uint64_t pI_id, bool use_negation_lookup = false);
 void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
@@ -163,8 +163,7 @@ void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** va
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 void add_unification_constraint(agent* thisAgent, test* t, test t_add, uint64_t gid);
-void add_unifications(agent* thisAgent, condition* cond, goal_stack_level level);
-
+void add_unifications(agent* thisAgent, condition* cond, goal_stack_level level, uint64_t pI_id);
 /* UITODO| Make this method of Test */
 const char* test_type_to_string(byte test_type);
 

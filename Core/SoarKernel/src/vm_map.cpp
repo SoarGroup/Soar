@@ -41,13 +41,7 @@ void Variablization_Manager::clear_data()
 
 void Variablization_Manager::clear_ovar_to_gid_table()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar g_id table...\n");
-    /* -- Clear original variable map -- */
-    for (std::map< Symbol*, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
-    {
-        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %u\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, it->first);
-    }
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id to g_id table...\n");
     o_id_to_g_id_map->clear();
 }
 
@@ -94,13 +88,13 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
     if (iter != (*g_id_to_var_map).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %u in g_id variablization table: %y/%y\n", index_id,
+        dprint(DT_VARIABLIZATION_MANAGER, "...found %u in g_id variablization table: %y/%y\n", index_id,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %u in g_id variablization table.\n", index_id);
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %u in g_id variablization table.\n", index_id);
         print_variablization_tables(DT_LHS_VARIABLIZATION, 2);
         return NULL;
     }
@@ -111,14 +105,14 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
     std::map< Symbol*, variablization* >::iterator iter = (*pMap).find(index_sym);
     if (iter != (*pMap).end())
     {
-        dprint(DT_LHS_VARIABLIZATION, "...found %y in variablization table: %y/%y\n", index_sym,
+        dprint(DT_VARIABLIZATION_MANAGER, "...found %y in variablization table: %y/%y\n", index_sym,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %y in variablization table.\n", index_sym);
-        print_variablization_tables(DT_LHS_VARIABLIZATION, 1);
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %y in variablization table.\n", index_sym);
+        print_variablization_tables(DT_VARIABLIZATION_MANAGER, 1);
         return NULL;
     }
 }
@@ -140,32 +134,40 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
 }
 
-uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
+uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym, uint64_t pI_id)
 {
-    std::map< Symbol*, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(index_sym);
-    if (iter != (*o_id_to_g_id_map).end())
-    {
-        dprint(DT_LHS_VARIABLIZATION, "...found %u in orig_var variablization table for %y\n",
-               iter->second, index_sym);
+    uint64_t found_o_id;
+    found_o_id = get_existing_o_id(index_sym, pI_id);
 
-        return iter->second;
-    }
-    else
+    if (found_o_id)
     {
-        dprint(DT_LHS_VARIABLIZATION, "...did not find %y in orig_var variablization table.\n", index_sym);
-        print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
-    }
+        std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(found_o_id);
+        if (iter != (*o_id_to_g_id_map).end())
+        {
+            dprint(DT_VARIABLIZATION_MANAGER, "...found %u in orig_var variablization table for %y\n",
+                iter->second, index_sym);
 
+            return iter->second;
+        } else {
+            dprint(DT_VARIABLIZATION_MANAGER, "...did not find %y in orig_var variablization table.\n", index_sym);
+            print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
+        }
+    } else {
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find o_id for %y in o_id table for instantiation %u.\n", index_sym, pI_id);
+        assert(false);
+    }
     return 0;
 }
 
-uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id)
+uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id, uint64_t pI_id)
 {
-    std::map< Symbol*, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(index_sym);
+    uint64_t lO_id = get_or_create_o_id(index_sym, pI_id);
+
+    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(lO_id);
     if (iter == (*o_id_to_g_id_map).end())
     {
-        (*o_id_to_g_id_map)[index_sym] = index_g_id;
-        symbol_add_ref(thisAgent, index_sym);
+        (*o_id_to_g_id_map)[lO_id] = index_g_id;
+//        symbol_add_ref(thisAgent, index_sym);
         /* -- returning 0 indicates that the mapping was added -- */
         return 0;
     }
