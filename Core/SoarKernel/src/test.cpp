@@ -1543,8 +1543,10 @@ inline void add_unifications_to_test(agent* thisAgent,
                      *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
-                        dprint(DT_OVAR_MAPPINGS, "Checking original variable mappings entry for %y to %u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
+                        dprint(DT_UNIFICATION, "Checking original variable mappings entry for %y to %u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
+                        /* MToDo | Consolidate these two calls when we get rid of original vars */
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id);
+//                        uint64_texisting_oid = thisAgent->variablizationManager->
                         if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
                         {
                             dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
@@ -1555,18 +1557,18 @@ inline void add_unifications_to_test(agent* thisAgent,
                     }
                     else
                     {
-                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
+                        dprint(DT_UNIFICATION, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
                             ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
                     }
                 }
                 else
                 {
-                    dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
+                    dprint(DT_UNIFICATION, "- Skipping %y.  No g_id necessary for STI.\n", sym);
                 }
             }
             else
             {
-                dprint(DT_IDENTITY_PROP, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
+                dprint(DT_UNIFICATION, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
             }
             break;
     }
