@@ -58,11 +58,14 @@ class Variablization_Manager
         void clear_ovar_gid_table();
         void clear_cached_constraints();
         void clear_dnvl();
+        void clear_ovar_to_o_id_map();
         void clear_data();
         void reinit();
 
         uint64_t add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id);
         uint64_t get_gid_for_orig_var(Symbol* index_sym);
+
+        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t inst_id);
         uint64_t get_o_id(Symbol* orig_var, uint64_t inst_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
 
@@ -146,7 +149,6 @@ class Variablization_Manager
 
         void clear_merge_map();
         void clear_substitution_map();
-        void clear_ovar_to_o_id_map();
         void clear_o_id_substitution_map();
         void clear_o_id_to_ovar_debug_map();
 
