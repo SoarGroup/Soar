@@ -37,7 +37,7 @@ void Variablization_Manager::clear_ovar_to_o_id_map()
     ovar_to_o_id_map->clear();
 }
 
-uint64_t Variablization_Manager::get_o_id(Symbol* orig_var, uint64_t inst_id)
+uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t inst_id)
 {
     std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
     std::map< uint64_t, uint64_t >::iterator iter_inst;
@@ -55,13 +55,26 @@ uint64_t Variablization_Manager::get_o_id(Symbol* orig_var, uint64_t inst_id)
         }
     }
 
-    ++ovar_id_counter;
-    (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
-    symbol_add_ref(thisAgent, orig_var);
-    (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
-    dprint(DT_OVAR_PROP, "...Not found.  Stored and returning new o_id %u for orig var %y.\n", ovar_id_counter, orig_var);
-    return ovar_id_counter;
+    return 0;
 
+}
+
+uint64_t Variablization_Manager::get_o_id(Symbol* orig_var, uint64_t inst_id)
+{
+    int64_t existing_o_id = 0;
+
+    existing_o_id = get_existing_o_id(orig_var, inst_id);
+    if (!existing_o_id)
+    {
+        ++ovar_id_counter;
+        (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
+        symbol_add_ref(thisAgent, orig_var);
+        (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
+        dprint(DT_OVAR_PROP, "...Not found.  Stored and returning new o_id %u for orig var %y.\n", ovar_id_counter, orig_var);
+        return ovar_id_counter;
+    } else {
+        return existing_o_id;
+    }
 }
 
 Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
