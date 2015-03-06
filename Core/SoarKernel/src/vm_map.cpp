@@ -29,7 +29,7 @@ void Variablization_Manager::clear_data()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing variablization maps.\n");
     clear_cached_constraints();
-    clear_ovar_gid_table();
+    clear_ovar_to_gid_table();
     clear_variablization_tables();
     clear_merge_map();
     clear_substitution_map();
@@ -39,16 +39,16 @@ void Variablization_Manager::clear_data()
     clear_o_id_to_ovar_debug_map();
 }
 
-void Variablization_Manager::clear_ovar_gid_table()
+void Variablization_Manager::clear_ovar_to_gid_table()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar g_id table...\n");
     /* -- Clear original variable map -- */
-    for (std::map< Symbol*, uint64_t >::iterator it = (*orig_var_to_g_id_map).begin(); it != (*orig_var_to_g_id_map).end(); ++it)
+    for (std::map< Symbol*, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
     {
         dprint(DT_VARIABLIZATION_MANAGER, "Clearing %y -> %u\n", it->first, it->second);
         symbol_remove_ref(thisAgent, it->first);
     }
-    orig_var_to_g_id_map->clear();
+    o_id_to_g_id_map->clear();
 }
 
 void Variablization_Manager::clear_variablization_tables()
@@ -142,8 +142,8 @@ variablization* Variablization_Manager::get_variablization(test t)
 
 uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
 {
-    std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
-    if (iter != (*orig_var_to_g_id_map).end())
+    std::map< Symbol*, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(index_sym);
+    if (iter != (*o_id_to_g_id_map).end())
     {
         dprint(DT_LHS_VARIABLIZATION, "...found %u in orig_var variablization table for %y\n",
                iter->second, index_sym);
@@ -161,10 +161,10 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym)
 
 uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id)
 {
-    std::map< Symbol*, uint64_t >::iterator iter = (*orig_var_to_g_id_map).find(index_sym);
-    if (iter == (*orig_var_to_g_id_map).end())
+    std::map< Symbol*, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(index_sym);
+    if (iter == (*o_id_to_g_id_map).end())
     {
-        (*orig_var_to_g_id_map)[index_sym] = index_g_id;
+        (*o_id_to_g_id_map)[index_sym] = index_g_id;
         symbol_add_ref(thisAgent, index_sym);
         /* -- returning 0 indicates that the mapping was added -- */
         return 0;

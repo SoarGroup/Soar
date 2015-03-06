@@ -924,7 +924,7 @@ inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
 {
     thisAgent->variablizationManager->clear_variablization_tables();
     thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_ovar_gid_table();
+    thisAgent->variablizationManager->clear_ovar_to_gid_table();
     thisAgent->variablizationManager->clear_ovar_to_o_id_map();
 }
 

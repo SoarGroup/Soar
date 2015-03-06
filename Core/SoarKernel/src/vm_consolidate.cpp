@@ -121,7 +121,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
     std::map< Symbol*, uint64_t >::iterator iter;
 
     print_ovar_gid_propogation_table(DT_FIX_CONDITIONS, true);
-    for (iter = orig_var_to_g_id_map->begin(); iter != orig_var_to_g_id_map->end(); ++iter)
+    for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
     {
 
         if (iter->second == sacrificeSymTest->identity->grounding_id)

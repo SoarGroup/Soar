@@ -20,7 +20,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     thisAgent = myAgent;
     sym_to_var_map = new std::map< Symbol*, variablization* >();
     g_id_to_var_map = new std::map< uint64_t, variablization* >();
-    orig_var_to_g_id_map = new std::map< Symbol*, uint64_t >();
+    o_id_to_g_id_map = new std::map< Symbol*, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
     literal_constraints = new std::map< uint64_t , test >();
@@ -44,7 +44,7 @@ Variablization_Manager::~Variablization_Manager()
     clear_data();
     delete sym_to_var_map;
     delete g_id_to_var_map;
-    delete orig_var_to_g_id_map;
+    delete o_id_to_g_id_map;
     delete sti_constraints;
     delete constant_constraints;
     delete literal_constraints;

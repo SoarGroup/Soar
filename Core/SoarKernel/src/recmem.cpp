@@ -1011,6 +1011,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     thisAgent->variablizationManager->clear_ovar_to_o_id_map();
+
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,
                         &(thisAgent->newly_created_instantiations));
@@ -1019,7 +1020,7 @@ void create_instantiation(agent* thisAgent, production* prod,
      *    propagating identities in the instantiation and used to add identity information
      *    to NCCs and match RHS variables with LHS variables.  Both are done at this
      *    point -- */
-    thisAgent->variablizationManager->clear_ovar_gid_table();
+    thisAgent->variablizationManager->clear_ovar_to_gid_table();
 
     /* -- clear the original var references that we cached in the preference in
      *    execute_action but did not increase their refcount -- */

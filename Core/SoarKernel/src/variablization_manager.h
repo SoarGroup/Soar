@@ -55,7 +55,7 @@ class Variablization_Manager
         uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
 
         void clear_variablization_tables();
-        void clear_ovar_gid_table();
+        void clear_ovar_to_gid_table();
         void clear_cached_constraints();
         void clear_dnvl();
         void clear_ovar_to_o_id_map();
@@ -157,7 +157,7 @@ class Variablization_Manager
          *    they store is temporary and cleared after use. -- */
 
         /* -- Look-up tables for LHS variablization -- */
-        std::map< Symbol*, uint64_t >*           orig_var_to_g_id_map;
+        std::map< Symbol*, uint64_t >*           o_id_to_g_id_map;
         std::map< uint64_t, variablization* >*   g_id_to_var_map;
         std::map< Symbol*, variablization* >*    sym_to_var_map;
 
