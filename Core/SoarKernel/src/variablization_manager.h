@@ -53,6 +53,7 @@ class Variablization_Manager
         uint64_t get_new_ground_id() { return (++ground_id_counter); };
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
         uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
+        void discard_instantiation_id(uint64_t i_id);
 
         void clear_variablization_tables();
         void clear_ovar_to_gid_table();

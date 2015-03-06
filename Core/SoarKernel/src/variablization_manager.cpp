@@ -66,6 +66,16 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
+/* This function is used when a chunk_instantiation fails to form a chunk.  Decreases
+ * the instantiation id counter by 1, allowing it to be re-assigned. */
+
+void Variablization_Manager::discard_instantiation_id(uint64_t i_id)
+{
+    assert(i_id == inst_id_counter);
+    dprint(DT_VARIABLIZATION_MANAGER, "Discarding instantiation id %u.\n", inst_id_counter);
+    --inst_id_counter;
+}
+
 /* ============================================================================
  *            Variablization_Manager::variablize_lhs_symbol
  *
