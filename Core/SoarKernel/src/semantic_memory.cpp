@@ -4252,8 +4252,8 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                     {
                         //If the chunk was retrieved and it is an identifier it is lti.
-                        smem_chunk_value_lti temp_lti;
-                        smem_chunk_value_constant temp_const;
+                        smem_chunk_value_lti temp_lti = {};
+                        smem_chunk_value_constant temp_const = {};
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4267,8 +4267,8 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     }
                     else //If the value is not an identifier, then it is a "constant".
                     {
-                        smem_chunk_value_constant temp_const;
-                        smem_chunk_value_lti temp_lti;
+                        smem_chunk_value_constant temp_const = {};
+                        smem_chunk_value_lti temp_lti = {};
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
@@ -4283,8 +4283,8 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                     {
                         //If the chunk was retrieved and it is an identifier it is lti.
-                        smem_chunk_value_lti temp_lti;
-                        smem_chunk_value_constant temp_const;
+                        smem_chunk_value_lti temp_lti = {};
+                        smem_chunk_value_constant temp_const = {};
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4298,8 +4298,8 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     }
                     else //If the value is nt an identifier, then it is a "constant".
                     {
-                        smem_chunk_value_constant temp_const;
-                        smem_chunk_value_lti temp_lti;
+                        smem_chunk_value_constant temp_const = {};
+                        smem_chunk_value_lti temp_lti = {};
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;

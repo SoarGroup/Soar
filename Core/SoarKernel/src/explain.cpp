@@ -503,7 +503,7 @@ void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod
         }
     }
 
-    if (prod->result == true)
+    if (prod->result == 1)
     {
         print(thisAgent,  "A result to be generated.\n");
     }
