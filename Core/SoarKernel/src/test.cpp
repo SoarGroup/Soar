@@ -1339,11 +1339,11 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                     {
                         dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u.  No unification needed.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
-                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
-                        {
-                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
-                            add_unification_constraint(thisAgent, t, *t, existing_gid);
-                        }
+//                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
+//                        {
+//                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
+//                            add_unification_constraint(thisAgent, t, *t, existing_gid);
+//                        }
                     }
                     else
                     {
@@ -1550,27 +1550,26 @@ inline void add_unifications_to_test(agent* thisAgent,
                         dprint(DT_UNIFICATION, "Checking original variable mappings entry for %y to %u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         /* MToDo | Consolidate these two calls when we get rid of original vars */
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
-                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
+                        if (existing_gid)
                         {
-                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
-                            add_unification_constraint(thisAgent, t, *t, existing_gid);
+                            if (existing_gid != (*t)->identity->grounding_id)
+                            {
+                                dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding it.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                                add_unification_constraint(thisAgent, t, *t, existing_gid);
+                            } else {
+                                dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  No unification test needed.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                            }
                         } else {
-                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  No unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                            dprint(DT_UNIFICATION, "- %y(%i) had no ovar to g_id mapping, so new one created.  No unification test needed.\n", sym, (*t)->identity->grounding_id, existing_gid);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         dprint(DT_UNIFICATION, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
                             ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
                     }
-                }
-                else
-                {
+                } else {
                     dprint(DT_UNIFICATION, "- Skipping %y.  No g_id necessary for STI.\n", sym);
                 }
-            }
-            else
-            {
+            } else {
                 dprint(DT_UNIFICATION, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
             }
             break;
@@ -1586,12 +1585,12 @@ void add_unifications(agent* thisAgent,
 {
     condition* c;
 
-    dprint(DT_UNIFICATION, "Adding unifications...\n");
+    dprint(DT_UNIFICATION, "Looking for unifications...\n");
     for (c = cond; c; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_UNIFICATION, "Adding unifications for condition: %l\n", c);
+            dprint(DT_UNIFICATION, "Looking for unifications in condition: %l\n", c);
             add_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
             add_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
             add_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
@@ -1859,7 +1858,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         /* -- Set identity information for relational test with variable as original symbol-- */
                         if (original_referent && original_referent->is_variable())
                         {
-                            dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against \"%y\n", original_referent);
+                            dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against %y\n", original_referent);
                             chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
                             if (chunk_test->identity->grounding_wme)
                             {
