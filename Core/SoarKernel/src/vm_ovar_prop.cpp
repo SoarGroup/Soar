@@ -50,11 +50,12 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t in
         iter_inst = iter_sym->second.find(inst_id);
         if (iter_inst != iter_sym->second.end())
         {
-//            dprint(DT_OVAR_PROP, "...Found.  Returning existing o_id %u\n", iter_inst->second);
+            dprint(DT_OVAR_PROP, "...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, inst_id, iter_inst->second);
             return iter_inst->second;
         }
     }
 
+    dprint(DT_OVAR_PROP, "...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, inst_id);
     return 0;
 
 }
@@ -70,7 +71,7 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t i
         (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
         symbol_add_ref(thisAgent, orig_var);
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
-        dprint(DT_OVAR_PROP, "...Not found.  Stored and returning new o_id %u for orig var %y.\n", ovar_id_counter, orig_var);
+        dprint(DT_OVAR_PROP, "...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, inst_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;

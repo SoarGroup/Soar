@@ -63,7 +63,6 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                     print_substitution_map(DT_FIX_CONDITIONS);
                     assert(false);
                 }
-                //assert(found_test);
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
                 t->data.referent = found_test->data.referent;

@@ -153,8 +153,8 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym, uint64_
             print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
         }
     } else {
+        /* This case can occur for RHS unbound variables */
         dprint(DT_VARIABLIZATION_MANAGER, "...did not find o_id for %y in o_id table for instantiation %u.\n", index_sym, pI_id);
-        assert(false);
     }
     return 0;
 }
@@ -166,6 +166,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(lO_id);
     if (iter == (*o_id_to_g_id_map).end())
     {
+        dprint(DT_OVAR_MAPPINGS, "Did not find o_id to g_id mapping for %u.  Adding.\n", lO_id);
         (*o_id_to_g_id_map)[lO_id] = index_g_id;
 //        symbol_add_ref(thisAgent, index_sym);
         /* -- returning 0 indicates that the mapping was added -- */
@@ -174,8 +175,8 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     else
     {
         dprint(DT_OVAR_MAPPINGS,
-               "...%u already exists in orig_var variablization table for %y.  add_orig_var_to_gid_mapping returning existing g_id.\n",
-               iter->second, index_sym);
+               "...g%u already exists for o_id %u(%y).  add_orig_var_to_gid_mapping returning existing g_id g%u.\n",
+               iter->second, lO_id, index_sym, iter->second);
     }
     return iter->second;
 }

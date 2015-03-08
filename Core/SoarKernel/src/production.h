@@ -125,7 +125,7 @@ typedef struct bt_info_struct
 
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-
+    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
