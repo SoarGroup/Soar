@@ -678,4 +678,11 @@ struct epmem_interval_comparator
 };
 typedef std::priority_queue<epmem_interval*, std::vector<epmem_interval*>, epmem_interval_comparator> epmem_interval_pq;
 
+// suppress long "decorated name length exceeded" warning;
+// applies for the rest of the TU, which is where templates are expanded
+// and the warning is generated.
+#ifdef _MSC_VER
+  #pragma warning(disable : 4503)
 #endif
+
+#endif // EPISODIC_MEMORY_H

@@ -116,6 +116,8 @@
 #include "sml_ClientAnalyzedXML.h"
 #include "soar_instance.h"
 %}
+// name this () operator from soar_instance.h so it can be wrapped
+%rename(compare) cmp_str::operator();
 
 //
 // Override EXPORT macro
@@ -152,13 +154,13 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
-bool __stdcall DllMain( void * hModule, 
-                       unsigned long  ul_reason_for_call, 
+bool __stdcall DllMain( void * hModule,
+                       unsigned long  ul_reason_for_call,
                        void * lpReserved
 					 )
 {
 	//_crtBreakAlloc = 13542;
-	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;
 	unused(lpReserved) ;
