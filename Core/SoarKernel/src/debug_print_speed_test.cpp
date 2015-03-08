@@ -6,20 +6,20 @@
 
 static Output_Manager* thisOutput_Manager = NULL;
 
-//#define test_print_function(format, ...) dprint (DT_DEBUG, format , __VA_ARGS__)
-//#define test_print_function(format, ...) Output_Manager::Get_OM().debug_print_sf (DT_DEBUG, format , __VA_ARGS__)
-//#define test_print_function(format, ...) Output_Manager::Get_OM().debug_print_sf_noprefix (DT_DEBUG, format , __VA_ARGS__)
-//#define test_print_function(format, ...) Output_Manager::Get_OM().print_sf (format , __VA_ARGS__)
+//#define test_print_function(format, ...) dprint (DT_DEBUG, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) Output_Manager::Get_OM().debug_print_sf (DT_DEBUG, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) Output_Manager::Get_OM().debug_print_sf_noprefix (DT_DEBUG, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) Output_Manager::Get_OM().print_sf (format , ##__VA_ARGS__)
 
-//#define test_print_function(format, ...) print (debug_agent, format , __VA_ARGS__)
-//#define test_print_function(format, ...) print_with_symbols (debug_agent, format , __VA_ARGS__)
-#define test_print_function(format, ...) print_old (debug_agent, format , __VA_ARGS__)
+//#define test_print_function(format, ...) print (debug_agent, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) print_with_symbols (debug_agent, format , ##__VA_ARGS__)
+#define test_print_function(format, ...) print_old (debug_agent, format , ##__VA_ARGS__)
 
-//#define test_print_function(format, ...) Output_Manager::Get_OM().printa_sf(debug_agent, format , __VA_ARGS__)
-//#define test_print_function(format, ...) thisOutput_Manager->printa_sf(debug_agent, format , __VA_ARGS__)
+//#define test_print_function(format, ...) Output_Manager::Get_OM().printa_sf(debug_agent, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) thisOutput_Manager->printa_sf(debug_agent, format , ##__VA_ARGS__)
 
-//#define test_print_function(format, ...) dprint_y (DT_DEBUG, format , __VA_ARGS__)
-//#define test_print_function(format, ...) dprint_macro (DT_DEBUG, format , __VA_ARGS__)
+//#define test_print_function(format, ...) dprint_y (DT_DEBUG, format , ##__VA_ARGS__)
+//#define test_print_function(format, ...) dprint_macro (DT_DEBUG, format , ##__VA_ARGS__)
 
 void test_print_speed()
 {

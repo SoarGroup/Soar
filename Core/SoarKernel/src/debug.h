@@ -44,15 +44,15 @@
 
     //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
 
-    #define dprint(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , __VA_ARGS__)
-    #define dprint_set_indents(mode, ...) Output_Manager::Get_OM().set_dprint_indents (mode , __VA_ARGS__)
-    #define dprint_set_test_format(mode, ...) Output_Manager::Get_OM().set_dprint_test_format (mode , __VA_ARGS__)
-    #define dprint_clear_indents(mode, ...) Output_Manager::Get_OM().clear_dprint_indents (mode , __VA_ARGS__)
-    #define dprint_clear_test_format(mode, ...) Output_Manager::Get_OM().clear_dprint_test_format (mode , __VA_ARGS__)
-    #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , __VA_ARGS__)
-    #define dprint_noprefix(mode, ...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , __VA_ARGS__)
+    #define dprint(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)
+    #define dprint_set_indents(mode, ...) Output_Manager::Get_OM().set_dprint_indents (mode , ##__VA_ARGS__)
+    #define dprint_set_test_format(mode, ...) Output_Manager::Get_OM().set_dprint_test_format (mode , ##__VA_ARGS__)
+    #define dprint_clear_indents(mode, ...) Output_Manager::Get_OM().clear_dprint_indents (mode , ##__VA_ARGS__)
+    #define dprint_clear_test_format(mode, ...) Output_Manager::Get_OM().clear_dprint_test_format (mode , ##__VA_ARGS__)
+    #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)
+    #define dprint_noprefix(mode, ...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##__VA_ARGS__)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
-    #define dprint_header(mode, h, ...) Output_Manager::Get_OM().debug_print_header (mode , h , __VA_ARGS__)
+    #define dprint_header(mode, h, ...) Output_Manager::Get_OM().debug_print_header (mode , h , ##__VA_ARGS__)
 
     /* -- The rest of these should all be migrated to soar format strings -- */
     #define dprint_current_lexeme(mode) Output_Manager::Get_OM().print_current_lexeme (mode)
