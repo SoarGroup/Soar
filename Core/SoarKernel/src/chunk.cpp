@@ -502,7 +502,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *inst_top = first_inst;
     dprint(DT_UNIFICATION, "Adding unification tests for new conditions from backtracing.\n");
     goal_stack_level gsl = get_match_goal(*inst_top);
-    add_unifications(thisAgent, *inst_top, gsl, pI_id);
+    thisAgent->variablizationManager->add_unifications(*inst_top, gsl, pI_id);
 
     copy_cond = *inst_top;
     while (copy_cond)

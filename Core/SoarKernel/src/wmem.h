@@ -201,4 +201,22 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
     }
 }
 
+
+inline const char* field_to_string(WME_Field f)
+{
+    if (f == ID_ELEMENT) return "ID";
+    if (f == ATTR_ELEMENT) return "attribute";
+    if (f == VALUE_ELEMENT) return "value";
+    return "NO-ELEMENT";
+}
+
+inline Symbol* get_wme_element(wme* w, WME_Field f)
+{
+    if (!w)  return NULL;
+    if (f == ID_ELEMENT) return w->id;
+    if (f == ATTR_ELEMENT) return w->attr;
+    if (f == VALUE_ELEMENT) return w->value;
+    return NULL;
+}
+
 #endif

@@ -63,6 +63,8 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                     print_substitution_map(DT_FIX_CONDITIONS);
                     assert(false);
                 }
+                print_variablization_tables(DT_FIX_CONDITIONS);
+                print_substitution_map(DT_FIX_CONDITIONS);
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
                 t->data.referent = found_test->data.referent;
@@ -125,7 +127,7 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
-            dprint(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: %y = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
+            dprint(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: o%u = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
             iter->second = survivorSymTest->identity->grounding_id;
         }
     }

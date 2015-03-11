@@ -73,6 +73,7 @@ class Variablization_Manager
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
 
+        void add_unifications(condition* cond, goal_stack_level level, uint64_t pI_id);
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
         void merge_conditions(condition* top_cond);
@@ -81,7 +82,6 @@ class Variablization_Manager
         void add_ltis_to_dnvl_for_prefs(preference* prefs);
 
         void      variablize_relational_constraints();
-
         void      variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void      variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
@@ -125,6 +125,9 @@ class Variablization_Manager
 
         bool variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
+
+        void add_unification_constraint(test* t, test t_add, uint64_t gid);
+        void add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level, uint64_t pI_id);
 
         test      get_substitution(Symbol* sym);
         void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
