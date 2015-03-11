@@ -284,7 +284,6 @@ void ChunkTest::testChunk23()
 
 void ChunkTest::testChunk24()
 {
-    source("setup.soar");
     build_and_check_chunk("chunk24.soar", 8, 1);
 }
 
