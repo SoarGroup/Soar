@@ -1447,7 +1447,7 @@ void propagate_identity(agent* thisAgent,
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n%c\n", c);
 
-                propagate_identity(thisAgent, c->data.ncc.top, level, true);
+                propagate_identity(thisAgent, c->data.ncc.top, level, pI_id, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {
