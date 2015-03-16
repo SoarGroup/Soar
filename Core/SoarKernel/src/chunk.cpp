@@ -924,10 +924,10 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
 
 inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
 {
-    thisAgent->variablizationManager->clear_variablization_tables();
+    thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_ovar_to_gid_table();
-    thisAgent->variablizationManager->clear_ovar_to_o_id_map();
+    thisAgent->variablizationManager->clear_oid_to_gid_map();
+//    thisAgent->variablizationManager->clear_ovar_to_o_id_map();
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)

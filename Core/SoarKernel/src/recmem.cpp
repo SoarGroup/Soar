@@ -826,7 +826,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     inst->GDS_evaluated_already = false;
     dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "create_instantiation() called for %y\n", inst->prod->name);
+    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
@@ -1010,7 +1010,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
-    thisAgent->variablizationManager->clear_ovar_to_o_id_map();
+//    thisAgent->variablizationManager->clear_ovar_to_o_id_map();
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,
@@ -1020,7 +1020,7 @@ void create_instantiation(agent* thisAgent, production* prod,
      *    propagating identities in the instantiation and used to add identity information
      *    to NCCs and match RHS variables with LHS variables.  Both are done at this
      *    point -- */
-    thisAgent->variablizationManager->clear_ovar_to_gid_table();
+    thisAgent->variablizationManager->clear_oid_to_gid_map();
 
     /* -- clear the original var references that we cached in the preference in
      *    execute_action but did not increase their refcount -- */

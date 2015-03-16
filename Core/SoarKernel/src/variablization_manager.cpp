@@ -76,6 +76,70 @@ void Variablization_Manager::discard_instantiation_id(uint64_t i_id)
     --inst_id_counter;
 }
 
+
+inline variablization* copy_variablization(agent* thisAgent, variablization* v)
+{
+    variablization* new_variablization = new variablization;
+    new_variablization->instantiated_symbol = v->instantiated_symbol;
+    new_variablization->variablized_symbol = v->variablized_symbol;
+    symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
+    symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
+    new_variablization->grounding_id = v->grounding_id;
+    return new_variablization;
+}
+
+void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
+        Symbol* variable,
+        identity_info* identity)
+{
+    variablization* new_variablization;
+    assert(instantiated_sym && variable);
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(%u) to %y.\n",
+           instantiated_sym,
+           identity ? identity->grounding_id : 0,
+           variable);
+
+    new_variablization = new variablization;
+    new_variablization->instantiated_symbol = instantiated_sym;
+    new_variablization->variablized_symbol = variable;
+    symbol_add_ref(thisAgent, instantiated_sym);
+    symbol_add_ref(thisAgent, variable);
+    new_variablization->grounding_id = identity ? identity->grounding_id : 0;
+
+    if (instantiated_sym->is_sti())
+    {
+        /* -- STI may have more than one original symbol (mostly due to the fact
+         *    that placeholder variables still exist to handle dot notation).  So, we
+         *    look them up using the identifier symbol instead of the original variable.
+         *
+         *    Note that we also store an entry using the new variable as an index. Later,
+         *    when looking for ungrounded variables in relational tests, the
+         *    identifier symbol will have already been replaced with a variable,
+         *    so we must use the variable instead to look up variablization info.
+         *    This may not be necessary after we resurrect the old NOT code. -- */
+
+        (*sym_to_var_map)[instantiated_sym] = new_variablization;
+        (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
+                        instantiated_sym, variable);
+    }
+    else if (identity)
+    {
+
+        /* -- A constant symbol is being variablized, so store variablization info
+         *    indexed by the constant's grounding id. -- */
+        (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
+
+        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created g_id_to_var_map[%u] to new variablization.\n",
+                        identity->grounding_id);
+    }
+    else
+    {
+        assert(false);
+    }
+    //  print_variablization_table();
+}
+
 /* ============================================================================
  *            Variablization_Manager::variablize_lhs_symbol
  *

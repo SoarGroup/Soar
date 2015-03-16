@@ -1,5 +1,5 @@
 # Negative conjunctive conditions
-sp {apply21f1
+sp {apply25f1
     (state <s> ^superstate <ss>
                ^operator)
     (<ss> ^test-item2 <y>
@@ -10,7 +10,7 @@ sp {apply21f1
     (<s> ^lowest <x>)
 }
 
-sp {apply21f2
+sp {apply25f2
     (state <s> ^superstate <ss>
                ^operator <o>
                ^lowest <low>)
