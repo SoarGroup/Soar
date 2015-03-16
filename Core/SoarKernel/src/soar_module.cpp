@@ -109,10 +109,10 @@ namespace soar_module
 
             for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
             {
-//                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
-//                    soar_module::symbol_triple((*a_it)->id, (*a_it)->attr, (*a_it)->value),
-//                    soar_module::g_id_triple(0,0,0));
-                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
+                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
+                    soar_module::symbol_triple((*a_it)->id, (*a_it)->attr, (*a_it)->value),
+                    soar_module::g_id_triple(0,0,0));
+//                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
                 pref->o_supported = true;
                 symbol_add_ref(thisAgent, pref->id);
                 symbol_add_ref(thisAgent, pref->attr);
@@ -148,25 +148,25 @@ namespace soar_module
                     inst->bottom_of_instantiated_conditions = cond;
                 }
                 cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
-//                cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
-//                cond->data.tests.id_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
-//                cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
+                cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
+                cond->data.tests.id_test->identity->grounding_wme = (*c_it);
+                cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
+                cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
+                symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
 
                 cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
-//                cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
-//                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
-//                cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
+                cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
+                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
+                cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
+                cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
+                symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
 
                 cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
-//                cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
-//                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
-//                cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
+                cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
+                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
+                cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
+                cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
+                symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
 
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);
