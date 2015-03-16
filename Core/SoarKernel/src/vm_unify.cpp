@@ -57,7 +57,6 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
             {
                 if (!sym->is_sti())
                 {
-                    assert((*t)->identity->grounding_id);
                     /* -- Check if we ned to add a unifying constraint, b/c this original variable
                      *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var_id)
