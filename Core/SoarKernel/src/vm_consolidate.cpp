@@ -63,8 +63,6 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                     print_substitution_map(DT_FIX_CONDITIONS);
                     assert(false);
                 }
-                print_variablization_tables(DT_FIX_CONDITIONS);
-                print_substitution_map(DT_FIX_CONDITIONS);
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
                 t->data.referent = found_test->data.referent;
@@ -76,7 +74,8 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 }
                 symbol_add_ref(thisAgent, found_test->identity->original_var);
                 t->identity->original_var = found_test->identity->original_var;
-                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(found_test->identity->original_var, 0);
+                t->identity->original_var_id = found_test->identity->original_var_id;
+//                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(found_test->identity->original_var, 0);
             }
             break;
     }

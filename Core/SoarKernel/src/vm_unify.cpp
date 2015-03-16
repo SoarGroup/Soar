@@ -23,7 +23,7 @@ void Variablization_Manager::add_unification_constraint(test* t, test t_add, uin
     dprint(DT_UNIFICATION, "Added unifying equality test between two symbols.  Test is now: %t\n", (*t));
 }
 
-void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level, uint64_t pI_id)
+void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level)
 {
     cons* c;
 
@@ -41,7 +41,7 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_unifications_to_test(&ct, default_f, level, pI_id);
+                add_unifications_to_test(&ct, default_f, level);
             }
             break;
 
@@ -60,7 +60,7 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
                     assert((*t)->identity->grounding_id);
                     /* -- Check if we ned to add a unifying constraint, b/c this original variable
                      *    already has a different g_id matched to it -- */
-                    if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
+                    if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var_id)
                     {
                         dprint(DT_UNIFICATION, "Checking if unification needed for o%u(%y) and g%u.\n", (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
                         /* MToDo | Consolidate these two calls when we get rid of original vars */
@@ -77,10 +77,7 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
                         } else {
                             thisAgent->variablizationManager->print_ovar_gid_propogation_table(DT_UNIFICATION);
                             thisAgent->variablizationManager->print_o_id_tables(DT_UNIFICATION);
-                            thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
-                            dprint(DT_UNIFICATION, "- %y o%u(%y, g%u)had no o_id to g_id mapping, so new one created.  No unification test needed.\n", sym, (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
-//                            assert(false);
-                            // This should not happen any more.
+                            dprint(DT_UNIFICATION, "- %y o%u(%y, g%u)had no o_id to g_id mapping, so must be ungrounded.  No unification test needed.\n", sym, (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
                         }
                     } else {
 //                        dprint(DT_UNIFICATION, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
@@ -98,7 +95,7 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
 //    (*t)->identity->grounding_wme = NULL;
 }
 
-void Variablization_Manager::add_unifications(condition* cond, goal_stack_level level, uint64_t pI_id)
+void Variablization_Manager::add_unifications(condition* cond, goal_stack_level level)
 {
     condition* c;
 
@@ -110,9 +107,9 @@ void Variablization_Manager::add_unifications(condition* cond, goal_stack_level 
         if (c->type == POSITIVE_CONDITION)
         {
             dprint(DT_UNIFICATION, "Looking for unifications in condition: %l\n", c);
-            add_unifications_to_test(&(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
-            add_unifications_to_test(&(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
-            add_unifications_to_test(&(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
+            add_unifications_to_test(&(c->data.tests.id_test), ID_ELEMENT, level);
+            add_unifications_to_test(&(c->data.tests.attr_test), ATTR_ELEMENT, level);
+            add_unifications_to_test(&(c->data.tests.value_test), VALUE_ELEMENT, level);
             dprint_set_indents(DT_UNIFICATION, "          ");
             dprint(DT_UNIFICATION, "Condition is now: %l\n", c);
             dprint_clear_indents(DT_UNIFICATION);

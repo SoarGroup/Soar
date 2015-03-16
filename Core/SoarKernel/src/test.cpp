@@ -1251,7 +1251,7 @@ inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_u
     return (cond->bt.wme_);
 }
 
-inline void add_identity_and_unifications_to_test(agent* thisAgent,
+inline void add_identity_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
                                  goal_stack_level level,
@@ -1273,7 +1273,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_identity_and_unifications_to_test(thisAgent, &ct, default_f, level, pI_id);
+                add_identity_to_test(thisAgent, &ct, default_f, level, pI_id);
             }
             break;
 
@@ -1298,13 +1298,8 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
                      *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
-                        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to %u.  No unification needed.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
+                        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
                         uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
-//                        if (existing_gid && (existing_gid != (*t)->identity->grounding_id))
-//                        {
-//                            dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding.\n", sym, (*t)->identity->grounding_id, existing_gid);
-//                            add_unification_constraint(thisAgent, t, *t, existing_gid);
-//                        }
                     }
                     else
                     {
@@ -1319,7 +1314,7 @@ inline void add_identity_and_unifications_to_test(agent* thisAgent,
             }
             else
             {
-                dprint(DT_IDENTITY_PROP, "- Skipping.  No %s sym retrieved from wme in add_identity_and_unifications_to_test!\n", field_to_string((*t)->identity->grounding_field));
+                dprint(DT_IDENTITY_PROP, "- Skipping.  No %s sym retrieved from wme in add_identity_to_test!\n", field_to_string((*t)->identity->grounding_field));
             }
             break;
     }
@@ -1423,9 +1418,9 @@ void propagate_identity(agent* thisAgent,
                 /* -- The last parameter determines whether to cache g_ids for NCCs.  We
                  *    only need to do this when negative conditions exist (has_negative_conds == true)
                  *    and this isn't a recursive call on an NCC list (use_negation_lookup = true) -- */
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
-                add_identity_and_unifications_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
+                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
+                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
+                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
             }
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);

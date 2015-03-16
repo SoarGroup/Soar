@@ -147,6 +147,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym, uint64_
     {
         return get_gid_for_o_id(found_o_id);
     } else {
+        dprint(DT_OVAR_MAPPINGS, "Did not find o_id for %y in instantiation %u. Returning 0.\n", index_sym, pI_id);
         return 0;
     }
 }

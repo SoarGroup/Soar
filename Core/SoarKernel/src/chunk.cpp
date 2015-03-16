@@ -413,8 +413,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                             condition** inst_top,
                             condition** vrblz_top,
                             tc_number tc_to_use,
-                            bool* reliable,
-                            uint64_t pI_id)
+                            bool* reliable)
 {
     cons* c;
     condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz, *copy_cond;
@@ -502,7 +501,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     *inst_top = first_inst;
     dprint(DT_UNIFICATION, "Adding unification tests for new conditions from backtracing.\n");
     goal_stack_level gsl = get_match_goal(*inst_top);
-    thisAgent->variablizationManager->add_unifications(*inst_top, gsl, pI_id);
+    thisAgent->variablizationManager->add_unifications(*inst_top, gsl);
 
     copy_cond = *inst_top;
     while (copy_cond)
@@ -927,7 +926,6 @@ inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_oid_to_gid_map();
-//    thisAgent->variablizationManager->clear_ovar_to_o_id_map();
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
@@ -946,7 +944,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     bool reliable = true;
     bool variablize;
     inst_top = vrblz_top = NULL;
-    int64_t chunk_inst_id = 0;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -1095,7 +1092,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_BACKTRACE, "Grounds after tracing:\n%3", thisAgent->grounds);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
-    chunk_inst_id = thisAgent->variablizationManager->get_new_inst_id();
 
     free_list(thisAgent, thisAgent->positive_potentials);
 
@@ -1103,7 +1099,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_inst_id);
+        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1148,8 +1144,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
         }
 
-        thisAgent->variablizationManager->discard_instantiation_id(chunk_inst_id);
-
         goto chunking_abort;
     }
 
@@ -1161,8 +1155,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
         }
         thisAgent->max_chunks_reached = true;
-
-        thisAgent->variablizationManager->discard_instantiation_id(chunk_inst_id);
 
         goto chunking_abort;
     }
@@ -1192,7 +1184,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list:\n");
 
-    rhs = thisAgent->variablizationManager->variablize_results(results, variablize, chunk_inst_id);
+    rhs = thisAgent->variablizationManager->variablize_results(results, variablize, inst->i_id);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
 
@@ -1224,8 +1216,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         deallocate_condition_list(thisAgent, inst_top);
         deallocate_action_list(thisAgent, rhs);
 
-        thisAgent->variablizationManager->discard_instantiation_id(chunk_inst_id);
-
         // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
         thisAgent->stop_soar = true;
         thisAgent->system_halted = true;
@@ -1250,7 +1240,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 
         chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
-        chunk_inst->i_id = chunk_inst_id;
+        chunk_inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
@@ -1327,7 +1317,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
              && (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH))
     {
         excise_production(thisAgent, prod, false);
-        thisAgent->variablizationManager->discard_instantiation_id(chunk_inst_id);
     }
 
     if (rete_addition_result != REFRACTED_INST_MATCHED)

@@ -66,17 +66,6 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
-/* This function is used when a chunk_instantiation fails to form a chunk.  Decreases
- * the instantiation id counter by 1, allowing it to be re-assigned. */
-
-void Variablization_Manager::discard_instantiation_id(uint64_t i_id)
-{
-    assert(i_id == inst_id_counter);
-    dprint(DT_VARIABLIZATION_MANAGER, "Discarding instantiation id %u.\n", inst_id_counter);
-    --inst_id_counter;
-}
-
-
 inline variablization* copy_variablization(agent* thisAgent, variablization* v)
 {
     variablization* new_variablization = new variablization;
@@ -245,7 +234,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     {
         if (original_var)
         {
-            dprint(DT_RHS_VARIABLIZATION, "...searching for original var %y in variablization orig var table...\n", original_var);
+            dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y for instantiation %u...\n", original_var, pI_id);
             g_id = get_gid_for_orig_var(original_var, pI_id);
             if (g_id != NON_GENERALIZABLE)
             {
@@ -263,6 +252,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
                  * variable came from another production.  It should be treated like an unbound
                  * variable, so we'll fall through to code at end of function.
                  * */
+                print_tables(DT_RHS_VARIABLIZATION);
                 dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, original_var);
             }
         }

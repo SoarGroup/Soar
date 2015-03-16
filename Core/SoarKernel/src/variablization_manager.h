@@ -53,7 +53,6 @@ class Variablization_Manager
         uint64_t get_new_ground_id() { return (++ground_id_counter); };
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
         uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
-        void discard_instantiation_id(uint64_t i_id);
 
         void clear_variablization_maps();
         void clear_oid_to_gid_map();
@@ -75,7 +74,7 @@ class Variablization_Manager
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
 
-        void add_unifications(condition* cond, goal_stack_level level, uint64_t pI_id);
+        void add_unifications(condition* cond, goal_stack_level level);
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
         void consolidate_variables(condition* top_cond, tc_number tc_num);
         void merge_conditions(condition* top_cond);
@@ -129,7 +128,7 @@ class Variablization_Manager
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
         void add_unification_constraint(test* t, test t_add, uint64_t gid);
-        void add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level, uint64_t pI_id);
+        void add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level);
 
         test      get_substitution(Symbol* sym);
         void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
