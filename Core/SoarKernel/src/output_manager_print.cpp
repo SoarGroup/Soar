@@ -187,8 +187,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 'l')
         {
-            condition_to_string(thisAgent, va_arg(args, condition*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            condition* lc = va_arg(args, condition*);
+            if (lc)
+            {
+                condition_to_string(thisAgent, lc, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'a')
         {
