@@ -1526,8 +1526,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
             add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
                                  &(cond->data.tests.value_test->original_test));
 
-            dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Done adding var names to original tests resulting in: (%t ^%t %t)\n",
-                cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
+            dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Done adding var names to original tests resulting in: %l\n", cond);
 
         }
 
@@ -1794,8 +1793,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     }
 
-    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): (%t ^%t %t)\n",
-        cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
+    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): %l\n", cond);
 
     fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, i_id);
     fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, i_id);
@@ -1803,8 +1801,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
-    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test: (%t ^%t %t)\n",
-        cond->data.tests.id_test, cond->data.tests.attr_test, cond->data.tests.value_test);
+    dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test: %l\n", cond);
 }
 
 /* UITODO| Make these methods of test */
