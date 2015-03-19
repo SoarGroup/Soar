@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /////////////////////////////////////////////////////////////////
 // Kernel class
@@ -77,12 +77,12 @@ Kernel::Kernel(Connection* pConnection)
     }
     
     /* voigtjr, rmarinie
-     *
-     * Upon further tinkering, we have discovered that the use of the code within
-     * the following symbol on Linux is no longer necessary, and, in fact, causes
-     * problems, but we are leaving it in in case our analysis turns out to be
-     * incorrect.
-     */
+    *
+    * Upon further tinkering, we have discovered that the use of the code within
+    * the following symbol on Linux is no longer necessary, and, in fact, causes
+    * problems, but we are leaving it in in case our analysis turns out to be
+    * incorrect.
+    */
     
 //#ifdef LINUX_STATIC_LINK
     // On Linux the linker only makes a single pass through the libraries
@@ -2268,9 +2268,9 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
     TestSystemCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, (smlSystemEventId) - 1) ;
+    smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, smlSYSTEM_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlSYSTEM_EVENT_BAD)
     {
         return false ;
     }
@@ -2297,9 +2297,9 @@ bool Kernel::UnregisterForStringEvent(int callbackID)
     TestStringCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, (smlStringEventId) - 1) ;
+    smlStringEventId id = m_StringEventMap.findFirstKeyByTest(&test, smlSTRING_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlSTRING_EVENT_BAD)
     {
         return false ;
     }
@@ -2326,9 +2326,9 @@ bool Kernel::UnregisterForUpdateEvent(int callbackID)
     TestUpdateCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, (smlUpdateEventId) - 1) ;
+    smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, smlUPDATE_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlUPDATE_EVENT_BAD)
     {
         return false ;
     }
@@ -2354,9 +2354,9 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
     TestAgentCallback test(callbackID) ;
     
     // Find the event ID for this callbackID
-    smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, (smlAgentEventId) - 1) ;
+    smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, smlAGENT_EVENT_BAD) ;
     
-    if (id == -1)
+    if (id == smlAGENT_EVENT_BAD)
     {
         return false ;
     }

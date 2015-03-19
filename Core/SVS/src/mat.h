@@ -369,6 +369,16 @@ class bbox
             return (max_pt + min_pt) / 2.0;
         }
         
+        const vec3& get_min() const
+        {
+            return min_pt;
+        }
+        
+        const vec3& get_max() const
+        {
+            return max_pt;
+        }
+        
         void get_points(ptlist& p) const
         {
             p.push_back(vec3(min_pt[0], min_pt[1], min_pt[2]));
@@ -387,6 +397,12 @@ class bbox
             randomize_vec(randPt, min_pt, max_pt);
             return randPt;
         }
+        
+        double get_volume() const
+        {
+            return (max_pt[0] - min_pt[0]) * (max_pt[1] - min_pt[1]) * (max_pt[2] - min_pt[2]);
+        }
+        
         
         friend std::ostream& operator<<(std::ostream& os, const bbox& b);
         

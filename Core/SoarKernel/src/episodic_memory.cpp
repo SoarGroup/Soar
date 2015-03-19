@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -1328,19 +1328,19 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
     for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
     {
         // add the preference to temporary memory
-		add_preference_to_tm(thisAgent, pref);
-		// add to the list of preferences to be removed
-		// when the goal is removed
-		insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-		pref->on_goal_list = true;
-		
-		if (epmem_wmes)
-		{
-			// if this is a meta wme, then it is completely local
-			// to the state and thus we will manually remove it
-			// (via preference removal) when the time comes
-			epmem_wmes->push_back(pref);
-		}
+        add_preference_to_tm(thisAgent, pref);
+        // add to the list of preferences to be removed
+        // when the goal is removed
+        insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+        pref->on_goal_list = true;
+        
+        if (epmem_wmes)
+        {
+            // if this is a meta wme, then it is completely local
+            // to the state and thus we will manually remove it
+            // (via preference removal) when the time comes
+            epmem_wmes->push_back(pref);
+        }
     }
     
     if (!epmem_wmes)
@@ -1371,11 +1371,11 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
                 
                 for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
                 {
-					add_preference_to_tm(thisAgent, just_pref);
-					if (wma_enabled(thisAgent))
-					{
-						wma_activate_wmes_in_pref(thisAgent, just_pref);
-					}
+                    add_preference_to_tm(thisAgent, just_pref);
+                    if (wma_enabled(thisAgent))
+                    {
+                        wma_activate_wmes_in_pref(thisAgent, just_pref);
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -1298,7 +1298,7 @@ bool get_lexer_allow_ids(agent* thisAgent)
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
 
-void determine_possible_symbol_types_for_string(char* s,
+void determine_possible_symbol_types_for_string(const char* s,
         size_t length_of_s,
         bool* possible_id,
         bool* possible_var,
@@ -1307,7 +1307,7 @@ void determine_possible_symbol_types_for_string(char* s,
         bool* possible_fc,
         bool* rereadable)
 {
-    char* ch;
+    const char* ch;
     bool all_alphanum;
     
     *possible_id = false;

@@ -19,7 +19,7 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
-#include <portability.h>
+#include "portability.h"
 #include "kernel.h"
 #include "soar_module.h"
 #include "Export.h"

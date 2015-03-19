@@ -73,13 +73,14 @@ class Output_Manager
         
         void init();
         void fill_mode_info();
-        bool debug_mode_enabled(TraceMode mode);
-        void    set_default_agent(agent* pSoarAgent);
-        agent* get_default_agent()
-        {
-            return m_defaultAgent;
-        };
+        
         void set_dprint_enabled(bool activate);
+        bool debug_mode_enabled(TraceMode mode);
+        
+        void set_default_agent(agent* pSoarAgent);
+        void clear_default_agent() { m_defaultAgent = NULL; }
+        agent* get_default_agent() { return m_defaultAgent; };
+        
         
         /* Print functions that don't take an agent.  Will use default agent if necessary */
         void printv(const char* format, ...);
@@ -115,14 +116,8 @@ class Output_Manager
             return printed_output_strings[next_output_string];
         }
         
-        int get_printer_output_column(agent* thisAgent = NULL)
-        {
-            return printer_output_column;
-        }
-        void set_printer_output_column(agent* thisAgent, int pOutputColumn = 1)
-        {
-            printer_output_column = pOutputColumn;
-        }
+        int get_printer_output_column(agent* thisAgent = NULL);
+        void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
         void start_fresh_line(agent* pSoarAgent = NULL);
         
         char* NULL_SYM_STR;
@@ -152,8 +147,8 @@ class Output_Manager
         char    printed_output_strings[output_string_size][num_output_strings];
         int64_t next_output_string;
         
-        int     printer_output_column;
-        void    update_printer_columns(agent* pSoarAgent, bool update_global, const char* msg);
+        int     global_printer_output_column;
+        void    update_printer_columns(agent* pSoarAgent, const char* msg);
         
 };
 

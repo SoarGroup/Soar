@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
@@ -31,7 +31,8 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
         if (m_RawOutput)
         {
             m_Result << "Using " ;
-            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format()) {
+            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format())
+            {
                 case numberedFormat:
                     m_Result << "numbered chunk naming format.";
                     break;
@@ -49,14 +50,15 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
         }
         return true;
     }
-
+    
     if (pChunkFormat)
     {
         Soar_Instance::Get_Soar_Instance().Set_Chunk_Name_Format(*pChunkFormat);
         if (m_RawOutput)
         {
             m_Result << "Using " ;
-            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format()) {
+            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format())
+            {
                 case numberedFormat:
                     m_Result << "numbered chunk naming format.";
                     break;
@@ -73,7 +75,7 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
         }
     }
-
+    
     if (pCount)
     {
         if (*pCount >= 0)
@@ -82,12 +84,12 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             {
                 return SetError("Cannot set count greater than the max-chunks sysparam.");
             }
-
+            
             if (static_cast<uint64_t>(*pCount) < thisAgent->chunk_count)
             {
                 return SetError("Cannot set chunk count less than the current number of chunks.");
             }
-
+            
             thisAgent->chunk_count = static_cast<uint64_t>(*pCount);
         }
         else
@@ -104,7 +106,7 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             }
         }
     }
-
+    
     if (pPrefix)
     {
         if (pPrefix->size())
@@ -113,9 +115,9 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             {
                 return SetError("Failed to set prefix (does it contain a '*'?).");
             }
-
+            
             strcpy(thisAgent->chunk_name_prefix, pPrefix->c_str());
-
+            
         }
         else
         {
@@ -134,6 +136,6 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
             }
         }
     }
-
+    
     return true;
 }

@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -34,6 +34,7 @@
 #include <utility>
 #include <ctype.h>
 #include <fstream>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -171,10 +172,11 @@ that smem_update_schema_one_to_two can convert
 
 It tests for the existence of a table name to determine if this is the old version.
 -scijones 2013*/
-inline bool smem_version_one(agent *thisAgent) {
+inline bool smem_version_one(agent* thisAgent)
+{
     double check_num_tables;
-    thisAgent->smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'",check_num_tables);
-    if(check_num_tables==0)
+    thisAgent->smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
+    if (check_num_tables == 0)
     {
         return false;
     }
@@ -189,34 +191,34 @@ void smem_path_param::set_value(const char* new_value)
        that switching databases and database modes on the fly seems to work, there's
        no need to attach special significance to the first time the path is set.
        MMA 2013 */
-
-        /* So, as it turns out, the first time you set the path, it is nice to check that
-           the database is the right version, so you can warn someone before they try to
-           use it that conversion will take some time. That way, they can then switch to
-           another before dedicating that time.
-           scijones 2014*/
-    value->assign( new_value );
-
-    const char *db_path;
+    
+    /* So, as it turns out, the first time you set the path, it is nice to check that
+       the database is the right version, so you can warn someone before they try to
+       use it that conversion will take some time. That way, they can then switch to
+       another before dedicating that time.
+       scijones 2014*/
+    value->assign(new_value);
+    
+    const char* db_path;
     db_path = thisAgent->smem_params->path->get_value();
     bool attempt_connection_here = thisAgent->smem_db->get_status() == soar_module::disconnected;
     if (attempt_connection_here)
     {
-        thisAgent->smem_db->connect( db_path );
+        thisAgent->smem_db->connect(db_path);
     }
-
-    if ( thisAgent->smem_db->get_status() == soar_module::problem )
+    
+    if (thisAgent->smem_db->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg() );
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg());
     }
     else
     {
         // temporary queries for one-time init actions
-        soar_module::sqlite_statement *temp_q = NULL;
-
+        soar_module::sqlite_statement* temp_q = NULL;
+        
         // If the database is on file, make sure the database contents use the current schema
         // If it does not, switch to memory-based database
-
+        
         if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
         {
             bool sql_is_new;
@@ -224,26 +226,27 @@ void smem_path_param::set_value(const char* new_value)
             if (thisAgent->smem_db->sql_is_new_db(sql_is_new))
             {
                 if (!sql_is_new)
-                {   // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement( thisAgent->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)" );
+                {
+                    // Check if table exists already
+                    temp_q = new soar_module::sqlite_statement(thisAgent->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
                     temp_q->prepare();
-                    if ( temp_q->get_status() == soar_module::ready )
+                    if (temp_q->get_status() == soar_module::ready)
                     {
-                        if (!thisAgent->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version ))
+                        if (!thisAgent->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
                             if (smem_version_one(thisAgent))
                             {
-                                print(thisAgent,"...You have selected a database with an old version.\n"
-                                        "...If you proceed, the database will be converted to a\n"
-                                        "...new version when the database is initialized.\n"
-                                        "...Conversion can take a large amount of time with large databases.\n");
+                                print(thisAgent, "...You have selected a database with an old version.\n"
+                                      "...If you proceed, the database will be converted to a\n"
+                                      "...new version when the database is initialized.\n"
+                                      "...Conversion can take a large amount of time with large databases.\n");
                             }
                         }
                     }
                 }
             }
         }
-
+        
         delete temp_q;
         temp_q = NULL;
     }
@@ -773,19 +776,19 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
     for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
     {
         // add the preference to temporary memory
-		add_preference_to_tm(thisAgent, pref);
-		// and add it to the list of preferences to be removed
-		// when the goal is removed
-		insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-		pref->on_goal_list = true;
-		
-		if (meta)
-		{
-			// if this is a meta wme, then it is completely local
-			// to the state and thus we will manually remove it
-			// (via preference removal) when the time comes
-			state->id->smem_info->smem_wmes->push_back(pref);
-		}
+        add_preference_to_tm(thisAgent, pref);
+        // and add it to the list of preferences to be removed
+        // when the goal is removed
+        insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+        pref->on_goal_list = true;
+        
+        if (meta)
+        {
+            // if this is a meta wme, then it is completely local
+            // to the state and thus we will manually remove it
+            // (via preference removal) when the time comes
+            state->id->smem_info->smem_wmes->push_back(pref);
+        }
     }
     
     if (!meta)
@@ -816,11 +819,11 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
                 
                 for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
                 {
-					add_preference_to_tm(thisAgent, just_pref);
-					if (wma_enabled(thisAgent))
-					{
-						wma_activate_wmes_in_pref(thisAgent, just_pref);
-					}
+                    add_preference_to_tm(thisAgent, just_pref);
+                    if (wma_enabled(thisAgent))
+                    {
+                        wma_activate_wmes_in_pref(thisAgent, just_pref);
+                    }
                 }
             }
         }
@@ -2152,7 +2155,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             ((lti->id->impasse_wmes == NIL) &&
              (lti->id->input_wmes == NIL) &&
              (lti->id->slots == NIL)))
-                || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
+            || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
     {
         soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
         Symbol* attr_sym;
@@ -2160,9 +2163,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
         expand_q->bind_int(1, lti_id);
-
+        
         std::list<Symbol*> children;
-
+        
         while (expand_q->execute() == soar_module::row)
         {
             // make the identifier symbol irrespective of value type
@@ -2172,7 +2175,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
             {
                 value_sym = smem_lti_soar_make(thisAgent, static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), lti->id->level);
-                if (depth>1)
+                if (depth > 1)
                 {
                     children.push_back(value_sym);
                 }
@@ -2191,17 +2194,17 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             symbol_remove_ref(thisAgent, value_sym);
         }
         expand_q->reinitialize();
-
+        
         //Attempt to find children for the case of depth.
         std::list<Symbol*>::iterator iterator;
         std::list<Symbol*>::iterator end = children.end();
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
-            smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth-1);
+            smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth - 1);
         }
     }
     
-
+    
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
@@ -2517,7 +2520,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     {
         match_ids = &(temp_list);
     }
-
+    
     smem_lti_id king_id = NIL;
     
     ////////////////////////////////////////////////////////////////////////////
@@ -2914,11 +2917,11 @@ void smem_reset(agent* thisAgent, Symbol* state)
         data->last_cmd_time[1] = 0;
         data->last_cmd_count[0] = 0;
         data->last_cmd_count[1] = 0;
-
+        
         // this will be called after prefs from goal are already removed,
         // so just clear out result stack
         data->smem_wmes->clear();
-
+        
         state = state->id->lower_goal;
     }
 }
@@ -2932,72 +2935,72 @@ void smem_switch_to_memory_db(agent* thisAgent, std::string& buf)
 }
 
 //Supposing a database exists with the old version, this should update it. - Steven Jones
-inline void smem_update_schema_one_to_two(agent *thisAgent)
+inline void smem_update_schema_one_to_two(agent* thisAgent)
 {
-	thisAgent->smem_db->sql_execute("BEGIN TRANSACTION");
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_type");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_str");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_int");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ascii");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_lti");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_history");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_web");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_attr");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_const");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_lti");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
-	thisAgent->smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_vars");
-
-	thisAgent->smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
-	thisAgent->smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
-	thisAgent->smem_db->sql_execute("DROP TABLE smem7_signature");
-
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
-	thisAgent->smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
-	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
-	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
-	thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
-	thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
-	thisAgent->smem_db->sql_execute("COMMIT");
+    thisAgent->smem_db->sql_execute("BEGIN TRANSACTION");
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_type");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_str");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_int");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ascii");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_lti");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_history");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_web");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_attr");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_const");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_lti");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
+    thisAgent->smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_vars");
+    
+    thisAgent->smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+    thisAgent->smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
+    thisAgent->smem_db->sql_execute("DROP TABLE smem7_signature");
+    
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
+    thisAgent->smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
+    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
+    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
+    thisAgent->smem_db->sql_execute("COMMIT");
 }
 
 // opens the SQLite database and performs all initialization required for the current mode
@@ -3087,18 +3090,18 @@ void smem_init_db(agent* thisAgent)
                             version_error_message.assign("...Error: Cannot read version number from file-based semantic memory database.\n");
                             if (smem_version_one(thisAgent))
                             {
-								version_error_message.assign("...Version of semantic memory database is old.\n"
-										                     "...Converting to version 2.0.\n" );
-								smem_update_schema_one_to_two(thisAgent);
-								switch_to_memory = false;
-								tabula_rasa = false;
-								delete temp_q;
-								temp_q = NULL;
-							}
+                                version_error_message.assign("...Version of semantic memory database is old.\n"
+                                                             "...Converting to version 2.0.\n");
+                                smem_update_schema_one_to_two(thisAgent);
+                                switch_to_memory = false;
+                                tabula_rasa = false;
+                                delete temp_q;
+                                temp_q = NULL;
+                            }
                             else
                             {
-								version_error_message.assign("...Switching to memory-based database.\n");
-							}
+                                version_error_message.assign("...Switching to memory-based database.\n");
+                            }
                         }
                     }
                     else     // Non-empty database exists with no version table.  Probably schema 1.0
@@ -3106,7 +3109,7 @@ void smem_init_db(agent* thisAgent)
                         if (smem_version_one(thisAgent))
                         {
                             version_error_message.assign("...Version of semantic memory database is old.\n"
-                                    "...Converting to version 2.0.\n" );
+                                                         "...Converting to version 2.0.\n");
                             smem_update_schema_one_to_two(thisAgent);
                             switch_to_memory = false;
                             tabula_rasa = false;
@@ -3893,62 +3896,63 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
 bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
 {
     uint64_t clause_count = 0;  // This is counting up the number of parsed clauses
-                                // so that there is a pointer to a failure location.
-
+    // so that there is a pointer to a failure location.
+    
     //Parsing requires an open semantic database.
     smem_attach(thisAgent);
-
+    
     //Next 5 lines copied as in smem_parse_chunks.
     thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(")");
     thisAgent->current_char = ' ';
     thisAgent->alternate_input_exit = true;
     set_lexer_allow_ids(thisAgent, true);
-
+    
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
-                            // and indicates whether or not we can call smem_process_query.
-
+    // and indicates whether or not we can call smem_process_query.
+    
     std::map<std::string, Symbol*> cue_ids; //I want to keep track of previous references when adding a new element to the cue.
-
+    
     //consume next token.
     get_lexeme(thisAgent);
-
+    
     good_cue = thisAgent->lexeme.type == L_PAREN_LEXEME;
-
+    
     Symbol* root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
-                            //It's main purpose is to contain augmentations
+    //It's main purpose is to contain augmentations
     Symbol* negative_cues;  //This is supposed to contain the negative augmentations.
-
+    
     bool trigger_first = true; //Just for managing my loop.
     bool minus_ever = false; //Did a negative cue ever show up?
     bool first_attribute = true; //Want to make sure there is a positive attribute to begin with.
-
+    
     // While there is parsing to be done:
-    while((thisAgent->lexeme.type == L_PAREN_LEXEME) && good_cue )
+    while ((thisAgent->lexeme.type == L_PAREN_LEXEME) && good_cue)
     {
         //First, consume the left paren.
         get_lexeme(thisAgent);
-
+        
         if (trigger_first)
         {
             good_cue = thisAgent->lexeme.type == VARIABLE_LEXEME;
-
+            
             if (good_cue)
             {
                 root_cue_id = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[1], 1);
                 cue_ids[thisAgent->lexeme.string] = root_cue_id;
-                negative_cues = make_new_identifier(thisAgent,(char) thisAgent->lexeme.string[1], 1);
+                negative_cues = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[1], 1);
             }
             else
             {
                 (*err_msg)->append("Error: The cue must be a variable.\n");//Spit out that the cue must be a variable.
                 break;
             }
-
+            
             trigger_first = false;
         }
         else
-        {//If this isn't the first time around, then this better be the same as the root_cue_id variable.
+        {
+            //If this isn't the first time around, then this better be the same as the root_cue_id variable.
             good_cue = cue_ids[thisAgent->lexeme.string] == root_cue_id;
             if (!good_cue)
             {
@@ -3956,18 +3960,18 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 break;
             }
         }
-
+        
         if (good_cue)
         {
             //Consume the root_cue_id
             get_lexeme(thisAgent);
-
+            
             Symbol* attribute;
             slot* temp_slot;
-
+            
             //Now, we process the attributes of the cue id contained in this clause.
             bool minus = false;
-
+            
             //Loop as long as positive or negative cues keep popping up.
             while (good_cue && (thisAgent->lexeme.type == UP_ARROW_LEXEME || thisAgent->lexeme.type == MINUS_LEXEME))
             {
@@ -3987,15 +3991,16 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 {
                     minus = false;
                 }
-
+                
                 get_lexeme(thisAgent);//Consume the up arrow and move on to the attribute.
-
+                
                 if (thisAgent->lexeme.type == VARIABLE_LEXEME)
-                {//SMem doesn't suppose variable attributes ... YET.
+                {
+                    //SMem doesn't suppose variable attributes ... YET.
                     good_cue = false;
                     break;
                 }
-
+                
                 // TODO: test to make sure this is good. Previously there was no test
                 // for the type of the lexeme so passing a "(" caused a segfault when making the slot.
                 attribute = smem_parse_constant_attr(thisAgent, &(thisAgent->lexeme));
@@ -4004,10 +4009,10 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     good_cue = false;
                     break;
                 }
-
+                
                 Symbol* value;
                 wme* temp_wme;
-
+                
                 if (minus)
                 {
                     temp_slot = make_slot(thisAgent, negative_cues, attribute);
@@ -4016,17 +4021,17 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 {
                     temp_slot = make_slot(thisAgent, root_cue_id, attribute); //Make a slot for this attribute, or return slot it already has.
                 }
-
+                
                 //consume the attribute.
                 get_lexeme(thisAgent);
                 bool hasAddedValue = false;
-
+                
                 do //Add value by type
                 {
                     value = NIL;
                     if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                     {
-                        value = make_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                        value = make_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                         get_lexeme(thisAgent);
                     }
                     else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
@@ -4060,8 +4065,8 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     {
                         std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
                         value_iterator = cue_ids.find(thisAgent->lexeme.string);
-
-                        if(value_iterator == cue_ids.end())
+                        
+                        if (value_iterator == cue_ids.end())
                         {
                             value = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[0], 1);
                             cue_ids[thisAgent->lexeme.string] = value; //Keep track of created symbols for deletion later.
@@ -4081,9 +4086,10 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                             break;
                         }
                     }
-
+                    
                     if (value != NIL && good_cue)
-                    {//Value might be nil, but R_paren or next attribute could make it a good cue.
+                    {
+                        //Value might be nil, but R_paren or next attribute could make it a good cue.
                         hasAddedValue = true;
                         if (minus)
                         {
@@ -4095,33 +4101,34 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                         }
                         insert_at_head_of_dll(temp_slot->wmes, temp_wme, next, prev); //Put the wme in the slow for the attribute.
                     }
-                } while (value != NIL);//Loop until there are no more value lexemes to add to that attribute.
-
+                }
+                while (value != NIL);  //Loop until there are no more value lexemes to add to that attribute.
+                
                 first_attribute = false;
-
+                
             }
         }
         else
         {
             break;
         }
-
+        
         while (thisAgent->lexeme.type == R_PAREN_LEXEME)
         {
             get_lexeme(thisAgent);
         }
-
+        
         clause_count++;
         trigger_first = false; //It is no longer the first clause.
-
+        
     }
     if (!good_cue)
     {
         std::string num;
         to_string(clause_count, num);
-
+        
         (*err_msg)->append("Error parsing clause #");
-        (*err_msg)->append(num+".");
+        (*err_msg)->append(num + ".");
     }
     else
     {
@@ -4130,11 +4137,11 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         soar_module::symbol_triple_list meta_wmes;
         soar_module::symbol_triple_list retrieval_wmes;
         (*result_message) = new std::string();
-
+        
         std::list<smem_lti_id> match_ids;
-
-        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever?negative_cues:NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids));
-
+        
+        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids));
+        
         if (!match_ids.empty())
         {
             for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
@@ -4147,50 +4154,52 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             (*result_message)->append("SMem| No results for query.");
         }
         delete prohibit;
-
+        
     }
-
+    
     /*
      * Below is the clean-up
      */
     if (root_cue_id != NIL)
     {
-        slot*s;
-
+        slot* s;
+        
         for (s = root_cue_id->id->slots; s != NIL; s = s->next)
-        {//Remove all wme's from the slot.
+        {
+            //Remove all wme's from the slot.
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
                 symbol_remove_ref(thisAgent, delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
-
+            
             s->wmes = NIL;
             symbol_remove_ref(thisAgent, s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         root_cue_id->id->slots = NIL;
-
+        
         for (s = negative_cues->id->slots; s != NIL; s = s->next)
-        {//Remove all wme's from the slot.
+        {
+            //Remove all wme's from the slot.
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
                 symbol_remove_ref(thisAgent, delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
-
+            
             s->wmes = NIL;
             symbol_remove_ref(thisAgent, s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         negative_cues->id->slots = NIL;
-
+        
         symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
         symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
     }
-
+    
     return good_cue;
 }
 
@@ -4198,36 +4207,37 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
  */
-bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
-{//TODO: need to fix so that err_msg and result_message are actually used or not passed.
+bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
+{
+    //TODO: need to fix so that err_msg and result_message are actually used or not passed.
     bool good_command = true;
-
+    
     //parsing chunks requires an open semantic database
     smem_attach(thisAgent);
-
+    
     //copied primarily from cli_sp
     thisAgent->alternate_input_string = chunks_str;
     thisAgent->alternate_input_suffix = const_cast<char*>(") ");
     thisAgent->current_char = ' ';
     thisAgent->alternate_input_exit = true;
     set_lexer_allow_ids(thisAgent, true);//This is the end of the incantation.
-
+    
     get_lexeme(thisAgent);
-
+    
     if (thisAgent->lexeme.type == L_PAREN_LEXEME)
     {
         get_lexeme(thisAgent);//Consumes the left paren
     }
-
+    
     if (thisAgent->lexeme.type == AT_LEXEME && good_command)
     {
         get_lexeme(thisAgent);
     }
-
+    
     good_command = thisAgent->lexeme.type == IDENTIFIER_LEXEME;
-
+    
     smem_lti_id lti_id;
-
+    
     if (good_command)
     {
         lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
@@ -4236,24 +4246,24 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
     {
         (*err_msg)->append("Error: No LTI found for that letter and number.\n");
     }
-
+    
     soar_module::symbol_triple_list retrieval_wmes;
     soar_module::symbol_triple_list meta_wmes;
-
+    
     if (good_command && lti_id != NIL)
     {
         Symbol* lti = smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-
+        
         get_lexeme(thisAgent);//Consume the identifier.
-
+        
         smem_slot_map children;
-
+        
         if (thisAgent->lexeme.type == UP_ARROW_LEXEME)
         {
             //Now that we know we have a good lti, we can do a NCBR so that we know what attributes and values we can delete.
             //"--force" will ignore attempts to delete that which isn't there, while the default will be to stop and report back.
             smem_install_memory(thisAgent, NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
-
+            
             //First, we'll create the slot_map according to retrieval_wmes, then we'll remove what we encounter during parsing.
             soar_module::symbol_triple_list::iterator triple_ptr_iter;
             smem_slot* temp_slot;
@@ -4323,17 +4333,17 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                     children[(*triple_ptr_iter)->attr] = temp_slot;
                 }
             }
-
+            
             //Now we process attributes one at a time.
             while (thisAgent->lexeme.type == UP_ARROW_LEXEME && (good_command || force))
             {
                 get_lexeme(thisAgent);// Consume the up arrow.
-
+                
                 Symbol* attribute = NIL;
-
+                
                 if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                 {
-                    attribute = find_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                    attribute = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                 }
                 else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
                 {
@@ -4343,7 +4353,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                 {
                     attribute = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
                 }
-
+                
                 if (attribute == NIL)
                 {
                     good_command = false;
@@ -4354,7 +4364,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                     get_lexeme(thisAgent);//Consume the attribute.
                     good_command = true;
                 }
-
+                
                 if (good_command && (thisAgent->lexeme.type != UP_ARROW_LEXEME && thisAgent->lexeme.type != R_PAREN_LEXEME)) //If there are values.
                 {
                     Symbol* value;
@@ -4363,7 +4373,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                         value = NIL;
                         if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
                         {
-                            value = find_str_constant(thisAgent, static_cast<const char*> (thisAgent->lexeme.string));
+                            value = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
                             get_lexeme(thisAgent);
                         }
                         else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
@@ -4399,9 +4409,10 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                                 (*err_msg)->append("Error: Expected ')' or '^'.\n... The value was likely not found.\n");
                             }
                         }
-
+                        
                         if (value != NIL && good_command) //Value might be nil, but that can be just fine.
-                        {//Given a value for this attribute, we have a symbol triple to remove.
+                        {
+                            //Given a value for this attribute, we have a symbol triple to remove.
                             smem_slot::iterator values;
                             for (values = (children.find(attribute))->second->begin(); values != (children.find(attribute))->second->end(); values++)
                             {
@@ -4409,7 +4420,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                                 {
                                     if ((*values)->val_lti.val_value->soar_id == value)
                                     {
-                                        delete (*values)->val_lti.val_value;
+                                        delete(*values)->val_lti.val_value;
                                         delete *values;
                                         (*(children.find(attribute))).second->erase(values);
                                         break;
@@ -4438,7 +4449,8 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
                                 break;
                             }
                         }
-                    } while (good_command && (value != NIL || !(thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME)));
+                    }
+                    while (good_command && (value != NIL || !(thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME)));
                 }
                 else if (good_command && children.find(attribute) != children.end()) //If we didn't have any values, then we just get rid of everything on the attribute.
                 {
@@ -4467,7 +4479,7 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
         {
             (*err_msg)->append("Error: Expected a ')'.\n");
         }
-
+        
         //Clean up.
         smem_slot_map::iterator attributes, end = children.end();
         for (attributes = children.begin(); attributes != end; attributes++)
@@ -4478,13 +4490,13 @@ bool smem_parse_remove( agent* thisAgent, const char* chunks_str, std::string** 
             {
                 if ((*values)->val_lti.val_type == value_lti_t)
                 {
-                    delete (*values)->val_lti.val_value;
+                    delete(*values)->val_lti.val_value;
                 }
                 delete *values;
             }
             delete attributes->second;
         }
-
+        
         soar_module::symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
         for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
@@ -5543,6 +5555,8 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
     to_string(lti_number, temp_str);
     return_val->append(temp_str);
     
+    bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
+    
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
     expand_q->bind_int(1, lti_id);
     while (expand_q->execute() == soar_module::row)
@@ -5551,9 +5565,38 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
         switch (expand_q->column_int(0))
         {
             case STR_CONSTANT_SYMBOL_TYPE:
+            {
                 smem_reverse_hash_str(thisAgent, expand_q->column_int(1), temp_str);
-                break;
                 
+                if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
+                {
+                    temp_str.insert(0, "|");
+                    temp_str += '|';
+                    break;
+                }
+                
+                determine_possible_symbol_types_for_string(temp_str.c_str(),
+                        strlen(temp_str.c_str()),
+                        &possible_id,
+                        &possible_var,
+                        &possible_sc,
+                        &possible_ic,
+                        &possible_fc,
+                        &is_rereadable);
+                        
+                bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
+                
+                if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+                        (!is_rereadable) ||
+                        has_angle_bracket)
+                {
+                    /* BUGBUG if in context where id's could occur, should check
+                     possible_id flag here also */
+                    temp_str.insert(0, "|");
+                    temp_str += '|';
+                }
+                break;
+            }
             case INT_CONSTANT_SYMBOL_TYPE:
                 temp_int = smem_reverse_hash_int(thisAgent, expand_q->column_int(1));
                 to_string(temp_int, temp_str);
@@ -5591,9 +5634,38 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
             switch (expand_q->column_int(2))
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
+                {
                     smem_reverse_hash_str(thisAgent, expand_q->column_int(3), temp_str2);
-                    break;
                     
+                    if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
+                    {
+                        temp_str2.insert(0, "|");
+                        temp_str2 += '|';
+                        break;
+                    }
+                    
+                    determine_possible_symbol_types_for_string(temp_str2.c_str(),
+                            temp_str2.length(),
+                            &possible_id,
+                            &possible_var,
+                            &possible_sc,
+                            &possible_ic,
+                            &possible_fc,
+                            &is_rereadable);
+                            
+                    bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
+                    
+                    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+                            (!is_rereadable) ||
+                            has_angle_bracket)
+                    {
+                        /* BUGBUG if in context where id's could occur, should check
+                         possible_id flag here also */
+                        temp_str2.insert(0, "|");
+                        temp_str2 += '|';
+                    }
+                    break;
+                }
                 case INT_CONSTANT_SYMBOL_TYPE:
                     temp_int = smem_reverse_hash_int(thisAgent, expand_q->column_int(3));
                     to_string(temp_int, temp_str2);
@@ -5651,13 +5723,13 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
             {
                 return_val->append(", -");
             }
-            temp_string << ((int64_t)thisAgent->smem_max_cycle-(int64_t)*history_item);
+            temp_string << ((int64_t)thisAgent->smem_max_cycle - (int64_t)*history_item);
             return_val->append(temp_string.str());
             temp_string.str("");
         }
         return_val->append("]\n");
     }
-
+    
     return next;
 }
 
@@ -5732,7 +5804,7 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, st
                 }
                 hist_q->reinitialize();
             }
-
+            
             if (history && !access_history.empty())
             {
                 next = _smem_print_lti(thisAgent, c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));

@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <portability.h>
+#include "portability.h"
 
 #include "cli_CommandLineInterface.h"
 
@@ -59,19 +59,18 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'a')
     {
-        std::string* err = NULL;
+        std::string* err = new std::string("");
         bool result = smem_parse_chunks(thisAgent, pAttr->c_str(), &(err));
         
         if (!result)
         {
             SetError(*err);
-            delete err;
         }
         else
         {
             PrintCLIMessage("Knowledge added to semantic memory.");
         }
-        
+        delete err;
         return result;
     }
     else if (pOp == 'b')
@@ -138,12 +137,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         uint64_t depth = 1;
         bool history = true;
         smem_attach(thisAgent);
-
+        
         if (thisAgent->smem_db->get_status() != soar_module::connected)
         {
             return SetError("Semantic memory database not connected.");
         }
-
+        
         if (pAttr)
         {
             get_lexeme_from_string(thisAgent, pAttr->c_str());
@@ -156,16 +155,16 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 return SetError("LTI not found");
             }
         }
-
+        
         std::string viz;
-
+        
         smem_print_lti(thisAgent, lti_id, depth, &(viz), history);
-
+        
         if (viz.empty())
         {
             return SetError("Could not find information on LTI.");
         }
-
+        
         PrintCLIMessage_Header("Semantic Memory", 40);
         PrintCLIMessage(&viz);
         return true;
@@ -244,17 +243,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'q')
     {
-        std::string *err = new std::string;
-        std::string *retrieved = new std::string;
+        std::string* err = new std::string;
+        std::string* retrieved = new std::string;
         uint64_t number_to_retrieve = 1;
-
+        
         if (pVal)
         {
             from_c_string(number_to_retrieve, pVal->c_str());
         }
-
+        
         bool result = smem_parse_cues(thisAgent, pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
-
+        
         if (!result)
         {
             SetError("Error while parsing query\n" + *err);
@@ -270,16 +269,16 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'r')
     {
-        std::string *err = new std::string;
-        std::string *retrieved = new std::string;
+        std::string* err = new std::string;
+        std::string* retrieved = new std::string;
         bool force = false;
         if (pVal)
         {
-            force = (!strcmp(pVal->c_str(),"f") || (!strcmp(pVal->c_str(),"force")));
+            force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
         }
-
+        
         bool result = smem_parse_remove(thisAgent, pAttr->c_str(), &(err), &(retrieved), force);
-
+        
         if (!result)
         {
             SetError("Error while attempting removal.\n" + *err);

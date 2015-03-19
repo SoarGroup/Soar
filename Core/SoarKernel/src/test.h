@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 /* -------------------------------------------------------------------
                               test.h
 
@@ -30,7 +30,6 @@ typedef char varnames;
 typedef unsigned short rete_node_level;
 typedef struct cons_struct cons;
 typedef cons list;
-typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef signed short goal_stack_level;
 typedef struct action_struct action;

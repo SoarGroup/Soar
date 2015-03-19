@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -17,7 +17,6 @@
 #include "soar_module.h"
 
 #include "agent.h"
-
 #include "instantiations.h"
 #include "tempmem.h"
 #include "prefmem.h"
@@ -32,7 +31,6 @@
 #include "test.h"
 
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
-typedef struct agent_struct agent;
 
 namespace soar_module
 {
@@ -94,6 +92,9 @@ namespace soar_module
         inst->backtrace_number = 0;
         inst->in_ms = false;
         inst->GDS_evaluated_already = false;
+        inst->top_of_instantiated_conditions = NULL;
+        inst->bottom_of_instantiated_conditions = NULL;
+        inst->nots = NULL;
         
         // create preferences
         inst->preferences_generated = NULL;

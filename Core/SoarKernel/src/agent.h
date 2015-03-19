@@ -394,7 +394,7 @@ typedef struct agent_struct
     enum top_level_phase current_phase;
     
     /* --- to interrupt at the end of the current phase, set stop_soar to true
-       and reason_for_stopping to some appropriate string --- */
+     and reason_for_stopping to some appropriate string --- */
     bool               stop_soar;
     const char*           reason_for_stopping;
     
@@ -586,7 +586,7 @@ typedef struct agent_struct
     /* accumulated cpu time spent in various parts of the system */
     /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer timers_gds;                                        // start_gds_tv
+    soar_timer timers_gds;                                        // start_gds_tv
     soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
     soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
     soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time

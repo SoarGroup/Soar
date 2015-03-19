@@ -1,4 +1,4 @@
-#include <portability.h>
+#include "portability.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -204,7 +204,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-    soar_process_timer local_timer;
+    soar_timer local_timer;
     local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
 #endif
 #endif
