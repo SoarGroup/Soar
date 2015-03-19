@@ -42,6 +42,7 @@ typedef struct rhs_struct
 {
     Symbol* referent;
     Symbol* original_rhs_variable;
+    uint64_t o_id;
     uint64_t g_id;
 } rhs_info;
 typedef rhs_info* rhs_symbol;
@@ -151,6 +152,10 @@ inline uint64_t   rhs_value_to_g_id(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->g_id;
 }
+inline uint64_t   rhs_value_to_o_id(rhs_value rv)
+{
+    return reinterpret_cast<rhs_symbol>(rv)->o_id;
+}
 inline ::list*    rhs_value_to_funcall_list(rhs_value rv)
 {
     return reinterpret_cast< ::list* >(reinterpret_cast<char*>(rv) - 1);
@@ -214,17 +219,19 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 
 /* -- Functions to create RHS -- */
 extern action* make_action(agent* thisAgent);
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID, uint64_t pO_ID);
 
 rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,
                            condition* cond,
                            char first_letter,
+                           uint64_t pI_id,
                            AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
 action* create_RHS_action_list(agent* thisAgent,
                                action* actions,
                                condition* cond,
+                               uint64_t pI_id,
                                AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
 
 

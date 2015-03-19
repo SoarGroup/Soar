@@ -1065,7 +1065,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     symbol_remove_ref(thisAgent, rhs_value_to_symbol(prod->action_list->referent));
 
                     // No refcount needed here because make_float_constant will increase
-                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined));
+                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined), NULL, 0, 0);
 
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;

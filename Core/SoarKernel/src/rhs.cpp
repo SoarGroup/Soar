@@ -22,7 +22,7 @@
 #include "test.h"
 #include "debug.h"
 
-Symbol* var_bound_in_reconstructed_original_conds(
+test var_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
@@ -117,7 +117,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable, r->g_id);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable, r->g_id, r->o_id);
     }
 }
 
@@ -347,6 +347,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,
                            condition* cond,
                            char first_letter,
+                           uint64_t pI_id,
                            AddAdditionalTestsMode add_original_vars)
 {
     cons* c, *new_c, *prev_new_c;
@@ -354,7 +355,9 @@ rhs_value create_RHS_value(agent* thisAgent,
     Symbol* sym, *original_sym = NULL;
     int64_t index;
     char prefix[2];
-    test t;
+    test t, original_t;
+    uint64_t lO_id = 0;
+
 
     /* -- (1) Reteloc's seemed to be used for identifiers or constants originally bound to
      *    variables
@@ -363,21 +366,28 @@ rhs_value create_RHS_value(agent* thisAgent,
 
     if (rhs_value_is_reteloc(rv))
     {
-        /* -- rv is a symbol pointed to by a rete location -- */
-        if (add_original_vars == ALL_ORIGINALS)
-        {
-            original_sym = var_bound_in_reconstructed_original_conds(thisAgent, cond,
-                           rhs_value_to_reteloc_field_num(rv),
-                           rhs_value_to_reteloc_levels_up(rv));
-        }
+        /* -- rv is a symbol pointed to by a rete location
+         *    This case seems to only be for identifiers or constants originally bound to variables -- */
+
+//        if (add_original_vars == ALL_ORIGINALS)
+//        {
+//            original_t = var_bound_in_reconstructed_original_conds(thisAgent, cond,
+//                           rhs_value_to_reteloc_field_num(rv),
+//                           rhs_value_to_reteloc_levels_up(rv));
+//            original_sym = original_t->data.referent;
+//            lO_id = original_t->identity->original_var_id;
+//        }
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        sym = t->data.referent;
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y[%y g%u] from reteloc.\n", sym, original_sym, t->identity->grounding_id);
+//        sym = t->data.referent;
+//        original_sym = t->identity->original_var;
+//        lO_id = t->identity->original_var_id;
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
         /* MToDo | Might not need to regenerate original sym and just use t->identity->orig_var */
-        assert(original_sym == t->identity->original_var);
-        return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym, t->identity->grounding_id);
+//        assert(original_sym == t->identity->original_var);
+        /*MToDo | Or does t->identity->original_var_id already have this info.  If so, didn't need to change var_bound_reconstructed_original_conds */
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->original_var, t->identity->grounding_id, t->identity->original_var_id);
     }
 
     if (rhs_value_is_unboundvar(rv))
@@ -398,18 +408,20 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
-            dprint_noprefix(DT_RHS_VARIABLIZATION, "%y for unbound var.\n", sym);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym);
+            lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
+            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for unbound var.\n", sym, 0, lO_id);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym, 0, lO_id);
         }
         else
         {
+            /* -- unbound variable was already created in previous rhs action -- */
             sym = *(thisAgent->rhs_variable_bindings + index);
             original_sym = sym;
         }
-//    dprint_noprefix(DT_RHS_VARIABLIZATION, "%y(%y) for unbound var.\n", sym, original_sym);
-//    return allocate_rhs_value_for_symbol(thisAgent, sym, original_sym);
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y for unbound var.\n", sym);
-        return allocate_rhs_value_for_symbol(thisAgent, sym, sym);
+        lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for RHS literal.\n", sym, original_sym, 0, lO_id);
+
+        return allocate_rhs_value_for_symbol(thisAgent, sym, sym, 0, lO_id);
     }
 
     if (rhs_value_is_funcall(rv))
@@ -426,6 +438,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                                             static_cast<char*>(c->first),
                                             cond,
                                             first_letter,
+                                            pI_id,
                                             add_original_vars);
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
@@ -435,19 +448,24 @@ rhs_value create_RHS_value(agent* thisAgent,
     }
     else
     {
-        /* -- rv is a rhs_symbol -- */
+        /* -- rv is a rhs_symbol
+         *    This case seems to only be for literal values including those in function calls. -- */
+
+        /* MToDo | If these are always literals, then we may not need to set any of the identity information.  Check. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u) from rhs_symbol (literal RHS constant).\n",
-                        rs->referent, rs->original_rhs_variable, rs->g_id);
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u o%u) from rhs_symbol (literal RHS constant).\n",
+                        rs->referent, rs->original_rhs_variable, rs->g_id, rs->o_id);
         original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
-        uint64_t g_id = (add_original_vars != DONT_ADD_TESTS) ? rs->g_id : 0;
-        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, original_sym, g_id);
+        uint64_t lG_id = (add_original_vars != DONT_ADD_TESTS) ? rs->g_id : 0;
+        uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
+        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, original_sym, lG_id, lO_id);
     }
 }
 
 action* create_RHS_action_list(agent* thisAgent,
                                action* actions,
                                condition* cond,
+                               uint64_t pI_id,
                                AddAdditionalTestsMode add_original_vars)
 {
     action* old, *New, *prev, *first;
@@ -475,23 +493,23 @@ action* create_RHS_action_list(agent* thisAgent,
         New->support = old->support;
         if (old->type == FUNCALL_ACTION)
         {
-            New->value = create_RHS_value(thisAgent, old->value, cond, 'v', add_original_vars);
+            New->value = create_RHS_value(thisAgent, old->value, cond, 'v', pI_id, add_original_vars);
         }
         else
         {
             dprint(DT_RHS_VARIABLIZATION, "ID: ");
-            New->id = create_RHS_value(thisAgent, old->id, cond, 's', add_original_vars);
+            New->id = create_RHS_value(thisAgent, old->id, cond, 's', pI_id, add_original_vars);
             dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
-            New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', add_original_vars);
+            New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', pI_id, add_original_vars);
             first_letter = first_letter_from_rhs_value(New->attr);
             dprint(DT_RHS_VARIABLIZATION, "Value: ");
             New->value = create_RHS_value(thisAgent, old->value, cond,
-                                          first_letter, add_original_vars);
+                                          first_letter, pI_id, add_original_vars);
             if (preference_is_binary(old->preference_type))
             {
                 dprint(DT_RHS_VARIABLIZATION, "Referent: ");
                 New->referent = create_RHS_value(thisAgent, old->referent,
-                                                 cond, first_letter, add_original_vars);
+                                                 cond, first_letter, pI_id, add_original_vars);
             }
             dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
         }
@@ -512,7 +530,7 @@ action* create_RHS_action_list(agent* thisAgent,
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
 /* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID, uint64_t pO_ID)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -525,7 +543,8 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->original_rhs_variable = pOrig_var;
     new_rhs_symbol->g_id = pG_ID;
-    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %i to new rhs_symbol %y(%y).\n" : ""), pG_ID, sym, pOrig_var);
+    new_rhs_symbol->o_id = pO_ID;
+    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %i to new rhs_symbol %y(%y/%u).\n" : ""), pG_ID, sym, pOrig_var, pO_ID);
 
     /* -- Must always increase original_sym refcount if it exists because this function
      *    is only called when the newly generate rhs value is created with a brand new
@@ -540,12 +559,12 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
 
 /* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
  *                  caller had to do the reference count update.  Possible bug source. -- */
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pG_ID, uint64_t pO_ID)
 {
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pOrig_var, pG_ID);
+    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pOrig_var, pG_ID, pO_ID);
 }
 

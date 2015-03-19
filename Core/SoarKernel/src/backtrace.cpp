@@ -38,6 +38,7 @@
 #include "debug.h"
 #include "prefmem.h"
 #include "variablization_manager.h"
+#include "soar_module.h"
 
 using namespace soar_TraceNames;
 
@@ -172,9 +173,9 @@ void backtrace_through_instantiation(agent* thisAgent,
                                      condition* trace_cond,
                                      bool* reliable,
                                      int indent,
-                                     Symbol* parent_cond_id,
-                                     Symbol* parent_cond_attr,
-                                     Symbol* parent_cond_value)
+                                     soar_module::symbol_triple parent_cond_ovars,
+                                     uint64_t parent_i_id,
+                                     soar_module::identity_triple parent_cond_o_ids)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */
@@ -183,7 +184,7 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d with orig vars (%y ^%y %y) for condition:\n", grounds_level, parent_cond_id, parent_cond_attr, parent_cond_value);
+//    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d with orig vars (%y ^%y %y) for condition:\n", grounds_level, parent_cond_id, parent_cond_attr, parent_cond_value);
     dprint(DT_BACKTRACE, "%l\n", trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -279,9 +280,24 @@ void backtrace_through_instantiation(agent* thisAgent,
         assert(trace_cond->data.tests.id_test);
         assert(trace_cond->data.tests.attr_test);
         assert(trace_cond->data.tests.value_test);
-        Symbol* old_id_ovar = equality_test_found_in_test(trace_cond->data.tests.id_test)->identity->original_var;
-        Symbol* old_cond_attr_ovar = equality_test_found_in_test(trace_cond->data.tests.attr_test)->identity->original_var;
-        Symbol* old_cond_value_ovar = equality_test_found_in_test(trace_cond->data.tests.value_test)->identity->original_var;
+        Symbol* previous_id_sym = equality_test_found_in_test(trace_cond->data.tests.id_test)->identity->original_var;
+        Symbol* previous_attr_sym = equality_test_found_in_test(trace_cond->data.tests.attr_test)->identity->original_var;
+        Symbol* previous_value_sym = equality_test_found_in_test(trace_cond->data.tests.value_test)->identity->original_var;
+//        assert(previous_id_sym);
+//        assert(previous_attr_sym);
+//        assert(previous_value_sym);
+//        uint64_t previous_id_o_id = thisAgent->variablizationManager->get_existing_o_id(previous_id_sym, inst->i_id);
+//        uint64_t previous_id_o_attr = thisAgent->variablizationManager->get_existing_o_id(previous_attr_sym, inst->i_id);
+//        uint64_t previous_id_o_value = thisAgent->variablizationManager->get_existing_o_id(previous_value_sym, inst->i_id);
+        uint64_t previous_id_o_id = trace_cond->data.tests.id_test->identity->original_var_id;
+        uint64_t previous_attr_o_id = trace_cond->data.tests.attr_test->identity->original_var_id;
+        uint64_t previous_value_o_id = trace_cond->data.tests.value_test->identity->original_var_id;
+        assert(!previous_id_sym || previous_id_o_id);
+        assert(!previous_attr_sym || previous_attr_o_id);
+        assert(!previous_value_sym || previous_value_o_id);
+//        dprint(DT_OVAR_PROP, "Propagating original id variable back:  %y(o%u) -> %y(o?)", previous_id_sym, previous_id_o_id, parent_cond_id);
+//        dprint(DT_OVAR_PROP, "Propagating original attr variable back:  %y(o%u) -> %y(o?)", previous_attr_sym, previous_attr_o_id, parent_cond_attr);
+//        dprint(DT_OVAR_PROP, "Propagating original value variable back:  %y(o%u) -> %y(o?)", previous_value_sym, previous_value_o_id, parent_cond_value);
     }
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
@@ -532,7 +548,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         {
 //            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
-                bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
+                bt_pref->original_symbols, 0, bt_pref->o_ids);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -547,7 +563,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         print_preference(thisAgent, p);
                     }
                     backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
-                        bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
+                        bt_pref->original_symbols, 0, bt_pref->o_ids);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -786,7 +802,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
         backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0,
-            bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
+            bt_pref->original_symbols, 0, bt_pref->o_ids);
 
         /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
@@ -801,7 +817,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     print_preference(thisAgent, p);
                 }
                 backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
-                    bt_pref->original_symbols.value, bt_pref->original_symbols.attr, bt_pref->original_symbols.value);
+                    bt_pref->original_symbols, 0, bt_pref->o_ids);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

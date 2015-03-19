@@ -4295,7 +4295,7 @@ abort_var_test_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Symbol* var_bound_in_reconstructed_original_conds(
+test var_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
@@ -4323,12 +4323,16 @@ Symbol* var_bound_in_reconstructed_original_conds(
         t = cond->data.tests.value_test;
     }
 
+    if (test_is_blank(t))
+    {
+        goto abort_var_test_bound_in_reconstructed_oconds;
+    }
     lTest = find_original_equality_test_preferring_vars(t, true);
     assert(lTest && lTest->type == EQUALITY_TEST);
 
-    return (lTest->data.referent);
+    return (lTest);
 
-abort_var_bound_in_reconstructed_conds:
+    abort_var_test_bound_in_reconstructed_oconds:
     {
         char msg[BUFFER_MSG_SIZE];
         strncpy(msg, "Internal error in var_bound_in_reconstructed_original_conds\n", BUFFER_MSG_SIZE);
@@ -4634,7 +4638,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
-        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, additional_tests);
+        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, pI_id, additional_tests);
         index = 0;
         cell = thisAgent->rhs_variable_bindings;
         while (index++ <= thisAgent->highest_rhs_unboundvar_index)
@@ -7508,7 +7512,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
             sym = reteload_symbol_from_index(thisAgent, f);
             /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
             //symbol_add_ref(thisAgent, sym);
-            rv = allocate_rhs_value_for_symbol(thisAgent, sym);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym, NULL, 0, 0);
             break;
         case 1:
             funcall_list = NIL;

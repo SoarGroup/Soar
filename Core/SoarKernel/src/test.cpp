@@ -1135,7 +1135,7 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
     Symbol* temp;
     test New = 0;
 
-    temp = var_bound_in_reconstructed_original_conds(thisAgent, cond, field_num, levels_up);
+    temp = (var_bound_in_reconstructed_original_conds(thisAgent, cond, field_num, levels_up))->data.referent;
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_hash_info_to_original_id_test %s.\n", temp->var->name);
     New = make_test(thisAgent, temp, EQUALITY_TEST);
     add_test(thisAgent, &(cond->data.tests.id_test->original_test), New);
@@ -1708,9 +1708,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
                     else if (additional_tests == ALL_ORIGINALS)
                     {
                         chunk_test = make_test(thisAgent, referent, test_type);
-                        original_referent = var_bound_in_reconstructed_original_conds(thisAgent, cond,
+                        original_referent = (var_bound_in_reconstructed_original_conds(thisAgent, cond,
                                             rt->data.variable_referent.field_num,
-                                            rt->data.variable_referent.levels_up);
+                                            rt->data.variable_referent.levels_up))->data.referent;
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "created relational test with referent %y.\n", original_referent);
                         chunk_test->original_test = make_test(thisAgent, original_referent, test_type);

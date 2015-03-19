@@ -182,8 +182,39 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 'g')
         {
-            identity_to_string(thisAgent, va_arg(args, test_info *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            test t = va_arg(args, test);
+            test ct = NULL;
+            if (t)
+            {
+                if (t->type != CONJUNCTIVE_TEST)
+                {
+                    if (t->identity)
+                    {
+                        identity_to_string(thisAgent, t, ch, dest_size - (ch - dest) );
+                        while (*ch) ch++;
+                    } else {
+                        *(ch++) = '#';
+                    }
+                } else {
+                    strcpy(ch, "{ ");
+                    ch += 2;
+                    for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
+                    {
+                        ct = static_cast<test>(c->first);
+                        if (ct && ct->identity)
+                        {
+                            identity_to_string(thisAgent, ct, ch, dest_size - (ch - dest) );
+                            while (*ch) ch++;
+                        } else {
+                            *(ch++) = '#';
+                        }
+                        *(ch++) = ' ';
+                    }
+                    *(ch++) = '}';;
+                }
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'l')
         {

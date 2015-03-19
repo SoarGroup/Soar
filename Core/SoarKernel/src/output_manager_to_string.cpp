@@ -80,12 +80,12 @@ char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_siz
     while (*ch) ch++;
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        /* MToDo | Remove this.  Just for debugging a particular agent */
-        if (!strcmp(w->value->to_string(), "block"))
-        {
+//        /* MToDo | Remove this.  Just for debugging a particular agent */
+//        if (!strcmp(w->value->to_string(), "block"))
+//        {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
             while (*ch) ch++;
-        }
+//        }
     }
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -404,7 +404,7 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         } else if (m_print_original) {
             sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->original_rhs_variable);
         } else if (m_print_identity) {
-            sprinta_sf(thisAgent, dest, dest_size, "%u", rsym->g_id);
+            sprinta_sf(thisAgent, dest, dest_size, "g%u/o%u", rsym->g_id, rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -535,8 +535,8 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     }
     else if (m_print_identity)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "%s(g%u ^g%u g%u) %c %y%s", m_pre_string,
-            pref->g_ids.id, pref->g_ids.attr, pref->g_ids.value,
+        sprinta_sf(thisAgent, dest, dest_size, "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", m_pre_string,
+            pref->g_ids.id, pref->o_ids.id, pref->g_ids.attr, pref->o_ids.attr, pref->g_ids.value, pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);

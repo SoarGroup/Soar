@@ -664,10 +664,10 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     rhs->type = MAKE_ACTION;
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym);
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym);
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym);
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym);
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, NULL, 0, 0);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, NULL, 0, 0);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, NULL, 0, 0);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, NULL, 0, 0);
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
     variablize_rhs_symbol(rhs->id, NULL, pI_id);
@@ -741,12 +741,12 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
 
-    a->id = allocate_rhs_value_for_symbol(thisAgent,  result->id, result->original_symbols.id, 0);
-    a->attr = allocate_rhs_value_for_symbol(thisAgent,  result->attr, result->original_symbols.attr, 0);
-    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->original_symbols.value, 0);
+    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->original_symbols.id, result->g_ids.id, result->o_ids.id);
+    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->original_symbols.attr, result->g_ids.attr, result->o_ids.attr);
+    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->original_symbols.value, result->g_ids.value, result->o_ids.value);
     if (preference_is_binary(result->type))
     {
-        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent);
+        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, NULL, 0, 0);
     }
 
     if (variablize)

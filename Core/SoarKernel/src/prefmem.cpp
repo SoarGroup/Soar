@@ -63,7 +63,8 @@ const char* preference_name[] =
 preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
                             const soar_module::symbol_triple originals,
-                            const soar_module::g_id_triple g_ids)
+                            const soar_module::identity_triple o_ids,
+                            const soar_module::identity_triple g_ids)
 {
     preference* p;
 
@@ -88,8 +89,6 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->prev = NIL;
     p->inst_next = NIL;
     p->inst_prev = NIL;
-    p->inst_next = NIL;
-    p->inst_prev = NIL;
     p->all_of_slot_next = NIL;
     p->all_of_slot_prev = NIL;
     p->all_of_goal_next = NIL;
@@ -112,6 +111,10 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     {
         symbol_add_ref(thisAgent, originals.value);
     }
+
+    p->o_ids.id = o_ids.id;
+    p->o_ids.attr = o_ids.attr;
+    p->o_ids.value = o_ids.value;
 
     p->g_ids.id = g_ids.id;
     p->g_ids.attr = g_ids.attr;

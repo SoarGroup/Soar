@@ -434,10 +434,11 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
+        c_inst = copy_condition(thisAgent, ground);
+
         /* -- Removed stripping of relational constraints b/c it was losing them in
          *    non-chunky problem spaces but was needed later for a chunky one. --  */
 //        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
-        c_inst = copy_condition(thisAgent, ground);
 
         add_cond(&c_inst, &prev_inst, &first_inst);
 
@@ -646,8 +647,7 @@ void make_clones_of_results(agent* thisAgent, preference* results,
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            soar_module::symbol_triple(result_p->original_symbols.id, result_p->original_symbols.attr, result_p->original_symbols.value),
-                            soar_module::g_id_triple(result_p->g_ids.id, result_p->g_ids.attr, result_p->g_ids.value));
+                            result_p->original_symbols, result_p->o_ids, result_p->g_ids);
         symbol_add_ref(thisAgent, p->id);
         symbol_add_ref(thisAgent, p->attr);
         symbol_add_ref(thisAgent, p->value);
@@ -1067,7 +1067,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            pref->original_symbols.value, pref->original_symbols.attr, pref->original_symbols.value);
+            pref->original_symbols, inst->i_id, pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
