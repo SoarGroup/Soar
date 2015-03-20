@@ -500,7 +500,7 @@ void smem_statement_container::create_indices()
     //This is to find the trajectories starting from a given LTI.
     add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id)");
     //Keep track of invalid trajectories.
-    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (valid_bit)");
+    add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit)");
     //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
     add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti1)");
     add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti2)");
