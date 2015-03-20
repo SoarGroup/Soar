@@ -334,6 +334,15 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 }
                 
             }
+            if (!strcmp(pAttr->c_str(), "spreading"))
+            {
+                if (thisAgent->smem_params->spreading->get_value() == on)
+                {
+                    PrintCLIMessage("This might take a long while.\n");
+                    //This is where a huge batch processing of all of SMem can be run.
+                    smem_calc_spread_trajectories(thisAgent);
+                }
+            }
         }
         return result;
     }
