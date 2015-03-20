@@ -77,6 +77,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     learning = new soar_module::boolean_param("learning", off, new soar_module::f_predicate<boolean>());
     add(learning);
     
+    // spreading
+    spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
+    add(spreading);
+
     // database
     database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
     database->add_mapping(memory, "memory");
