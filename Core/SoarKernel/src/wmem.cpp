@@ -137,7 +137,12 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
         {
             (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] = (uint64_t)1;
             //Here, I should also add to a data structure containing "ltis to add to context".
+            thisAgent->smem_context_additions->insert(w->value->id->smem_lti);
             //edge case? - I should remove ltis from "ltis to remove from context".
+            if (thisAgent->smem_context_removals->find(w->value->id->smem_lti)!=thisAgent->smem_context_removals->end())
+            {
+                thisAgent->smem_context_removals->erase(w->value->id->smem_lti);
+            }
         }
         else
         {
@@ -169,7 +174,12 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
         {
             thisAgent->smem_in_wmem->erase(w->value->id->smem_lti);
             //should also add to a data structure like "ltis to remove from context.
+            thisAgent->smem_context_removals->insert(w->value->id->smem_lti);
             //edge case - should remove from "ltis to add to context."
+            if (thisAgent->smem_context_additions->find(w->value->id->smem_lti)!=thisAgent->smem_context_additions->end())
+            {
+                thisAgent->smem_context_additions->erase(w->value->id->smem_lti);
+            }
         }
         else
         {
