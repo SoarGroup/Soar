@@ -330,6 +330,7 @@ typedef uint64_t smem_hash_id;
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;
 typedef std::set<smem_lti_id> smem_lti_set;
+typedef std::map<smem_lti_id, uint64_t> smem_lti_map;
 
 // a list of symbols
 typedef std::list<Symbol*> smem_sym_list;
@@ -466,6 +467,8 @@ enum smem_install_type { wm_install, fake_install };
 
 extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
+
+extern bool smem_calc_spread_trajectories(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);

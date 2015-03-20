@@ -27,6 +27,7 @@
 #include "decide.h"
 #include "test.h"
 #include "tempmem.h"
+#include "soar_rand.h"
 
 #include <list>
 #include <map>
@@ -1198,6 +1199,138 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+
+//This is just to make the initial batch processing easier. It gets children of an lti up to some depth.
+//When used in intial construction, it just goes to a depth of 1 (immediate children), but one can use for
+//a full traversal, if wanted.
+void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
+{
+    if (lti_trajectories.find(lti_id)==lti_trajectories.end())
+    {
+        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
+
+        std::list<smem_lti_id> children;
+
+        //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
+        if (children_q->get_status() == soar_module::unprepared)
+        {
+            assert(false);//testing if I still need this.
+            children_q->prepare();
+        }
+        children_q->bind_int(1, lti_id);
+        children_q->bind_int(2, lti_id);
+        lti_trajectories[lti_id] = new std::list<smem_lti_id>;
+        while(children_q->execute() == soar_module::row && children_q->column_int(0) != lti_id)
+        {
+            (lti_trajectories[lti_id])->push_back(children_q->column_int(0));
+            children.push_back(children_q->column_int(0));
+        }
+        children_q->reinitialize();
+        if (depth > 1)
+        {
+            for(std::list<smem_lti_id>::iterator child_iterator = children.begin(); child_iterator!=children.end(); child_iterator++)
+            {
+                child_spread(thisAgent, *child_iterator, lti_trajectories, depth-1);
+            }
+        }
+    }
+}
+
+//This is a random construction of trajectories with depth up to 10 (or something).
+void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 10)
+{
+    smem_lti_id lti_id = trajectory.back();
+    child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
+
+    //I should iterate through the tree stored in the map and recursively construct trajectories to add to the table in smem.
+    if (depth==0)
+    {
+    //A depth of 0 indicates that we have ten elements in the trajectory list, so we have hit the depth limit and should add to the table.
+        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
+        {
+            thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *trajectory_iterator);
+        }
+        thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
+        return;
+    }
+    //TODO: Define the probability constant elsewhere. It's HARD-CODED here.
+    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||SoarRand()>.9)
+    {
+    //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
+        int i = 0;
+        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
+        {
+            i++;
+            thisAgent->smem_stmts->trajectory_add->bind_int(i, *trajectory_iterator);
+        }
+        for (int j = i+1; j < 12; j++)
+        {
+            thisAgent->smem_stmts->trajectory_add->bind_int(j, 0);
+        }
+        thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
+        return;
+    }
+
+    //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
+    std::list<smem_lti_id>::iterator lti_iterator = lti_trajectories[lti_id]->begin();
+    int index = SoarRandInt(lti_trajectories[lti_id]->size()-1);
+    assert(lti_trajectories.find(lti_id)!=lti_trajectories.end());
+    assert(lti_trajectories[lti_id]->size() > 0);
+    for (int i = 0; i < index; ++i)
+    {
+        ++lti_iterator;
+    }
+    smem_lti_id next = *lti_iterator;
+    {
+        trajectory.push_back(*lti_iterator);
+        trajectory_construction(thisAgent, trajectory, lti_trajectories, depth-1);
+    }
+}
+
+
+extern bool smem_calc_spread_trajectories(agent* thisAgent)
+{//This is written to be a batch process when spreading is turned on. It will take a long time.
+    smem_attach(thisAgent);
+    soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
+    soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
+    smem_lti_id lti_id;
+    std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
+    int j = 0;
+    //Iterate through all ltis in SMem
+    while (lti_a->execute() == soar_module::row)
+    {
+        lti_id = lti_a->column_int(0);
+        //Make the fingerprint for this lti.
+        //TODO - This isn't the only place, but I've HARD-CODED the depth, here.
+        for (int i = 0; i < 10; ++i)
+        {
+            std::list<smem_lti_id> trajectory;
+            trajectory.push_back(lti_id);
+            trajectory_construction(thisAgent,trajectory,lti_trajectories);
+        }
+    }
+    lti_a->reinitialize();
+
+    for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
+    {
+        delete to_delete->second;
+    }
+
+    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
+    likelihood_cond_count->prepare();
+    likelihood_cond_count->execute(soar_module::op_reinit);
+    delete likelihood_cond_count;
+
+    soar_module::sqlite_statement* lti_count_num_appearances = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j");
+    lti_count_num_appearances->prepare();
+    lti_count_num_appearances->execute(soar_module::op_reinit);
+    delete lti_count_num_appearances;
+    return true;
+}
+
+
 inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0)
 {
     double sum = 0.0;
@@ -1384,10 +1517,28 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     
     // always associate activation with lti
     {
-        // activation_value=? WHERE lti=?
+        // Adding a bunch of stuff for spreading here.
+
+        double spread = 0;
+        soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+                "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
+        calc_spread->prepare();
+        calc_spread->bind_int(1,lti);
+        double additional;
+        while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
+        {
+
+            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log(0.5/(calc_spread->column_int(0)));
+            spread+=additional;//(additional>0 ? additional: 0);
+        }
+        delete calc_spread;
+
+        // activation_value=? spreading value = ? WHERE lti=?
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
-        thisAgent->smem_stmts->act_lti_set->bind_int(2, lti);
+        thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
+        thisAgent->smem_stmts->act_lti_set->bind_int(3, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+        new_activation+=spread;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -1397,6 +1548,92 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     return new_activation;
 }
 
+// Given the current elements in thisAgent->smem_in_wmem, this function will update
+// the component of activation from spread.
+/*
+* Idea: num_appearances_i_j = number of appearances of i in j.
+* Suppose i is in j and in our context. We then find all j's such that i is in them.
+* We add to their current value the value from i.
+*
+* Implementation idea: Make context table match vector here. Join num_appearances_i_j on i and context lti.
+* Group by j and sum number of appearances in the grouping. The resulting number is the number of
+* appearances of j relevant to the context of i's.
+*
+* Right now, the implementation idea is to keep track of context with a set stored in the agent.
+*
+* For simplification at the cost of efficiency, I will completely rewrite the table each time.
+* This incurs cost equal to the number of ltis in wmem each time instead of only processing additions
+* and deletions. Only processing changes is the obvious next step.
+* */
+
+inline void smem_calc_spread(agent* thisAgent)
+{
+    //This part will end up not being here. It's inefficient, but was an easy start.
+    soar_module::sqlite_statement* create_context_table = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
+    create_context_table->prepare();
+    create_context_table->execute();
+    delete create_context_table;
+
+    //Now, delete old entries.
+    soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+        "DELETE FROM smem_current_context");
+    delete_old_context->prepare();
+    delete_old_context->execute(soar_module::op_reinit);
+    delete delete_old_context;
+
+    //Insert values that will be used later.
+    soar_module::sqlite_statement* new_spread_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_current_context (lti_id) VALUES (?)");
+    new_spread_context->prepare();
+
+    for(smem_lti_map::iterator it = thisAgent->smem_in_wmem->begin(); it != thisAgent->smem_in_wmem->end(); ++it)
+    {
+        new_spread_context->bind_int(1,it->first);
+        new_spread_context->execute(soar_module::op_reinit);
+    }
+    soar_module::sqlite_statement* prepare_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
+            "SELECT lti_j,num_appearances_i_j,num_appearances,lti_i FROM smem_current_context JOIN "
+            "smem_likelihoods ON smem_current_context.lti_id=smem_likelihoods.lti_i JOIN "
+            "smem_trajectory_num ON smem_trajectory_num.lti_id=smem_likelihoods.lti_i");
+    prepare_spread->prepare();
+    prepare_spread->execute();
+    delete prepare_spread;
+
+    soar_module::sqlite_statement* to_activate = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "SELECT DISTINCT lti_id FROM smem_current_spread");
+    to_activate->prepare();
+    while(to_activate->execute() == soar_module::row)
+    {
+        thisAgent->smem_stmts->act_lti_get->bind_int(1, to_activate->column_int(0));
+        thisAgent->smem_stmts->act_lti_get->execute();
+
+        double spread = 0;
+        soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+                "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
+        calc_spread->prepare();
+        calc_spread->bind_int(1,to_activate->column_int(0));
+        double additional;
+        while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
+        {
+            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log(0.5/(calc_spread->column_int(0)));
+            spread+=additional;//(additional>0 ? additional: 0);
+        }
+        delete calc_spread;
+        thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+        thisAgent->smem_stmts->act_set->bind_int(2, to_activate->column_int(0));
+        thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+
+        thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
+        thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
+        thisAgent->smem_stmts->act_lti_set->bind_int(3, to_activate->column_int(0));
+        thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+
+        thisAgent->smem_stmts->act_lti_get->reinitialize();
+    }
+    delete to_activate;
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -2604,6 +2841,9 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     thisAgent->smem_timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
     
+    //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
+    smem_calc_spread(thisAgent);
+
     // prepare query stats
     {
         smem_prioritized_weighted_cue weighted_pq;
@@ -2750,7 +2990,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
             {
                 thisAgent->smem_stmts->act_lti_get->bind_int(1, q->column_int(0));
                 thisAgent->smem_stmts->act_lti_get->execute();
-                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->smem_stmts->act_lti_get->column_double(0), q->column_int(0)));
+                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->smem_stmts->act_lti_get->column_double(0)+thisAgent->smem_stmts->act_lti_get->column_double(1), q->column_int(0)));
                 thisAgent->smem_stmts->act_lti_get->reinitialize();
                 
                 more_rows = (q->execute() == soar_module::row);
@@ -5138,8 +5378,8 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
             return_val->append(" [ label=\"");
             return_val->append((*lti_name));
             return_val->append("\\n[");
-            
-            temp_double = q->column_double(3);
+
+            temp_double = q->column_double(3)+q->column_double(4);
             to_string(temp_double, temp_str, 3, true);
             if (temp_double >= 0)
             {
@@ -5589,7 +5829,7 @@ void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth
             act_q->bind_int(1, cl_p->first);
             if (act_q->execute() == soar_module::row)
             {
-                temp_double = act_q->column_double(0);
+                temp_double = act_q->column_double(0)+act_q->column_double(1);
                 to_string(temp_double, temp_str, 3, true);
                 if (temp_double >= 0)
                 {
@@ -5816,7 +6056,7 @@ void smem_print_store(agent* thisAgent, std::string* return_val)
     soar_module::sqlite_statement* q = thisAgent->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        _smem_print_lti(thisAgent, q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3), return_val);
+        _smem_print_lti(thisAgent, q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3)+q->column_double(4), return_val);
     }
     q->reinitialize();
 }
