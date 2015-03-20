@@ -423,13 +423,28 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY, symbol_value INTEGER)");
     add_structure("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY, symbol_value REAL)");
     add_structure("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY, symbol_value TEXT)");
-    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total INTEGER, activations_last INTEGER, activations_first INTEGER)");
+    //This (below) was changed. It not includes an additional term, activation from spread.
+    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total INTEGER, activations_last INTEGER, activations_first INTEGER, activation_spread REAL)");
     add_structure("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER)");
     add_structure("CREATE TABLE smem_augmentations (lti_id INTEGER, attribute_s_id INTEGER, value_constant_s_id INTEGER, value_lti_id INTEGER, activation_value REAL)");
     add_structure("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY, edge_frequency INTEGER)");
     add_structure("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER, value_constant_s_id INTEGER, edge_frequency INTEGER)");
     add_structure("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER, value_lti_id INTEGER, edge_frequency INTEGER)");
     add_structure("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)");
+    // This table is a sparse monte-carlo search through the semantic network,
+    // but can be a deterministic and exhaustive depth-limited search
+    // for the sake of calculating likelihoods (or fan).
+    //Just added "valid_bit"
+    add_structure("CREATE TABLE smem_likelihood_trajectories (lti_id INTEGER, lti1 INTEGER, lti2 INTEGER, lti3 INTEGER, lti4 INTEGER, lti5 INTEGER, lti6 INTEGER, lti7 INTEGER, lti8 INTEGER, lti9 INTEGER, lti10 INTEGER, valid_bit INTEGER)");
+    //This is bookkeeping. It contains counts of how often certain ltis show up in the fingerprints of other ltis.
+    add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j INTEGER)");
+    /*
+     * This keeps track of how often an lti shows up in fingerprints at all when used for ACT-R activation and it keeps track of fingerprint size in Soar (personalized pagerank) activation
+     */
+    add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances INTEGER)");
+    // This contains the counts needed to calculation spreading activation values for ltis in working memory.
+    add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
+
     // adding an ascii table just to make lti queries easier when inspecting database
     {
         add_structure("INSERT OR IGNORE INTO smem_ascii (ascii_num, ascii_chr) VALUES (65,'A')");
@@ -471,8 +486,36 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)");
     add_structure("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
     add_structure("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+    //This is for Soar spread.
+    add_structure("CREATE INDEX smem_augmentations_parent_val_lti ON smem_augmentations (lti_id, value_constant_s_id, value_lti_id)");
+    //This makes it easier to explore the network when doing a ACT-R style spread. I omit here because the focus on this branch is Soar spread.
+    //add_structure("CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
     add_structure("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
     add_structure("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
+
+    /*
+     * The indices below are all for spreading.
+     * */
+    //This is to find the trajectories starting from a given LTI.
+    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id)");
+    //Keep track of invalid trajectories.
+    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (valid_bit)");
+    //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
+    add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti1)");
+    add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti2)");
+    add_structure("CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti3)");
+    add_structure("CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti4)");
+    add_structure("CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti5)");
+    add_structure("CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti6)");
+    add_structure("CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti7)");
+    add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti8)");
+    add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti9)");
+    add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti10)");
+    add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
+    add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
+    add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
+    add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");
+    add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
 void smem_statement_container::drop_tables(agent* new_agent)
@@ -489,6 +532,11 @@ void smem_statement_container::drop_tables(agent* new_agent)
     new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_constant_frequency");
     new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_lti_frequency");
     new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_ascii");
+    //Dropping the spreading tables.
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_likelihood_trajectories");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_likelihoods");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_current_spread");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_trajectory_num");
 }
 
 smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->smem_db)
@@ -625,6 +673,12 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(web_lti_child);
     
     //
+    //The below is needed when searching for parent ltis of an lti. (ACT-R spread)
+    //web_val_parent = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " UNION ALL SELECT value_lti_id FROM smem_augmentations WHERE lti_id IN (SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR ")");
+    //The below is for Soar spread, looking for children ltis of a specific lti.
+    web_val_child = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR );
+
+    //
     
     attribute_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?");
     add(attribute_frequency_check);
@@ -679,10 +733,12 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     act_lti_child_ct_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET total_augmentations=? WHERE lti_id=?");
     add(act_lti_child_ct_set);
     
-    act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_value=? WHERE lti_id=?");
+    //Modified to include spread and base-level.
+    act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_value=?,activation_spread=? WHERE lti_id=?");
     add(act_lti_set);
     
-    act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_lti WHERE lti_id=?");
+    //Modified to include spread and base-level.
+    act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_value,activation_spread FROM smem_lti WHERE lti_id=?");
     add(act_lti_get);
     
     history_get = new soar_module::sqlite_statement(new_db, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10 FROM smem_activation_history WHERE lti_id=?");
@@ -696,10 +752,27 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     //
     
-    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_value FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
+    //This was for spreading (batch processing/initialization), but it just iterates over all ltis.
+    // I should perhaps change to iterate based on the ordering in smem_augmentations, but if it isn't broke...
+    lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti");
+    add(lti_all);
+
+    //adding trajectory into fingerprint. Assume we do not insert invalid trajectories.
+    trajectory_add = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihood_trajectories (lti_id, lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10, valid_bit) VALUES (?,?,?,?,?,?,?,?,?,?,?,1)");
+    add(trajectory_add);
+
+    //getting trajectory from fingerprint. Only retrieves ones with valid bit of 1.
+    trajectory_get = new soar_module::sqlite_statement(new_db, "SELECT lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10 FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=1");
+    add(trajectory_get);
+
+    //
+
+    //Modified to include spread value.
+    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_value, activation_spread FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
     add(vis_lti);
     
-    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_lti WHERE lti_id=?");
+    //Modified to include spread value.
+    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value,activation_spread FROM smem_lti WHERE lti_id=?");
     add(vis_lti_act);
     
     vis_value_const = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)");
