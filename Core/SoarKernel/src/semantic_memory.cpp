@@ -1216,7 +1216,8 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
         //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
         if (children_q->get_status() == soar_module::unprepared)
         {
-            assert(false);//testing if I still need this.
+            //assert(false);//testing if I still need this.
+            // ^ assertion failed. - I do.
             children_q->prepare();
         }
         children_q->bind_int(1, lti_id);
