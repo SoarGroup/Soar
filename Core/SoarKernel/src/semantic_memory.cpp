@@ -1574,22 +1574,22 @@ inline void smem_calc_spread(agent* thisAgent)
     delete_old_context->prepare();
     for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
-        delete_old_context->bind_int(1,(*it);
-        delete_old_context->execute(soar_module::op_reinit);
-    }
-    delete_old_context->execute(soar_module::op_reinit);
-    delete delete_old_context;
-    //This deletes from the table that calculates spread, not just the one that contains current context elements.
-    soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "DELETE FROM smem_current_spread WHERE lti_id=?");
-    delete_old_context->prepare();
-    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
-    {
         delete_old_context->bind_int(1,(*it));
         delete_old_context->execute(soar_module::op_reinit);
     }
     delete_old_context->execute(soar_module::op_reinit);
     delete delete_old_context;
+    //This deletes from the table that calculates spread, not just the one that contains current context elements.
+    soar_module::sqlite_statement* delete_old_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DELETE FROM smem_current_spread WHERE lti_id=?");
+    delete_old_spread->prepare();
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {
+        delete_old_spread->bind_int(1,(*it));
+        delete_old_spread->execute(soar_module::op_reinit);
+    }
+    delete_old_spread->execute(soar_module::op_reinit);
+    delete delete_old_spread;
     thisAgent->smem_context_removals->clear();
 
     //Insert values that will be used later.
