@@ -445,6 +445,8 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances INTEGER)");
     // This contains the counts needed to calculation spreading activation values for ltis in working memory.
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
+    // This keeps track of the context.
+    add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
     // adding an ascii table just to make lti queries easier when inspecting database
     {
@@ -1561,59 +1563,69 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 *
 * Right now, the implementation idea is to keep track of context with a set stored in the agent.
 *
-* For simplification at the cost of efficiency, I will completely rewrite the table each time.
-* This incurs cost equal to the number of ltis in wmem each time instead of only processing additions
-* and deletions. Only processing changes is the obvious next step.
 * */
 
 inline void smem_calc_spread(agent* thisAgent)
 {
-    //This part will end up not being here. It's inefficient, but was an easy start.
-    soar_module::sqlite_statement* create_context_table = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
-    create_context_table->prepare();
-    create_context_table->execute();
-    delete create_context_table;
 
     //Now, delete old entries.
     soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
-        "DELETE FROM smem_current_context");
+        "DELETE FROM smem_current_context WHERE lti_id=?");
     delete_old_context->prepare();
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {
+        delete_old_context->bind_int(1,(*it);
+        delete_old_context->execute(soar_module::op_reinit);
+    }
     delete_old_context->execute(soar_module::op_reinit);
     delete delete_old_context;
+    //This deletes from the table that calculates spread, not just the one that contains current context elements.
+    soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DELETE FROM smem_current_spread WHERE lti_id=?");
+    delete_old_context->prepare();
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {
+        delete_old_context->bind_int(1,(*it));
+        delete_old_context->execute(soar_module::op_reinit);
+    }
+    delete_old_context->execute(soar_module::op_reinit);
+    delete delete_old_context;
+    thisAgent->smem_context_removals->clear();
 
     //Insert values that will be used later.
-    soar_module::sqlite_statement* new_spread_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+    soar_module::sqlite_statement* add_new_context = new soar_module::sqlite_statement(thisAgent->smem_db,
             "INSERT INTO smem_current_context (lti_id) VALUES (?)");
-    new_spread_context->prepare();
+    add_new_context->prepare();
 
-    for(smem_lti_map::iterator it = thisAgent->smem_in_wmem->begin(); it != thisAgent->smem_in_wmem->end(); ++it)
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {
-        new_spread_context->bind_int(1,it->first);
-        new_spread_context->execute(soar_module::op_reinit);
+        add_new_context->bind_int(1,(*it));
+        add_new_context->execute(soar_module::op_reinit);
     }
-    soar_module::sqlite_statement* prepare_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
-            "SELECT lti_j,num_appearances_i_j,num_appearances,lti_i FROM smem_current_context JOIN "
-            "smem_likelihoods ON smem_current_context.lti_id=smem_likelihoods.lti_i JOIN "
-            "smem_trajectory_num ON smem_trajectory_num.lti_id=smem_likelihoods.lti_i");
-    prepare_spread->prepare();
-    prepare_spread->execute();
-    delete prepare_spread;
+    delete add_new_context;
 
-    soar_module::sqlite_statement* to_activate = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "SELECT DISTINCT lti_id FROM smem_current_spread");
-    to_activate->prepare();
-    while(to_activate->execute() == soar_module::row)
+    soar_module::sqlite_statement* add_fingerprint = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
+            "SELECT lti_j,num_appearances_i_j,num_appearances,lti_i FROM smem_current_context "
+            "smem_likelihoods WHERE smem_likelihoods.lti_i=? JOIN "
+            "smem_trajectory_num ON smem_trajectory_num.lti_id=smem_likelihoods.lti_i");
+    add_fingerprint->prepare();
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {
-        thisAgent->smem_stmts->act_lti_get->bind_int(1, to_activate->column_int(0));
-        thisAgent->smem_stmts->act_lti_get->execute();
+        add_fingerprint->bind_int(1,(*it));
+        add_fingerprint->execute(soar_module::op_reinit);
+    }
+    delete add_fingerprint;
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+    {
 
         double spread = 0;
         soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
                 "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
         calc_spread->prepare();
-        calc_spread->bind_int(1,to_activate->column_int(0));
+        calc_spread->bind_int(1,(*it));
         double additional;
         while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
         {
@@ -1622,17 +1634,17 @@ inline void smem_calc_spread(agent* thisAgent)
         }
         delete calc_spread;
         thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
-        thisAgent->smem_stmts->act_set->bind_int(2, to_activate->column_int(0));
+        thisAgent->smem_stmts->act_set->bind_int(2, (*it));
         thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
 
         thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-        thisAgent->smem_stmts->act_lti_set->bind_int(3, to_activate->column_int(0));
+        thisAgent->smem_stmts->act_lti_set->bind_int(3, (*it));
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
 
         thisAgent->smem_stmts->act_lti_get->reinitialize();
     }
-    delete to_activate;
+    thisAgent->smem_context_additions->clear();
 }
 
 //////////////////////////////////////////////////////////
