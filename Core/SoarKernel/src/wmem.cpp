@@ -131,7 +131,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     //This is for spreading (keeping track of context).
-    if (w->value->id && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
+    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
     {
         if (thisAgent->smem_in_wmem->find(w->value->id->smem_lti)==thisAgent->smem_in_wmem->end())
         {
@@ -163,7 +163,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
     push(thisAgent, w, thisAgent->wmes_to_remove);
     
-    if (w->value->id && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
+    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
     {
         //This assert is almost more a test of my understanding of what is happening.
         //We shouldn't ever get here without having already added the lti before.
