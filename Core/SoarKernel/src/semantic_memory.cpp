@@ -1582,7 +1582,7 @@ inline void smem_calc_spread(agent* thisAgent)
     delete delete_old_context;
     //This deletes from the table that calculates spread, not just the one that contains current context elements.
     soar_module::sqlite_statement* delete_old_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "DELETE FROM smem_current_spread WHERE lti_id=?");
+            "DELETE FROM smem_current_spread WHERE lti_source=?");
     delete_old_spread->prepare();
     for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
@@ -1605,11 +1605,14 @@ inline void smem_calc_spread(agent* thisAgent)
     }
     delete add_new_context;
 
+    //num_appearances is number of things inside the fingerprint of lti_j.
+    //num_appearances_i_j is number of times i occurs in fingerprint of lti_j.
     soar_module::sqlite_statement* add_fingerprint = new soar_module::sqlite_statement(thisAgent->smem_db,
+            //INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM (SELECT * FROM smem_likelihoods WHERE lti_j<200) INNER JOIN smem_trajectory_num ON lti_id=lti_j;
             "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
-            "SELECT lti_j,num_appearances_i_j,num_appearances,lti_i FROM smem_current_context "
-            "smem_likelihoods WHERE smem_likelihoods.lti_i=? JOIN "
-            "smem_trajectory_num ON smem_trajectory_num.lti_id=smem_likelihoods.lti_i");
+            "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
+            "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
+            "smem_trajectory_num ON lti_id=lti_j");
     add_fingerprint->prepare();
 
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
