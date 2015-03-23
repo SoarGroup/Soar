@@ -516,32 +516,36 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
 {
     assert(thisAgent && dest && pref);
 
+    char* ch = dest;
+
     if (m_print_actual)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string, pref->id, pref->attr, pref->value,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y ^%y %y) %c %y%s", pref->id, pref->attr, pref->value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-        return dest;
+        while (*ch) ch++;
     }
-    else if (m_print_original)
+    if (m_print_original)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "%s(%y ^%y %y) %c %y%s", m_pre_string,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual) ? ", " : m_pre_string,
             pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-        return dest;
+        while (*ch) ch++;
     }
-    else if (m_print_identity)
+    if (m_print_identity)
     {
-        sprinta_sf(thisAgent, dest, dest_size, "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", m_pre_string,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", (m_print_actual) ? ", " : m_pre_string,
             pref->g_ids.id, pref->o_ids.id, pref->g_ids.attr, pref->o_ids.attr, pref->g_ids.value, pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-        return dest;
+        while (*ch) ch++;
     }
+    *ch = 0;
+    return dest;
     return NULL;
 }
 
@@ -551,7 +555,7 @@ char* Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top_
 
     for (preference* pref = top_pref; pref != NIL;)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%p\n", pref);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%p\n", m_pre_string, pref);
         while (*ch) ch++;
         pref = pref->inst_next;
     }
@@ -566,7 +570,7 @@ char* Output_Manager::preflist_result_to_string(agent* thisAgent, preference* to
 
     for (preference* pref = top_pref; pref != NIL;)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%p\n", pref);
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%p\n", m_pre_string, pref);
         while (*ch) ch++;
         pref = pref->next_result;
     }

@@ -147,7 +147,7 @@ uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym, uint64_
     {
         return get_gid_for_o_id(found_o_id);
     } else {
-        dprint(DT_OVAR_MAPPINGS, "Did not find o_id for %y in instantiation %u. Returning 0.\n", index_sym, pI_id);
+        dprint(DT_VARIABLIZATION_MANAGER, "Did not find o_id for %y in instantiation %u. Returning 0.\n", index_sym, pI_id);
         return 0;
     }
 }
@@ -157,7 +157,7 @@ uint64_t Variablization_Manager::add_o_id_to_gid_mapping(uint64_t pO_id, uint64_
     std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(pO_id);
     if (iter == (*o_id_to_g_id_map).end())
     {
-        dprint(DT_OVAR_MAPPINGS, "Did not find o_id to g_id mapping for %u.  Adding.\n", pO_id);
+        dprint(DT_VARIABLIZATION_MANAGER, "Did not find o_id to g_id mapping for %u.  Adding.\n", pO_id);
         (*o_id_to_g_id_map)[pO_id] = pG_id;
 //        symbol_add_ref(thisAgent, index_sym);
         /* -- returning 0 indicates that the mapping was added -- */
@@ -165,7 +165,7 @@ uint64_t Variablization_Manager::add_o_id_to_gid_mapping(uint64_t pO_id, uint64_
     }
     else
     {
-        dprint(DT_OVAR_MAPPINGS,
+        dprint(DT_VARIABLIZATION_MANAGER,
                "...g%u already exists for o%u(%y).  add_o_id_to_gid_mapping returning existing g%u.\n",
                iter->second, pO_id, get_ovar_for_o_id(pO_id), iter->second);
     }
@@ -177,7 +177,7 @@ uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, 
     uint64_t lO_id = get_or_create_o_id(index_sym, pI_id);
 //    uint64_t lO_id = get_existing_o_id(index_sym, pI_id);
     if (!lO_id)
-        print_o_id_tables(DT_OVAR_MAPPINGS);
+        print_o_id_tables(DT_VARIABLIZATION_MANAGER);
     assert(lO_id);
     return add_o_id_to_gid_mapping(lO_id, index_g_id);
 }
@@ -212,20 +212,20 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t in
     std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
     std::map< uint64_t, uint64_t >::iterator iter_inst;
 
-//    dprint(DT_OVAR_PROP, "...looking for symbol %y\n", orig_var);
+//    dprint(DT_VARIABLIZATION_MANAGER, "...looking for symbol %y\n", orig_var);
     iter_sym = ovar_to_o_id_map->find(orig_var);
     if (iter_sym != ovar_to_o_id_map->end())
     {
-//        dprint(DT_OVAR_PROP, "...Found.  Looking  for instantiation id %u\n", inst_id);
+//        dprint(DT_VARIABLIZATION_MANAGER, "...Found.  Looking  for instantiation id %u\n", inst_id);
         iter_inst = iter_sym->second.find(inst_id);
         if (iter_inst != iter_sym->second.end())
         {
-            dprint(DT_OVAR_PROP, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, inst_id, iter_inst->second);
+            dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, inst_id, iter_inst->second);
             return iter_inst->second;
         }
     }
 
-    dprint(DT_OVAR_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, inst_id);
+    dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, inst_id);
     /* MToDo | Remove */
     std::string strName(orig_var->to_string());
     if ((inst_id == 1) && (strName == "<x>"))
@@ -245,7 +245,7 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t i
         (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
         symbol_add_ref(thisAgent, orig_var);
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
-        dprint(DT_OVAR_PROP, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, inst_id);
+        dprint(DT_VARIABLIZATION_MANAGER, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, inst_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;
@@ -256,7 +256,7 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
 {
     if (o_id == 0) return NULL;
 
-//    dprint(DT_OVAR_PROP, "...looking for ovar for o_id %u...", o_id);
+//    dprint(DT_VARIABLIZATION_MANAGER, "...looking for ovar for o_id %u...", o_id);
     std::map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
     if (iter != o_id_to_ovar_debug_map->end())
     {

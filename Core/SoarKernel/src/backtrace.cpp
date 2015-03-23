@@ -272,34 +272,29 @@ void backtrace_through_instantiation(agent* thisAgent,
     tc2 = get_new_tc_number(thisAgent);
     need_another_pass = false;
     Symbol* thisID, *value;
-    Symbol* old_id_ovar = NULL;
-    Symbol* old_cond_attr_ovar = NULL;
-    Symbol* old_cond_value_ovar = NULL;
-    if (trace_cond)
-    {
-        assert(trace_cond->data.tests.id_test);
-        assert(trace_cond->data.tests.attr_test);
-        assert(trace_cond->data.tests.value_test);
-        Symbol* previous_id_sym = equality_test_found_in_test(trace_cond->data.tests.id_test)->identity->original_var;
-        Symbol* previous_attr_sym = equality_test_found_in_test(trace_cond->data.tests.attr_test)->identity->original_var;
-        Symbol* previous_value_sym = equality_test_found_in_test(trace_cond->data.tests.value_test)->identity->original_var;
-//        assert(previous_id_sym);
-//        assert(previous_attr_sym);
-//        assert(previous_value_sym);
-//        uint64_t previous_id_o_id = thisAgent->variablizationManager->get_existing_o_id(previous_id_sym, inst->i_id);
-//        uint64_t previous_id_o_attr = thisAgent->variablizationManager->get_existing_o_id(previous_attr_sym, inst->i_id);
-//        uint64_t previous_id_o_value = thisAgent->variablizationManager->get_existing_o_id(previous_value_sym, inst->i_id);
-        uint64_t previous_id_o_id = trace_cond->data.tests.id_test->identity->original_var_id;
-        uint64_t previous_attr_o_id = trace_cond->data.tests.attr_test->identity->original_var_id;
-        uint64_t previous_value_o_id = trace_cond->data.tests.value_test->identity->original_var_id;
-        assert(!previous_id_sym || previous_id_o_id);
-        assert(!previous_attr_sym || previous_attr_o_id);
-        assert(!previous_value_sym || previous_value_o_id);
-//        dprint(DT_OVAR_PROP, "Propagating original id variable back:  %y(o%u) -> %y(o?)", previous_id_sym, previous_id_o_id, parent_cond_id);
-//        dprint(DT_OVAR_PROP, "Propagating original attr variable back:  %y(o%u) -> %y(o?)", previous_attr_sym, previous_attr_o_id, parent_cond_attr);
-//        dprint(DT_OVAR_PROP, "Propagating original value variable back:  %y(o%u) -> %y(o?)", previous_value_sym, previous_value_o_id, parent_cond_value);
-    }
 
+//    dprint(DT_OVAR_PROP, "Variablization Identity Propagation Demystification\n");
+//    dprint(DT_OVAR_PROP, "Trace cond: %l\n", trace_cond);
+//    if (trace_cond)
+//    {
+//        assert(trace_cond->data.tests.id_test);
+//        assert(trace_cond->data.tests.attr_test);
+//        assert(trace_cond->data.tests.value_test);
+//        test rhs_id_test = equality_test_found_in_test(trace_cond->data.tests.id_test);
+//        test rhs_attr_test = equality_test_found_in_test(trace_cond->data.tests.attr_test);
+//        test rhs_value_test = equality_test_found_in_test(trace_cond->data.tests.value_test);
+//        dprint(DT_OVAR_PROP, "Trace cond eq tests: (%y [o%u] ^%y [o%u] %y [o%u])\n",
+//            rhs_id_test->identity->original_var, rhs_id_test->identity->original_var_id, rhs_attr_test->identity->original_var, rhs_attr_test->identity->original_var_id, rhs_value_test->identity->original_var, rhs_value_test->identity->original_var_id);
+//        uint64_t previous_id_o_id = trace_cond->data.tests.id_test->identity->original_var_id;
+//        uint64_t previous_attr_o_id = trace_cond->data.tests.attr_test->identity->original_var_id;
+//        uint64_t previous_value_o_id = trace_cond->data.tests.value_test->identity->original_var_id;
+//    }
+//
+//    dprint(DT_OVAR_PROP, "Parent cond: (%y [o%u] ^%y [o%u] %y [o%u])\n",
+//        parent_cond_ovars.id, parent_cond_o_ids.id, parent_cond_ovars.attr, parent_cond_o_ids.attr, parent_cond_ovars.value, parent_cond_o_ids.value);
+////        dprint(DT_OVAR_PROP, "Propagating original id variable back:  %y(o%u) -> %y(o?)", previous_id_sym, previous_id_o_id, parent_cond_id);
+////        dprint(DT_OVAR_PROP, "Propagating original attr variable back:  %y(o%u) -> %y(o?)", previous_attr_sym, previous_attr_o_id, parent_cond_attr);
+////        dprint(DT_OVAR_PROP, "Propagating original value variable back:  %y(o%u) -> %y(o?)", previous_value_sym, previous_value_o_id, parent_cond_value);
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
 
@@ -547,6 +542,11 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         if (bt_pref)
         {
 //            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
+            dprint(DT_OVAR_PROP, "Variablization Identity Propagation Demystification\n");
+            dprint(DT_OVAR_PROP, "Cond: %l\n", cond);
+            dprint(DT_OVAR_PROP, "bt.trace: %p\n", cond->bt.trace);
+            dprint(DT_OVAR_PROP, "bt.trace clone: %p\n", bt_pref);
+
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
                 bt_pref->original_symbols, 0, bt_pref->o_ids);
 

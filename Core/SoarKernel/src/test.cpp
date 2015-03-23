@@ -1294,8 +1294,6 @@ inline void add_identity_to_test(agent* thisAgent,
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
-                    /* -- Check if we ned to add a unifying constraint, b/c this original variable
-                     *    already has a different g_id matched to it -- */
                     if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
                     {
                         dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);

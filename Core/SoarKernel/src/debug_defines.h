@@ -50,7 +50,7 @@
 //--
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
-#define TRACE_Init_DT_RHS_VARIABLIZATION          true
+#define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
