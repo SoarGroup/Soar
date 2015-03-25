@@ -73,4 +73,4 @@ sp {propose*stop
 }
 
 #run
-#ctf expected/chunk29.soar print -cf
+#ctf expected/chunk30.soar print -cf

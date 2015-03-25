@@ -120,14 +120,18 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
 {
     std::map< uint64_t, uint64_t >::iterator iter;
 
-    print_ovar_gid_propogation_table(DT_FIX_CONDITIONS, true);
+    print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
     for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
     {
 
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
             dprint(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: o%u = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
-            iter->second = survivorSymTest->identity->grounding_id;
+            /* MToDo | It was changing the iterator before.  That shouldn't change table, so maybe this was a bug
+             *         that came out of switching from ovar to o_ids in this map?  Does this invalidate the
+             *         iterator though? If so, we may need to recursively call update_ovar_table_for_sub*/
+            //            iter->second = survivorSymTest->identity->grounding_id;
+            (*o_id_to_g_id_map)[iter->first] = survivorSymTest->identity->grounding_id;
         }
     }
 }

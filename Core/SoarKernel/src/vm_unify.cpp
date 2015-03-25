@@ -108,8 +108,8 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
 //                                dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  No unification test needed.\n", sym, (*t)->identity->grounding_id, existing_gid);
                             }
                         } else {
-                            thisAgent->variablizationManager->print_ovar_gid_propogation_table(DT_UNIFICATION);
-                            thisAgent->variablizationManager->print_o_id_tables(DT_UNIFICATION);
+//                            thisAgent->variablizationManager->print_ovar_gid_propogation_table(DT_UNIFICATION);
+//                            thisAgent->variablizationManager->print_o_id_tables(DT_UNIFICATION);
                             dprint(DT_UNIFICATION, "- %y o%u(%y, g%u)had no o_id to g_id mapping, so must be ungrounded.  No unification test needed.\n", sym, (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
                         }
                     } else {
@@ -144,7 +144,7 @@ void Variablization_Manager::add_unifications(condition* cond, goal_stack_level 
             add_unifications_to_test(&(c->data.tests.attr_test), ATTR_ELEMENT, level);
             add_unifications_to_test(&(c->data.tests.value_test), VALUE_ELEMENT, level);
             dprint_set_indents(DT_UNIFICATION, "          ");
-            dprint(DT_UNIFICATION, "Condition is now: %l\n", c);
+            dprint(DT_UNIFICATION, "After unifications, condition is now: %l\n", c);
             dprint_clear_indents(DT_UNIFICATION);
         }
     }

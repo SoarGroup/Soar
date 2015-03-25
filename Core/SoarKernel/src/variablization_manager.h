@@ -100,7 +100,7 @@ class Variablization_Manager
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_substitution_map(TraceMode mode);
-        void print_ovar_gid_propogation_table(TraceMode mode, bool printHeader = false);
+        void print_o_id_to_gid_map(TraceMode mode, bool printHeader = false);
         void print_dnvl_set(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);

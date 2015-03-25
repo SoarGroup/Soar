@@ -134,7 +134,7 @@ uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)
         return iter->second;
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "...did not find o%u in o_id_to_g_id.\n", pO_id);
-        print_ovar_gid_propogation_table(DT_LHS_VARIABLIZATION);
+        print_o_id_to_gid_map(DT_OVAR_PROP);
     }
     return 0;
 }

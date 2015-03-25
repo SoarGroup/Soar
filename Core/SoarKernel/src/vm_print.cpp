@@ -164,12 +164,12 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
     dprint(mode, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_ovar_gid_propogation_table(TraceMode mode, bool printHeader)
+void Variablization_Manager::print_o_id_to_gid_map(TraceMode mode, bool printHeader)
 {
     if (printHeader)
     {
         dprint(mode, "------------------------------------\n");
-        dprint(mode, "OrigVariable to g_id Propagation Map\n");
+        dprint(mode, "         o_id to g_id Map\n");
         dprint(mode, "------------------------------------\n");
     }
 
@@ -282,7 +282,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         {
             dprint(mode, "------------------------------------\n");
         }
-        print_ovar_gid_propogation_table(mode);
+        print_o_id_to_gid_map(mode);
     }
     dprint(mode, "------------------------------------\n");
 }

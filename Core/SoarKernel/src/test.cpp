@@ -1294,19 +1294,29 @@ inline void add_identity_to_test(agent* thisAgent,
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
-                    if (((*t)->identity->grounding_id != NON_GENERALIZABLE) && (*t)->identity->original_var)
+                    if ((*t)->identity->original_var)
                     {
-                        dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
-                        uint64_t existing_gid = thisAgent->variablizationManager->add_orig_var_to_gid_mapping((*t)->identity->original_var, (*t)->identity->grounding_id, pI_id);
-                    }
-                    else
-                    {
-                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
-                            ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
+                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
+                        if ((*t)->identity->grounding_id != NON_GENERALIZABLE)
+                        {
+                            dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
+                            uint64_t existing_gid = thisAgent->variablizationManager->add_o_id_to_gid_mapping((*t)->identity->original_var_id, (*t)->identity->grounding_id);
+                        }
+                        else
+                        {
+                            dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
+                                ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
+                        }
                     }
                 }
                 else
                 {
+                    /* MToDo | Clean up logic so this happens for all syms with original var, even though we don't currently
+                     *         use for STIs */
+                    if ((*t)->identity->original_var)
+                    {
+                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
+                    }
                     dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
                 }
             }

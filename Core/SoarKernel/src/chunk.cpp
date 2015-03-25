@@ -420,7 +420,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
 
     c_inst = c_vrblz = NIL; /* unnecessary, but gcc -Wall warns without it */
 
-    dprint(DT_BACKTRACE, "Building conditions for new chunk...\n");
+    dprint(DT_UNIFICATION, "Building conditions for new chunk...\n");
+    dprint(DT_UNIFICATION, "Grounds from backtrace: \n");
+    dprint_noprefix(DT_UNIFICATION, "%3", thisAgent->grounds);
     dprint(DT_BACKTRACE, "...adding positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
     prev_inst = prev_vrblz = NIL;
@@ -500,7 +502,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     }
 
     *inst_top = first_inst;
-    dprint(DT_UNIFICATION, "Adding grounding unification tests for new conditions from backtracing.\n");
+    dprint(DT_UNIFICATION, "Conditions after variablization unification: \n");
+    dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
+    dprint(DT_UNIFICATION, "Adding grounding unifications...\n");
     goal_stack_level gsl = get_match_goal(*inst_top);
     thisAgent->variablizationManager->add_unifications(*inst_top, gsl);
 
@@ -530,11 +534,11 @@ void build_chunk_conds_for_grounds_and_add_negateds(
 
     *vrblz_top = first_vrblz;
 
-    dprint(DT_CONSTRAINTS, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
-    dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", *inst_top);
+    dprint(DT_UNIFICATION, "Conditions after grounding unifications: \n");
+    dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
 //    dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
 //    dprint_noprefix(DT_CONSTRAINTS, "%1", *vrblz_top);
+    dprint(DT_UNIFICATION, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
 }
 
 /* --------------------------------------------------------------------
