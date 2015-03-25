@@ -434,7 +434,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_inst = copy_condition(thisAgent, ground);
+        c_inst = copy_condition(thisAgent, ground, true);
 
         /* -- Removed stripping of relational constraints b/c it was losing them in
          *    non-chunky problem spaces but was needed later for a chunky one. --  */
@@ -467,7 +467,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 print_string(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_inst = copy_condition(thisAgent, cc->cond);
+            c_inst = copy_condition(thisAgent, cc->cond, true);
 
             add_cond(&c_inst, &prev_inst, &first_inst);
         }
@@ -500,7 +500,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     }
 
     *inst_top = first_inst;
-    dprint(DT_UNIFICATION, "Adding unification tests for new conditions from backtracing.\n");
+    dprint(DT_UNIFICATION, "Adding grounding unification tests for new conditions from backtracing.\n");
     goal_stack_level gsl = get_match_goal(*inst_top);
     thisAgent->variablizationManager->add_unifications(*inst_top, gsl);
 
@@ -926,6 +926,7 @@ inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_oid_to_gid_map();
+    thisAgent->variablizationManager->clear_o_id_substitution_map();
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
@@ -1067,7 +1068,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            pref->original_symbols, inst->i_id, pref->o_ids);
+            pref->original_symbols, pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -1092,6 +1093,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_BACKTRACE, "Grounds after tracing:\n%3", thisAgent->grounds);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
+
+    dprint(DT_OVAR_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
+    thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
 
     free_list(thisAgent, thisAgent->positive_potentials);
 
@@ -1342,7 +1346,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
+        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation...\n");
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
         return;
     }

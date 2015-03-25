@@ -59,6 +59,7 @@ class Variablization_Manager
         void clear_cached_constraints();
         void clear_dnvl();
         void clear_ovar_to_o_id_map();
+        void clear_o_id_substitution_map();
         void clear_data();
         void reinit();
 
@@ -73,6 +74,9 @@ class Variablization_Manager
 
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
+
+        void add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
+        uint64_t get_o_id_substitution(uint64_t pO_id);
 
         void add_unifications(condition* cond, goal_stack_level level);
         void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
@@ -154,7 +158,6 @@ class Variablization_Manager
 
         void clear_merge_map();
         void clear_substitution_map();
-        void clear_o_id_substitution_map();
         void clear_o_id_to_ovar_debug_map();
 
         /* -- The following are tables used by the variablization manager during

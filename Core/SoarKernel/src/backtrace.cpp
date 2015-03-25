@@ -173,9 +173,8 @@ void backtrace_through_instantiation(agent* thisAgent,
                                      condition* trace_cond,
                                      bool* reliable,
                                      int indent,
-                                     soar_module::symbol_triple parent_cond_ovars,
-                                     uint64_t parent_i_id,
-                                     soar_module::identity_triple parent_cond_o_ids)
+                                     soar_module::symbol_triple ovars_to_replace,
+                                     soar_module::identity_triple o_ids_to_replace)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */
@@ -184,7 +183,7 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-//    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d with orig vars (%y ^%y %y) for condition:\n", grounds_level, parent_cond_id, parent_cond_attr, parent_cond_value);
+    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d for i%u with orig vars (%y ^%y %y) for condition:\n", grounds_level, inst->i_id, ovars_to_replace.id, ovars_to_replace.attr, ovars_to_replace.value);
     dprint(DT_BACKTRACE, "%l\n", trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -213,6 +212,32 @@ void backtrace_through_instantiation(agent* thisAgent,
 
     }
 
+//    dprint(DT_OVAR_PROP, "Variablization Identity Propagation Demystification (backtrace_through_instantiation)!!!\n");
+//    dprint(DT_OVAR_PROP, "Parent condition: %l\n", trace_cond);
+//    dprint(DT_OVAR_PROP, "Identities to replace: (%y [o%u] ^%y [o%u] %y [o%u])\n",
+//        ovars_to_replace.id, o_ids_to_replace.id, ovars_to_replace.attr, o_ids_to_replace.attr, ovars_to_replace.value, o_ids_to_replace.value);
+    if (trace_cond)
+    {
+        if (o_ids_to_replace.id && trace_cond->data.tests.id_test && trace_cond->data.tests.id_test->identity->original_var_id)
+        {
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n",
+                ovars_to_replace.id, o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var, trace_cond->data.tests.id_test->identity->original_var_id);
+            thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var_id);
+        }
+        if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test && trace_cond->data.tests.attr_test->identity->original_var_id)
+        {
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n",
+                ovars_to_replace.attr, o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var, trace_cond->data.tests.attr_test->identity->original_var_id);
+            thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var_id);
+        }
+        if (o_ids_to_replace.value && trace_cond->data.tests.value_test && trace_cond->data.tests.value_test->identity->original_var_id)
+        {
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n",
+                ovars_to_replace.value, o_ids_to_replace.value, trace_cond->data.tests.value_test->identity->original_var, trace_cond->data.tests.value_test->identity->original_var_id);
+            thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.value, trace_cond->data.tests.value_test->identity->original_var_id);
+        }
+    }
+
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
     if (inst->backtrace_number == thisAgent->backtrace_number)
     {
@@ -225,6 +250,7 @@ void backtrace_through_instantiation(agent* thisAgent,
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
+        dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n", trace_cond);
         return;
     }
     inst->backtrace_number = thisAgent->backtrace_number;
@@ -273,28 +299,6 @@ void backtrace_through_instantiation(agent* thisAgent,
     need_another_pass = false;
     Symbol* thisID, *value;
 
-//    dprint(DT_OVAR_PROP, "Variablization Identity Propagation Demystification\n");
-//    dprint(DT_OVAR_PROP, "Trace cond: %l\n", trace_cond);
-//    if (trace_cond)
-//    {
-//        assert(trace_cond->data.tests.id_test);
-//        assert(trace_cond->data.tests.attr_test);
-//        assert(trace_cond->data.tests.value_test);
-//        test rhs_id_test = equality_test_found_in_test(trace_cond->data.tests.id_test);
-//        test rhs_attr_test = equality_test_found_in_test(trace_cond->data.tests.attr_test);
-//        test rhs_value_test = equality_test_found_in_test(trace_cond->data.tests.value_test);
-//        dprint(DT_OVAR_PROP, "Trace cond eq tests: (%y [o%u] ^%y [o%u] %y [o%u])\n",
-//            rhs_id_test->identity->original_var, rhs_id_test->identity->original_var_id, rhs_attr_test->identity->original_var, rhs_attr_test->identity->original_var_id, rhs_value_test->identity->original_var, rhs_value_test->identity->original_var_id);
-//        uint64_t previous_id_o_id = trace_cond->data.tests.id_test->identity->original_var_id;
-//        uint64_t previous_attr_o_id = trace_cond->data.tests.attr_test->identity->original_var_id;
-//        uint64_t previous_value_o_id = trace_cond->data.tests.value_test->identity->original_var_id;
-//    }
-//
-//    dprint(DT_OVAR_PROP, "Parent cond: (%y [o%u] ^%y [o%u] %y [o%u])\n",
-//        parent_cond_ovars.id, parent_cond_o_ids.id, parent_cond_ovars.attr, parent_cond_o_ids.attr, parent_cond_ovars.value, parent_cond_o_ids.value);
-////        dprint(DT_OVAR_PROP, "Propagating original id variable back:  %y(o%u) -> %y(o?)", previous_id_sym, previous_id_o_id, parent_cond_id);
-////        dprint(DT_OVAR_PROP, "Propagating original attr variable back:  %y(o%u) -> %y(o?)", previous_attr_sym, previous_attr_o_id, parent_cond_attr);
-////        dprint(DT_OVAR_PROP, "Propagating original value variable back:  %y(o%u) -> %y(o?)", previous_value_sym, previous_value_o_id, parent_cond_value);
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
 
@@ -386,7 +390,6 @@ void backtrace_through_instantiation(agent* thisAgent,
     locals_to_print = NIL;
     negateds_to_print = NIL;
 
-    /* Record the conds in the print_lists even if not going to be printed */
     dprint(DT_BACKTRACE, "Backtracing collecting grounds, potentials and locals...\n");
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
@@ -541,14 +544,8 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-//            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0);
-            dprint(DT_OVAR_PROP, "Variablization Identity Propagation Demystification\n");
-            dprint(DT_OVAR_PROP, "Cond: %l\n", cond);
-            dprint(DT_OVAR_PROP, "bt.trace: %p\n", cond->bt.trace);
-            dprint(DT_OVAR_PROP, "bt.trace clone: %p\n", bt_pref);
-
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
-                bt_pref->original_symbols, 0, bt_pref->o_ids);
+                bt_pref->original_symbols, bt_pref->o_ids);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -562,8 +559,11 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         xml_begin_tag(thisAgent, kTagCDPSPreference);
                         print_preference(thisAgent, p);
                     }
+                    /* MToDo | We might actually need to pass NULL in instead of cond, because these
+                     *         are results!  That's what chunk_instantiation does with results */
+
                     backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
-                        bt_pref->original_symbols, 0, bt_pref->o_ids);
+                        p->original_symbols, p->o_ids);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -802,7 +802,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
         backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0,
-            bt_pref->original_symbols, 0, bt_pref->o_ids);
+            bt_pref->original_symbols, bt_pref->o_ids);
 
         /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
@@ -816,8 +816,11 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     xml_begin_tag(thisAgent, kTagCDPSPreference);
                     print_preference(thisAgent, p);
                 }
+                /* MToDo | We might actually need to pass NULL in instead of potential, because these
+                 *         are results!  That's what chunk_instantiation does with results */
+
                 backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
-                    bt_pref->original_symbols, 0, bt_pref->o_ids);
+                    p->original_symbols, p->o_ids);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

@@ -135,7 +135,7 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
 
     for (iter = o_id_substitution_map->begin(); iter != o_id_substitution_map->end(); ++iter)
     {
-        dprint(DT_MERGE, "   o%u(%y) = o%u(%y)\n",
+        dprint(mode, "   o%u(%y) = o%u(%y)\n",
             iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
             iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
     }

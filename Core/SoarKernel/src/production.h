@@ -237,7 +237,7 @@ extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
 extern void init_condition(condition* cond);
 
 /* --- Returns a new copy of the given condition. --- */
-extern condition* copy_condition(agent* thisAgent, condition* cond);
+extern condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false);
 
 /* --- Returns a new copy of the given condition without any relational tests --- */
 condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);

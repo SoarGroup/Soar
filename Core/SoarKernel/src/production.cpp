@@ -34,6 +34,7 @@
 #include "test.h"
 #include "chunk.h"
 #include "debug.h"
+#include "variablization_manager.h"
 #include <ctype.h>
 
 void init_production_utilities(agent* thisAgent)
@@ -137,12 +138,24 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
     return New;
 }
 
+inline void unify_variablization_identity(agent* thisAgent, test t)
+{
+    uint64_t found_o_id = 0;
+
+    found_o_id = thisAgent->variablizationManager->get_o_id_substitution(t->identity->original_var_id);
+    if (found_o_id)
+    {
+        t->identity->original_var_id = found_o_id;
+        symbol_remove_ref(thisAgent, t->identity->original_var);
+        t->identity->original_var = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id);
+        symbol_add_ref(thisAgent, t->identity->original_var);
+    }
+}
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent,
-                          condition* cond)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity)
 {
     condition* New;
 
@@ -165,6 +178,21 @@ condition* copy_condition(agent* thisAgent,
             New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test);
             New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+            if (pUnify_variablization_identity)
+            {
+                if (New->data.tests.id_test->identity->original_var_id)
+                {
+                    unify_variablization_identity(thisAgent, New->data.tests.id_test);
+                }
+                if (New->data.tests.attr_test->identity->original_var_id)
+                {
+                    unify_variablization_identity(thisAgent, New->data.tests.attr_test);
+                }
+                if (New->data.tests.value_test->identity->original_var_id)
+                {
+                    unify_variablization_identity(thisAgent, New->data.tests.value_test);
+                }
+            }
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
