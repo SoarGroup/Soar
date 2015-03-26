@@ -449,7 +449,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
-    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, prohibited INTEGER)");
+    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY)");
 
     // adding an ascii table just to make lti queries easier when inspecting database
     {
@@ -760,14 +760,17 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     // Adding statements needed to support prohibits.
 
-    prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=? WHERE lti_id=?");
-    add(prohibit_set);
+    //prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=? WHERE lti_id=?");
+    //add(prohibit_set);
 
-    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_prohibited (lti_id,prohibited) VALUES (?,0)");
+    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id) VALUES (?)");
     add(prohibit_add);
 
-    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT prohibited FROM smem_prohibited WHERE lti_id=?");
+    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_prohibited WHERE lti_id=?");
     add(prohibit_check);
+
+    prohibit_remove = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_prohibited WHERE lti_id=?");
+    add(prohibit_remove);
 
     history_remove = new soar_module::sqlite_statement(new_db, "UPDATE smem_activation_history SET t1=t2,t2=t3,t3=t4,t4=t5,t5=t6,t6=t7,t7=t8,t8=t9,t9=t10,t10=0"); //add something like "only use 9/10 when prohibited"
     add(history_remove);
@@ -1374,13 +1377,12 @@ inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time
     // get all history
     thisAgent->smem_stmts->history_get->bind_int(1, lti);
     thisAgent->smem_stmts->history_get->execute();
-    int prohibited = 0;
+    bool prohibited = false;
     {
         int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
 
         thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
-        thisAgent->smem_stmts->prohibit_check->execute();
-        prohibited = thisAgent->smem_stmts->prohibit_check->column_int(0);
+        prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
         if (prohibited)
         {
             available_history--;
@@ -1426,7 +1428,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     ////////////////////////////////////////////////////////////////////////////
     
     int64_t time_now;
-    int prohibited = 0;
+    bool prohibited = false;
     if (add_access)
     {
         time_now = thisAgent->smem_max_cycle++;
@@ -1436,14 +1438,12 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         * should take care of things. There is one exception. The number of touches should remain the same instead of being incremented.
         */
         thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
-        thisAgent->smem_stmts->prohibit_check->execute();
-        prohibited = thisAgent->smem_stmts->prohibit_check->column_int(0);
+        prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
         thisAgent->smem_stmts->prohibit_check->reinitialize();
         if (prohibited)
         {//Just need to flip the bit here.
-            thisAgent->smem_stmts->prohibit_set->bind_int(1,0);
-            thisAgent->smem_stmts->prohibit_set->bind_int(2,lti);
-            thisAgent->smem_stmts->prohibit_set->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->prohibit_remove->bind_int(1,lti);
+            thisAgent->smem_stmts->prohibit_remove->execute(soar_module::op_reinit);
         }
 
 
@@ -1506,10 +1506,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         if (add_access)
         {
 
-            thisAgent->smem_stmts->lti_access_set->bind_int(1, (prohibited == 1) ? (prev_access_n) : (prev_access_n + 1));
+            thisAgent->smem_stmts->lti_access_set->bind_int(1, (prohibited) ? (prev_access_n) : (prev_access_n + 1));
             //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
             thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
-            thisAgent->smem_stmts->lti_access_set->bind_int(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
+            thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
             thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
             thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
         }
@@ -1532,9 +1532,18 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         {
             if (add_access)
             {
-                thisAgent->smem_stmts->history_add->bind_int(1, lti);
-                thisAgent->smem_stmts->history_add->bind_int(2, time_now);
-                thisAgent->smem_stmts->history_add->execute(soar_module::op_reinit);
+                if (prohibited)
+                {
+                    thisAgent->smem_stmts->history_push->bind_int(1, time_now);
+                    thisAgent->smem_stmts->history_push->bind_int(2, lti);
+                    thisAgent->smem_stmts->history_push->execute(soar_module::op_reinit);
+                }
+                else
+                {
+                    thisAgent->smem_stmts->history_add->bind_int(1, lti);
+                    thisAgent->smem_stmts->history_add->bind_int(2, time_now);
+                    thisAgent->smem_stmts->history_add->execute(soar_module::op_reinit);
+                }
             }
             
             new_activation = 0;
@@ -2258,9 +2267,11 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     
     // Put the initialization of the entry in the prohibit table here.
     //(The initialization to the activation history is in the below function call "smem_lti_activate".)
-    // Also, it seemed appropriate for such an initialization to be in store_chunk.
-    thisAgent->smem_stmts->prohibit_add->bind_int(1,lti_id);
-    thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
+    // Also, it seemed appropriate for such an initialization to be in store_chunk.Z
+    {
+        thisAgent->smem_stmts->prohibit_add->bind_int(1,lti_id);
+        thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
+    }
     //The above doesn't add a prohibit event. It merely stores the lti_id in the prohibit table for later use.
 
 
@@ -2908,16 +2919,14 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     for (prohibited_lti_p = prohibit->begin(); prohibited_lti_p != prohibit->end(); prohibited_lti_p++)
     {
         thisAgent->smem_stmts->prohibit_check->bind_int(1,(*prohibited_lti_p));
-        thisAgent->smem_stmts->prohibit_check->execute();
-        if (thisAgent->smem_stmts->prohibit_check->column_int(0) == 0)
+        if (thisAgent->smem_stmts->prohibit_check->execute() != soar_module::row)
         {//If the lti is not already prohibited
             //Then add the prohibit and get rid of the history.
             thisAgent->smem_stmts->prohibit_check->reinitialize();
 
             //Add the prohibit
-            thisAgent->smem_stmts->prohibit_set->bind_int(1,1);
-            thisAgent->smem_stmts->prohibit_set->bind_int(2,(*prohibited_lti_p));
-            thisAgent->smem_stmts->prohibit_set->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->prohibit_add->bind_int(1,(*prohibited_lti_p));
+            thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
 
             //remove the history
             thisAgent->smem_stmts->history_remove->bind_int(1,(*prohibited_lti_p));
@@ -2925,11 +2934,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
 
         //The above could potentially fail if there is no history, but that shouldn't ever be possible here.
         }
-        else
-        {//Set it up this way in case I want to do something else in the event of already being prohibited.
-            thisAgent->smem_stmts->prohibit_check->reinitialize();
-            //Right now, do nothing in this case.
-        }
+        thisAgent->smem_stmts->prohibit_check->reinitialize();
     }
 
     smem_weighted_cue_list weighted_cue;
