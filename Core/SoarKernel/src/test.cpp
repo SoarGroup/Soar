@@ -1296,7 +1296,7 @@ inline void add_identity_to_test(agent* thisAgent,
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
                     if ((*t)->identity->original_var)
                     {
-                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
+//                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
                         if ((*t)->identity->grounding_id != NON_GENERALIZABLE)
                         {
                             dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
@@ -1311,12 +1311,6 @@ inline void add_identity_to_test(agent* thisAgent,
                 }
                 else
                 {
-                    /* MToDo | Clean up logic so this happens for all syms with original var, even though we don't currently
-                     *         use for STIs */
-                    if ((*t)->identity->original_var)
-                    {
-                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
-                    }
                     dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
                 }
             }
@@ -1371,16 +1365,9 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             {
                 if (!sym->is_sti() && !sym->is_variable())
                 {
-                    // Recall grounding id using original var
-//                    if (t->identity->grounding_id != NON_GENERALIZABLE)
-//                    {
-                        t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym, pI_id);
-                        dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %i.\n", sym, t->identity->grounding_id);
-//                    }
-//                    else
-//                    {
-//                        dprint(DT_IDENTITY_PROP, "Could not propagate g_id for NC b/c symbol %y is marked ungeneralizable.\n", sym);
-//                    }
+//                    t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym, pI_id);
+                    t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_o_id(t->identity->original_var_id);
+                    dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %i.\n", sym, t->identity->grounding_id);
                 }
                 else
                 {

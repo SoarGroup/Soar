@@ -949,6 +949,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     bool reliable = true;
     bool variablize;
     inst_top = vrblz_top = NULL;
+    uint64_t chunk_new_i_id = 0;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -1183,9 +1184,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
-    thisAgent->variablizationManager->fix_conditions(vrblz_top, !variablize);
+    chunk_new_i_id = thisAgent->variablizationManager->get_new_inst_id();
+    thisAgent->variablizationManager->fix_conditions(vrblz_top, chunk_new_i_id, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
-    thisAgent->variablizationManager->fix_conditions(inst_top, true);
+    thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
@@ -1248,7 +1250,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 
         chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
-        chunk_inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
+        chunk_inst->i_id = chunk_new_i_id;
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */

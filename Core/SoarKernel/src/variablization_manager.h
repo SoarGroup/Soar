@@ -79,8 +79,8 @@ class Variablization_Manager
         uint64_t get_o_id_substitution(uint64_t pO_id);
 
         void add_unifications(condition* cond, goal_stack_level level);
-        void fix_conditions(condition* top_cond, bool ignore_ungroundeds = false);
-        void consolidate_variables(condition* top_cond, tc_number tc_num);
+        void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
+        void consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id);
         void merge_conditions(condition* top_cond);
 
         void add_ltis_to_dnvl_for_conditions(condition* top_cond);
@@ -137,7 +137,7 @@ class Variablization_Manager
         test      get_substitution(Symbol* sym);
         void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
         void      update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
-        void      consolidate_variables_in_test(test t, tc_number tc_num);
+        void      consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id);
         void      remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
 
         void      merge_values_in_conds(condition* pDestCond, condition* pSrcCond);

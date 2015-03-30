@@ -30,7 +30,7 @@ test Variablization_Manager::get_substitution(Symbol* sym)
 }
 
 
-void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_num)
+void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id)
 {
     test found_test;
     switch (t->type)
@@ -46,7 +46,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
             while (c)
             {
                 test tt = static_cast<test>(c->first);
-                consolidate_variables_in_test(tt, tc_num);
+                consolidate_variables_in_test(tt, tc_num, pI_id);
                 c = c->rest;
             }
             dprint(DT_FIX_CONDITIONS, "          After consolidating vars in conj test: %t\n", t);
@@ -75,13 +75,20 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 symbol_add_ref(thisAgent, found_test->identity->original_var);
                 t->identity->original_var = found_test->identity->original_var;
                 t->identity->original_var_id = found_test->identity->original_var_id;
-//                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(found_test->identity->original_var, 0);
+            }
+            /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
+             * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
+             * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
+             * rules that do not currently match unlike chunks/justifications) */
+            if (t->identity->original_var_id && pI_id)
+            {
+                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(t->identity->original_var, pI_id);
             }
             break;
     }
 }
 
-void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num)
+void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id)
 {
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Consolidating variables in tests =\n");
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
@@ -96,13 +103,13 @@ void Variablization_Manager::consolidate_variables(condition* top_cond, tc_numbe
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
-            consolidate_variables_in_test(cond->data.tests.id_test, tc_num);
-            consolidate_variables_in_test(cond->data.tests.attr_test, tc_num);
-            consolidate_variables_in_test(cond->data.tests.value_test, tc_num);
+            consolidate_variables_in_test(cond->data.tests.id_test, tc_num, pI_id);
+            consolidate_variables_in_test(cond->data.tests.attr_test, tc_num, pI_id);
+            consolidate_variables_in_test(cond->data.tests.value_test, tc_num, pI_id);
         }
         else
         {
-            consolidate_variables(cond->data.ncc.top, tc_num);
+            consolidate_variables(cond->data.ncc.top, tc_num, pI_id);
         }
         last_cond = cond;
         cond = next_cond;
@@ -249,7 +256,7 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
     }
 }
 
-void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ungroundeds)
+void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds)
 {
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Finding redundancies =\n");
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
@@ -281,7 +288,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, bool ignore_ung
 //        dprint(DT_FIX_CONDITIONS, "...done finding redundancies in condition.\n");
     }
 
-    consolidate_variables(top_cond, tc_num_subst);
+    consolidate_variables(top_cond, tc_num_subst, pI_id);
     clear_substitution_map();
 
     // get new tc_num to mark any variables that need to be literals

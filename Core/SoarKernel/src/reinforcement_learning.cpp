@@ -670,7 +670,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
             /* -- Clean up unification constraints and merge redundant conditions
              *    Note that this is needed even for justifications -- */
-            thisAgent->variablizationManager->fix_conditions(cond_top);
+            thisAgent->variablizationManager->fix_conditions(cond_top, 0);
 
             dprint(DT_RL_VARIABLIZATION, "Final conditions: \n");
             dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond_top);

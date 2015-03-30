@@ -369,24 +369,10 @@ rhs_value create_RHS_value(agent* thisAgent,
         /* -- rv is a symbol pointed to by a rete location
          *    This case seems to only be for identifiers or constants originally bound to variables -- */
 
-//        if (add_original_vars == ALL_ORIGINALS)
-//        {
-//            original_t = var_bound_in_reconstructed_original_conds(thisAgent, cond,
-//                           rhs_value_to_reteloc_field_num(rv),
-//                           rhs_value_to_reteloc_levels_up(rv));
-//            original_sym = original_t->data.referent;
-//            lO_id = original_t->identity->original_var_id;
-//        }
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-//        sym = t->data.referent;
-//        original_sym = t->identity->original_var;
-//        lO_id = t->identity->original_var_id;
         dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
-        /* MToDo | Might not need to regenerate original sym and just use t->identity->orig_var */
-//        assert(original_sym == t->identity->original_var);
-        /*MToDo | Or does t->identity->original_var_id already have this info.  If so, didn't need to change var_bound_reconstructed_original_conds */
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->original_var, t->identity->grounding_id, t->identity->original_var_id);
     }
 

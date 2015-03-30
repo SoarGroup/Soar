@@ -493,7 +493,7 @@ bool Variablization_Manager::variablize_test_by_lookup(test* t, bool pSkipTopLev
         if ((*t)->data.referent->is_sti())
         {
             /* -- STI identifier that is ungrounded.  Error.  -- */
-            dprint(DT_DEBUG, "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n");
+            dprint(DT_LHS_VARIABLIZATION, "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n");
             return false;
         }
         else
