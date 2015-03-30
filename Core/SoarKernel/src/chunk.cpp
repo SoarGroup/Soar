@@ -1183,7 +1183,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
-    thisAgent->variablizationManager->fix_conditions(vrblz_top);
+    thisAgent->variablizationManager->fix_conditions(vrblz_top, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
     thisAgent->variablizationManager->fix_conditions(inst_top, true);
 
