@@ -172,7 +172,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // spreading_baseline - This determines how far 1 occurence in a fingerprint is from zero occurances in a fingerprint
     // Think of it as a measure of the confidence we have that our spreading model is capturing all relevant nodes
     // It's somewhat related to epsilon greedy.
-    spreading_baseline = new soar_module::decimal_param("spreading_baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_baseline);
 }
 
@@ -455,7 +455,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
-    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, INTEGER prohibited, INTEGER dirty)");
+    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, prohibited INTEGER, dirty INTEGER)");
 
     // adding an ascii table just to make lti queries easier when inspecting database
     {
@@ -769,7 +769,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=?,dirty=1 WHERE lti_id=?");
     add(prohibit_set);
 
-    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
+    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
     add(prohibit_add);
 
     prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id,dirty FROM smem_prohibited WHERE lti_id=? AND prohibited=1");

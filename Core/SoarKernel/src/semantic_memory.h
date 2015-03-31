@@ -275,9 +275,11 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* history_get;
         soar_module::sqlite_statement* history_push;
         soar_module::sqlite_statement* history_add;
-        soar_module::sqlite_statement* prohibit_remove;
+        soar_module::sqlite_statement* prohibit_set;
         soar_module::sqlite_statement* prohibit_add;
         soar_module::sqlite_statement* prohibit_check;
+        soar_module::sqlite_statement* prohibit_reset;
+        soar_module::sqlite_statement* prohibit_remove;
         soar_module::sqlite_statement* history_remove;
         
         soar_module::sqlite_statement* vis_lti;
