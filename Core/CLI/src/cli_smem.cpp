@@ -33,7 +33,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
-        PrintCLIMessage_Item("learning:", thisAgent->smem_params->spreading, 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
