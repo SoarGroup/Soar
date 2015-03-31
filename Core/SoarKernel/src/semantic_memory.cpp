@@ -1223,41 +1223,6 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-//This is the same as child_spread below, but for ACT-R style spread.
-void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
-{
-    if (lti_trajectories.find(lti_id)==lti_trajectories.end())
-    {
-        soar_module::sqlite_statement* parents_q = thisAgent->smem_stmts->web_val_parent;
-
-        std::list<smem_lti_id> parents;
-
-        //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
-        if (parents_q->get_status() == soar_module::unprepared)
-        {
-            //assert(false);//testing if I still need this.
-            // ^ assertion failed. - I do.
-            parents_q->prepare();
-        }
-        parents_q->bind_int(1, lti_id);
-        parents_q->bind_int(2, lti_id);
-        lti_trajectories[lti_id] = new std::list<smem_lti_id>;
-        while(parents_q->execute() == soar_module::row && parents_q->column_int(0) != lti_id)
-        {
-            (lti_trajectories[lti_id])->push_back(parents_q->column_int(0));
-            parents.push_back(parents_q->column_int(0));
-        }
-        parents_q->reinitialize();
-        if (depth > 1)
-        {
-            for(std::list<smem_lti_id>::iterator parent_iterator = parents.begin(); parent_iterator!=parents.end(); parent_iterator++)
-            {
-                child_spread(thisAgent, *parent_iterator, lti_trajectories, depth-1);
-            }
-        }
-    }
-}
-
 
 //This is just to make the initial batch processing easier. It gets children of an lti up to some depth.
 //When used in intial construction, it just goes to a depth of 1 (immediate children), but one can use for
