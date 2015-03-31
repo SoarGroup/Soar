@@ -455,7 +455,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
-    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY)");
+    add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, INTEGER prohibited, INTEGER dirty)");
 
     // adding an ascii table just to make lti queries easier when inspecting database
     {
@@ -766,14 +766,17 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     // Adding statements needed to support prohibits.
 
-    //prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=? WHERE lti_id=?");
-    //add(prohibit_set);
+    prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=?,dirty=1 WHERE lti_id=?");
+    add(prohibit_set);
 
-    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id) VALUES (?)");
+    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
     add(prohibit_add);
 
-    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_prohibited WHERE lti_id=?");
+    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id,dirty FROM smem_prohibited WHERE lti_id=? AND prohibited=1");
     add(prohibit_check);
+
+    prohibit_reset = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=0,dirty=0 WHERE lti_id=?");
+    add(prohibit_reset);
 
     prohibit_remove = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_prohibited WHERE lti_id=?");
     add(prohibit_remove);
@@ -1448,8 +1451,11 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->prohibit_check->reinitialize();
         if (prohibited)
         {//Just need to flip the bit here.
-            thisAgent->smem_stmts->prohibit_remove->bind_int(1,lti);
-            thisAgent->smem_stmts->prohibit_remove->execute(soar_module::op_reinit);
+            //remove the history
+            thisAgent->smem_stmts->history_remove->bind_int(1,(lti));
+            thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->prohibit_reset->bind_int(1,lti);
+            thisAgent->smem_stmts->prohibit_reset->execute(soar_module::op_reinit);
         }
 
 
@@ -2274,10 +2280,10 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // Put the initialization of the entry in the prohibit table here.
     //(The initialization to the activation history is in the below function call "smem_lti_activate".)
     // Also, it seemed appropriate for such an initialization to be in store_chunk.Z
-    /*{
+    {
         thisAgent->smem_stmts->prohibit_add->bind_int(1,lti_id);
         thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
-    }*/
+    }
     //The above doesn't add a prohibit event. It merely stores the lti_id in the prohibit table for later use.
 
 
@@ -2930,12 +2936,12 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
             //Then add the prohibit and get rid of the history.
 
             //Add the prohibit
-            thisAgent->smem_stmts->prohibit_add->bind_int(1,(*prohibited_lti_p));
-            thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->prohibit_set->bind_int(1,(*prohibited_lti_p));
+            thisAgent->smem_stmts->prohibit_set->execute(soar_module::op_reinit);
 
-            //remove the history
+            /*//remove the history
             thisAgent->smem_stmts->history_remove->bind_int(1,(*prohibited_lti_p));
-            thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);*/
 
         //The above could potentially fail if there is no history, but that shouldn't ever be possible here.
         }
