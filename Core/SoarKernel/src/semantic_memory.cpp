@@ -2274,10 +2274,10 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // Put the initialization of the entry in the prohibit table here.
     //(The initialization to the activation history is in the below function call "smem_lti_activate".)
     // Also, it seemed appropriate for such an initialization to be in store_chunk.Z
-    {
+    /*{
         thisAgent->smem_stmts->prohibit_add->bind_int(1,lti_id);
         thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
-    }
+    }*/
     //The above doesn't add a prohibit event. It merely stores the lti_id in the prohibit table for later use.
 
 
@@ -2928,7 +2928,6 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         if (thisAgent->smem_stmts->prohibit_check->execute() != soar_module::row)
         {//If the lti is not already prohibited
             //Then add the prohibit and get rid of the history.
-            thisAgent->smem_stmts->prohibit_check->reinitialize();
 
             //Add the prohibit
             thisAgent->smem_stmts->prohibit_add->bind_int(1,(*prohibited_lti_p));
