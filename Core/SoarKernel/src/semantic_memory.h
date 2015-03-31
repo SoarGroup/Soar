@@ -73,6 +73,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::boolean_param* activate_on_query;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
+        soar_module::decimal_param* spreading_baseline;
         
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;

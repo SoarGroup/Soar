@@ -33,6 +33,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
+        PrintCLIMessage_Item("learning:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
@@ -53,6 +54,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage("");
         
         return true;

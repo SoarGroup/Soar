@@ -168,6 +168,12 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // mirroring
     mirroring = new soar_module::boolean_param("mirroring", off, new smem_db_predicate< boolean >(thisAgent));
     add(mirroring);
+
+    // spreading_baseline - This determines how far 1 occurence in a fingerprint is from zero occurances in a fingerprint
+    // Think of it as a measure of the confidence we have that our spreading model is capturing all relevant nodes
+    // It's somewhat related to epsilon greedy.
+    spreading_baseline = new soar_module::decimal_param("spreading_baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_baseline);
 }
 
 //
@@ -1594,7 +1600,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
         {
 
-            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log(0.5/(calc_spread->column_int(0)));
+            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log((thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0)));
             spread+=additional;//(additional>0 ? additional: 0);
         }
         delete calc_spread;
@@ -1696,7 +1702,7 @@ inline void smem_calc_spread(agent* thisAgent)
         double additional;
         while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
         {
-            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log(0.5/(calc_spread->column_int(0)));
+            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log((thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0)));
             spread+=additional;//(additional>0 ? additional: 0);
         }
         delete calc_spread;
