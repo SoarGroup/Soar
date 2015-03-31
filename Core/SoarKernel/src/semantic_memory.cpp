@@ -1312,51 +1312,6 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
     }
 }
 
-//This is a deterministic depth 1 construction (for ACT-R spreading).
-void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 1)
-{
-    smem_lti_id lti_id = trajectory.back();
-    child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
-
-    //I should iterate through the tree stored in the map and recursively construct trajectories to add to the table in smem.
-    if (depth==0)
-    {
-    //A depth of 0 indicates that we have ten elements in the trajectory list, so we have hit the depth limit and should add to the table.
-        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
-        {
-            thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *trajectory_iterator);
-        }
-        thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
-        return;
-    }
-    //TODO: Define the probability constant elsewhere. It's HARD-CODED here.
-    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0))
-    {
-    //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
-        int i = 0;
-        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
-        {
-            i++;
-            thisAgent->smem_stmts->trajectory_add->bind_int(i, *trajectory_iterator);
-        }
-        for (int j = i+1; j < 12; j++)
-        {
-            thisAgent->smem_stmts->trajectory_add->bind_int(j, 0);
-        }
-        thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
-        return;
-    }
-
-    //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
-    std::list<smem_lti_id>::iterator lti_iterator_begin = lti_trajectories[lti_id]->begin();
-    std::list<smem_lti_id>::iterator lti_iterator_end = lti_trajectories[lti_id]->end();
-    std::list<smem_lti_id>::iterator lti_iterator;
-    for(lti_iterator = lti_iterator_begin; lti_iterator!=lti_iterator_end; ++lti_iterator)
-    {
-        trajectory.push_back(*lti_iterator);
-        trajectory_construction_deterministic(thisAgent, trajectory, lti_trajectories, depth-1);
-    }
-}
 
 extern bool smem_calc_spread_trajectories(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
@@ -1371,54 +1326,12 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
     {
         lti_id = lti_a->column_int(0);
         //Make the fingerprint for this lti.
-        //TODO - This isn't the only place, but I've HARD-CODED the number of trajectories, here.
+        //TODO - This isn't the only place, but I've HARD-CODED the depth, here.
         for (int i = 0; i < 10; ++i)
         {
             std::list<smem_lti_id> trajectory;
             trajectory.push_back(lti_id);
             trajectory_construction(thisAgent,trajectory,lti_trajectories);
-        }
-    }
-    lti_a->reinitialize();
-
-    for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
-    {
-        delete to_delete->second;
-    }
-
-    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
-    likelihood_cond_count->prepare();
-    likelihood_cond_count->execute(soar_module::op_reinit);
-    delete likelihood_cond_count;
-
-    soar_module::sqlite_statement* lti_count_num_appearances = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j");
-    lti_count_num_appearances->prepare();
-    lti_count_num_appearances->execute(soar_module::op_reinit);
-    delete lti_count_num_appearances;
-    return true;
-}
-
-extern bool smem_calc_spread_trajectory(agent* thisAgent)
-{//This is written to be a batch process when spreading is turned on. It will take a long time.
-    smem_attach(thisAgent);
-    soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
-    soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
-    smem_lti_id lti_id;
-    std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
-    int j = 0;
-    //Iterate through all ltis in SMem
-    while (lti_a->execute() == soar_module::row)
-    {
-        lti_id = lti_a->column_int(0);
-        //Make the fingerprint for this lti.
-        //TODO - This isn't the only place, but I've HARD-CODED the number of trajectories, here.
-        for (int i = 0; i < 1; ++i)
-        {
-            std::list<smem_lti_id> trajectory;
-            trajectory.push_back(lti_id);
-            trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
         }
     }
     lti_a->reinitialize();
