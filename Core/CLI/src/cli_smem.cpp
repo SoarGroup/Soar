@@ -343,15 +343,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     smem_calc_spread_trajectories(thisAgent);
                 }
             }
-            if (!strcmp(pAttr->c_str(), "ACT-R_spreading"))
-            {
-                if (thisAgent->smem_params->spreading->get_value() == on)
-                {
-                    PrintCLIMessage("This might take a long while.\n");
-                    //This is where a huge batch processing of all of SMem can be run.
-                    smem_calc_spread_trajectory(thisAgent);
-                }
-            }
         }
         return result;
     }

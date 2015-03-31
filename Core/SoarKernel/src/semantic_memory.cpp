@@ -1438,12 +1438,6 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
 extern bool smem_calc_spread_trajectory(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
     smem_attach(thisAgent);
-    //Don't want to bother with this unless I go through with turning ACT-R spreading on.
-    soar_module::sqlite_statement* initialization_act_r = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
-    initialization_act_r->prepare();
-    initialization_act_r->execute(soar_module::op_reinit);
-    delete initialization_act_r;
     soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
     soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
     smem_lti_id lti_id;
@@ -3056,9 +3050,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
             thisAgent->smem_stmts->prohibit_add->bind_int(1,(*prohibited_lti_p));
             thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
 
-            //remove the history// This might be the part that is inefficient.
-            //I could wait to do this until I'm messing with activation anyway.
-            //I'll run an explain to see which statement is causing me trouble.
+            //remove the history
             thisAgent->smem_stmts->history_remove->bind_int(1,(*prohibited_lti_p));
             thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
 

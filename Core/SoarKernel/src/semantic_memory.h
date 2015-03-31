@@ -473,7 +473,6 @@ extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
 
 extern bool smem_calc_spread_trajectories(agent* thisAgent);
-extern bool smem_calc_spread_trajectory(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
