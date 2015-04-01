@@ -754,10 +754,35 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
+        uint64_t temp_g_id;
 
+        temp_g_id = get_existing_o_id(result->original_symbols.id, pI_id);
+        if (result->o_ids.id != temp_g_id)
+        {
+        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.id, temp_g_id);
+        	print_o_id_tables(DT_DEBUG);
+        }
+        assert(result->o_ids.id == temp_g_id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id, pI_id);
+
+        temp_g_id = get_existing_o_id(result->original_symbols.attr, pI_id);
+        if (result->o_ids.attr != temp_g_id)
+        {
+        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.attr, temp_g_id);
+        	print_o_id_tables(DT_DEBUG);
+        }
+        assert(result->o_ids.attr == temp_g_id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr, pI_id);
+
+        temp_g_id = get_existing_o_id(result->original_symbols.value, pI_id);
+        if (result->o_ids.value != temp_g_id)
+        {
+        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.value, temp_g_id);
+        	print_o_id_tables(DT_DEBUG);
+        }
+        assert(result->o_ids.value == temp_g_id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->value, result->original_symbols.value, pI_id);
+
         if (preference_is_binary(result->type))
         {
             thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL, pI_id);

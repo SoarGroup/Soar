@@ -8,6 +8,7 @@
 #include "variablization_manager.h"
 #include "agent.h"
 #include "instantiations.h"
+#include "prefmem.h"
 #include "assert.h"
 #include "test.h"
 #include "print.h"
@@ -33,6 +34,8 @@ test Variablization_Manager::get_substitution(Symbol* sym)
 void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id)
 {
     test found_test;
+    uint64_t old_o_id;
+
     switch (t->type)
     {
         case GOAL_ID_TEST:
@@ -65,6 +68,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 }
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
+                old_o_id = t->identity->original_var_id;
                 t->data.referent = found_test->data.referent;
                 t->identity->grounding_id = found_test->identity->grounding_id;
                 dprint(DT_FIX_CONDITIONS, "          Copying original vars:: %y %y\n", t->identity->original_var, found_test->identity->original_var);
@@ -83,6 +87,8 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
             if (t->identity->original_var_id && pI_id)
             {
                 t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(t->identity->original_var, pI_id);
+                assert(old_o_id);
+                update_o_id_to_g_id(old_o_id, t->identity->original_var_id);
             }
             break;
     }
@@ -134,10 +140,6 @@ void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, te
         if (iter->second == sacrificeSymTest->identity->grounding_id)
         {
             dprint(DT_FIX_CONDITIONS, "...found ovar->g_id mapping that needs updated: o%u = g%u -> g%u.\n", iter->first, iter->second, survivorSymTest->identity->grounding_id);
-            /* MToDo | It was changing the iterator before.  That shouldn't change table, so maybe this was a bug
-             *         that came out of switching from ovar to o_ids in this map?  Does this invalidate the
-             *         iterator though? If so, we may need to recursively call update_ovar_table_for_sub*/
-            //            iter->second = survivorSymTest->identity->grounding_id;
             (*o_id_to_g_id_map)[iter->first] = survivorSymTest->identity->grounding_id;
         }
     }
@@ -302,4 +304,44 @@ void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id,
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding redundancies =\n");
 }
 
+void Variablization_Manager::update_o_id_to_g_id(uint64_t old_o_id, uint64_t new_o_id)
+{
+    std::map< uint64_t, uint64_t >::iterator iter;
+    uint64_t saved_g_id;
+
+    print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
+    for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
+    {
+
+        if (iter->first == old_o_id)
+        {
+            dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
+            //            iter->second = survivorSymTest->identity->grounding_id;
+            saved_g_id = iter->second;
+            o_id_to_g_id_map->erase(old_o_id);
+            (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
+        }
+    }
+}
+
+void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
+{
+    if (!result) return;
+
+    if (result->original_symbols.id && pI_id)
+    {
+    	result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+    }
+    if (result->original_symbols.attr && pI_id)
+    {
+    	result->o_ids.attr = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.attr, pI_id);
+    }
+    if (result->original_symbols.value && pI_id)
+    {
+    	result->o_ids.value = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.value, pI_id);
+    }
+
+    fix_results(result->next_result, pI_id);
+    /* MToDo | Do we need to fix o_ids in clones too? */
+}
 

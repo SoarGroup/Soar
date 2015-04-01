@@ -1188,13 +1188,14 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(vrblz_top, chunk_new_i_id, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
+    thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list:\n");
 
-    rhs = thisAgent->variablizationManager->variablize_results(results, variablize, inst->i_id);
+    rhs = thisAgent->variablizationManager->variablize_results(results, variablize, chunk_new_i_id);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
 

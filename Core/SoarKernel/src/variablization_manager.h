@@ -80,6 +80,7 @@ class Variablization_Manager
 
         void add_unifications(condition* cond, goal_stack_level level);
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
+        void fix_results(preference* result, uint64_t pI_id);
         void consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id);
         void merge_conditions(condition* top_cond);
 
@@ -134,13 +135,13 @@ class Variablization_Manager
         void add_unification_constraint(test* t, test t_add, uint64_t gid);
         void add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level);
 
-        test      get_substitution(Symbol* sym);
-        void      set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
-        void      update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
-        void      consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id);
-        void      remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
-
-        void      merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
+        test get_substitution(Symbol* sym);
+        void set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
+        void update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
+        void consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id);
+        void remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
+        void update_o_id_to_g_id(uint64_t old_o_id, uint64_t new_o_id);
+        void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
         void cache_constraint(test equality_test, test relational_test);
