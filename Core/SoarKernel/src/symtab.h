@@ -527,6 +527,7 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
 #else
     //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #endif
+//    assert((x)->reference_count > 0);
     (x)->reference_count--;
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -538,7 +539,6 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
     }
 #endif
 
-    assert((x)->reference_count >= 0);
     if ((x)->reference_count == 0)
     {
         deallocate_symbol(thisAgent, x);
@@ -573,8 +573,8 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x)
         //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
+//    assert((x)->reference_count > 0);
     (x)->reference_count--;
-    assert((x)->reference_count >= 0);
 }
 
 /* -----------------------------------------------------------------
