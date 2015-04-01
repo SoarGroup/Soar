@@ -207,7 +207,7 @@ void Variablization_Manager::clear_ovar_to_o_id_map()
     ovar_to_o_id_map->clear();
 }
 
-uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t inst_id)
+uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 {
     std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
     std::map< uint64_t, uint64_t >::iterator iter_inst;
@@ -217,35 +217,35 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t in
     if (iter_sym != ovar_to_o_id_map->end())
     {
 //        dprint(DT_VARIABLIZATION_MANAGER, "...Found.  Looking  for instantiation id %u\n", inst_id);
-        iter_inst = iter_sym->second.find(inst_id);
+        iter_inst = iter_sym->second.find(pI_id);
         if (iter_inst != iter_sym->second.end())
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, inst_id, iter_inst->second);
+            dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, pI_id, iter_inst->second);
             return iter_inst->second;
         }
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, inst_id);
+    dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     /* MToDo | Remove */
     std::string strName(orig_var->to_string());
-    if ((inst_id == 1) && (strName == "<x>"))
+    if ((pI_id == 1) && (strName == "<x>"))
         assert(false);
     return 0;
 
 }
 
-uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t inst_id)
+uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
 {
     int64_t existing_o_id = 0;
 
-    existing_o_id = get_existing_o_id(orig_var, inst_id);
+    existing_o_id = get_existing_o_id(orig_var, pI_id);
     if (!existing_o_id)
     {
         ++ovar_id_counter;
-        (*ovar_to_o_id_map)[orig_var][inst_id] = ovar_id_counter;
+        (*ovar_to_o_id_map)[orig_var][pI_id] = ovar_id_counter;
         symbol_add_ref(thisAgent, orig_var);
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
-        dprint(DT_VARIABLIZATION_MANAGER, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, inst_id);
+        dprint(DT_VARIABLIZATION_MANAGER, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;
