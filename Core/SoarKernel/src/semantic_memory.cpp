@@ -1605,8 +1605,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         double additional;
         while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
         {
-
-            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log((thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0)));
+            ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
+            double raw_prob = (((double)(calc_spread->column_int(1)))/calc_spread->column_int(0));
+            double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0));
+            additional = (log(raw_prob/(1-raw_prob)))-log(offset/(1-offset));
             spread+=additional;//(additional>0 ? additional: 0);
         }
         delete calc_spread;
