@@ -48,6 +48,12 @@ class extract_command : public command, public filter_input::listener
         
         bool update_sub()
         {
+            if (!once && !first && !svs::get_filter_dirty_bit())
+            {
+                // Don't update filter results if the dirty bit is false
+                return true;
+            }
+
             if (!res_root)
             {
                 res_root = si->get_wme_val(si->make_id_wme(root, "result"));

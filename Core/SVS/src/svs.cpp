@@ -331,6 +331,7 @@ void svs_state::process_cmds()
         if (c)
         {
             curr_cmds.insert(command_entry(new_cmd->id, c, 0));
+            svs::mark_filter_dirty_bit();
         }
         else
         {
@@ -362,6 +363,8 @@ svs::svs(agent* a)
     si = new soar_interface(a);
     draw = new drawer();
 }
+
+bool svs::filter_dirty_bit = true;
 
 svs::~svs()
 {
@@ -423,6 +426,10 @@ void svs::proc_input(svs_state* s)
         strip(env_inputs[i], " \t");
         s->get_scene()->parse_sgel(env_inputs[i]);
     }
+    if (env_inputs.size() > 0)
+    {
+        svs::mark_filter_dirty_bit();
+    }
     env_inputs.clear();
 }
 
@@ -461,6 +468,8 @@ void svs::input_callback()
     {
         (**i).update_cmd_results(false);
     }
+
+    svs::filter_dirty_bit = false;
 }
 
 /*
