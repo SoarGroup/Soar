@@ -1713,13 +1713,22 @@ inline void smem_calc_spread(agent* thisAgent)
                 "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
         calc_spread->prepare();
         calc_spread->bind_int(1,(*it));
-        double additional;
+        double additional_num = 0;
+        double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
         while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
         {
-            additional = (log(((double)(calc_spread->column_int(1)))/calc_spread->column_int(0)))-log((thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0)));
-            spread+=additional;//(additional>0 ? additional: 0);
-        }
+            ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
+            /*double raw_prob = (((double)(calc_spread->column_int(1)))/calc_spread->column_int(0));
+            double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0));
+            additional = (log(raw_prob/(1-raw_prob)))-log(offset/(1-offset));
+            spread+=additional;//(additional>0 ? additional: 0);*/
+            additional_num+=calc_spread->column_int(1);
+            additional_denom+=calc_spread->column_int(0);
+        }//The modified calculation here is as if we had actually calculated the personalized pagerank vector from the entire context.
         delete calc_spread;
+        double raw_prob = additional_num/additional_denom;
+        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/additional_denom;
+        spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));
         thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
         thisAgent->smem_stmts->act_set->bind_int(2, (*it));
         thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
