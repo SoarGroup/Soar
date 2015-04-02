@@ -1584,20 +1584,14 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
     }
     
-    // only if augmentation count is less than threshold do we associate with edges
-    if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
-    {
-        // activation_value=? WHERE lti=?
-        thisAgent->smem_stmts->act_set->bind_double(1, new_activation);
-        thisAgent->smem_stmts->act_set->bind_int(2, lti);
-        thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
-    }
     
+
     // always associate activation with lti
+    double spread = 0;
+
     {
         // Adding a bunch of stuff for spreading here.
 
-        double spread = 0;
         soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
                 "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
         calc_spread->prepare();
@@ -1624,14 +1618,21 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
         thisAgent->smem_stmts->act_lti_set->bind_int(3, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
-        new_activation+=spread;
+        // only if augmentation count is less than threshold do we associate with edges
+        if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+        {
+            // activation_value=? WHERE lti=?
+            thisAgent->smem_stmts->act_set->bind_double(1, new_activation+spread);
+            thisAgent->smem_stmts->act_set->bind_int(2, lti);
+            thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
     
-    return new_activation;
+    return new_activation+spread;
 }
 
 // Given the current elements in thisAgent->smem_in_wmem, this function will update
@@ -1729,6 +1730,10 @@ inline void smem_calc_spread(agent* thisAgent)
         double raw_prob = additional_num/additional_denom;
         double offset = (thisAgent->smem_params->spreading_baseline->get_value())/additional_denom;
         spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));
+
+        thisAgent->smem_stmts->act_lti_get->bind_int(1,(*it));
+        thisAgent->smem_stmts->act_lti_get->execute();
+
         thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
         thisAgent->smem_stmts->act_set->bind_int(2, (*it));
         thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
