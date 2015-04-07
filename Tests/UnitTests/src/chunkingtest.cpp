@@ -329,7 +329,7 @@ void ChunkTest::testChunk34()
 
 void ChunkTest::testChunk35()
 {
-    build_and_check_chunk("chunk35.soar", 8, 0);
+    build_and_check_chunk("chunk35.soar", 8, 1);
 }
 
 void ChunkTest::testChunk36()
