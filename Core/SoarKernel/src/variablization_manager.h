@@ -90,8 +90,8 @@ class Variablization_Manager
         void      variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void      variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
-        action* variablize_results(preference* result, bool variablize, uint64_t pI_id);
-        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym, uint64_t pI_id);
+        action* variablize_results(preference* result, bool variablize);
+        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
         void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -120,7 +120,7 @@ class Variablization_Manager
         variablization* get_variablization(Symbol* index_sym);
 
         void variablize_lhs_symbol(Symbol** sym, identity_info* identity);
-        void variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var, uint64_t pI_id);
+        void variablize_rhs_symbol(rhs_value pRhs_val);
 
         void variablize_test(test* t, Symbol* original_referent);
         void variablize_equality_test(test* t);

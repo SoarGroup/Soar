@@ -1197,7 +1197,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list...\n");
 
-    rhs = thisAgent->variablizationManager->variablize_results(results, variablize, chunk_new_i_id);
+    rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
 

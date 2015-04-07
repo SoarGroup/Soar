@@ -210,7 +210,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
  *
  * ====================================================================================================== */
 
-void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var, uint64_t pI_id)
+void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
@@ -220,8 +220,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
     dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y).\n",
-           rs->referent, original_var);
-
+           rs->referent, rs->original_rhs_variable);
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
 
@@ -232,9 +231,9 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     }
     else
     {
-        if (original_var)
+        if (rs->original_rhs_variable)
         {
-            dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y for instantiation %u...\n", original_var, pI_id);
+            dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", rs->original_rhs_variable);
             g_id = get_gid_for_o_id(rs->o_id);
             if (g_id != NON_GENERALIZABLE)
             {
@@ -253,7 +252,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
                  * variable, so we'll fall through to code at end of function.
                  * */
                 print_tables(DT_RHS_VARIABLIZATION);
-                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, original_var);
+                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, rs->original_rhs_variable);
             }
         }
         else
@@ -656,7 +655,7 @@ void Variablization_Manager::variablize_rl_test(test* t)
 
 
 // creates an action for a template instantiation
-action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym, uint64_t pI_id)
+action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
 {
     action* rhs;
 
@@ -670,10 +669,10 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, NULL, 0, 0);
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
-    variablize_rhs_symbol(rhs->id, NULL, pI_id);
-    variablize_rhs_symbol(rhs->attr, NULL, pI_id);
-    variablize_rhs_symbol(rhs->value, NULL, pI_id);
-    variablize_rhs_symbol(rhs->referent, NULL, pI_id);
+    variablize_rhs_symbol(rhs->id);
+    variablize_rhs_symbol(rhs->attr);
+    variablize_rhs_symbol(rhs->value);
+    variablize_rhs_symbol(rhs->referent);
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
     return rhs;
 }
@@ -729,7 +728,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* Variablization_Manager::variablize_results(preference* result, bool variablize, uint64_t pI_id)
+action* Variablization_Manager::variablize_results(preference* result, bool variablize)
 {
     action* a;
 
@@ -754,38 +753,12 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
-        uint64_t temp_g_id;
-
-        temp_g_id = get_existing_o_id(result->original_symbols.id, pI_id);
-        if (result->o_ids.id != temp_g_id)
-        {
-        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.id, temp_g_id);
-        	print_o_id_tables(DT_DEBUG);
-        }
-        assert(result->o_ids.id == temp_g_id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id, pI_id);
-
-        temp_g_id = get_existing_o_id(result->original_symbols.attr, pI_id);
-        if (result->o_ids.attr != temp_g_id)
-        {
-        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.attr, temp_g_id);
-        	print_o_id_tables(DT_DEBUG);
-        }
-        assert(result->o_ids.attr == temp_g_id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr, pI_id);
-
-        temp_g_id = get_existing_o_id(result->original_symbols.value, pI_id);
-        if (result->o_ids.value != temp_g_id)
-        {
-        	dprint(DT_DEBUG, "Existing o_id in RHS item %u != %u (what get_existing_o_id returns)!\n",result->o_ids.value, temp_g_id);
-        	print_o_id_tables(DT_DEBUG);
-        }
-        assert(result->o_ids.value == temp_g_id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->value, result->original_symbols.value, pI_id);
-
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->id);
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr);
+        thisAgent->variablizationManager->variablize_rhs_symbol(a->value);
         if (preference_is_binary(result->type))
         {
-            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL, pI_id);
+            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent);
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
@@ -800,7 +773,7 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     a->preference_type = result->type;
 
-    a->next = variablize_results(result->next_result, variablize, pI_id);
+    a->next = variablize_results(result->next_result, variablize);
     return a;
 }
 
