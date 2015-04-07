@@ -27,7 +27,7 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t i_id);
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id);
 
 /* =================================================================
 
@@ -93,7 +93,7 @@ test copy_test(agent* thisAgent, test t)
     new_ct->identity->original_var_id = t->identity->original_var_id;
     if (new_ct->identity->original_var)
     {
-        symbol_add_ref(thisAgent, t->identity->original_var);
+        symbol_add_ref(thisAgent, new_ct->identity->original_var);
     }
     /* Cached eq_test is used by the chunker to avoid repeatedly searching
      * through conjunctions for the main equality test.  Value set during
@@ -329,7 +329,7 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
  *           tests for the same symbol, one with and one without the original test,
  *           which caused problems with other aspects of chunking. -- */
 
-void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t i_id)
+void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id)
 {
     // Handle case where relational test is equality test
     if ((*dest_test_address) && new_test && (new_test->type == EQUALITY_TEST))
@@ -352,14 +352,11 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                     if (new_test->original_test->data.referent->is_variable())
                     {
                         destination->identity->original_var =  new_test->original_test->data.referent;
-                        if (i_id)
+                        if (pI_id)
                         {
-                            destination->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, thisAgent->newly_created_instantiations->i_id);
+                            destination->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
                         }
-//                        if (destination->identity->original_var)
-//                        {
-                            symbol_add_ref(thisAgent, destination->identity->original_var);
-//                        }
+                        symbol_add_ref(thisAgent, destination->identity->original_var);
                     }
                     /* MToDo | Should this be deallocated? */
                     new_test->original_test = NIL;
@@ -399,14 +396,11 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                             if (new_test->original_test->data.referent->is_variable())
                             {
                                 check_test->identity->original_var =  new_test->original_test->data.referent;
-                                if (i_id)
+                                if (pI_id)
                                 {
-                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, i_id);
+                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
                                 }
-//                                if (check_test->identity->original_var)
-//                                {
-                                    symbol_add_ref(thisAgent, check_test->identity->original_var);
-//                                }
+                                symbol_add_ref(thisAgent, check_test->identity->original_var);
                             }
                             new_test->original_test = NIL;
                             dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %s\n", check_test, check_test->identity->original_var);
@@ -1254,8 +1248,7 @@ inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_u
 inline void add_identity_to_test(agent* thisAgent,
                                  test* t,
                                  WME_Field default_f,
-                                 goal_stack_level level,
-                                 uint64_t pI_id)
+                                 goal_stack_level level)
 {
     cons* c;
 
@@ -1273,7 +1266,7 @@ inline void add_identity_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_identity_to_test(thisAgent, &ct, default_f, level, pI_id);
+                add_identity_to_test(thisAgent, &ct, default_f, level);
             }
             break;
 
@@ -1294,7 +1287,7 @@ inline void add_identity_to_test(agent* thisAgent,
                 {
                     (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
-                    if ((*t)->identity->original_var)
+                    if ((*t)->identity->original_var_id)
                     {
 //                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
                         if ((*t)->identity->grounding_id != NON_GENERALIZABLE)
@@ -1307,6 +1300,10 @@ inline void add_identity_to_test(agent* thisAgent,
                             dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
                                 ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
                         }
+                    }
+                    else
+                    {
+                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for literal %t. No original variable.\n", (*t));
                     }
                 }
                 else
@@ -1326,8 +1323,7 @@ inline void add_identity_to_test(agent* thisAgent,
 
 inline void add_identity_to_negative_test(agent* thisAgent,
         test t,
-        WME_Field default_f,
-        uint64_t pI_id)
+        WME_Field default_f)
 {
     assert(t);
     cons* c;
@@ -1345,7 +1341,7 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             dprint(DT_IDENTITY_PROP, "Propagating g_ids to NCC...\n");
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                add_identity_to_negative_test(thisAgent, static_cast<test>(c->first), default_f, pI_id);
+                add_identity_to_negative_test(thisAgent, static_cast<test>(c->first), default_f);
             }
             break;
 
@@ -1387,7 +1383,6 @@ inline void add_identity_to_negative_test(agent* thisAgent,
 void propagate_identity(agent* thisAgent,
                         condition* cond,
                         goal_stack_level level,
-                        uint64_t pI_id,
                         bool use_negation_lookup)
 {
     condition* c;
@@ -1403,9 +1398,9 @@ void propagate_identity(agent* thisAgent,
             if (use_negation_lookup)
             {
                 /* -- Positive conditions within an NCC.  This was recursive call. -- */
-                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT, pI_id);
-                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT, pI_id);
-                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
             else
             {
@@ -1413,9 +1408,9 @@ void propagate_identity(agent* thisAgent,
                 /* -- The last parameter determines whether to cache g_ids for NCCs.  We
                  *    only need to do this when negative conditions exist (has_negative_conds == true)
                  *    and this isn't a recursive call on an NCC list (use_negation_lookup = true) -- */
-                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level, pI_id);
-                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level, pI_id);
-                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level, pI_id);
+                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
+                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
+                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
             }
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
@@ -1437,14 +1432,14 @@ void propagate_identity(agent* thisAgent,
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n%c\n", c);
 
-                propagate_identity(thisAgent, c->data.ncc.top, level, pI_id, true);
+                propagate_identity(thisAgent, c->data.ncc.top, level, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for negative condition: %l", c);
-                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT, pI_id);
-                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT, pI_id);
-                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT, pI_id);
+                add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
+                add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
             }
 
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
@@ -1483,7 +1478,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                                         condition* cond,
                                         wme* w,
                                         node_varnames* nvn,
-                                        uint64_t i_id,
+                                        uint64_t pI_id,
                                         AddAdditionalTestsMode additional_tests)
 {
     Symbol* referent = NULL, *original_referent = NULL;
@@ -1724,9 +1719,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
                             {
                                 chunk_test->identity->original_var =  original_referent;
                                 symbol_add_ref(thisAgent, original_referent);
-                                if (i_id)
+                                if (pI_id)
                                 {
-                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, i_id);
+                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
                                 }
                             }
                         }
@@ -1737,19 +1732,19 @@ void add_additional_tests_and_originals(agent* thisAgent,
                 {
                     if (rt->right_field_num == 0)
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, i_id);
+                        add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, pI_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to id resulting in: %t\n", cond->data.tests.id_test);
                     }
                     else if (rt->right_field_num == 1)
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, i_id);
+                        add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, pI_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to attr resulting in: %t\n", cond->data.tests.attr_test);
                     }
                     else
                     {
-                        add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, i_id);
+                        add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, pI_id);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "adding relational test to value resulting in: %t\n", cond->data.tests.value_test);
                     }
@@ -1790,9 +1785,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): %l\n", cond);
 
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, i_id);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, i_id);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, i_id);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, pI_id);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, pI_id);
+    fill_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, pI_id);
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
@@ -2113,7 +2108,7 @@ void cache_eq_test(test t)
     }
 }
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t i_id)
+void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id)
 {
     cons* c;
     test orig_test;
@@ -2135,9 +2130,9 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
 //                       (w ? "WME" : "No WME"));
                 t->identity->original_var = orig_test->data.referent;
                 symbol_add_ref(thisAgent, t->identity->original_var);
-                if (i_id)
+                if (pI_id)
                 {
-                    t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, i_id);
+                    t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
                 }
             }
         }
@@ -2162,7 +2157,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, i_id);
+            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, pI_id);
         }
     }
 }

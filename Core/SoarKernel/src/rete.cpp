@@ -4377,7 +4377,7 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
-                             uint64_t i_id,
+                             uint64_t pI_id,
                              AddAdditionalTestsMode additional_tests)
 {
     condition* cond;
@@ -4400,7 +4400,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                 tok ? tok->w : NIL,
                                 conds_for_cutoff_and_up,
                                 dest_top_cond, &(cond->prev),
-                                i_id,
+                                pI_id,
                                 additional_tests);
         cond->prev->next = cond;
     }
@@ -4419,7 +4419,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                 cond->prev,
                                 &(cond->data.ncc.top),
                                 &(cond->data.ncc.bottom),
-                                i_id,
+                                pI_id,
                                 additional_tests);
         cond->data.ncc.top->prev = NIL;
     }
@@ -4450,7 +4450,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, i_id, additional_tests);
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
             }
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4510,7 +4510,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, i_id, additional_tests);
+                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
@@ -4623,7 +4623,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
         match_level = ((lowest_level_so_far != -1) ? lowest_level_so_far : ATTRIBUTE_IMPASSE_LEVEL);
 //        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
 
-        propagate_identity(thisAgent, (*dest_top_cond), match_level, pI_id);
+        propagate_identity(thisAgent, (*dest_top_cond), match_level);
     }
     if (dest_rhs)
     {

@@ -997,7 +997,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     if (update_grounding_ids)
     {
         dprint(DT_IDENTITY_PROP, "Re-propagating identity for potentially different match level.\n");
-        propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level, inst->i_id);
+        propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
     }
 
 //    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
