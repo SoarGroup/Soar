@@ -68,7 +68,6 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 }
                 symbol_remove_ref(thisAgent, t->data.referent);
                 symbol_add_ref(thisAgent, found_test->data.referent);
-                old_o_id = t->identity->original_var_id;
                 t->data.referent = found_test->data.referent;
                 t->identity->grounding_id = found_test->identity->grounding_id;
                 dprint(DT_FIX_CONDITIONS, "          Copying original vars:: %y %y\n", t->identity->original_var, found_test->identity->original_var);
@@ -86,6 +85,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
              * rules that do not currently match unlike chunks/justifications) */
             if (t->identity->original_var_id && pI_id)
             {
+                old_o_id = t->identity->original_var_id;
                 t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(t->identity->original_var, pI_id);
                 assert(old_o_id);
                 update_o_id_to_g_id(old_o_id, t->identity->original_var_id);
@@ -309,19 +309,29 @@ void Variablization_Manager::update_o_id_to_g_id(uint64_t old_o_id, uint64_t new
     std::map< uint64_t, uint64_t >::iterator iter;
     uint64_t saved_g_id;
 
+    dprint(DT_FIX_CONDITIONS, "Attempting to update o_id_to_g_id map from o%u to o%u.\n", old_o_id, new_o_id);
     print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
-    for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
+    iter = o_id_to_g_id_map->find(old_o_id);
+    if (iter != o_id_to_g_id_map->end())
     {
-
-        if (iter->first == old_o_id)
-        {
-            dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
-            //            iter->second = survivorSymTest->identity->grounding_id;
-            saved_g_id = iter->second;
-            o_id_to_g_id_map->erase(old_o_id);
-            (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
-        }
+        dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
+        //            iter->second = survivorSymTest->identity->grounding_id;
+        saved_g_id = iter->second;
+        o_id_to_g_id_map->erase(old_o_id);
+        (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
     }
+//    for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
+//    {
+//
+//        if (iter->first == old_o_id)
+//        {
+//            dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
+//            //            iter->second = survivorSymTest->identity->grounding_id;
+//            saved_g_id = iter->second;
+//            o_id_to_g_id_map->erase(old_o_id);
+//            (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
+//        }
+//    }
 }
 
 void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
