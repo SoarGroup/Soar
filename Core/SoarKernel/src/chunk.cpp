@@ -1180,7 +1180,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
 
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
@@ -1188,12 +1188,14 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(vrblz_top, chunk_new_i_id, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
+    dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
+    thisAgent->variablizationManager->print_variablization_tables(DT_VARIABLIZATION_MANAGER);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
-    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list:\n");
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list...\n");
 
     rhs = thisAgent->variablizationManager->variablize_results(results, variablize, chunk_new_i_id);
 

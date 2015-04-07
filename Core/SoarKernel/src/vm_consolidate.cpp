@@ -260,7 +260,7 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
 
 void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds)
 {
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Finding redundancies =\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing conditions =\n");
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_indents(DT_FIX_CONDITIONS);
@@ -301,7 +301,7 @@ void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id,
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding redundancies =\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding fixing conditions =\n");
 }
 
 void Variablization_Manager::update_o_id_to_g_id(uint64_t old_o_id, uint64_t new_o_id)

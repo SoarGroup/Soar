@@ -2155,7 +2155,7 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
 
-    /* MToDo | Probably can remove these.  This was setting up identity information for
+    /* MToDo | Might be able toremove these.  This was setting up identity information for
      *         the fake instantiation, but it did not turn out to be needed for the issue
      *         we were trying to fix. */
 
@@ -2163,22 +2163,39 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
     cond->data.tests.id_test->identity->grounding_wme = ap_wme;
     cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
-    cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
-    symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
+    if (cond->data.tests.id_test->data.referent->is_variable())
+    {
+        cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
+        symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
+        cond->data.tests.id_test->identity->original_var_id =
+        		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.id_test->identity->original_var, inst->i_id);
+    	assert(false);
+    }
 
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
     cond->data.tests.attr_test->identity->grounding_wme = ap_wme;
     cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
-    cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
-    symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
-
+    if (cond->data.tests.attr_test->data.referent->is_variable())
+    {
+        cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
+        symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
+        cond->data.tests.attr_test->identity->original_var_id =
+        		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.attr_test->identity->original_var, inst->i_id);
+    	assert(false);
+    }
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
     cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
     cond->data.tests.value_test->identity->grounding_wme = ap_wme;
     cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
-    cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
-    symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
+    if (cond->data.tests.value_test->data.referent->is_variable())
+    {
+        cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
+        symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
+        cond->data.tests.value_test->identity->original_var_id =
+        		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.value_test->identity->original_var, inst->i_id);
+    	assert(false);
+    }
 
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;
