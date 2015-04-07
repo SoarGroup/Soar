@@ -235,7 +235,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
         if (original_var)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y for instantiation %u...\n", original_var, pI_id);
-            g_id = get_gid_for_orig_var(original_var, pI_id);
+            g_id = get_gid_for_o_id(rs->o_id);
             if (g_id != NON_GENERALIZABLE)
             {
                 found_variablization = get_variablization(g_id);

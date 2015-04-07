@@ -1289,7 +1289,6 @@ inline void add_identity_to_test(agent* thisAgent,
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
                     if ((*t)->identity->original_var_id)
                     {
-//                        (*t)->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id((*t)->identity->original_var, pI_id);
                         if ((*t)->identity->grounding_id != NON_GENERALIZABLE)
                         {
                             dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
@@ -1317,8 +1316,6 @@ inline void add_identity_to_test(agent* thisAgent,
             }
             break;
     }
-    /* -- We no longer need the wme and didn't increase refcount, so discard reference -- */
-//    (*t)->identity->grounding_wme = NULL;
 }
 
 inline void add_identity_to_negative_test(agent* thisAgent,
@@ -1361,7 +1358,6 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             {
                 if (!sym->is_sti() && !sym->is_variable())
                 {
-//                    t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_orig_var(orig_sym, pI_id);
                     t->identity->grounding_id = thisAgent->variablizationManager->get_gid_for_o_id(t->identity->original_var_id);
                     dprint(DT_IDENTITY_PROP, "Setting g_id for %y to %i.\n", sym, t->identity->grounding_id);
                 }
@@ -1376,8 +1372,6 @@ inline void add_identity_to_negative_test(agent* thisAgent,
             }
             break;
     }
-    /* -- We no longer need the wme and didn't increase refcount, so discard reference -- */
-//    t->identity->grounding_wme = NULL;
 }
 
 void propagate_identity(agent* thisAgent,

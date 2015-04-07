@@ -139,19 +139,6 @@ uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)
     return 0;
 }
 
-uint64_t Variablization_Manager::get_gid_for_orig_var(Symbol* index_sym, uint64_t pI_id)
-{
-    uint64_t found_o_id;
-    found_o_id = get_existing_o_id(index_sym, pI_id);
-    if (found_o_id)
-    {
-        return get_gid_for_o_id(found_o_id);
-    } else {
-        dprint(DT_VARIABLIZATION_MANAGER, "Did not find o_id for %y in instantiation %u. Returning 0.\n", index_sym, pI_id);
-        return 0;
-    }
-}
-
 uint64_t Variablization_Manager::add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id)
 {
     std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(pO_id);
