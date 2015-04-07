@@ -159,17 +159,6 @@ uint64_t Variablization_Manager::add_o_id_to_gid_mapping(uint64_t pO_id, uint64_
     return iter->second;
 }
 
-uint64_t Variablization_Manager::add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id, uint64_t pI_id)
-{
-    uint64_t lO_id = get_or_create_o_id(index_sym, pI_id);
-//    uint64_t lO_id = get_existing_o_id(index_sym, pI_id);
-    if (!lO_id)
-        print_o_id_tables(DT_VARIABLIZATION_MANAGER);
-    assert(lO_id);
-    return add_o_id_to_gid_mapping(lO_id, index_g_id);
-}
-
-
 void Variablization_Manager::clear_o_id_to_ovar_debug_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");

@@ -64,7 +64,6 @@ class Variablization_Manager
         void reinit();
 
         uint64_t add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id);
-        uint64_t add_orig_var_to_gid_mapping(Symbol* index_sym, uint64_t index_g_id, uint64_t pI_id);
         uint64_t get_gid_for_o_id(uint64_t pO_id);
 
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);

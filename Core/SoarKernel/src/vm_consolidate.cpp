@@ -320,37 +320,27 @@ void Variablization_Manager::update_o_id_to_g_id(uint64_t old_o_id, uint64_t new
         o_id_to_g_id_map->erase(old_o_id);
         (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
     }
-//    for (iter = o_id_to_g_id_map->begin(); iter != o_id_to_g_id_map->end(); ++iter)
-//    {
-//
-//        if (iter->first == old_o_id)
-//        {
-//            dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
-//            //            iter->second = survivorSymTest->identity->grounding_id;
-//            saved_g_id = iter->second;
-//            o_id_to_g_id_map->erase(old_o_id);
-//            (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
-//        }
-//    }
 }
 
 void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
 {
     if (!result) return;
 
-    if (result->original_symbols.id && pI_id)
+    if (pI_id)
     {
-    	result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+        if (result->original_symbols.id)
+        {
+            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+        }
+        if (result->original_symbols.attr)
+        {
+            result->o_ids.attr = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.attr, pI_id);
+        }
+        if (result->original_symbols.value)
+        {
+            result->o_ids.value = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.value, pI_id);
+        }
     }
-    if (result->original_symbols.attr && pI_id)
-    {
-    	result->o_ids.attr = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.attr, pI_id);
-    }
-    if (result->original_symbols.value && pI_id)
-    {
-    	result->o_ids.value = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.value, pI_id);
-    }
-
     fix_results(result->next_result, pI_id);
     /* MToDo | Do we need to fix o_ids in clones too? */
 }
