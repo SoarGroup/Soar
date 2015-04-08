@@ -156,40 +156,17 @@ namespace soar_module
                 cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
                 cond->data.tests.id_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
-                /* MToDo | I don't think fake instantiations should have original variables.  This was
-                 *         an attempt to fix a bug that wasn't needed.  Should delete */
-                if (cond->data.tests.id_test->data.referent->is_variable())
-                {
-                    cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
-                    symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
-                    cond->data.tests.id_test->identity->original_var_id =
-                    		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.id_test->identity->original_var, inst->i_id);
-                	assert(false);
-                }
+
                 cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
                 cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
                 cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
-                if (cond->data.tests.attr_test->data.referent->is_variable())
-                {
-                    cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
-                    symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
-                    cond->data.tests.attr_test->identity->original_var_id =
-                    		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.id_test->identity->original_var, inst->i_id);
-                	assert(false);
-                }
+
                 cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
                 cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
                 cond->data.tests.value_test->identity->grounding_wme = (*c_it);
                 cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
-                if (cond->data.tests.value_test->data.referent->is_variable())
-                {
-                    cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
-                    symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
-                    cond->data.tests.value_test->identity->original_var_id =
-                    		thisAgent->variablizationManager->get_or_create_o_id(cond->data.tests.value_test->identity->original_var, inst->i_id);
-                	assert(false);
-                }
+
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);
 
