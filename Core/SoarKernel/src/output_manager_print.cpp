@@ -26,7 +26,7 @@
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
-//#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
+#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
