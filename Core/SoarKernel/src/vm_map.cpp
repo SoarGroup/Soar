@@ -189,6 +189,8 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
     std::map< uint64_t, uint64_t >::iterator iter_inst;
 
 //    dprint(DT_VARIABLIZATION_MANAGER, "...looking for symbol %y\n", orig_var);
+    assert(orig_var && pI_id);
+
     iter_sym = ovar_to_o_id_map->find(orig_var);
     if (iter_sym != ovar_to_o_id_map->end())
     {
@@ -203,9 +205,9 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 
     dprint(DT_VARIABLIZATION_MANAGER, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     /* MToDo | Remove */
-    std::string strName(orig_var->to_string());
-    if ((pI_id == 1) && (strName == "<x>"))
-        assert(false);
+//    std::string strName(orig_var->to_string());
+//    if ((pI_id == 1) && (strName == "<x>"))
+//        assert(false);
     return 0;
 
 }

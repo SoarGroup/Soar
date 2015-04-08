@@ -394,7 +394,10 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
-            lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
+            if (pI_id)
+            {
+                lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
+            }
             dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for unbound var.\n", sym, 0, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym, 0, lO_id);
         }
@@ -404,7 +407,10 @@ rhs_value create_RHS_value(agent* thisAgent,
             sym = *(thisAgent->rhs_variable_bindings + index);
             original_sym = sym;
         }
-        lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
+        if (pI_id)
+        {
+            lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
+        }
         dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for RHS literal.\n", sym, original_sym, 0, lO_id);
 
         return allocate_rhs_value_for_symbol(thisAgent, sym, sym, 0, lO_id);
