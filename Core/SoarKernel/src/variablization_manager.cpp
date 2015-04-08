@@ -312,6 +312,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
  *            Variablization_Manager::variablize_test
  *
  * Requires: Test from positive condition.
+ *           Test's original test was a variable
  *           Test must not be a conjunctive test.
  * Modifies: t
  * Effect:   If referent is variablizable, replaces referent symbol with a
@@ -336,10 +337,10 @@ void Variablization_Manager::variablize_test(test* t, Symbol* original_referent)
         {
             is_variablizable = true;
         } else {
-            is_variablizable = instantiated_referent->is_variablizable_constant(original_referent) && !is_in_dnvl(instantiated_referent);
+            is_variablizable = instantiated_referent->is_variablizable() && !is_in_dnvl(instantiated_referent);
         }
     } else {
-        is_variablizable = instantiated_referent->is_variablizable_constant(original_referent);
+        is_variablizable = instantiated_referent->is_variablizable();
     }
     if (is_variablizable)
     {
@@ -424,6 +425,7 @@ void Variablization_Manager::variablize_equality_test(test* t)
 void Variablization_Manager::variablize_equality_tests(test* t)
 {
     cons* c;
+    test* tt;
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", *t);
     assert(*t);
 
@@ -437,7 +439,11 @@ void Variablization_Manager::variablize_equality_tests(test* t)
         for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
-            variablize_equality_test(reinterpret_cast<test*>(&(c->first)));
+            tt = reinterpret_cast<test*>(&(c->first));
+            if ((*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
+            {
+                variablize_equality_test(tt);
+            }
         }
 
         dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -445,7 +451,10 @@ void Variablization_Manager::variablize_equality_tests(test* t)
     }
     else
     {
-        variablize_equality_test(t);
+        if ((*t)->identity->original_var && (*t)->identity->original_var->is_variable())
+        {
+            variablize_equality_test(t);
+        }
     }
 }
 
@@ -512,6 +521,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
 {
 
     cons* c;
+    test* tt;
     bool isGrounded;
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", *t);
 
@@ -530,7 +540,11 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
              *    deleted.  We just leave them as a literal. We only use the return value of
              *    variablize_test_by_lookup when variablizing constraints collected during
              *    backtracing, since we can just avoid adding them to the condition list. -- */
-            variablize_test_by_lookup(reinterpret_cast<test*>(&(c->first)), pSkipTopLevelEqualities);
+            tt = reinterpret_cast<test*>(&(c->first));
+            if ((*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
+            {
+            variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
+            }
         }
 
         dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -538,7 +552,10 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
     }
     else
     {
-        variablize_test_by_lookup(t, pSkipTopLevelEqualities);
+        if ((*t)->identity->original_var && (*t)->identity->original_var->is_variable())
+        {
+            variablize_test_by_lookup(t, pSkipTopLevelEqualities);
+        }
     }
 }
 
@@ -599,19 +616,6 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
     }
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
-
-
-/* =====================================================================
-
-          variablize_rl_symbol and variablize_rl_condition_list
-
-   Variablizing of conditions is done by walking over a condition list
-   and destructively modifying it, replacing tests of identifiers with
-   tests of tests of variables.
-
-   These functions are analogous to the ones in chunk.cpp but without
-   all of the generalized variablization logic introduced in Soar 9.4
-===================================================================== */
 
 void Variablization_Manager::variablize_rl_test(test* t)
 {
