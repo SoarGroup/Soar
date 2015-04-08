@@ -26,6 +26,13 @@ void Variablization_Manager::clear_data()
     clear_ovar_to_o_id_map();
     clear_o_id_substitution_map();
     clear_o_id_to_ovar_debug_map();
+    clear_o_id_update_map();
+}
+
+void Variablization_Manager::clear_o_id_update_map()
+{
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id to g_id table...\n");
+    o_id_update_map->clear();
 }
 
 void Variablization_Manager::clear_oid_to_gid_map()
@@ -123,6 +130,22 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
 }
 
+o_id_update_info* Variablization_Manager::get_updated_o_id_info_for_o_id(uint64_t old_o_id)
+{
+    std::map< uint64_t, o_id_update_info* >::iterator iter = (*o_id_update_map).find(old_o_id);
+    if (iter != (*o_id_update_map).end())
+    {
+        dprint(DT_VARIABLIZATION_MANAGER, "...found o%u(%y) in o_id_update_map for o%u\n",
+            iter->second->o_id, iter->second->o_var, old_o_id);
+
+        return iter->second;
+    } else {
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find o%u in o_id_update_map.\n", old_o_id);
+        print_o_id_update_map(DT_VARIABLIZATION_MANAGER);
+    }
+    return 0;
+}
+
 uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)
 {
     std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(pO_id);
@@ -134,7 +157,7 @@ uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)
         return iter->second;
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "...did not find o%u in o_id_to_g_id.\n", pO_id);
-        print_o_id_to_gid_map(DT_OVAR_PROP);
+        print_o_id_to_gid_map(DT_VARIABLIZATION_MANAGER);
     }
     return 0;
 }

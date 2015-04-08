@@ -26,6 +26,13 @@ typedef struct variablization_struct
     uint64_t grounding_id;
 } variablization;
 
+typedef struct o_id_update_struct
+{
+        uint64_t o_id;
+        Symbol* o_var;
+        o_id_update_struct() : o_id(0), o_var(NULL) {}
+} o_id_update_info;
+
 /* -- Variablization_Manager
  *
  * variablization_table
@@ -56,6 +63,7 @@ class Variablization_Manager
 
         void clear_variablization_maps();
         void clear_oid_to_gid_map();
+        void clear_o_id_update_map();
         void clear_cached_constraints();
         void clear_dnvl();
         void clear_ovar_to_o_id_map();
@@ -95,6 +103,7 @@ class Variablization_Manager
         void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
         void print_tables(TraceMode mode);
+        void print_o_id_update_map(TraceMode mode, bool printHeader = false);
         void print_o_id_tables(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
@@ -142,6 +151,8 @@ class Variablization_Manager
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
+        o_id_update_info* get_updated_o_id_info_for_o_id(uint64_t old_o_id);
+
         void cache_constraint(test equality_test, test relational_test);
         void cache_constraints_in_test(test t);
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
@@ -184,6 +195,7 @@ class Variablization_Manager
         std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
         std::map< uint64_t, uint64_t >*                         o_id_substitution_map;
         std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
+        std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
 
         /* -- A counter for the next grounding id to assign. 0 is the default
          *    value and not considered a valid grounding id. -- */

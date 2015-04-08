@@ -17,6 +17,7 @@ void Variablization_Manager::print_o_id_tables(TraceMode mode)
 {
     print_ovar_to_o_id_map(mode);
     print_o_id_substitution_map(mode);
+    print_o_id_update_map(mode);
     print_o_id_to_ovar_debug_map(mode);
 
 }
@@ -162,6 +163,26 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
     }
 
     dprint(mode, "------------------------------------\n");
+}
+void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHeader)
+{
+    if (printHeader)
+    {
+        dprint(mode, "------------------------------------\n");
+        dprint(mode, "           o_id_update_map\n");
+        dprint(mode, "------------------------------------\n");
+    }
+
+    if (o_id_update_map->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+
+    for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
+    {
+        dprint(mode, "%u -> %u (%y)\n", it->first, it->second->o_id, it->second->o_var);
+    }
+
 }
 
 void Variablization_Manager::print_o_id_to_gid_map(TraceMode mode, bool printHeader)

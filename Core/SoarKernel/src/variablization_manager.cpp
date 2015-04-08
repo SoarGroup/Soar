@@ -33,6 +33,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
     o_id_substitution_map = new std::map< uint64_t, uint64_t >();
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
+    o_id_update_map = new std::map< uint64_t, o_id_update_info* >();
 
     ground_id_counter = 0;
     inst_id_counter = 0;
@@ -54,6 +55,7 @@ Variablization_Manager::~Variablization_Manager()
     delete ovar_to_o_id_map;
     delete o_id_substitution_map;
     delete o_id_to_ovar_debug_map;
+    delete o_id_update_map;
 
 }
 
