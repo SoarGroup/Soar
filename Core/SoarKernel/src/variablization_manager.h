@@ -151,7 +151,9 @@ class Variablization_Manager
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
-        o_id_update_info* get_updated_o_id_info_for_o_id(uint64_t old_o_id);
+        o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id);
+        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id);
 
         void cache_constraint(test equality_test, test relational_test);
         void cache_constraints_in_test(test t);

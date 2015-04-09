@@ -86,9 +86,8 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
             if (t->identity->original_var_id && pI_id)
             {
                 old_o_id = t->identity->original_var_id;
-                t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(t->identity->original_var, pI_id);
-                assert(old_o_id);
-                update_o_id_to_g_id(old_o_id, t->identity->original_var_id);
+                update_o_id_for_new_instantiation(&(t->identity->original_var), &(t->identity->original_var_id), pI_id);
+                assert(old_o_id != t->identity->original_var_id);
             }
             break;
     }
@@ -330,14 +329,20 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
     {
         if (result->original_symbols.id)
         {
-            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+            assert(result->original_symbols.id->is_variable());
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id);
+//            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
         }
         if (result->original_symbols.attr)
         {
+            assert(result->original_symbols.attr->is_variable());
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id);
             result->o_ids.attr = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.attr, pI_id);
         }
         if (result->original_symbols.value)
         {
+            assert(result->original_symbols.value->is_variable());
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id);
             result->o_ids.value = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.value, pI_id);
         }
     }

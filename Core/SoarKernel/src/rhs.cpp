@@ -398,7 +398,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             {
                 lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
             }
-            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for unbound var.\n", sym, 0, lO_id);
+            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for new unbound var.\n", sym, 0, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym, 0, lO_id);
         }
         else
@@ -411,7 +411,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         {
             lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
         }
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for RHS literal.\n", sym, original_sym, 0, lO_id);
+        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for previously seen unbound var.\n", sym, original_sym, 0, lO_id);
 
         return allocate_rhs_value_for_symbol(thisAgent, sym, sym, 0, lO_id);
     }
@@ -533,19 +533,18 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     }
     allocate_with_pool(thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
-    new_rhs_symbol->original_rhs_variable = pOrig_var;
     new_rhs_symbol->g_id = pG_ID;
-    new_rhs_symbol->o_id = pO_ID;
+    if (pOrig_var && pOrig_var->is_variable())
+    {
+        new_rhs_symbol->original_rhs_variable = pOrig_var;
+        new_rhs_symbol->o_id = pO_ID;
+        symbol_add_ref(thisAgent, pOrig_var);
+    } else {
+        new_rhs_symbol->original_rhs_variable = NULL;
+        new_rhs_symbol->o_id = 0;
+    }
     dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %i to new rhs_symbol %y(%y/%u).\n" : ""), pG_ID, sym, pOrig_var, pO_ID);
 
-    /* -- Must always increase original_sym refcount if it exists because this function
-     *    is only called when the newly generate rhs value is created with a brand new
-     *    sym that already had its refcount incremented -- */
-
-    if (pOrig_var)
-    {
-        symbol_add_ref(thisAgent, pOrig_var);
-    }
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 

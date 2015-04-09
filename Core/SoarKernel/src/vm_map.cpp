@@ -32,6 +32,11 @@ void Variablization_Manager::clear_data()
 void Variablization_Manager::clear_o_id_update_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id to g_id table...\n");
+    for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
+    {
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing %u -> %y(%u)\n", it->first, it->second->o_var, it->second->o_id);
+        delete it->second;
+    }
     o_id_update_map->clear();
 }
 
@@ -130,7 +135,7 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
 }
 
-o_id_update_info* Variablization_Manager::get_updated_o_id_info_for_o_id(uint64_t old_o_id)
+o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_id)
 {
     std::map< uint64_t, o_id_update_info* >::iterator iter = (*o_id_update_map).find(old_o_id);
     if (iter != (*o_id_update_map).end())
@@ -144,6 +149,63 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info_for_o_id(uint64_
         print_o_id_update_map(DT_VARIABLIZATION_MANAGER);
     }
     return 0;
+}
+
+void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id)
+{
+    assert(get_updated_o_id_info(old_o_id) == 0);
+    o_id_update_info* new_o_id_info = new o_id_update_info();
+    new_o_id_info->o_var = new_ovar;
+    new_o_id_info->o_id = new_o_id;
+    (*o_id_update_map)[old_o_id] = new_o_id_info;
+}
+
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id)
+{
+    uint64_t new_o_id = 0;
+    Symbol* new_ovar = NULL;
+    bool found_unique = false;
+
+    if (!(*pO_id)) return;
+
+    o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
+    if (new_o_id_info)
+    {
+        (*pO_id) = new_o_id_info->o_id;
+        if ((*pOvar) != new_o_id_info->o_var)
+        {
+            symbol_remove_ref(thisAgent, (*pOvar));
+            (*pOvar) = new_o_id_info->o_var;
+            symbol_add_ref(thisAgent, (*pOvar));
+        }
+        return;
+    } else {
+        new_o_id = get_existing_o_id((*pOvar), pNew_i_id);
+        if (new_o_id)
+        {
+            /* Needs to be made unique.  This ovar has an existing o_id for new instantiation but no
+             * update info entry for the o_id.  That means that the previously seen case of this ovar
+             * had a different o_id. */
+            new_ovar = generate_new_variable(thisAgent, (*pOvar)->var->name);
+            new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
+            add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
+            if ((*pOvar))
+            {
+                symbol_remove_ref(thisAgent, (*pOvar));
+            } else {
+                /* MToDo|  Remove logic.  There should always be an oVar. */
+                assert(false);
+            }
+            (*pOvar) = new_ovar;
+        } else {
+            /* First time this ovar has been encountered in the new instantiation.  So, create new
+             * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
+            new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
+            add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
+        }
+        update_o_id_to_g_id((*pO_id), new_o_id);
+        (*pO_id) = new_o_id;
+    }
 }
 
 uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)

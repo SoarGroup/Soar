@@ -2115,13 +2115,14 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
         abort_with_fatal_error(thisAgent, msg);
     }
     /* --- make the fake preference --- */
-    /* MToDo | We may need to make accurate o_ids here, unless none of these can ever be
-     *         variables.  If so, not sure if we even need ovars (though we might because
-     *         they might be used to differentiate between unbound vars and literal constants)
-     *         Need to check.*/
+    /* MToDo | If any of these can ever be variables, then we need to pass in ovars.  Don't think they can.  Remove.*/
+    assert(!goal->is_variable());
+    assert(!thisAgent->item_symbol->is_variable());
+    assert(!cand->value->is_variable());
+
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
-                           soar_module::symbol_triple(goal, thisAgent->item_symbol, cand->value),
+                           soar_module::symbol_triple(NULL, NULL, NULL),
                            soar_module::identity_triple(0,0,0),
                            soar_module::identity_triple(0,0,0));
 //    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
