@@ -16,18 +16,26 @@ sp {init
 sp {propose
    (state <s> ^superstate <ss>)
    (<ss> ^superstate nil
-         ^item2 <value>)
+         ^item2 <value>
+         ^item1 <value2>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name make-chunk)}
 
+sp {ungrounded
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^item3 33)
+}
+
 sp {apply
    (state <s> ^operator <o>
+              ^item3 <value>
               ^superstate <ss>)
-   (<ss> ^item1 <value>)
+   (<ss> ^item2 <value2> ^item1 <value2>)
    (<o> ^name make-chunk)
 -->
-   (<ss> ^result <value>)}
+   (<ss> ^result <value> ^result2 <value2>)}
 
 sp {apply*test-done
    (state <s> ^result <r>)
