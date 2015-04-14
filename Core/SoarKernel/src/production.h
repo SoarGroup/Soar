@@ -245,7 +245,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent, condi
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
 extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
-                         condition** dest_bottom);
+                         condition** dest_bottom, bool pUnify_variablization_identity = false);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
                                       ::list** var_list);

@@ -173,6 +173,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                                      condition* trace_cond,
                                      bool* reliable,
                                      int indent,
+                                     soar_module::symbol_triple ovars_matched_syms,
                                      soar_module::symbol_triple ovars_to_replace,
                                      soar_module::identity_triple o_ids_to_replace)
 {
@@ -218,19 +219,19 @@ void backtrace_through_instantiation(agent* thisAgent,
 //        ovars_to_replace.id, o_ids_to_replace.id, ovars_to_replace.attr, o_ids_to_replace.attr, ovars_to_replace.value, o_ids_to_replace.value);
     if (trace_cond)
     {
-        if (o_ids_to_replace.id && trace_cond->data.tests.id_test && trace_cond->data.tests.id_test->identity->original_var_id)
+        if (!ovars_matched_syms.id->is_sti() && o_ids_to_replace.id && trace_cond->data.tests.id_test && trace_cond->data.tests.id_test->identity->original_var_id)
         {
             dprint(DT_OVAR_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n",
                 ovars_to_replace.id, o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var, trace_cond->data.tests.id_test->identity->original_var_id);
             thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var_id);
         }
-        if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test && trace_cond->data.tests.attr_test->identity->original_var_id)
+        if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && trace_cond->data.tests.attr_test && trace_cond->data.tests.attr_test->identity->original_var_id)
         {
             dprint(DT_OVAR_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n",
                 ovars_to_replace.attr, o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var, trace_cond->data.tests.attr_test->identity->original_var_id);
             thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var_id);
         }
-        if (o_ids_to_replace.value && trace_cond->data.tests.value_test && trace_cond->data.tests.value_test->identity->original_var_id)
+        if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && trace_cond->data.tests.value_test && trace_cond->data.tests.value_test->identity->original_var_id)
         {
             dprint(DT_OVAR_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n",
                 ovars_to_replace.value, o_ids_to_replace.value, trace_cond->data.tests.value_test->identity->original_var, trace_cond->data.tests.value_test->identity->original_var_id);
@@ -545,7 +546,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         if (bt_pref)
         {
             backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0,
-                bt_pref->original_symbols, bt_pref->o_ids);
+                soar_module::symbol_triple_struct(bt_pref->id, bt_pref->attr, bt_pref->value), bt_pref->original_symbols, bt_pref->o_ids);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -563,7 +564,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                      *         are results!  That's what chunk_instantiation does with results */
 
                     backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
-                        p->original_symbols, p->o_ids);
+                        soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->original_symbols, p->o_ids);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -802,7 +803,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
         backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0,
-            bt_pref->original_symbols, bt_pref->o_ids);
+            soar_module::symbol_triple_struct(bt_pref->id, bt_pref->attr, bt_pref->value), bt_pref->original_symbols, bt_pref->o_ids);
 
         /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
@@ -820,7 +821,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                  *         are results!  That's what chunk_instantiation does with results */
 
                 backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
-                    p->original_symbols, p->o_ids);
+                    soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->original_symbols, p->o_ids);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

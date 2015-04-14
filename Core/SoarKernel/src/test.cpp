@@ -35,10 +35,26 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
 
 ================================================================= */
 
+inline void unify_variablization_identity(agent* thisAgent, test t)
+{
+    uint64_t found_o_id = 0;
+
+    found_o_id = thisAgent->variablizationManager->get_o_id_substitution(t->identity->original_var_id);
+    if (found_o_id)
+    {
+        t->identity->original_var_id = found_o_id;
+        symbol_remove_ref(thisAgent, t->identity->original_var);
+        /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
+         *         a better way to set ovar here. */
+        t->identity->original_var = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id);
+        symbol_add_ref(thisAgent, t->identity->original_var);
+    }
+}
+
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c)
+list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity)
 {
     cons* new_c;
 
@@ -47,8 +63,8 @@ list* copy_test_list(agent* thisAgent, cons* c)
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first));
-    new_c->rest = copy_test_list(thisAgent, c->rest);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity);
     return new_c;
 }
 
@@ -56,7 +72,7 @@ list* copy_test_list(agent* thisAgent, cons* c)
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
 {
     Symbol* referent;
     test new_ct;
@@ -79,21 +95,29 @@ test copy_test(agent* thisAgent, test t)
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list);
+            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity);
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
+            new_ct->identity->original_var = t->identity->original_var;
+            new_ct->identity->original_var_id = t->identity->original_var_id;
+            if (new_ct->identity->original_var)
+            {
+                symbol_add_ref(thisAgent, new_ct->identity->original_var);
+            }
+            if (pUnify_variablization_identity)
+            {
+                if (new_ct->identity->original_var_id)
+                {
+                    unify_variablization_identity(thisAgent, new_ct);
+                }
+            }
+
             break;
     }
     if (t->original_test)
     {
-        new_ct->original_test = copy_test(thisAgent, t->original_test);
-    }
-    new_ct->identity->original_var = t->identity->original_var;
-    new_ct->identity->original_var_id = t->identity->original_var_id;
-    if (new_ct->identity->original_var)
-    {
-        symbol_add_ref(thisAgent, new_ct->identity->original_var);
+        new_ct->original_test = copy_test(thisAgent, t->original_test, pUnify_variablization_identity);
     }
     /* Cached eq_test is used by the chunker to avoid repeatedly searching
      * through conjunctions for the main equality test.  Value set during
@@ -103,6 +127,7 @@ test copy_test(agent* thisAgent, test t)
     new_ct->identity->grounding_id = t->identity->grounding_id;
     new_ct->identity->grounding_field = t->identity->grounding_field;
     new_ct->identity->grounding_wme = t->identity->grounding_wme;
+
     if (new_ct->identity->grounding_wme)
     {
 //        wme_add_ref(new_ct->identity->grounding_wme);
@@ -1170,20 +1195,20 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     dprint(DT_IDENTITY_PROP, "- g_id requested for %s of %w at level %d...\n", field_to_string(f), w, pLevel);
 
     grounding_info* g = w->ground_id_list;
-    if (!g)
-    {
-        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %d.\n", pLevel);
-    }
+//    if (!g)
+//    {
+//        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %d.\n", pLevel);
+//    }
     /* -- See if we already have ground IDs for this goal level -- */
     bool create_grounding_info = true;
     for (; g; g = g->next)
     {
         if (g->level == pLevel)
         {
-            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %i: (%u ^%u %u)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
+//            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %i: (%u ^%u %u)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
             if (g->grounding_id[f] == 0)
             {
-                dprint(DT_IDENTITY_PROP, "-- will attempt to retrieve via propagation or create a new g_id for %s element.\n", field_to_string(f));
+//                dprint(DT_IDENTITY_PROP, "-- will attempt to retrieve via propagation or create a new g_id for %s element.\n", field_to_string(f));
                 create_grounding_info = false;
                 break;
             }
@@ -1209,7 +1234,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
     {
         /* MToDo | We can probably eliminate generating id's for level 1 to level 1 matches here */
         g->grounding_id[f] = get_gid_from_pref_for_field(w->preference, f);
-        dprint(DT_IDENTITY_PROP, "- propagating g_id %u from wme preference at the same level...", g->grounding_id[f]);
+        dprint(DT_IDENTITY_PROP, "- g_id is %u in wme preference at the same level...", g->grounding_id[f]);
     }
     else
     {
@@ -1219,7 +1244,7 @@ inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_
         }
         else
         {
-            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %d...", w->id->id->level);
+//            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %d...", w->id->id->level);
         }
     }
     if (g->grounding_id[f] == 0)
@@ -1291,23 +1316,22 @@ inline void add_identity_to_test(agent* thisAgent,
                     {
                         if ((*t)->identity->grounding_id != NON_GENERALIZABLE)
                         {
-                            dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: %y to u%u.\n", (*t)->identity->original_var, (*t)->identity->grounding_id);
-                            uint64_t existing_gid = thisAgent->variablizationManager->add_o_id_to_gid_mapping((*t)->identity->original_var_id, (*t)->identity->grounding_id);
+                            dprint(DT_OVAR_MAPPINGS, "Adding original variable mappings entry: o%u(%y) to g%u.\n", (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
+                            thisAgent->variablizationManager->add_o_id_to_gid_mapping((*t)->identity->original_var_id, (*t)->identity->grounding_id);
                         }
                         else
                         {
-                            dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,
-                                ((*t)->identity->grounding_id == NON_GENERALIZABLE) ? "Marked ungeneralizable" : "No original var");
+//                            dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for %y. Marked ungeneralizable (g0).\n", sym);
                         }
                     }
                     else
                     {
-                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for literal %t. No original variable.\n", (*t));
+//                        dprint(DT_IDENTITY_PROP, "- Not adding ovar to g_id mapping for literal %t. No original variable.\n", (*t));
                     }
                 }
                 else
                 {
-                    dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
+//                    dprint(DT_IDENTITY_PROP, "- Skipping %y.  No g_id necessary for STI.\n", sym);
                 }
             }
             else
@@ -1382,12 +1406,14 @@ void propagate_identity(agent* thisAgent,
     condition* c;
     bool has_negative_conds = false;
 
-    dprint(DT_IDENTITY_PROP, "Pass 1: Propagating identity for positive conditions...\n");
+    dprint_set_indents(DT_IDENTITY_PROP, "          ");
+    dprint(DT_IDENTITY_PROP, "Pre-propagation conditions: \n%1", cond);
+    dprint_clear_indents(DT_IDENTITY_PROP);
     for (c = cond; c; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_IDENTITY_PROP, "Propagating identity for condition: %l\n", c);
+            dprint(DT_IDENTITY_PROP, "Propagating identity for positive condition: %l\n", c);
 
             if (use_negation_lookup)
             {
@@ -1416,7 +1442,6 @@ void propagate_identity(agent* thisAgent,
         }
     }
 
-    dprint(DT_IDENTITY_PROP, "Pass 2: Propagating identity for negative conditions...\n");
     if (has_negative_conds)
     {
         for (c = cond; c; c = c->next)
@@ -1434,6 +1459,8 @@ void propagate_identity(agent* thisAgent,
                 add_identity_to_negative_test(thisAgent, c->data.tests.id_test, ID_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.attr_test, ATTR_ELEMENT);
                 add_identity_to_negative_test(thisAgent, c->data.tests.value_test, VALUE_ELEMENT);
+            } else {
+                continue;
             }
 
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
@@ -1442,6 +1469,10 @@ void propagate_identity(agent* thisAgent,
 
         }
     }
+    dprint_set_indents(DT_IDENTITY_PROP, "          ");
+    dprint(DT_IDENTITY_PROP, "Post-propagation conditions: \n%1", cond);
+    dprint_clear_indents(DT_IDENTITY_PROP);
+    thisAgent->variablizationManager->print_tables(DT_IDENTITY_PROP);
 }
 
 

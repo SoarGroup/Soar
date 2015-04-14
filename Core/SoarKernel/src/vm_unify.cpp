@@ -23,6 +23,7 @@ void Variablization_Manager::add_o_id_unification(uint64_t pOld_o_id, uint64_t p
     {
         dprint(DT_OVAR_PROP, "Did not find o_id to o_id_substitution_map entry for o%u.  Adding %y[o%u] -> %y[o%u].\n", pOld_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
         (*o_id_substitution_map)[pOld_o_id] = pNew_o_id;
+        print_o_id_substitution_map(DT_OVAR_PROP);
     }
     else
     {

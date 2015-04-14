@@ -931,6 +931,8 @@ inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_oid_to_gid_map();
     thisAgent->variablizationManager->clear_o_id_substitution_map();
+    thisAgent->variablizationManager->clear_o_id_update_map();
+
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
@@ -1073,7 +1075,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            pref->original_symbols, pref->o_ids);
+            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->original_symbols.id, pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -1189,8 +1191,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
     dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
-    thisAgent->variablizationManager->print_variablization_tables(DT_VARIABLIZATION_MANAGER);
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing Results =\n");
+    thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
 
     dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);

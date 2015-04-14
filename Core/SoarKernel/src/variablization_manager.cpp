@@ -37,7 +37,8 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     ground_id_counter = 0;
     inst_id_counter = 0;
-    ovar_id_counter = 0;
+    /* Starting at 100 just to more clearly differentiate them from g_ids when debugging simple cases */
+    ovar_id_counter = 100;
 }
 
 Variablization_Manager::~Variablization_Manager()
@@ -758,7 +759,7 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
     {
         dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
-        dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
+        dprint(DT_IDENTITY_PROP, "Setting g_ids for action and variablizing results...\n");
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->attr);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->value);

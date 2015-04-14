@@ -30,104 +30,6 @@ test Variablization_Manager::get_substitution(Symbol* sym)
     return NULL;
 }
 
-
-void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id)
-{
-    test found_test;
-    uint64_t old_o_id;
-
-    switch (t->type)
-    {
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case DISJUNCTION_TEST:
-            break;
-        case CONJUNCTIVE_TEST:
-        {
-            dprint(DT_FIX_CONDITIONS, "          Consolidating vars in conj test: %t\n", t);
-            ::list* c = t->data.conjunct_list;
-            while (c)
-            {
-                test tt = static_cast<test>(c->first);
-                consolidate_variables_in_test(tt, tc_num, pI_id);
-                c = c->rest;
-            }
-            dprint(DT_FIX_CONDITIONS, "          After consolidating vars in conj test: %t\n", t);
-            break;
-        }
-        default:
-            if (test_has_referent(t) && (t->data.referent->tc_num == tc_num))
-            {
-                dprint(DT_FIX_CONDITIONS, "          Test needing substitution found:: %t\n", t);
-                found_test = get_substitution(t->data.referent);
-                if (!found_test)
-                {
-                    print_variablization_tables(DT_FIX_CONDITIONS);
-                    print_substitution_map(DT_FIX_CONDITIONS);
-                    assert(false);
-                }
-                symbol_remove_ref(thisAgent, t->data.referent);
-                symbol_add_ref(thisAgent, found_test->data.referent);
-                t->data.referent = found_test->data.referent;
-                t->identity->grounding_id = found_test->identity->grounding_id;
-                dprint(DT_FIX_CONDITIONS, "          Copying original vars:: %y %y\n", t->identity->original_var, found_test->identity->original_var);
-                if (t->identity->original_var)
-                {
-                    symbol_remove_ref(thisAgent, t->identity->original_var);
-                }
-                symbol_add_ref(thisAgent, found_test->identity->original_var);
-                t->identity->original_var = found_test->identity->original_var;
-                t->identity->original_var_id = found_test->identity->original_var_id;
-            }
-            /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
-             * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
-             * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
-             * rules that do not currently match unlike chunks/justifications) */
-            if (t->identity->original_var_id && pI_id)
-            {
-                old_o_id = t->identity->original_var_id;
-                update_o_id_for_new_instantiation(&(t->identity->original_var), &(t->identity->original_var_id), pI_id);
-                assert(old_o_id != t->identity->original_var_id);
-            }
-            break;
-    }
-}
-
-void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id)
-{
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Consolidating variables in tests =\n");
-    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
-    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
-
-    condition* next_cond, *last_cond = NULL;
-    for (condition* cond = top_cond; cond;)
-    {
-        dprint(DT_FIX_CONDITIONS, "Fixing condition: %l\n", cond);
-        next_cond = cond->next;
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            consolidate_variables_in_test(cond->data.tests.id_test, tc_num, pI_id);
-            consolidate_variables_in_test(cond->data.tests.attr_test, tc_num, pI_id);
-            consolidate_variables_in_test(cond->data.tests.value_test, tc_num, pI_id);
-        }
-        else
-        {
-            consolidate_variables(cond->data.ncc.top, tc_num, pI_id);
-        }
-        last_cond = cond;
-        cond = next_cond;
-//        dprint(DT_FIX_CONDITIONS, "...done fixing condition.\n");
-    }
-    dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
-    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
-    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done consolidating variables in tests =\n");
-
-}
-
 void Variablization_Manager::update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest)
 {
     std::map< uint64_t, uint64_t >::iterator iter;
@@ -208,7 +110,7 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
             {
                 dprint(DT_FIX_CONDITIONS, "Ungrounded STI found: %y\n", tt->data.referent);
                 c = delete_test_from_conjunct(thisAgent, t, c);
-                dprint(DT_FIX_CONDITIONS, "          ...after deletion: %t\n", (*t));
+                dprint(DT_FIX_CONDITIONS, "          ...after deletion: %t [%g]\n", (*t), (*t));
             }
 
             // Code to detect a conjunction that contain more than one equality tests.  If found, eliminate the redundancy.
@@ -230,8 +132,8 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
 
                     }
 //                    dprint(DT_FIX_CONDITIONS, "Surviving test = %y, sacrificed test = %y.\n", survivor->data.referent, sacrifice->data.referent);
-                    dprint(DT_FIX_CONDITIONS, "Surviving test = %t [%g %y]", survivor, survivor, survivor->identity->original_var);
-                    dprint_noprefix(DT_FIX_CONDITIONS, ", sacrificed test = %t [%g %y]\n", sacrifice, sacrifice, sacrifice->identity->original_var);
+                    dprint(DT_FIX_CONDITIONS, "Surviving test = %t [%g]", survivor, survivor);
+                    dprint_noprefix(DT_FIX_CONDITIONS, ", sacrificed test = %t [%g]\n", sacrifice, sacrifice);
                     // MToDo | If there's a problem, make sure we have g_id in this variablized test.
                     set_substitution(sacrifice, survivor, tc_num);
                     c = delete_test_from_conjunct(thisAgent, t, c);
@@ -256,6 +158,214 @@ void Variablization_Manager::remove_redundancies_and_ungroundeds(test* t, tc_num
         survivor->eq_test = survivor;
     }
 }
+
+o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_id)
+{
+    std::map< uint64_t, o_id_update_info* >::iterator iter = (*o_id_update_map).find(old_o_id);
+    if (iter != (*o_id_update_map).end())
+    {
+        dprint(DT_VARIABLIZATION_MANAGER, "...found o%u(%y) in o_id_update_map for o%u\n",
+            iter->second->o_id, iter->second->o_var, old_o_id, get_ovar_for_o_id(old_o_id));
+
+        return iter->second;
+    } else {
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find o%u(%y) in o_id_update_map.\n", old_o_id, get_ovar_for_o_id(old_o_id));
+        print_o_id_update_map(DT_VARIABLIZATION_MANAGER);
+    }
+    return 0;
+}
+
+void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id)
+{
+    assert(get_updated_o_id_info(old_o_id) == 0);
+    o_id_update_info* new_o_id_info = new o_id_update_info();
+    new_o_id_info->o_var = new_ovar;
+    new_o_id_info->o_id = new_o_id;
+    (*o_id_update_map)[old_o_id] = new_o_id_info;
+}
+
+void Variablization_Manager::add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id)
+{
+    std::map< uint64_t, uint64_t >::iterator iter;
+    uint64_t new_g_id=0;
+
+    /* This should never be a STI, so should always have a g_id */
+    assert(pG_id);
+
+    dprint(DT_FIX_CONDITIONS, "Attempting to update o_id_to_g_id map from o%u to o%u.\n", old_o_id, new_o_id);
+    print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
+    iter = o_id_to_g_id_map->find(old_o_id);
+    if (iter != o_id_to_g_id_map->end())
+    {
+        dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
+        new_g_id = iter->second;
+        o_id_to_g_id_map->erase(old_o_id);
+    } else {
+        new_g_id = pG_id;
+    }
+
+    (*o_id_to_g_id_map)[new_o_id] = new_g_id;
+
+}
+
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, uint64_t pG_id)
+{
+    uint64_t new_o_id = 0;
+    Symbol* new_ovar = NULL;
+    bool found_unique = false;
+
+    if (!(*pO_id)) return;
+
+    o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
+    if (new_o_id_info)
+    {
+        (*pO_id) = new_o_id_info->o_id;
+        if ((*pOvar) != new_o_id_info->o_var)
+        {
+            symbol_remove_ref(thisAgent, (*pOvar));
+            (*pOvar) = new_o_id_info->o_var;
+            symbol_add_ref(thisAgent, (*pOvar));
+        }
+        return;
+    } else {
+        new_o_id = get_existing_o_id((*pOvar), pNew_i_id);
+        if (new_o_id)
+        {
+            /* Ovar needs to be made unique.  This ovar has an existing o_id for new instantiation but no
+             * update info entry for the o_id.  That means that the previously seen case of this ovar
+             * had a different o_id. */
+            /* Get rid of the brackets and add something to make collision less likely with other
+             * variables in condition list */
+            std::string lVarName((*pOvar)->var->name+1);
+            lVarName.erase(lVarName.length()-1);
+            lVarName.append("-other");
+            new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
+            dprint(DT_OVAR_MAPPINGS, "Generated new variable %y from %s.\n", new_ovar, lVarName.c_str());
+            new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
+            add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
+            if ((*pOvar))
+            {
+                symbol_remove_ref(thisAgent, (*pOvar));
+            } else {
+                /* MToDo|  Remove logic.  There should always be an oVar. */
+                assert(false);
+            }
+            (*pOvar) = new_ovar;
+        } else {
+            /* First time this ovar has been encountered in the new instantiation.  So, create new
+             * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
+            new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
+            add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
+        }
+        if (pG_id)
+        {
+            add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, pG_id);
+        }
+        (*pO_id) = new_o_id;
+    }
+}
+
+void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id)
+{
+    test found_test;
+    uint64_t old_o_id;
+
+    switch (t->type)
+    {
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case DISJUNCTION_TEST:
+            break;
+        case CONJUNCTIVE_TEST:
+        {
+            dprint(DT_FIX_CONDITIONS, "Consolidating vars in conj test: %t [%g]\n", t, t);
+            ::list* c = t->data.conjunct_list;
+            test tt;
+            while (c)
+            {
+                tt = static_cast<test>(c->first);
+                consolidate_variables_in_test(tt, tc_num, pI_id);
+                c = c->rest;
+            }
+            dprint(DT_FIX_CONDITIONS, "After consolidating vars in conj test: %t [%g]\n", t, t);
+            break;
+        }
+        default:
+            if (test_has_referent(t) && (t->data.referent->tc_num == tc_num))
+            {
+                dprint(DT_FIX_CONDITIONS, "Test marked as needing substitution found:: %t\n", t);
+                found_test = get_substitution(t->data.referent);
+                if (!found_test)
+                {
+                    print_variablization_tables(DT_FIX_CONDITIONS);
+                    print_substitution_map(DT_FIX_CONDITIONS);
+                    assert(false);
+                }
+                symbol_remove_ref(thisAgent, t->data.referent);
+                symbol_add_ref(thisAgent, found_test->data.referent);
+                t->data.referent = found_test->data.referent;
+                t->identity->grounding_id = found_test->identity->grounding_id;
+                dprint(DT_FIX_CONDITIONS, "Copying original vars: %y %y\n", t->identity->original_var, found_test->identity->original_var);
+                if (t->identity->original_var)
+                {
+                    symbol_remove_ref(thisAgent, t->identity->original_var);
+                }
+                symbol_add_ref(thisAgent, found_test->identity->original_var);
+                t->identity->original_var = found_test->identity->original_var;
+                t->identity->original_var_id = found_test->identity->original_var_id;
+            }
+            /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
+             * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
+             * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
+             * rules that do not currently match unlike chunks/justifications) */
+            if (t->identity->original_var_id && pI_id)
+            {
+                dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u and i%u.\n", t->identity->original_var_id, pI_id);
+                old_o_id = t->identity->original_var_id;
+                update_o_id_for_new_instantiation(&(t->identity->original_var), &(t->identity->original_var_id), pI_id, t->identity->grounding_id);
+                dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", t, t);
+                print_o_id_to_gid_map(DT_FIX_CONDITIONS);
+                assert(old_o_id != t->identity->original_var_id);
+            }
+            break;
+    }
+}
+
+void Variablization_Manager::consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id)
+{
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Consolidating variables in tests =\n");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
+    dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
+
+    condition* next_cond, *last_cond = NULL;
+    for (condition* cond = top_cond; cond;)
+    {
+        dprint(DT_FIX_CONDITIONS, "Fixing condition: %l\n", cond);
+        next_cond = cond->next;
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            consolidate_variables_in_test(cond->data.tests.id_test, tc_num, pI_id);
+            consolidate_variables_in_test(cond->data.tests.attr_test, tc_num, pI_id);
+            consolidate_variables_in_test(cond->data.tests.value_test, tc_num, pI_id);
+        }
+        else
+        {
+            consolidate_variables(cond->data.ncc.top, tc_num, pI_id);
+        }
+        last_cond = cond;
+        cond = next_cond;
+//        dprint(DT_FIX_CONDITIONS, "...done fixing condition.\n");
+    }
+    dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
+    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
+    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
+    dprint_clear_indents(DT_FIX_CONDITIONS);
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done consolidating variables in tests =\n");
+
+}
+
 
 void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds)
 {
@@ -300,30 +410,15 @@ void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id,
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
     dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done finding fixing conditions =\n");
-}
-
-void Variablization_Manager::update_o_id_to_g_id(uint64_t old_o_id, uint64_t new_o_id)
-{
-    std::map< uint64_t, uint64_t >::iterator iter;
-    uint64_t saved_g_id;
-
-    dprint(DT_FIX_CONDITIONS, "Attempting to update o_id_to_g_id map from o%u to o%u.\n", old_o_id, new_o_id);
-    print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
-    iter = o_id_to_g_id_map->find(old_o_id);
-    if (iter != o_id_to_g_id_map->end())
-    {
-        dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
-        //            iter->second = survivorSymTest->identity->grounding_id;
-        saved_g_id = iter->second;
-        o_id_to_g_id_map->erase(old_o_id);
-        (*o_id_to_g_id_map)[new_o_id] = saved_g_id;
-    }
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done fixing conditions =\n");
 }
 
 void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
 {
+
     if (!result) return;
+
+    dprint(DT_FIX_CONDITIONS, "Fixing result %p\n", result);
 
     if (pI_id)
     {
@@ -331,7 +426,8 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         {
             assert(result->original_symbols.id->is_variable());
             update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id);
-//            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+            // Next line was disabled for a couple versions.  Forgot why, but seems like it should be there in case id element is an LTI
+            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
         }
         if (result->original_symbols.attr)
         {
@@ -349,4 +445,3 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
     fix_results(result->next_result, pI_id);
     /* MToDo | Do we need to fix o_ids in clones too? */
 }
-

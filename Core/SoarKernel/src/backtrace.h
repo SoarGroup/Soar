@@ -57,6 +57,7 @@ extern void backtrace_through_instantiation(agent* thisAgent,
         condition* trace_cond,
         bool* reliable,
         int indent,
+        soar_module::symbol_triple ovars_matched_syms,
         soar_module::symbol_triple parent_cond_ovars,
         soar_module::identity_triple parent_cond_o_ids);
 

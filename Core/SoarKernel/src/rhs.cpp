@@ -372,7 +372,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
+//        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->original_var, t->identity->grounding_id, t->identity->original_var_id);
     }
 
@@ -398,7 +398,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             {
                 lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
             }
-            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for new unbound var.\n", sym, 0, lO_id);
+//            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for new unbound var.\n", sym, 0, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym, 0, lO_id);
         }
         else
@@ -411,7 +411,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         {
             lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
         }
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for previously seen unbound var.\n", sym, original_sym, 0, lO_id);
+//        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for previously seen unbound var.\n", sym, original_sym, 0, lO_id);
 
         return allocate_rhs_value_for_symbol(thisAgent, sym, sym, 0, lO_id);
     }
@@ -445,8 +445,8 @@ rhs_value create_RHS_value(agent* thisAgent,
 
         /* MToDo | If these are always literals, then we may not need to set any of the identity information.  Check. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u o%u) from rhs_symbol (literal RHS constant).\n",
-                        rs->referent, rs->original_rhs_variable, rs->g_id, rs->o_id);
+//        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u o%u) from rhs_symbol (literal RHS constant).\n",
+//                        rs->referent, rs->original_rhs_variable, rs->g_id, rs->o_id);
         original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
         uint64_t lG_id = (add_original_vars != DONT_ADD_TESTS) ? rs->g_id : 0;
         uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
@@ -463,8 +463,8 @@ action* create_RHS_action_list(agent* thisAgent,
     action* old, *New, *prev, *first;
     char first_letter;
 
-    dprint(DT_RHS_VARIABLIZATION, "In create_RHS_action_list()\n");
-    dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
+//    dprint(DT_RHS_VARIABLIZATION, "In create_RHS_action_list()\n");
+//    dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
     prev = NIL;
     first = NIL;
     old = actions;
@@ -489,21 +489,21 @@ action* create_RHS_action_list(agent* thisAgent,
         }
         else
         {
-            dprint(DT_RHS_VARIABLIZATION, "ID: ");
+//            dprint(DT_RHS_VARIABLIZATION, "ID: ");
             New->id = create_RHS_value(thisAgent, old->id, cond, 's', pI_id, add_original_vars);
-            dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
+//            dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
             New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', pI_id, add_original_vars);
             first_letter = first_letter_from_rhs_value(New->attr);
-            dprint(DT_RHS_VARIABLIZATION, "Value: ");
+//            dprint(DT_RHS_VARIABLIZATION, "Value: ");
             New->value = create_RHS_value(thisAgent, old->value, cond,
                                           first_letter, pI_id, add_original_vars);
             if (preference_is_binary(old->preference_type))
             {
-                dprint(DT_RHS_VARIABLIZATION, "Referent: ");
+//                dprint(DT_RHS_VARIABLIZATION, "Referent: ");
                 New->referent = create_RHS_value(thisAgent, old->referent,
                                                  cond, first_letter, pI_id, add_original_vars);
             }
-            dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
+//            dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
         }
         old = old->next;
     }
@@ -515,7 +515,7 @@ action* create_RHS_action_list(agent* thisAgent,
     {
         first = NIL;
     }
-    dprint(DT_RHS_VARIABLIZATION, "Done create_RHS_action_list()\n");
+//    dprint(DT_RHS_VARIABLIZATION, "Done create_RHS_action_list()\n");
     return first;
 }
 
@@ -543,7 +543,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
         new_rhs_symbol->original_rhs_variable = NULL;
         new_rhs_symbol->o_id = 0;
     }
-    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "Propagating g_id %i to new rhs_symbol %y(%y/%u).\n" : ""), pG_ID, sym, pOrig_var, pO_ID);
+    dprint_noprefix(DT_IDENTITY_PROP, (pG_ID ? "ID PROP | Propagating g_id %i to new rhs_symbol %y(%y/%u).\n" : ""), pG_ID, sym, pOrig_var, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

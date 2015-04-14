@@ -138,19 +138,6 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
     return New;
 }
 
-inline void unify_variablization_identity(agent* thisAgent, test t)
-{
-    uint64_t found_o_id = 0;
-
-    found_o_id = thisAgent->variablizationManager->get_o_id_substitution(t->identity->original_var_id);
-    if (found_o_id)
-    {
-        t->identity->original_var_id = found_o_id;
-        symbol_remove_ref(thisAgent, t->identity->original_var);
-        t->identity->original_var = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id);
-        symbol_add_ref(thisAgent, t->identity->original_var);
-    }
-}
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
@@ -174,29 +161,14 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
             New->bt = cond->bt;
         /* ... and fall through to next case */
         case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-            if (pUnify_variablization_identity)
-            {
-                if (New->data.tests.id_test->identity->original_var_id)
-                {
-                    unify_variablization_identity(thisAgent, New->data.tests.id_test);
-                }
-                if (New->data.tests.attr_test->identity->original_var_id)
-                {
-                    unify_variablization_identity(thisAgent, New->data.tests.attr_test);
-                }
-                if (New->data.tests.value_test->identity->original_var_id)
-                {
-                    unify_variablization_identity(thisAgent, New->data.tests.value_test);
-                }
-            }
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom));
+                                &(New->data.ncc.bottom), pUnify_variablization_identity);
             break;
     }
     return New;
@@ -210,14 +182,15 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
 void copy_condition_list(agent* thisAgent,
                          condition* top_cond,
                          condition** dest_top,
-                         condition** dest_bottom)
+                         condition** dest_bottom,
+                         bool pUnify_variablization_identity)
 {
     condition* New, *prev;
 
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity);
         if (prev)
         {
             prev->next = New;

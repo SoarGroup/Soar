@@ -71,7 +71,7 @@ class Variablization_Manager
         void clear_data();
         void reinit();
 
-        uint64_t add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id);
+        void add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id);
         uint64_t get_gid_for_o_id(uint64_t pO_id);
 
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
@@ -103,12 +103,12 @@ class Variablization_Manager
         void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
         void print_tables(TraceMode mode);
-        void print_o_id_update_map(TraceMode mode, bool printHeader = false);
+        void print_o_id_update_map(TraceMode mode, bool printHeader = true);
         void print_o_id_tables(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_substitution_map(TraceMode mode);
-        void print_o_id_to_gid_map(TraceMode mode, bool printHeader = false);
+        void print_o_id_to_gid_map(TraceMode mode, bool printHeader = true);
         void print_dnvl_set(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);
@@ -147,12 +147,12 @@ class Variablization_Manager
         void update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
         void consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id);
         void remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
-        void update_o_id_to_g_id(uint64_t old_o_id, uint64_t new_o_id);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id);
+        void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, uint64_t pG_id = 0);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id);
 
         void cache_constraint(test equality_test, test relational_test);

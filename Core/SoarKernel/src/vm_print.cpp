@@ -136,8 +136,12 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
 
     for (iter = o_id_substitution_map->begin(); iter != o_id_substitution_map->end(); ++iter)
     {
-        dprint(mode, "   o%u(%y) = o%u(%y)\n",
-            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
+//        dprint(mode, "   o%u(%y) = o%u(%y)\n",
+//            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
+//            iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
+        dprint(mode, "   o%u(%y) = ",
+            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first));
+        dprint_noprefix(mode, "o%u(%y)\n",
             iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
     }
 
@@ -180,7 +184,7 @@ void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHea
 
     for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
     {
-        dprint(mode, "%u -> %u (%y)\n", it->first, it->second->o_id, it->second->o_var);
+        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second->o_id, it->second->o_var);
     }
 
 }
@@ -201,7 +205,7 @@ void Variablization_Manager::print_o_id_to_gid_map(TraceMode mode, bool printHea
 
     for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
     {
-        dprint(mode, "%u(%y) -> %u\n", it->first, thisAgent->variablizationManager->get_ovar_for_o_id(it->first), it->second);
+        dprint(mode, "o%u(%y) -> g%u\n", it->first, thisAgent->variablizationManager->get_ovar_for_o_id(it->first), it->second);
     }
 
 }
@@ -240,7 +244,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "%u: %t\n", it->first, static_cast<test>(c->first));
+            dprint(mode, "g%u: %t\n", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }
@@ -253,7 +257,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
     }
     for (std::map< uint64_t, test >::iterator it = literal_constraints->begin(); it != literal_constraints->end(); ++it)
     {
-        dprint(mode, "%u: %t\n", it->first, static_cast<test>(it->second));
+        dprint(mode, "g%u: %t\n", it->first, static_cast<test>(it->second));
     }
     dprint(mode, "------------------------------------\n");
 }

@@ -1014,6 +1014,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
+    thisAgent->variablizationManager->clear_oid_to_gid_map();
+
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, false,
                         &(thisAgent->newly_created_instantiations));
