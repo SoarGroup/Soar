@@ -6,16 +6,10 @@ learn --on
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 9 7 6
-         ^test-item2 9 7
-         ^test-param <tp> <tp2> <tp3>
-         ^test-param2 <tp3>
-         ^test-current 1
-         ^bar blue
-         ^test-id <ti>)
-    (<tp3> ^foo <tp> ^foo <tp2>)
+    (<s> ^test-item 9
+         ^test-param2 <tp3>)
+    (<tp3> ^foo <tp>)
     (<tp> ^value 9 8)
-    (<tp2> ^value <dummy1> <dummy2>)
     (write (crlf) |Starting chunking unit test.|)
 }
 
