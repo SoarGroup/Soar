@@ -103,15 +103,23 @@ void Variablization_Manager::add_unifications_to_test(test* t, WME_Field default
                         {
                             if (existing_gid != (*t)->identity->grounding_id)
                             {
-                                dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  Unification test needed.  Adding it.\n", sym, (*t)->identity->grounding_id, existing_gid);
+                                assert(existing_gid);
+                                assert((*t)->identity->grounding_id);
+//                                dprint(DT_UNIFICATION, "- o%u(%y=%y, g%u) already has g_id g%u.  Unification test needed.  Adding it.\n",
+//                                    (*t)->identity->original_var_id, (*t)->identity->original_var,
+//                                    sym, (*t)->identity->grounding_id, existing_gid);
+                                dprint(DT_UNIFICATION, "- o%u(%y=%y, ",
+                                    (*t)->identity->original_var_id, (*t)->identity->original_var, sym);
+                                dprint_noprefix(DT_UNIFICATION, "g%u) already has g_id g%u.  Unification test needed.  Adding it.\n",
+                                    (*t)->identity->grounding_id, existing_gid);
                                 add_unification_constraint(t, *t, existing_gid);
                             } else {
-//                                dprint(DT_UNIFICATION, "- %y(%i) already has g_id %i.  No unification test needed.\n", sym, (*t)->identity->grounding_id, existing_gid);
+//                                dprint(DT_UNIFICATION, "- o%u(%y) already has g_id %u.  No unification test needed.\n", (*t)->identity->grounding_id, sym, existing_gid);
                             }
                         } else {
 //                            thisAgent->variablizationManager->print_ovar_gid_propogation_table(DT_UNIFICATION);
 //                            thisAgent->variablizationManager->print_o_id_tables(DT_UNIFICATION);
-                            dprint(DT_UNIFICATION, "- %y o%u(%y, g%u)had no o_id to g_id mapping, so must be ungrounded.  No unification test needed.\n", sym, (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
+                            dprint(DT_UNIFICATION, "- %y o%u(%y, g%u) has no o_id to g_id mapping, so must be ungrounded.  No unification test needed.\n", sym, (*t)->identity->original_var_id, (*t)->identity->original_var, (*t)->identity->grounding_id);
                         }
                     } else {
 //                        dprint(DT_UNIFICATION, "- Not adding ovar to g_id mapping for %y. %s.\n", sym,

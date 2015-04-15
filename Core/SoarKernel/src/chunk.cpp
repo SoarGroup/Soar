@@ -413,7 +413,8 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                             condition** inst_top,
                             condition** vrblz_top,
                             tc_number tc_to_use,
-                            bool* reliable)
+                            bool* reliable,
+                            uint64_t pI_id)
 {
     cons* c;
     condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz, *copy_cond;
@@ -436,7 +437,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_inst = copy_condition(thisAgent, ground, true);
+        c_inst = copy_condition(thisAgent, ground, true, pI_id);
 
         /* -- Removed stripping of relational constraints b/c it was losing them in
          *    non-chunky problem spaces but was needed later for a chunky one. --  */
@@ -469,7 +470,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 print_string(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_inst = copy_condition(thisAgent, cc->cond, true);
+            c_inst = copy_condition(thisAgent, cc->cond, true, pI_id);
 
             add_cond(&c_inst, &prev_inst, &first_inst);
         }
@@ -1107,10 +1108,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     free_list(thisAgent, thisAgent->positive_potentials);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
+    chunk_new_i_id = thisAgent->variablizationManager->get_new_inst_id();
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
+        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
     }
 
     variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1186,7 +1188,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
-    chunk_new_i_id = thisAgent->variablizationManager->get_new_inst_id();
     thisAgent->variablizationManager->fix_conditions(vrblz_top, chunk_new_i_id, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);

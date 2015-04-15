@@ -54,7 +54,7 @@ inline void unify_variablization_identity(agent* thisAgent, test t)
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity)
+list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity, uint64_t pI_id)
 {
     cons* new_c;
 
@@ -63,8 +63,8 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
-    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pI_id);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity, pI_id);
     return new_c;
 }
 
@@ -72,7 +72,7 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, uint64_t pI_id)
 {
     Symbol* referent;
     test new_ct;
@@ -90,15 +90,23 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
             break;
         case DISJUNCTION_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
+            new_ct->identity->grounding_id = t->identity->grounding_id;
+            new_ct->identity->grounding_field = t->identity->grounding_field;
+            new_ct->identity->grounding_wme = t->identity->grounding_wme;
+            new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity);
+            new_ct->identity->grounding_id = t->identity->grounding_id;
+            new_ct->identity->grounding_field = t->identity->grounding_field;
+            new_ct->identity->grounding_wme = t->identity->grounding_wme;
+            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity, pI_id);
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
+            new_ct->identity->grounding_id = t->identity->grounding_id;
+            new_ct->identity->grounding_field = t->identity->grounding_field;
+            new_ct->identity->grounding_wme = t->identity->grounding_wme;
             new_ct->identity->original_var = t->identity->original_var;
             new_ct->identity->original_var_id = t->identity->original_var_id;
             if (new_ct->identity->original_var)
@@ -110,6 +118,19 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
                 if (new_ct->identity->original_var_id)
                 {
                     unify_variablization_identity(thisAgent, new_ct);
+                    /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
+                     * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
+                     * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
+                     * rules that do not currently match unlike chunks/justifications) */
+                    if (new_ct->identity->original_var_id && pI_id)
+                    {
+                        dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
+                        //                        old_o_id = new_ct->identity->original_var_id;
+                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), pI_id, new_ct->identity->grounding_id);
+                        dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
+                        thisAgent->variablizationManager->print_o_id_to_gid_map(DT_FIX_CONDITIONS);
+                        assert(new_ct->identity->original_var_id != t->identity->original_var_id);
+                    }
                 }
             }
 
@@ -117,17 +138,14 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
     }
     if (t->original_test)
     {
-        new_ct->original_test = copy_test(thisAgent, t->original_test, pUnify_variablization_identity);
+        /* -- MToDo | Probably no need to unify original test.  Check. -- */
+        new_ct->original_test = copy_test(thisAgent, t->original_test, pUnify_variablization_identity, pI_id);
     }
     /* Cached eq_test is used by the chunker to avoid repeatedly searching
      * through conjunctions for the main equality test.  Value set during
      * chunking, but we had it here at some point for debugging test
      * and in case we need it to be general in the future. */
 //    cache_eq_test(new_ct);
-    new_ct->identity->grounding_id = t->identity->grounding_id;
-    new_ct->identity->grounding_field = t->identity->grounding_field;
-    new_ct->identity->grounding_wme = t->identity->grounding_wme;
-
     if (new_ct->identity->grounding_wme)
     {
 //        wme_add_ref(new_ct->identity->grounding_wme);

@@ -314,19 +314,7 @@ void Variablization_Manager::consolidate_variables_in_test(test t, tc_number tc_
                 t->identity->original_var = found_test->identity->original_var;
                 t->identity->original_var_id = found_test->identity->original_var_id;
             }
-            /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
-             * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
-             * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
-             * rules that do not currently match unlike chunks/justifications) */
-            if (t->identity->original_var_id && pI_id)
-            {
-                dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u and i%u.\n", t->identity->original_var_id, pI_id);
-                old_o_id = t->identity->original_var_id;
-                update_o_id_for_new_instantiation(&(t->identity->original_var), &(t->identity->original_var_id), pI_id, t->identity->grounding_id);
-                dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", t, t);
-                print_o_id_to_gid_map(DT_FIX_CONDITIONS);
-                assert(old_o_id != t->identity->original_var_id);
-            }
+
             break;
     }
 }

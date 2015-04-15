@@ -142,7 +142,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false);
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, uint64_t pI_id = 0);
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 test copy_test_without_relationals(agent* thisAgent, test t);
 

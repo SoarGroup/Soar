@@ -84,6 +84,8 @@ class Variablization_Manager
         void add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         uint64_t get_o_id_substitution(uint64_t pO_id);
 
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, uint64_t pG_id = 0);
+
         void add_unifications(condition* cond, goal_stack_level level);
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -152,7 +154,6 @@ class Variablization_Manager
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, uint64_t pG_id = 0);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id);
 
         void cache_constraint(test equality_test, test relational_test);
