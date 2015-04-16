@@ -342,7 +342,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                    smem_calc_spread_trajectories(thisAgent);
+                    smem_calc_spread_trajectory(thisAgent);
                 }
             }
         }
