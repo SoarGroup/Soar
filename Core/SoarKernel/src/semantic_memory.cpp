@@ -1550,8 +1550,11 @@ inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time
         
         sum += (apx_numerator / apx_denominator);
     }
-    //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//This no longer reflects log-odds, but instead log-probability.
-    return ((sum > 0) ? (log(sum)) : (SMEM_ACT_LOW));
+    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+    {
+        return ((sum > 0) ? (log(sum)) : (SMEM_ACT_LOW));
+    }
+    return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//This no longer reflects log-odds, but instead log-probability.
 }
 
 // activates a new or existing long-term identifier
@@ -1817,7 +1820,15 @@ inline void smem_calc_spread(agent* thisAgent)
             ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
             raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
             //offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
-            additional = (2+log(raw_prob));//-log(offset));
+            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+            {
+                additional = (2+log(raw_prob));
+            }
+            else
+            {
+                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
+                additional = (log(raw_prob)-log(offset));
+            }
             spread-=additional;//Now, we've adjusted the activation according to this new addition.
 
             thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
