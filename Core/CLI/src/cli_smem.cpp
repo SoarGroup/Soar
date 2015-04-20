@@ -360,7 +360,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     }
                     else if (thisAgent->smem_params->spreading_type->get_value() == ppr_noloop)
                     {
-
+                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
                     }
                     else if (thisAgent->smem_params->spreading_type->get_value() == ppr)
                     {
