@@ -326,18 +326,18 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
-        if (m_print_original) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)/(%y %s^%y %y)",
-                (m_print_actual) ? ", " : NULL,
-                cond->data.tests.id_test,
-                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-                cond->data.tests.attr_test, cond->data.tests.value_test,
-                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->original_var_id),
-                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.attr_test->identity->original_var_id),
-                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.value_test->identity->original_var_id));
-            while (*ch) ch++;
-        }
+//        if (m_print_original) {
+//            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)/(%y %s^%y %y)",
+//                (m_print_actual) ? ", " : NULL,
+//                cond->data.tests.id_test,
+//                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+//                cond->data.tests.attr_test, cond->data.tests.value_test,
+//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->original_var_id),
+//                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.attr_test->identity->original_var_id),
+//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.value_test->identity->original_var_id));
+//            while (*ch) ch++;
+//        }
         if (m_print_identity) {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%g %s^%g %g)",
                 (m_print_actual || m_print_original) ? ", " : NULL,
@@ -528,18 +528,18 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
             (pref->o_supported) ? " :O " : NULL);
         while (*ch) ch++;
     }
-    if (m_print_original)
-    {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual) ? ", " : m_pre_string,
-            pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
-            preference_to_char(pref->type),
-            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
-            (pref->o_supported) ? " :O " : NULL);
-        while (*ch) ch++;
-    }
+//    if (m_print_original)
+//    {
+//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual) ? ", " : "",
+//            pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
+//            preference_to_char(pref->type),
+//            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+//            (pref->o_supported) ? " :O " : NULL);
+//        while (*ch) ch++;
+//    }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", (m_print_actual) ? ", " : m_pre_string,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", (m_print_actual) ? ", " : "",
             pref->g_ids.id, pref->o_ids.id, pref->g_ids.attr, pref->o_ids.attr, pref->g_ids.value, pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
