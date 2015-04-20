@@ -271,7 +271,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 //        dprint(mode, "       Variablization Tables\n");
 //        dprint(mode, "------------------------------------\n");
 //    }
-    if ((whichTable == 0) || (whichTable == 1))
+    if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
     {
         dprint(mode, "== Symbol -> v_info table ==\n");
 //        if (whichTable != 0)
@@ -285,7 +285,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
             dprint(mode, "%y -> %y/%y\n", it->first, it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }
-    if ((whichTable == 0) || (whichTable == 2))
+    if ((whichTable == 0) || (whichTable == 2) || (whichTable == 3))
     {
         dprint(mode, "== G_ID -> v_info table ==\n");
 //        if (whichTable != 0)
@@ -300,9 +300,9 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
                    it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }
-    if ((whichTable == 0) || (whichTable == 3))
+    if (whichTable == 0)
     {
-        dprint(mode, "---- Original Var -> G_ID Table ----\n");
+        dprint(mode, "---- O_ID -> G_ID Table ----\n");
         if (whichTable != 0)
         {
             dprint(mode, "------------------------------------\n");

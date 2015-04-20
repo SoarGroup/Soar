@@ -126,7 +126,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                     {
                         dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
                         //                        old_o_id = new_ct->identity->original_var_id;
-                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), pI_id, new_ct->identity->grounding_id);
+                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id);
                         dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
                         thisAgent->variablizationManager->print_o_id_to_gid_map(DT_FIX_CONDITIONS);
                         assert(new_ct->identity->original_var_id != t->identity->original_var_id);

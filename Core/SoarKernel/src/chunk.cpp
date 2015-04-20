@@ -1360,8 +1360,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation...\n");
+        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u...\n", chunk_new_i_id);
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
+        dprint(DT_FUNC_PRODUCTIONS, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
         return;
     }
 

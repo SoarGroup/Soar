@@ -208,7 +208,7 @@ void Variablization_Manager::add_updated_o_id_to_g_id_mapping(uint64_t old_o_id,
 
 }
 
-void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, uint64_t pG_id)
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult)
 {
     uint64_t new_o_id = 0;
     Symbol* new_ovar = NULL;
@@ -234,8 +234,6 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
             /* Ovar needs to be made unique.  This ovar has an existing o_id for new instantiation but no
              * update info entry for the o_id.  That means that the previously seen case of this ovar
              * had a different o_id. */
-            /* Get rid of the brackets and add something to make collision less likely with other
-             * variables in condition list */
             std::string lVarName((*pOvar)->var->name+1);
             lVarName.erase(lVarName.length()-1);
             lVarName.append("-other");
@@ -252,14 +250,28 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
             }
             (*pOvar) = new_ovar;
         } else {
-            /* First time this ovar has been encountered in the new instantiation.  So, create new
-             * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
-            new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
-            add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
+            if (pIsResult)
+            {
+                /* A RHS variable that was local to the substate, so it won't be variablized and doesn't need
+                 * these values.*/
+                if ((*pOvar))
+                {
+                    symbol_remove_ref(thisAgent, (*pOvar));
+                } else {
+                    /* MToDo|  Remove logic.  There should always be an oVar. */
+                    assert(false);
+                }
+                (*pG_id) = 0;
+            } else {
+                /* First time this ovar has been encountered in the new instantiation.  So, create new
+                 * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
+                new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
+                add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
+            }
         }
-        if (pG_id)
+        if ((*pG_id) && !pIsResult)
         {
-            add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, pG_id);
+            add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, (*pG_id));
         }
         (*pO_id) = new_o_id;
     }
@@ -413,21 +425,17 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id);
-            // Next line was disabled for a couple versions.  Forgot why, but seems like it should be there in case id element is an LTI
-            result->o_ids.id = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.id, pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &(result->g_ids.id), pI_id);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id);
-            result->o_ids.attr = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.attr, pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &(result->g_ids.attr), pI_id);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id);
-            result->o_ids.value = thisAgent->variablizationManager->get_or_create_o_id(result->original_symbols.value, pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &(result->g_ids.value), pI_id);
         }
     }
     fix_results(result->next_result, pI_id);
