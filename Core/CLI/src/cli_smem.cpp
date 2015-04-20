@@ -354,15 +354,15 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                    if (thisAgent->smem_params->spreading_type->get_value() == actr)
+                    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
                     {
                         smem_calc_spread_trajectory(thisAgent);
                     }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == ppr_noloop)
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
                     {
                         smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
                     }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == ppr)
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr)
                     {
                         smem_calc_spread_trajectories(thisAgent);
                     }

@@ -46,6 +46,7 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
+        enum spreading_types { ppr, ppr_noloop, actr };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
@@ -57,6 +58,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::boolean_param* learning;
         soar_module::boolean_param* spreading;//clearly, for spreading.
         soar_module::constant_param<db_choices>* database;
+        soar_module::constant_param<spreading_types>* spreading_type;
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
@@ -476,6 +478,7 @@ extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
 
 extern bool smem_calc_spread_trajectory(agent* thisAgent);
+extern bool smem_calc_spread_trajectories(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
