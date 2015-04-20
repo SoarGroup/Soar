@@ -1314,13 +1314,28 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
     smem_lti_id lti_id = trajectory.back();
     child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
 
+    //If we have the noloop option on, this set terminates the additions early to avoid loops.
+    std::set<smem_lti_id> added_ltis;
     //I should iterate through the tree stored in the map and recursively construct trajectories to add to the table in smem.
     if (depth==0)
     {
     //A depth of 0 indicates that we have ten elements in the trajectory list, so we have hit the depth limit and should add to the table.
+        bool valid_addition = true;
         for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
         {
-            thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *trajectory_iterator);
+            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop && valid_addition)
+            {
+                valid_addition = (added_ltis.find(*trajectory_iterator)==added_ltis.end());
+                added_ltis.insert(*trajectory_iterator);
+            }
+            if (valid_addition)
+            {
+                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *trajectory_iterator);
+            }
+            else
+            {
+                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
+            }
         }
         thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
         return;
@@ -1330,10 +1345,24 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
     {
     //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
         int i = 0;
-        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end(); trajectory_iterator++)
+        bool valid_addition;
+        for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end() && valid_addition; trajectory_iterator++)
         {
             i++;
-            thisAgent->smem_stmts->trajectory_add->bind_int(i, *trajectory_iterator);
+            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop
+                    && added_ltis.find(*trajectory_iterator)!=added_ltis.end())
+            {
+                valid_addition = false;
+                thisAgent->smem_stmts->trajectory_add->bind_int(i, 0);
+            }
+            else
+            {
+                thisAgent->smem_stmts->trajectory_add->bind_int(i, *trajectory_iterator);
+            }
+            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
+            {
+                added_ltis.insert(*trajectory_iterator);
+            }
         }
         for (int j = i+1; j < 12; j++)
         {
