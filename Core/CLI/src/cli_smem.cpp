@@ -55,6 +55,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
+        PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
         PrintCLIMessage("");
         
         return true;
@@ -336,13 +337,39 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 }
                 
             }
+            if (!strcmp(pAttr->c_str(), "spreading-type"))
+            {
+                //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
+                if (pVal)
+                {
+                    if ((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr"))
+                    {
+                        assert(false); //This shouldn't happen while I'm testing.
+                    }
+                }
+            }
             if (!strcmp(pAttr->c_str(), "spreading"))
             {
                 if (thisAgent->smem_params->spreading->get_value() == on)
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                    smem_calc_spread_trajectories(thisAgent);
+                    if (thisAgent->smem_params->spreading_type->get_value() == actr)
+                    {
+                        smem_calc_spread_trajectory(thisAgent);
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == ppr_noloop)
+                    {
+                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == ppr)
+                    {
+                        smem_calc_spread_trajectories(thisAgent);
+                    }
+                    else
+                    {
+                        assert(false);
+                    }
                 }
             }
         }
