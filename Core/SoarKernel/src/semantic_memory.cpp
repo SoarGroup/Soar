@@ -1231,7 +1231,7 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
 // Activation Functions (smem::act)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
+/*void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
@@ -1242,8 +1242,6 @@ void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,st
         //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
         if (parents_q->get_status() == soar_module::unprepared)
         {
-            //assert(false);//testing if I still need this.
-            // ^ assertion failed. - I do.
             parents_q->prepare();
         }
         parents_q->bind_int(1, lti_id);
@@ -1259,11 +1257,11 @@ void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,st
         {
             for(std::list<smem_lti_id>::iterator parent_iterator = parents.begin(); parent_iterator!=parents.end(); parent_iterator++)
             {
-                child_spread(thisAgent, *parent_iterator, lti_trajectories, depth-1);
+                parent_spread(thisAgent, *parent_iterator, lti_trajectories, depth-1);
             }
         }
     }
-}
+}*/
 
 //This is just to make the initial batch processing easier. It gets children of an lti up to some depth.
 //When used in intial construction, it just goes to a depth of 1 (immediate children), but one can use for
