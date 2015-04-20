@@ -82,6 +82,14 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
     add(spreading);
 
+    // spreading type
+    spreading_type = new soar_module::constant_param<db_choices>("spreading-type", ppr, new soar_module::f_predicate<spreading_types>());
+    spreading_type->add_mapping(ppr, "ppr");//personalized pagerank log(prob)
+    spreading_type->add_mapping(actr, "actr");//Using act-r's depth 1 log-odds.
+    spreading_type->add_mapping(ppr_noloop, "ppr-noloop");//Same as ppr, but with a restriction that trajectories don't loop.
+    //Need to code up and add the one with variable depth ACT-R...
+    add(spreading_type);
+
     // database
     database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
     database->add_mapping(memory, "memory");
