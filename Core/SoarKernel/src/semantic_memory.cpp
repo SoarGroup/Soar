@@ -1818,14 +1818,16 @@ inline void smem_calc_spread(agent* thisAgent)
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
 
             ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
-            raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
+            //raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
             //offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
             if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
             {
+                raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
                 additional = (2+log(raw_prob));
             }
             else
             {
+                raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)));
                 offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
                 additional = (log(raw_prob)-log(offset));
             }
