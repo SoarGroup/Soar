@@ -61,6 +61,7 @@ enum TraceMode
     DT_DNVL,
     DT_OVAR_PROP,
     DT_UNIFICATION,
+    DT_VM_MAPS,
     num_trace_modes
 };
 
