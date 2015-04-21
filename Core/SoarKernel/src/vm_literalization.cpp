@@ -40,7 +40,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
     if (!test_has_referent(*t)) return;
 
     t_symbol = (*t)->data.referent;
-    t_gid = (*t)->identity->grounding_id;
+    t_gid = (*t)->identity->original_var_id;
     dprint(DT_LITERALIZATION, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
     if (t_gid == 0)
     {

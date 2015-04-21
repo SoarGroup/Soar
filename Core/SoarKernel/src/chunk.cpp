@@ -507,7 +507,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
     dprint(DT_UNIFICATION, "Adding grounding unifications...\n");
     goal_stack_level gsl = get_match_goal(*inst_top);
-    thisAgent->variablizationManager->add_unifications(*inst_top, gsl);
+//    thisAgent->variablizationManager->add_unifications(*inst_top, gsl);
 
     copy_cond = *inst_top;
     while (copy_cond)
@@ -1064,7 +1064,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_backtrace_list(thisAgent);
     }
 
+    dprint_set_indents(DT_BACKTRACE, "          ");
     dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6", NULL, pref);
+    dprint_clear_indents(DT_BACKTRACE);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
@@ -1085,7 +1087,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Backtracing through results DONE.\n");
+    dprint_set_indents(DT_BACKTRACE, "          ");
     dprint(DT_BACKTRACE, "Grounds:\n%3", thisAgent->grounds);
+    dprint_clear_indents(DT_BACKTRACE);
 
     while (true)
     {
@@ -1098,7 +1102,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Tracing DONE.\n");
-    dprint(DT_BACKTRACE, "Grounds after tracing:\n%3", thisAgent->grounds);
+    dprint_set_indents(DT_BACKTRACE, "          ");
+    dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", thisAgent->grounds);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
 
@@ -1113,6 +1119,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
+        thisAgent->variablizationManager->propagate_constraint_identities(chunk_new_i_id);
     }
 
     variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
@@ -1172,7 +1179,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
+    dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     if (variablize)
     {
@@ -1182,7 +1191,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
+    dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
 
@@ -1197,8 +1208,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
 
-    dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions with relational constraints: \n");
+    dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
+    dprint_noprefix(DT_VARIABLIZATION_MANAGER, "%1", vrblz_top);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list...\n");
 
@@ -1207,17 +1220,18 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
+    dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint_noprefix(DT_CONSTRAINTS, "%1", inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
     dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created variablized rule: \n%4", vrblz_top, rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%4", vrblz_top, rhs);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered rule: \n%4", vrblz_top, rhs);
 
     if (!prod)
     {
@@ -1267,7 +1281,10 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
@@ -1284,7 +1301,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     /* MToDo | Remove the print_name parameter disabling here. */
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name || true);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "Add production to rete result: %s\n",
+    dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
            ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
             (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) ? "Refracted instantiation did not match!" :
             (rete_addition_result == REFRACTED_INST_MATCHED) ? "Refracted instantiation matched." :
@@ -1311,9 +1328,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         }
     }
 
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBefore, "chunk instantiation created final production: \n");
-    dprint_production(DT_PRINT_INSTANTIATIONS, (rete_addition_result != DUPLICATE_PRODUCTION) ? prod : NIL);
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintAfter, "");
+//    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "chunk instantiation after rete addition: \n");
+//    dprint_production(DT_VARIABLIZATION_MANAGER, (rete_addition_result != DUPLICATE_PRODUCTION) ? prod : NIL);
+//    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "");
 
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, vrblz_top);
@@ -1360,7 +1377,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u...\n", chunk_new_i_id);
+        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
         dprint(DT_FUNC_PRODUCTIONS, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
         return;
@@ -1374,7 +1391,7 @@ chunking_abort:
         chunk_instantiation_cleanup(thisAgent, prod_name);
         if (prod_name)
         {
-            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building chunk %y\n", prod_name);
+            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
             symbol_remove_ref(thisAgent, prod_name);
         }
     }

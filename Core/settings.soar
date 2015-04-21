@@ -17,7 +17,7 @@ alias cnf               chunk-name-format
 alias ea                excise --all
 alias ec                excise --chunks
 alias m                 matches
-alias pcf               print -cf
+alias pcf               print -cfi
 alias pf                production-find
 alias ps                print --stack
 alias quit              exit

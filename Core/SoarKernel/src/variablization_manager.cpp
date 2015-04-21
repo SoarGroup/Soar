@@ -112,7 +112,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         (*sym_to_var_map)[instantiated_sym] = new_variablization;
         (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
-        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
+        dprint(DT_VM_MAPS, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
                         instantiated_sym, variable);
     }
     else if (identity)
@@ -120,9 +120,9 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         /* -- A constant symbol is being variablized, so store variablization info
          *    indexed by the constant's grounding id. -- */
-        (*g_id_to_var_map)[identity->grounding_id] = new_variablization;
+        (*g_id_to_var_map)[identity->original_var_id] = new_variablization;
 
-        dprint_noprefix(DT_LHS_VARIABLIZATION, "Created g_id_to_var_map[%u] to new variablization.\n",
+        dprint(DT_VM_MAPS, "Created g_id_to_var_map[%u] to new variablization.\n",
                         identity->grounding_id);
     }
     else
@@ -144,6 +144,8 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
  *           in the production to determine whether it is a literal and should
  *           not be variablized.
  *
+ *           For RL rules, identity may be NULL
+ *
  * ========================================================================= */
 void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* identity)
 {
@@ -151,22 +153,17 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     Symbol* var;
     variablization* var_info;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing %y(g%u)...\n",
+    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(g%u)...",
            (*sym),
            (identity ? identity->grounding_id : 0));
 
     if (!((*sym)->is_sti()))
     {
-        /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that */
+        /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that.
+         *         Currently identity parameter can be null for RL tests, should probably just change
+         *         this function to take just a test parameter and require that it's an equality test.*/
         assert(identity);
-//        if (identity->grounding_id == NON_GENERALIZABLE)
-//        {
-//            /* -- This symbol has been marked as non-generalizable, for
-//             *    example because it is an LTI retrieved in a substate -- */
-//            dprint(DT_LHS_VARIABLIZATION, "...not variablizing because test marked as non-generalizable.\n");
-//            return;
-//        }
-        var_info = get_variablization(identity->grounding_id);
+        var_info = get_variablization(identity->original_var_id);
     }
     else
     {
@@ -179,6 +176,8 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
         symbol_remove_ref(thisAgent, (*sym));
         *sym = var_info->variablized_symbol;
         symbol_add_ref(thisAgent, var_info->variablized_symbol);
+        dprint(DT_LHS_VARIABLIZATION, "with found variablization info %y(%y, g%u)\n",
+               (*sym), var_info->instantiated_symbol, var_info->grounding_id);
         return;
     }
 
@@ -197,11 +196,12 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
 
     store_variablization((*sym), var, identity);
 
-    dprint(DT_LHS_VARIABLIZATION, "...created new variablization %y.\n", var);
-
     /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
     symbol_remove_ref(thisAgent, *sym);
     *sym = var;
+    dprint(DT_LHS_VARIABLIZATION, "with newly created variablization info %y(g%u)\n",
+           (*sym), (identity ? identity->grounding_id : 0));
+
 }
 /* ======================================================================================================
  *
@@ -218,12 +218,12 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     char prefix[2];
     Symbol* var;
     variablization* found_variablization = NULL;
-    uint64_t lG_id;
+//    uint64_t lG_id;
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y).\n",
-           rs->referent, rs->original_rhs_variable);
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u g%u).\n",
+           rs->referent, rs->original_rhs_variable, rs->o_id, rs->g_id);
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
 
@@ -234,34 +234,41 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     }
     else
     {
-        if (rs->original_rhs_variable)
+        if (rs->o_id)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", rs->original_rhs_variable);
-            lG_id = get_gid_for_o_id(rs->o_id);
-            if (lG_id != NON_GENERALIZABLE)
-            {
-                found_variablization = get_variablization(lG_id);
-            }
-            else
-            {
-                /* Normally this should not occur.  All ovars on rhs for constants should have
-                 * entries in table since we scanned original variables of starting conditions
-                 * of instantiation.
-                 *
-                 * But I think there is one exception.  If we have a preference that is added to
-                 * the result because it is a rhs identifier that previously was linked to the
-                 * resulting state.  The identifier will seem ungrounded because its original
-                 * variable came from another production.  It should be treated like an unbound
-                 * variable, so we'll fall through to code at end of function.
-                 * */
-                print_tables(DT_RHS_VARIABLIZATION);
-                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, rs->original_rhs_variable);
-            }
+//            lG_id = get_gid_for_o_id(rs->o_id);
+//            if (lG_id != NON_GENERALIZABLE)
+//            {
+////                found_variablization = get_variablization(lG_id);
+                found_variablization = get_variablization(rs->o_id);
+//            }
+//            else
+//            {
+//                /* Normally this should not occur.  All ovars on rhs for constants should have
+//                 * entries in table since we scanned original variables of starting conditions
+//                 * of instantiation.
+//                 *
+//                 * But I think there is one exception.  If we have a preference that is added to
+//                 * the result because it is a rhs identifier that previously was linked to the
+//                 * resulting state.  The identifier will seem ungrounded because its original
+//                 * variable came from another production.  It should be treated like an unbound
+//                 * variable, so we'll fall through to code at end of function.
+//                 * */
+//                print_tables(DT_RHS_VARIABLIZATION);
+//                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, rs->original_rhs_variable);
+//            }
         }
         else
         {
             dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
             rs->g_id = NON_GENERALIZABLE;
+            if (rs->original_rhs_variable)
+            {
+                dprint(DT_RHS_VARIABLIZATION, "...and removing original variable %y!\n", rs->original_rhs_variable);
+                symbol_remove_ref(thisAgent, rs->original_rhs_variable);
+                rs->original_rhs_variable = NULL;
+            }
             return;
         }
     }
@@ -280,7 +287,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
             rs->referent = found_variablization->variablized_symbol;
             symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
             /* MToDo | This is probably not necessary to set.  Should be set for cases that have g_id */
-            assert(rs->g_id ==found_variablization->grounding_id);
+//            assert(rs->g_id ==found_variablization->grounding_id);
             rs->g_id = found_variablization->grounding_id;
             return;
         } else {
@@ -446,7 +453,7 @@ void Variablization_Manager::variablize_equality_tests(test* t)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
             tt = reinterpret_cast<test*>(&(c->first));
-            if ((*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
+            if (((*tt)->type == EQUALITY_TEST) && (*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
             {
 //                variablize_equality_test(tt);
                 variablize_test(tt, (*tt)->identity->original_var);
@@ -764,6 +771,8 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
     {
         dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
+        dprint_clear_indents(DT_RHS_VARIABLIZATION);
+
         dprint(DT_IDENTITY_PROP, "Setting g_ids for action and variablizing results...\n");
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->attr);

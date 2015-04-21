@@ -35,7 +35,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
 
 ================================================================= */
 
-inline void unify_variablization_identity(agent* thisAgent, test t)
+void unify_variablization_identity(agent* thisAgent, test t)
 {
     uint64_t found_o_id = 0;
 

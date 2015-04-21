@@ -1,3 +1,5 @@
+# Tests variable name conflation that can occur during bottom-up chunking.
+
 srand 23
 learn --on
 learn --only

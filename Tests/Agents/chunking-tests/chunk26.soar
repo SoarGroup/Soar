@@ -66,5 +66,5 @@ sp {propose*stop
 }
 
 
-run
-ctf expected/chunk26b.soar print -rfi
+#run
+#ctf expected/chunk26b.soar print -rfi

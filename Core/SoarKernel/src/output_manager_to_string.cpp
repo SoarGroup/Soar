@@ -539,8 +539,8 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
 //    }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/o%u ^g%u/o%u g%u/o%u) %c %y%s", (m_print_actual) ? ", " : "",
-            pref->g_ids.id, pref->o_ids.id, pref->g_ids.attr, pref->o_ids.attr, pref->g_ids.value, pref->o_ids.value,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/%y/o%u ^g%u/%y/o%u g%u/%y/o%u) %c %y%s", (m_print_actual) ? ", " : "",
+            pref->g_ids.id, pref->original_symbols.id, pref->o_ids.id, pref->g_ids.attr, pref->original_symbols.attr, pref->o_ids.attr, pref->g_ids.value, pref->original_symbols.value, pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);

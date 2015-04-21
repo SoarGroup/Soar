@@ -216,18 +216,18 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
     }
     else
     {
-        std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(equality_test->identity->grounding_id);
+        std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(equality_test->identity->original_var_id);
         if (iter == constant_constraints->end())
         {
             push(thisAgent, (copied_test), new_list);
-            (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
+            (*constant_constraints)[equality_test->identity->original_var_id] = new_list;
             dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
         else
         {
-            new_list = (*constant_constraints)[equality_test->identity->grounding_id];
+            new_list = (*constant_constraints)[equality_test->identity->original_var_id];
             push(thisAgent, (copied_test), new_list);
-            (*constant_constraints)[equality_test->identity->grounding_id] = new_list;
+            (*constant_constraints)[equality_test->identity->original_var_id] = new_list;
             dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
         }
     }
@@ -240,10 +240,10 @@ void Variablization_Manager::cache_constraints_in_test(test t)
     if (t->type != CONJUNCTIVE_TEST)
     {
         assert(t->type == EQUALITY_TEST);
-        if (t->data.referent->is_constant() && !t->identity->original_var)
+        if (t->data.referent->is_constant() && !t->identity->original_var_id)
         {
-            dprint(DT_CONSTRAINTS, "...caching equality test into literal constraint list: g%u -> %y\n", t->identity->grounding_id, t->data.referent);
-            (*literal_constraints)[t->identity->grounding_id] = copy_test(thisAgent, t);
+            dprint(DT_CONSTRAINTS, "...caching equality test into literal constraint list: g%u -> %y\n", t->identity->original_var_id, t->data.referent);
+            (*literal_constraints)[t->identity->original_var_id] = copy_test(thisAgent, t);
 //            cache_constraint(t, t);
         }
         return;
@@ -266,10 +266,10 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         switch (ctest->type)
         {
             case EQUALITY_TEST:
-                if (ctest->data.referent->is_constant() && !ctest->identity->original_var)
+                if (ctest->data.referent->is_constant() && !ctest->identity->original_var_id)
                 {
                     dprint(DT_CONSTRAINTS, "...caching equality test from conjunctive test into literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
-                    (*literal_constraints)[ctest->identity->grounding_id] = copy_test(thisAgent, ctest);
+                    (*literal_constraints)[ctest->identity->original_var_id] = copy_test(thisAgent, ctest);
 //                    cache_constraint(equality_test, ctest);
                 }
                 break;
@@ -294,7 +294,7 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
     //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     /* MToDo| Re-enable attribute constraint caching here.  Disabled just to simplify debugging for now */
-//    cache_constraints_in_test(c->data.tests.attr_test);
+    cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
 
@@ -314,7 +314,7 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
     dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%u).\n", eq_symbol, eq_test->identity ? eq_test->identity->grounding_id : 0);
-    if (!eq_test->identity || (eq_test->identity->grounding_id == 0))
+    if (!eq_test->identity || (eq_test->identity->original_var_id == 0))
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");
         found_variablization = get_variablization(eq_symbol);
@@ -351,12 +351,12 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     else
     {
         dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
-        found_variablization = get_variablization(eq_test->identity->grounding_id);
+        found_variablization = get_variablization(eq_test->identity->original_var_id);
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %y.\n", found_variablization->variablized_symbol);
             print_cached_constraints(DT_CONSTRAINTS);
-            std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(eq_test->identity->grounding_id);
+            std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(eq_test->identity->original_var_id);
             if (iter != (*constant_constraints).end())
             {
                 dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %y...\n", eq_symbol);
@@ -414,4 +414,36 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
     dprint_header(DT_CONSTRAINTS, PrintAfter, "");
 }
 
+void Variablization_Manager::propagate_constraint_identities(uint64_t pI_id)
+{
+    std::map< uint64_t, ::list* >::iterator it;
+    test new_ct;
+    cons* c;
 
+    for (it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
+    {
+        c = it->second;
+        while (c)
+        {
+            new_ct = static_cast<test>(c->first);
+            dprint(DT_CONSTRAINTS, "...updating identity for constraint %t [%g]\n", new_ct, new_ct);
+            if (new_ct->identity->original_var_id)
+            {
+                unify_variablization_identity(thisAgent, new_ct);
+                /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
+                 * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
+                 * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
+                 * rules that do not currently match unlike chunks/justifications) */
+                if (new_ct->identity->original_var_id && pI_id)
+                {
+                    dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
+                    //                        old_o_id = new_ct->identity->original_var_id;
+                    thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id);
+                    dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
+                    thisAgent->variablizationManager->print_o_id_to_gid_map(DT_FIX_CONDITIONS);
+                }
+            }
+            c = c->rest;
+        }
+    }
+}

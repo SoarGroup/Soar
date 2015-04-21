@@ -164,13 +164,13 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_i
     std::map< uint64_t, o_id_update_info* >::iterator iter = (*o_id_update_map).find(old_o_id);
     if (iter != (*o_id_update_map).end())
     {
-        dprint(DT_VARIABLIZATION_MANAGER, "...found o%u(%y) in o_id_update_map for o%u\n",
+        dprint(DT_VM_MAPS, "...found o%u(%y) in o_id_update_map for o%u\n",
             iter->second->o_id, iter->second->o_var, old_o_id, get_ovar_for_o_id(old_o_id));
 
         return iter->second;
     } else {
-        dprint(DT_VARIABLIZATION_MANAGER, "...did not find o%u(%y) in o_id_update_map.\n", old_o_id, get_ovar_for_o_id(old_o_id));
-        print_o_id_update_map(DT_VARIABLIZATION_MANAGER);
+        dprint(DT_VM_MAPS, "...did not find o%u(%y) in o_id_update_map.\n", old_o_id, get_ovar_for_o_id(old_o_id));
+        print_o_id_update_map(DT_VM_MAPS);
     }
     return 0;
 }

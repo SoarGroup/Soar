@@ -80,6 +80,7 @@ class Variablization_Manager
 
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
+        void propagate_constraint_identities(uint64_t pI_id);
 
         void add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         uint64_t get_o_id_substitution(uint64_t pO_id);
