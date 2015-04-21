@@ -56,6 +56,8 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
+        PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
+        PrintCLIMessage_Item("restart-probability:", thisAgent->smem_params->restart_probability, 40);
         PrintCLIMessage("");
         
         return true;

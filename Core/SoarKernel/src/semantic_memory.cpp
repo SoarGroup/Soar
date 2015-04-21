@@ -182,6 +182,12 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // It's somewhat related to epsilon greedy.
     spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_baseline);
+
+    number_trajectories = new soar_module::integer_param("number-trajectories", 10, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(number_trajectories);
+
+    restart_probability = new soar_module::decimal_param("restart-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(restart_probability);
 }
 
 //
@@ -1239,13 +1245,14 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
 // Activation Functions (smem::act)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-/*void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
+void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories,int depth = 10)
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
         soar_module::sqlite_statement* parents_q = thisAgent->smem_stmts->web_val_parent;
 
         std::list<smem_lti_id> parents;
+
 
         //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
         if (parents_q->get_status() == soar_module::unprepared)
@@ -1269,7 +1276,7 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
             }
         }
     }
-}*/
+}
 
 //This is just to make the initial batch processing easier. It gets children of an lti up to some depth.
 //When used in intial construction, it just goes to a depth of 1 (immediate children), but one can use for
@@ -1392,7 +1399,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
 void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 1)
 {
     smem_lti_id lti_id = trajectory.back();
-    child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
+    parent_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
 
     //I should iterate through the tree stored in the map and recursively construct trajectories to add to the table in smem.
     if (depth==0)
@@ -1446,8 +1453,8 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
     {
         lti_id = lti_a->column_int(0);
         //Make the fingerprint for this lti.
-        //TODO - This isn't the only place, but I've HARD-CODED the depth, here.
-        for (int i = 0; i < 10; ++i)
+        //TODO - This isn't the only place, but I've HARD-CODED the number of trajectories here.
+        for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value(); ++i)
         {
             std::list<smem_lti_id> trajectory;
             trajectory.push_back(lti_id);

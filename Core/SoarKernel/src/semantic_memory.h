@@ -70,12 +70,14 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<opt_choices>* opt;
         
         soar_module::integer_param* thresh;
+        soar_module::integer_param* number_trajectories;
         
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
         soar_module::decimal_param* spreading_baseline;
+        soar_module::decimal_param* restart_probability;
         
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
