@@ -292,6 +292,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* vis_value_lti;
         
         //The ones below are for spreading
+        soar_module::sqlite_statement* web_val_parent;
         soar_module::sqlite_statement* web_val_child;
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;
