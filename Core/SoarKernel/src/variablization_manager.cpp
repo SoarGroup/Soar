@@ -280,7 +280,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
             rs->referent = found_variablization->variablized_symbol;
             symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
             /* MToDo | This is probably not necessary to set.  Should be set for cases that have g_id */
-            assert(rs->g_id ==found_variablization->grounding_id);
+//            assert(rs->g_id ==found_variablization->grounding_id);
             rs->g_id = found_variablization->grounding_id;
             return;
         } else {
