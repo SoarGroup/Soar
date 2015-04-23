@@ -216,31 +216,25 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
 
     if (!(*pO_id)) return;
 
+    dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation called for %y o%u ", (*pOvar), (*pO_id));
+    dprint_noprefix(DT_OVAR_MAPPINGS, "g%u i%u %s\n", (*pG_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
     o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
     if (new_o_id_info)
     {
         (*pO_id) = new_o_id_info->o_id;
         if ((*pOvar) != new_o_id_info->o_var)
         {
+            dprint(DT_OVAR_MAPPINGS, "...found existing variable update %y(o%u)\n", new_o_id_info->o_var, new_o_id_info->o_id);
             symbol_remove_ref(thisAgent, (*pOvar));
             (*pOvar) = new_o_id_info->o_var;
             symbol_add_ref(thisAgent, (*pOvar));
         }
-        return;
     } else {
-        new_o_id = get_existing_o_id((*pOvar), pNew_i_id);
-        if (new_o_id)
+        if (pIsResult)
         {
-            /* Ovar needs to be made unique.  This ovar has an existing o_id for new instantiation but no
-             * update info entry for the o_id.  That means that the previously seen case of this ovar
-             * had a different o_id. */
-            std::string lVarName((*pOvar)->var->name+1);
-            lVarName.erase(lVarName.length()-1);
-            lVarName.append("-other");
-            new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
-            dprint(DT_OVAR_MAPPINGS, "Generated new variable %y from %s.\n", new_ovar, lVarName.c_str());
-            new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
-            add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
+            /* A RHS variable that was local to the substate, so it won't be variablized and doesn't need
+             * these values.*/
+            dprint(DT_OVAR_MAPPINGS, "...did not find update info for result %y(o%u).  Must be ungrounded.\n", (*pOvar), (*pO_id));
             if ((*pOvar))
             {
                 symbol_remove_ref(thisAgent, (*pOvar));
@@ -248,12 +242,25 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
                 /* MToDo|  Remove logic.  There should always be an oVar. */
                 assert(false);
             }
-            (*pOvar) = new_ovar;
+            (*pG_id) = 0;
+            (*pOvar) = NULL;
+            (*pO_id) = 0;
         } else {
-            if (pIsResult)
+            new_o_id = get_existing_o_id((*pOvar), pNew_i_id);
+            if (new_o_id)
             {
-                /* A RHS variable that was local to the substate, so it won't be variablized and doesn't need
-                 * these values.*/
+                /* Ovar needs to be made unique.  This ovar has an existing o_id for new instantiation but no
+                 * update info entry for the o_id.  That means that the previously seen case of this ovar
+                 * had a different o_id. */
+                std::string lVarName((*pOvar)->var->name+1);
+                lVarName.erase(lVarName.length()-1);
+                lVarName.append("-other");
+                new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
+                //            dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation generated new variable %y from %s (%y ", new_ovar, lVarName.c_str(), ts);
+                //            dprint_noprefix(DT_OVAR_MAPPINGS, "o%u g%u i%u %s).\n", tu1, (*pG_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+                new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
+                dprint(DT_OVAR_MAPPINGS, "...var name already used.  Generated new identity %y(%u) from varname root %s.\n", new_ovar, new_o_id, lVarName.c_str());
+                add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
                 if ((*pOvar))
                 {
                     symbol_remove_ref(thisAgent, (*pOvar));
@@ -261,19 +268,20 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
                     /* MToDo|  Remove logic.  There should always be an oVar. */
                     assert(false);
                 }
-                (*pG_id) = 0;
+                (*pOvar) = new_ovar;
             } else {
                 /* First time this ovar has been encountered in the new instantiation.  So, create new
                  * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
                 new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
+                dprint(DT_OVAR_MAPPINGS, "...var name not used.  Generated new identity for instantiation i%u %y(o%u).\n", pNew_i_id, (*pOvar), (*pO_id));
                 add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
             }
+            if ((*pG_id))
+            {
+                add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, (*pG_id));
+            }
+            (*pO_id) = new_o_id;
         }
-        if ((*pG_id) && !pIsResult)
-        {
-            add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, (*pG_id));
-        }
-        (*pO_id) = new_o_id;
     }
 }
 
@@ -425,17 +433,17 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &(result->g_ids.id), pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &(result->g_ids.id), pI_id, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &(result->g_ids.attr), pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &(result->g_ids.attr), pI_id, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &(result->g_ids.value), pI_id);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &(result->g_ids.value), pI_id, true);
         }
     }
     fix_results(result->next_result, pI_id);

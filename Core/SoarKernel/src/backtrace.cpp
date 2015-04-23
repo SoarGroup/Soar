@@ -221,20 +221,20 @@ void backtrace_through_instantiation(agent* thisAgent,
     {
         if (!ovars_matched_syms.id->is_sti() && o_ids_to_replace.id && trace_cond->data.tests.id_test && trace_cond->data.tests.id_test->identity->original_var_id)
         {
-            dprint(DT_OVAR_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n",
-                ovars_to_replace.id, o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var, trace_cond->data.tests.id_test->identity->original_var_id);
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for identifier element: %y [o%u] ", ovars_to_replace.id, o_ids_to_replace.id);
+            dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", trace_cond->data.tests.id_test->identity->original_var, trace_cond->data.tests.id_test->identity->original_var_id);
             thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.id, trace_cond->data.tests.id_test->identity->original_var_id);
         }
         if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && trace_cond->data.tests.attr_test && trace_cond->data.tests.attr_test->identity->original_var_id)
         {
-            dprint(DT_OVAR_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n",
-                ovars_to_replace.attr, o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var, trace_cond->data.tests.attr_test->identity->original_var_id);
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for attribute element: %y [o%u] ", ovars_to_replace.attr, o_ids_to_replace.attr);
+            dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", trace_cond->data.tests.attr_test->identity->original_var, trace_cond->data.tests.attr_test->identity->original_var_id);
             thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.attr, trace_cond->data.tests.attr_test->identity->original_var_id);
         }
         if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && trace_cond->data.tests.value_test && trace_cond->data.tests.value_test->identity->original_var_id)
         {
-            dprint(DT_OVAR_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n",
-                ovars_to_replace.value, o_ids_to_replace.value, trace_cond->data.tests.value_test->identity->original_var, trace_cond->data.tests.value_test->identity->original_var_id);
+            dprint(DT_OVAR_PROP, "Found an o_id to replace for value element: %y [o%u] ", ovars_to_replace.value, o_ids_to_replace.value);
+            dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", trace_cond->data.tests.value_test->identity->original_var, trace_cond->data.tests.value_test->identity->original_var_id);
             thisAgent->variablizationManager->add_o_id_unification(o_ids_to_replace.value, trace_cond->data.tests.value_test->identity->original_var_id);
         }
     }

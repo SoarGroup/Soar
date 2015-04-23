@@ -1182,7 +1182,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
-
+    thisAgent->variablizationManager->print_o_id_update_map(DT_DEBUG, true);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
@@ -1204,13 +1204,18 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
     dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing Results =\n");
+    dprint_set_indents(DT_OVAR_PROP, "          ");
+    dprint_noprefix(DT_OVAR_PROP, "%6", vrblz_top, results);
+    dprint_clear_indents(DT_OVAR_PROP);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP);
+    reset_variable_generator(thisAgent, vrblz_top, NIL);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions with relational constraints: \n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n");
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
-    dprint_noprefix(DT_VARIABLIZATION_MANAGER, "%1", vrblz_top);
+    dprint_noprefix(DT_VARIABLIZATION_MANAGER, "%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list...\n");

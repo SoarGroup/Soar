@@ -153,7 +153,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     Symbol* var;
     variablization* var_info;
 
-    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(g%u)...",
+    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(g%u)...\n",
            (*sym),
            (identity ? identity->grounding_id : 0));
 
@@ -176,7 +176,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
         symbol_remove_ref(thisAgent, (*sym));
         *sym = var_info->variablized_symbol;
         symbol_add_ref(thisAgent, var_info->variablized_symbol);
-        dprint(DT_LHS_VARIABLIZATION, "with found variablization info %y(%y, g%u)\n",
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y, g%u)\n",
                (*sym), var_info->instantiated_symbol, var_info->grounding_id);
         return;
     }
@@ -199,7 +199,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
     symbol_remove_ref(thisAgent, *sym);
     *sym = var;
-    dprint(DT_LHS_VARIABLIZATION, "with newly created variablization info %y(g%u)\n",
+    dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info %y(g%u)\n",
            (*sym), (identity ? identity->grounding_id : 0));
 
 }
