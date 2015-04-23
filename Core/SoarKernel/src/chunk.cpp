@@ -997,6 +997,12 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
 
+    /* Normally, grounding ids are generated during instantiation creation, but when doing
+     * bottom-up chunking, chunk_instantiation creates the instantiation and then calls
+     * itself recursively, so we need to update the grounding id's for the new match level.
+     * We do it here instead of before the recursive call to save processing, by allowing
+     * us to avoid regeneration when there are no results and hence no chunk to be formed. We
+     * expect that to be the case for most bottom-up chunking calls. */
     if (update_grounding_ids)
     {
         dprint(DT_IDENTITY_PROP, "Re-propagating identity for potentially different match level.\n");
@@ -1187,8 +1193,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
-        thisAgent->variablizationManager->variablize_relational_constraints();
-        thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
+//        thisAgent->variablizationManager->variablize_relational_constraints();
+//        thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");

@@ -120,8 +120,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                     unify_variablization_identity(thisAgent, new_ct);
                     /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                      * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
-                     * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
-                     * rules that do not currently match unlike chunks/justifications) */
+                     * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
                     if (new_ct->identity->original_var_id && pI_id)
                     {
                         dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
