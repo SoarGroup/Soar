@@ -1348,7 +1348,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
         return;
     }
     //TODO: Define the probability constant elsewhere. It's HARD-CODED here.
-    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||SoarRand()>.9)
+    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||SoarRand()>thisAgent->smem_params->restart_probability->get_value())
     {
     //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
         int i = 0;
