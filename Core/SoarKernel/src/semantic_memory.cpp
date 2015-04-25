@@ -1352,7 +1352,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
     {
     //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
         int i = 0;
-        bool valid_addition;
+        bool valid_addition = true;
         for (std::list<smem_lti_id>::iterator trajectory_iterator = trajectory.begin(); trajectory_iterator != trajectory.end() && valid_addition; trajectory_iterator++)
         {
             i++;
