@@ -19,7 +19,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 {
     thisAgent = myAgent;
     sym_to_var_map = new std::map< Symbol*, variablization* >();
-    g_id_to_var_map = new std::map< uint64_t, variablization* >();
+    o_id_to_var_map = new std::map< uint64_t, variablization* >();
     o_id_to_g_id_map = new std::map< uint64_t, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
@@ -45,7 +45,7 @@ Variablization_Manager::~Variablization_Manager()
 {
     clear_data();
     delete sym_to_var_map;
-    delete g_id_to_var_map;
+    delete o_id_to_var_map;
     delete o_id_to_g_id_map;
     delete sti_constraints;
     delete constant_constraints;
@@ -120,7 +120,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         /* -- A constant symbol is being variablized, so store variablization info
          *    indexed by the constant's grounding id. -- */
-        (*g_id_to_var_map)[identity->original_var_id] = new_variablization;
+        (*o_id_to_var_map)[identity->original_var_id] = new_variablization;
 
         dprint(DT_VM_MAPS, "Created g_id_to_var_map[%u] to new variablization.\n",
                         identity->grounding_id);

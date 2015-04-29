@@ -65,7 +65,7 @@ void Variablization_Manager::clear_variablization_maps()
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
     /* -- Clear grounding_id->variablization map -- */
-    for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
+    for (std::map< uint64_t, variablization* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y(%u)/%y(%u)\n",
                it->first,
@@ -75,7 +75,7 @@ void Variablization_Manager::clear_variablization_maps()
         symbol_remove_ref(thisAgent, it->second->variablized_symbol);
         delete it->second;
     }
-    g_id_to_var_map->clear();
+    o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
 }
 
@@ -86,8 +86,8 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
         return NULL;
     }
 
-    std::map< uint64_t, variablization* >::iterator iter = (*g_id_to_var_map).find(index_id);
-    if (iter != (*g_id_to_var_map).end())
+    std::map< uint64_t, variablization* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    if (iter != (*o_id_to_var_map).end())
     {
         dprint(DT_VM_MAPS, "...found %u in g_id variablization table: %y/%y\n", index_id,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);

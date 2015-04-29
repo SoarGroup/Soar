@@ -180,7 +180,7 @@ class Variablization_Manager
 
         /* -- Look-up tables for LHS variablization -- */
         std::map< uint64_t, uint64_t >*          o_id_to_g_id_map;
-        std::map< uint64_t, variablization* >*   g_id_to_var_map;
+        std::map< uint64_t, variablization* >*   o_id_to_var_map;
         std::map< Symbol*, variablization* >*    sym_to_var_map;
 
         /* -- Cache of constraint tests collected during backtracing -- */

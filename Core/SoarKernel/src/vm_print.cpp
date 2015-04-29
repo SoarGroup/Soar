@@ -290,11 +290,11 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         dprint(mode, "== G_ID -> v_info table ==\n");
 //        if (whichTable != 0)
 //            dprint(mode, "------------------------------------\n");
-        if (g_id_to_var_map->size() == 0)
+        if (o_id_to_var_map->size() == 0)
         {
             dprint(mode, "EMPTY MAP\n");
         }
-        for (std::map< uint64_t, variablization* >::iterator it = (*g_id_to_var_map).begin(); it != (*g_id_to_var_map).end(); ++it)
+        for (std::map< uint64_t, variablization* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
         {
             dprint(mode, "%u -> %y/%y\n", it->first,
                    it->second->variablized_symbol, it->second->instantiated_symbol);
