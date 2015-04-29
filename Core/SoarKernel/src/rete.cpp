@@ -4598,33 +4598,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                             pI_id,
                             additional_tests);
 
-    if (additional_tests != DONT_ADD_TESTS)
-    {
-        /* -- Now that conditions are created, we must propagate identity information
-         *    constants from their wme's to their tests. Match level is needed to
-         *    access proper identity information, since an identity ID is specific
-         *    to a particular substate level. We also pass in whether the condition
-         *    list has any negative or negative conjunctive conditions.  If there are
-         *    none, the identity propagation function does not need to propagate
-         *    identities to the wme-less negative conjunctions and hence does not
-         *    need to maintain a mapping of original variables to grounding id's.-- */
 
-        lowest_level_so_far = -1;
-        for (cond = (*dest_top_cond); cond != NIL; cond = cond->next)
-            if (cond->type == POSITIVE_CONDITION)
-            {
-                if (cond->bt.wme_->id->id->isa_goal)
-                    if (cond->bt.wme_->id->id->level > lowest_level_so_far)
-                    {
-                        lowest_level_so_far = cond->bt.wme_->id->id->level;
-                    }
-            }
-
-        match_level = ((lowest_level_so_far != -1) ? lowest_level_so_far : ATTRIBUTE_IMPASSE_LEVEL);
-//        dprint(DT_IDENTITY_PROP, "Match level is %d.\n", match_level);
-
-        propagate_identity(thisAgent, (*dest_top_cond), match_level);
-    }
     if (dest_rhs)
     {
 //        dprint(DT_RHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
