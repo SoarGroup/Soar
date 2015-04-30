@@ -67,6 +67,8 @@ class Variablization_Manager
         void clear_cached_constraints();
         void clear_dnvl();
         void clear_ovar_to_o_id_map();
+        void clear_merge_map();
+        void clear_o_id_to_ovar_debug_map();
         void clear_o_id_substitution_map();
         void clear_data();
         void reinit();
@@ -90,7 +92,6 @@ class Variablization_Manager
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
-        void consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id);
         void merge_conditions(condition* top_cond);
 
         void add_ltis_to_dnvl_for_conditions(condition* top_cond);
@@ -110,7 +111,6 @@ class Variablization_Manager
         void print_o_id_tables(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
-        void print_substitution_map(TraceMode mode);
         void print_o_id_to_gid_map(TraceMode mode, bool printHeader = true);
         void print_dnvl_set(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
@@ -142,11 +142,8 @@ class Variablization_Manager
         bool variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
-        test get_substitution(Symbol* sym);
-        void set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
         void update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
-        void consolidate_variables_in_test(test t, tc_number tc_num, uint64_t pI_id);
-        void remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
+        void remove_ungrounded_sti_tests(test* t, bool ignore_ungroundeds);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
@@ -171,10 +168,6 @@ class Variablization_Manager
         bool is_in_dnvl(Symbol* sym);
         void add_ltis_to_dnvl_for_test(test t);
 
-        void clear_merge_map();
-        void clear_substitution_map();
-        void clear_o_id_to_ovar_debug_map();
-
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
@@ -192,7 +185,6 @@ class Variablization_Manager
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >* cond_merge_map;
-        std::map< Symbol*, test >* substitution_map;
 
         std::set< Symbol* >* dnvl_set;
         std::set< uint64_t >* literalizations;

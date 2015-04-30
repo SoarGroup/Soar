@@ -26,7 +26,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     literal_constraints = new std::map< uint64_t , test >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
-    substitution_map = new std::map< Symbol*, test >();
 
     dnvl_set = new std::set< Symbol* >;
 
@@ -52,7 +51,6 @@ Variablization_Manager::~Variablization_Manager()
     delete constant_constraints;
     delete literal_constraints;
     delete cond_merge_map;
-    delete substitution_map;
     delete dnvl_set;
     delete ovar_to_o_id_map;
     delete o_id_substitution_map;

@@ -41,26 +41,6 @@ void Variablization_Manager::print_dnvl_set(TraceMode mode)
 
     dprint(mode, "------------------------------------\n");
 }
-void Variablization_Manager::print_substitution_map(TraceMode mode)
-{
-    dprint(mode, "------------------------------------\n");
-    dprint(mode, "          Substitution Map\n");
-    dprint(mode, "------------------------------------\n");
-
-    if (substitution_map->size() == 0)
-    {
-        dprint(mode, "EMPTY MAP\n");
-    }
-
-    std::map< Symbol*, test>::iterator iter;
-
-    for (iter = substitution_map->begin(); iter != substitution_map->end(); ++iter)
-    {
-        dprint(mode, "%y -> %t\n", iter->first, iter->second);
-    }
-
-    dprint(mode, "------------------------------------\n");
-}
 
 
 void Variablization_Manager::print_merge_map(TraceMode mode)

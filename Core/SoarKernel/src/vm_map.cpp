@@ -21,7 +21,6 @@ void Variablization_Manager::clear_data()
     clear_oid_to_gid_map();
     clear_variablization_maps();
     clear_merge_map();
-    clear_substitution_map();
     clear_dnvl();
     clear_ovar_to_o_id_map();
     clear_o_id_substitution_map();

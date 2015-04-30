@@ -21,7 +21,7 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
     }
 
     Symbol* t_symbol;
-    uint64_t t_gid;
+    uint64_t lO_id;
 
     variablization *found_variablization;
 
@@ -40,9 +40,9 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
     if (!test_has_referent(*t)) return;
 
     t_symbol = (*t)->data.referent;
-    t_gid = (*t)->identity->original_var_id;
+    lO_id = (*t)->identity->original_var_id;
     dprint(DT_LITERALIZATION, "Installing literal constraints for test %y in test %t.\n", t_symbol, *t);
-    if (t_gid == 0)
+    if (lO_id == 0)
     {
         dprint(DT_LITERALIZATION, "...no identity, so must be STI or literal relational test.  Skipping.\n");
     }
@@ -55,10 +55,10 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
 //        if (found_variablization)
 //        {
 //            dprint(DT_LITERALIZATION, "...grounding id %u was variablized, looking for literal constraint...\n", t_gid);
-            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(t_gid);
+            std::map< uint64_t, test >::iterator iter = (*literal_constraints).find(lO_id);
             if (iter != (*literal_constraints).end())
             {
-                dprint(DT_LITERALIZATION, "...literal constraint found for g%u: %t. Replacing with literal...\n", t_gid, iter->second);
+                dprint(DT_LITERALIZATION, "...literal constraint found for g%u: %t. Replacing with literal...\n", lO_id, iter->second);
                 deallocate_test(thisAgent, *t);
                 test temp = iter->second;
                 *t = copy_test(thisAgent, iter->second);
@@ -74,10 +74,10 @@ void Variablization_Manager::install_literal_constraints_for_test(test* t)
 //                    deallocate_test(thisAgent, (*t)->original_test);
 //                    (*t)->original_test = copy_test(thisAgent, *t);
 //                }
-                found_variablization = get_variablization(t_gid);
+                found_variablization = get_variablization(lO_id);
                 if (found_variablization)
                 {
-                    dprint(DT_LITERALIZATION, "...grounding id %u was variablized, marking as literal constraint for RHS...\n", t_gid);
+                    dprint(DT_LITERALIZATION, "...grounding id %u was variablized, marking as literal constraint for RHS...\n", lO_id);
                     found_variablization->variablized_symbol->tc_num = tc_num_literalized;
                 }
                 dprint(DT_LITERALIZATION, "...final test: %t\n", *t);
