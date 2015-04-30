@@ -37,6 +37,7 @@
 #define WMEM_H
 
 #include "enums.h"
+#include "soar_module.h"
 
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
@@ -51,7 +52,7 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 
 extern void reset_wme_timetags(agent* thisAgent);
-extern wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable, goal_stack_level mlevel=0, uint64_t gid_id=0, uint64_t gid_attr=0, uint64_t gid_value=0);
+extern wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
 extern void add_wme_to_wm(agent* thisAgent, wme* w);
 extern void remove_wme_from_wm(agent* thisAgent, wme* w);
 extern void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap = false);
@@ -122,31 +123,6 @@ extern Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
    We deallocate a wme when its reference count goes to 0.
 ------------------------------------------------------------------------ */
 
-
-/* This struct holds a set of unique grounding id's for a wme. This is
- * used during chunking to determine when two constants have the same semantic
- * grounding.  Note that different substates will have different sets of grounding
- * ids for the same wme.  That's why this we have the next field to maintain a list
- * of grounding IDs.  This is to insure that we don't enforce equalities between
- * variablized constants that happen to be identical or were even copied around in
- * higher level states if the problem-solving in the substate did not require them
- * to be equal */
-
-typedef struct grounding_struct
-{
-    uint64_t grounding_id[3];
-    goal_stack_level level;
-    grounding_struct* next;
-
-    grounding_struct(goal_stack_level new_level, grounding_struct* new_next)
-        : level(new_level), next(new_next)
-    {
-        grounding_id[ID_ELEMENT] = 0;
-        grounding_id[ATTR_ELEMENT] = 0;
-        grounding_id[VALUE_ELEMENT] = 0;
-    }
-} grounding_info;
-
 typedef struct wme_struct
 {
     /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
@@ -168,8 +144,7 @@ typedef struct wme_struct
     struct preference_struct* chunker_bt_pref;
     struct condition_struct* chunker_bt_last_ground_cond;
 
-
-    grounding_info* ground_id_list;           /* used for chunking (see struct above) */
+    soar_module::identity_triple g_ids;           /* used for chunking (see struct above) */
 
     struct gds_struct* gds;
     struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */

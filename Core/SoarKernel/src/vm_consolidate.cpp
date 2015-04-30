@@ -53,7 +53,6 @@ void Variablization_Manager::set_substitution(test sacrificeSymTest, test surviv
                     sacrificeSymTest->data.referent, sacrificeSymTest->identity->grounding_id,
                     survivorSymTest->data.referent, survivorSymTest->identity->grounding_id,
                     tc_num);
-
     /* -- If we're already supposed to substitute the survivor sym for another, we need to
           scan ovar->g_id list looking for g_ids that match previous survivor and redirect
           to new survivor -- */

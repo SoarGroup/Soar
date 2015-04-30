@@ -36,14 +36,10 @@ char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t
     bool lFoundIdentity;
     if (pOnlyWithIdentity)
     {
-        grounding_info* g = w->ground_id_list;
         lFoundIdentity = false;
-        for (; g && !lFoundIdentity; g = g->next)
+        if ((w->g_ids.id > 0) || (w->g_ids.attr > 0) || (w->g_ids.value > 0))
         {
-            if ((g->grounding_id[0] > 0) || (g->grounding_id[1] > 0) || (g->grounding_id[2] > 0))
-            {
-                lFoundIdentity = true;
-            }
+            lFoundIdentity = true;
         }
     }
     if (!pOnlyWithIdentity || (pOnlyWithIdentity && lFoundIdentity))
@@ -52,18 +48,8 @@ char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t
             w->timetag, w->id, w->attr, w->value,
             (w->acceptable ? " +) [" : ") ["));
         while (*ch) ch++;
-
-        grounding_info* g = w->ground_id_list;
-        for (; g; g = g->next)
-        {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "l%d: g%u g%u g%u", g->level, g->grounding_id[0], g->grounding_id[1], g->grounding_id[2]);
-            while (*ch) ch++;
-            if (g->next)
-            {
-                strcpy(ch, ", ");
-                ch += 2;
-            }
-        }
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u g%u g%u", w->g_ids.id, w->g_ids.attr, w->g_ids.value);
+        while (*ch) ch++;
         *(ch++) = ']';
         *ch = 0;
     }

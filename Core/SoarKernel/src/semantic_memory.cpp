@@ -793,7 +793,7 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
 //        thisAgent->variablizationManager->add_ltis_to_dnvl_for_conditions(inst->top_of_instantiated_conditions);
         thisAgent->variablizationManager->add_ltis_to_dnvl_for_prefs(inst->preferences_generated);
 
-        chunk_instantiation(thisAgent, inst, false, &my_justification_list, true);
+        chunk_instantiation(thisAgent, inst, false, &my_justification_list);
 
         thisAgent->variablizationManager->clear_dnvl();
 

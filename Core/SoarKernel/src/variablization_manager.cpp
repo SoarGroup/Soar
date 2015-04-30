@@ -30,6 +30,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     dnvl_set = new std::set< Symbol* >;
 
+    literalizations = new std::set< uint64_t >;
     ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
     o_id_substitution_map = new std::map< uint64_t, uint64_t >();
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();

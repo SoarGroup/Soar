@@ -87,7 +87,6 @@ class Variablization_Manager
 
         void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult = false);
 
-        void add_unifications(condition* cond, goal_stack_level level);
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
         void consolidate_variables(condition* top_cond, tc_number tc_num, uint64_t pI_id);
@@ -142,9 +141,6 @@ class Variablization_Manager
         bool variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
-        void add_unification_constraint(test* t, test t_add, uint64_t gid);
-        void add_unifications_to_test(test* t, WME_Field default_f, goal_stack_level level);
-
         test get_substitution(Symbol* sym);
         void set_substitution(test sacrificeSymTest, test survivorSymTest, tc_number tc_num);
         void update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
@@ -194,6 +190,7 @@ class Variablization_Manager
         std::map< Symbol*, test >* substitution_map;
 
         std::set< Symbol* >* dnvl_set;
+        std::set< uint64_t >* literalizations;
 
         /* This is a map of original variable symbols to its map of instantiations to o_ids */
         std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;

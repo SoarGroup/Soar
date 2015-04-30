@@ -37,6 +37,9 @@
 #ifndef PREFMEM_H
 #define PREFMEM_H
 
+#include "kernel.h"
+#include "wma.h"
+
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;

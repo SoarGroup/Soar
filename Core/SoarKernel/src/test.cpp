@@ -1182,99 +1182,48 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
 /* --------------------------------------------------------------------------
                  Get grounding IDs for a WME
  --------------------------------------------------------------------------*/
-inline uint64_t get_gid_from_pref_for_field(preference* p, WME_Field f)
+inline uint64_t get_gid_from_field(const soar_module::identity_triple gt, WME_Field f)
 {
-    switch (f)
-    {
-        case ID_ELEMENT:
-            return p->g_ids.id;
-            break;
-        case ATTR_ELEMENT:
-            return p->g_ids.attr;
-            break;
-        case VALUE_ELEMENT:
-            return p->g_ids.value;
-            break;
-        default:
-            assert(false);
-            break;
-    }
+    if (f == VALUE_ELEMENT)
+        return gt.value;
+    else if (f == ATTR_ELEMENT)
+        return gt.attr;
+    else if (f == ID_ELEMENT)
+        return gt.id;
+
+    assert(false);
     return 0;
 }
 
-inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f, goal_stack_level pLevel)
+inline uint64_t get_ground_id(agent* thisAgent, wme* w, WME_Field f)
 {
-    if (!w || (pLevel == TOP_GOAL_LEVEL))
+    if (!w)
     {
+        assert(false);
         return NON_GENERALIZABLE;
     }
 
-    dprint(DT_IDENTITY_PROP, "- g_id requested for %s of %w at level %d...\n", field_to_string(f), w, pLevel);
+    dprint(DT_IDENTITY_PROP, "- g_id requested for %s of %w...\n", field_to_string(f), w);
 
-    grounding_info* g = w->ground_id_list;
-//    if (!g)
-//    {
-//        dprint(DT_IDENTITY_PROP, "- no grounding struct at level %d.\n", pLevel);
-//    }
-    /* -- See if we already have ground IDs for this goal level -- */
-    bool create_grounding_info = true;
-    for (; g; g = g->next)
-    {
-        if (g->level == pLevel)
-        {
-//            dprint(DT_IDENTITY_PROP, "- found grounding struct for level %i: (%u ^%u %u)\n", pLevel, g->grounding_id[ID_ELEMENT], g->grounding_id[ATTR_ELEMENT], g->grounding_id[VALUE_ELEMENT]);
-            if (g->grounding_id[f] == 0)
-            {
-//                dprint(DT_IDENTITY_PROP, "-- will attempt to retrieve via propagation or create a new g_id for %s element.\n", field_to_string(f));
-                create_grounding_info = false;
-                break;
-            }
-            else
-            {
-                dprint(DT_IDENTITY_PROP, "-- returning g_id %u\n", g->grounding_id[f]);
-                return g->grounding_id[f];
-            }
-        }
-    }
+    uint64_t found_g_id = get_gid_from_field(w->g_ids, f);
 
-    /* -- Create new grounding info with unique IDs for this goal level and
-     *    add to head of ground_id_list -- */
-    if (create_grounding_info)
+    if (found_g_id == 0)
     {
-        g = new grounding_info(pLevel, w->ground_id_list);
-        w->ground_id_list = g;
-    }
-    /* -- When a grounding ID is requested for a WME at the same level as the match level,
-     *    we first check if there is a propagated value from the instantiation that created
-     *    that wme.  If so, we use that value. -- */
-    if (w->preference && (w->id->id->level == pLevel))
-    {
-        /* MToDo | We can probably eliminate generating id's for level 1 to level 1 matches here */
-        g->grounding_id[f] = get_gid_from_pref_for_field(w->preference, f);
-        dprint(DT_IDENTITY_PROP, "- g_id is %u in wme preference at the same level...", g->grounding_id[f]);
-    }
-    else
-    {
-        if (!w->preference)
-        {
-            dprint(DT_IDENTITY_PROP, "- not propagating.  No preference found for wme...");
-        }
-        else
-        {
-//            dprint(DT_IDENTITY_PROP, "- not propagating.  WME at higher level %d...", w->id->id->level);
-        }
-    }
-    if (g->grounding_id[f] == 0)
-    {
-        g->grounding_id[f] = thisAgent->variablizationManager->get_new_ground_id();
+        found_g_id = thisAgent->variablizationManager->get_new_ground_id();
         dprint_noprefix(DT_IDENTITY_PROP, "generating new g_id ");
+        if (f == VALUE_ELEMENT)
+            w->g_ids.value = found_g_id;
+        else if (f == ATTR_ELEMENT)
+            w->g_ids.attr = found_g_id;
+        else if (f == ID_ELEMENT)
+            w->g_ids.id = found_g_id;
     }
     else
     {
         dprint_noprefix(DT_IDENTITY_PROP, "returning existing g_id ");
     }
-    dprint_noprefix(DT_IDENTITY_PROP, "%u\n", g->grounding_id[f]);
-    return g->grounding_id[f];
+    dprint_noprefix(DT_IDENTITY_PROP, "%u\n", found_g_id);
+    return found_g_id;
 }
 
 inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_up)
@@ -1289,8 +1238,7 @@ inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_u
 
 inline void add_identity_to_test(agent* thisAgent,
                                  test* t,
-                                 WME_Field default_f,
-                                 goal_stack_level level)
+                                 WME_Field default_f)
 {
     cons* c;
 
@@ -1308,7 +1256,7 @@ inline void add_identity_to_test(agent* thisAgent,
             for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
             {
                 test ct = static_cast<test>(c->first);
-                add_identity_to_test(thisAgent, &ct, default_f, level);
+                add_identity_to_test(thisAgent, &ct, default_f);
             }
             break;
 
@@ -1327,7 +1275,7 @@ inline void add_identity_to_test(agent* thisAgent,
             {
                 if (!sym->is_sti())
                 {
-                    (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field, level);
+                    (*t)->identity->grounding_id = get_ground_id(thisAgent, (*t)->identity->grounding_wme, (*t)->identity->grounding_field);
                     dprint(DT_IDENTITY_PROP, "- Setting g_id for %y to %i.\n", sym, (*t)->identity->grounding_id);
                     if ((*t)->identity->original_var_id)
                     {
@@ -1417,7 +1365,6 @@ inline void add_identity_to_negative_test(agent* thisAgent,
 
 void propagate_identity(agent* thisAgent,
                         condition* cond,
-                        goal_stack_level level,
                         bool use_negation_lookup)
 {
     condition* c;
@@ -1445,9 +1392,9 @@ void propagate_identity(agent* thisAgent,
                 /* -- The last parameter determines whether to cache g_ids for NCCs.  We
                  *    only need to do this when negative conditions exist (has_negative_conds == true)
                  *    and this isn't a recursive call on an NCC list (use_negation_lookup = true) -- */
-                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT, level);
-                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT, level);
-                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT, level);
+                add_identity_to_test(thisAgent, &(c->data.tests.id_test), ID_ELEMENT);
+                add_identity_to_test(thisAgent, &(c->data.tests.attr_test), ATTR_ELEMENT);
+                add_identity_to_test(thisAgent, &(c->data.tests.value_test), VALUE_ELEMENT);
             }
             dprint_set_indents(DT_IDENTITY_PROP, "          ");
             dprint(DT_IDENTITY_PROP, "Condition is now: %l\n", c);
@@ -1468,7 +1415,7 @@ void propagate_identity(agent* thisAgent,
             {
                 dprint(DT_IDENTITY_PROP, "Propagating identity for NCC.  Calling propagate_identity recursively.\n%c\n", c);
 
-                propagate_identity(thisAgent, c->data.ncc.top, level, true);
+                propagate_identity(thisAgent, c->data.ncc.top, true);
             }
             else if (c->type == NEGATIVE_CONDITION)
             {

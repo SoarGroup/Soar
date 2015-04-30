@@ -50,8 +50,7 @@ extern void init_chunker(agent* thisAgent);
 extern void chunk_instantiation(agent* thisAgent,
                                 instantiation* inst,
                                 bool variablize,
-                                instantiation** custom_inst_list,
-                                bool update_grounding_ids = false);
+                                instantiation** custom_inst_list);
 extern chunk_cond* make_chunk_cond_for_negated_condition(agent* thisAgent, condition* cond);
 extern bool add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* new_cc);
 

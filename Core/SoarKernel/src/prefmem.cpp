@@ -10,6 +10,8 @@
    ====================================================================== */
 
 #include <stdlib.h>
+#include "prefmem.h"
+
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
@@ -19,9 +21,7 @@
 #include "recmem.h"
 #include "tempmem.h"
 #include "decide.h"
-#include "prefmem.h"
 #include "print.h"
-#include "wma.h"
 #include "wmem.h"
 
 /* Note that these must be in the same order as the #define variables

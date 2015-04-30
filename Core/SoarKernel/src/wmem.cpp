@@ -76,7 +76,7 @@ void reset_wme_timetags(agent* thisAgent)
     thisAgent->current_wme_timetag = 1;
 }
 
-wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable, goal_stack_level mlevel, uint64_t gid_id, uint64_t gid_attr, uint64_t gid_value)
+wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable)
 {
     wme* w;
 
@@ -115,7 +115,9 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
 
-    w->ground_id_list = NIL;
+    w->g_ids.id = 0;
+    w->g_ids.attr = 0;
+    w->g_ids.value = 0;
 
     return w;
 }
@@ -328,16 +330,6 @@ void deallocate_wme(agent* thisAgent, wme* w)
     symbol_remove_ref(thisAgent, w->id);
     symbol_remove_ref(thisAgent, w->attr);
     symbol_remove_ref(thisAgent, w->value);
-
-    grounding_info* g_next, *g;
-
-    /* -- See if we already have ground IDs for this goal level -- */
-
-    for (g = w->ground_id_list; g; g = g_next)
-    {
-        g_next = g->next;
-        delete g;
-    }
 
     free_with_pool(&thisAgent->wme_pool, w);
     thisAgent->num_existing_wmes--;
