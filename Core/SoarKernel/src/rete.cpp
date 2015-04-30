@@ -7486,7 +7486,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
             sym = reteload_symbol_from_index(thisAgent, f);
             /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
             //symbol_add_ref(thisAgent, sym);
-            rv = allocate_rhs_value_for_symbol(thisAgent, sym, NULL, 0, 0);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym, NULL, 0);
             break;
         case 1:
             funcall_list = NIL;

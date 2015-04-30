@@ -2123,7 +2123,6 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
                            soar_module::symbol_triple(NULL, NULL, NULL),
-                           soar_module::identity_triple(0,0,0),
                            soar_module::identity_triple(0,0,0));
 //    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
 //                           cand->value, NIL);
@@ -2437,7 +2436,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 }
                 dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
                 dprint(DT_BACKTRACE, "   Originals: %y ^%y %y\n", cand->original_symbols.id, cand->original_symbols.attr, cand->original_symbols.value);
-                dprint(DT_BACKTRACE, "   g_ids: %u ^%u %u\n", cand->g_ids.id, cand->g_ids.attr, cand->g_ids.value);
+                dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;

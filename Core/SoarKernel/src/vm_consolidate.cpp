@@ -429,20 +429,21 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
 
     if (pI_id)
     {
+        uint64_t dummy;
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &(result->g_ids.id), pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &dummy, pI_id, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &(result->g_ids.attr), pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &dummy, pI_id, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &(result->g_ids.value), pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &dummy, pI_id, true);
         }
     }
     fix_results(result->next_result, pI_id);

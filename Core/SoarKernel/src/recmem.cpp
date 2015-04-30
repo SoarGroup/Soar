@@ -549,11 +549,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                            soar_module::identity_triple(
                                ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_o_id(original_id) : 0),
                                ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_o_id(original_attr) : 0),
-                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_o_id(original_value) : 0)),
-                           soar_module::identity_triple(
-                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_g_id(original_id) : 0),
-                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_g_id(original_attr) : 0),
-                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_g_id(original_value) : 0)));
+                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_o_id(original_value) : 0)));
 
 abort_execute_action: /* control comes here when some error occurred */
     if (id)

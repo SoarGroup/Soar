@@ -1513,7 +1513,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
         // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
         // make_symbol_for_lexeme already increments refcount
-        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, NULL, 0, 0);
+        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, NULL, 0);
         lexer->get_lexeme();
         return rv;
     }
@@ -1758,7 +1758,7 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
         prev_a = a;
         a->type = MAKE_ACTION;
         a->preference_type = preference_type;
-        a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0, 0);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0);
         /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
         // symbol_add_ref(thisAgent, id);
         a->attr = copy_rhs_value(thisAgent, attr);
@@ -1888,7 +1888,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
             prev_a = a;
             a->type = MAKE_ACTION;
             a->preference_type = preference_type;
-            a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0, 0);
+            a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0);
             /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
             //symbol_add_ref(thisAgent, id);
             a->attr = copy_rhs_value(thisAgent, attr);
@@ -1915,7 +1915,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
                 prev_a = a;
                 a->type = MAKE_ACTION;
                 a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
-                a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0, 0);
+                a->id = allocate_rhs_value_for_symbol(thisAgent, id, NULL, 0);
                 /* MToDoRefCnt | May not need these refcount adds b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
                 // symbol_add_ref(thisAgent, id);
                 a->attr = copy_rhs_value(thisAgent, attr);
@@ -1983,11 +1983,11 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         if (strcmp(szAttribute, "operator") != 0)
         {
             new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr,
-                          allocate_rhs_value_for_symbol(thisAgent, new_var, NULL, 0, 0));
+                          allocate_rhs_value_for_symbol(thisAgent, new_var, NULL, 0));
         }
         else
         {
-            new_actions = parse_preferences(thisAgent, lexer, id, attr, allocate_rhs_value_for_symbol(thisAgent, new_var, NULL, 0, 0));
+            new_actions = parse_preferences(thisAgent, lexer, id, attr, allocate_rhs_value_for_symbol(thisAgent, new_var, NULL, 0));
         }
 
         for (last = new_actions; last->next != NIL; last = last->next)

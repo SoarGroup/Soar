@@ -224,7 +224,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
     dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u g%u).\n",
-           rs->referent, rs->original_rhs_variable, rs->o_id, rs->g_id);
+           rs->referent, rs->original_rhs_variable, rs->o_id);
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
 
@@ -263,7 +263,6 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
         else
         {
             dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
-            rs->g_id = NON_GENERALIZABLE;
             if (rs->original_rhs_variable)
             {
                 dprint(DT_RHS_VARIABLIZATION, "...and removing original variable %y!\n", rs->original_rhs_variable);
@@ -287,9 +286,6 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
             symbol_remove_ref(thisAgent, rs->referent);
             rs->referent = found_variablization->variablized_symbol;
             symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
-            /* MToDo | This is probably not necessary to set.  Should be set for cases that have g_id */
-//            assert(rs->g_id ==found_variablization->grounding_id);
-            rs->g_id = found_variablization->grounding_id;
             return;
         } else {
             dprint(DT_RHS_VARIABLIZATION, "... skipping variablization of %y because it was literalized on LHS.\n", found_variablization->variablized_symbol);
@@ -319,7 +315,6 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
             dprint(DT_RHS_VARIABLIZATION, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
         }
     }
-    rs->g_id = NON_GENERALIZABLE;
 }
 
 /* ============================================================================
@@ -683,10 +678,10 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     rhs->type = MAKE_ACTION;
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, NULL, 0, 0);
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, NULL, 0, 0);
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, NULL, 0, 0);
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, NULL, 0, 0);
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, NULL, 0);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, NULL, 0);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, NULL, 0);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, NULL, 0);
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
     variablize_rhs_symbol(rhs->id);
@@ -760,12 +755,12 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
 
-    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->original_symbols.id, result->g_ids.id, result->o_ids.id);
-    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->original_symbols.attr, result->g_ids.attr, result->o_ids.attr);
-    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->original_symbols.value, result->g_ids.value, result->o_ids.value);
+    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->original_symbols.id, result->o_ids.id);
+    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->original_symbols.attr, result->o_ids.attr);
+    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->original_symbols.value, result->o_ids.value);
     if (preference_is_binary(result->type))
     {
-        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, NULL, 0, 0);
+        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, NULL, 0);
     }
 
     if (variablize)

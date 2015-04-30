@@ -63,8 +63,7 @@ const char* preference_name[] =
 preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
                             const soar_module::symbol_triple originals,
-                            const soar_module::identity_triple o_ids,
-                            const soar_module::identity_triple g_ids)
+                            const soar_module::identity_triple o_ids)
 {
     preference* p;
 
@@ -115,10 +114,6 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->o_ids.id = o_ids.id;
     p->o_ids.attr = o_ids.attr;
     p->o_ids.value = o_ids.value;
-
-    p->g_ids.id = g_ids.id;
-    p->g_ids.attr = g_ids.attr;
-    p->g_ids.value = g_ids.value;
 
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));

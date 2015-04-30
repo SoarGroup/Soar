@@ -115,7 +115,6 @@ namespace soar_module
                 assert(!(*a_it)->value->is_variable());
                 pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
                     soar_module::symbol_triple(NULL, NULL, NULL),
-                    soar_module::identity_triple(0,0,0),
                     soar_module::identity_triple(0,0,0));
                 pref->o_supported = true;
                 symbol_add_ref(thisAgent, pref->id);

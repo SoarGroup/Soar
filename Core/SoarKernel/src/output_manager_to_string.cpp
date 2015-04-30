@@ -392,7 +392,7 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         } else if (m_print_original) {
             sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->original_rhs_variable);
         } else if (m_print_identity) {
-            sprinta_sf(thisAgent, dest, dest_size, "%y [g%u/%y/o%u]", rsym->referent, rsym->g_id, rsym->original_rhs_variable, rsym->o_id);
+            sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, rsym->original_rhs_variable, rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -525,8 +525,8 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
 //    }
     if (m_print_identity)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(g%u/%y/o%u ^g%u/%y/o%u g%u/%y/o%u) %c %y%s", (m_print_actual) ? ", " : "",
-            pref->g_ids.id, pref->original_symbols.id, pref->o_ids.id, pref->g_ids.attr, pref->original_symbols.attr, pref->o_ids.attr, pref->g_ids.value, pref->original_symbols.value, pref->o_ids.value,
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual) ? ", " : "",
+            pref->original_symbols.id, pref->o_ids.id, pref->original_symbols.attr, pref->o_ids.attr, pref->original_symbols.value, pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
