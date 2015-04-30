@@ -162,7 +162,6 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
-void unify_variablization_identity(agent* thisAgent, test t);
 /* UITODO| Make this method of Test */
 const char* test_type_to_string(byte test_type);
 

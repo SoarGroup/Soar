@@ -652,7 +652,8 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
                         if (t2->identity)
                         {
                             /* -- Two grounded constants -- */
-                            return (t1->identity->grounding_id == t2->identity->grounding_id);
+                            return ((t1->identity->grounding_id == t2->identity->grounding_id) &&
+                                (t1->identity->original_var_id == t2->identity->original_var_id));
                         }
                         else
                         {
