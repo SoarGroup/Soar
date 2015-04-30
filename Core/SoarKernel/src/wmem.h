@@ -38,12 +38,14 @@
 
 #include "enums.h"
 #include "soar_module.h"
+#include "production.h"
 
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
+typedef unsigned short rete_node_level;
 
 typedef struct wma_decay_element_struct wma_decay_element;
 
@@ -176,6 +178,15 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
     }
 }
 
+inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_up)
+{
+    while (where_levels_up)
+    {
+        where_levels_up--;
+        cond = cond->prev;
+    }
+    return (cond->bt.wme_);
+}
 
 inline const char* field_to_string(WME_Field f)
 {

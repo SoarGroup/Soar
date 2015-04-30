@@ -429,7 +429,7 @@ void Variablization_Manager::propagate_constraint_identities(uint64_t pI_id)
             dprint(DT_CONSTRAINTS, "...updating identity for constraint %t [%g]\n", new_ct, new_ct);
             if (new_ct->identity->original_var_id)
             {
-                unify_variablization_identity(thisAgent, new_ct);
+                thisAgent->variablizationManager->unify_variablization_identity(thisAgent, new_ct);
                 /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                  * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
                  * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating

@@ -14,6 +14,23 @@
 #include "wmem.h"
 #include "debug.h"
 
+
+void Variablization_Manager::unify_variablization_identity(agent* thisAgent, test t)
+{
+    uint64_t found_o_id = 0;
+
+    found_o_id = thisAgent->variablizationManager->get_o_id_substitution(t->identity->original_var_id);
+    if (found_o_id)
+    {
+        t->identity->original_var_id = found_o_id;
+        symbol_remove_ref(thisAgent, t->identity->original_var);
+        /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
+         *         a better way to set ovar here. */
+        t->identity->original_var = get_ovar_for_o_id(t->identity->original_var_id);
+        symbol_add_ref(thisAgent, t->identity->original_var);
+    }
+}
+
 void Variablization_Manager::add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
     std::map< uint64_t, uint64_t >::iterator iter = (*o_id_substitution_map).find(pNew_o_id);

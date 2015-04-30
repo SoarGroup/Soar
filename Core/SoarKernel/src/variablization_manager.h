@@ -84,6 +84,7 @@ class Variablization_Manager
 
         void add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         uint64_t get_o_id_substitution(uint64_t pO_id);
+        void unify_variablization_identity(agent* thisAgent, test t);
 
         void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult = false);
 
@@ -148,6 +149,10 @@ class Variablization_Manager
         void remove_redundancies_and_ungroundeds(test* t, tc_number tc_num, bool ignore_ungroundeds);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
+
+        void propagate_identity(condition* cond, bool use_negation_lookup);
+        void add_identity_to_negative_test(test t, WME_Field default_f);
+        void add_identity_to_test(test* t, WME_Field default_f);
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
