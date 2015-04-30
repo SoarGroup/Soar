@@ -2155,22 +2155,15 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
 
-    /* MToDo | Might be able toremove these.  This was setting up identity information for
-     *         the fake instantiation, but it did not turn out to be needed for the issue
-     *         we were trying to fix. */
-
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
     cond->data.tests.id_test->identity->grounding_wme = ap_wme;
     cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
 
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
-    cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
     cond->data.tests.attr_test->identity->grounding_wme = ap_wme;
     cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
 
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
     cond->data.tests.value_test->identity->grounding_wme = ap_wme;
     cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
 

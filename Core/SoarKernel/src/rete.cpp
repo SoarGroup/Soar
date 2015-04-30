@@ -4295,14 +4295,26 @@ abort_var_test_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-test var_bound_in_reconstructed_original_conds(
+Symbol* var_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
     rete_node_level where_levels_up)
 {
-    test t, lTest;
+    test t;
+    Symbol *lSym;
     cons* c;
+
+    if (where_levels_up == 0)
+    {
+        /* -- It's in the same condition, so the identity hasn't been created yet. We
+         *    look up using the original_test pointer, which only exists until the
+         *    identity is set up. -- */
+        t = var_test_bound_in_reconstructed_conds(thisAgent, cond, where_field_num, where_levels_up);
+        assert(t);
+        assert(t->original_test);
+        return t->original_test->data.referent;
+    }
 
     while (where_levels_up)
     {
@@ -4327,10 +4339,8 @@ test var_bound_in_reconstructed_original_conds(
     {
         goto abort_var_test_bound_in_reconstructed_oconds;
     }
-    lTest = find_original_equality_test_preferring_vars(t, true);
-    assert(lTest && lTest->type == EQUALITY_TEST);
-
-    return (lTest);
+    lSym = find_equality_test_preferring_vars(t)->identity->original_var;
+    return (lSym);
 
     abort_var_test_bound_in_reconstructed_oconds:
     {

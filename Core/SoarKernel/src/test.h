@@ -136,7 +136,8 @@ test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 void cache_eq_test(test t);
 test equality_test_found_in_test(test t);
 test equality_var_test_found_in_test(test t);
-test find_original_equality_test_preferring_vars(test t, bool useOriginals = false);
+test find_equality_test_preferring_vars(test t);
+test find_original_equality_test_preferring_vars(test t);
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);

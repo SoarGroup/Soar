@@ -27,7 +27,7 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id);
+void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id);
 
 /* =================================================================
 
@@ -347,13 +347,13 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
  *    test with the one from the new test but does not add a new equality test.  This is only used
  *    when reconstructing the original conditions and adding relational tests.
  *
- *    Note:  This was added to handle a yet unexplained rare bug where the main equality test in a
+ *    Note:  This was added to handle a yet unexplained situation in which the main equality test in a
  *           reconstructed test does not get an original test.  Normally, that variable is
  *           retrieved from the rete's varname data structures, but for some cases, the
  *           varname is empty, and it later adds an equality test for that variable that it
- *           finds in the extra_tests portion of the rete node.  This effected two equality
- *           tests for the same symbol, one with and one without the original test,
- *           which caused problems with other aspects of chunking. -- */
+ *           finds in the extra_tests portion of the rete node, where it normally gets relational
+ *           tests.  This produced two equality tests for the same symbol, one with and one without
+ *           the original test, which caused problems with other aspects of chunking. -- */
 
 void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id)
 {
@@ -1156,26 +1156,11 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
     Symbol* temp;
     test New = 0;
 
-    temp = (var_bound_in_reconstructed_original_conds(thisAgent, cond, field_num, levels_up))->data.referent;
+    temp = var_bound_in_reconstructed_original_conds(thisAgent, cond, field_num, levels_up);
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_hash_info_to_original_id_test %s.\n", temp->var->name);
     New = make_test(thisAgent, temp, EQUALITY_TEST);
     add_test(thisAgent, &(cond->data.tests.id_test->original_test), New);
 }
-
-
-
-
-
-
-byte get_original_symbol_type(test t)
-{
-    if (t && t->original_test && t->original_test->data.referent)
-    {
-        return t->original_test->data.referent->symbol_type;
-    }
-    return UNDEFINED_SYMBOL_TYPE;
-}
-
 
 /* ----------------------------------------------------------------------
                  add_additional_tests_and_originals
@@ -1415,30 +1400,29 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         chunk_test = make_test(thisAgent, referent, test_type);
                         original_referent = (var_bound_in_reconstructed_original_conds(thisAgent, cond,
                                             rt->data.variable_referent.field_num,
-                                            rt->data.variable_referent.levels_up))->data.referent;
+                                            rt->data.variable_referent.levels_up));
+                        chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
+                        if (chunk_test->identity->grounding_wme)
+                        {
+//                                wme_add_ref(chunk_test->identity->grounding_wme);
+                        }
+                        chunk_test->identity->grounding_field = static_cast<WME_Field>(rt->data.variable_referent.field_num);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "created relational test with referent %y.\n", original_referent);
-                        chunk_test->original_test = make_test(thisAgent, original_referent, test_type);
 
                         /* -- Set identity information for relational test with variable as original symbol-- */
                         if (original_referent && original_referent->is_variable())
                         {
                             dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against %y\n", original_referent);
-                            chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
-                            if (chunk_test->identity->grounding_wme)
+                            chunk_test->original_test = make_test(thisAgent, original_referent, test_type);
+                            chunk_test->identity->original_var =  original_referent;
+                            symbol_add_ref(thisAgent, original_referent);
+                            if (pI_id)
                             {
-//                                wme_add_ref(chunk_test->identity->grounding_wme);
+                                chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
                             }
-                            chunk_test->identity->grounding_field = static_cast<WME_Field>(rt->data.variable_referent.field_num);
-                            if (original_referent->is_variable())
-                            {
-                                chunk_test->identity->original_var =  original_referent;
-                                symbol_add_ref(thisAgent, original_referent);
-                                if (pI_id)
-                                {
-                                    chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
-                                }
-                            }
+                        } else {
+                            chunk_test->original_test = make_test(thisAgent, referent, test_type);
                         }
                     }
                 }
@@ -1500,9 +1484,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): %l\n", cond);
 
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, pI_id);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, pI_id);
-    fill_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, pI_id);
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
@@ -1734,7 +1718,7 @@ void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool consi
  *    determines that there doesn't exist an equality test on a variable
  *    symbol. -- */
 
-test find_original_equality_test_preferring_vars(test t, bool useOriginals)
+test find_equality_test_preferring_vars(test t)
 {
 
     cons* c;
@@ -1746,15 +1730,8 @@ test find_original_equality_test_preferring_vars(test t, bool useOriginals)
         {
 
             case EQUALITY_TEST:
-                if (useOriginals)
-                {
-                    return find_original_equality_test_preferring_vars(t->original_test, false);
-                }
-                else
-                {
-                    assert(t->data.referent);
-                    return t;
-                }
+                assert(t->data.referent);
+                return t;
                 break;
 
             case CONJUNCTIVE_TEST:
@@ -1762,35 +1739,61 @@ test find_original_equality_test_preferring_vars(test t, bool useOriginals)
                 {
                     ct = static_cast<test>(c->first);
                     assert(ct);
-                    if (useOriginals)
+                    if (ct->type == EQUALITY_TEST)
                     {
-                        foundTest = find_original_equality_test_preferring_vars(ct->original_test, false);
-                        if (foundTest)
+                        assert(ct->data.referent);
+                        if (ct->data.referent->is_variable())
                         {
-                            assert(foundTest->data.referent);
-                            if (foundTest->data.referent->is_variable())
-                            {
-                                return foundTest;
-                            }
-                            else
-                            {
-                                found_literal = foundTest;
-                            }
+                            return ct;
+                        }
+                        else
+                        {
+                            found_literal = ct;
                         }
                     }
-                    else
+                }
+                /* -- At this point, we have not found an equality test on a variable.  If
+                 *    we have found one on a literal, we return it -- */
+                return found_literal;
+                break;
+            default:
+                break;
+        }
+    }
+    return NULL;
+}
+
+test find_original_equality_test_preferring_vars(test t)
+{
+
+    cons* c;
+    test ct, found_literal = NULL, foundTest = NULL;
+
+    if (t)
+    {
+        switch (t->type)
+        {
+
+            case EQUALITY_TEST:
+                return find_equality_test_preferring_vars(t->original_test);
+                break;
+
+            case CONJUNCTIVE_TEST:
+                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                {
+                    ct = static_cast<test>(c->first);
+                    assert(ct);
+                    foundTest = find_equality_test_preferring_vars(ct->original_test);
+                    if (foundTest)
                     {
-                        if (ct->type == EQUALITY_TEST)
+                        assert(foundTest->data.referent);
+                        if (foundTest->data.referent->is_variable())
                         {
-                            assert(ct->data.referent);
-                            if (ct->data.referent->is_variable())
-                            {
-                                return ct;
-                            }
-                            else
-                            {
-                                found_literal = ct;
-                            }
+                            return foundTest;
+                        }
+                        else
+                        {
+                            found_literal = foundTest;
                         }
                     }
                 }
@@ -1823,7 +1826,7 @@ void cache_eq_test(test t)
     }
 }
 
-void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id)
+void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id)
 {
     cons* c;
     test orig_test;
@@ -1837,7 +1840,7 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
     {
         if (t->original_test && t->original_test->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE)
         {
-            orig_test = find_original_equality_test_preferring_vars(t, true);
+            orig_test = find_original_equality_test_preferring_vars(t);
             if (orig_test && orig_test->data.referent->is_variable())
             {
 //                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%y\": %y + %s\n",
@@ -1872,8 +1875,13 @@ void fill_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field defa
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            fill_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, pI_id);
+            create_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, pI_id);
         }
+    }
+    if (t->original_test)
+    {
+        deallocate_test(thisAgent, t->original_test);
+        t->original_test = NULL;
     }
 }
 
