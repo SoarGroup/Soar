@@ -1,3 +1,59 @@
+# Possible o_id propagation problem.  
+
+learn --on
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object)
+
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word1 <w>
+         ^word2 <w>)
+}
+
+sp {apply*loose*constraint
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word1 <> not-object)
+    -->
+    (<s> ^sub-result1 1 +)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word2 object)
+    -->
+    (<s> ^sub-result2 1 +)
+}
+
+sp {start-chunking2
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result1 <r> 
+               ^sub-result2 <r>)
+    (<o> ^word1 <object> ^word2 <object2>)
+    -->
+    (<ss> ^result <object> +
+          ^result2 <object2> +)
+}
+
 # Attempt to get constraint that won't propagate or attach to wrong thing
 
 srand 23

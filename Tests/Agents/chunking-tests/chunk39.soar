@@ -1,13 +1,54 @@
-# Possible o_id propagation problem.  
+# Constraint propagation from base conditions
 
 learn --on
 watch --learn 2
 
-sp {init
+sp {init-superstate
    (state <s> ^superstate nil)
 -->
-   (<s> ^word object)
+   (<s> ^data 1 3)
+}
 
+sp {propose
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^operator <o> +)
+}
+
+sp {elab-copy-ts-ts
+   (state <s> ^superstate nil
+              ^data <t> { > 1 })
+-->
+   (<s> ^data2 <t>)
+}
+
+sp {apply-copy-ts-ts-ss
+   (state <s> ^superstate <ss>
+              ^operator)
+   (<ss> ^data2 <t> { >= 2 })
+-->
+   (<s> ^subdata2 <t>)
+}
+
+
+sp {apply-copy-ts-ss
+   (state <s> ^superstate <ss>
+              ^operator)
+   (<ss> ^data <t>)
+-->
+   (<s> ^subdata <t>)
+}
+
+sp {apply-create-chunk
+   (state <s> ^superstate <ss>
+              ^operator <o>
+              ^subdata { <> <t2> <t1> }
+              ^subdata { < <t1> <t2> }
+              ^subdata2 <t1>)
+   (<ss> ^data2 <t3> 
+         ^data2 <t4>)
+-->
+   (<ss> ^big <t1> ^small <t2>)
 }
 
 sp {propose*stop
@@ -17,39 +58,4 @@ sp {propose*stop
     (interrupt)
 }
 
-sp {propose
-    (state <s> ^superstate <ss>)
-    (<ss> ^superstate nil
-          ^word <w>)
--->
-    (<s> ^operator <o> + =)
-    (<o> ^word1 <w>
-         ^word2 <w>)
-}
 
-sp {apply*loose*constraint
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<o> ^word1 <> not-object)
-    -->
-    (<s> ^sub-result1 1 +)
-}
-
-sp {apply*literalization
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<o> ^word2 object)
-    -->
-    (<s> ^sub-result2 1 +)
-}
-
-sp {start-chunking2
-    (state <s> ^superstate <ss>
-               ^operator <o>
-               ^sub-result1 <r> 
-               ^sub-result2 <r>)
-    (<o> ^word1 <object> ^word2 <object2>)
-    -->
-    (<ss> ^result <object> +
-          ^result2 <object2> +)
-}

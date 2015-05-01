@@ -52,7 +52,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk36);
         CPPUNIT_TEST(testChunk37);
         CPPUNIT_TEST(testChunk38);
-//        CPPUNIT_TEST(testChunk39);
+        CPPUNIT_TEST(testChunk39);
 //        CPPUNIT_TEST(testChunk40);
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -361,11 +361,13 @@ void ChunkTest::testChunk37()
 
 void ChunkTest::testChunk38()
 {
+    /* Literalization and constraint maintenance */
     build_and_check_chunk("chunk38.soar", 8, 2);
 }
 
 void ChunkTest::testChunk39()
 {
+    /* Constraint maintenance from base conditions */
     build_and_check_chunk("chunk39.soar", 8, 1);
 }
 
