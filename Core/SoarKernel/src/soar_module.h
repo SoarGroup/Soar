@@ -984,21 +984,23 @@ namespace soar_module
             {
                 return thisAgent;
             }
+
+            soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL) {}
             
-            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL), size(sizeof(value_type))
+            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
             }
             
-            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
             }
             
             template <class _other>
-            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( T ).name() );
@@ -1015,7 +1017,8 @@ namespace soar_module
                 
                 if (!mem_pool)
                 {
-                    mem_pool = get_memory_pool(thisAgent, size);
+                    assert(thisAgent);
+                    mem_pool = get_memory_pool(thisAgent, sizeof(value_type));
                 }
                 
                 pointer t;
@@ -1038,7 +1041,8 @@ namespace soar_module
                 // it's quite possible, then, that the sizes would be off
                 if (!mem_pool)
                 {
-                    mem_pool = get_memory_pool(thisAgent, size);
+                    assert(thisAgent);
+                    mem_pool = get_memory_pool(thisAgent, sizeof(value_type));
                 }
                 
                 if (p)
@@ -1082,9 +1086,6 @@ namespace soar_module
         private:
             agent* thisAgent;
             memory_pool* mem_pool;
-            size_type size;
-            
-            soar_memory_pool_allocator() {}
             
     };
     
