@@ -1,11 +1,12 @@
+# Attempt to get constraint that won't propagate or attach to wrong thing
+
 srand 23
 learn --on
 
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 9
-         ^test-item2 7)
+    (<s> ^i1 1 ^i2 2 ^i3 3 ^i4 4)
     (write (crlf) |Starting chunking unit test.|)
 }
 
@@ -34,7 +35,8 @@ sp {apply*test-failed
 sp {init-substate
     (state <s> ^superstate.superstate nil)
 -->
-    (<s> ^name substate)}
+    (<s> ^name substate
+         ^ungrounded 5)}
 
 sp {propose*test
     (state <s> ^name substate)
@@ -42,32 +44,23 @@ sp {propose*test
     (<s> ^operator <o> +)
     (<o> ^name test)}
 
-## Chaining example with binding from local state that coincidentally
-# matches a different binding.  Both vars on rhs.  One should be reversed
-# while the other shouldn't be.
-
-sp {apply1a
-    (state <s> ^name substate
-               ^operator.name test)
--->
-    (<s> ^substate-output 9)}
-
-sp {apply1b
+sp {apply-bt1
     (state <s> ^name substate
                ^operator.name test
-               ^superstate.test-item { > 8 < 10 >= <var-ungrounded> <var> }
-               ^superstate.test-item2 { <= <var> <var2> }
-               ^substate-output <var-ungrounded>
-               ^superstate <ss>)
+               ^superstate <ss>
+               ^ungrounded { > <i3> <big>})
+    (<ss> ^i3 {<=> <big> <= <big> <i3>})
 -->
-    (<ss> ^result1a <var-ungrounded>
-          ^result1b <var>
-          ^result1c <var2>
-          ^result1d <unbound>
-          ^test-done 1)
-    (<unbound> ^foo bar)
-    }
+    (<s> ^continue true)
+}
 
-
-#run
-#ctf expected/chunk1.soar print -cf
+sp {apply2
+    (state <s> ^name substate
+               ^operator.name test
+               ^continue
+               ^ungrounded <u>
+               ^superstate <ss>)
+    (<ss> ^i3 <i3>)
+-->
+    (<ss> ^result <u>)
+}

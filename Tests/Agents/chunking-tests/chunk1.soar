@@ -1,11 +1,16 @@
+# Tests:
+# - All relational test types
+# - Includes literal relational test and disjunction
+# - RHS actions that are variablized
+#-  RHS actions with literals that are the same symbols
+#   as were variablized. 
 srand 23
 learn --on
 
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 9
-         ^test-item2 7)
+    (<s> ^i1 1 ^i2 2 ^i3 3 ^i4 4)
     (write (crlf) |Starting chunking unit test.|)
 }
 
@@ -42,32 +47,21 @@ sp {propose*test
     (<s> ^operator <o> +)
     (<o> ^name test)}
 
-## Chaining example with binding from local state that coincidentally
-# matches a different binding.  Both vars on rhs.  One should be reversed
-# while the other shouldn't be.
-
-sp {apply1a
-    (state <s> ^name substate
-               ^operator.name test)
--->
-    (<s> ^substate-output 9)}
-
-sp {apply1b
+sp {apply2
     (state <s> ^name substate
                ^operator.name test
-               ^superstate.test-item { > 8 < 10 >= <var-ungrounded> <var> }
-               ^superstate.test-item2 { <= <var> <var2> }
-               ^substate-output <var-ungrounded>
                ^superstate <ss>)
+    (<ss> ^i1 {< <x2> >= <x1> < 2 <x1>}
+          ^i2 {> <x1> <= <x2> < <x3> > 1 < 23 <x2>}
+          ^i3 {<=> <x1> <> 4 <> <ss> <x3>}
+          ^i4 {<< 4 9 >> > <x2> <x4>})
 -->
-    (<ss> ^result1a <var-ungrounded>
-          ^result1b <var>
-          ^result1c <var2>
-          ^result1d <unbound>
-          ^test-done 1)
-    (<unbound> ^foo bar)
-    }
-
+    (<ss> ^x1 <x1> ^x2 <x2> ^x3 <x3> ^x4 <x4>
+          ^c1 1 ^c2 2 ^c3 3 ^c4 4 ^c5 3.0
+          ^unbound <u>)
+    (<u> ^x1 <x1> ^x2 <x2> ^x3 <x3> ^x4 <x4>
+          ^c1 1 ^c2 2 ^c3 3 ^c4 4 ^c5 3.0)
+}
 
 #run
-#ctf expected/chunk1.soar print -cf
+#ctf expected/chunk2.soar print -cf

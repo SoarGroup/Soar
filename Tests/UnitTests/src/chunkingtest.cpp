@@ -51,6 +51,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk35);
         CPPUNIT_TEST(testChunk36);
         CPPUNIT_TEST(testChunk37);
+        CPPUNIT_TEST(testChunk38);
+//        CPPUNIT_TEST(testChunk39);
+//        CPPUNIT_TEST(testChunk40);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -100,6 +103,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void testChunk35();
         void testChunk36();
         void testChunk37();
+        void testChunk38();
+        void testChunk39();
+        void testChunk40();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -161,6 +167,15 @@ void ChunkTest::tearDown()
 
 void ChunkTest::testChunk1()
 {
+/*
+# Tests:
+# - All relational test types with integers
+# - Includes literal relational test and disjunction
+# - RHS actions that are variablized
+#-  RHS actions with literals that are the same symbols
+#   as were variablized.
+*/
+
     build_and_check_chunk("chunk1.soar", 4, 1);
 }
 
@@ -342,4 +357,19 @@ void ChunkTest::testChunk36()
 void ChunkTest::testChunk37()
 {
     build_and_check_chunk("chunk37.soar", 8, 1);
+}
+
+void ChunkTest::testChunk38()
+{
+    build_and_check_chunk("chunk38.soar", 8, 2);
+}
+
+void ChunkTest::testChunk39()
+{
+    build_and_check_chunk("chunk39.soar", 8, 1);
+}
+
+void ChunkTest::testChunk40()
+{
+    build_and_check_chunk("chunk40.soar", 8, 1);
 }
