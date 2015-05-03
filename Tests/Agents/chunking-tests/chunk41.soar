@@ -1,0 +1,21 @@
+# Tests:
+# - 
+
+srand 23
+learn --on
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
+}
+

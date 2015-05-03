@@ -14,8 +14,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-        CPPUNIT_TEST(testChunk1);
-        CPPUNIT_TEST(testChunk2);
+        CPPUNIT_TEST(All_Test_Types);
+        CPPUNIT_TEST(Ungrounded_Relational_Constraint);
         CPPUNIT_TEST(testChunk3);
         CPPUNIT_TEST(testChunk4);
         CPPUNIT_TEST(testChunk5);
@@ -53,7 +53,16 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testChunk37);
         CPPUNIT_TEST(testChunk38);
         CPPUNIT_TEST(testChunk39);
-//        CPPUNIT_TEST(testChunk40);
+        CPPUNIT_TEST(testChunk40);
+        CPPUNIT_TEST(testChunk41);
+        CPPUNIT_TEST(testChunk42);
+        CPPUNIT_TEST(testChunk43);
+        CPPUNIT_TEST(testChunk44);
+        CPPUNIT_TEST(testChunk45);
+        CPPUNIT_TEST(testChunk46);
+        CPPUNIT_TEST(testChunk47);
+        CPPUNIT_TEST(testChunk48);
+        CPPUNIT_TEST(testChunk49);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -66,8 +75,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void source(const std::string& path);
         void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
 
-        void testChunk1();
-        void testChunk2();
+        void All_Test_Types();
+        void Ungrounded_Relational_Constraint();
         void testChunk3();
         void testChunk4();
         void testChunk5();
@@ -106,6 +115,15 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void testChunk38();
         void testChunk39();
         void testChunk40();
+        void testChunk41();
+        void testChunk42();
+        void testChunk43();
+        void testChunk44();
+        void testChunk45();
+        void testChunk46();
+        void testChunk47();
+        void testChunk48();
+        void testChunk49();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -135,9 +153,10 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
         {
             sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
             excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
-            std::cout << "      FAILED:  Expected to ignore " << expected_chunks << ": sourced " << sourced << ", excised " << excised << ", ignored " << ignored;
+            std::ostringstream outStringStream("");
+            outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
+            throw CPPUnit_Assert_Failure(outStringStream.str());
         }
-        CPPUNIT_ASSERT(ignored == expected_chunks);
     }
 }
 
@@ -165,7 +184,7 @@ void ChunkTest::tearDown()
     pAgent = 0;
 }
 
-void ChunkTest::testChunk1()
+void ChunkTest::All_Test_Types()
 {
 /*
 # Tests:
@@ -179,7 +198,7 @@ void ChunkTest::testChunk1()
     build_and_check_chunk("chunk1.soar", 4, 1);
 }
 
-void ChunkTest::testChunk2()
+void ChunkTest::Ungrounded_Relational_Constraint()
 {
     build_and_check_chunk("chunk2.soar", 8, 1);
 }
@@ -374,4 +393,49 @@ void ChunkTest::testChunk39()
 void ChunkTest::testChunk40()
 {
     build_and_check_chunk("chunk40.soar", 8, 1);
+}
+
+void ChunkTest::testChunk41()
+{
+    build_and_check_chunk("chunk41.soar", 8, 1);
+}
+
+void ChunkTest::testChunk42()
+{
+    build_and_check_chunk("chunk42.soar", 8, 1);
+}
+
+void ChunkTest::testChunk43()
+{
+    build_and_check_chunk("chunk43.soar", 8, 1);
+}
+
+void ChunkTest::testChunk44()
+{
+    build_and_check_chunk("chunk44.soar", 8, 1);
+}
+
+void ChunkTest::testChunk45()
+{
+    build_and_check_chunk("chunk45.soar", 8, 1);
+}
+
+void ChunkTest::testChunk46()
+{
+    build_and_check_chunk("chunk46.soar", 8, 1);
+}
+
+void ChunkTest::testChunk47()
+{
+    build_and_check_chunk("chunk47.soar", 8, 1);
+}
+
+void ChunkTest::testChunk48()
+{
+    build_and_check_chunk("chunk48.soar", 8, 1);
+}
+
+void ChunkTest::testChunk49()
+{
+    build_and_check_chunk("chunk49.soar", 8, 1);
 }
