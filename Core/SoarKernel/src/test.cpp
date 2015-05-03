@@ -101,7 +101,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             {
                 if (new_ct->identity->original_var_id)
                 {
-                    thisAgent->variablizationManager->unify_variablization_identity(thisAgent, new_ct);
+                    thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
                     /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                      * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
                      * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/

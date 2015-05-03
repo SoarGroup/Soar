@@ -42,8 +42,8 @@
 #define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 //--
-#define TRACE_Init_DT_FUNC_PRODUCTIONS            false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_FUNC_PRODUCTIONS            true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_TEST_TO_TEST            false
 #define TRACE_Init_DT_ADD_CONSTRAINTS_ORIG_TESTS  false
@@ -66,7 +66,7 @@
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_OVAR_MAPPINGS               false
-#define TRACE_Init_DT_OVAR_PROP                   false
+#define TRACE_Init_DT_OVAR_PROP                   true
 
 
 /* -- Which output listeners should be initially turned on -- */

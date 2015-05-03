@@ -84,9 +84,9 @@ class Variablization_Manager
         void install_cached_constraints(condition* cond);
         void propagate_constraint_identities(uint64_t pI_id);
 
-        void add_o_id_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        uint64_t get_o_id_substitution(uint64_t pO_id);
-        void unify_variablization_identity(agent* thisAgent, test t);
+        void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
+        uint64_t get_identity_unification(uint64_t pO_id);
+        void unify_identity(agent* thisAgent, test t);
 
         void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult = false);
 
