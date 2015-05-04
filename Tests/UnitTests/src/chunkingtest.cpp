@@ -27,6 +27,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Ungrounded_Mixed);
         CPPUNIT_TEST(Ungrounded_STI_Promotion);
         CPPUNIT_TEST(Ungrounded_Relational_Constraint);
+        CPPUNIT_TEST(Ungrounded_in_BT_RConstraint);
         CPPUNIT_TEST(Vrblzd_RConstraint_on_Ungrounded);
         CPPUNIT_TEST(NC_Simple_No_Exist);
         CPPUNIT_TEST(NC_with_Relational_Constraint);
@@ -39,6 +40,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
         CPPUNIT_TEST(Prohibit_Fake_Instantiation_LTIs);
         CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
+        CPPUNIT_TEST(Simple_Literalization);
+        CPPUNIT_TEST(Simple_Constraint_Prop);
+        CPPUNIT_TEST(Literalization_with_Constraints);
+        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(BUNCPS_0);
         CPPUNIT_TEST(BUNCPS_1);
         CPPUNIT_TEST(BUNCPS_2);
@@ -47,17 +52,12 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_5);
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_RConstraints);
-        CPPUNIT_TEST(Simple_Literalization_Constraint_Prop);
-        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
-        CPPUNIT_TEST(Literalization_with_Constraints);
-        CPPUNIT_TEST(Ungrounded_in_BTd_Constraints);
 //        CPPUNIT_TEST(testChunk5);
 //        CPPUNIT_TEST(testChunk6);
 //        CPPUNIT_TEST(testChunk15);
 //        CPPUNIT_TEST(testChunk17);
 //        CPPUNIT_TEST(testChunk40);
 //        CPPUNIT_TEST(testChunk42);
-//        CPPUNIT_TEST(testChunk44);
 //        CPPUNIT_TEST(testChunk45);
 //        CPPUNIT_TEST(testChunk46);
 //        CPPUNIT_TEST(testChunk47);
@@ -81,11 +81,11 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Conflated_Constants();
         void Ungrounded_Relational_Constraint();
         void Vrblzd_RConstraint_on_Ungrounded();
-        void Simple_Literalization_Constraint_Prop();
+        void Simple_Literalization();
         void Constraint_Prop_from_Base_Conds();
         void BUNCPS_7_with_RConstraints();
         void Literalization_with_Constraints();
-        void Ungrounded_in_BTd_Constraints();
+        void Ungrounded_in_BT_RConstraint();
         void RHS_Unbound_Multivalue();
         void Rete_Bug_Deep_vs_Top();
         void Rete_Bug_Deep_vs_Deep();
@@ -113,12 +113,12 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void BUNCPS_5();
         void BUNCPS_6_Four_Level();
         void Superstate_Identity_Opaque();
+        void Simple_Constraint_Prop();
 //        void testChunk5();
 //        void testChunk6();
 //        void testChunk17();
 //        void testChunk40();
 //        void testChunk42();
-//        void testChunk44();
 //        void testChunk45();
 //        void testChunk46();
 //        void testChunk47();
@@ -233,7 +233,7 @@ void ChunkTest::Superstate_Identity_Opaque()
 //    build_and_check_chunk("chunk6.soar", 8, 1);
 //}
 //
-void ChunkTest::Ungrounded_in_BTd_Constraints()
+void ChunkTest::Ungrounded_in_BT_RConstraint()
 {
     build_and_check_chunk("chunk7.soar", 8, 2);
 }
@@ -388,7 +388,7 @@ void ChunkTest::BUNCPS_7_with_RConstraints()
     build_and_check_chunk("chunk37.soar", 8, 1);
 }
 
-void ChunkTest::Simple_Literalization_Constraint_Prop()
+void ChunkTest::Simple_Literalization()
 {
     /* Literalization and constraint maintenance */
     build_and_check_chunk("chunk38.soar", 8, 2);
@@ -410,11 +410,11 @@ void ChunkTest::Constraint_Prop_from_Base_Conds()
 //    build_and_check_chunk("chunk42.soar", 8, 1);
 //}
 //
-//void ChunkTest::testChunk44()
-//{
-//    build_and_check_chunk("chunk44.soar", 8, 1);
-//}
-//
+void ChunkTest::Simple_Constraint_Prop()
+{
+    build_and_check_chunk("chunk44.soar", 8, 1);
+}
+
 //void ChunkTest::testChunk45()
 //{
 //    build_and_check_chunk("chunk45.soar", 8, 1);

@@ -1,3 +1,5 @@
+# Simple literalization test
+
 learn --on
 watch --learn 2
 
@@ -19,28 +21,10 @@ sp {propose*stop
 sp {propose
     (state <s> ^superstate <ss>)
     (<ss> ^superstate nil
-          ^word { <> word-propose <w> })
+          ^word <w>)
 -->
     (<s> ^operator <o> + =)
     (<o> ^word <w>)
-}
-
-sp {apply*loose*constraint
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<ss> ^word2 <w2>)
-    (<o> ^word { <> not-object <> <w2> <no> })
-    -->
-    (<s> ^sub-result1 1 +)
-}
-
-sp {make-chunk1
-    (state <s> ^superstate <ss>
-               ^operator <o>
-               ^sub-result1 <r>)
-    (<o> ^word {<> word-make <object> })
-    -->
-    (<ss> ^result <object> +)
 }
 
 sp {apply*literalization
@@ -48,14 +32,14 @@ sp {apply*literalization
                ^operator <o>)
     (<o> ^word object)
     -->
-    (<s> ^sub-result2 1 +)
+    (<s> ^sub-result 1 +)
 }
 
-sp {make-chunk2
+sp {make-chunk
     (state <s> ^superstate <ss>
                ^operator <o>
-               ^sub-result2 <r>)
+               ^sub-result <r>)
     (<o> ^word <object>)
     -->
-    (<ss> ^result2 <object> +)
+    (<ss> ^result <object> +)
 }

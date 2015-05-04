@@ -1,10 +1,3 @@
-sp {answer*chunk*make-chunk1*snc*t2-2
-    (state <s1> ^superstate nil)
-    (<s1> ^word { <> not-object <c1> })
-    -->
-    (<s1> ^result <c1> +)
-}
-
 sp {answer*chunk*make-chunk2*snc*t2-1
     (state <s1> ^superstate nil)
     (<s1> ^word object)
