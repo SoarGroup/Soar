@@ -52,16 +52,19 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
         if (iter == (*o_id_substitution_map).end())
         {
             /* Map all cases of this identity with its parent identity */
-            dprint(DT_UNIFICATION, "Did not find o_id to o_id_substitution_map entry for o%u.  Adding %y[o%u] -> %y[o%u].\n", pOld_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+            print_o_id_to_ovar_debug_map(DT_UNIFICATION);
+            dprint(DT_UNIFICATION, "Did not find o_id to o_id_substitution_map entry for o%u.  Adding %y[o%u] ", pOld_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id);
+            dprint_noprefix(DT_UNIFICATION, "-> %y[o%u].\n", get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             newID = pNew_o_id;
             print_o_id_substitution_map(DT_OVAR_PROP);
         }
         else
         {
             /* Map all cases of what this identity is already remapped to with its parent identity */
-            dprint(DT_UNIFICATION, "o_id unification (%y[o%u] -> %y[o%u]) already exists.  Adding transitive mapping %y[o%u] -> %y[o%u].\n",
-                get_ovar_for_o_id(pNew_o_id), pNew_o_id, get_ovar_for_o_id(iter->second), iter->second,
-                get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
+            dprint(DT_UNIFICATION, "o_id unification (%y[o%u] -> ", get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+            dprint_noprefix(DT_UNIFICATION, "%y[o%u]) already exists.  Adding transitive mapping ", get_ovar_for_o_id(iter->second), iter->second);
+            dprint_noprefix(DT_UNIFICATION, "%y[o%u] -> ", get_ovar_for_o_id(pOld_o_id), pOld_o_id);
+            dprint_noprefix(DT_UNIFICATION, "%y[o%u].\n", get_ovar_for_o_id(iter->second), iter->second);
             newID = iter->second;
         }
     }
@@ -88,7 +91,8 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
                 /* The existing identity we're unifying with is already unified with another identity from
                  * a different trace.  So, unify the identity that it is already remapped to with identity
                  * of the parent in this trace */
-                dprint(DT_UNIFICATION, "Unification with another identity exists for o%u.  Adding %y[o%u] -> %y[o%u].\n", pOld_o_id, get_ovar_for_o_id(iter->second), iter->second, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+                dprint(DT_UNIFICATION, "Unification with another identity exists for o%u.  Adding %y[o%u] -> ", pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
+                dprint_noprefix(DT_UNIFICATION, "%y[o%u].\n", get_ovar_for_o_id(pNew_o_id), pNew_o_id);
                 (*o_id_substitution_map)[iter->second] = newID;
             }
         }
