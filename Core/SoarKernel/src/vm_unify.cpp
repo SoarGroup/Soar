@@ -17,19 +17,27 @@
 
 void Variablization_Manager::unify_identity(agent* thisAgent, test t)
 {
-    uint64_t found_o_id = 0;
-
-    found_o_id = thisAgent->variablizationManager->get_identity_unification(t->identity->original_var_id);
-    if (found_o_id)
+    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_substitution_map).find(t->identity->original_var_id);
+    if (iter != (*o_id_substitution_map).end())
     {
-        t->identity->original_var_id = found_o_id;
-        symbol_remove_ref(thisAgent, t->identity->original_var);
-        /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
-         *         a better way to set ovar here. */
-        t->identity->original_var = get_ovar_for_o_id(t->identity->original_var_id);
+        dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
+            t->identity->original_var_id, iter->second);
+
+        t->identity->original_var_id = iter->second;
         if (t->identity->original_var)
         {
-            symbol_add_ref(thisAgent, t->identity->original_var);
+            symbol_remove_ref(thisAgent, t->identity->original_var);
+            t->identity->original_var = NULL;
+        }
+        if (iter->second)
+        {
+            /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
+             *         a better way to set ovar here. */
+            t->identity->original_var = get_ovar_for_o_id(t->identity->original_var_id);
+            if (t->identity->original_var)
+            {
+                symbol_add_ref(thisAgent, t->identity->original_var);
+            }
         }
     }
 }
@@ -96,27 +104,10 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
                 (*o_id_substitution_map)[iter->second] = newID;
             }
         }
-        print_o_id_substitution_map(DT_UNIFICATION);
-        return;
     }
 
-    /* No existing unification for the existing identity, so just unify it with the identity of the parent. */
+    /* Unify identity in this instantiation with final identity */
     (*o_id_substitution_map)[pOld_o_id] = newID;
     print_o_id_substitution_map(DT_UNIFICATION);
 }
 
-uint64_t Variablization_Manager::get_identity_unification(uint64_t pO_id)
-{
-    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_substitution_map).find(pO_id);
-    if (iter != (*o_id_substitution_map).end())
-    {
-        dprint(DT_UNIFICATION, "...found o%u in o_id_substitution_map table for o%u\n",
-            iter->second, pO_id);
-
-        return iter->second;
-    } else {
-//        dprint(DT_UNIFICATION, "...did not find o%u in o_id_substitution_map.\n", pO_id);
-//        print_o_id_substitution_map(DT_UNIFICATION);
-    }
-    return 0;
-}

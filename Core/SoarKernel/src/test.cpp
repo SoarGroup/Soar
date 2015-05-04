@@ -372,6 +372,7 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                     if (destination->identity->original_var)
                     {
                         symbol_remove_ref(thisAgent, destination->identity->original_var);
+                        destination->identity->original_var = NULL;
                         // Don't think it's possible
                         assert(false);
                     }
@@ -416,6 +417,7 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                             if (check_test->identity->original_var)
                             {
                                 symbol_remove_ref(thisAgent, check_test->identity->original_var);
+                                check_test->identity->original_var = NULL;
                                 // Don't think it's possible
                                 assert(false);
                             }

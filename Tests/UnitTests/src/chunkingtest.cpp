@@ -391,7 +391,7 @@ void ChunkTest::BUNCPS_7_with_RConstraints()
 void ChunkTest::Simple_Literalization()
 {
     /* Literalization and constraint maintenance */
-    build_and_check_chunk("chunk38.soar", 8, 2);
+    build_and_check_chunk("chunk38.soar", 8, 1);
 }
 
 void ChunkTest::Constraint_Prop_from_Base_Conds()
