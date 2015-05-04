@@ -70,7 +70,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<opt_choices>* opt;
         
         soar_module::integer_param* thresh;
-        soar_module::integer_param* number_trajectories;
+        soar_module::decimal_param* number_trajectories;
         
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
@@ -293,6 +293,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         
         //The ones below are for spreading
         soar_module::sqlite_statement* web_val_parent;
+        soar_module::sqlite_statement* web_val_parent_2;
         soar_module::sqlite_statement* web_val_child;
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;

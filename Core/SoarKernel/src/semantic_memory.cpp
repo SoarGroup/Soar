@@ -183,7 +183,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_baseline);
 
-    number_trajectories = new soar_module::integer_param("number-trajectories", 10, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    number_trajectories = new soar_module::decimal_param("number-trajectories", 10, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(number_trajectories);
 
     restart_probability = new soar_module::decimal_param("restart-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
@@ -515,7 +515,7 @@ void smem_statement_container::create_indices()
     //This is for Soar spread.
     add_structure("CREATE INDEX smem_augmentations_parent_val_lti ON smem_augmentations (lti_id, value_constant_s_id, value_lti_id)");
     //This makes it easier to explore the network when doing a ACT-R style spread. I omit here because the focus on this branch is Soar spread.
-    //add_structure("CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
+    add_structure("CREATE INDEX smem_augmentations_backlink ON smem_augmentations (value_lti_id, value_constant_s_id, lti_id)");
     add_structure("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
     add_structure("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
 
@@ -705,7 +705,10 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     web_val_parent = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " UNION ALL SELECT value_lti_id FROM smem_augmentations WHERE lti_id IN (SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR ")");
     //The below is for Soar spread, looking for children ltis of a specific lti.
     web_val_child = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR );
-
+	add(web_val_parent);
+	add(web_val_child);
+	web_val_parent_2 = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR );
+	add(web_val_parent_2);
     //
     
     attribute_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?");
@@ -1285,7 +1288,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
+        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_parent_2;
 
         std::list<smem_lti_id> children;
 
@@ -1297,7 +1300,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
             children_q->prepare();
         }
         children_q->bind_int(1, lti_id);
-        children_q->bind_int(2, lti_id);
+        //children_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
         while(children_q->execute() == soar_module::row && children_q->column_int(0) != lti_id)
         {
@@ -1347,7 +1350,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
         thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
         return;
     }
-    //TODO: Define the probability constant elsewhere. It's HARD-CODED here.
+    //probability constant here can be set via command.
     if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||SoarRand()>thisAgent->smem_params->restart_probability->get_value())
     {
     //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
@@ -1364,6 +1367,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
             }
             else
             {
+            	//std::cout << *trajectory_iterator << std::endl; 
                 thisAgent->smem_stmts->trajectory_add->bind_int(i, *trajectory_iterator);
             }
             if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
@@ -1373,6 +1377,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
         }
         for (int j = i+1; j < 12; j++)
         {
+                    //	std::cout << j << std::endl; 
             thisAgent->smem_stmts->trajectory_add->bind_int(j, 0);
         }
         thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
@@ -1381,7 +1386,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
 
     //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
     std::list<smem_lti_id>::iterator lti_iterator = lti_trajectories[lti_id]->begin();
-    int index = SoarRandInt(lti_trajectories[lti_id]->size()-1);
+    uint64_t index = SoarRandInt(lti_trajectories[lti_id]->size()-1);
     assert(lti_trajectories.find(lti_id)!=lti_trajectories.end());
     assert(lti_trajectories[lti_id]->size() > 0);
     for (int i = 0; i < index; ++i)
@@ -1442,7 +1447,13 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
 }
 extern bool smem_calc_spread_trajectories(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
-    smem_attach(thisAgent);
+	smem_attach(thisAgent);
+	/*soar_module::sqlite_statement* initialization_act_r = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
+    initialization_act_r->prepare();
+    initialization_act_r->execute(soar_module::op_reinit);
+    delete initialization_act_r;*/
+    
     soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
     soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
     smem_lti_id lti_id;
@@ -1456,6 +1467,8 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
         //TODO - This isn't the only place, but I've HARD-CODED the number of trajectories here.
         for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value(); ++i)
         {
+        assert(thisAgent->smem_params->number_trajectories->get_value()!=10);
+        //assert(i!=8);
             std::list<smem_lti_id> trajectory;
             trajectory.push_back(lti_id);
             trajectory_construction(thisAgent,trajectory,lti_trajectories);
@@ -3715,6 +3728,7 @@ inline void smem_update_schema_one_to_two(agent* thisAgent)
     thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
     thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
     thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+    //value_lti_id, lti_id
     thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
     thisAgent->smem_db->sql_execute("COMMIT");
 }
