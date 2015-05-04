@@ -1,6 +1,8 @@
-sp {answer*apply4*onc*t3-1
-    (state <s1> ^superstate nil ^test-item2 <c2>
-          ^test-item { < 9 <> <c2> <c1> })
+sp {answer*chunk*make*snc*t2-1
+    (state <s1> ^superstate nil)
+    (<s1> ^foo2 { <> homer <c3> })
+    (<s1> ^foo { <> simpson <c1> })
+    (<s1> ^foo { <> bart <c2> })
     -->
-    (<s1> ^result4a <c1> + ^result4b <c2> + ^test-done 1 +)
+    (<s1> ^test-done true +)
 }

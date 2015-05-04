@@ -1,4 +1,4 @@
-# NCC tests
+# NC test
 
 srand 23
 learn --on

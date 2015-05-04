@@ -1,19 +1,24 @@
+# Tests:
+# - Two conditions in two tests backtraced through that test the same constant in the same wme in the top state
+#   - Should not appear as same condition or variable in chunk
+# - Two conditions in two tests backtraced through, one that tests a constant in the top state and one
+#   that tests a copy of it made on the top state
+
 srand 23
 learn --on
 
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 8
-         ^test-item2 7)
+    (<s> ^foo bar)
     (write (crlf) |Starting chunking unit test.|)
 }
 
-sp {propose*top
-    (state <s> ^superstate nil)
+sp {elab-superstate
+    (state <s> ^{ << foo foot >> <a> } <v>)
 -->
-    (<s> ^operator <o>)
-    (<o> ^name do-test)
+    (<s> ^foo2 <v>)
+    (write (crlf) |Starting chunking unit test.|)
 }
 
 sp {apply*test-done
@@ -31,27 +36,40 @@ sp {apply*test-failed
     (halt)
 }
 
-sp {init-substate
+sp {propose*test
     (state <s> ^superstate.superstate nil)
 -->
-    (<s> ^name substate)}
+    (<s> ^operator <o> +)}
 
-sp {propose*test
-    (state <s> ^name substate)
--->
-    (<s> ^operator <o> +)
-    (<o> ^name test)}
-
-# Numeric inequality
-sp {apply4
-    (state <s> ^name substate
-               ^operator.name test
+sp {apply-bt1
+    (state <s> ^operator
                ^superstate <ss>)
-    (<ss> ^test-item { < 9 <val> }
-          ^test-item2 { <> <val> <val2> })
--->
-    (<ss> ^result4a <val> ^result4b <val2>
-          ^test-done 1)}
+    (<ss> ^foo {<> bart <x>}
+          ^foo2 {<> homer <z>})
+    -->
+    (<s> ^continue1 true)
+}
 
-#run
-#ctf expected/chunk4.soar print -cf
+sp {apply-bt2
+    (state <s> ^operator
+               ^superstate <ss>)
+    (<ss> ^foo {<> simpson <y>})
+-->
+    (<s> ^continue2 true)
+}
+
+sp {apply-bt3
+    (state <s> ^operator
+               ^superstate <ss>)
+-->
+    (<s> ^continue3 true)
+}
+
+sp {make
+    (state <s> ^operator
+               ^continue1
+               ^continue2
+               ^superstate <ss>)
+-->
+    (<ss> ^test-done true +)
+}

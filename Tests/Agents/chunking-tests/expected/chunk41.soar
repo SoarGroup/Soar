@@ -1,1 +1,15 @@
-#sp {answer*
+sp {answer*chunk*make*snc*t2-1
+    :chunk
+    (state <s1> ^superstate nil)
+    (<s1> ^constant2 {> 23 <> 23 <c2> })
+    (<s1> ^constant { < 33 <c1> })
+    (<s1> ^sti2 <t2>)
+    (<s1> ^sti { <> <t2> <t1> })
+    -->
+    (<s1> ^result1 <u1> +)
+    (<s1> ^result2 <t1> +)
+    (<s1> ^result3 <t2> +)
+    (<s1> ^result4 23 +)
+    (<s1> ^result5 <c1> +)
+    (<s1> ^result6 <c2> +)
+}

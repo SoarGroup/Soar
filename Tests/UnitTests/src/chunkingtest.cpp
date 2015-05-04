@@ -14,55 +14,55 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
+        CPPUNIT_TEST(RL_Variablization);
+        CPPUNIT_TEST(STI_Variablization);
+        CPPUNIT_TEST(STI_Variablization_Same_Type);
+        CPPUNIT_TEST(Superstate_Identity_Opaque);
+        CPPUNIT_TEST(RHS_Unbound_Multivalue);
         CPPUNIT_TEST(All_Test_Types);
+        CPPUNIT_TEST(Conflated_Constants);
+        CPPUNIT_TEST(Rete_Bug_Deep_vs_Top);
+        CPPUNIT_TEST(Rete_Bug_Deep_vs_Deep);
+        CPPUNIT_TEST(Ungrounded_STIs);
+        CPPUNIT_TEST(Ungrounded_Mixed);
+        CPPUNIT_TEST(Ungrounded_STI_Promotion);
         CPPUNIT_TEST(Ungrounded_Relational_Constraint);
-        CPPUNIT_TEST(testChunk3);
-        CPPUNIT_TEST(testChunk4);
-        CPPUNIT_TEST(testChunk5);
-        CPPUNIT_TEST(testChunk6);
-        CPPUNIT_TEST(testChunk7);
-        CPPUNIT_TEST(testChunk8);
-        CPPUNIT_TEST(testChunk9);
-        CPPUNIT_TEST(testChunk10);
-        CPPUNIT_TEST(testChunk11);
-        CPPUNIT_TEST(testChunk12);
-        CPPUNIT_TEST(testChunk13);
-        CPPUNIT_TEST(testChunk14);
-        CPPUNIT_TEST(testChunk15);
-        CPPUNIT_TEST(testChunk16);
-        CPPUNIT_TEST(testChunk17);
-        CPPUNIT_TEST(testChunk18);
-        CPPUNIT_TEST(testChunk19);
-        CPPUNIT_TEST(testChunk20);
-        CPPUNIT_TEST(testChunk21);
-        CPPUNIT_TEST(testChunk22);
-        CPPUNIT_TEST(testChunk23);
-        CPPUNIT_TEST(testChunk24);
-        CPPUNIT_TEST(testChunk25);
-        CPPUNIT_TEST(testChunk26);
-        CPPUNIT_TEST(testChunk27);
-        CPPUNIT_TEST(testChunk28);
-        CPPUNIT_TEST(testChunk29);
-        CPPUNIT_TEST(testChunk30);
-        CPPUNIT_TEST(testChunk31);
-        CPPUNIT_TEST(testChunk32);
-        CPPUNIT_TEST(testChunk33);
-        CPPUNIT_TEST(testChunk34);
-        CPPUNIT_TEST(testChunk35);
-        CPPUNIT_TEST(testChunk36);
-        CPPUNIT_TEST(testChunk37);
-        CPPUNIT_TEST(testChunk38);
-        CPPUNIT_TEST(testChunk39);
-        CPPUNIT_TEST(testChunk40);
-        CPPUNIT_TEST(testChunk41);
-        CPPUNIT_TEST(testChunk42);
-        CPPUNIT_TEST(testChunk43);
-        CPPUNIT_TEST(testChunk44);
-        CPPUNIT_TEST(testChunk45);
-        CPPUNIT_TEST(testChunk46);
-        CPPUNIT_TEST(testChunk47);
-        CPPUNIT_TEST(testChunk48);
-        CPPUNIT_TEST(testChunk49);
+        CPPUNIT_TEST(Vrblzd_RConstraint_on_Ungrounded);
+        CPPUNIT_TEST(NC_Simple_No_Exist);
+        CPPUNIT_TEST(NC_with_Relational_Constraint);
+        CPPUNIT_TEST(NC_with_RC_and_Local_Variable);
+        CPPUNIT_TEST(NCC_Simple_Literals);
+        CPPUNIT_TEST(NCC_2_Conds_Simple_Literals);
+        CPPUNIT_TEST(NCC_with_Relational_Constraint);
+        CPPUNIT_TEST(NCC_Complex);
+        CPPUNIT_TEST(NCC_from_Backtrace);
+        CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
+        CPPUNIT_TEST(Prohibit_Fake_Instantiation_LTIs);
+        CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
+        CPPUNIT_TEST(BUNCPS_0);
+        CPPUNIT_TEST(BUNCPS_1);
+        CPPUNIT_TEST(BUNCPS_2);
+        CPPUNIT_TEST(BUNCPS_3);
+        CPPUNIT_TEST(BUNCPS_4);
+        CPPUNIT_TEST(BUNCPS_5);
+        CPPUNIT_TEST(BUNCPS_6_Four_Level);
+        CPPUNIT_TEST(BUNCPS_7_with_RConstraints);
+        CPPUNIT_TEST(Simple_Literalization_Constraint_Prop);
+        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
+        CPPUNIT_TEST(Literalization_with_Constraints);
+        CPPUNIT_TEST(Ungrounded_in_BTd_Constraints);
+//        CPPUNIT_TEST(testChunk5);
+//        CPPUNIT_TEST(testChunk6);
+//        CPPUNIT_TEST(testChunk15);
+//        CPPUNIT_TEST(testChunk17);
+//        CPPUNIT_TEST(testChunk40);
+//        CPPUNIT_TEST(testChunk42);
+//        CPPUNIT_TEST(testChunk44);
+//        CPPUNIT_TEST(testChunk45);
+//        CPPUNIT_TEST(testChunk46);
+//        CPPUNIT_TEST(testChunk47);
+//        CPPUNIT_TEST(testChunk48);
+//        CPPUNIT_TEST(testChunk49);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -75,55 +75,55 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void source(const std::string& path);
         void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
 
+        void STI_Variablization();
+        void STI_Variablization_Same_Type();
         void All_Test_Types();
+        void Conflated_Constants();
         void Ungrounded_Relational_Constraint();
-        void testChunk3();
-        void testChunk4();
-        void testChunk5();
-        void testChunk6();
-        void testChunk7();
-        void testChunk8();
-        void testChunk9();
-        void testChunk10();
-        void testChunk11();
-        void testChunk12();
-        void testChunk13();
-        void testChunk14();
+        void Vrblzd_RConstraint_on_Ungrounded();
+        void Simple_Literalization_Constraint_Prop();
+        void Constraint_Prop_from_Base_Conds();
+        void BUNCPS_7_with_RConstraints();
+        void Literalization_with_Constraints();
+        void Ungrounded_in_BTd_Constraints();
+        void RHS_Unbound_Multivalue();
+        void Rete_Bug_Deep_vs_Top();
+        void Rete_Bug_Deep_vs_Deep();
+        void Ungrounded_STIs();
+        void Ungrounded_Mixed();
         void testChunk15();
-        void testChunk16();
-        void testChunk17();
-        void testChunk18();
-        void testChunk19();
-        void testChunk20();
-        void testChunk21();
-        void testChunk22();
-        void testChunk23();
-        void testChunk24();
-        void testChunk25();
-        void testChunk26();
-        void testChunk27();
-        void testChunk28();
-        void testChunk29();
-        void testChunk30();
-        void testChunk31();
-        void testChunk32();
-        void testChunk33();
-        void testChunk34();
-        void testChunk35();
-        void testChunk36();
-        void testChunk37();
-        void testChunk38();
-        void testChunk39();
-        void testChunk40();
-        void testChunk41();
-        void testChunk42();
-        void testChunk43();
-        void testChunk44();
-        void testChunk45();
-        void testChunk46();
-        void testChunk47();
-        void testChunk48();
-        void testChunk49();
+        void Ungrounded_STI_Promotion();
+        void NC_with_RC_and_Local_Variable();
+        void NCC_Simple_Literals();
+        void NC_Simple_No_Exist();
+        void NC_with_Relational_Constraint();
+        void NCC_2_Conds_Simple_Literals();
+        void NCC_with_Relational_Constraint();
+        void NCC_Complex();
+        void NCC_from_Backtrace();
+        void RL_Variablization();
+        void BUNCPS_0();
+        void Prohibit_Fake_Instantiation_LTIs();
+        void BUNCPS_1();
+        void BUNCPS_2();
+        void BUNCPS_3();
+        void Maintain_Instantiation_Specific_Identity();
+        void BUNCPS_4();
+        void Justification_RC_not_Ungrounded_STIs();
+        void BUNCPS_5();
+        void BUNCPS_6_Four_Level();
+        void Superstate_Identity_Opaque();
+//        void testChunk5();
+//        void testChunk6();
+//        void testChunk17();
+//        void testChunk40();
+//        void testChunk42();
+//        void testChunk44();
+//        void testChunk45();
+//        void testChunk46();
+//        void testChunk47();
+//        void testChunk48();
+//        void testChunk49();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -203,62 +203,72 @@ void ChunkTest::Ungrounded_Relational_Constraint()
     build_and_check_chunk("chunk2.soar", 8, 1);
 }
 
-void ChunkTest::testChunk3()
+void ChunkTest::Vrblzd_RConstraint_on_Ungrounded()
+{
+    build_and_check_chunk("chunk41.soar", 8, 1);
+}
+
+void ChunkTest::Literalization_with_Constraints()
+{
+    build_and_check_chunk("chunk43.soar", 8, 1);
+}
+
+void ChunkTest::Conflated_Constants()
 {
     build_and_check_chunk("chunk3.soar", 8, 1);
 }
 
-void ChunkTest::testChunk4()
+void ChunkTest::Superstate_Identity_Opaque()
 {
     build_and_check_chunk("chunk4.soar", 8, 1);
 }
 
-void ChunkTest::testChunk5()
-{
-    build_and_check_chunk("chunk5.soar", 8, 1);
-}
-
-void ChunkTest::testChunk6()
-{
-    build_and_check_chunk("chunk6.soar", 8, 1);
-}
-
-void ChunkTest::testChunk7()
+//void ChunkTest::testChunk5()
+//{
+//    build_and_check_chunk("chunk5.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk6()
+//{
+//    build_and_check_chunk("chunk6.soar", 8, 1);
+//}
+//
+void ChunkTest::Ungrounded_in_BTd_Constraints()
 {
     build_and_check_chunk("chunk7.soar", 8, 2);
 }
 
-void ChunkTest::testChunk8()
+void ChunkTest::STI_Variablization()
 {
     build_and_check_chunk("chunk8.soar", 8, 1);
 }
 
-void ChunkTest::testChunk9()
+void ChunkTest::STI_Variablization_Same_Type()
 {
     build_and_check_chunk("chunk9.soar", 8, 1);
 }
 
-void ChunkTest::testChunk10()
+void ChunkTest::RHS_Unbound_Multivalue()
 {
     build_and_check_chunk("chunk10.soar", 8, 2);
 }
 
-void ChunkTest::testChunk11()
+void ChunkTest::Rete_Bug_Deep_vs_Top()
 {
     build_and_check_chunk("chunk11.soar", 8, 1);
 }
 
-void ChunkTest::testChunk12()
+void ChunkTest::Rete_Bug_Deep_vs_Deep()
 {
     build_and_check_chunk("chunk12.soar", 8, 1);
 }
 
-void ChunkTest::testChunk13()
+void ChunkTest::Ungrounded_STIs()
 {
     build_and_check_chunk("chunk13.soar", 8, 1);
 }
 
-void ChunkTest::testChunk14()
+void ChunkTest::Ungrounded_Mixed()
 {
     build_and_check_chunk("chunk14.soar", 8, 1);
 }
@@ -268,174 +278,164 @@ void ChunkTest::testChunk15()
     build_and_check_chunk("chunk15.soar", 8, 1);
 }
 
-void ChunkTest::testChunk16()
+void ChunkTest::Ungrounded_STI_Promotion()
 {
     build_and_check_chunk("chunk16.soar", 8, 1);
 }
 
-void ChunkTest::testChunk17()
-{
-    build_and_check_chunk("chunk17.soar", 8, 1);
-}
-
-void ChunkTest::testChunk18()
+//void ChunkTest::testChunk17()
+//{
+//    build_and_check_chunk("chunk17.soar", 8, 1);
+//}
+//
+void ChunkTest::NC_with_RC_and_Local_Variable()
 {
     build_and_check_chunk("chunk18.soar", 8, 1);
 }
 
-void ChunkTest::testChunk19()
+void ChunkTest::NCC_Simple_Literals()
 {
     build_and_check_chunk("chunk19.soar", 8, 1);
 }
 
-void ChunkTest::testChunk20()
+void ChunkTest::NC_Simple_No_Exist()
 {
     build_and_check_chunk("chunk20.soar", 8, 1);
 }
 
-void ChunkTest::testChunk21()
+void ChunkTest::NC_with_Relational_Constraint()
 {
     build_and_check_chunk("chunk21.soar", 8, 1);
 }
 
-void ChunkTest::testChunk22()
+void ChunkTest::NCC_2_Conds_Simple_Literals()
 {
     build_and_check_chunk("chunk22.soar", 8, 1);
 }
 
-void ChunkTest::testChunk23()
+void ChunkTest::NCC_with_Relational_Constraint()
 {
     build_and_check_chunk("chunk23.soar", 8, 1);
 }
 
-void ChunkTest::testChunk24()
+void ChunkTest::NCC_Complex()
 {
     build_and_check_chunk("chunk24.soar", 8, 1);
 }
 
-void ChunkTest::testChunk25()
+void ChunkTest::NCC_from_Backtrace()
 {
     build_and_check_chunk("chunk25.soar", 8, 1);
 }
 
-void ChunkTest::testChunk26()
+void ChunkTest::RL_Variablization()
 {
     build_and_check_chunk("chunk26.soar", 8, 5);
 }
 
-void ChunkTest::testChunk27()
+void ChunkTest::BUNCPS_0()
 {
     build_and_check_chunk("chunk27.soar", 8, 1);
 }
 
-void ChunkTest::testChunk28()
+void ChunkTest::Prohibit_Fake_Instantiation_LTIs()
 {
     build_and_check_chunk("chunk28.soar", 8, 1);
 }
 
-void ChunkTest::testChunk29()
+void ChunkTest::BUNCPS_1()
 {
     build_and_check_chunk("chunk29.soar", 8, 1);
 }
 
-void ChunkTest::testChunk30()
+void ChunkTest::BUNCPS_2()
 {
     build_and_check_chunk("chunk30.soar", 8, 1);
 }
 
-void ChunkTest::testChunk31()
+void ChunkTest::BUNCPS_3()
 {
     build_and_check_chunk("chunk31.soar", 8, 1);
 }
 
-void ChunkTest::testChunk32()
+void ChunkTest::Maintain_Instantiation_Specific_Identity()
 {
     build_and_check_chunk("chunk32.soar", 8, 1);
 }
 
-void ChunkTest::testChunk33()
+void ChunkTest::BUNCPS_4()
 {
     build_and_check_chunk("chunk33.soar", 8, 1);
 }
 
-void ChunkTest::testChunk34()
+void ChunkTest::Justification_RC_not_Ungrounded_STIs()
 {
     build_and_check_chunk("chunk34.soar", 8, 1);
 }
 
-void ChunkTest::testChunk35()
+void ChunkTest::BUNCPS_5()
 {
     build_and_check_chunk("chunk35.soar", 8, 1);
 }
 
-void ChunkTest::testChunk36()
+void ChunkTest::BUNCPS_6_Four_Level()
 {
     build_and_check_chunk("chunk36.soar", 8, 2);
 }
 
-void ChunkTest::testChunk37()
+void ChunkTest::BUNCPS_7_with_RConstraints()
 {
     build_and_check_chunk("chunk37.soar", 8, 1);
 }
 
-void ChunkTest::testChunk38()
+void ChunkTest::Simple_Literalization_Constraint_Prop()
 {
     /* Literalization and constraint maintenance */
     build_and_check_chunk("chunk38.soar", 8, 2);
 }
 
-void ChunkTest::testChunk39()
+void ChunkTest::Constraint_Prop_from_Base_Conds()
 {
     /* Constraint maintenance from base conditions */
     build_and_check_chunk("chunk39.soar", 8, 1);
 }
 
-void ChunkTest::testChunk40()
-{
-    build_and_check_chunk("chunk40.soar", 8, 1);
-}
-
-void ChunkTest::testChunk41()
-{
-    build_and_check_chunk("chunk41.soar", 8, 1);
-}
-
-void ChunkTest::testChunk42()
-{
-    build_and_check_chunk("chunk42.soar", 8, 1);
-}
-
-void ChunkTest::testChunk43()
-{
-    build_and_check_chunk("chunk43.soar", 8, 1);
-}
-
-void ChunkTest::testChunk44()
-{
-    build_and_check_chunk("chunk44.soar", 8, 1);
-}
-
-void ChunkTest::testChunk45()
-{
-    build_and_check_chunk("chunk45.soar", 8, 1);
-}
-
-void ChunkTest::testChunk46()
-{
-    build_and_check_chunk("chunk46.soar", 8, 1);
-}
-
-void ChunkTest::testChunk47()
-{
-    build_and_check_chunk("chunk47.soar", 8, 1);
-}
-
-void ChunkTest::testChunk48()
-{
-    build_and_check_chunk("chunk48.soar", 8, 1);
-}
-
-void ChunkTest::testChunk49()
-{
-    build_and_check_chunk("chunk49.soar", 8, 1);
-}
+//void ChunkTest::testChunk40()
+//{
+//    build_and_check_chunk("chunk40.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk42()
+//{
+//    build_and_check_chunk("chunk42.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk44()
+//{
+//    build_and_check_chunk("chunk44.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk45()
+//{
+//    build_and_check_chunk("chunk45.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk46()
+//{
+//    build_and_check_chunk("chunk46.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk47()
+//{
+//    build_and_check_chunk("chunk47.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk48()
+//{
+//    build_and_check_chunk("chunk48.soar", 8, 1);
+//}
+//
+//void ChunkTest::testChunk49()
+//{
+//    build_and_check_chunk("chunk49.soar", 8, 1);
+//}
