@@ -23,7 +23,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     o_id_to_g_id_map = new std::map< uint64_t, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
-    literal_constraints = new std::map< uint64_t , test >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
 
@@ -49,7 +48,6 @@ Variablization_Manager::~Variablization_Manager()
     delete o_id_to_g_id_map;
     delete sti_constraints;
     delete constant_constraints;
-    delete literal_constraints;
     delete cond_merge_map;
     delete dnvl_set;
     delete ovar_to_o_id_map;
@@ -236,27 +234,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
         if (rs->o_id)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", rs->original_rhs_variable);
-//            lG_id = get_gid_for_o_id(rs->o_id);
-//            if (lG_id != NON_GENERALIZABLE)
-//            {
-////                found_variablization = get_variablization(lG_id);
                 found_variablization = get_variablization(rs->o_id);
-//            }
-//            else
-//            {
-//                /* Normally this should not occur.  All ovars on rhs for constants should have
-//                 * entries in table since we scanned original variables of starting conditions
-//                 * of instantiation.
-//                 *
-//                 * But I think there is one exception.  If we have a preference that is added to
-//                 * the result because it is a rhs identifier that previously was linked to the
-//                 * resulting state.  The identifier will seem ungrounded because its original
-//                 * variable came from another production.  It should be treated like an unbound
-//                 * variable, so we'll fall through to code at end of function.
-//                 * */
-//                print_tables(DT_RHS_VARIABLIZATION);
-//                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, rs->original_rhs_variable);
-//            }
         }
         else
         {
@@ -275,19 +253,11 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     if (found_variablization)
     {
         /* --- Grounded symbol that has been variablized before--- */
-
         dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %y.\n", found_variablization->variablized_symbol);
-
-        if (found_variablization->variablized_symbol->tc_num != tc_num_literalized)
-        {
-            /* --- Variablized symbol was not literalized on LHS --- */
-            symbol_remove_ref(thisAgent, rs->referent);
-            rs->referent = found_variablization->variablized_symbol;
-            symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
-            return;
-        } else {
-            dprint(DT_RHS_VARIABLIZATION, "... skipping variablization of %y because it was literalized on LHS.\n", found_variablization->variablized_symbol);
-        }
+        symbol_remove_ref(thisAgent, rs->referent);
+        rs->referent = found_variablization->variablized_symbol;
+        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+        return;
     } else {
         /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
          *    Both cases return 0.  Grounding id will be generated if requested by another match. -- */

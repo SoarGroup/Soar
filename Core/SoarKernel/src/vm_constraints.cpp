@@ -186,9 +186,6 @@ void Variablization_Manager::clear_cached_constraints()
         free_list(thisAgent, it->second);
     }
     constant_constraints->clear();
-
-    /* We didn't increase refcount on literal constraints, so we just need to clear the list */
-    literal_constraints->clear();
 }
 
 void Variablization_Manager::cache_constraint(test equality_test, test relational_test)
@@ -240,12 +237,6 @@ void Variablization_Manager::cache_constraints_in_test(test t)
     if (t->type != CONJUNCTIVE_TEST)
     {
         assert(t->type == EQUALITY_TEST);
-        if (t->data.referent->is_constant() && !t->identity->original_var_id)
-        {
-            dprint(DT_CONSTRAINTS, "...caching equality test into literal constraint list: g%u -> %y\n", t->identity->original_var_id, t->data.referent);
-            (*literal_constraints)[t->identity->original_var_id] = copy_test(thisAgent, t);
-//            cache_constraint(t, t);
-        }
         return;
     }
 
@@ -265,14 +256,6 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         ctest = static_cast<test>(c->first);
         switch (ctest->type)
         {
-            case EQUALITY_TEST:
-                if (ctest->data.referent->is_constant() && !ctest->identity->original_var_id)
-                {
-                    dprint(DT_CONSTRAINTS, "...caching equality test from conjunctive test into literal constraint list: g%u -> %y\n", ctest->identity->grounding_id, ctest->data.referent);
-                    (*literal_constraints)[ctest->identity->original_var_id] = copy_test(thisAgent, ctest);
-//                    cache_constraint(equality_test, ctest);
-                }
-                break;
             case GREATER_TEST:
             case GREATER_OR_EQUAL_TEST:
             case LESS_TEST:

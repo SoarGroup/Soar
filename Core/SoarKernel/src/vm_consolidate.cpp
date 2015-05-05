@@ -212,10 +212,6 @@ void Variablization_Manager::fix_conditions(condition* top_cond, uint64_t pI_id,
         cond = next_cond;
     }
 
-    // get new tc_num to mark any variables that need to be literals
-    tc_num_literalized = get_new_tc_number(thisAgent);;
-//    install_literal_constraints(top_cond);
-
     dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
     dprint_set_indents(DT_FIX_CONDITIONS, "          ");
     dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);

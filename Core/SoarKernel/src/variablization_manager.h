@@ -158,10 +158,6 @@ class Variablization_Manager
         void cache_constraints_in_test(test t);
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
         void install_cached_constraints_for_test(test* t);
-        void install_literal_constraints_for_test(test* t);
-        void install_literal_constraints(condition* pCond);
-
-        tc_number tc_num_literalized;
 
         void add_dnvl(Symbol* sym);
         bool is_in_dnvl(Symbol* sym);
@@ -179,7 +175,6 @@ class Variablization_Manager
         /* -- Cache of constraint tests collected during backtracing -- */
         std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
-        std::map< uint64_t, test >*              literal_constraints;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
