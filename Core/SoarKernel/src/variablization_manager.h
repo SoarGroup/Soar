@@ -65,7 +65,6 @@ class Variablization_Manager
         void clear_oid_to_gid_map();
         void clear_o_id_update_map();
         void clear_cached_constraints();
-        void clear_dnvl();
         void clear_ovar_to_o_id_map();
         void clear_merge_map();
         void clear_o_id_to_ovar_debug_map();
@@ -93,9 +92,6 @@ class Variablization_Manager
         void fix_results(preference* result, uint64_t pI_id);
         void merge_conditions(condition* top_cond);
 
-        void add_ltis_to_dnvl_for_conditions(condition* top_cond);
-        void add_ltis_to_dnvl_for_prefs(preference* prefs);
-
         void      variablize_relational_constraints();
         void      variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void      variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
@@ -111,7 +107,6 @@ class Variablization_Manager
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_o_id_to_gid_map(TraceMode mode, bool printHeader = true);
-        void print_dnvl_set(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
@@ -159,10 +154,6 @@ class Variablization_Manager
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
         void install_cached_constraints_for_test(test* t);
 
-        void add_dnvl(Symbol* sym);
-        bool is_in_dnvl(Symbol* sym);
-        void add_ltis_to_dnvl_for_test(test t);
-
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
@@ -175,13 +166,11 @@ class Variablization_Manager
         /* -- Cache of constraint tests collected during backtracing -- */
         std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
+        std::set< uint64_t >* literalizations;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >* cond_merge_map;
-
-        std::set< Symbol* >* dnvl_set;
-        std::set< uint64_t >* literalizations;
 
         /* This is a map of original variable symbols to its map of instantiations to o_ids */
         std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;

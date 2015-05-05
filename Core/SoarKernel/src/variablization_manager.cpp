@@ -26,8 +26,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
 
-    dnvl_set = new std::set< Symbol* >;
-
     literalizations = new std::set< uint64_t >;
     ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
     unification_map = new std::map< uint64_t, uint64_t >();
@@ -49,7 +47,6 @@ Variablization_Manager::~Variablization_Manager()
     delete sti_constraints;
     delete constant_constraints;
     delete cond_merge_map;
-    delete dnvl_set;
     delete ovar_to_o_id_map;
     delete unification_map;
     delete o_id_to_ovar_debug_map;
@@ -308,14 +305,9 @@ void Variablization_Manager::variablize_test(test* t, Symbol* original_referent)
     assert(instantiated_referent && original_referent);
 
     bool is_variablizable = false;
-    if (instantiated_referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    if (instantiated_referent->symbol_type == IDENTIFIER_SYMBOL_TYPE && instantiated_referent->id->smem_lti == NIL)
     {
-        if (instantiated_referent->id->smem_lti == NIL)
-        {
-            is_variablizable = true;
-        } else {
-            is_variablizable = instantiated_referent->is_variablizable() && !is_in_dnvl(instantiated_referent);
-        }
+        is_variablizable = true;
     } else {
         is_variablizable = instantiated_referent->is_variablizable();
     }
@@ -326,7 +318,7 @@ void Variablization_Manager::variablize_test(test* t, Symbol* original_referent)
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %y or in DNVL.  Original: %y.\n", instantiated_referent, original_referent);
+        dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %y.  Original: %y.\n", instantiated_referent, original_referent);
     }
 
     dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", *t);
@@ -363,7 +355,6 @@ void Variablization_Manager::variablize_equality_tests(test* t)
             tt = reinterpret_cast<test*>(&(c->first));
             if (((*tt)->type == EQUALITY_TEST) && (*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
             {
-//                variablize_equality_test(tt);
                 variablize_test(tt, (*tt)->identity->original_var);
             }
         }
@@ -704,72 +695,4 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
 
     a->next = variablize_results(result->next_result, variablize);
     return a;
-}
-
-void Variablization_Manager::add_ltis_to_dnvl_for_test(test t)
-{
-    cons* c;
-    dprint(DT_IDENTITY_PROP, "Adding LTIs for test: %t\n", t);
-
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        dprint(DT_IDENTITY_PROP, "Adding LTIs for conjunctive test: ");
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            add_ltis_to_dnvl_for_test(reinterpret_cast<test>(c->first));
-        }
-    }
-    else if (test_has_referent(t) && t->data.referent->is_lti())
-    {
-        dprint(DT_IDENTITY_PROP, "Adding LTI %y to DNVL.", t->data.referent);
-        add_dnvl(t->data.referent);
-    }
-}
-
-void Variablization_Manager::add_ltis_to_dnvl_for_conditions(condition* top_cond)
-{
-    dprint(DT_IDENTITY_PROP, "Adding LTIs to DNVL: ");
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            dprint(DT_IDENTITY_PROP, "Adding for condition: %l\n", cond);
-            add_ltis_to_dnvl_for_test(cond->data.tests.id_test);
-            add_ltis_to_dnvl_for_test(cond->data.tests.attr_test);
-            add_ltis_to_dnvl_for_test(cond->data.tests.value_test);
-        }
-        else
-        {
-            dprint(DT_NCC_VARIABLIZATION, "Adding for negative conjunctive condition:\n");
-            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
-            add_ltis_to_dnvl_for_conditions(cond->data.ncc.top);
-        }
-    }
-    dprint_noprefix(DT_IDENTITY_PROP, "\n");
-    dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
-    print_dnvl_set(DT_IDENTITY_PROP);
-
-}
-
-void Variablization_Manager::add_ltis_to_dnvl_for_prefs(preference* prefs)
-{
-    if (!prefs)
-    {
-        dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
-        print_dnvl_set(DT_IDENTITY_PROP);
-        return;
-    }
-
-    dprint(DT_IDENTITY_PROP, "Adding LTIs to for preference: %p\n",
-        prefs);
-
-    if (prefs->id && (prefs->id->is_lti())) { add_dnvl(prefs->id); }
-    if (prefs->attr && (prefs->attr->is_lti())) { add_dnvl(prefs->attr); }
-    if (prefs->value && (prefs->value->is_lti())) { add_dnvl(prefs->value); }
-    if (preference_is_binary(prefs->type))
-    {
-        if (prefs->referent && (prefs->referent->is_lti())) { add_dnvl(prefs->referent); }
-    }
-    add_ltis_to_dnvl_for_prefs(prefs->next_result);
-
 }

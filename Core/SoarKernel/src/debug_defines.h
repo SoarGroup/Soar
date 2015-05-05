@@ -57,9 +57,9 @@
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
-#define TRACE_Init_DT_UNIFICATION                 true
+#define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_LITERALIZATION              true
-#define TRACE_Init_DT_DNVL                        false
+#define TRACE_Init_DT_DNVL                        true
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
 //--

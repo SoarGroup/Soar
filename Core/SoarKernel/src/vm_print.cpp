@@ -21,27 +21,6 @@ void Variablization_Manager::print_o_id_tables(TraceMode mode)
     print_o_id_to_ovar_debug_map(mode);
 
 }
-void Variablization_Manager::print_dnvl_set(TraceMode mode)
-{
-    dprint(mode, "------------------------------------\n");
-    dprint(mode, "       Do Not Variablize List\n");
-    dprint(mode, "------------------------------------\n");
-
-    if (dnvl_set->size() == 0)
-    {
-        dprint(mode, "EMPTY SET\n");
-    }
-
-    std::set< Symbol*>::iterator iter;
-    int d_cnt = 1;
-    for (iter = dnvl_set->begin(); iter != dnvl_set->end(); ++iter, ++d_cnt)
-    {
-        dprint(mode, "%i %y\n", d_cnt, (*iter));
-    }
-
-    dprint(mode, "------------------------------------\n");
-}
-
 
 void Variablization_Manager::print_merge_map(TraceMode mode)
 {

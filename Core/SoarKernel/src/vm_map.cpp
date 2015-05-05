@@ -21,7 +21,6 @@ void Variablization_Manager::clear_data()
     clear_oid_to_gid_map();
     clear_variablization_maps();
     clear_merge_map();
-    clear_dnvl();
     clear_ovar_to_o_id_map();
     clear_o_id_substitution_map();
     clear_o_id_to_ovar_debug_map();
@@ -212,9 +211,6 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 
     dprint(DT_VM_MAPS, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     /* MToDo | Remove */
-//    std::string strName(orig_var->to_string());
-//    if ((pI_id == 1) && (strName == "<x>"))
-//        assert(false);
     return 0;
 
 }
@@ -251,24 +247,4 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
 //    dprint_noprefix(DT_OVAR_PROP, "not found.  Returning NULL.\n");
     return NULL;
 
-}
-
-void Variablization_Manager::clear_dnvl()
-{
-    dprint(DT_DNVL, "Clearing LTI DNVL set.\n");
-     dnvl_set->clear();
-}
-void Variablization_Manager::add_dnvl(Symbol* sym)
-{
-    dprint(DT_DNVL, "...adding symbol %y to DNVL set.\n", sym);
-    dnvl_set->insert(sym);
-}
-
-bool Variablization_Manager::is_in_dnvl(Symbol* sym)
-{
-    std::set< Symbol* >::iterator iter;
-    iter = dnvl_set->find(sym);
-    dprint(DT_DNVL, "Looking for symbol %y in DNVL set...%s.\n", sym, (iter != dnvl_set->end()) ? "found" : "not found");
-
-    return (iter != dnvl_set->end());
 }
