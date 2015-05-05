@@ -175,7 +175,7 @@ void Variablization_Manager::clear_o_id_to_ovar_debug_map()
 void Variablization_Manager::clear_o_id_substitution_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
-    o_id_substitution_map->clear();
+    unification_map->clear();
 }
 
 void Variablization_Manager::clear_ovar_to_o_id_map()

@@ -17,8 +17,8 @@
 
 void Variablization_Manager::unify_identity(agent* thisAgent, test t)
 {
-    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_substitution_map).find(t->identity->original_var_id);
-    if (iter != (*o_id_substitution_map).end())
+    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity->original_var_id);
+    if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
             t->identity->original_var_id, iter->second);
@@ -41,6 +41,21 @@ void Variablization_Manager::unify_identity(agent* thisAgent, test t)
         }
     }
 }
+/* MToDo | Verify that this is necessary in certain cases */
+void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id)
+{
+    std::map< uint64_t, uint64_t >::iterator iter;
+
+    for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
+    {
+
+        if (iter->second == pOld_o_id)
+        {
+            dprint(DT_FIX_CONDITIONS, "...found secondary ovar->g_id mapping that needs updated: o%u = o%u = o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
+            (*unification_map)[iter->first] = pNew_o_id;
+        }
+    }
+}
 
 void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
@@ -55,9 +70,9 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
         newID = 0;
     } else {
         /* See if a unification already exists for the new identity propagating back*/
-        iter = (*o_id_substitution_map).find(pNew_o_id);
+        iter = (*unification_map).find(pNew_o_id);
 
-        if (iter == (*o_id_substitution_map).end())
+        if (iter == (*unification_map).end())
         {
             /* Map all cases of this identity with its parent identity */
             print_o_id_to_ovar_debug_map(DT_UNIFICATION);
@@ -78,8 +93,8 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
     }
 
     /* See if a unification already exists for the identity being replaced in this instantiation*/
-    iter = (*o_id_substitution_map).find(pOld_o_id);
-    if (iter != (*o_id_substitution_map).end())
+    iter = (*unification_map).find(pOld_o_id);
+    if (iter != (*unification_map).end())
     {
         if (iter->second == 0)
         {
@@ -87,27 +102,31 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
              * literalize any tests with identity of parent in this trace */
             dprint(DT_UNIFICATION, "Literalization exists for o%u.  Propagating literalization substitution with %y[o%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             /* MToDo | This might be redundant.  Wouldn't it be literalized already? */
-            (*o_id_substitution_map)[newID] = 0;
+            (*unification_map)[newID] = 0;
+            update_unification_table(newID, 0);
         } else {
             if (newID == 0)
             {
                 /* The existing identity we're literalizing is already unified with another identity from
                  * a different trace.  So, literalize the identity, that it is already remapped to.*/
                 dprint(DT_UNIFICATION, "Unification with another identity exists for o%u.  Propagating literalization substitution with %y[o%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
-                (*o_id_substitution_map)[iter->second] = 0;
+                (*unification_map)[iter->second] = 0;
+                update_unification_table(iter->second, 0);
             } else {
                 /* The existing identity we're unifying with is already unified with another identity from
                  * a different trace.  So, unify the identity that it is already remapped to with identity
                  * of the parent in this trace */
                 dprint(DT_UNIFICATION, "Unification with another identity exists for o%u.  Adding %y[o%u] -> ", pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
                 dprint_noprefix(DT_UNIFICATION, "%y[o%u].\n", get_ovar_for_o_id(pNew_o_id), pNew_o_id);
-                (*o_id_substitution_map)[iter->second] = newID;
+                (*unification_map)[iter->second] = newID;
+                update_unification_table(iter->second, newID);
             }
         }
     }
 
     /* Unify identity in this instantiation with final identity */
-    (*o_id_substitution_map)[pOld_o_id] = newID;
+    (*unification_map)[pOld_o_id] = newID;
+    update_unification_table(pOld_o_id, newID);
     print_o_id_substitution_map(DT_UNIFICATION);
 }
 

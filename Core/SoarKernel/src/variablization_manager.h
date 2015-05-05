@@ -141,7 +141,6 @@ class Variablization_Manager
         bool variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
-        void update_ovar_table_for_sub(test sacrificeSymTest, test survivorSymTest);
         void remove_ungrounded_sti_tests(test* t, bool ignore_ungroundeds);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
@@ -153,6 +152,7 @@ class Variablization_Manager
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id);
+        void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
 
         void cache_constraint(test equality_test, test relational_test);
         void cache_constraints_in_test(test t);
@@ -190,7 +190,7 @@ class Variablization_Manager
 
         /* This is a map of original variable symbols to its map of instantiations to o_ids */
         std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
-        std::map< uint64_t, uint64_t >*                         o_id_substitution_map;
+        std::map< uint64_t, uint64_t >*                         unification_map;
         std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
         std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
 

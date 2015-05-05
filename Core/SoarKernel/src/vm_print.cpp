@@ -107,14 +107,14 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
     dprint(mode, "     o_id_substitution_map Map\n");
     dprint(mode, "------------------------------------\n");
 
-    if (o_id_substitution_map->size() == 0)
+    if (unification_map->size() == 0)
     {
         dprint(mode, "EMPTY MAP\n");
     }
 
     std::map< uint64_t, uint64_t >::iterator iter;
 
-    for (iter = o_id_substitution_map->begin(); iter != o_id_substitution_map->end(); ++iter)
+    for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
 //        dprint(mode, "   o%u(%y) = o%u(%y)\n",
 //            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),

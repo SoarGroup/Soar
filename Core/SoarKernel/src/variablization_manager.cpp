@@ -31,7 +31,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     literalizations = new std::set< uint64_t >;
     ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
-    o_id_substitution_map = new std::map< uint64_t, uint64_t >();
+    unification_map = new std::map< uint64_t, uint64_t >();
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
     o_id_update_map = new std::map< uint64_t, o_id_update_info* >();
 
@@ -53,7 +53,7 @@ Variablization_Manager::~Variablization_Manager()
     delete cond_merge_map;
     delete dnvl_set;
     delete ovar_to_o_id_map;
-    delete o_id_substitution_map;
+    delete unification_map;
     delete o_id_to_ovar_debug_map;
     delete o_id_update_map;
 
