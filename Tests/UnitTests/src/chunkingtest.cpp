@@ -41,8 +41,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Prohibit_Fake_Instantiation_LTIs);
         CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
         CPPUNIT_TEST(Simple_Literalization);
-        CPPUNIT_TEST(Simple_Constraint_Prop);
+        CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_Constraints);
+        CPPUNIT_TEST(Simple_Constraint_Prop);
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(BUNCPS_0);
         CPPUNIT_TEST(BUNCPS_1);
@@ -58,7 +59,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 //        CPPUNIT_TEST(testChunk17);
 //        CPPUNIT_TEST(testChunk40);
 //        CPPUNIT_TEST(testChunk42);
-//        CPPUNIT_TEST(testChunk45);
 //        CPPUNIT_TEST(testChunk46);
 //        CPPUNIT_TEST(testChunk47);
 //        CPPUNIT_TEST(testChunk48);
@@ -114,12 +114,12 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void BUNCPS_6_Four_Level();
         void Superstate_Identity_Opaque();
         void Simple_Constraint_Prop();
+        void Literalization_of_NC_and_NCC();
 //        void testChunk5();
 //        void testChunk6();
 //        void testChunk17();
 //        void testChunk40();
 //        void testChunk42();
-//        void testChunk45();
 //        void testChunk46();
 //        void testChunk47();
 //        void testChunk48();
@@ -415,11 +415,11 @@ void ChunkTest::Simple_Constraint_Prop()
     build_and_check_chunk("chunk44.soar", 8, 1);
 }
 
-//void ChunkTest::testChunk45()
-//{
-//    build_and_check_chunk("chunk45.soar", 8, 1);
-//}
-//
+void ChunkTest::Literalization_of_NC_and_NCC()
+{
+    build_and_check_chunk("chunk45.soar", 8, 1);
+}
+
 //void ChunkTest::testChunk46()
 //{
 //    build_and_check_chunk("chunk46.soar", 8, 1);
