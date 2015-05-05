@@ -192,7 +192,8 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
 {
     dprint(DT_CONSTRAINTS, "Adding relational constraint %t to %t.\n", relational_test, equality_test);
     ::list* new_list = NULL;
-    test copied_test = copy_test(thisAgent, relational_test);
+//    test copied_test = copy_test(thisAgent, relational_test);
+    test copied_test = relational_test;
 
     if (equality_test->data.referent->is_sti())
     {

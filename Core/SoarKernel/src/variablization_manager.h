@@ -18,6 +18,7 @@ typedef struct action_struct action;
 typedef struct preference_struct preference;
 typedef char* rhs_value;
 typedef struct chunk_cond_struct chunk_cond;
+tc_number get_new_tc_number(agent* thisAgent);
 
 typedef struct variablization_struct
 {
@@ -78,6 +79,15 @@ class Variablization_Manager
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
+
+        void reset_constraint_found_tc_num()
+        {
+            tc_num_found = get_new_tc_number(thisAgent);
+        };
+        tc_number get_constraint_found_tc_num()
+        {
+            return tc_num_found;
+        };
 
         void cache_constraints_in_cond(condition* c);
         void install_cached_constraints(condition* cond);
@@ -183,6 +193,8 @@ class Variablization_Manager
         uint64_t ground_id_counter;
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
+
+        tc_number tc_num_found;
 
 };
 

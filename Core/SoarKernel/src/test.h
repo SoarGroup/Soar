@@ -92,8 +92,9 @@ typedef struct test_struct
     } data;
     test_struct*     original_test;
     test_struct*     eq_test;
+    tc_number        tc_num;
     identity_info*   identity;
-    test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), identity(NULL)
+    test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), tc_num(0), identity(NULL)
     {
         data.referent = NULL;
     }

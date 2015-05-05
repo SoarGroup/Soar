@@ -99,6 +99,10 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             }
             if (pUnify_variablization_identity)
             {
+                if (t->type != EQUALITY_TEST)
+                {
+                    t->tc_num = thisAgent->variablizationManager->get_constraint_found_tc_num();
+                }
                 if (new_ct->identity->original_var_id)
                 {
                     thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);

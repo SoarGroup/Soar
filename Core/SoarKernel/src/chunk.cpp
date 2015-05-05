@@ -426,6 +426,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint_noprefix(DT_UNIFICATION, "%3", thisAgent->grounds);
     dprint(DT_BACKTRACE, "...adding positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
+    thisAgent->variablizationManager->reset_constraint_found_tc_num();
     prev_inst = prev_vrblz = NIL;
     while (thisAgent->grounds)
     {
