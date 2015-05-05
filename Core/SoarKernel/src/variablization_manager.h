@@ -31,7 +31,8 @@ typedef struct o_id_update_struct
 {
         uint64_t o_id;
         Symbol* o_var;
-        o_id_update_struct() : o_id(0), o_var(NULL) {}
+        test equality_test_in_positive_cond;
+        o_id_update_struct() : o_id(0), o_var(NULL), equality_test_in_positive_cond(NULL) {}
 } o_id_update_info;
 
 /* -- Variablization_Manager
@@ -96,7 +97,7 @@ class Variablization_Manager
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult = false);
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, test eq_test = NULL, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -156,7 +157,7 @@ class Variablization_Manager
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
-        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id);
+        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, test eq_test = NULL);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
 
         void cache_constraint(test equality_test, test relational_test);

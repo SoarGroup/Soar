@@ -48,7 +48,6 @@
 #include "src/vm_constraints.cpp"
 #include "src/vm_consolidate.cpp"
 #include "src/vm_g_identity.cpp"
-#include "src/vm_literalization.cpp"
 #include "src/vm_map.cpp"
 #include "src/vm_merge.cpp"
 #include "src/vm_print.cpp"

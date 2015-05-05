@@ -391,7 +391,10 @@ void Variablization_Manager::install_cached_constraints(condition* cond)
         }
         cond = cond->next;
     }
-    dprint(DT_CONSTRAINTS, "install_relational_constraints done adding constraints.  Final tables:\n");
+    dprint(DT_CONSTRAINTS,
+        (!sti_constraints->size() && !constant_constraints->size()) ?
+        "All constraints were added.  Final tables:\n" :
+        "Some constraints could not be attached!!!  Final tables:\n");
     print_variablization_tables(DT_CONSTRAINTS);
     print_cached_constraints(DT_CONSTRAINTS);
     dprint_noprefix(DT_CONSTRAINTS, "%1", cond);

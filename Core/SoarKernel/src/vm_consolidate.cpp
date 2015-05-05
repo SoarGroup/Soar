@@ -74,12 +74,13 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_i
     return 0;
 }
 
-void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id)
+void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, test eq_test)
 {
     assert(get_updated_o_id_info(old_o_id) == 0);
     o_id_update_info* new_o_id_info = new o_id_update_info();
     new_o_id_info->o_var = new_ovar;
     new_o_id_info->o_id = new_o_id;
+    new_o_id_info->equality_test_in_positive_cond = eq_test;
     (*o_id_update_map)[old_o_id] = new_o_id_info;
 }
 
@@ -107,7 +108,7 @@ void Variablization_Manager::add_updated_o_id_to_g_id_mapping(uint64_t old_o_id,
 
 }
 
-void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, bool pIsResult)
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, test eq_test, bool pIsResult)
 {
     uint64_t new_o_id = 0;
     Symbol* new_ovar = NULL;
@@ -232,17 +233,17 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &dummy, pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &dummy, pI_id, NULL, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &dummy, pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &dummy, pI_id, NULL, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &dummy, pI_id, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &dummy, pI_id, NULL, true);
         }
     }
     fix_results(result->next_result, pI_id);

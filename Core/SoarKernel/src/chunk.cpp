@@ -424,7 +424,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint(DT_UNIFICATION, "Building conditions for new chunk...\n");
     dprint(DT_UNIFICATION, "Grounds from backtrace: \n");
     dprint_noprefix(DT_UNIFICATION, "%3", thisAgent->grounds);
-    dprint(DT_BACKTRACE, "...adding positive conditions from final ground set.\n");
+    dprint(DT_BACKTRACE, "...creating positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
     thisAgent->variablizationManager->reset_constraint_found_tc_num();
     prev_inst = prev_vrblz = NIL;
@@ -504,8 +504,11 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     }
 
     *inst_top = first_inst;
-    dprint(DT_UNIFICATION, "Conditions after variablization unification: \n");
+    dprint(DT_UNIFICATION, "Conditions after identity unification: \n");
     dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
+
+    /**/
+//    thisAgent->variablizationManager->propagate_constraint_identities(chunk_new_i_id);
 
     copy_cond = *inst_top;
     while (copy_cond)
@@ -991,15 +994,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
 
-//    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
-//    for (condition* c = inst->top_of_instantiated_conditions; c; c = c->next)
-//    {
-//        if (c->type == POSITIVE_CONDITION)
-//        {
-//            thisAgent->variablizationManager->cache_constraints_in_cond(c);
-//        }
-//    }
-
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
         Symbol* g;
@@ -1107,7 +1101,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
-        thisAgent->variablizationManager->propagate_constraint_identities(chunk_new_i_id);
     }
 
     variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);

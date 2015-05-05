@@ -99,9 +99,16 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             }
             if (pUnify_variablization_identity)
             {
+                test eq_test = NULL;
+                /* Mark this test as found.  The tests in the constraint lists are copies of
+                 * the pointers in grounds, so we use this tc_num later to later check if
+                 * an entry in the constraint propagation list is a duplicate of a test
+                 * already in a condition, which most should be. */
                 if (t->type != EQUALITY_TEST)
                 {
                     t->tc_num = thisAgent->variablizationManager->get_constraint_found_tc_num();
+                } else {
+                    eq_test = t;
                 }
                 if (new_ct->identity->original_var_id)
                 {
@@ -111,11 +118,9 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                      * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
                     if (new_ct->identity->original_var_id && pI_id)
                     {
-                        dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
-                        //                        old_o_id = new_ct->identity->original_var_id;
-                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id);
+                        dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, pI_id);
+                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id, t);
                         dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                        thisAgent->variablizationManager->print_o_id_to_gid_map(DT_FIX_CONDITIONS);
                         assert(new_ct->identity->original_var_id != t->identity->original_var_id);
                     }
                 }
