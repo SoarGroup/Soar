@@ -18,7 +18,6 @@ void Variablization_Manager::clear_data()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing all variablization manager maps.\n");
     clear_cached_constraints();
-    clear_oid_to_gid_map();
     clear_variablization_maps();
     clear_merge_map();
     clear_ovar_to_o_id_map();
@@ -36,12 +35,6 @@ void Variablization_Manager::clear_o_id_update_map()
         delete it->second;
     }
     o_id_update_map->clear();
-}
-
-void Variablization_Manager::clear_oid_to_gid_map()
-{
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id to g_id table...\n");
-    o_id_to_g_id_map->clear();
 }
 
 void Variablization_Manager::clear_variablization_maps()
@@ -87,13 +80,13 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     std::map< uint64_t, variablization* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found %u in g_id variablization table: %y/%y\n", index_id,
+        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y/%y\n", index_id,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_VM_MAPS, "...did not find %u in g_id variablization table.\n", index_id);
+        dprint(DT_VM_MAPS, "...did not find o%u in non-STI variablization table.\n", index_id);
         print_variablization_tables(DT_LHS_VARIABLIZATION, 2);
         return NULL;
     }
@@ -104,13 +97,13 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
     std::map< Symbol*, variablization* >::iterator iter = (*pMap).find(index_sym);
     if (iter != (*pMap).end())
     {
-        dprint(DT_VM_MAPS, "...found %y in variablization table: %y/%y\n", index_sym,
+        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y/%y\n", index_sym,
                iter->second->variablized_symbol, iter->second->instantiated_symbol);
         return iter->second;
     }
     else
     {
-        dprint(DT_VM_MAPS, "...did not find %y in variablization table.\n", index_sym);
+        dprint(DT_VM_MAPS, "...did not find %y in STI variablization table.\n", index_sym);
         print_variablization_tables(DT_VM_MAPS, 1);
         return NULL;
     }
@@ -129,39 +122,7 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
     else
     {
-        return get_variablization(t->identity->original_var_id);
-    }
-}
-
-uint64_t Variablization_Manager::get_gid_for_o_id(uint64_t pO_id)
-{
-    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(pO_id);
-    if (iter != (*o_id_to_g_id_map).end())
-    {
-        dprint(DT_VM_MAPS, "...found g%u in o_id_to_g_id table for o%u\n",
-            iter->second, pO_id);
-
-        return iter->second;
-    } else {
-        dprint(DT_VM_MAPS, "...did not find o%u in o_id_to_g_id.\n", pO_id);
-        print_o_id_to_gid_map(DT_VM_MAPS);
-    }
-    return 0;
-}
-
-void Variablization_Manager::add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id)
-{
-    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_to_g_id_map).find(pO_id);
-    if (iter == (*o_id_to_g_id_map).end())
-    {
-        dprint(DT_VM_MAPS, "Did not find o_id to g_id mapping for %u.  Adding.\n", pO_id);
-        (*o_id_to_g_id_map)[pO_id] = pG_id;
-    }
-    else
-    {
-        dprint(DT_VM_MAPS,
-               "...g%u already exists for o%u(%y).  add_o_id_to_gid_mapping returning existing g%u.\n",
-               iter->second, pO_id, get_ovar_for_o_id(pO_id), iter->second);
+        return get_variablization(t->identity->o_id);
     }
 }
 

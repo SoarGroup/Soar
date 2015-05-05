@@ -35,35 +35,22 @@ typedef signed short goal_stack_level;
 typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
-/* identity_info is a struct used to hold the original symbol and grounding
- * information for a test.  It is used during chunking to determine which
+/* identity_info is a struct used to hold the rule symbol and variablization
+ * identity for a test.  It is used during chunking to determine which
  * constant symbols have the same semantics.
  *
  *    Type:             Test type in condition of original production matched
  *    symbol_type:      Symbol type in condition of original production matched
- *    grounding_id:     Unique numeric identifier of WME matched (a given WME
- *                      will have a different grounding ID for every level of
- *                      the goal stack.  Generated lazily.)
- *    grounding_index:  Which field of the WME (id, attr or value)
- *    grounding_wme:    This caches the matched wme when reconstructing the
- *                      condition when creating the instantiation.  It is needed
- *                      because we can't propagate the proper grounding IDs
- *                      until we know the match level of an instantiation.  So,
- *                      we temporarily cache the matched wme here while
- *                      reconstructing the conditions, and then later use that
- *                      wme to get IDs once we know the match level.
  *
- * Note: Conjunctive tests will not have symbol_type or grounding_id
- * or grounding index.*/
+ * Note: Conjunctive tests will not have identity.  The individual tests will though.
+ *
+ * */
 
 typedef struct identity_struct
 {
-    Symbol*       original_var;
-    uint64_t      original_var_id;
-    uint64_t      grounding_id;
-    WME_Field     grounding_field;
-    wme*           grounding_wme;
-    identity_struct() : original_var(NULL), original_var_id(0), grounding_id(NON_GENERALIZABLE), grounding_field(NO_ELEMENT), grounding_wme(NULL) {}
+    Symbol*       rule_symbol;
+    uint64_t      o_id;
+    identity_struct() : rule_symbol(NULL), o_id(0) {}
 } identity_info;
 
 /* -- test_info stores information about a test.  If nil, the test is
@@ -71,8 +58,8 @@ typedef struct identity_struct
  *
  *    The original_test pointer stores the test that was defined when the
  *    production was read in by the parser.  The values are filled in by the
- *    rete when reconstructing a production.  It is used by the chunker to
- *    determine when to variablize non-STI symbols.
+ *    rete when reconstructing a production.  It is used to fill out the
+ *    identity structure then removed.
  *
  *    The eq_test pointer is used to cache the main equality test for an
  *    element in a condition so that we do not have to continually re-scan

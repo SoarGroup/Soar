@@ -226,11 +226,11 @@ void backtrace_through_instantiation(agent* thisAgent,
         /* MToDo | Both cases in innermost if will do the same thing.  If literalization doesn't do anything special, remove.*/
         if (!ovars_matched_syms.id->is_sti() && o_ids_to_replace.id && lId)
         {
-            if (lId->identity->original_var_id)
+            if (lId->identity->o_id)
             {
                 dprint(DT_OVAR_PROP, "Found an o_id to replace for identifier element: %y [o%u] ", ovars_to_replace.id, o_ids_to_replace.id);
-                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lId->identity->original_var, lId->identity->original_var_id);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity->original_var_id);
+                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lId->identity->rule_symbol, lId->identity->o_id);
+                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity->o_id);
             } else {
                 dprint(DT_OVAR_PROP, "Found an o_id to literalize for identifier element: %y [o%u] ", ovars_to_replace.id, o_ids_to_replace.id);
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lId);
@@ -239,11 +239,11 @@ void backtrace_through_instantiation(agent* thisAgent,
         }
         if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && lAttr)
         {
-            if (lAttr->identity->original_var_id)
+            if (lAttr->identity->o_id)
             {
                 dprint(DT_OVAR_PROP, "Found an o_id to replace for attribute element: %y [o%u] ", ovars_to_replace.attr, o_ids_to_replace.attr);
-                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lAttr->identity->original_var, lAttr->identity->original_var_id);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity->original_var_id);
+                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lAttr->identity->rule_symbol, lAttr->identity->o_id);
+                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity->o_id);
             } else {
                 dprint(DT_OVAR_PROP, "Found an o_id to literalize for attribute element: %y [o%u] ", ovars_to_replace.attr, o_ids_to_replace.attr);
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lAttr);
@@ -252,11 +252,11 @@ void backtrace_through_instantiation(agent* thisAgent,
         }
         if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && lValue)
         {
-            if (lValue->identity->original_var_id)
+            if (lValue->identity->o_id)
             {
                 dprint(DT_OVAR_PROP, "Found an o_id to replace for value element: %y [o%u] ", ovars_to_replace.value, o_ids_to_replace.value);
-                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lValue->identity->original_var, lValue->identity->original_var_id);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity->original_var_id);
+                dprint_noprefix(DT_OVAR_PROP, "-> %y [o%u]\n", lValue->identity->rule_symbol, lValue->identity->o_id);
+                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity->o_id);
             } else {
                 dprint(DT_OVAR_PROP, "Found an o_id to literalize for value element: %y [o%u] ", ovars_to_replace.value, o_ids_to_replace.value);
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lValue);

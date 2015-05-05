@@ -24,7 +24,6 @@ typedef struct variablization_struct
 {
     Symbol* instantiated_symbol;
     Symbol* variablized_symbol;
-    uint64_t grounding_id;
 } variablization;
 
 typedef struct o_id_update_struct
@@ -59,12 +58,10 @@ class Variablization_Manager
 {
     public:
 
-        uint64_t get_new_ground_id() { return (++ground_id_counter); };
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
         uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
 
         void clear_variablization_maps();
-        void clear_oid_to_gid_map();
         void clear_o_id_update_map();
         void clear_cached_constraints();
         void clear_ovar_to_o_id_map();
@@ -73,9 +70,6 @@ class Variablization_Manager
         void clear_o_id_substitution_map();
         void clear_data();
         void reinit();
-
-        void add_o_id_to_gid_mapping(uint64_t pO_id, uint64_t pG_id);
-        uint64_t get_gid_for_o_id(uint64_t pO_id);
 
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
@@ -97,7 +91,7 @@ class Variablization_Manager
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, test eq_test = NULL, bool pIsResult = false);
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, test eq_test = NULL, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -117,7 +111,6 @@ class Variablization_Manager
         void print_o_id_tables(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
-        void print_o_id_to_gid_map(TraceMode mode, bool printHeader = true);
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
@@ -156,7 +149,6 @@ class Variablization_Manager
         void add_identity_to_test(test* t, WME_Field default_f);
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
-        void add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, test eq_test = NULL);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
 
@@ -170,7 +162,6 @@ class Variablization_Manager
          *    they store is temporary and cleared after use. -- */
 
         /* -- Look-up tables for LHS variablization -- */
-        std::map< uint64_t, uint64_t >*          o_id_to_g_id_map;
         std::map< uint64_t, variablization* >*   o_id_to_var_map;
         std::map< Symbol*, variablization* >*    sym_to_var_map;
 
@@ -189,9 +180,8 @@ class Variablization_Manager
         std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
         std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
 
-        /* -- A counter for the next grounding id to assign. 0 is the default
-         *    value and not considered a valid grounding id. -- */
-        uint64_t ground_id_counter;
+        /* -- A counter for variablization and instantiation id's. 0 is the default
+         *    value and not considered a valid id. -- */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
 

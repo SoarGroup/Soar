@@ -148,8 +148,8 @@ class Output_Manager
         char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok = NIL, wme* w = NIL);
         char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality = false);
         const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
-        char* wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity = false);
-        char* WM_to_string(agent* thisAgent, char* dest, size_t dest_size, bool pOnlyWithIdentity = true);
+        char* wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size);
+        char* WM_to_string(agent* thisAgent, char* dest, size_t dest_size);
 
         void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
 

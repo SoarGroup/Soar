@@ -27,7 +27,7 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id);
+void create_identity_for_eq_tests(agent* thisAgent, test t, uint64_t pI_id);
 
 /* =================================================================
 
@@ -74,28 +74,19 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             break;
         case DISJUNCTION_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->identity->grounding_id = t->identity->grounding_id;
-            new_ct->identity->grounding_field = t->identity->grounding_field;
-            new_ct->identity->grounding_wme = t->identity->grounding_wme;
             new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->identity->grounding_id = t->identity->grounding_id;
-            new_ct->identity->grounding_field = t->identity->grounding_field;
-            new_ct->identity->grounding_wme = t->identity->grounding_wme;
             new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity, pI_id);
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
-            new_ct->identity->grounding_id = t->identity->grounding_id;
-            new_ct->identity->grounding_field = t->identity->grounding_field;
-            new_ct->identity->grounding_wme = t->identity->grounding_wme;
-            new_ct->identity->original_var = t->identity->original_var;
-            new_ct->identity->original_var_id = t->identity->original_var_id;
-            if (new_ct->identity->original_var)
+            new_ct->identity->rule_symbol = t->identity->rule_symbol;
+            new_ct->identity->o_id = t->identity->o_id;
+            if (new_ct->identity->rule_symbol)
             {
-                symbol_add_ref(thisAgent, new_ct->identity->original_var);
+                symbol_add_ref(thisAgent, new_ct->identity->rule_symbol);
             }
             if (pUnify_variablization_identity)
             {
@@ -110,18 +101,18 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                 } else {
                     eq_test = t;
                 }
-                if (new_ct->identity->original_var_id)
+                if (new_ct->identity->o_id)
                 {
                     thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
                     /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                      * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
                      * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
-                    if (new_ct->identity->original_var_id && pI_id)
+                    if (new_ct->identity->o_id && pI_id)
                     {
-                        dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, pI_id);
-                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id, t);
+                        dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->o_id, new_ct->identity->rule_symbol, pI_id);
+                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id, t);
                         dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                        assert(new_ct->identity->original_var_id != t->identity->original_var_id);
+                        assert(new_ct->identity->o_id != t->identity->o_id);
                     }
                 }
             }
@@ -138,10 +129,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
      * chunking, but we had it here at some point for debugging test
      * and in case we need it to be general in the future. */
 //    cache_eq_test(new_ct);
-    if (new_ct->identity->grounding_wme)
-    {
-//        wme_add_ref(new_ct->identity->grounding_wme);
-    }
 
     return new_ct;
 }
@@ -280,13 +267,9 @@ void deallocate_test(agent* thisAgent, test t)
      *            if other unit tests fail.  -- */
     if (t->identity)
     {
-        if (t->identity->original_var)
+        if (t->identity->rule_symbol)
         {
-            symbol_remove_ref(thisAgent, t->identity->original_var);
-        }
-        if (t->identity->grounding_wme)
-        {
-//            wme_remove_ref(thisAgent, t->identity->grounding_wme);
+            symbol_remove_ref(thisAgent, t->identity->rule_symbol);
         }
         delete t->identity;
     }
@@ -378,26 +361,26 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                 {
                     /* This is the special case */
                     destination->original_test = new_test->original_test;
-                    if (destination->identity->original_var)
+                    if (destination->identity->rule_symbol)
                     {
-                        symbol_remove_ref(thisAgent, destination->identity->original_var);
-                        destination->identity->original_var = NULL;
+                        symbol_remove_ref(thisAgent, destination->identity->rule_symbol);
+                        destination->identity->rule_symbol = NULL;
                         // Don't think it's possible
                         assert(false);
                     }
                     if (new_test->original_test->data.referent->is_variable())
                     {
-                        destination->identity->original_var =  new_test->original_test->data.referent;
+                        destination->identity->rule_symbol =  new_test->original_test->data.referent;
                         if (pI_id)
                         {
-                            destination->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
+                            destination->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
                         }
-                        symbol_add_ref(thisAgent, destination->identity->original_var);
+                        symbol_add_ref(thisAgent, destination->identity->rule_symbol);
                     }
                     /* MToDo | Should this be deallocated? */
                     new_test->original_test = NIL;
                     dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %y\n",
-                        destination, destination->identity->original_var);
+                        destination, destination->identity->rule_symbol);
                     deallocate_test(thisAgent, new_test);
                     return;
                 }
@@ -423,24 +406,24 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                         {
                             /* This is the special case */
                             check_test->original_test = new_test->original_test;
-                            if (check_test->identity->original_var)
+                            if (check_test->identity->rule_symbol)
                             {
-                                symbol_remove_ref(thisAgent, check_test->identity->original_var);
-                                check_test->identity->original_var = NULL;
+                                symbol_remove_ref(thisAgent, check_test->identity->rule_symbol);
+                                check_test->identity->rule_symbol = NULL;
                                 // Don't think it's possible
                                 assert(false);
                             }
                             if (new_test->original_test->data.referent->is_variable())
                             {
-                                check_test->identity->original_var =  new_test->original_test->data.referent;
+                                check_test->identity->rule_symbol =  new_test->original_test->data.referent;
                                 if (pI_id)
                                 {
-                                    check_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
+                                    check_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
                                 }
-                                symbol_add_ref(thisAgent, check_test->identity->original_var);
+                                symbol_add_ref(thisAgent, check_test->identity->rule_symbol);
                             }
                             new_test->original_test = NIL;
-                            dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %s\n", check_test, check_test->identity->original_var);
+                            dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %s\n", check_test, check_test->identity->rule_symbol);
                             deallocate_test(thisAgent, new_test);
                             return;
                         }
@@ -663,8 +646,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
                         if (t2->identity)
                         {
                             /* -- Two grounded constants -- */
-                            return ((t1->identity->grounding_id == t2->identity->grounding_id) &&
-                                (t1->identity->original_var_id == t2->identity->original_var_id));
+                            return (t1->identity->o_id == t2->identity->o_id);
                         }
                         else
                         {
@@ -1412,12 +1394,6 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         original_referent = (var_bound_in_reconstructed_original_conds(thisAgent, cond,
                                             rt->data.variable_referent.field_num,
                                             rt->data.variable_referent.levels_up));
-                        chunk_test->identity->grounding_wme = get_wme_for_referent(cond,  rt->data.variable_referent.levels_up);
-                        if (chunk_test->identity->grounding_wme)
-                        {
-//                                wme_add_ref(chunk_test->identity->grounding_wme);
-                        }
-                        chunk_test->identity->grounding_field = static_cast<WME_Field>(rt->data.variable_referent.field_num);
 
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "created relational test with referent %y.\n", original_referent);
 
@@ -1426,11 +1402,11 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         {
                             dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against %y\n", original_referent);
                             chunk_test->original_test = make_test(thisAgent, original_referent, test_type);
-                            chunk_test->identity->original_var =  original_referent;
+                            chunk_test->identity->rule_symbol =  original_referent;
                             symbol_add_ref(thisAgent, original_referent);
                             if (pI_id)
                             {
-                                chunk_test->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
+                                chunk_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
                             }
                         } else {
                             chunk_test->original_test = make_test(thisAgent, referent, test_type);
@@ -1495,9 +1471,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "Final test (without identity): %l\n", cond);
 
-    create_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, w, ID_ELEMENT, pI_id);
-    create_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, w, ATTR_ELEMENT, pI_id);
-    create_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, w, VALUE_ELEMENT, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.id_test, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.attr_test, pI_id);
+    create_identity_for_eq_tests(thisAgent, cond->data.tests.value_test, pI_id);
 
     dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
@@ -1837,7 +1813,7 @@ void cache_eq_test(test t)
     }
 }
 
-void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field default_field, uint64_t pI_id)
+void create_identity_for_eq_tests(agent* thisAgent, test t, uint64_t pI_id)
 {
     cons* c;
     test orig_test;
@@ -1854,14 +1830,14 @@ void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field de
             orig_test = find_original_equality_test_preferring_vars(t);
             if (orig_test && orig_test->data.referent->is_variable())
             {
-//                dprint(DT_IDENTITY_PROP, "Caching original symbol and wme in identity for \"%y\": %y + %s\n",
+//                dprint(DT_IDENTITY_PROP, "Caching rule symbol in identity for \"%y\": %y + %s\n",
 //                       t->data.referent, orig_test->data.referent,
 //                       (w ? "WME" : "No WME"));
-                t->identity->original_var = orig_test->data.referent;
-                symbol_add_ref(thisAgent, t->identity->original_var);
+                t->identity->rule_symbol = orig_test->data.referent;
+                symbol_add_ref(thisAgent, t->identity->rule_symbol);
                 if (pI_id)
                 {
-                    t->identity->original_var_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
+                    t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
                 }
             }
         }
@@ -1869,24 +1845,12 @@ void create_identity_for_eq_tests(agent* thisAgent, test t, wme* w, WME_Field de
         {
 //            dprint(DT_IDENTITY_PROP, "No original test for \"%y\".  Cannot set identity's original var!\n", t->data.referent);
         }
-        if (!t->identity->grounding_wme)
-        {
-            t->identity->grounding_wme = w;
-            if (w)
-            {
-//                wme_add_ref(w);
-            }
-        }
-        if (t->identity->grounding_field == NO_ELEMENT)
-        {
-            t->identity->grounding_field = default_field;
-        }
     }
     else if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            create_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), w, default_field, pI_id);
+            create_identity_for_eq_tests(thisAgent, static_cast<test>(c->first), pI_id);
         }
     }
     if (t->original_test)

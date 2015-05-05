@@ -137,9 +137,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             {
                 if (t->type != CONJUNCTIVE_TEST)
                 {
-                    if (t->identity && t->identity->original_var)
+                    if (t->identity && t->identity->rule_symbol)
                     {
-                        t->identity->original_var->to_string(true, ch, dest_size - (ch - dest));
+                        t->identity->rule_symbol->to_string(true, ch, dest_size - (ch - dest));
                         while (*ch) ch++;
                     } else {
                         *(ch++) = '#';
@@ -150,9 +150,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
                     for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                     {
                         ct = static_cast<test>(c->first);
-                        if (ct && ct->identity && ct->identity->original_var)
+                        if (ct && ct->identity && ct->identity->rule_symbol)
                         {
-                            ct->identity->original_var->to_string(true, ch, dest_size - (ch - dest));
+                            ct->identity->rule_symbol->to_string(true, ch, dest_size - (ch - dest));
                             while (*ch) ch++;
                         } else {
                             *(ch++) = '#';
@@ -291,7 +291,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == '8')
         {
-            WM_to_string(thisAgent, ch, dest_size - (ch - dest), true);
+            WM_to_string(thisAgent, ch, dest_size - (ch - dest));
             while (*ch) ch++;
             format += 2;
         } else if (*(format + 1) == 'c')

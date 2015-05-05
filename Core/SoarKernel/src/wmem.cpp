@@ -115,10 +115,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
 
-    w->g_ids.id = 0;
-    w->g_ids.attr = 0;
-    w->g_ids.value = 0;
-
     return w;
 }
 

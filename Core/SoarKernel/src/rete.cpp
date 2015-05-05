@@ -4339,7 +4339,7 @@ Symbol* var_bound_in_reconstructed_original_conds(
     {
         goto abort_var_test_bound_in_reconstructed_oconds;
     }
-    lSym = find_equality_test_preferring_vars(t)->identity->original_var;
+    lSym = find_equality_test_preferring_vars(t)->identity->rule_symbol;
     return (lSym);
 
     abort_var_test_bound_in_reconstructed_oconds:

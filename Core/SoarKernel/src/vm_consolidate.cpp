@@ -84,31 +84,7 @@ void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* ne
     (*o_id_update_map)[old_o_id] = new_o_id_info;
 }
 
-void Variablization_Manager::add_updated_o_id_to_g_id_mapping(uint64_t old_o_id, uint64_t new_o_id, uint64_t pG_id)
-{
-    std::map< uint64_t, uint64_t >::iterator iter;
-    uint64_t new_g_id=0;
-
-    /* This should never be a STI, so should always have a g_id */
-    assert(pG_id);
-
-    dprint(DT_FIX_CONDITIONS, "Attempting to update o_id_to_g_id map from o%u to o%u.\n", old_o_id, new_o_id);
-    print_o_id_to_gid_map(DT_FIX_CONDITIONS, true);
-    iter = o_id_to_g_id_map->find(old_o_id);
-    if (iter != o_id_to_g_id_map->end())
-    {
-        dprint(DT_FIX_CONDITIONS, "...found o_id->g_id mapping that needs updated: o%u = g%u -> o%u = g%u.\n", iter->first, iter->second, new_o_id, iter->second);
-        new_g_id = iter->second;
-        o_id_to_g_id_map->erase(old_o_id);
-    } else {
-        new_g_id = pG_id;
-    }
-
-    (*o_id_to_g_id_map)[new_o_id] = new_g_id;
-
-}
-
-void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t* pG_id, uint64_t pNew_i_id, test eq_test, bool pIsResult)
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, test eq_test, bool pIsResult)
 {
     uint64_t new_o_id = 0;
     Symbol* new_ovar = NULL;
@@ -117,7 +93,7 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
     if (!(*pO_id)) return;
 
     dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation called for %y o%u ", (*pOvar), (*pO_id));
-    dprint_noprefix(DT_OVAR_MAPPINGS, "g%u i%u %s\n", (*pG_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+    dprint_noprefix(DT_OVAR_MAPPINGS, "i%u %s\n", pNew_i_id, pIsResult ? "isResult" : "isNotResult");
     o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
     if (new_o_id_info)
     {
@@ -142,7 +118,6 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
                 /* MToDo|  Remove logic.  There should always be an oVar. */
                 assert(false);
             }
-            (*pG_id) = 0;
             (*pOvar) = NULL;
             (*pO_id) = 0;
         } else {
@@ -157,7 +132,7 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
                 lVarName.append("-other");
                 new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
                 //            dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation generated new variable %y from %s (%y ", new_ovar, lVarName.c_str(), ts);
-                //            dprint_noprefix(DT_OVAR_MAPPINGS, "o%u g%u i%u %s).\n", tu1, (*pG_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+                //            dprint_noprefix(DT_OVAR_MAPPINGS, "o%u i%u %s).\n", tu1, pNew_i_id, pIsResult ? "isResult" : "isNotResult");
                 new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
                 dprint(DT_OVAR_MAPPINGS, "...var name already used.  Generated new identity %y(%u) from varname root %s.\n", new_ovar, new_o_id, lVarName.c_str());
                 add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
@@ -175,10 +150,6 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
                 new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
                 dprint(DT_OVAR_MAPPINGS, "...var name not used.  Generated new identity for instantiation i%u %y(o%u).\n", pNew_i_id, (*pOvar), (*pO_id));
                 add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
-            }
-            if ((*pG_id))
-            {
-                add_updated_o_id_to_g_id_mapping((*pO_id), new_o_id, (*pG_id));
             }
             (*pO_id) = new_o_id;
         }
@@ -229,21 +200,20 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
 
     if (pI_id)
     {
-        uint64_t dummy;
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), &dummy, pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id, NULL, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), &dummy, pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, NULL, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), &dummy, pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id, NULL, true);
         }
     }
     fix_results(result->next_result, pI_id);

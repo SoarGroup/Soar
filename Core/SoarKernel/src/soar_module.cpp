@@ -151,16 +151,8 @@ namespace soar_module
                     inst->bottom_of_instantiated_conditions = cond;
                 }
                 cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
-                cond->data.tests.id_test->identity->grounding_wme = (*c_it);
-                cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
-
                 cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
-                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
-                cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
-
                 cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
-                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
-                cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
 
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);

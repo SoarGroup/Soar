@@ -76,11 +76,6 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
  *    Effects:  This function merges redundant conditions in a condition list
  *              by combining constraints of conditions that share identical
  *              equality tests for all three elements of the condition.
- *    Notes:    Since we are working with the variablized list, we do not
- *              need to worry about grounding id's.  The variablization
- *              logic should have already utilized that information when
- *              variablizing.  If we have the same equality symbol, we can
- *              assume they have the same grounding (or one that is unified.)
  * -- */
 
 inline int64_t count_conditions(condition* top_cond)

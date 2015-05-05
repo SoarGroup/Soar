@@ -28,36 +28,22 @@
 #include "variablization_manager.h"
 #include "test.h"
 
-char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity)
+char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size)
 {
     assert(thisAgent && dest && w);
     char* ch = dest;
 
-    bool lFoundIdentity;
-    if (pOnlyWithIdentity)
-    {
-        lFoundIdentity = false;
-        if ((w->g_ids.id > 0) || (w->g_ids.attr > 0) || (w->g_ids.value > 0))
-        {
-            lFoundIdentity = true;
-        }
-    }
-    if (!pOnlyWithIdentity || (pOnlyWithIdentity && lFoundIdentity))
-    {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(t%u: %y ^%y %y%s",
-            w->timetag, w->id, w->attr, w->value,
-            (w->acceptable ? " +) [" : ") ["));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u g%u g%u", w->g_ids.id, w->g_ids.attr, w->g_ids.value);
-        while (*ch) ch++;
-        *(ch++) = ']';
-        *ch = 0;
-    }
+    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(t%u: %y ^%y %y%s",
+        w->timetag, w->id, w->attr, w->value,
+        (w->acceptable ? " +) [" : ") ["));
+    while (*ch) ch++;
+    *(ch++) = ']';
+    *ch = 0;
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 }
 
-char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_size, bool pOnlyWithIdentity)
+char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_size)
 {
     assert(thisAgent && dest);
     char* ch = dest;
@@ -66,12 +52,8 @@ char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_siz
     while (*ch) ch++;
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-//        /* MToDo | Remove this.  Just for debugging a particular agent */
-//        if (!strcmp(w->value->to_string(), "block"))
-//        {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
-            while (*ch) ch++;
-//        }
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
+        while (*ch) ch++;
     }
     dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
@@ -264,10 +246,10 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case LESS_OR_EQUAL_TEST:
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "g%u/o%u/%y", t->identity->grounding_id,
-                t->identity->original_var_id,
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "o%u/%y",
+                t->identity->o_id,
 //                thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id)
-                t->identity->original_var
+                t->identity->rule_symbol
                 );
             while (*ch) ch++;
             break;

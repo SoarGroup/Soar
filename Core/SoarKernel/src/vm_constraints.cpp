@@ -39,7 +39,7 @@ void Variablization_Manager::variablize_relational_constraints()
 
         if (found_variablization)
         {
-            dprint(DT_LHS_VARIABLIZATION, "...found grounding.  Variablizing constraint list.\n");
+            dprint(DT_LHS_VARIABLIZATION, "...found variablization.  Variablizing constraint list.\n");
 
             variablize_cached_constraints_for_symbol(&(it->second));
 
@@ -76,12 +76,12 @@ void Variablization_Manager::variablize_relational_constraints()
     for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
     {
 
-        dprint(DT_LHS_VARIABLIZATION, "Looking for variablization for equality g_id %u.\n", it->first);
+        dprint(DT_LHS_VARIABLIZATION, "Looking for variablization for o%u.\n", it->first);
         found_variablization = get_variablization(it->first);
 
         if (found_variablization)
         {
-            dprint(DT_LHS_VARIABLIZATION, "...found grounding for grounding id %u.  Variablizing constraint list.\n", it->first);
+            dprint(DT_LHS_VARIABLIZATION, "...found variablization for o%u.  Variablizing constraint list.\n", it->first);
             variablize_cached_constraints_for_symbol(&(it->second));
 
             /* -- If at least one relational constraint remains in the list, add to variablized constraint
@@ -91,13 +91,13 @@ void Variablization_Manager::variablize_relational_constraints()
             if (it->second)
             {
                 dprint(DT_LHS_VARIABLIZATION, "...variablized constraints exist.  Copying to new constraint list.\n");
-                (*variablized_constant_constraints)[found_variablization->grounding_id] = it->second;
+//                (*variablized_constant_constraints)[found_variablization->grounding_id] = it->second;
             }
         }
         else
         {
             /* -- Delete entire constraint list for ungrounded identifier -- */
-            dprint(DT_LHS_VARIABLIZATION, "...not variablizing constraint list b/c equality g_id not in chunk.  Deallocating tests.\n");
+            dprint(DT_LHS_VARIABLIZATION, "...not variablizing constraint list b/c o_id not in positive test of chunk.  Deallocating tests.\n");
             c = it->second;
             while (c)
             {
@@ -214,19 +214,19 @@ void Variablization_Manager::cache_constraint(test equality_test, test relationa
     }
     else
     {
-        std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(equality_test->identity->original_var_id);
+        std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(equality_test->identity->o_id);
         if (iter == constant_constraints->end())
         {
             push(thisAgent, (copied_test), new_list);
-            (*constant_constraints)[equality_test->identity->original_var_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            (*constant_constraints)[equality_test->identity->o_id] = new_list;
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[o%u] + %t\n", equality_test->identity->o_id, copied_test);
         }
         else
         {
-            new_list = (*constant_constraints)[equality_test->identity->original_var_id];
+            new_list = (*constant_constraints)[equality_test->identity->o_id];
             push(thisAgent, (copied_test), new_list);
-            (*constant_constraints)[equality_test->identity->original_var_id] = new_list;
-            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[g%u] + %t\n", equality_test->identity->grounding_id, copied_test);
+            (*constant_constraints)[equality_test->identity->o_id] = new_list;
+            dprint(DT_CONSTRAINTS, "ADDED (*constant_constraints)[o%u] + %t\n", equality_test->identity->o_id, copied_test);
         }
     }
 }
@@ -297,8 +297,8 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     eq_test = equality_test_found_in_test(*t);
     assert(eq_test);
     eq_symbol = eq_test->data.referent;
-    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%u).\n", eq_symbol, eq_test->identity ? eq_test->identity->grounding_id : 0);
-    if (!eq_test->identity || (eq_test->identity->original_var_id == 0))
+    dprint(DT_CONSTRAINTS, "Calling add_relational_constraints_for_test() for symbol %y(%u).\n", eq_symbol, eq_test->identity ? eq_test->identity->o_id : 0);
+    if (!eq_test->identity || (eq_test->identity->o_id == 0))
     {
         dprint(DT_CONSTRAINTS, "...no identity, so must be STI.  Using symbol to look up.\n");
         found_variablization = get_variablization(eq_symbol);
@@ -334,13 +334,13 @@ void Variablization_Manager::install_cached_constraints_for_test(test* t)
     }
     else
     {
-        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using g_id to look up.\n");
-        found_variablization = get_variablization(eq_test->identity->original_var_id);
+        dprint(DT_CONSTRAINTS, "...identity exists, so must be constant.  Using o_id to look up.\n");
+        found_variablization = get_variablization(eq_test->identity->o_id);
         if (found_variablization)
         {
             dprint(DT_CONSTRAINTS, "...variablization found.  Variablized symbol = %y.\n", found_variablization->variablized_symbol);
             print_cached_constraints(DT_CONSTRAINTS);
-            std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(eq_test->identity->original_var_id);
+            std::map< uint64_t, ::list* >::iterator iter = (*constant_constraints).find(eq_test->identity->o_id);
             if (iter != (*constant_constraints).end())
             {
                 dprint(DT_CONSTRAINTS, "...adding relational constraint list for symbol %y...\n", eq_symbol);
@@ -414,20 +414,19 @@ void Variablization_Manager::propagate_constraint_identities(uint64_t pI_id)
         {
             new_ct = static_cast<test>(c->first);
             dprint(DT_CONSTRAINTS, "...updating identity for constraint %t [%g]\n", new_ct, new_ct);
-            if (new_ct->identity->original_var_id)
+            if (new_ct->identity->o_id)
             {
                 thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
                 /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                  * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
                  * 0 in the case of reinforcement rules being created.  (I think they're different b/c rl is creating
                  * rules that do not currently match unlike chunks/justifications) */
-                if (new_ct->identity->original_var_id && pI_id)
+                if (new_ct->identity->o_id && pI_id)
                 {
-                    dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y, g%u) for i%u.\n", new_ct->identity->original_var_id, new_ct->identity->original_var, new_ct->identity->grounding_id, pI_id);
+                    dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->o_id, new_ct->identity->rule_symbol, pI_id);
                     //                        old_o_id = new_ct->identity->original_var_id;
-                    thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->original_var), &(new_ct->identity->original_var_id), &(new_ct->identity->grounding_id), pI_id);
+                    thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id);
                     dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                    thisAgent->variablizationManager->print_o_id_to_gid_map(DT_FIX_CONDITIONS);
                 }
             }
             c = c->rest;

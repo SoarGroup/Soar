@@ -17,26 +17,26 @@
 
 void Variablization_Manager::unify_identity(agent* thisAgent, test t)
 {
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity->original_var_id);
+    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity->o_id);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
-            t->identity->original_var_id, iter->second);
+            t->identity->o_id, iter->second);
 
-        t->identity->original_var_id = iter->second;
-        if (t->identity->original_var)
+        t->identity->o_id = iter->second;
+        if (t->identity->rule_symbol)
         {
-            symbol_remove_ref(thisAgent, t->identity->original_var);
-            t->identity->original_var = NULL;
+            symbol_remove_ref(thisAgent, t->identity->rule_symbol);
+            t->identity->rule_symbol = NULL;
         }
         if (iter->second)
         {
             /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
              *         a better way to set ovar here. */
-            t->identity->original_var = get_ovar_for_o_id(t->identity->original_var_id);
-            if (t->identity->original_var)
+            t->identity->rule_symbol = get_ovar_for_o_id(t->identity->o_id);
+            if (t->identity->rule_symbol)
             {
-                symbol_add_ref(thisAgent, t->identity->original_var);
+                symbol_add_ref(thisAgent, t->identity->rule_symbol);
             }
         }
     }
@@ -51,7 +51,7 @@ void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64
 
         if (iter->second == pOld_o_id)
         {
-            dprint(DT_FIX_CONDITIONS, "...found secondary ovar->g_id mapping that needs updated: o%u = o%u = o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
+            dprint(DT_FIX_CONDITIONS, "...found secondary o_id unification mapping that needs updated: o%u = o%u -> o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
             (*unification_map)[iter->first] = pNew_o_id;
         }
     }

@@ -148,27 +148,6 @@ void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHea
 
 }
 
-void Variablization_Manager::print_o_id_to_gid_map(TraceMode mode, bool printHeader)
-{
-    if (printHeader)
-    {
-        dprint(mode, "------------------------------------\n");
-        dprint(mode, "         o_id to g_id Map\n");
-        dprint(mode, "------------------------------------\n");
-    }
-
-    if (o_id_to_g_id_map->size() == 0)
-    {
-        dprint(mode, "EMPTY MAP\n");
-    }
-
-    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_to_g_id_map).begin(); it != (*o_id_to_g_id_map).end(); ++it)
-    {
-        dprint(mode, "o%u(%y) -> g%u\n", it->first, thisAgent->variablizationManager->get_ovar_for_o_id(it->first), it->second);
-    }
-
-}
-
 void Variablization_Manager::print_cached_constraints(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
@@ -203,7 +182,7 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
         c = it->second;
         while (c)
         {
-            dprint(mode, "g%u: %t\n", it->first, static_cast<test>(c->first));
+            dprint(mode, "o%u: %t\n", it->first, static_cast<test>(c->first));
             c = c->rest;
         }
     }
@@ -221,7 +200,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 //    }
     if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
     {
-        dprint(mode, "== Symbol -> v_info table ==\n");
+        dprint(mode, "== Symbol -> Variablization ==\n");
 //        if (whichTable != 0)
 //            dprint(mode, "------------------------------------\n");
         if (sym_to_var_map->size() == 0)
@@ -235,7 +214,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     }
     if ((whichTable == 0) || (whichTable == 2) || (whichTable == 3))
     {
-        dprint(mode, "== G_ID -> v_info table ==\n");
+        dprint(mode, "== O_ID -> Variablization ==\n");
 //        if (whichTable != 0)
 //            dprint(mode, "------------------------------------\n");
         if (o_id_to_var_map->size() == 0)
@@ -244,18 +223,9 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         }
         for (std::map< uint64_t, variablization* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
         {
-            dprint(mode, "%u -> %y/%y\n", it->first,
+            dprint(mode, "o%u -> %y/%y\n", it->first,
                    it->second->variablized_symbol, it->second->instantiated_symbol);
         }
-    }
-    if (whichTable == 0)
-    {
-        dprint(mode, "---- O_ID -> G_ID Table ----\n");
-        if (whichTable != 0)
-        {
-            dprint(mode, "------------------------------------\n");
-        }
-        print_o_id_to_gid_map(mode);
     }
     dprint(mode, "------------------------------------\n");
 }

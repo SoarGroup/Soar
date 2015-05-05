@@ -20,7 +20,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     thisAgent = myAgent;
     sym_to_var_map = new std::map< Symbol*, variablization* >();
     o_id_to_var_map = new std::map< uint64_t, variablization* >();
-    o_id_to_g_id_map = new std::map< uint64_t, uint64_t >();
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
 
@@ -32,7 +31,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
     o_id_update_map = new std::map< uint64_t, o_id_update_info* >();
 
-    ground_id_counter = 0;
     inst_id_counter = 0;
     /* Starting at 100 just to more clearly differentiate them from g_ids when debugging simple cases */
     ovar_id_counter = 100;
@@ -43,7 +41,6 @@ Variablization_Manager::~Variablization_Manager()
     clear_data();
     delete sym_to_var_map;
     delete o_id_to_var_map;
-    delete o_id_to_g_id_map;
     delete sti_constraints;
     delete constant_constraints;
     delete cond_merge_map;
@@ -58,7 +55,6 @@ void Variablization_Manager::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
-    ground_id_counter = 0;
     inst_id_counter = 0;
     ovar_id_counter = 0;
 }
@@ -70,7 +66,6 @@ inline variablization* copy_variablization(agent* thisAgent, variablization* v)
     new_variablization->variablized_symbol = v->variablized_symbol;
     symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
     symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
-    new_variablization->grounding_id = v->grounding_id;
     return new_variablization;
 }
 
@@ -80,9 +75,9 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 {
     variablization* new_variablization;
     assert(instantiated_sym && variable);
-    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(%u) to %y.\n",
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(o%u) to %y.\n",
            instantiated_sym,
-           identity ? identity->grounding_id : 0,
+           identity ? identity->o_id : 0,
            variable);
 
     new_variablization = new variablization;
@@ -90,7 +85,6 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     new_variablization->variablized_symbol = variable;
     symbol_add_ref(thisAgent, instantiated_sym);
     symbol_add_ref(thisAgent, variable);
-    new_variablization->grounding_id = identity ? identity->grounding_id : 0;
 
     if (instantiated_sym->is_sti())
     {
@@ -113,11 +107,11 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     {
 
         /* -- A constant symbol is being variablized, so store variablization info
-         *    indexed by the constant's grounding id. -- */
-        (*o_id_to_var_map)[identity->original_var_id] = new_variablization;
+         *    indexed by the constant's o_id. -- */
+        (*o_id_to_var_map)[identity->o_id] = new_variablization;
 
-        dprint(DT_VM_MAPS, "Created g_id_to_var_map[%u] to new variablization.\n",
-                        identity->grounding_id);
+        dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n",
+                        identity->o_id);
     }
     else
     {
@@ -147,9 +141,9 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     Symbol* var;
     variablization* var_info;
 
-    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(g%u)...\n",
+    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n",
            (*sym),
-           (identity ? identity->grounding_id : 0));
+           (identity ? identity->o_id : 0));
 
     if (!((*sym)->is_sti()))
     {
@@ -157,7 +151,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
          *         Currently identity parameter can be null for RL tests, should probably just change
          *         this function to take just a test parameter and require that it's an equality test.*/
         assert(identity);
-        var_info = get_variablization(identity->original_var_id);
+        var_info = get_variablization(identity->o_id);
     }
     else
     {
@@ -170,8 +164,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
         symbol_remove_ref(thisAgent, (*sym));
         *sym = var_info->variablized_symbol;
         symbol_add_ref(thisAgent, var_info->variablized_symbol);
-        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y, g%u)\n",
-               (*sym), var_info->instantiated_symbol, var_info->grounding_id);
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info->instantiated_symbol);
         return;
     }
 
@@ -193,17 +186,14 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* 
     /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
     symbol_remove_ref(thisAgent, *sym);
     *sym = var;
-    dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info %y(g%u)\n",
-           (*sym), (identity ? identity->grounding_id : 0));
+    dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
 
 }
 /* ======================================================================================================
  *
  *                                          variablize_rhs_symbol
  *
- *      The logic for variablizing the rhs is slightly different than the lhs since constants on the
- *      rhs do not yet have grounding id's.  We match variables bound to constants to lhs variables by
- *      looking up the grounding id using the original variable names instead of using the grounding id.
+ *      The logic for variablizing the rhs is slightly different than the lhs.
  *
  * ====================================================================================================== */
 
@@ -216,7 +206,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u g%u).\n",
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u).\n",
            rs->referent, rs->original_rhs_variable, rs->o_id);
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
@@ -250,14 +240,14 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     if (found_variablization)
     {
         /* --- Grounded symbol that has been variablized before--- */
-        dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %y.\n", found_variablization->variablized_symbol);
+        dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization->variablized_symbol);
         symbol_remove_ref(thisAgent, rs->referent);
         rs->referent = found_variablization->variablized_symbol;
         symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
         return;
     } else {
         /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
-         *    Both cases return 0.  Grounding id will be generated if requested by another match. -- */
+         *    Both cases return 0. -- */
 
         if (rs->referent->is_sti())
         {
@@ -353,9 +343,9 @@ void Variablization_Manager::variablize_equality_tests(test* t)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
             tt = reinterpret_cast<test*>(&(c->first));
-            if (((*tt)->type == EQUALITY_TEST) && (*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
+            if (((*tt)->type == EQUALITY_TEST) && (*tt)->identity->rule_symbol && (*tt)->identity->rule_symbol->is_variable())
             {
-                variablize_test(tt, (*tt)->identity->original_var);
+                variablize_test(tt, (*tt)->identity->rule_symbol);
             }
         }
 
@@ -364,10 +354,10 @@ void Variablization_Manager::variablize_equality_tests(test* t)
     }
     else
     {
-        if (((*t)->type == EQUALITY_TEST) && (*t)->identity->original_var && (*t)->identity->original_var->is_variable())
+        if (((*t)->type == EQUALITY_TEST) && (*t)->identity->rule_symbol && (*t)->identity->rule_symbol->is_variable())
         {
 //            variablize_equality_test(t);
-            variablize_test(t, (*t)->identity->original_var);
+            variablize_test(t, (*t)->identity->rule_symbol);
         }
     }
 }
@@ -455,7 +445,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
              *    variablize_test_by_lookup when variablizing constraints collected during
              *    backtracing, since we can just avoid adding them to the condition list. -- */
             tt = reinterpret_cast<test*>(&(c->first));
-            if ((*tt)->identity->original_var && (*tt)->identity->original_var->is_variable())
+            if ((*tt)->identity->rule_symbol && (*tt)->identity->rule_symbol->is_variable())
             {
             variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
             }
@@ -466,7 +456,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
     }
     else
     {
-        if ((*t)->identity->original_var && (*t)->identity->original_var->is_variable())
+        if ((*t)->identity->rule_symbol && (*t)->identity->rule_symbol->is_variable())
         {
             variablize_test_by_lookup(t, pSkipTopLevelEqualities);
         }

@@ -367,7 +367,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
 //        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
-        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->original_var, t->identity->original_var_id);
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->rule_symbol, t->identity->o_id);
     }
 
     if (rhs_value_is_unboundvar(rv))
@@ -439,8 +439,8 @@ rhs_value create_RHS_value(agent* thisAgent,
 
         /* MToDo | If these are always literals, then we may not need to set any of the identity information.  Check. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-//        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y, g%u o%u) from rhs_symbol (literal RHS constant).\n",
-//                        rs->referent, rs->original_rhs_variable, rs->g_id, rs->o_id);
+//        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y/o%u) from rhs_symbol (literal RHS constant).\n",
+//                        rs->referent, rs->original_rhs_variable, rs->o_id);
         original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
         uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, original_sym, lO_id);
@@ -535,7 +535,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
         new_rhs_symbol->original_rhs_variable = NULL;
         new_rhs_symbol->o_id = 0;
     }
-    dprint_noprefix(DT_IDENTITY_PROP, (pO_ID ? "ID PROP | Propagating g_id %i to new rhs_symbol %y(%y/%u).\n" : ""), sym, pOrig_var, pO_ID);
+    dprint_noprefix(DT_IDENTITY_PROP, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(%y/%u).\n" : ""), sym, pOrig_var, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

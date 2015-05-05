@@ -146,8 +146,6 @@ typedef struct wme_struct
     struct preference_struct* chunker_bt_pref;
     struct condition_struct* chunker_bt_last_ground_cond;
 
-    soar_module::identity_triple g_ids;           /* used for chunking (see struct above) */
-
     struct gds_struct* gds;
     struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
 
