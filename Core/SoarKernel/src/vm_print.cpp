@@ -166,45 +166,8 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
     }
 
 }
-void Variablization_Manager::print_cached_constraints(TraceMode mode)
+void Variablization_Manager::print_constraints(TraceMode mode)
 {
-    dprint(mode, "------------------------------------\n");
-    dprint(mode, "           STI Constraint Map\n");
-    dprint(mode, "------------------------------------\n");
-
-    if (sti_constraints->size() == 0)
-    {
-        dprint(mode, "EMPTY MAP\n");
-    }
-
-    cons* c;
-
-    for (std::map< Symbol*, ::list* >::iterator it = sti_constraints->begin(); it != sti_constraints->end(); ++it)
-    {
-        c = it->second;
-        while (c)
-        {
-            dprint(mode, "%y: %t\n", it->first, static_cast<test>(c->first));
-            c = c->rest;
-        }
-    }
-    dprint(mode, "------------------------------------\n");
-    dprint(mode, "         Non-STI Constraint Map\n");
-    dprint(mode, "------------------------------------\n");
-    if (constant_constraints->size() == 0)
-    {
-        dprint(mode, "EMPTY MAP\n");
-    }
-    for (std::map< uint64_t, ::list* >::iterator it = constant_constraints->begin(); it != constant_constraints->end(); ++it)
-    {
-        c = it->second;
-        while (c)
-        {
-            dprint(mode, "o%u: %t\n", it->first, static_cast<test>(c->first));
-            c = c->rest;
-        }
-    }
-
     dprint(mode, "------------------------------------\n");
     dprint(mode, "    Relational Constraints List\n");
     dprint(mode, "------------------------------------\n");

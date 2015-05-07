@@ -507,7 +507,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint(DT_UNIFICATION, "Conditions after identity unification: \n");
     dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
 
-    thisAgent->variablizationManager->propagate_additional_constraints(*inst_top, pI_id);
+    thisAgent->variablizationManager->add_additional_constraints(*inst_top, pI_id);
 
     copy_cond = *inst_top;
     while (copy_cond)
@@ -1086,7 +1086,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", thisAgent->grounds);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
-    thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
+    thisAgent->variablizationManager->print_constraints(DT_CONSTRAINTS);
 
     dprint(DT_OVAR_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
     thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);

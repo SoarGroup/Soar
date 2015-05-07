@@ -107,7 +107,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                     if (new_ct->identity->o_id && pI_id)
                     {
                         dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->o_id, new_ct->identity->rule_symbol, pI_id);
-                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id);
+                        thisAgent->variablizationManager->create_consistent_identity_for_chunk(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id);
                         dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
                         assert(new_ct->identity->o_id != t->identity->o_id);
                     }

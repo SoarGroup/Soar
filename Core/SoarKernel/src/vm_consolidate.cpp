@@ -85,7 +85,7 @@ void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* ne
     (*o_id_update_map)[old_o_id] = new_o_id_info;
 }
 
-void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
+void Variablization_Manager::create_consistent_identity_for_chunk(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
 {
     uint64_t new_o_id = 0;
     Symbol* new_ovar = NULL;
@@ -204,17 +204,17 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
+            create_consistent_identity_for_chunk(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
+            create_consistent_identity_for_chunk(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
+            create_consistent_identity_for_chunk(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
         }
     }
     fix_results(result->next_result, pI_id);

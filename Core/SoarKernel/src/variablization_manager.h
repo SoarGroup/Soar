@@ -103,15 +103,12 @@ class Variablization_Manager
         };
 
         void cache_constraints_in_cond(condition* c);
-        void install_cached_constraints(condition* cond);
-        void propagate_constraint_identities(uint64_t pI_id);
-
-        void propagate_additional_constraints(condition* cond, uint64_t pI_id);
+        void add_additional_constraints(condition* cond, uint64_t pI_id);
 
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
+        void create_consistent_identity_for_chunk(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -130,7 +127,7 @@ class Variablization_Manager
         void print_o_id_update_map(TraceMode mode, bool printHeader = true);
         void print_o_id_tables(TraceMode mode);
         void print_attachment_points(TraceMode mode);
-        void print_cached_constraints(TraceMode mode);
+        void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);
@@ -165,18 +162,11 @@ class Variablization_Manager
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
-        void propagate_identity(condition* cond, bool use_negation_lookup);
-        void add_identity_to_negative_test(test t, WME_Field default_f);
-        void add_identity_to_test(test* t, WME_Field default_f);
-
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond = NULL, WME_Field pos_cond_field = NO_ELEMENT);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
 
-        void cache_constraint(test equality_test, test relational_test);
         void cache_constraints_in_test(test t);
-        void variablize_cached_constraints_for_symbol(::list** constraint_list);
-        void install_cached_constraints_for_test(test* t);
 
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
@@ -190,13 +180,16 @@ class Variablization_Manager
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
 
+        std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
+        std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
+
+        /* This is a map of original variable symbols to its map of instantiations to o_ids */
+        std::map< uint64_t, uint64_t >*                         unification_map;
+        std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
+
         /* -- Look-up tables for LHS variablization -- */
         std::map< uint64_t, variablization* >*   o_id_to_var_map;
         std::map< Symbol*, variablization* >*    sym_to_var_map;
-
-        /* -- Cache of constraint tests collected during backtracing -- */
-        std::map< Symbol*, ::list* >*            sti_constraints;
-        std::map< uint64_t, ::list* >*           constant_constraints;
 
         std::list< constraint* >* constraints;
         std::map< uint64_t, attachment_point* >* attachment_points;
@@ -204,12 +197,6 @@ class Variablization_Manager
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >* cond_merge_map;
-
-        /* This is a map of original variable symbols to its map of instantiations to o_ids */
-        std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
-        std::map< uint64_t, uint64_t >*                         unification_map;
-        std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
-        std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
 
         /* -- A counter for variablization and instantiation id's. 0 is the default
          *    value and not considered a valid id. -- */
