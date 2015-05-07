@@ -507,8 +507,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint(DT_UNIFICATION, "Conditions after identity unification: \n");
     dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
 
-    /**/
-//    thisAgent->variablizationManager->propagate_constraint_identities(chunk_new_i_id);
+    thisAgent->variablizationManager->propagate_additional_constraints(*inst_top, pI_id);
 
     copy_cond = *inst_top;
     while (copy_cond)

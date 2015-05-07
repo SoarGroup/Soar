@@ -64,7 +64,7 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_i
     if (iter != (*o_id_update_map).end())
     {
         dprint(DT_VM_MAPS, "...found o%u(%y) in o_id_update_map for o%u\n",
-            iter->second->o_id, iter->second->o_var, old_o_id, get_ovar_for_o_id(old_o_id));
+            iter->second->o_id, iter->second->rule_symbol, old_o_id, get_ovar_for_o_id(old_o_id));
 
         return iter->second;
     } else {
@@ -74,17 +74,18 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_i
     return 0;
 }
 
-void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, test eq_test)
+void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond, WME_Field pos_cond_field)
 {
     assert(get_updated_o_id_info(old_o_id) == 0);
     o_id_update_info* new_o_id_info = new o_id_update_info();
-    new_o_id_info->o_var = new_ovar;
+    new_o_id_info->rule_symbol = new_ovar;
     new_o_id_info->o_id = new_o_id;
-    new_o_id_info->equality_test_in_positive_cond = eq_test;
+    new_o_id_info->positive_cond = pos_cond;
+    new_o_id_info->field = pos_cond_field;
     (*o_id_update_map)[old_o_id] = new_o_id_info;
 }
 
-void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, test eq_test, bool pIsResult)
+void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
 {
     uint64_t new_o_id = 0;
     Symbol* new_ovar = NULL;
@@ -98,11 +99,11 @@ void Variablization_Manager::update_o_id_for_new_instantiation(Symbol** pOvar, u
     if (new_o_id_info)
     {
         (*pO_id) = new_o_id_info->o_id;
-        if ((*pOvar) != new_o_id_info->o_var)
+        if ((*pOvar) != new_o_id_info->rule_symbol)
         {
-            dprint(DT_OVAR_MAPPINGS, "...found existing variable update %y(o%u)\n", new_o_id_info->o_var, new_o_id_info->o_id);
+            dprint(DT_OVAR_MAPPINGS, "...found existing variable update %y(o%u)\n", new_o_id_info->rule_symbol, new_o_id_info->o_id);
             symbol_remove_ref(thisAgent, (*pOvar));
-            (*pOvar) = new_o_id_info->o_var;
+            (*pOvar) = new_o_id_info->rule_symbol;
             symbol_add_ref(thisAgent, (*pOvar));
         }
     } else {
@@ -203,17 +204,17 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id, NULL, true);
+            update_o_id_for_new_instantiation(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
         }
     }
     fix_results(result->next_result, pI_id);

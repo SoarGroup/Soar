@@ -176,16 +176,6 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
     }
 }
 
-inline wme* get_wme_for_referent(condition* cond, rete_node_level where_levels_up)
-{
-    while (where_levels_up)
-    {
-        where_levels_up--;
-        cond = cond->prev;
-    }
-    return (cond->bt.wme_);
-}
-
 inline const char* field_to_string(WME_Field f)
 {
     if (f == ID_ELEMENT) return "ID";

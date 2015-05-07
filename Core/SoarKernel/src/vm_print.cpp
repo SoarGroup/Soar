@@ -10,6 +10,7 @@
 #include "instantiations.h"
 #include "assert.h"
 #include "test.h"
+#include "wmem.h"
 #include "print.h"
 #include "debug.h"
 
@@ -143,11 +144,28 @@ void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHea
 
     for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
     {
-        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second->o_id, it->second->o_var);
+        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second->o_id, it->second->rule_symbol);
     }
 
 }
 
+void Variablization_Manager::print_attachment_points(TraceMode mode)
+{
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "   Attachment Points in conditions\n");
+    dprint(mode, "------------------------------------\n");
+
+    if (o_id_update_map->size() == 0)
+    {
+        dprint(mode, "EMPTY MAP\n");
+    }
+
+    for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    {
+        dprint(mode, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+    }
+
+}
 void Variablization_Manager::print_cached_constraints(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
@@ -186,6 +204,19 @@ void Variablization_Manager::print_cached_constraints(TraceMode mode)
             c = c->rest;
         }
     }
+
+    dprint(mode, "------------------------------------\n");
+    dprint(mode, "    Relational Constraints List\n");
+    dprint(mode, "------------------------------------\n");
+    if (constraints->empty())
+    {
+        dprint(mode, "NO CONSTRAINTS RECORDED\n");
+    }
+    for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
+    {
+        dprint(mode, "%t[%g] %t[%g]\n", (*it)->eq_test, (*it)->eq_test, (*it)->constraint_test, (*it)->constraint_test);
+    }
+
     dprint(mode, "------------------------------------\n");
 }
 /* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */

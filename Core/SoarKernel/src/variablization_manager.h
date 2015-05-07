@@ -9,9 +9,9 @@
 #define VARIABLIZATION_MANAGER_H_
 
 #include "portability.h"
-#include <set>
 #include "symtab.h"
 #include "test.h"
+#include <list>
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -24,14 +24,31 @@ typedef struct variablization_struct
 {
     Symbol* instantiated_symbol;
     Symbol* variablized_symbol;
+    variablization_struct() : instantiated_symbol(NULL), variablized_symbol(NULL) {}
 } variablization;
+
+typedef struct constraint_struct
+{
+    test eq_test;
+    test constraint_test;
+    constraint_struct(test new_eq, test new_constraint) : eq_test(new_eq), constraint_test(new_constraint) {}
+} constraint;
+
+typedef struct attachment_struct
+{
+        condition* cond;
+        WME_Field field;
+        attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
+
+} attachment_point;
 
 typedef struct o_id_update_struct
 {
         uint64_t o_id;
-        Symbol* o_var;
-        test equality_test_in_positive_cond;
-        o_id_update_struct() : o_id(0), o_var(NULL), equality_test_in_positive_cond(NULL) {}
+        Symbol* rule_symbol;
+        condition* positive_cond;
+        WME_Field field;
+        o_id_update_struct() : o_id(0), rule_symbol(NULL), positive_cond(NULL), field(NO_ELEMENT) {}
 } o_id_update_info;
 
 /* -- Variablization_Manager
@@ -63,6 +80,7 @@ class Variablization_Manager
 
         void clear_variablization_maps();
         void clear_o_id_update_map();
+        void clear_attachment_map();
         void clear_cached_constraints();
         void clear_ovar_to_o_id_map();
         void clear_merge_map();
@@ -88,10 +106,12 @@ class Variablization_Manager
         void install_cached_constraints(condition* cond);
         void propagate_constraint_identities(uint64_t pI_id);
 
+        void propagate_additional_constraints(condition* cond, uint64_t pI_id);
+
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, test eq_test = NULL, bool pIsResult = false);
+        void update_o_id_for_new_instantiation(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -109,6 +129,7 @@ class Variablization_Manager
         void print_tables(TraceMode mode);
         void print_o_id_update_map(TraceMode mode, bool printHeader = true);
         void print_o_id_tables(TraceMode mode);
+        void print_attachment_points(TraceMode mode);
         void print_cached_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_ovar_to_o_id_map(TraceMode mode);
@@ -149,13 +170,21 @@ class Variablization_Manager
         void add_identity_to_test(test* t, WME_Field default_f);
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
-        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, test eq_test = NULL);
+        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond = NULL, WME_Field pos_cond_field = NO_ELEMENT);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
 
         void cache_constraint(test equality_test, test relational_test);
         void cache_constraints_in_test(test t);
         void variablize_cached_constraints_for_symbol(::list** constraint_list);
         void install_cached_constraints_for_test(test* t);
+
+        attachment_point* get_attachment_point(uint64_t pO_id);
+        void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
+        void find_attachment_point_for_test(test pTest, condition* pCond, WME_Field pField);
+        void find_attachment_points(condition* cond);
+        void prune_redundant_constraints();
+        void invert_relational_test(test* pEq_test, test* pRelational_test);
+        void attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id);
 
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
@@ -168,7 +197,9 @@ class Variablization_Manager
         /* -- Cache of constraint tests collected during backtracing -- */
         std::map< Symbol*, ::list* >*            sti_constraints;
         std::map< uint64_t, ::list* >*           constant_constraints;
-        std::set< uint64_t >* literalizations;
+
+        std::list< constraint* >* constraints;
+        std::map< uint64_t, attachment_point* >* attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */

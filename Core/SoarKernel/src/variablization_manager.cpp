@@ -20,16 +20,19 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     thisAgent = myAgent;
     sym_to_var_map = new std::map< Symbol*, variablization* >();
     o_id_to_var_map = new std::map< uint64_t, variablization* >();
+
+    ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
+    o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
+
     sti_constraints = new std::map< Symbol*, ::list* >();
     constant_constraints = new std::map< uint64_t , ::list* >();
+    constraints = new std::list< constraint* >;
+    attachment_points = new std::map< uint64_t, attachment_point* >();
+
+    unification_map = new std::map< uint64_t, uint64_t >();
+    o_id_update_map = new std::map< uint64_t, o_id_update_info* >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
-
-    literalizations = new std::set< uint64_t >;
-    ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
-    unification_map = new std::map< uint64_t, uint64_t >();
-    o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
-    o_id_update_map = new std::map< uint64_t, o_id_update_info* >();
 
     inst_id_counter = 0;
     /* Starting at 100 just to more clearly differentiate them from g_ids when debugging simple cases */
@@ -43,6 +46,8 @@ Variablization_Manager::~Variablization_Manager()
     delete o_id_to_var_map;
     delete sti_constraints;
     delete constant_constraints;
+    delete constraints;
+    delete attachment_points;
     delete cond_merge_map;
     delete ovar_to_o_id_map;
     delete unification_map;

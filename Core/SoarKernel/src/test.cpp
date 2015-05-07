@@ -90,16 +90,13 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             }
             if (pUnify_variablization_identity)
             {
-                test eq_test = NULL;
-                /* Mark this test as found.  The tests in the constraint lists are copies of
+                /* Mark this test as seen.  The tests in the constraint lists are copies of
                  * the pointers in grounds, so we use this tc_num later to later check if
                  * an entry in the constraint propagation list is a duplicate of a test
                  * already in a condition, which most should be. */
                 if (t->type != EQUALITY_TEST)
                 {
                     t->tc_num = thisAgent->variablizationManager->get_constraint_found_tc_num();
-                } else {
-                    eq_test = t;
                 }
                 if (new_ct->identity->o_id)
                 {
@@ -110,7 +107,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                     if (new_ct->identity->o_id && pI_id)
                     {
                         dprint(DT_FIX_CONDITIONS, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n", new_ct->identity->o_id, new_ct->identity->rule_symbol, pI_id);
-                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id, t);
+                        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id);
                         dprint(DT_FIX_CONDITIONS, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
                         assert(new_ct->identity->o_id != t->identity->o_id);
                     }
@@ -121,7 +118,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
     }
     if (t->original_test)
     {
-        /* -- MToDo | Probably no need to unify original test.  Check. -- */
+        /* -- MToDo | Don't think we can ever get an original_test here any more, can we?. -- */
         new_ct->original_test = copy_test(thisAgent, t->original_test, pUnify_variablization_identity, pI_id);
     }
     /* Cached eq_test is used by the chunker to avoid repeatedly searching
