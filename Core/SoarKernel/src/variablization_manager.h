@@ -165,12 +165,13 @@ class Variablization_Manager
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond = NULL, WME_Field pos_cond_field = NO_ELEMENT);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
+        void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
+        void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
 
         void cache_constraints_in_test(test t);
 
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
-        void find_attachment_point_for_test(test pTest, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
         void prune_redundant_constraints();
         void invert_relational_test(test* pEq_test, test* pRelational_test);

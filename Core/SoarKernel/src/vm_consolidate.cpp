@@ -85,6 +85,19 @@ void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* ne
     (*o_id_update_map)[old_o_id] = new_o_id_info;
 }
 
+void Variablization_Manager::create_consistent_identity_for_result_element(preference* result, uint64_t pI_id, WME_Field field)
+{
+
+    if (field == ID_ELEMENT)
+    {
+        create_consistent_identity_for_chunk(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
+    } else if (field == ATTR_ELEMENT) {
+        create_consistent_identity_for_chunk(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
+    } else if (field == VALUE_ELEMENT) {
+        create_consistent_identity_for_chunk(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
+    }
+}
+
 void Variablization_Manager::create_consistent_identity_for_chunk(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
 {
     uint64_t new_o_id = 0;
@@ -198,23 +211,29 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
     if (!result) return;
 
     dprint(DT_FIX_CONDITIONS, "Fixing result %p\n", result);
+//    print_o_id_substitution_map(DT_FIX_CONDITIONS);
+//    print_o_id_update_map(DT_FIX_CONDITIONS);
+    print_o_id_tables(DT_FIX_CONDITIONS);
 
     if (pI_id)
     {
         if (result->original_symbols.id)
         {
             assert(result->original_symbols.id->is_variable());
-            create_consistent_identity_for_chunk(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
+            unify_identity_for_result_element(thisAgent, result, ID_ELEMENT);
+            create_consistent_identity_for_result_element(result, pI_id, ID_ELEMENT);
         }
         if (result->original_symbols.attr)
         {
             assert(result->original_symbols.attr->is_variable());
-            create_consistent_identity_for_chunk(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
+            unify_identity_for_result_element(thisAgent, result, ATTR_ELEMENT);
+            create_consistent_identity_for_result_element(result, pI_id, ATTR_ELEMENT);
         }
         if (result->original_symbols.value)
         {
             assert(result->original_symbols.value->is_variable());
-            create_consistent_identity_for_chunk(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
+            unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
+            create_consistent_identity_for_result_element(result, pI_id, VALUE_ELEMENT);
         }
     }
     fix_results(result->next_result, pI_id);

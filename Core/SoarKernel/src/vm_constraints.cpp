@@ -90,9 +90,9 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
 
         return it->second;
     } else {
-        dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n",
-            get_ovar_for_o_id(it->first), it->first);
-        print_o_id_update_map(DT_VM_MAPS);
+        dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
+        print_attachment_points(DT_CONSTRAINTS);
+        print_o_id_update_map(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -100,7 +100,7 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
 void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
 {
     std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
-    if (it == (*attachment_points).end())
+    if (it != (*attachment_points).end())
     {
         dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %y(o%u) -> %s of %l\n",
             get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
@@ -112,15 +112,6 @@ void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCo
     (*attachment_points)[pO_id] = new attachment_point(pCond, pField);;
 }
 
-void Variablization_Manager::find_attachment_point_for_test(test pTest, condition* pCond, WME_Field pField)
-{
-    test lTest = equality_test_found_in_test(pTest);
-    if (lTest && lTest->identity->o_id)
-    {
-        set_attachment_point(lTest->identity->o_id, pCond, pField);
-    }
-}
-
 void Variablization_Manager::find_attachment_points(condition* pCond)
 {
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Scanning conditions for constraint attachment points...\n%1", pCond);
@@ -130,8 +121,16 @@ void Variablization_Manager::find_attachment_points(condition* pCond)
         if (pCond->type == POSITIVE_CONDITION)
         {
             dprint(DT_CONSTRAINTS, "Adding attachment points for positive condition %l\n", pCond);
-            find_attachment_point_for_test(pCond->data.tests.attr_test, pCond, ATTR_ELEMENT);
-            find_attachment_point_for_test(pCond->data.tests.value_test, pCond, VALUE_ELEMENT);
+            test lTest = equality_test_found_in_test(pCond->data.tests.value_test);
+            if (lTest && lTest->identity->o_id)
+            {
+                set_attachment_point(lTest->identity->o_id, pCond, VALUE_ELEMENT);
+            }
+            lTest = equality_test_found_in_test(pCond->data.tests.attr_test);
+            if (lTest && lTest->identity->o_id)
+            {
+                set_attachment_point(lTest->identity->o_id, pCond, ATTR_ELEMENT);
+            }
         }
         else
         {
@@ -141,7 +140,7 @@ void Variablization_Manager::find_attachment_points(condition* pCond)
         }
         pCond = pCond->next;
     }
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "Done scanning conditions for attachment points.");
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "Done scanning conditions for attachment points.\n");
 }
 
 void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelational_test)
@@ -186,20 +185,22 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 
 void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
 {
-    o_id_update_info* new_o_id_info = get_updated_o_id_info(pEq_test->identity->o_id);
-    if (new_o_id_info)
+    dprint(DT_CONSTRAINTS, "Attempting to attach %t to %t.\n", pRelational_test, pEq_test);
+    attachment_point* attachment_info = get_attachment_point(pEq_test->identity->o_id);
+    if (attachment_info)
     {
-        assert(new_o_id_info->positive_cond);
-        if (new_o_id_info->field == VALUE_ELEMENT)
+        dprint(DT_CONSTRAINTS, "Found attachment point in condition %l.\n", attachment_info->cond);
+        assert(attachment_info->cond);
+        if (attachment_info->field == VALUE_ELEMENT)
         {
-            add_test(thisAgent, &(new_o_id_info->positive_cond->data.tests.value_test), pRelational_test);
-        } else if (new_o_id_info->field == ATTR_ELEMENT)
+            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test);
+        } else if (attachment_info->field == ATTR_ELEMENT)
         {
-            add_test(thisAgent, &(new_o_id_info->positive_cond->data.tests.attr_test), pRelational_test);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test);
         } else
         {
             assert(false);
-            add_test(thisAgent, &(new_o_id_info->positive_cond->data.tests.id_test), pRelational_test);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test);
         }
 //        dprint(DT_CONSTRAINTS, "...found test to attach to %t[%g]\n", attach_test, attach_test);
 //        new_o_id_info = get_updated_o_id_info(pRelational_test->identity->o_id);
@@ -209,6 +210,7 @@ void Variablization_Manager::attach_relational_test(test pEq_test, test pRelatio
 //        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id, t);
         return;
     }
+    dprint(DT_CONSTRAINTS, "Did not find attachment point!\n");
     assert(false);
 }
 
@@ -236,6 +238,10 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
 
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Propagating additional constraints...\n");
 
+    /* Most constraints should already be in a chunk condition.  We marked
+     * them with a tc_num as they were copied from the grounds to the
+     * chunk condition, so that we can prune them from the list here. */
+
     prune_redundant_constraints();
     if (constraints->empty())
     {
@@ -243,29 +249,16 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
         return;
     }
 
-    return;
     find_attachment_points(cond);
+    print_attachment_points(DT_CONSTRAINTS);
 
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;
         if (lConstraint->constraint_test->tc_num != tc_num_found)
         {
-            constraint_test = copy_test(thisAgent, lConstraint->constraint_test);
-            eq_copy = copy_test(thisAgent, lConstraint->eq_test);
-            if (eq_copy->identity->o_id)
-            {
-                thisAgent->variablizationManager->unify_identity(thisAgent, eq_copy);
-            }
-            if (eq_copy->identity->o_id)
-            {
-                thisAgent->variablizationManager->unify_identity(thisAgent, eq_copy);
-            }
-
-//            new_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
-//            eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
-//            update_o_id_for_new_instantiation(&(constraint_test->identity->rule_symbol), &(constraint_test->identity->o_id), pI_id, NULL, true);
-//            update_o_id_for_new_instantiation(&(eq_copy->identity->rule_symbol), &(eq_copy->identity->o_id), pI_id, NULL, true);
+            constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
+            eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
             dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
             if (eq_copy->identity->o_id)

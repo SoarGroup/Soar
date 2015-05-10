@@ -53,7 +53,7 @@
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_LHS_VARIABLIZATION          true
-#define TRACE_Init_DT_RHS_VARIABLIZATION          false
+#define TRACE_Init_DT_RHS_VARIABLIZATION          true
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_FIX_CONDITIONS              true

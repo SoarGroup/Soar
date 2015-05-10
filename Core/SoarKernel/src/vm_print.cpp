@@ -162,7 +162,8 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
 
     for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
-        dprint(mode, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+        dprint(mode, "%y(o%u) -> %s of ", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field));
+        dprint_noprefix(mode, "%l\n", it->second->cond);
     }
 
 }

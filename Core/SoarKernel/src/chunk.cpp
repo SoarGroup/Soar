@@ -928,7 +928,7 @@ void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_o_id_substitution_map();
     thisAgent->variablizationManager->clear_o_id_update_map();
-
+    thisAgent->variablizationManager->clear_attachment_map();
 }
 
 void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list)
