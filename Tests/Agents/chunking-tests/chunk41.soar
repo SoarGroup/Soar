@@ -1,57 +1,67 @@
 # Tests:
-# - 
+# - Attempt to get constraint that won't propagate or attach to wrong thing
 
 srand 23
 learn --on
 
-sp {apply*test-failed
-    (state <s> ^superstate.superstate.superstate.superstate nil)
--->
-    (write (crlf) |Too deep.  Stopping.|)
-    (halt)
-}
-
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^sti <tp> 
-         ^sti2 <tp2>
-         ^constant 23
-         ^constant2 33)
+    (<s> ^i1 1 ^i2 2 ^i3 3 ^i4 4)
     (write (crlf) |Starting chunking unit test.|)
 }
 
-sp {propose
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
+}
+
+sp {init-substate
     (state <s> ^superstate.superstate nil)
 -->
-    (<s> ^operator <o> +)}
+    (<s> ^name substate
+         ^ungrounded 5)}
 
-sp {apply
-    (state <s> ^operator
-               ^superstate <ss>)
+sp {propose*test
+    (state <s> ^name substate)
 -->
-    (<s> ^substate-output <ungrounded>
-         ^substate-output-c 23
-         ^substate-output-c2 33)}
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
 
-sp {make
-    (state <s> ^operator
-               ^substate-output { <> <var-grounded> <> <var-grounded2> <var-ungrounded> }
-               ^substate-output-c { <> <var-grounded-c2> <var-ungrounded-c> }
-               ^substate-output-c2 { > <var-grounded-c> <var-ungrounded-c2> }
-               ^substate-output-c2 { > <var-ungrounded-c> <var-grounded-c2> }
-               ^superstate <ss>)
-    (<ss> ^sti <var-grounded>
-          ^sti2 { <> <var-grounded> <var-grounded2>}
-          ^constant <var-grounded-c>
-          ^constant2 <var-grounded-c2>)
+sp {apply-bt1
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>
+               ^ungrounded { > <i3> <big>})
+    (<ss> ^i3 {<=> <big> <= <big> <i3>})
 -->
-    (<ss> ^result1u <var-ungrounded>
-          ^result2 <var-grounded>
-          ^result3 <var-grounded2>
-          ^result4u <var-ungrounded-c>
-          ^result5u <var-ungrounded-c>
-          ^result6 <var-grounded-c>
-          ^result7 <var-grounded-c2>)
-    }
+    (<s> ^continue true)
+}
 
+sp {apply2
+    (state <s> ^name substate
+               ^operator.name test
+               ^continue
+               ^ungrounded <u>
+               ^superstate <ss>)
+    (<ss> ^i3 <i3>)
+-->
+    (<ss> ^result <u>)
+}

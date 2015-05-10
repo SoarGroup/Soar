@@ -1,48 +1,21 @@
-# Literalization of NC and NCC
+# Tests:
+# - 
 
+srand 23
 learn --on
-watch --learn 2
 
-sp {init
-   (state <s> ^superstate nil)
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
 -->
-   (<s> ^word object
-        ^word2 not-object2)
-
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
 }
 
-sp {propose*stop
-   (state <s> ^superstate.superstate.superstate nil)
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
-    (write (crlf) |Too deep.|)
-    (interrupt)
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
 }
 
-sp {propose
-    (state <s> ^superstate <ss>)
-    (<ss> ^superstate nil
-          ^word <w>)
--->
-    (<s> ^operator <o> + =)
-    (<o> ^word <w>)
-}
-
-sp {apply*literalization
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<o> ^word object)
-    -->
-    (<s> ^sub-result 1 +)
-}
-
-sp {make-chunk
-    (state <s> ^superstate <ss>
-               ^operator <o>
-               ^sub-result <r>)
-    (<o> ^word <object>)
-    (<ss> -^prefix <object>)
-    - {(<ss> ^suffix <object>)
-       (<ss> ^word { <> <object> <fantasy-object> })}
-    -->
-    (<ss> ^result <object> +)
-}

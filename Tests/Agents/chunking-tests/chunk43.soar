@@ -1,53 +1,21 @@
-# Literalization_with_Constraints
-# - Basically a literalization test with some extra tricky stuff
-# - Literalized equality test in conjunction, so test should be thrown out
-# - Ungrounded equality test with constraints on it that use both literalized 
-#   and variablized symbols.  One constraint should propagate and literalized 
-#   one should be thrown out.
-                                
+# Tests:
+# - 
 
+srand 23
 learn --on
-watch --learn 2
 
-sp {init
-   (state <s> ^superstate nil)
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
 -->
-   (<s> ^word object ^word2 not-object)
-
+    (write (crlf) |Chunk produced. Test completed.|)
+    (exec succeeded)
+    (halt)
 }
 
-sp {propose*stop
-   (state <s> ^superstate.superstate.superstate nil)
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
-    (write (crlf) |Too deep.|)
-    (interrupt)
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (halt)
 }
 
-sp {propose
-    (state <s> ^superstate <ss>)
-    (<ss> ^superstate nil
-          ^word <w>)
--->
-    (<s> ^operator <o> + =)
-    (<o> ^word <w>)
-}
-
-sp {apply*literalization
-    (state <s> ^superstate <ss>
-               ^operator <o>)
-    (<o> ^word object)
-    -->
-    (<s> ^sub-result ungrounded +)
-}
-
-sp {start-chunking2
-    (state <s> ^superstate <ss>
-               ^operator <o>
-               ^sub-result {<> <not-object> <> <object> <ungrounded>})
-    (<o> ^word { <> <ungrounded> <object> })
-    (<ss> ^word2 {<> <object> <not-object> })
-    -->
-    (<ss> ^result <object> +
-          ^result2 <not-object> +
-          ^result3 <ungrounded> +)
-}
