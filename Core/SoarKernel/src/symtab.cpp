@@ -58,7 +58,7 @@
 uint32_t compress(uint32_t h, short num_bits)
 {
     uint32_t result;
-
+    
     if (num_bits < 16)
     {
         h = (h & 0xFFFF) ^ (h >> 16);
@@ -79,7 +79,7 @@ uint32_t compress(uint32_t h, short num_bits)
 uint32_t hash_string(const char* s)      /* AGR 600 */
 {
     uint32_t h;
-
+    
     h = 0;
     while (*s != 0)
     {
@@ -224,13 +224,13 @@ void init_symbol_tables(agent* thisAgent)
     thisAgent->str_constant_hash_table = make_hash_table(thisAgent, 0, hash_str_constant);
     thisAgent->int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
     thisAgent->float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
-
+    
     init_memory_pool(thisAgent, &thisAgent->variable_pool, sizeof(varSymbol), "variable");
     init_memory_pool(thisAgent, &thisAgent->identifier_pool, sizeof(idSymbol), "identifier");
     init_memory_pool(thisAgent, &thisAgent->str_constant_pool, sizeof(strSymbol), "str constant");
     init_memory_pool(thisAgent, &thisAgent->int_constant_pool, sizeof(intSymbol), "int constant");
     init_memory_pool(thisAgent, &thisAgent->float_constant_pool, sizeof(floatSymbol), "float constant");
-
+    
     reset_id_counters(thisAgent);
 }
 
@@ -238,7 +238,7 @@ Symbol* find_variable(agent* thisAgent, const char* name)
 {
     uint32_t hash_value;
     varSymbol* sym;
-
+    
     hash_value = hash_variable_raw_info(name, thisAgent->variable_hash_table->log2size);
     sym = reinterpret_cast<varSymbol*>(*(thisAgent->variable_hash_table->buckets + hash_value));
     for (; sym != NIL; sym = varSym(sym->next_in_hash_table))
@@ -255,7 +255,7 @@ Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number
 {
     uint32_t hash_value;
     idSymbol* sym;
-
+    
     hash_value = hash_identifier_raw_info(name_letter, name_number,
                                           thisAgent->identifier_hash_table->log2size);
     sym = reinterpret_cast<idSymbol*>(*(thisAgent->identifier_hash_table->buckets + hash_value));
@@ -274,7 +274,7 @@ Symbol* find_str_constant(agent* thisAgent, const char* name)
 {
     uint32_t hash_value;
     strSymbol* sym;
-
+    
     hash_value = hash_str_constant_raw_info(name,
                                             thisAgent->str_constant_hash_table->log2size);
     sym = reinterpret_cast<strSymbol*>(*(thisAgent->str_constant_hash_table->buckets + hash_value));
@@ -292,7 +292,7 @@ Symbol* find_int_constant(agent* thisAgent, int64_t value)
 {
     uint32_t hash_value;
     intSymbol* sym;
-
+    
     hash_value = hash_int_constant_raw_info(value,
                                             thisAgent->int_constant_hash_table->log2size);
     sym = reinterpret_cast<intSymbol*>(*(thisAgent->int_constant_hash_table->buckets + hash_value));
@@ -310,7 +310,7 @@ Symbol* find_float_constant(agent* thisAgent, double value)
 {
     uint32_t hash_value;
     floatSymbol* sym;
-
+    
     hash_value = hash_float_constant_raw_info(value,
                  thisAgent->float_constant_hash_table->log2size);
     sym = reinterpret_cast<floatSymbol*>(*(thisAgent->float_constant_hash_table->buckets + hash_value));
@@ -328,14 +328,14 @@ Symbol* make_variable(agent* thisAgent, const char* name)
 {
 
     varSymbol* sym;
-
+    
     sym = varSym(find_variable(thisAgent, name));
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
         return sym;
     }
-
+    
     allocate_with_pool(thisAgent, &thisAgent->variable_pool, &sym);
     sym->symbol_type = VARIABLE_SYMBOL_TYPE;
     sym->reference_count = 0;
@@ -351,7 +351,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
     sym->var = sym;
     symbol_add_ref(thisAgent, sym);
     add_to_hash_table(thisAgent, thisAgent->variable_hash_table, sym);
-
+    
     return sym;
 }
 
@@ -359,7 +359,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
 {
 
     idSymbol* sym;
-
+    
     if (isalpha(name_letter))
     {
         if (islower(name_letter))
@@ -377,7 +377,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
     sym->tc_num = 0;
     sym->name_letter = name_letter;
-
+    
     // For long-term identifiers
     if (name_number == NIL)
     {
@@ -392,7 +392,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
         }
     }
     sym->name_number = name_number;
-
+    
     sym->level = level;
     sym->promotion_level = level;
     sym->slots = NIL;
@@ -414,26 +414,26 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->preferences_from_goal = NIL;
     sym->associated_output_links = NIL;
     sym->input_wmes = NIL;
-
+    
     sym->rl_info = NIL;
     sym->reward_header = NIL;
-
+    
     sym->epmem_header = NIL;
     sym->epmem_cmd_header = NIL;
     sym->epmem_result_header = NIL;
     sym->epmem_id = EPMEM_NODEID_BAD;
     sym->epmem_valid = NIL;
     sym->epmem_time_wme = NIL;
-
+    
     sym->smem_header = NIL;
     sym->smem_cmd_header = NIL;
     sym->smem_result_header = NIL;
     sym->smem_lti = NIL;
     sym->smem_time_id = EPMEM_MEMID_NONE;
     sym->smem_valid = NIL;
-
+    
     sym->rl_trace = NIL;
-
+    
     sym->fc = NIL;
     sym->ic = NIL;
     sym->sc = NIL;
@@ -441,14 +441,14 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->id = sym;
     symbol_add_ref(thisAgent, sym);
     add_to_hash_table(thisAgent, thisAgent->identifier_hash_table, sym);
-
+    
     return sym;
 }
 
 Symbol* make_str_constant(agent* thisAgent, char const* name)
 {
     strSymbol* sym;
-
+    
     sym = strSym(find_str_constant(thisAgent, name));
     if (sym)
     {
@@ -481,7 +481,7 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
 Symbol* make_int_constant(agent* thisAgent, int64_t value)
 {
     intSymbol* sym;
-
+    
     sym = intSym(find_int_constant(thisAgent, value));
     if (sym)
     {
@@ -513,7 +513,7 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
 Symbol* make_float_constant(agent* thisAgent, double value)
 {
     floatSymbol* sym;
-
+    
     sym = floatSym(find_float_constant(thisAgent, value));
     if (sym)
     {
@@ -617,12 +617,12 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     char msg[256];
     sym = static_cast<symbol_struct*>(item);
     FILE* f = reinterpret_cast<FILE*>(userdata);
-
+    
     if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         if (sym->reference_count > 0)
         {
-
+        
             if (sym->id->smem_lti != NIL)
             {
                 SNPRINTF(msg, 256,
@@ -639,11 +639,11 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
                          static_cast<long long unsigned>(sym->id->name_number),
                          static_cast<long long unsigned>(sym->reference_count));
             }
-
+            
             msg[255] = 0; /* ensure null termination */
             print(thisAgent,  msg);
             xml_generate_warning(thisAgent, msg);
-
+            
             if (f)
             {
                 fprintf(f, "%s", msg) ;
@@ -661,7 +661,7 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
 bool reset_id_counters(agent* thisAgent)
 {
     int i;
-
+    
     if (thisAgent->identifier_hash_table->count != 0)
     {
         // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
@@ -673,12 +673,12 @@ bool reset_id_counters(agent* thisAgent)
             print(thisAgent,  "there are still some identifiers allocated.  (Probably a memory leak.)\n");
             print(thisAgent,  "(Leaving identifier numbers alone.)\n");
             xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
-
+            
             print_internal_symbols(thisAgent);
             /* RDF 01272003: Added this to improve the output from this error message */
             //TODO: append this to previous XML string or generate separate output?
             //do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
-
+            
             // Also dump the ids to a txt file
             FILE* ids = fopen("leaked-ids.txt", "w") ;
             if (ids)
@@ -686,10 +686,10 @@ bool reset_id_counters(agent* thisAgent)
                 do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, reinterpret_cast<void*>(ids));
                 fclose(ids) ;
             }
-
+            
             return false;
         }
-
+        
         // Getting here means that there are still identifiers but that
         // they are all long-term and (hopefully) exist only in production memory.
     }
@@ -697,19 +697,19 @@ bool reset_id_counters(agent* thisAgent)
     {
         thisAgent->id_counter[i] = 1;
     }
-
+    
     if (thisAgent->smem_db->get_status() == soar_module::connected)
     {
         smem_reset_id_counters(thisAgent);
     }
-
+    
     return true ;
 }
 
 bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
 {
     Symbol* sym;
-
+    
     sym = static_cast<symbol_struct*>(item);
     sym->tc_num = 0;
     return false;
@@ -724,7 +724,7 @@ void reset_id_and_variable_tc_numbers(agent* thisAgent)
 bool reset_gensym_number(agent* /*thisAgent*/, void* item, void*)
 {
     Symbol* sym;
-
+    
     sym = static_cast<symbol_struct*>(item);
     sym->var->gensym_number = 0;
     return false;
@@ -761,7 +761,7 @@ Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t
 #define GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */
     char name[GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE];
     Symbol* New;
-
+    
     while (true)
     {
         SNPRINTF(name, GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, static_cast<long unsigned int>((*counter)++));
@@ -815,7 +815,7 @@ double get_number_from_symbol(Symbol* sym)
     {
         return static_cast<double>(sym->ic->value);
     }
-
+    
     return 0.0;
 }
 
@@ -828,7 +828,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
         list* sym_list)
 {
     cons* c, *first, *prev;
-
+    
     if (! sym_list)
     {
         return NIL;
@@ -859,7 +859,7 @@ void deallocate_symbol_list_removing_references(agent* thisAgent,
         list* sym_list)
 {
     cons* c;
-
+    
     while (sym_list)
     {
         c = sym_list;
@@ -903,13 +903,13 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->constraint_failure_symbol = make_str_constant(thisAgent, "constraint-failure");
     thisAgent->no_change_symbol = make_str_constant(thisAgent, "no-change");
     thisAgent->multiple_symbol = make_str_constant(thisAgent, "multiple");
-
+    
     // SBW 5/07
     thisAgent->item_count_symbol = make_str_constant(thisAgent, "item-count");
-
+    
     // NLD 11/11
     thisAgent->non_numeric_count_symbol = make_str_constant(thisAgent, "non-numeric-count");
-
+    
     thisAgent->conflict_symbol = make_str_constant(thisAgent, "conflict");
     thisAgent->tie_symbol = make_str_constant(thisAgent, "tie");
     thisAgent->item_symbol = make_str_constant(thisAgent, "item");
@@ -920,7 +920,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->type_symbol = make_str_constant(thisAgent, "type");
     thisAgent->goal_symbol = make_str_constant(thisAgent, "goal");
     thisAgent->name_symbol = make_str_constant(thisAgent, "name");
-
+    
     thisAgent->ts_context_variable = make_variable(thisAgent, "<ts>");
     thisAgent->to_context_variable = make_variable(thisAgent, "<to>");
     thisAgent->sss_context_variable = make_variable(thisAgent, "<sss>");
@@ -929,18 +929,18 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->so_context_variable = make_variable(thisAgent, "<so>");
     thisAgent->s_context_variable = make_variable(thisAgent, "<s>");
     thisAgent->o_context_variable = make_variable(thisAgent, "<o>");
-
+    
     thisAgent->input_link_symbol = make_str_constant(thisAgent, "input-link");
     thisAgent->output_link_symbol = make_str_constant(thisAgent, "output-link");
-
+    
     thisAgent->rl_sym_reward_link = make_str_constant(thisAgent, "reward-link");
     thisAgent->rl_sym_reward = make_str_constant(thisAgent, "reward");
     thisAgent->rl_sym_value = make_str_constant(thisAgent, "value");
-
+    
     thisAgent->epmem_sym = make_str_constant(thisAgent, "epmem");
     thisAgent->epmem_sym_cmd = make_str_constant(thisAgent, "command");
     thisAgent->epmem_sym_result = make_str_constant(thisAgent, "result");
-
+    
     thisAgent->epmem_sym_retrieved = make_str_constant(thisAgent, "retrieved");
     thisAgent->epmem_sym_status = make_str_constant(thisAgent, "status");
     thisAgent->epmem_sym_match_score = make_str_constant(thisAgent, "match-score");
@@ -957,7 +957,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->epmem_sym_success = make_str_constant(thisAgent, "success");
     thisAgent->epmem_sym_failure = make_str_constant(thisAgent, "failure");
     thisAgent->epmem_sym_bad_cmd = make_str_constant(thisAgent, "bad-cmd");
-
+    
     thisAgent->epmem_sym_retrieve = make_str_constant(thisAgent, "retrieve");
     thisAgent->epmem_sym_next = make_str_constant(thisAgent, "next");
     thisAgent->epmem_sym_prev = make_str_constant(thisAgent, "previous");
@@ -968,19 +968,19 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->epmem_sym_prohibit = make_str_constant(thisAgent, "prohibit");
     thisAgent->epmem_sym_yes = make_str_constant(thisAgent, "yes");
     thisAgent->epmem_sym_no = make_str_constant(thisAgent, "no");
-
-
+    
+    
     thisAgent->smem_sym = make_str_constant(thisAgent, "smem");
     thisAgent->smem_sym_cmd = make_str_constant(thisAgent, "command");
     thisAgent->smem_sym_result = make_str_constant(thisAgent, "result");
-
+    
     thisAgent->smem_sym_retrieved = make_str_constant(thisAgent, "retrieved");
     thisAgent->smem_sym_status = make_str_constant(thisAgent, "status");
     thisAgent->smem_sym_success = make_str_constant(thisAgent, "success");
     thisAgent->smem_sym_failure = make_str_constant(thisAgent, "failure");
     thisAgent->smem_sym_bad_cmd = make_str_constant(thisAgent, "bad-cmd");
     thisAgent->smem_sym_depth = make_str_constant(thisAgent, "depth");
-
+    
     thisAgent->smem_sym_retrieve = make_str_constant(thisAgent, "retrieve");
     thisAgent->smem_sym_query = make_str_constant(thisAgent, "query");
     thisAgent->smem_sym_negquery = make_str_constant(thisAgent, "neg-query");
@@ -1026,7 +1026,7 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->type_symbol));
     release_helper(thisAgent, &(thisAgent->goal_symbol));
     release_helper(thisAgent, &(thisAgent->name_symbol));
-
+    
     release_helper(thisAgent, &(thisAgent->ts_context_variable));
     release_helper(thisAgent, &(thisAgent->to_context_variable));
     release_helper(thisAgent, &(thisAgent->sss_context_variable));
@@ -1035,21 +1035,21 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->so_context_variable));
     release_helper(thisAgent, &(thisAgent->s_context_variable));
     release_helper(thisAgent, &(thisAgent->o_context_variable));
-
+    
     release_helper(thisAgent, &(thisAgent->item_count_symbol));
     release_helper(thisAgent, &(thisAgent->non_numeric_count_symbol));
-
+    
     release_helper(thisAgent, &(thisAgent->input_link_symbol));
     release_helper(thisAgent, &(thisAgent->output_link_symbol));
-
+    
     release_helper(thisAgent, &(thisAgent->rl_sym_reward_link));
     release_helper(thisAgent, &(thisAgent->rl_sym_reward));
     release_helper(thisAgent, &(thisAgent->rl_sym_value));
-
+    
     release_helper(thisAgent, &(thisAgent->epmem_sym));
     release_helper(thisAgent, &(thisAgent->epmem_sym_cmd));
     release_helper(thisAgent, &(thisAgent->epmem_sym_result));
-
+    
     release_helper(thisAgent, &(thisAgent->epmem_sym_retrieved));
     release_helper(thisAgent, &(thisAgent->epmem_sym_status));
     release_helper(thisAgent, &(thisAgent->epmem_sym_match_score));
@@ -1066,7 +1066,7 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->epmem_sym_success));
     release_helper(thisAgent, &(thisAgent->epmem_sym_failure));
     release_helper(thisAgent, &(thisAgent->epmem_sym_bad_cmd));
-
+    
     release_helper(thisAgent, &(thisAgent->epmem_sym_retrieve));
     release_helper(thisAgent, &(thisAgent->epmem_sym_next));
     release_helper(thisAgent, &(thisAgent->epmem_sym_prev));
@@ -1077,18 +1077,18 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->epmem_sym_prohibit));
     release_helper(thisAgent, &(thisAgent->epmem_sym_yes));
     release_helper(thisAgent, &(thisAgent->epmem_sym_no));
-
+    
     release_helper(thisAgent, &(thisAgent->smem_sym));
     release_helper(thisAgent, &(thisAgent->smem_sym_cmd));
     release_helper(thisAgent, &(thisAgent->smem_sym_result));
-
+    
     release_helper(thisAgent, &(thisAgent->smem_sym_retrieved));
     release_helper(thisAgent, &(thisAgent->smem_sym_status));
     release_helper(thisAgent, &(thisAgent->smem_sym_success));
     release_helper(thisAgent, &(thisAgent->smem_sym_failure));
     release_helper(thisAgent, &(thisAgent->smem_sym_bad_cmd));
     release_helper(thisAgent, &(thisAgent->smem_sym_depth));
-
+    
     release_helper(thisAgent, &(thisAgent->smem_sym_retrieve));
     release_helper(thisAgent, &(thisAgent->smem_sym_query));
     release_helper(thisAgent, &(thisAgent->smem_sym_negquery));
@@ -1109,14 +1109,14 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool is_rereadable;
     bool has_angle_bracket;
-
+    
     /* -- Not sure if this is legit, but works and smooths debugging -- */
     if (!this)
     {
         //assert(false);
         return Output_Manager::Get_OM().NULL_SYM_STR;
     }
-
+    
     switch (symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:
@@ -1127,7 +1127,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             strcpy(dest, var->name);
             dest[dest_size - 1] = 0; /* ensure null termination */
             return dest;
-
+            
         case IDENTIFIER_SYMBOL_TYPE:
             if (!dest)
             {
@@ -1144,7 +1144,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             }
             dest[dest_size - 1] = 0; /* ensure null termination */
             return dest;
-
+            
         case INT_CONSTANT_SYMBOL_TYPE:
             if (!dest)
             {
@@ -1154,7 +1154,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             SNPRINTF(dest, dest_size, "%ld", static_cast<long int>(ic->value));
             dest[dest_size - 1] = 0; /* ensure null termination */
             return dest;
-
+            
         case FLOAT_CONSTANT_SYMBOL_TYPE:
             if (!dest)
             {
@@ -1186,7 +1186,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 *end_of_mantissa = 0;
             }
             return dest;
-
+            
         case STR_CONSTANT_SYMBOL_TYPE:
             if (!rereadable)
             {
@@ -1197,12 +1197,12 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 strcpy(dest, sc->name);
                 return dest;
             }
-
+            
             soar::Lexer::determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
                     &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
-
+                    
             has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name) - 1] == '>';
-
+            
             if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
                     (!is_rereadable) || has_angle_bracket)
             {
@@ -1217,7 +1217,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             }
             strcpy(dest, sc->name);
             return dest;
-
+            
         default:
         {
             char msg[BUFFER_MSG_SIZE];
