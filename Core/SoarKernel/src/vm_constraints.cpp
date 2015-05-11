@@ -97,6 +97,23 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
     return 0;
 }
 
+bool Variablization_Manager::has_positive_condition(uint64_t pO_id)
+{
+    std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
+    if (it != (*attachment_points).end())
+    {
+        dprint(DT_CONSTRAINTS, "...found positive condition, returning true: %y(o%u) -> %s of %l\n",
+            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+
+        return true;
+    } else {
+        dprint(DT_CONSTRAINTS, "...did not find positive condition, returning false for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
+//        print_attachment_points(DT_CONSTRAINTS);
+//        print_o_id_update_map(DT_CONSTRAINTS);
+    }
+    return false;
+}
+
 void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
 {
     std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
@@ -147,7 +164,7 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 {
     assert(test_has_referent(*pEq_test));
     assert(test_has_referent(*pRelational_test));
-    assert((*pEq_test)->type != EQUALITY_TEST);
+    assert((*pEq_test)->type == EQUALITY_TEST);
     assert((*pRelational_test)->type != EQUALITY_TEST);
 
     TestType tt = (*pRelational_test)->type;
@@ -178,14 +195,15 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
     (*pRelational_test)->type = EQUALITY_TEST;
 
     test temp = *pEq_test;
-    pEq_test = pRelational_test;
+    (*pEq_test) = (*pRelational_test);
     (*pRelational_test) = temp;
 
 }
 
 void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
 {
-    dprint(DT_CONSTRAINTS, "Attempting to attach %t to %t.\n", pRelational_test, pEq_test);
+    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) ", pRelational_test, pRelational_test->identity->o_id);
+    dprint_noprefix(DT_CONSTRAINTS, "%t(o%u).\n", pEq_test, pEq_test->identity->o_id);
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity->o_id);
     if (attachment_info)
     {
@@ -255,41 +273,35 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;
-        if (lConstraint->constraint_test->tc_num != tc_num_found)
+        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
+        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
+
+        dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] ", eq_copy, eq_copy);
+        dprint_noprefix(DT_CONSTRAINTS, "%t[%g]\n", constraint_test, constraint_test);
+
+        if (eq_copy->identity->o_id && has_positive_condition(eq_copy->identity->o_id))
         {
-            constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
-            eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
-            dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
-
-            if (eq_copy->identity->o_id)
-            {
-                /* Attach to a positive chunk condition test of eq_test */
-                dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
-                attach_relational_test(eq_copy, constraint_test, pI_id);
-            } else {
-                if (constraint_test->identity->o_id)
-                {
-                    /* Original identity it was attached to was literalized, but the relational
-                     * referent was not, so make complement and add to a positive chunk
-                     * condition test for the referent */
-                    dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
-                    invert_relational_test(&eq_copy, &constraint_test);
-                    attach_relational_test(eq_copy, constraint_test, pI_id);
-
-                } else {
-                    // Both tests are literals.  Delete.
-                    dprint(DT_CONSTRAINTS, "...both tests are literals.  Oh my god.\n");
-                    deallocate_test(thisAgent, constraint_test);
-                    // Is this possible?
-                    assert(false);
-                }
-            }
-            /* eq_test no longer needed so deallocate.  relational test now attached */
-            deallocate_test(thisAgent, eq_copy);
+            /* Attach to a positive chunk condition test of eq_test */
+            dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
+            attach_relational_test(eq_copy, constraint_test, pI_id);
         } else {
-            // Skipping test because marked as already in a chunk condition
-            dprint(DT_CONSTRAINTS, "Skipping test b/c marked as already in chunk %g %g...\n", lConstraint->eq_test, lConstraint->constraint_test);
+            /* Original identity constraint was attached to was literalized */
+            if (constraint_test->identity->o_id && has_positive_condition(constraint_test->identity->o_id))
+            {
+                /* Relational tests referent was not literalized, so make complement and
+                 * add to a positive chunk condition test for the referent */
+                dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
+                invert_relational_test(&eq_copy, &constraint_test);
+                attach_relational_test(eq_copy, constraint_test, pI_id);
+
+            } else {
+                // Both tests are literals.  Delete.
+                dprint(DT_CONSTRAINTS, "...both tests are literals.  Oh my god.\n");
+                deallocate_test(thisAgent, constraint_test);
+            }
         }
+        /* eq_test no longer needed so deallocate.  relational test now attached */
+        deallocate_test(thisAgent, eq_copy);
     }
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
 }

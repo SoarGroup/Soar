@@ -178,7 +178,8 @@ void Variablization_Manager::print_constraints(TraceMode mode)
     }
     for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
-        dprint(mode, "%t[%g] %t[%g]\n", (*it)->eq_test, (*it)->eq_test, (*it)->constraint_test, (*it)->constraint_test);
+        dprint(mode, "%t[%g]:   ", (*it)->eq_test, (*it)->eq_test);
+        dprint_noprefix(mode, "%t[%g]\n", (*it)->constraint_test, (*it)->constraint_test);
     }
 
     dprint(mode, "------------------------------------\n");

@@ -93,17 +93,12 @@ class Variablization_Manager
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
 
-        void reset_constraint_found_tc_num()
-        {
-            tc_num_found = get_new_tc_number(thisAgent);
-        };
-        tc_number get_constraint_found_tc_num()
-        {
-            return tc_num_found;
-        };
+        void reset_constraint_found_tc_num() { tc_num_found = get_new_tc_number(thisAgent); };
+        tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
         void cache_constraints_in_cond(condition* c);
         void add_additional_constraints(condition* cond, uint64_t pI_id);
+        bool has_positive_condition(uint64_t pO_id);
 
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
