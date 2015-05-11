@@ -40,11 +40,12 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
         CPPUNIT_TEST(Prohibit_Fake_Instantiation_LTIs);
         CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
+        CPPUNIT_TEST(Simple_Constraint_Prop);
+        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(Simple_Literalization);
         CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_Constraints);
-        CPPUNIT_TEST(Simple_Constraint_Prop);
-        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
+        CPPUNIT_TEST(Literalization_with_BT_Constraints);
         CPPUNIT_TEST(BUNCPS_0);
         CPPUNIT_TEST(BUNCPS_1);
         CPPUNIT_TEST(BUNCPS_2);
@@ -53,7 +54,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_5);
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
-//        CPPUNIT_TEST(testChunk40);
 //        CPPUNIT_TEST(testChunk41);
 //        CPPUNIT_TEST(testChunk42);
 //        CPPUNIT_TEST(testChunk43);
@@ -114,7 +114,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Superstate_Identity_Opaque();
         void Simple_Constraint_Prop();
         void Literalization_of_NC_and_NCC();
-//        void testChunk40();
+        void Literalization_with_BT_Constraints();
 //        void testChunk41();
 //        void testChunk42();
 //        void testChunk43();
@@ -390,11 +390,11 @@ void ChunkTest::Literalization_of_NC_and_NCC()
     build_and_check_chunk("Literalization_of_NC_and_NCC.soar", 8, 1);
 }
 
-//void ChunkTest::testChunk40()
-//{
-//    build_and_check_chunk("chunk40.soar", 8, 1);
-//}
-//
+void ChunkTest::Literalization_with_BT_Constraints()
+{
+    build_and_check_chunk("Literalization_with_BT_Constraints.soar", 8, 1);
+}
+
 //void ChunkTest::testChunk41()
 //{
 //    build_and_check_chunk("chunk41.soar", 8, 1);

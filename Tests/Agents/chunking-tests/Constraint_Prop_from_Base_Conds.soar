@@ -19,17 +19,16 @@ sp {elab-copy-ts-ts
    (state <s> ^superstate nil
               ^data <t> { > 1 })
 -->
-   (<s> ^data2 <t>)
+   (<s> ^data2 <t>) ; # = 3
 }
 
 sp {apply-copy-ts-ts-ss
    (state <s> ^superstate <ss>
               ^operator)
-   (<ss> ^data2 <t> { >= 2 })
+   (<ss> ^data2  { >= 2 <t> })
 -->
-   (<s> ^subdata2 <t>)
+   (<s> ^subdata2 <t>) ; # = 3
 }
-
 
 sp {apply-copy-ts-ss
    (state <s> ^superstate <ss>
@@ -45,7 +44,7 @@ sp {apply-create-chunk
               ^subdata { <> <t2> <t1> }
               ^subdata { < <t1> <t2> }
               ^subdata2 <t1>)
-   (<ss> ^data2 <t3> 
+   (<ss> ^data <t3> 
          ^data2 <t4>)
 -->
    (<ss> ^big <t1> ^small <t2>)

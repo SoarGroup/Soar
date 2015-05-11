@@ -1,67 +1,83 @@
-# Tests:
-# - Attempt to get constraint that won't propagate or attach to wrong thing
+# Possible o_id propagation problem.  
 
-srand 23
 learn --on
+watch --learn 2
 
-sp {init-superstate
-    (state <s> ^superstate nil)
+sp {init
+   (state <s> ^superstate nil)
 -->
-    (<s> ^i1 1 ^i2 2 ^i3 3 ^i4 4)
-    (write (crlf) |Starting chunking unit test.|)
+   (<s> ^word object ^word2 not-object)
 }
 
-sp {propose*top
-    (state <s> ^superstate nil)
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
 -->
-    (<s> ^operator <o>)
-    (<o> ^name do-test)
+    (write (crlf) |Too deep.|)
+    (interrupt)
 }
 
-sp {apply*test-done
-    (state <s> ^superstate nil ^test-done)
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
 -->
-    (write (crlf) |Chunk produced. Test completed.|)
-    (exec succeeded)
-    (halt)
+    (<s> ^operator <o> + =)
+    (<o> ^word1 <w>
+         ^word2 <w>)
 }
 
-sp {apply*test-failed
-    (state <s> ^superstate.superstate.superstate.superstate nil)
--->
-    (write (crlf) |Chunk not produced.  Test failed.|)
-    (halt)
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word2 object)
+    -->
+    (<s> ^sub-result-lit ungrounded +)
 }
 
-sp {init-substate
-    (state <s> ^superstate.superstate nil)
--->
-    (<s> ^name substate
-         ^ungrounded 5)}
+sp {apply*constraints
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result-lit)
+    (<o> ^word1 { <> <w2> <w> }
+         ^word2 <w2>)
 
-sp {propose*test
-    (state <s> ^name substate)
--->
-    (<s> ^operator <o> +)
-    (<o> ^name test)}
-
-sp {apply-bt1
-    (state <s> ^name substate
-               ^operator.name test
-               ^superstate <ss>
-               ^ungrounded { > <i3> <big>})
-    (<ss> ^i3 {<=> <big> <= <big> <i3>})
--->
-    (<s> ^continue true)
+    -->
+    (<s> ^sub-result1 ungrounded +)
 }
 
-sp {apply2
-    (state <s> ^name substate
-               ^operator.name test
-               ^continue
-               ^ungrounded <u>
-               ^superstate <ss>)
-    (<ss> ^i3 <i3>)
--->
-    (<ss> ^result <u>)
+sp {apply*constraints*no-lit
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word1 { <> <w2> <w> }
+         ^word2 <w2>)
+
+    -->
+    (<s> ^sub-result2 ungrounded +)
 }
+
+sp {start-chunking
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result-lit <r> 
+               ^sub-result1 <r>)
+    (<ss> ^word2 <not-object>
+          ^word <object2>)
+    -->
+    (<ss> ^result1a <object> +
+          ^result1b <not-object> +
+          ^result1c <ungrounded> +)
+}
+
+sp {start-chunking-partial-lit
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result-lit <r> 
+               ^sub-result2 <r>)
+    (<ss> ^word2 <not-object>
+          ^word <object2>)
+    -->
+    (<ss> ^result2a <object> +
+          ^result2b <not-object> +
+          ^result2c <ungrounded> +)
+}
+

@@ -45,7 +45,8 @@ sp {start-chunking2
                ^operator <o>
                ^sub-result {<> <not-object> <> <object> <ungrounded>})
     (<o> ^word { <> <ungrounded> <object> })
-    (<ss> ^word2 {<> <object> <not-object> })
+    (<ss> ^word2 {<> <object> <not-object> }
+          ^word { <> <ungrounded> <object2> })
     -->
     (<ss> ^result <object> +
           ^result2 <not-object> +
