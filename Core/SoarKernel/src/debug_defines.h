@@ -50,7 +50,7 @@
 #define TRACE_Init_DT_SAVEDVARS                   false
 //--
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
-#define TRACE_Init_DT_BACKTRACE                   false
+#define TRACE_Init_DT_BACKTRACE                   true
 #define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false

@@ -1162,13 +1162,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_DEBUG, true);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP, true);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
-//        thisAgent->variablizationManager->variablize_relational_constraints();
-//        thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
     }
 
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
