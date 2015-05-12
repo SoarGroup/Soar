@@ -298,6 +298,12 @@ class Output_Manager
  *       %2   action list
  *       %3   cons list of conditions
  *
+ *       %1   condition list
+ *       %2   cons list of conditions
+ *       %3   action lists
+ *       %4   preference lists
+ *       %5   results lists
+ *
  *       %4   condition action lists (2 args: cond, action)
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)

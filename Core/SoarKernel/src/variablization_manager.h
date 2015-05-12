@@ -159,7 +159,7 @@ class Variablization_Manager
 
         o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
         void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond = NULL, WME_Field pos_cond_field = NO_ELEMENT);
-        void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id);
+        void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
 

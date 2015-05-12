@@ -1045,7 +1045,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint_set_indents(DT_BACKTRACE, "          ");
-    dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6", NULL, pref);
+    dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     dprint_clear_indents(DT_BACKTRACE);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
@@ -1084,6 +1084,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint(DT_BACKTRACE, "Tracing DONE.\n");
     dprint_set_indents(DT_BACKTRACE, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", thisAgent->grounds);
+//    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     thisAgent->variablizationManager->print_constraints(DT_CONSTRAINTS);
@@ -1211,7 +1212,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%4", vrblz_top, rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);

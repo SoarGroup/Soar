@@ -6,7 +6,7 @@ watch --learn 2
 sp {init
    (state <s> ^superstate nil)
 -->
-   (<s> ^word object ^word2 not-object)
+   (<s> ^object1 object ^object2 not-object)
 }
 
 sp {propose*stop
@@ -19,17 +19,17 @@ sp {propose*stop
 sp {propose
     (state <s> ^superstate <ss>)
     (<ss> ^superstate nil
-          ^word <w>)
+          ^object1 <w>)
 -->
     (<s> ^operator <o> + =)
-    (<o> ^word1 <w>
-         ^word2 <w>)
+    (<o> ^o-object1 <w>
+         ^o-object2 <w>)
 }
 
 sp {apply*literalization
     (state <s> ^superstate <ss>
                ^operator <o>)
-    (<o> ^word2 object)
+    (<o> ^o-object2 object)
     -->
     (<s> ^sub-result-lit ungrounded +)
 }
@@ -37,9 +37,9 @@ sp {apply*literalization
 sp {apply*constraints
     (state <s> ^superstate <ss>
                ^operator <o>
-               ^sub-result-lit)
-    (<o> ^word1 { <> <w2> <w> }
-         ^word2 <w2>)
+               ^sub-result-lit <ungrounded>)
+    (<o> ^o-object1 { <=> <w2> <w> }
+         ^o-object2 <w2>)
 
     -->
     (<s> ^sub-result1 ungrounded +)
@@ -48,8 +48,8 @@ sp {apply*constraints
 sp {apply*constraints*no-lit
     (state <s> ^superstate <ss>
                ^operator <o>)
-    (<o> ^word1 { <> <w2> <w> }
-         ^word2 <w2>)
+    (<o> ^o-object1 { >= <w2> <w> }
+         ^o-object2 <w2>)
 
     -->
     (<s> ^sub-result2 ungrounded +)
@@ -59,25 +59,26 @@ sp {start-chunking
     (state <s> ^superstate <ss>
                ^operator <o>
                ^sub-result-lit <r> 
-               ^sub-result1 <r>)
-    (<ss> ^word2 <not-object>
-          ^word <object2>)
+               ^sub-result1 <r>
+               ^sub-result2)
+    (<ss> ^object2 <not-object>
+          ^object1 <object2>)
     -->
-    (<ss> ^result1a <object> +
+    (<ss> ^result1u <r> +
           ^result1b <not-object> +
-          ^result1c <ungrounded> +)
+          ^result1c <object2> +)
 }
 
 sp {start-chunking-partial-lit
     (state <s> ^superstate <ss>
                ^operator <o>
-               ^sub-result-lit <r> 
+#               ^sub-result-lit <r> 
                ^sub-result2 <r>)
-    (<ss> ^word2 <not-object>
-          ^word <object2>)
+    (<ss> ^object2 <not-object>
+          ^object1 <object2>)
     -->
-    (<ss> ^result2a <object> +
+    (<ss> ^result2a <r> +
           ^result2b <not-object> +
-          ^result2c <ungrounded> +)
+          ^result2c <object2> +)
 }
 

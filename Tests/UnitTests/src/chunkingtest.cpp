@@ -54,7 +54,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_5);
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
-//        CPPUNIT_TEST(testChunk41);
+        CPPUNIT_TEST(Literalization_with_BT_Constraints2);
 //        CPPUNIT_TEST(testChunk42);
 //        CPPUNIT_TEST(testChunk43);
 //        CPPUNIT_TEST(testChunk44);
@@ -115,7 +115,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Simple_Constraint_Prop();
         void Literalization_of_NC_and_NCC();
         void Literalization_with_BT_Constraints();
-//        void testChunk41();
+        void Literalization_with_BT_Constraints2();
 //        void testChunk42();
 //        void testChunk43();
 //        void testChunk44();
@@ -395,11 +395,11 @@ void ChunkTest::Literalization_with_BT_Constraints()
     build_and_check_chunk("Literalization_with_BT_Constraints.soar", 8, 1);
 }
 
-//void ChunkTest::testChunk41()
-//{
-//    build_and_check_chunk("chunk41.soar", 8, 1);
-//}
-//
+void ChunkTest::Literalization_with_BT_Constraints2()
+{
+    build_and_check_chunk("chunk41.soar", 8, 2);
+}
+
 //void ChunkTest::testChunk42()
 //{
 //    build_and_check_chunk("chunk42.soar", 8, 1);

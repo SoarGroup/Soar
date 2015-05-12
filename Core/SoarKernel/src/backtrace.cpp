@@ -236,6 +236,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lId);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, 0);
             }
+            thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
         }
         if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && lAttr)
         {
@@ -249,6 +250,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lAttr);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, 0);
             }
+            thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
         }
         if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && lValue)
         {
@@ -262,6 +264,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint_noprefix(DT_OVAR_PROP, "-> %t\n", lValue);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, 0);
             }
+            thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
         }
     }
 
