@@ -240,7 +240,7 @@ void ChunkTest::STI_Variablization_Same_Type()
 
 void ChunkTest::RHS_Unbound_Multivalue()
 {
-    build_and_check_chunk("chunk10.soar", 8, 2);
+    build_and_check_chunk("RHS_Unbound_Multivalue.soar", 8, 2);
 }
 
 void ChunkTest::Rete_Bug_Deep_vs_Top()
@@ -397,7 +397,7 @@ void ChunkTest::Literalization_with_BT_Constraints()
 
 void ChunkTest::Literalization_with_BT_Constraints2()
 {
-    build_and_check_chunk("chunk41.soar", 8, 2);
+    build_and_check_chunk("Literalization_with_BT_Constraints2.soar", 8, 2);
 }
 
 //void ChunkTest::testChunk42()
