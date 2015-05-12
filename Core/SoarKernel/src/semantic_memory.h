@@ -295,6 +295,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* web_val_parent;
         soar_module::sqlite_statement* web_val_parent_2;
         soar_module::sqlite_statement* web_val_child;
+        soar_module::sqlite_statement* web_val_both;
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;
         soar_module::sqlite_statement* trajectory_get;

@@ -709,6 +709,8 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 	add(web_val_child);
 	web_val_parent_2 = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR );
 	add(web_val_parent_2);
+    web_val_both = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " UNION ALL SELECT lti_id FROM smem_augmentations WHERE value_lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR);
+	add(web_val_both);
     //
     
     attribute_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?");
@@ -1252,7 +1254,7 @@ void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,st
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* parents_q = thisAgent->smem_stmts->web_val_parent;
+        soar_module::sqlite_statement* parents_q = thisAgent->smem_stmts->web_val_parent_2;
 
         std::list<smem_lti_id> parents;
 
@@ -1288,7 +1290,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_parent_2;
+        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_both;//web_val_parent_2;
 
         std::list<smem_lti_id> children;
 
@@ -1300,7 +1302,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
             children_q->prepare();
         }
         children_q->bind_int(1, lti_id);
-        //children_q->bind_int(2, lti_id);
+        children_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
         while(children_q->execute() == soar_module::row && children_q->column_int(0) != lti_id)
         {
@@ -1499,12 +1501,12 @@ extern bool smem_calc_spread_trajectory(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
     smem_attach(thisAgent);
     //Don't want to bother with this unless I go through with turning ACT-R spreading on.
-    soar_module::sqlite_statement* initialization_act_r = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
-    initialization_act_r->prepare();
-    initialization_act_r->execute(soar_module::op_reinit);
-    delete initialization_act_r;
-    soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
+    //soar_module::sqlite_statement* initialization_act_r = new soar_module::sqlite_statement(thisAgent->smem_db,
+         //   "CREATE INDEX smem_augmentations_lti_id ON smem_augmentations (value_lti_id, lti_id)");
+    //initialization_act_r->prepare();
+    //initialization_act_r->execute(soar_module::op_reinit);
+    //delete initialization_act_r;
+    //soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;
     soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
     smem_lti_id lti_id;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
@@ -1981,9 +1983,20 @@ inline void smem_calc_spread(agent* thisAgent)
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
 
             ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
-            raw_prob = (((double)(calc_spread->column_int(2)))/calc_spread->column_int(1));
+            /*raw_prob = (((double)(calc_spread->column_int(2)))/calc_spread->column_int(1));
             offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
-            additional = (log(raw_prob)-log(offset));
+            additional = (log(raw_prob)-log(offset));*/
+            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+            {
+                raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
+                additional = (2+log(raw_prob));
+            }
+            else
+            {
+                raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)));
+                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
+                additional = (log(raw_prob)-log(offset));
+            }
             spread+=additional;//Now, we've adjusted the activation according to this new addition.
 
             thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
@@ -3254,7 +3267,10 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     ////////////////////////////////////////////////////////////////////////////
     
     //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
-    smem_calc_spread(thisAgent);
+    if (thisAgent->smem_params->spreading->get_value() == on)
+    {
+        smem_calc_spread(thisAgent);
+    }
 
     // prepare query stats
     {
