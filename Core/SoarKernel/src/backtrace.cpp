@@ -184,8 +184,13 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d for i%u with orig vars (%y ^%y %y) for condition:\n", grounds_level, inst->i_id, ovars_to_replace.id, ovars_to_replace.attr, ovars_to_replace.value);
-    dprint(DT_BACKTRACE, "%l\n", trace_cond);
+//    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d for i%u with orig vars (%y ^%y %y) for condition:\n", grounds_level, inst->i_id,
+//        ovars_to_replace.id ? ovars_to_replace.id : thisAgent->none_symbol, ovars_to_replace.attr ? ovars_to_replace.attr : thisAgent->none_symbol, ovars_to_replace.value ? ovars_to_replace.value : thisAgent->none_symbol);
+    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d for i%u with orig vars (%y ", grounds_level, inst->i_id,
+        ovars_to_replace.id ? ovars_to_replace.id : thisAgent->none_symbol);
+    dprint_noprefix(DT_BACKTRACE, "^%y ", ovars_to_replace.attr ? ovars_to_replace.attr : thisAgent->none_symbol);
+    dprint_noprefix(DT_BACKTRACE, "%y) for condition:\n", ovars_to_replace.value ? ovars_to_replace.value : thisAgent->none_symbol);
+    dprint_noprefix(DT_BACKTRACE, "%l\n", trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
 

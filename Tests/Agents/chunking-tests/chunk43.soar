@@ -1,21 +1,44 @@
-# Tests:
-# - 
+# Literalization of conjunction
 
-srand 23
 learn --on
+watch --learn 2
 
-sp {apply*test-done
-    (state <s> ^superstate nil ^test-done)
+sp {init
+   (state <s> ^superstate nil)
 -->
-    (write (crlf) |Chunk produced. Test completed.|)
-    (exec succeeded)
-    (halt)
+   (<s> ^word <object>)
 }
 
-sp {apply*test-failed
-    (state <s> ^superstate.superstate.superstate.superstate nil)
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
 -->
-    (write (crlf) |Chunk not produced.  Test failed.|)
-    (halt)
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word <w>)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+#    (<o> ^word object)
+    -->
+    (<s> ^sub-result <ungrounded> +)
+}
+
+sp {start-chunking2
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result <ungrounded>)
+    (<ss> ^word { <> <ungrounded> <object> })
+    -->
+    (<ss> ^result <object> +)
 }
 

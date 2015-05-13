@@ -2114,16 +2114,26 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
-    /* --- make the fake preference --- */
-    /* MToDo | If any of these can ever be variables, then we need to pass in ovars.  Don't think they can.  Remove.*/
-    assert(!goal->is_variable());
-    assert(!thisAgent->item_symbol->is_variable());
-    assert(!cand->value->is_variable());
 
+    /* --- make the fake instantiation --- */
+    allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &inst);
+    inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
+
+    /* --- make the fake condition --- */
+    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
+    init_condition(cond);
+    cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
+    set_identity_for_rule_variable(thisAgent, cond->data.tests.id_test, thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
+    cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
+    set_identity_for_rule_variable(thisAgent, cond->data.tests.value_test, thisAgent->o_context_variable, inst->i_id);
+    uint64_t fake_s_o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id);
+
+    /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
-                           soar_module::symbol_triple(NULL, NULL, NULL),
-                           soar_module::identity_triple(0,0,0));
+                           soar_module::symbol_triple(thisAgent->s_context_variable, NULL, thisAgent->o_context_variable),
+                           soar_module::identity_triple(fake_s_o_id, 0, cond->data.tests.value_test->identity->o_id));
 //    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
 //                           cand->value, NIL);
     symbol_add_ref(thisAgent, pref->id);
@@ -2133,10 +2143,11 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
                           all_of_goal_next, all_of_goal_prev);
     pref->on_goal_list = true;
     preference_add_ref(pref);
-    /* --- make the fake instantiation --- */
-    allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &inst);
+
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NIL;
+
+    /* -- Fill in the fake instantiation info -- */
     inst->preferences_generated = pref;
     inst->prod = NIL;
     inst->next = inst->prev = NIL;
@@ -2146,18 +2157,12 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->match_goal_level = goal->id->level;
     inst->reliable = true;
     inst->backtrace_number = 0;
-    inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
     inst->in_ms = false;
-    /* --- make the fake condition --- */
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
-    init_condition(cond);
+
+    /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
-
-    cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
-    cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
 
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;

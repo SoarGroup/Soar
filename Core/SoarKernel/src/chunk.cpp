@@ -851,12 +851,12 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
 
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
-        dprint(DT_DEBUG, "Chunk name %s already exists...trying...", lName.str().c_str());
+//        dprint(DT_DEBUG, "Chunk name %s already exists...trying...", lName.str().c_str());
         do
         {
             newLName.str("");
             newLName << lName.str() << "-" << collision_count++;
-            dprint_noprefix(DT_DEBUG, "%s\n", newLName.str().c_str());
+//            dprint_noprefix(DT_DEBUG, "%s\n", newLName.str().c_str());
         }
         while (find_str_constant(thisAgent, newLName.str().c_str()));
         lName.str(newLName.str());

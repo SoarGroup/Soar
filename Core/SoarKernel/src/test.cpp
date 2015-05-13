@@ -79,6 +79,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
             new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity, pI_id);
+
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
@@ -330,6 +331,25 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     dprint(DT_ADD_TEST_TO_TEST, "        = %t\n", *dest_test_address);
 }
 
+void set_identity_for_rule_variable(agent* thisAgent, test t, Symbol* pRuleSym, uint64_t pI_id)
+{
+    if (t->identity->rule_symbol)
+    {
+        symbol_remove_ref(thisAgent, t->identity->rule_symbol);
+        t->identity->rule_symbol = NULL;
+    }
+    if (pRuleSym->is_variable())
+    {
+        t->identity->rule_symbol =  pRuleSym;
+        if (pI_id)
+        {
+            t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(pRuleSym, pI_id);
+        }
+        symbol_add_ref(thisAgent, t->identity->rule_symbol);
+    }
+}
+
+
 /* -- This function is a special purpose function for adding relational tests to another test. It
  *    adds a test to a list but checks if there already exists an equality test for that same symbol.
  *    If one does exist but doesn't have an original test, it replaces the missing original
@@ -358,23 +378,8 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                 {
                     /* This is the special case */
                     destination->original_test = new_test->original_test;
-                    if (destination->identity->rule_symbol)
-                    {
-                        symbol_remove_ref(thisAgent, destination->identity->rule_symbol);
-                        destination->identity->rule_symbol = NULL;
-                        // Don't think it's possible
-                        assert(false);
-                    }
-                    if (new_test->original_test->data.referent->is_variable())
-                    {
-                        destination->identity->rule_symbol =  new_test->original_test->data.referent;
-                        if (pI_id)
-                        {
-                            destination->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
-                        }
-                        symbol_add_ref(thisAgent, destination->identity->rule_symbol);
-                    }
-                    /* MToDo | Should this be deallocated? */
+                    set_identity_for_rule_variable(thisAgent, destination, new_test->original_test->data.referent, pI_id);
+                    /* MToDo | Should original_test here be deallocated? */
                     new_test->original_test = NIL;
                     dprint(DT_IDENTITY_PROP, "Making original var string for add_relational_test %t: %y\n",
                         destination, destination->identity->rule_symbol);
@@ -1395,16 +1400,11 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "created relational test with referent %y.\n", original_referent);
 
                         /* -- Set identity information for relational test with variable as original symbol-- */
-                        if (original_referent && original_referent->is_variable())
+                        if (original_referent)
                         {
-                            dprint(DT_IDENTITY_PROP, "Adding wme and test/symbol type information for relational test against %y\n", original_referent);
+                            dprint(DT_IDENTITY_PROP, "Adding original rule test/symbol type information for relational test against %y\n", original_referent);
                             chunk_test->original_test = make_test(thisAgent, original_referent, test_type);
-                            chunk_test->identity->rule_symbol =  original_referent;
-                            symbol_add_ref(thisAgent, original_referent);
-                            if (pI_id)
-                            {
-                                chunk_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent, pI_id);
-                            }
+                            set_identity_for_rule_variable(thisAgent, chunk_test, original_referent, pI_id);
                         } else {
                             chunk_test->original_test = make_test(thisAgent, referent, test_type);
                         }
@@ -1825,18 +1825,7 @@ void create_identity_for_eq_tests(agent* thisAgent, test t, uint64_t pI_id)
         if (t->original_test && t->original_test->data.referent->symbol_type == VARIABLE_SYMBOL_TYPE)
         {
             orig_test = find_original_equality_test_preferring_vars(t);
-            if (orig_test && orig_test->data.referent->is_variable())
-            {
-//                dprint(DT_IDENTITY_PROP, "Caching rule symbol in identity for \"%y\": %y + %s\n",
-//                       t->data.referent, orig_test->data.referent,
-//                       (w ? "WME" : "No WME"));
-                t->identity->rule_symbol = orig_test->data.referent;
-                symbol_add_ref(thisAgent, t->identity->rule_symbol);
-                if (pI_id)
-                {
-                    t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
-                }
-            }
+            set_identity_for_rule_variable(thisAgent, t, orig_test->data.referent, pI_id);
         }
         else
         {
