@@ -1290,7 +1290,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_both;//web_val_parent_2;
+        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;//web_val_parent_2;
 
         std::list<smem_lti_id> children;
 
