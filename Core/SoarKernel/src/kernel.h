@@ -35,8 +35,10 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_EPMEM_WME_ADD
 
     //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-    //#define MEM_POOLS_ENABLED 1
-    //#define USE_MEM_POOL_ALLOCATORS 1
+    #define MEM_POOLS_ENABLED 1
+    #define USE_MEM_POOL_ALLOCATORS 1
+    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+
 
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
@@ -70,18 +72,21 @@ typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
-#define MEMORY_POOL_STATS
-
 //#define NO_TIMING_STUFF
 //#define DO_TOP_LEVEL_REF_CTS
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
-#define DISCARD_CHUNK_VARNAMES true
+/* MToDo | Setting this to true may make chunks less readable since variable names are now used
+ *         and re-used when chunking */
+#define DISCARD_CHUNK_VARNAMES false
+
+/* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
+
 #ifndef NO_TIMING_STUFF
-//#define DETAILED_TIMING_STATS
+#define DETAILED_TIMING_STATS
 #endif
 
 //#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */

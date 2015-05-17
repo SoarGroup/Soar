@@ -1318,8 +1318,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 //    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "");
 
     /* --- deallocate chunks conds and variablized conditions --- */
-    deallocate_condition_list(thisAgent, vrblz_top);
-    /* MToDo | Do we need to deallocate the rhs here? It doesn't seem to be done anywhere.*/
+    deallocate_condition_list(thisAgent, vrblz_top);    /* MToDo | Do we need to deallocate the rhs here? It doesn't seem to be done anywhere.*/
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
@@ -1365,9 +1364,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list);
         dprint(DT_FUNC_PRODUCTIONS, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
-        return;
     }
-
 
     return;
 

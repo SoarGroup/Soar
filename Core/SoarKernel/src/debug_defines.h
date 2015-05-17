@@ -77,8 +77,8 @@
 
 /* -- Which output debug listeners should be initially turned on -- */
 #define OM_Init_db_dbg_mode       off
-#define OM_Init_callback_dbg_mode on
-#define OM_Init_stdout_dbg_mode   off
+#define OM_Init_callback_dbg_mode off
+#define OM_Init_stdout_dbg_mode   on
 #endif
 
 #ifdef DEBUG_UNITTEST_SETTINGS

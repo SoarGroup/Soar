@@ -4058,17 +4058,17 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     }
 
     /* --- if not a chunk, store variable name information --- */
-    /* MToDo | Disabling throwing out of chunk variable names now.  A chunk based on an instantiation
+    /* MToDo | May want to remove ability to throw out of chunk variable names now.  A chunk based on an instantiation
      *         from a chunk may need them as original variables. May not be necessary.  Recheck later. */
-//  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
-//      p->p_node->b.p.parents_nvn = NIL;
-//      p->rhs_unbound_variables = NIL;
-//      deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
-//  } else {
+  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
+      p->p_node->b.p.parents_nvn = NIL;
+      p->rhs_unbound_variables = NIL;
+      deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
+  } else {
     p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
     p->rhs_unbound_variables =
         destructively_reverse_list(rhs_unbound_vars_for_new_prod);
-//  }
+  }
 
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
