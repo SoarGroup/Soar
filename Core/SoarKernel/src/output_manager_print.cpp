@@ -87,10 +87,17 @@ void Output_Manager::print_sf(const char* format, ...)
     }
 }
 
-void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args)
+void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list pargs)
 {
     char* ch = dest;
     Symbol* sym;
+
+    /* Apparently nested variadic calls need to have their argument list copied here.
+     * If windows has issues with va_copy, might be able to just comment out that line
+     * or use args = pargs.  Supposedly, way VC++ handles va_list doesn't need for it
+     * to be copied. */
+    va_list args;
+    va_copy(args, pargs);
 
     while (true)
     {
@@ -103,17 +110,11 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
         {
             break;
         }
-        /* --- handle the %-thingy --- */
-        /* the size of the remaining buffer (after ch) is
-            the difference between the address of ch and
-            the address of the beginning of the buffer
-         */
         if (*(format + 1) == 's')
         {
             char *ch2 = va_arg(args, char *);
             if (ch2 && strlen(ch2))
             {
-                //SNPRINTF(ch, count - (ch - dest), "%s", va_arg(args, char *));
                 strcpy(ch, ch2);
                 while (*ch) ch++;
             }
@@ -177,8 +178,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 't')
         {
-            test_to_string(va_arg(args, test_info *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            test t = va_arg(args, test);
+            if (t)
+            {
+                test_to_string(t, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'g')
         {
@@ -229,18 +236,36 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == 'a')
         {
-            action_to_string(thisAgent, va_arg(args, action *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            action* la = va_arg(args, action *);
+            if (la)
+            {
+                action_to_string(thisAgent, la, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'p')
         {
-            pref_to_string(thisAgent, va_arg(args, preference *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            preference* lp = va_arg(args, preference *);
+            if (lp)
+            {
+                pref_to_string(thisAgent, lp, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'w')
         {
-            wme_to_string(thisAgent, va_arg(args, wme *), ch, dest_size - (ch - dest) );
+            wme* lw = va_arg(args, wme *);
+            if (lw)
+            {
+            wme_to_string(thisAgent, lw, ch, dest_size - (ch - dest) );
             while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
             format += 2;
         } else if (*(format + 1) == 'd')
         {

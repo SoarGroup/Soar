@@ -360,8 +360,32 @@ void debug_test(int type)
             break;
 
         case 5:
+        {
+            reset_variable_generator(debug_agent, NULL, NULL);
+            Symbol* sym1  = generate_new_variable(debug_agent, "m");
+            Symbol* sym2  = generate_new_variable(debug_agent, "m");
+            Symbol* sym3  = generate_new_variable(debug_agent, "m");
+            Symbol* newSym1  = find_identifier(debug_agent, 'S', 1);
+            Symbol* newSym2  = find_identifier(debug_agent, 'I', 2);
+            Symbol* newSym3  = find_identifier(debug_agent, 'I', 3);
+            test t1 = make_test(debug_agent, sym1, EQUALITY_TEST);
+            test t2 = make_test(debug_agent, sym2, EQUALITY_TEST);
+            test t3 = make_test(debug_agent, sym3, EQUALITY_TEST);
+            t1->identity->o_id = 23;
+            t2->identity->o_id = 33;
+            t3->identity->o_id = 91;
+            t1->identity->rule_symbol = sym2;
+            t2->identity->rule_symbol = sym1;
+            t3->identity->rule_symbol = sym1;
+            dprint(DT_DEBUG, "%y %y %u\n", sym1, sym2, t1->identity->o_id);
+            dprint(DT_DEBUG, "%y %y %u %u\n", sym1, sym2, t2->identity->o_id, t1->identity->o_id);
+            dprint(DT_DEBUG, "%y %y %y %u\n", newSym1, newSym2, newSym3, t1->identity->o_id);
+            dprint(DT_DEBUG, "%y %t %y %y %u\n", sym1, t1, sym2, sym3, t1->identity->o_id);
+            dprint(DT_DEBUG, "%y %g %y %y %u\n", sym1, t1, sym2, sym3, t1->identity->o_id);
+            dprint(DT_DEBUG, "%y(o%u) %y(o%u)\n", t1->data.referent, t1->identity->o_id, t2->data.referent, t2->identity->o_id);
+            dprint(DT_DEBUG, "%t[%g] %t[%g]\n", t1, t1, t2, t2);
             break;
-
+        }
         case 6:
             break;
 
