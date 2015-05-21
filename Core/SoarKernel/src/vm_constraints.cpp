@@ -202,8 +202,7 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 
 void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
 {
-    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) ", pRelational_test, pRelational_test->identity->o_id);
-    dprint_noprefix(DT_CONSTRAINTS, "%t(o%u).\n", pEq_test, pEq_test->identity->o_id);
+    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity->o_id, pEq_test, pEq_test->identity->o_id);
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity->o_id);
     if (attachment_info)
     {
@@ -220,12 +219,6 @@ void Variablization_Manager::attach_relational_test(test pEq_test, test pRelatio
             assert(false);
             add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test);
         }
-//        dprint(DT_CONSTRAINTS, "...found test to attach to %t[%g]\n", attach_test, attach_test);
-//        new_o_id_info = get_updated_o_id_info(pRelational_test->identity->o_id);
-//        if (new_o_id_info)
-//        {
-//        }
-//        thisAgent->variablizationManager->update_o_id_for_new_instantiation(&(new_ct->identity->rule_symbol), &(new_ct->identity->o_id), pI_id, t);
         return;
     }
     dprint(DT_CONSTRAINTS, "Did not find attachment point!\n");
@@ -276,8 +269,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
         constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
         eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
 
-        dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] ", eq_copy, eq_copy);
-        dprint_noprefix(DT_CONSTRAINTS, "%t[%g]\n", constraint_test, constraint_test);
+        dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
         if (eq_copy->identity->o_id && has_positive_condition(eq_copy->identity->o_id))
         {

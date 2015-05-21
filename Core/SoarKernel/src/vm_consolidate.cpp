@@ -106,8 +106,7 @@ void Variablization_Manager::create_consistent_identity_for_chunk(Symbol** pOvar
 
     if (!(*pO_id)) return;
 
-    dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation called for %y o%u ", (*pOvar), (*pO_id));
-    dprint_noprefix(DT_OVAR_MAPPINGS, "i%u %s\n", pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+    dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation called for %y o%u i%u %s\n", (*pOvar), (*pO_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
     o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
     if (new_o_id_info)
     {
@@ -145,8 +144,7 @@ void Variablization_Manager::create_consistent_identity_for_chunk(Symbol** pOvar
                 lVarName.erase(lVarName.length()-1);
                 lVarName.append("-other");
                 new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
-                //            dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation generated new variable %y from %s (%y ", new_ovar, lVarName.c_str(), ts);
-                //            dprint_noprefix(DT_OVAR_MAPPINGS, "o%u i%u %s).\n", tu1, pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+                //            dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation generated new variable %y from %s (%y o%u i%u %s).\n", new_ovar, lVarName.c_str(), ts, tu1, pNew_i_id, pIsResult ? "isResult" : "isNotResult");
                 new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
                 dprint(DT_OVAR_MAPPINGS, "...var name already used.  Generated new identity %y(%u) from varname root %s.\n", new_ovar, new_o_id, lVarName.c_str());
                 add_updated_o_id_info((*pO_id), new_ovar, new_o_id);

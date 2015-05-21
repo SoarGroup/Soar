@@ -96,12 +96,8 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
-//        dprint(mode, "   o%u(%y) = o%u(%y)\n",
-//            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
-//            iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
-        dprint(mode, "   o%u(%y) = ",
-            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first));
-        dprint_noprefix(mode, "o%u(%y)\n",
+        dprint(mode, "   o%u(%y) = o%u(%y)\n",
+            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
             iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
     }
 
@@ -162,8 +158,7 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
 
     for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
-        dprint(mode, "%y(o%u) -> %s of ", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field));
-        dprint_noprefix(mode, "%l\n", it->second->cond);
+        dprint(mode, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
     }
 
 }
@@ -178,8 +173,7 @@ void Variablization_Manager::print_constraints(TraceMode mode)
     }
     for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
-        dprint(mode, "%t[%g]:   ", (*it)->eq_test, (*it)->eq_test);
-        dprint_noprefix(mode, "%t[%g]\n", (*it)->constraint_test, (*it)->constraint_test);
+        dprint(mode, "%t[%g]:   %t[%g]\n", (*it)->eq_test, (*it)->eq_test, (*it)->constraint_test, (*it)->constraint_test);
     }
 
     dprint(mode, "------------------------------------\n");
@@ -189,16 +183,9 @@ void Variablization_Manager::print_constraints(TraceMode mode)
 void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
 {
     dprint(mode, "------------------------------------\n");
-//    if (whichTable == 0)
-//    {
-//        dprint(mode, "       Variablization Tables\n");
-//        dprint(mode, "------------------------------------\n");
-//    }
     if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
     {
         dprint(mode, "== Symbol -> Variablization ==\n");
-//        if (whichTable != 0)
-//            dprint(mode, "------------------------------------\n");
         if (sym_to_var_map->size() == 0)
         {
             dprint(mode, "EMPTY MAP\n");
@@ -211,8 +198,6 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     if ((whichTable == 0) || (whichTable == 2) || (whichTable == 3))
     {
         dprint(mode, "== O_ID -> Variablization ==\n");
-//        if (whichTable != 0)
-//            dprint(mode, "------------------------------------\n");
         if (o_id_to_var_map->size() == 0)
         {
             dprint(mode, "EMPTY MAP\n");
