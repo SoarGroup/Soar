@@ -77,8 +77,12 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     add(discount_rate);
 
     // learning-rate
-    learning_rate = new soar_module::decimal_param("learning-rate", 0.3, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    learning_rate = new soar_module::decimal_param("learning-rate", 0.01, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
+
+    // step-size-parameter
+    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(step_size_parameter);
 
     // learning-policy
     learning_policy = new soar_module::constant_param<learning_choices>("learning-policy", sarsa, new soar_module::f_predicate<learning_choices>());
@@ -711,6 +715,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
+                new_production->rl_gql = 0.0;
+                new_production->rl_rho = 0.0;
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n");
             dprint_set_indents(DT_RL_VARIABLIZATION, "          ");
@@ -901,6 +907,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
         {
             rl_et_map::iterator iter;
             double alpha = thisAgent->rl_params->learning_rate->get_value();
+            double eta = thisAgent->rl_params->step_size_parameter->get_value();
             double lambda = thisAgent->rl_params->et_decay_rate->get_value();
             double gamma = thisAgent->rl_params->discount_rate->get_value();
             double tolerance = thisAgent->rl_params->et_tolerance->get_value();

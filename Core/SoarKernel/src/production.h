@@ -200,6 +200,8 @@ typedef struct production_struct
 
     double rl_ecr;                // expected current reward (discounted reward)
     double rl_efr;                // expected future reward (discounted next state)
+    double rl_gql;                // second value for implementation of GQ(\lambda)
+    double rl_rho;                // ratio of target policy to behavior policy
 
     condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;

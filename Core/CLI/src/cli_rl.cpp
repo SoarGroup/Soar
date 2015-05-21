@@ -149,9 +149,12 @@ bool CommandLineInterface::DoRL(const char pOp, const std::string* pAttr, const 
         
         CLI_DoRL_print(*this, m_RawOutput, m_Result,
                        CLI_DoRL_generate_output("learning-policy: ", thisAgent->rl_params->learning_policy->get_string()));
-                       
+
         CLI_DoRL_print(*this, m_RawOutput, m_Result,
                        CLI_DoRL_generate_output("learning-rate: ", thisAgent->rl_params->learning_rate->get_string()));
+
+        CLI_DoRL_print(*this, m_RawOutput, m_Result,
+                       CLI_DoRL_generate_output("step-size-parameter: ", thisAgent->rl_params->step_size_parameter->get_string()));
                        
         CLI_DoRL_print(*this, m_RawOutput, m_Result,
                        CLI_DoRL_generate_output("hrl-discount: ", thisAgent->rl_params->hrl_discount->get_string()));
