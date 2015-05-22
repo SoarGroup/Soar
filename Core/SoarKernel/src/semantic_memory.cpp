@@ -788,7 +788,7 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
         // such as to potentially produce justifications that can follow
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
+        dprint(DT_MILESTONES, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
         chunk_instantiation(thisAgent, inst, false, &my_justification_list);
 
         // if any justifications are created, assert their preferences manually

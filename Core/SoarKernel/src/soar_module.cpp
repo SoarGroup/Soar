@@ -83,7 +83,7 @@ namespace soar_module
 
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
     {
-        dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "make_fake_instantiation() called.\n");
+        dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
 
         // make fake instantiation
         instantiation* inst;

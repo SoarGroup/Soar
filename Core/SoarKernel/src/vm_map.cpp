@@ -215,10 +215,10 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
     std::map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
     if (iter != o_id_to_ovar_debug_map->end())
     {
-//        dprint_noprefix(DT_OVAR_PROP, "found.  Returning %y\n", iter->second);
+//        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);
         return iter->second;
     }
-//    dprint_noprefix(DT_OVAR_PROP, "not found.  Returning NULL.\n");
+//    dprint_noprefix(DT_IDENTITY_PROP, "not found.  Returning NULL.\n");
     return NULL;
 
 }

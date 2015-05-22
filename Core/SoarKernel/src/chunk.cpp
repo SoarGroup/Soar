@@ -992,7 +992,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
+    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called...\n");
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1091,8 +1091,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     thisAgent->variablizationManager->print_constraints(DT_CONSTRAINTS);
 
-    dprint(DT_OVAR_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
-    thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
+    dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
+    thisAgent->variablizationManager->print_o_id_substitution_map(DT_IDENTITY_PROP);
 
     free_list(thisAgent, thisAgent->positive_potentials);
 
@@ -1135,7 +1135,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
-    dprint(DT_FUNC_PRODUCTIONS, "Backtracing done.  Building chunk %y\n", prod_name);
+    dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
 
     /* --- if there aren't any grounds, exit --- */
     if (!inst_top)
@@ -1164,7 +1164,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP, true);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP, true);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
@@ -1184,11 +1184,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
     dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing Results =\n");
-    dprint_set_indents(DT_OVAR_PROP, "          ");
-    dprint_noprefix(DT_OVAR_PROP, "%6", vrblz_top, results);
-    dprint_clear_indents(DT_OVAR_PROP);
+    dprint_set_indents(DT_IDENTITY_PROP, "          ");
+    dprint_noprefix(DT_IDENTITY_PROP, "%6", vrblz_top, results);
+    dprint_clear_indents(DT_IDENTITY_PROP);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
@@ -1361,9 +1361,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
+        dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
         chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list);
-        dprint(DT_FUNC_PRODUCTIONS, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
+        dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
 
     return;
@@ -1373,7 +1373,7 @@ chunking_abort:
         chunk_instantiation_cleanup(thisAgent, prod_name);
         if (prod_name)
         {
-            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
+            dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
             symbol_remove_ref(thisAgent, prod_name);
         }
     }

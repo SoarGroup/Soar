@@ -826,8 +826,8 @@ void create_instantiation(agent* thisAgent, production* prod,
      */
 
     inst->GDS_evaluated_already = false;
-    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
+    dprint_start_fresh_line(DT_MILESTONES);
+    dprint_header(DT_MILESTONES, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
@@ -1005,8 +1005,8 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
+    dprint_start_fresh_line(DT_MILESTONES);
+    dprint(DT_MILESTONES, "---------------------------------------------------------\n");
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
     dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);

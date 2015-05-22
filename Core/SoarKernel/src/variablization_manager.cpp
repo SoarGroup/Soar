@@ -662,7 +662,6 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-        dprint(DT_IDENTITY_PROP, "Setting g_ids for action and variablizing results...\n");
         thisAgent->variablizationManager->variablize_rhs_symbol(a->id);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->attr);
         thisAgent->variablizationManager->variablize_rhs_symbol(a->value);
