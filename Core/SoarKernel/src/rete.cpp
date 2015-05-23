@@ -4295,14 +4295,13 @@ abort_var_test_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Symbol* var_bound_in_reconstructed_original_conds(
+test var_identity_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
     rete_node_level where_levels_up)
 {
     test t;
-    Symbol *lSym;
     cons* c;
 
     if (where_levels_up == 0)
@@ -4313,7 +4312,7 @@ Symbol* var_bound_in_reconstructed_original_conds(
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond, where_field_num, where_levels_up);
         assert(t);
         assert(t->original_test);
-        return t->original_test->data.referent;
+        return t->original_test;
     }
 
     while (where_levels_up)
@@ -4339,8 +4338,8 @@ Symbol* var_bound_in_reconstructed_original_conds(
     {
         goto abort_var_test_bound_in_reconstructed_oconds;
     }
-    lSym = find_equality_test_preferring_vars(t)->identity->rule_symbol;
-    return (lSym);
+    t = find_equality_test_preferring_vars(t);
+    return (t);
 
     abort_var_test_bound_in_reconstructed_oconds:
     {
@@ -7496,7 +7495,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
             sym = reteload_symbol_from_index(thisAgent, f);
             /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
             //symbol_add_ref(thisAgent, sym);
-            rv = allocate_rhs_value_for_symbol(thisAgent, sym, NULL, 0);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym, 0);
             break;
         case 1:
             funcall_list = NIL;

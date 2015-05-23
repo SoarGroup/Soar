@@ -248,9 +248,7 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case SAME_TYPE_TEST:
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "o%u/%y",
                 t->identity->o_id,
-//                thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->original_var_id)
-                t->identity->rule_symbol
-                );
+                t->identity->o_id ? thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->o_id) : NULL);
             while (*ch) ch++;
             break;
         case CONJUNCTIVE_TEST:
@@ -372,9 +370,9 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         {
             sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->referent);
         } else if (m_print_original) {
-            sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->original_rhs_variable);
+            sprinta_sf(thisAgent, dest, dest_size, "%y", thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
         } else if (m_print_identity) {
-            sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, rsym->original_rhs_variable, rsym->o_id);
+            sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -508,7 +506,9 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
     if (m_print_identity)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual) ? ", " : "",
-            pref->original_symbols.id, pref->o_ids.id, pref->original_symbols.attr, pref->o_ids.attr, pref->original_symbols.value, pref->o_ids.value,
+            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
+            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
+            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);

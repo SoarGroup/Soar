@@ -374,9 +374,9 @@ void debug_test(int type)
             t1->identity->o_id = 23;
             t2->identity->o_id = 33;
             t3->identity->o_id = 91;
-            t1->identity->rule_symbol = sym2;
-            t2->identity->rule_symbol = sym1;
-            t3->identity->rule_symbol = sym1;
+//            t1->identity->rule_symbol = sym2;
+//            t2->identity->rule_symbol = sym1;
+//            t3->identity->rule_symbol = sym1;
             dprint(DT_DEBUG, "%y %y %u\n", sym1, sym2, t1->identity->o_id);
             dprint(DT_DEBUG, "%y %y %u %u\n", sym1, sym2, t2->identity->o_id, t1->identity->o_id);
             dprint(DT_DEBUG, "%y %y %y %u\n", newSym1, newSym2, newSym3, t1->identity->o_id);

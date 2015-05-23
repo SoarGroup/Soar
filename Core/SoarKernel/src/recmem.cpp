@@ -542,10 +542,6 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
     return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
-                           soar_module::symbol_triple(
-                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_original_symbol(original_id) : NULL),
-                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_original_symbol(original_attr) : NULL),
-                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_original_symbol(original_value) : NULL)),
                            soar_module::identity_triple(
                                ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_o_id(original_id) : 0),
                                ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_o_id(original_attr) : 0),

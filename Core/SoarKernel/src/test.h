@@ -48,9 +48,10 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_p
 
 typedef struct identity_struct
 {
-    Symbol*       rule_symbol;
+//    Symbol*       rule_symbol;
     uint64_t      o_id;
-    identity_struct() : rule_symbol(NULL), o_id(0) {}
+//    identity_struct() : rule_symbol(NULL), o_id(0) {}
+    identity_struct() : o_id(0) {}
 } identity_info;
 
 /* -- test_info stores information about a test.  If nil, the test is
@@ -143,7 +144,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, boo
 /* --- Some functions related to tests that used to be in rete.cpp */
 
 void add_additional_tests_and_originals(agent* thisAgent, rete_node* node, condition* cond, wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-void set_identity_for_rule_variable(agent* thisAgent, test t, Symbol* pRuleSym, uint64_t pI_id);
+//void set_identity_for_rule_variable(agent* thisAgent, test t, Symbol* pRuleSym, uint64_t pI_id);
 void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);

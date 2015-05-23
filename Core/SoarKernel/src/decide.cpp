@@ -2123,19 +2123,18 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
     init_condition(cond);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    set_identity_for_rule_variable(thisAgent, cond->data.tests.id_test, thisAgent->ss_context_variable, inst->i_id);
+//    set_identity_for_rule_variable(thisAgent, cond->data.tests.id_test, thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    set_identity_for_rule_variable(thisAgent, cond->data.tests.value_test, thisAgent->o_context_variable, inst->i_id);
+//    set_identity_for_rule_variable(thisAgent, cond->data.tests.value_test, thisAgent->o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
     uint64_t fake_s_o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id);
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
-                           soar_module::symbol_triple(thisAgent->s_context_variable, NULL, thisAgent->o_context_variable),
                            soar_module::identity_triple(fake_s_o_id, 0, cond->data.tests.value_test->identity->o_id));
-//    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
-//                           cand->value, NIL);
     symbol_add_ref(thisAgent, pref->id);
     symbol_add_ref(thisAgent, pref->attr);
     symbol_add_ref(thisAgent, pref->value);
@@ -2425,7 +2424,6 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     dprint(DT_GDS, "%7", cand->inst);
                 }
                 dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
-                dprint(DT_BACKTRACE, "   Originals: %y ^%y %y\n", cand->original_symbols.id, cand->original_symbols.attr, cand->original_symbols.value);
                 dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);

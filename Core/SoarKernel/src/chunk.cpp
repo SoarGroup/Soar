@@ -648,7 +648,7 @@ void make_clones_of_results(agent* thisAgent, preference* results,
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->original_symbols, result_p->o_ids);
+                            result_p->o_ids);
         symbol_add_ref(thisAgent, p->id);
         symbol_add_ref(thisAgent, p->attr);
         symbol_add_ref(thisAgent, p->value);
@@ -1060,7 +1060,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->original_symbols.id, pref->o_ids);
+            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {

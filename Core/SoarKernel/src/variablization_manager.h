@@ -42,15 +42,6 @@ typedef struct attachment_struct
 
 } attachment_point;
 
-typedef struct o_id_update_struct
-{
-        uint64_t o_id;
-        Symbol* rule_symbol;
-        condition* positive_cond;
-        WME_Field field;
-        o_id_update_struct() : o_id(0), rule_symbol(NULL), positive_cond(NULL), field(NO_ELEMENT) {}
-} o_id_update_info;
-
 /* -- Variablization_Manager
  *
  * variablization_table
@@ -103,7 +94,7 @@ class Variablization_Manager
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void create_consistent_identity_for_chunk(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
+        void create_consistent_identity_for_chunk(uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -144,21 +135,19 @@ class Variablization_Manager
         void variablize_lhs_symbol(Symbol** sym, identity_info* identity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
 
-        void variablize_test(test* t, Symbol* original_referent);
-        void variablize_equality_test(test* t);
         void variablize_equality_tests(test* t);
 
         void variablize_rl_test(test* chunk_test);
 
-        bool variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
+        void variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
         void remove_ungrounded_sti_tests(test* t, bool ignore_ungroundeds);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
-        o_id_update_info* get_updated_o_id_info(uint64_t old_o_id);
-        void add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond = NULL, WME_Field pos_cond_field = NO_ELEMENT);
+        uint64_t get_updated_o_id_info(uint64_t old_o_id);
+        void add_updated_o_id_info(uint64_t old_o_id, uint64_t new_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
@@ -181,7 +170,7 @@ class Variablization_Manager
 
         /* This is a map of original variable symbols to its map of instantiations to o_ids */
         std::map< uint64_t, uint64_t >*                         unification_map;
-        std::map< uint64_t, o_id_update_info* >*                o_id_update_map;
+        std::map< uint64_t, uint64_t >*                         o_id_update_map;
 
         /* -- Look-up tables for LHS variablization -- */
         std::map< uint64_t, variablization* >*   o_id_to_var_map;

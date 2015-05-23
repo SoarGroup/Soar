@@ -111,7 +111,7 @@ test var_test_bound_in_reconstructed_conds(
     condition* cond,
     byte where_field_num,
     rete_node_level where_levels_up);
-Symbol* var_bound_in_reconstructed_original_conds(
+test var_identity_bound_in_reconstructed_original_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
