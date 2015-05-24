@@ -95,7 +95,6 @@ class rl_param_container: public soar_module::param_container
         rl_learning_param* learning;
         soar_module::decimal_param* discount_rate;
         soar_module::decimal_param* learning_rate;
-        soar_module::decimal_param* step_size_parameter;
         soar_module::decimal_param* meta_learning_rate; // For delta bar delta
         soar_module::constant_param<learning_choices>* learning_policy;
         soar_module::constant_param<decay_choices>* decay_mode;
@@ -104,6 +103,9 @@ class rl_param_container: public soar_module::param_container
         soar_module::boolean_param* temporal_extension;
         soar_module::boolean_param* hrl_discount;
         soar_module::boolean_param* temporal_discount;
+
+        soar_module::boolean_param* gq_lambda;
+        soar_module::decimal_param* step_size_parameter;
         
         soar_module::boolean_param* chunk_stop;
         soar_module::boolean_param* meta; // Whether doc strings are used for storing metadata.
@@ -197,6 +199,7 @@ typedef struct rl_data_struct
     
     double previous_q;                      // q-value of the previous state
     double reward;                          // accumulated discounted reward
+    double rho;                             // ratio of target policy to behavior policy
     
     unsigned int gap_age;                   // the number of steps since a cycle containing rl rules
     unsigned int hrl_age;                   // the number of steps in a subgoal

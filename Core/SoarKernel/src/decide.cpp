@@ -2971,6 +2971,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     allocate_with_pool(thisAgent, &(thisAgent->rl_info_pool), &(id->id->rl_info));
     id->id->rl_info->previous_q = 0;
     id->id->rl_info->reward = 0;
+    id->id->rl_info->rho = 1.0;
     id->id->rl_info->gap_age = 0;
     id->id->rl_info->hrl_age = 0;
     allocate_with_pool(thisAgent, &(thisAgent->rl_et_pool), &(id->id->rl_info->eligibility_traces));

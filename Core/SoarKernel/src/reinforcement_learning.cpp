@@ -80,10 +80,6 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning_rate = new soar_module::decimal_param("learning-rate", 0.01, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
 
-    // step-size-parameter
-    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
-    add(step_size_parameter);
-
     // learning-policy
     learning_policy = new soar_module::constant_param<learning_choices>("learning-policy", sarsa, new soar_module::f_predicate<learning_choices>());
     learning_policy->add_mapping(sarsa, "sarsa");
@@ -117,6 +113,14 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     // temporal-discount
     temporal_discount = new soar_module::boolean_param("temporal-discount", on, new soar_module::f_predicate<boolean>());
     add(temporal_discount);
+
+    // gq-lambda
+    gq_lambda = new soar_module::boolean_param("gq-lambda", off, new soar_module::f_predicate<boolean>());
+    add(gq_lambda);
+
+    // step-size-parameter
+    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(step_size_parameter);
 
     // chunk-stop
     chunk_stop = new soar_module::boolean_param("chunk-stop", on, new soar_module::f_predicate<boolean>());
@@ -295,6 +299,7 @@ void rl_reset_data(agent* thisAgent)
 
         data->previous_q = 0;
         data->reward = 0;
+        data->rho = 1.0;
 
         data->gap_age = 0;
         data->hrl_age = 0;
@@ -716,7 +721,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
                 new_production->rl_gql = 0.0;
-                new_production->rl_rho = 0.0;
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n");
             dprint_set_indents(DT_RL_VARIABLIZATION, "          ");
@@ -862,6 +866,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     if (just_fired)
     {
         data->previous_q = cand->numeric_value;
+        data->rho = cand->rl_rho;
     }
     else
     {
@@ -883,6 +888,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
             }
 
             data->previous_q = cand->numeric_value;
+            data->rho = 1.0;
         }
         else
         {
@@ -957,12 +963,22 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 }
             }
 
+            if (thisAgent->rl_params->gq_lambda->get_value() == on)
+            {
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    iter->second *= data->rho;
+                }
+            }
+
             // Update trace for just fired prods
             double sum_old_ecr = 0.0;
             double sum_old_efr = 0.0;
+            double dot_w_phi = 0.0;
             if (!data->prev_op_rl_rules->empty())
             {
-                double trace_increment = (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
+                /// TODO: Implement I != 1.0 for non-terminal states when using hierarchical reinforcement learning
+                double trace_increment = /* I * */(1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
@@ -981,14 +997,22 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         (*data->eligibility_traces)[(*p) ] = trace_increment;
                     }
                 }
+
+                dot_w_phi += (*p)->rl_gql;
             }
 
             // For each prod with a trace, perform update
             {
-                double old_ecr, old_efr;
+                double old_ecr, old_efr, old_gql;
                 double delta_ecr, delta_efr;
-                double new_combined, new_ecr, new_efr;
+                double new_combined, new_ecr, new_efr, new_gql;
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
+
+                double dot_w_e = 0.0;
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    dot_w_e += iter->first->rl_gql * iter->second;
+                }
 
                 for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
                 {
@@ -997,6 +1021,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     // get old vals
                     old_ecr = prod->rl_ecr;
                     old_efr = prod->rl_efr;
+                    old_gql = prod->rl_gql;
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
@@ -1045,6 +1070,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     new_ecr = (old_ecr + delta_ecr);
                     new_efr = (old_efr + delta_efr);
                     new_combined = (new_ecr + new_efr);
+                    new_gql = old_gql + eta * (delta_ecr + delta_efr);
 
                     // print as necessary
                     if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
@@ -1077,6 +1103,24 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
+                    prod->rl_gql = new_gql;
+                }
+
+                if (thisAgent->rl_params->gq_lambda->get_value() == on) {
+                    for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
+                    {
+                        pref->inst->prod->rl_gql -= alpha * gamma * (1 - lambda) * dot_w_e;
+                    }
+
+                    for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
+                    {
+                        (*p)->rl_gql -= alpha * eta * dot_w_phi;
+                    }
+                }
+
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    production* prod = iter->first;
 
                     // change documentation
                     if (thisAgent->rl_params->meta->get_value() == on)

@@ -616,18 +616,18 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
 
         if (exploration_policy == USER_SELECT_FIRST || exploration_policy == USER_SELECT_LAST)
         {
-            // set \rho to 0.0 throughout for degenerate exploration policies
-            for (const preference* cand = candidates; cand; cand = cand->next_candidate)
-                cand->inst->prod->rl_rho = 0.0;
+            // set \rho to 1.0 throughout for degenerate exploration policies
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
+                cand->rl_rho = 1.0;
         }
         else {
             // temporarily set \rho assuming a purely greedy policy
-            for (const preference* cand = candidates; cand; cand = cand->next_candidate)
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
             {
                 if (cand->numeric_value == top_value)
-                    cand->inst->prod->rl_rho = 1.0 / num_top_values;
+                    cand->rl_rho = 1.0 / num_top_values;
                 else
-                    cand->inst->prod->rl_rho = 0.0;
+                    cand->rl_rho = 0.0;
             }
         }
     }
@@ -663,7 +663,15 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
     if (my_rl_enabled)
     {
         rl_tabulate_reward_values(thisAgent);
-        
+
+        // should find highest valued candidate in q-learning
+        if (my_learning_policy == rl_param_container::sarsa)
+        {
+            // set \rho to 1.0 throughout for online exploration
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
+                cand->rl_rho = 1.0;
+        }
+
         if (my_learning_policy == rl_param_container::sarsa)
         {
             rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
@@ -819,9 +827,9 @@ preference* exploration_randomly_select(preference* candidates, const bool &upda
         ++cand_count;
     }
     if (update_rho) {
-        for (const preference* cand = candidates; cand; cand = cand->next_candidate)
+        for (preference* cand = candidates; cand; cand = cand->next_candidate)
         {
-            cand->inst->prod->rl_rho /= 1.0 / cand_count;
+            cand->rl_rho /= 1.0 / cand_count;
         }
     }
     
@@ -855,15 +863,15 @@ preference* exploration_probabilistically_select(preference* candidates)
         return exploration_randomly_select(candidates);
     }
 
-    for (const preference* cand = candidates; cand; cand = cand->next_candidate)
+    for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
         if(cand->numeric_value)
-            cand->inst->prod->rl_rho /= cand->numeric_value / total_probability;
+            cand->rl_rho /= cand->numeric_value / total_probability;
         else {
-            if(cand->inst->prod->rl_rho > 0)
-                cand->inst->prod->rl_rho = std::numeric_limits<double>::max();
-            else if(cand->inst->prod->rl_rho < 0)
-                cand->inst->prod->rl_rho = -std::numeric_limits<double>::max();
+            if(cand->rl_rho > 0)
+                cand->rl_rho = std::numeric_limits<double>::max();
+            else if(cand->rl_rho < 0)
+                cand->rl_rho = -std::numeric_limits<double>::max();
         }
     }
 
@@ -937,7 +945,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
 
     for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, ++i)
     {
-        c->inst->prod->rl_rho /= *i / exptotal;
+        c->rl_rho /= *i / exptotal;
     }
     
     // output trace information
@@ -1008,9 +1016,9 @@ preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* cand
     {
         ++cand_count;
     }
-    for (const preference* cand = candidates; cand; cand = cand->next_candidate)
+    for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
-        cand->inst->prod->rl_rho /= (1.0 - epsilon) * cand->inst->prod->rl_rho + epsilon / cand_count;
+        cand->rl_rho /= (1.0 - epsilon) * cand->rl_rho + epsilon / cand_count;
     }
 
     return cand;
