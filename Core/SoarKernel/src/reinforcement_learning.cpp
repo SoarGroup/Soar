@@ -977,8 +977,9 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             double dot_w_phi = 0.0;
             if (!data->prev_op_rl_rules->empty())
             {
-                /// TODO: Implement I != 1.0 for non-terminal states when using hierarchical reinforcement learning
-                double trace_increment = /* I * */ (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
+                /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
+                const double I = goal->id->lower_goal && update_efr ? 0.0 : 1.0;
+                double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
