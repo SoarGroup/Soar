@@ -77,7 +77,7 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     add(discount_rate);
 
     // learning-rate
-    learning_rate = new soar_module::decimal_param("learning-rate", 0.01, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    learning_rate = new soar_module::decimal_param("learning-rate", 0.3, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
 
     // learning-policy
@@ -978,7 +978,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             if (!data->prev_op_rl_rules->empty())
             {
                 /// TODO: Implement I != 1.0 for non-terminal states when using hierarchical reinforcement learning
-                double trace_increment = /* I * */(1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
+                double trace_increment = /* I * */ (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
@@ -996,9 +996,9 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     {
                         (*data->eligibility_traces)[(*p) ] = trace_increment;
                     }
-                }
 
-                dot_w_phi += (*p)->rl_gql;
+                    dot_w_phi += (*p)->rl_gql;
+                }
             }
 
             // For each prod with a trace, perform update
@@ -1106,7 +1106,8 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_gql = new_gql;
                 }
 
-                if (thisAgent->rl_params->gq_lambda->get_value() == on) {
+                if (thisAgent->rl_params->gq_lambda->get_value() == on)
+                {
                     for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
                     {
                         pref->inst->prod->rl_gql -= alpha * gamma * (1 - lambda) * dot_w_e;
