@@ -484,9 +484,7 @@ void debug_test_structs()
     //  deallocate_test(debug_agent, dest);
 
     dest = copy_test(debug_agent, idEqTest01);
-    dest->original_test = copy_test(debug_agent, varEqTest01);
     add_me = copy_test(debug_agent, idEqTest02);
-    add_me->original_test = copy_test(debug_agent, varEqTest01);
     add_test(debug_agent, &dest, add_me);
     add_test(debug_agent, &dest, idEqTest03);
 

@@ -4327,64 +4327,6 @@ abort_var_test_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-test var_identity_bound_in_reconstructed_original_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up)
-{
-    test t;
-    cons* c;
-
-    if (where_levels_up == 0)
-    {
-        /* -- It's in the same condition, so the identity hasn't been created yet. We
-         *    look up using the original_test pointer, which only exists until the
-         *    identity is set up. -- */
-        t = var_test_bound_in_reconstructed_conds(thisAgent, cond, where_field_num, where_levels_up);
-        assert(t);
-        assert(t->original_test);
-        return t->original_test;
-    }
-
-    while (where_levels_up)
-    {
-        where_levels_up--;
-        cond = cond->prev;
-    }
-
-    if (where_field_num == 0)
-    {
-        t = cond->data.tests.id_test;
-    }
-    else if (where_field_num == 1)
-    {
-        t = cond->data.tests.attr_test;
-    }
-    else
-    {
-        t = cond->data.tests.value_test;
-    }
-
-    if (test_is_blank(t))
-    {
-        goto abort_var_test_bound_in_reconstructed_oconds;
-    }
-    t = find_equality_test_preferring_vars(t);
-    return (t);
-
-    abort_var_test_bound_in_reconstructed_oconds:
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "Internal error in var_bound_in_reconstructed_original_conds\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-
-
 /* ----------------------------------------------------------------------
                           Rete Node To Conditions
 

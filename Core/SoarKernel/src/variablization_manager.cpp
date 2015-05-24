@@ -289,7 +289,6 @@ void Variablization_Manager::variablize_equality_tests(test* t)
         // Original test should always be null for a conjunctive tests.
         // MToDo | Previous logic wouldn't assert false but print an error out instead.  Remove.
 
-        assert((*t)->original_test == NULL);
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
         for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
         {
@@ -368,8 +367,6 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
 
     if ((*t)->type == CONJUNCTIVE_TEST)
     {
-        // previous logic wouldn't assert false but print an error out instead.`
-        assert((*t)->original_test == NULL);
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
         for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
         {
