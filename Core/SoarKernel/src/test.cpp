@@ -1141,12 +1141,17 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
     test t = 0, New = 0;
 
     t = var_identity_bound_in_reconstructed_original_conds(thisAgent, cond, field_num, levels_up);
-    temp = t->data.referent;
-    dprint(DT_ADD_ADDITIONALS, "add_hash_info_to_original_id_test %t.\n", t);
-    New = make_test(thisAgent, temp, EQUALITY_TEST);
-    New->identity->o_id = t->identity->o_id;
-    add_test(thisAgent, &(cond->data.tests.id_test->original_test), New);
     cond->data.tests.id_test->identity->o_id = t->identity->o_id;
+//    cond->data.tests.id_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+    dprint(DT_ADD_ADDITIONALS, "add_hash_info_to_original_id_test added o_id o%u(%y) from %t.\n",
+        cond->data.tests.id_test->identity->o_id,
+        thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->o_id),
+        t);
+//    temp = t->data.referent;
+//    New = make_test(thisAgent, temp, EQUALITY_TEST);
+//    New->identity->o_id = t->identity->o_id;
+//    add_test(thisAgent, &(cond->data.tests.id_test->original_test), New);
+//    cond->data.tests.id_test->identity->o_id = t->identity->o_id;
 }
 
 /* ----------------------------------------------------------------------
@@ -1195,18 +1200,10 @@ void add_additional_tests_and_originals(agent* thisAgent,
         {
             dprint(DT_ADD_ADDITIONALS, "adding var names node to original tests:\n");
             dprint_varnames_node(DT_ADD_ADDITIONALS, nvn);
-
-            add_varnames_to_test(thisAgent, nvn->data.fields.id_varnames,
-                                 &(cond->data.tests.id_test->original_test));
-            create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
-            add_varnames_to_test(thisAgent, nvn->data.fields.attr_varnames,
-                                 &(cond->data.tests.attr_test->original_test));
-            create_identity_for_tests(thisAgent, cond->data.tests.attr_test, pI_id);
-            add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
-                                 &(cond->data.tests.value_test->original_test));
-            create_identity_for_tests(thisAgent, cond->data.tests.value_test, pI_id);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id);
             dprint(DT_ADD_ADDITIONALS, "Done adding var names to original tests resulting in: %l\n", cond);
-
         }
 
         /* --- on hashed nodes, add equality test for the hash function --- */
@@ -1216,8 +1213,6 @@ void add_additional_tests_and_originals(agent* thisAgent,
             add_hash_info_to_original_id_test(thisAgent, cond,
                                               node->left_hash_loc_field_num,
                                               node->left_hash_loc_levels_up);
-            /* Can remove next line if we don't need to deallocate test created in add_hash_info */
-            create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
             dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
 
         }
@@ -1227,7 +1222,6 @@ void add_additional_tests_and_originals(agent* thisAgent,
             add_hash_info_to_original_id_test(thisAgent, cond,
                                               node->parent->left_hash_loc_field_num,
                                               node->parent->left_hash_loc_levels_up);
-            create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
             dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
 
         }
@@ -1238,209 +1232,198 @@ void add_additional_tests_and_originals(agent* thisAgent,
     for (; rt != NIL; rt = rt->next)
     {
         chunk_test = NULL;
-        switch (rt->type)
+        /* MToDo | Do we really need to add impasse or goal tests ever? I think they're re-added later anyway. */
+        if (additional_tests == ALL_ORIGINALS && ((rt->type ==ID_IS_GOAL_RETE_TEST) ||
+             (rt->type ==ID_IS_IMPASSE_RETE_TEST) || (rt->type ==DISJUNCTION_RETE_TEST)))
         {
-            case ID_IS_GOAL_RETE_TEST:
-                if (additional_tests == ALL_ORIGINALS)
-                {
-                    dprint(DT_ADD_ADDITIONALS, "Creating goal test.\n");
-                    chunk_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
-                    chunk_test->original_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
-                }
-                break;
-            case ID_IS_IMPASSE_RETE_TEST:
-                if (additional_tests == ALL_ORIGINALS)
-                {
-                    dprint(DT_ADD_ADDITIONALS, "Creating impasse test.\n");
-                    chunk_test =  make_test(thisAgent, NIL, IMPASSE_ID_TEST);;
-                    chunk_test->original_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
-                }
-                break;
-            case DISJUNCTION_RETE_TEST:
-                if (additional_tests == ALL_ORIGINALS)
-                {
-                    dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
-                    chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-                    chunk_test->original_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-                    chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
-                    /* MToDo | We probably don't need to copy the disjunction list to original_test.  Will not be used. */
-                    chunk_test->original_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
-                    if (rt->right_field_num == 0)
-                    {
-                        add_test(thisAgent, &(cond->data.tests.id_test), chunk_test);
-                        dprint(DT_ADD_ADDITIONALS, "adding disjunction test to id resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+            if (rt->type ==ID_IS_GOAL_RETE_TEST)
+            {
+                dprint(DT_ADD_ADDITIONALS, "Creating goal test.\n");
+                chunk_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
+            } else if (rt->type ==ID_IS_IMPASSE_RETE_TEST) {
+                dprint(DT_ADD_ADDITIONALS, "Creating impasse test.\n");
+                chunk_test =  make_test(thisAgent, NIL, IMPASSE_ID_TEST);;
+            } else if (rt->type ==DISJUNCTION_RETE_TEST) {
+                dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
+                chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+                chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            }
+            if (rt->right_field_num == 0)
+            {
+                add_test(thisAgent, &(cond->data.tests.id_test), chunk_test);
+                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to id resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
 
-                    }
-                    else if (rt->right_field_num == 1)
-                    {
-                        add_test(thisAgent, &(cond->data.tests.attr_test), chunk_test);
-                        dprint(DT_ADD_ADDITIONALS, "adding disjunction test to attr resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+            }
+            else if (rt->right_field_num == 1)
+            {
+                add_test(thisAgent, &(cond->data.tests.attr_test), chunk_test);
+                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to attr resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
 
+            }
+            else
+            {
+                add_test(thisAgent, &(cond->data.tests.value_test), chunk_test);
+                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to value resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+            }
+        } else {
+            if ((additional_tests == ALL_ORIGINALS) && test_is_constant_relational_test(rt->type))
+            {
+                dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
+                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+                referent = rt->data.constant_referent;
+                chunk_test = make_test(thisAgent, referent, test_type);
+            }
+            else if (test_is_variable_relational_test(rt->type))
+            {
+                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+                dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
+
+                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+                    rt->data.variable_referent.field_num,
+                    rt->data.variable_referent.levels_up);
+                referent = ref_test->data.referent;
+                if (additional_tests == JUST_INEQUALITIES)
+                {
+                    if (((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
+                        && (referent != NIL)
+                        && referent->is_identifier())
+                    {
+                        chunk_test = make_test(thisAgent, referent, test_type);
                     }
                     else
                     {
-                        add_test(thisAgent, &(cond->data.tests.value_test), chunk_test);
-                        dprint(DT_ADD_ADDITIONALS, "adding disjunction test to value resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+                        dprint(DT_ADD_ADDITIONALS, "Relational test is not a valid template relational test.  Ignoring.\n");
                     }
                 }
-                break;
-            default:
-                if (test_is_constant_relational_test(rt->type))
+                else if (additional_tests == ALL_ORIGINALS)
                 {
-                    if (additional_tests == ALL_ORIGINALS)
-                    {
-                        dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
-                        test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                        referent = rt->data.constant_referent;
-                        chunk_test = make_test(thisAgent, referent, test_type);
-                        chunk_test->original_test = make_test(thisAgent, referent, test_type);
-                    }
+                    chunk_test = make_test(thisAgent, referent, test_type);
+                    chunk_test->identity->o_id = ref_test->identity->o_id;
+//                    test original_referent_test = var_identity_bound_in_reconstructed_original_conds(thisAgent, cond,
+//                        rt->data.variable_referent.field_num,
+//                        rt->data.variable_referent.levels_up);
+//
+//
+//                    /* -- Set identity information for relational test with variable as original symbol-- */
+//                    if (original_referent_test)
+//                    {
+//                        chunk_test->original_test = make_test(thisAgent, original_referent_test->data.referent, test_type);
+//                        create_identity_for_tests(thisAgent, chunk_test, pI_id);
+//
+//                        //                            if (original_referent_test->identity->o_id)
+//                        //                            {
+//                        //                                dprint(DT_IDENTITY_PROP, "Adding original rule test/symbol type information for relational test against %t\n", original_referent_test);
+//                        //                                chunk_test->identity->o_id = original_referent_test->identity->o_id;
+//                        //                                /* MToDo | Next line probably not needed. */
+//                        //                                //                            chunk_test->original_test->identity->o_id = original_referent_identity;
+//                        //                                //                            destination->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
+//                        //                                //                            set_identity_for_rule_variable(thisAgent, chunk_test, original_referent_test, pI_id);
+//                        //                            } else {
+//                        //                                chunk_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent_test->data.referent, pI_id);
+//                        //                            }
+//                    } else {
+//                        /* MToDo | Can this be possible?  Maybe it can for the special case.  Check. */
+//                        chunk_test->original_test = make_test(thisAgent, referent, test_type);
+//                    }
+                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
                 }
-                else if (test_is_variable_relational_test(rt->type))
+            }
+            /* -- Make sure we have an equality test for each element for both the condition and the original rule condition -- */
+            if (!rt->data.variable_referent.levels_up)
+            {
+                switch (rt->data.variable_referent.field_num)
                 {
-                    test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                    dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
-
-                    referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                               rt->data.variable_referent.field_num,
-                               rt->data.variable_referent.levels_up);
-                    if (additional_tests == JUST_INEQUALITIES)
-                    {
-                        if (((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
-                                && (referent != NIL)
-                                && referent->is_identifier())
+                    case 0:
+                        if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
                         {
-                            chunk_test = make_test(thisAgent, referent, test_type);
-                        }
-                        else
-                        {
-                            dprint(DT_ADD_ADDITIONALS, "Relational test is not a valid template relational test.  Ignoring.\n");
-                        }
-                    }
-                    else if (additional_tests == ALL_ORIGINALS)
-                    {
-                        chunk_test = make_test(thisAgent, referent, test_type);
-                        test original_referent_test = var_identity_bound_in_reconstructed_original_conds(thisAgent, cond,
-                                            rt->data.variable_referent.field_num,
-                                            rt->data.variable_referent.levels_up);
-
-
-                        /* -- Set identity information for relational test with variable as original symbol-- */
-                        if (original_referent_test)
-                        {
-                            chunk_test->original_test = make_test(thisAgent, original_referent_test->data.referent, test_type);
-                            create_identity_for_tests(thisAgent, chunk_test, pI_id);
-
-//                            if (original_referent_test->identity->o_id)
-//                            {
-//                                dprint(DT_IDENTITY_PROP, "Adding original rule test/symbol type information for relational test against %t\n", original_referent_test);
-//                                chunk_test->identity->o_id = original_referent_test->identity->o_id;
-//                                /* MToDo | Next line probably not needed. */
-//                                //                            chunk_test->original_test->identity->o_id = original_referent_identity;
-//                                //                            destination->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(new_test->original_test->data.referent, pI_id);
-//                                //                            set_identity_for_rule_variable(thisAgent, chunk_test, original_referent_test, pI_id);
-//                            } else {
-//                                chunk_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(original_referent_test->data.referent, pI_id);
-//                            }
-                        } else {
-                            /* MToDo | Can this be possible?  Maybe it can for the special case.  Check. */
-                            chunk_test->original_test = make_test(thisAgent, referent, test_type);
-                        }
-                        dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
-                    }
-                }
-                /* -- Make sure we have an equality test for each element for both the condition and the original rule condition -- */
-                if (!rt->data.variable_referent.levels_up)
-                {
-                    switch (rt->data.variable_referent.field_num)
-                    {
-                        case 0:
-                            if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
-                            {
-                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for id element.  Adding gensymmed test...\n");
-                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
-
-                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-                            }
-                            if (additional_tests == ALL_ORIGINALS)
-                            {
-                                if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test->original_test, NIL))
-                                {
-                                    dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule id element.  Adding gensymmed test...\n");
-                                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test->original_test), 's');
-
-                                    dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-                                }
-                            }
-                            break;
-                        case 1:
-                            if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
-                            {
-                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for attr element.  Adding gensymmed test...\n");
-                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
-
-                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-                            }
-                            if (additional_tests == ALL_ORIGINALS)
-                            {
-                                if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test->original_test, NIL))
-                                {
-                                    dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule attr element.  Adding gensymmed test...\n");
-                                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
-
-                                    dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-                                }
-                            }
-                            break;
-                        case 2:
-                            if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
-                            {
-                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for value element.  Adding gensymmed test...\n");
-                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
-                                                            first_letter_from_test(cond->data.tests.attr_test));
-
-                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-                            }
-                            if (additional_tests == ALL_ORIGINALS)
-                            {
-                                if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test->original_test, NIL))
-                                {
-                                    dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule value element.  Adding gensymmed test...\n");
-                                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test->original_test),
-                                                                first_letter_from_test(cond->data.tests.attr_test->original_test));
-
-                                    dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-                                }
-                            }
-                            break;
-                        default:
                             assert(false);
-                            break;
-                    }
-                }
+                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for id element.  Adding gensymmed test...\n");
+                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
 
-                if (chunk_test)
+                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+                        }
+//                        if (additional_tests == ALL_ORIGINALS)
+//                        {
+//                            if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test->original_test, NIL))
+//                            {
+//                                assert(false);
+//                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule id element.  Adding gensymmed test...\n");
+//                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test->original_test), 's');
+//
+//                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+//                            }
+//                        }
+                        break;
+                    case 1:
+                        if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
+                        {
+                            assert(false);
+                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for attr element.  Adding gensymmed test...\n");
+                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
+
+                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+                        }
+//                        if (additional_tests == ALL_ORIGINALS)
+//                        {
+//                            if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test->original_test, NIL))
+//                            {
+//                                assert(false);
+//                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule attr element.  Adding gensymmed test...\n");
+//                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
+//
+//                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+//                            }
+//                        }
+                        break;
+                    case 2:
+                        if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+                        {
+                            assert(false);
+                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for value element.  Adding gensymmed test...\n");
+                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
+                                first_letter_from_test(cond->data.tests.attr_test));
+
+                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+                        }
+//                        if (additional_tests == ALL_ORIGINALS)
+//                        {
+//                            if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test->original_test, NIL))
+//                            {
+//                                assert(false);
+//                                dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for rule value element.  Adding gensymmed test...\n");
+//                                add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test->original_test),
+//                                    first_letter_from_test(cond->data.tests.attr_test->original_test));
+//
+//                                dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+//                            }
+//                        }
+                        break;
+                    default:
+                        assert(false);
+                        break;
+                }
+            }
+            if (chunk_test)
+            {
+                if (rt->right_field_num == 0)
                 {
-                    if (rt->right_field_num == 0)
-                    {
-                        add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, pI_id);
+                    add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, pI_id);
 
-                        dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-                    }
-                    else if (rt->right_field_num == 1)
-                    {
-                        add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, pI_id);
-
-                        dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-                    }
-                    else
-                    {
-                        add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, pI_id);
-
-                        dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-                    }
+                    dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
                 }
-                break;
+                else if (rt->right_field_num == 1)
+                {
+                    add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, pI_id);
+
+                    dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+                }
+                else
+                {
+                    add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, pI_id);
+
+                    dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+                }
+            }
         }
     }
 
@@ -1451,6 +1434,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
             if (! test_includes_equality_test_for_symbol
                     (cond->data.tests.id_test->original_test, NIL))
             {
+                assert(false);
                 add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test->original_test), 's');
                 create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
 
@@ -1459,6 +1443,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
             if (! test_includes_equality_test_for_symbol
                     (cond->data.tests.attr_test->original_test, NIL))
             {
+                assert(false);
                 add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test->original_test), 'a');
                 create_identity_for_tests(thisAgent, cond->data.tests.attr_test, pI_id);
                 dprint(DT_ADD_ADDITIONALS, "Final test contained no equality test for rule id element.  Added gensymmed test resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
@@ -1466,6 +1451,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
             if (! test_includes_equality_test_for_symbol
                     (cond->data.tests.value_test->original_test, NIL))
             {
+                assert(false);
                 add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test->original_test),
                                             first_letter_from_test(cond->data.tests.attr_test->original_test));
                 create_identity_for_tests(thisAgent, cond->data.tests.value_test, pI_id);
@@ -1474,9 +1460,9 @@ void add_additional_tests_and_originals(agent* thisAgent,
         }
 
         /* Following may not be needed except to clean up original_tests */
-        create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
-        create_identity_for_tests(thisAgent, cond->data.tests.attr_test, pI_id);
-        create_identity_for_tests(thisAgent, cond->data.tests.value_test, pI_id);
+//        create_identity_for_tests(thisAgent, cond->data.tests.id_test, pI_id);
+//        create_identity_for_tests(thisAgent, cond->data.tests.attr_test, pI_id);
+//        create_identity_for_tests(thisAgent, cond->data.tests.value_test, pI_id);
     }
 
     dprint(DT_ADD_ADDITIONALS, "add_additional_tests_and_originals finished for %s.\n",
