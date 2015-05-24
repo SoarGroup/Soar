@@ -12,34 +12,30 @@
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 
 #ifndef SOAR_RELEASE_VERSION
     /* --  The following enables debugging traces/modes. Individual debug
      *     #defines are found in debug_defines.h -- */
-    //#define SOAR_DEBUG_PRINTING
+    #define SOAR_DEBUG_PRINTING
+
+    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL
 
     /* -- Enables the printing of the call trace within debug messages.  Tested
- *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
- *    but not tested. Does not work on Windows. -- */
+     *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
+     *    but not tested. Does not work on Windows. -- */
     //#define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
- *    the debug database -- */
+     *    the debug database -- */
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-
     //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-    #define MEM_POOLS_ENABLED 1
-    #define USE_MEM_POOL_ALLOCATORS 1
-    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-
-
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
@@ -49,10 +45,13 @@ extern void print(agent* thisAgent, const char* format, ...);
     /* -- Low level GDS debug information -- */
     //#define DEBUG_GDS
 
-/* -- High-level information on the instantiations that created an
- * o-supported element and lead to the elaboration of the GDS */
+    /* -- High-level information on the instantiations that created an
+     * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 #endif
+
+//#define MEM_POOLS_ENABLED 1
+//#define USE_MEM_POOL_ALLOCATORS 1
 
 /* -------------------------------------------------- */
 /*     Global constants, type declarations, etc.      */

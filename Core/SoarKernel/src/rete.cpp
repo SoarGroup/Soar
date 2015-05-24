@@ -2825,7 +2825,9 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
+        if (!strcmp(temp->var->name, "<x4>"))
+            assert(true);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2834,13 +2836,43 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
     }
 }
 
+
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
+{
+    test New;
+    cons* c;
+    Symbol* temp;
+
+    if (vn == NIL)
+    {
+        return;
+    }
+    if (varnames_is_one_var(vn))
+    {
+        temp = varnames_to_one_var(vn);
+        t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity->o_id, temp->var->name);
+    }
+    else
+    {
+        /* MToDo | Not sure if we can have a varlist when this is called from add_additionals.  Should only
+         * be called in cases where there is one equality test.  Remove.*/
+        assert(false);
+        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
+        {
+            temp = static_cast<Symbol*>(c->first);
+            t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity->o_id, temp->var->name);
+        }
+    }
+}
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
 

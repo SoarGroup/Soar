@@ -284,7 +284,7 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
 
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        if (m_print_actual)
+        if (m_print_actual_effective)
         {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%t %s^%t %t)",
             cond->data.tests.id_test,
@@ -292,7 +292,7 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
-//        if (m_print_original) {
+//        if (m_print_original_effective) {
 //            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)/(%y %s^%y %y)",
 //                (m_print_actual) ? ", " : NULL,
 //                cond->data.tests.id_test,
@@ -304,9 +304,9 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
 //                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.value_test->identity->original_var_id));
 //            while (*ch) ch++;
 //        }
-        if (m_print_identity) {
+        if (m_print_identity_effective) {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%g %s^%g %g)",
-                (m_print_actual || m_print_original) ? ", " : NULL,
+                (m_print_actual_effective || m_print_original_effective) ? ", " : NULL,
                 cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
                 cond->data.tests.attr_test, cond->data.tests.value_test);
@@ -366,12 +366,12 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
 
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
-        if (this->m_print_actual)
+        if (this->m_print_actual_effective)
         {
             sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->referent);
-        } else if (m_print_original) {
+        } else if (m_print_original_effective) {
             sprinta_sf(thisAgent, dest, dest_size, "%y", thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
-        } else if (m_print_identity) {
+        } else if (m_print_identity_effective) {
             sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
         }
     }
@@ -486,31 +486,31 @@ char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* d
 
     char* ch = dest;
 
-    if (m_print_actual)
+    if (m_print_actual_effective)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y ^%y %y) %c %y%s", pref->id, pref->attr, pref->value,
             preference_to_char(pref->type),
-            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
         while (*ch) ch++;
     }
-//    if (m_print_original)
+//    if (m_print_original_effective)
 //    {
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual) ? ", " : "",
+//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual_effective) ? ", " : "",
 //            pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
 //            preference_to_char(pref->type),
-//            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+//            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
 //            (pref->o_supported) ? " :O " : NULL);
 //        while (*ch) ch++;
 //    }
-    if (m_print_identity)
+    if (m_print_identity_effective)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual) ? ", " : "",
+        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual_effective) ? ", " : "",
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
             preference_to_char(pref->type),
-            (m_print_actual && preference_is_binary(pref->type)) ? pref->referent : NULL,
+            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
         while (*ch) ch++;
     }

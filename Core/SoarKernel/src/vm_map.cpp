@@ -191,6 +191,7 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 
 uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
 {
+    assert(orig_var->is_variable());
     int64_t existing_o_id = 0;
 
     existing_o_id = get_existing_o_id(orig_var, pI_id);

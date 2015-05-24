@@ -19,8 +19,6 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
-#define SOAR_DEBUG_PRINTING
-
 #include "portability.h"
 #include "kernel.h"
 #include "soar_db.h"
@@ -46,9 +44,9 @@
 
     #define dprint(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)
     #define dprint_set_indents(mode, ...) Output_Manager::Get_OM().set_dprint_indents (mode , ##__VA_ARGS__)
-    #define dprint_set_test_format(mode, ...) Output_Manager::Get_OM().set_dprint_test_format (mode , ##__VA_ARGS__)
+    #define dprint_set_default_test_format(mode, ...) Output_Manager::Get_OM().set_default_dprint_test_format (mode , ##__VA_ARGS__)
     #define dprint_clear_indents(mode, ...) Output_Manager::Get_OM().clear_dprint_indents (mode , ##__VA_ARGS__)
-    #define dprint_clear_test_format(mode, ...) Output_Manager::Get_OM().clear_dprint_test_format (mode , ##__VA_ARGS__)
+    #define dprint_reset_test_format(mode, ...) Output_Manager::Get_OM().reset_dprint_test_format (mode , ##__VA_ARGS__)
     #define dprint_y(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)
     #define dprint_noprefix(mode, ...) Output_Manager::Get_OM().debug_print_sf_noprefix (mode , ##__VA_ARGS__)
     #define dprint_start_fresh_line(mode) Output_Manager::Get_OM().debug_start_fresh_line (mode)
@@ -65,9 +63,9 @@
 #else
     #define dprint(mode, format, ...) ((void)0)
     #define dprint_set_indents(mode, ...) ((void)0)
-    #define dprint_set_test_format(mode, ...) ((void)0)
+    #define dprint_set_default_test_format(mode, ...) ((void)0)
     #define dprint_clear_indents(mode, ...) ((void)0)
-    #define dprint_clear_test_format(mode, ...) ((void)0)
+    #define dprint_reset_test_format(mode, ...) ((void)0)
     #define dprint_y(mode, format, ...) ((void)0)
     #define dprint_noprefix(mode, format, ...) ((void)0)
     #define dprint_start_fresh_line(mode) ((void)0)
