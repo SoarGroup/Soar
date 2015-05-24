@@ -12,6 +12,7 @@ import re
 import fnmatch
 from SCons.Node.Alias import default_ans
 import SCons.Script
+import shutil
 
 join = os.path.join
 
@@ -109,6 +110,15 @@ def InstallDir(env, tgt, src, globstring="*"):
                 targets.extend(Install(tgtsub, p))
 
     return targets
+
+def InstallDLLs(env):
+  if sys.platform == 'win32' and GetOption('opt'):
+    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
+    outdir = os.path.realpath(GetOption('outdir')) + '\\'
+    os.mkdir(outdir)
+    for dll in indlls:
+      #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
+      shutil.copy(dll.rstr(), outdir)
 
 Export('InstallDir')
 
@@ -324,5 +334,7 @@ if COMMAND_LINE_TARGETS == ['list']:
 
 # Set default targets
 for a in DEF_TARGETS:
-    if a in all_aliases:
-        Default(a)
+	if a in all_aliases:
+		Default(a)
+
+InstallDLLs(env)
