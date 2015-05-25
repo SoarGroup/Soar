@@ -247,8 +247,8 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "o%u/%y",
-                t->identity->o_id,
-                t->identity->o_id ? thisAgent->variablizationManager->get_ovar_for_o_id(t->identity->o_id) : NULL);
+                t->identity,
+                t->identity ? thisAgent->variablizationManager->get_ovar_for_o_id(t->identity) : NULL);
             while (*ch) ch++;
             break;
         case CONJUNCTIVE_TEST:

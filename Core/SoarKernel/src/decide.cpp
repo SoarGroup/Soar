@@ -2124,17 +2124,17 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     init_condition(cond);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
 //    set_identity_for_rule_variable(thisAgent, cond->data.tests.id_test, thisAgent->ss_context_variable, inst->i_id);
-    cond->data.tests.id_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
 //    set_identity_for_rule_variable(thisAgent, cond->data.tests.value_test, thisAgent->o_context_variable, inst->i_id);
-    cond->data.tests.value_test->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
     uint64_t fake_s_o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id);
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
-                           soar_module::identity_triple(fake_s_o_id, 0, cond->data.tests.value_test->identity->o_id));
+                           soar_module::identity_triple(fake_s_o_id, 0, cond->data.tests.value_test->identity));
     symbol_add_ref(thisAgent, pref->id);
     symbol_add_ref(thisAgent, pref->attr);
     symbol_add_ref(thisAgent, pref->value);

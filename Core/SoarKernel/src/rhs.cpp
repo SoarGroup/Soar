@@ -363,7 +363,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
 //        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
-        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->o_id);
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
     }
 
     if (rhs_value_is_unboundvar(rv))

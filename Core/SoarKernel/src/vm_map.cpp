@@ -135,7 +135,7 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
     else
     {
-        return get_variablization(t->identity->o_id);
+        return get_variablization(t->identity);
     }
 }
 

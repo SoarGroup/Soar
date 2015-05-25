@@ -35,25 +35,6 @@ typedef signed short goal_stack_level;
 typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
-/* identity_info is a struct used to hold the rule symbol and variablization
- * identity for a test.  It is used during chunking to determine which
- * constant symbols have the same semantics.
- *
- *    Type:             Test type in condition of original production matched
- *    symbol_type:      Symbol type in condition of original production matched
- *
- * Note: Conjunctive tests will not have identity.  The individual tests will though.
- *
- * */
-
-typedef struct identity_struct
-{
-//    Symbol*       rule_symbol;
-    uint64_t      o_id;
-//    identity_struct() : rule_symbol(NULL), o_id(0) {}
-    identity_struct() : o_id(0) {}
-} identity_info;
-
 /* -- test_info stores information about a test.  If nil, the test is
  *    considered blank.
  *
@@ -80,8 +61,8 @@ typedef struct test_struct
     } data;
     test_struct*     eq_test;
     tc_number        tc_num;
-    identity_info*   identity;
-    test_struct() : type(NUM_TEST_TYPES), eq_test(NULL), tc_num(0), identity(NULL)
+    uint64_t         identity;
+    test_struct() : type(NUM_TEST_TYPES), eq_test(NULL), tc_num(0), identity(0)
     {
         data.referent = NULL;
     }

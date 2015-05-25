@@ -83,7 +83,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
-            new_ct->identity->o_id = t->identity->o_id;
+            new_ct->identity = t->identity;
             if (pUnify_variablization_identity)
             {
                 /* Mark this test as seen.  The tests in the constraint lists are copies of
@@ -94,19 +94,19 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                 {
                     t->tc_num = thisAgent->variablizationManager->get_constraint_found_tc_num();
                 }
-                if (new_ct->identity->o_id)
+                if (new_ct->identity)
                 {
                     thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
                     /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
                      * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
                      * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
-                    if (new_ct->identity->o_id && pI_id)
+                    if (new_ct->identity && pI_id)
                     {
                         dprint(DT_CHUNK_ID_MAINTENANCE, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n",
-                            new_ct->identity->o_id, thisAgent->variablizationManager->get_ovar_for_o_id(new_ct->identity->o_id), pI_id);
-                        thisAgent->variablizationManager->create_consistent_identity_for_chunk(&(new_ct->identity->o_id), pI_id);
+                            new_ct->identity, thisAgent->variablizationManager->get_ovar_for_o_id(new_ct->identity), pI_id);
+                        thisAgent->variablizationManager->create_consistent_identity_for_chunk(&(new_ct->identity), pI_id);
                         dprint(DT_CHUNK_ID_MAINTENANCE, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                        assert(new_ct->identity->o_id != t->identity->o_id);
+                        assert(new_ct->identity != t->identity);
                     }
                 }
             }
@@ -242,12 +242,6 @@ void deallocate_test(agent* thisAgent, test t)
 #endif
             break;
     }
-    /* -- MToDo | All tests should have identity for now, so we shouldn't need to check this.  Leaving in for now to see
-     *            if other unit tests fail.  -- */
-    if (t->identity)
-    {
-        delete t->identity;
-    }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
      *    during chunking.  We did not copy the test or increment the refcount, so we
      *    don't need to decrease the refcount here. -- */
@@ -310,7 +304,7 @@ void create_identity_for_test(agent* thisAgent, test t, test orig_test, uint64_t
     assert (t->type == orig_test->type);
     assert(pI_id);
 
-    t->identity->o_id = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
+    t->identity = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
 }
 
 /* -- This function is a special purpose function for adding relational tests to another test. It
@@ -337,12 +331,12 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
         {
             if (destination->data.referent == new_test->data.referent)
             {
-                if (!destination->identity->o_id && new_test->identity->o_id)
+                if (!destination->identity && new_test->identity)
                 {
                     /* This is the special case */
-                    destination->identity->o_id = new_test->identity->o_id;
+                    destination->identity = new_test->identity;
                     dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %y\n",
-                        destination, thisAgent->variablizationManager->get_ovar_for_o_id(destination->identity->o_id));
+                        destination, thisAgent->variablizationManager->get_ovar_for_o_id(destination->identity));
                     deallocate_test(thisAgent, new_test);
                     return;
                 }
@@ -364,12 +358,12 @@ void add_relational_test(agent* thisAgent, test* dest_test_address, test new_tes
                 {
                     if (check_test->data.referent == new_test->data.referent)
                     {
-                        if (!check_test->identity->o_id && new_test->identity->o_id)
+                        if (!check_test->identity && new_test->identity)
                         {
                             /* This is the special case */
-                            check_test->identity->o_id = new_test->identity->o_id;
+                            check_test->identity = new_test->identity;
                             dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
-                                thisAgent->variablizationManager->get_ovar_for_o_id(check_test->identity->o_id));
+                                thisAgent->variablizationManager->get_ovar_for_o_id(check_test->identity));
                             deallocate_test(thisAgent, new_test);
                             return;
                         }
@@ -587,32 +581,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
                 }
                 else
                 {
-                    if (t1->identity)
-                    {
-                        if (t2->identity)
-                        {
-                            /* -- Two grounded constants -- */
-                            return (t1->identity->o_id == t2->identity->o_id);
-                        }
-                        else
-                        {
-                            /* -- A literal constant and a grounded one-- */
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        if (t2->identity)
-                        {
-                            /* -- A literal constant and a grounded one-- */
-                            return false;
-                        }
-                        else
-                        {
-                            /* -- Two literal constants -- */
-                            return true;
-                        }
-                    }
+                    return (t1->identity == t2->identity);
                 }
             }
             return true;
@@ -1096,10 +1065,10 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
     test t = 0, New = 0;
 
     t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
-    cond->data.tests.id_test->identity->o_id = t->identity->o_id;
+    cond->data.tests.id_test->identity = t->identity;
     dprint(DT_ADD_ADDITIONALS, "add_hash_info_to_original_id_test added o_id o%u(%y) from %t.\n",
-        cond->data.tests.id_test->identity->o_id,
-        thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->o_id),
+        cond->data.tests.id_test->identity,
+        thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity),
         t);
 }
 
@@ -1247,7 +1216,7 @@ void add_additional_tests_and_originals(agent* thisAgent,
                 else if (additional_tests == ALL_ORIGINALS)
                 {
                     chunk_test = make_test(thisAgent, referent, test_type);
-                    chunk_test->identity->o_id = ref_test->identity->o_id;
+                    chunk_test->identity = ref_test->identity;
                     dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
                 }
             }
@@ -1397,10 +1366,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->eq_test = NULL;
-    /* MToDo| Should limit creation of identity to only tests that need them.
-     *        For example, STIs and tests read during initial parse don't
-     *        need identity. */
-    new_ct->identity = new identity_info;
+    new_ct->identity = 0;
 
     if (sym)
     {

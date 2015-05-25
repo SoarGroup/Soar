@@ -125,14 +125,14 @@ class Variablization_Manager
     private:
         agent* thisAgent;
 
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, identity_info* identity);
+        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
 
         variablization* get_variablization_for_symbol(std::map< Symbol*, variablization* >* pMap, Symbol* index_sym);
         variablization* get_variablization(uint64_t index_id);
         variablization* get_variablization(test equality_test);
         variablization* get_variablization(Symbol* index_sym);
 
-        void variablize_lhs_symbol(Symbol** sym, identity_info* identity);
+        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
 
         void variablize_equality_tests(test* t);

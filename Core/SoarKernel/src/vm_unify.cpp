@@ -18,13 +18,13 @@
 
 void Variablization_Manager::unify_identity(agent* thisAgent, test t)
 {
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity->o_id);
+    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
-            t->identity->o_id, iter->second);
+            t->identity, iter->second);
 
-        t->identity->o_id = iter->second;
+        t->identity = iter->second;
     }
 }
 void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
