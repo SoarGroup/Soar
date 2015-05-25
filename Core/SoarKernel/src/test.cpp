@@ -1149,22 +1149,24 @@ void add_additional_tests_and_originals(agent* thisAgent,
     dprint(DT_ADD_ADDITIONALS, "Processing additional tests to add to condition %l...\n", cond);
     for (; rt != NIL; rt = rt->next)
     {
+        dprint(DT_ADD_ADDITIONALS, "Processing additional test...\n");
         chunk_test = NULL;
         /* MToDo | Do we really need to add impasse or goal tests ever? I think they're re-added later anyway. */
-        if (additional_tests == ALL_ORIGINALS && ((rt->type ==ID_IS_GOAL_RETE_TEST) ||
-             (rt->type ==ID_IS_IMPASSE_RETE_TEST) || (rt->type ==DISJUNCTION_RETE_TEST)))
+        if (additional_tests == ALL_ORIGINALS && (
+//            (rt->type ==ID_IS_GOAL_RETE_TEST) ||
+//            (rt->type ==ID_IS_IMPASSE_RETE_TEST) ||
+            (rt->type ==DISJUNCTION_RETE_TEST)))
         {
-            if (rt->type ==ID_IS_GOAL_RETE_TEST)
-            {
+            if (rt->type ==DISJUNCTION_RETE_TEST) {
+                dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
+                chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+                chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            } else if (rt->type ==ID_IS_GOAL_RETE_TEST) {
                 dprint(DT_ADD_ADDITIONALS, "Creating goal test.\n");
                 chunk_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
             } else if (rt->type ==ID_IS_IMPASSE_RETE_TEST) {
                 dprint(DT_ADD_ADDITIONALS, "Creating impasse test.\n");
                 chunk_test =  make_test(thisAgent, NIL, IMPASSE_ID_TEST);;
-            } else if (rt->type ==DISJUNCTION_RETE_TEST) {
-                dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
-                chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-                chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
             }
             if (rt->right_field_num == 0)
             {
@@ -1207,10 +1209,11 @@ void add_additional_tests_and_originals(agent* thisAgent,
                         && referent->is_identifier())
                     {
                         chunk_test = make_test(thisAgent, referent, test_type);
+                        dprint(DT_RL_VARIABLIZATION, "Creating valid relational test for template %t [%g].\n", chunk_test, chunk_test);
                     }
                     else
                     {
-                        dprint(DT_ADD_ADDITIONALS, "Relational test is not a valid template relational test.  Ignoring.\n");
+                        dprint(DT_RL_VARIABLIZATION, "Relational test is not a valid template relational test.  Ignoring.\n");
                     }
                 }
                 else if (additional_tests == ALL_ORIGINALS)

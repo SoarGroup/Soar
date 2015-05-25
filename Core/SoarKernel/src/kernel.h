@@ -12,15 +12,13 @@
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 
 #ifndef SOAR_RELEASE_VERSION
     /* --  The following enables debugging traces/modes. Individual debug
      *     #defines are found in debug_defines.h -- */
     #define SOAR_DEBUG_PRINTING
-
-    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL
@@ -50,8 +48,9 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_GDS_HIGH
 #endif
 
-//#define MEM_POOLS_ENABLED 1
-//#define USE_MEM_POOL_ALLOCATORS 1
+#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+#define MEM_POOLS_ENABLED 1
+#define USE_MEM_POOL_ALLOCATORS 1
 
 /* -------------------------------------------------- */
 /*     Global constants, type declarations, etc.      */
