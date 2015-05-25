@@ -839,12 +839,12 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->production_firing_count++;
 
     AddAdditionalTestsMode additional_test_mode;
-    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM])
-    {
-            additional_test_mode = ALL_ORIGINALS;
-    } else if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
+    if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-    } else {
+    } else if (thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+    {
+        additional_test_mode = ALL_ORIGINALS;
+    } else  {
         additional_test_mode = DONT_ADD_TESTS;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
