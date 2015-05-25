@@ -867,6 +867,25 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
     return generated_name;
 }
 
+/* ====================================================================
+
+                        Chunk Instantiation
+
+   This the main chunking routine.  It takes an instantiation, and a
+   flag "variablize"--if false, the chunk will not be
+   variablized.  (If true, it may still not be variablized, due to
+   chunk-free-problem-spaces, ^quiescence t, etc.)
+==================================================================== */
+
+void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
+{
+    thisAgent->variablizationManager->clear_variablization_maps();
+    thisAgent->variablizationManager->clear_cached_constraints();
+    thisAgent->variablizationManager->clear_o_id_substitution_map();
+    thisAgent->variablizationManager->clear_o_id_update_map();
+    thisAgent->variablizationManager->clear_attachment_map();
+}
+
 bool should_variablize(agent* thisAgent, instantiation* inst)
 {
     preference* p;
@@ -914,26 +933,7 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
     return true;
 }
 
-/* ====================================================================
-
-                        Chunk Instantiation
-
-   This the main chunking routine.  It takes an instantiation, and a
-   flag "variablize"--if false, the chunk will not be
-   variablized.  (If true, it may still not be variablized, due to
-   chunk-free-problem-spaces, ^quiescence t, etc.)
-==================================================================== */
-
-void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
-{
-    thisAgent->variablizationManager->clear_variablization_maps();
-    thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_o_id_substitution_map();
-    thisAgent->variablizationManager->clear_o_id_update_map();
-    thisAgent->variablizationManager->clear_attachment_map();
-}
-
-void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list)
+void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learning, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -1104,7 +1104,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
     }
 
-    variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
+    variablize = allow_learning && reliable && should_variablize(thisAgent, inst);
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
@@ -1284,7 +1284,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
     /* MToDo | Remove the print_name parameter disabling here. */
-    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name || true);
+    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
            ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
@@ -1362,7 +1362,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     if (!thisAgent->max_chunks_reached)
     {
         dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
-        chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list);
+        chunk_instantiation(thisAgent, chunk_inst, allow_learning, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
 

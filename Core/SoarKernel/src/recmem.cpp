@@ -838,12 +838,20 @@ void create_instantiation(agent* thisAgent, production* prod,
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
+    AddAdditionalTestsMode additional_test_mode;
+    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+    {
+            additional_test_mode = ALL_ORIGINALS;
+    } else if (prod->type != TEMPLATE_PRODUCTION_TYPE) {
+        additional_test_mode = JUST_INEQUALITIES;
+    } else {
+        additional_test_mode = DONT_ADD_TESTS;
+    }
     /* --- build the instantiated conditions, and bind LHS variables --- */
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
                                  &(inst->top_of_instantiated_conditions),
                                  &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-                                 inst->i_id,
-                                 ((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
+                                 inst->i_id, additional_test_mode);
 
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
@@ -894,8 +902,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next)
     {
         /* MToDo | Disabled this assert.  May re-enable later when testing. rhs_vars should not be able to differ from action_list */
-//    if ((a && !a2) || (!a && a2))
-//      assert(false);
+        if ((a && !a2) || (!a && a2))
+            assert(false);
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
             pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
@@ -1008,17 +1016,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    chunk_instantiation(thisAgent, inst, false,
+    chunk_instantiation(thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? true : false,
                         &(thisAgent->newly_created_instantiations));
-
-    /* -- clear the original var references that we cached in the preference in
-     *    execute_action but did not increase their refcount -- */
-//  for (pref = inst->preferences_generated; pref != NIL;
-//      pref = pref->inst_next) {
-//    pref->original_symbols.id = NIL;
-//    pref->original_symbols.attr = NIL;
-//    pref->original_symbols.value = NIL;
-//  }
 
     /* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
     deallocate_action_list(thisAgent, rhs_vars);

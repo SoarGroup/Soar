@@ -69,6 +69,10 @@ class Variablization_Manager
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
         uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
 
+        void variablize_relational_constraints();
+        void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+        void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+
         void clear_variablization_maps();
         void clear_o_id_update_map();
         void clear_attachment_map();
@@ -99,10 +103,6 @@ class Variablization_Manager
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
         void merge_conditions(condition* top_cond);
-
-        void      variablize_relational_constraints();
-        void      variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        void      variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
         action* variablize_results(preference* result, bool variablize);
         action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);

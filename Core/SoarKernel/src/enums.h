@@ -145,9 +145,6 @@ enum TestType
     NUM_TEST_TYPES
 };
 
-/* -- Identity values of 0 indicate that we shouldn't variablize the symbol in this test -- */
-#define NON_GENERALIZABLE 0
-
 /* MToDo | Change these to enums -- */
 /* -------------------------------
       Types of Productions
