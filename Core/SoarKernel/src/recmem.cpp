@@ -542,10 +542,6 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
     return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
-                           soar_module::symbol_triple(
-                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_original_symbol(original_id) : NULL),
-                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_original_symbol(original_attr) : NULL),
-                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_original_symbol(original_value) : NULL)),
                            soar_module::identity_triple(
                                ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_o_id(original_id) : 0),
                                ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_o_id(original_attr) : 0),
@@ -826,8 +822,8 @@ void create_instantiation(agent* thisAgent, production* prod,
      */
 
     inst->GDS_evaluated_already = false;
-    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
+    dprint_start_fresh_line(DT_MILESTONES);
+    dprint_header(DT_MILESTONES, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
@@ -842,12 +838,20 @@ void create_instantiation(agent* thisAgent, production* prod,
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
+    AddAdditionalTestsMode additional_test_mode;
+    if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
+        additional_test_mode = JUST_INEQUALITIES;
+    } else if (thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+    {
+        additional_test_mode = ALL_ORIGINALS;
+    } else  {
+        additional_test_mode = DONT_ADD_TESTS;
+    }
     /* --- build the instantiated conditions, and bind LHS variables --- */
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
                                  &(inst->top_of_instantiated_conditions),
                                  &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-                                 inst->i_id,
-                                 ((prod->type != TEMPLATE_PRODUCTION_TYPE) ? ALL_ORIGINALS : JUST_INEQUALITIES));
+                                 inst->i_id, additional_test_mode);
 
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
@@ -898,8 +902,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next)
     {
         /* MToDo | Disabled this assert.  May re-enable later when testing. rhs_vars should not be able to differ from action_list */
-//    if ((a && !a2) || (!a && a2))
-//      assert(false);
+        if ((a && !a2) || (!a && a2))
+            assert(false);
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
             pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
@@ -1005,24 +1009,15 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint_start_fresh_line(DT_FUNC_PRODUCTIONS);
-    dprint(DT_FUNC_PRODUCTIONS, "---------------------------------------------------------\n");
-    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation created: \n");
+    dprint_start_fresh_line(DT_MILESTONES);
+    dprint(DT_MILESTONES, "---------------------------------------------------------\n");
+    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n");
     dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
     dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    chunk_instantiation(thisAgent, inst, false,
+    chunk_instantiation(thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? true : false,
                         &(thisAgent->newly_created_instantiations));
-
-    /* -- clear the original var references that we cached in the preference in
-     *    execute_action but did not increase their refcount -- */
-//  for (pref = inst->preferences_generated; pref != NIL;
-//      pref = pref->inst_next) {
-//    pref->original_symbols.id = NIL;
-//    pref->original_symbols.attr = NIL;
-//    pref->original_symbols.value = NIL;
-//  }
 
     /* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
     deallocate_action_list(thisAgent, rhs_vars);

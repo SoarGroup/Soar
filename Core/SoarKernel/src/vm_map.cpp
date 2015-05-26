@@ -31,11 +31,11 @@ void Variablization_Manager::clear_data()
 void Variablization_Manager::clear_o_id_update_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_update table...\n");
-    for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
-    {
-        dprint(DT_VM_MAPS, "Clearing %u -> %y(%u)\n", it->first, it->second->rule_symbol, it->second->o_id);
-        delete it->second;
-    }
+//    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
+//    {
+//        dprint(DT_VM_MAPS, "Clearing %u -> %y(%u)\n", it->first, get_ovar_for_o_id(it->second), it->second);
+//        delete it->second;
+//    }
     o_id_update_map->clear();
 }
 
@@ -135,7 +135,7 @@ variablization* Variablization_Manager::get_variablization(test t)
     }
     else
     {
-        return get_variablization(t->identity->o_id);
+        return get_variablization(t->identity);
     }
 }
 
@@ -191,6 +191,7 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 
 uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
 {
+    assert(orig_var->is_variable());
     int64_t existing_o_id = 0;
 
     existing_o_id = get_existing_o_id(orig_var, pI_id);
@@ -215,10 +216,10 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
     std::map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
     if (iter != o_id_to_ovar_debug_map->end())
     {
-//        dprint_noprefix(DT_OVAR_PROP, "found.  Returning %y\n", iter->second);
+//        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);
         return iter->second;
     }
-//    dprint_noprefix(DT_OVAR_PROP, "not found.  Returning NULL.\n");
+//    dprint_noprefix(DT_IDENTITY_PROP, "not found.  Returning NULL.\n");
     return NULL;
 
 }

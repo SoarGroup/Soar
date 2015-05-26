@@ -58,13 +58,13 @@ void Variablization_Manager::remove_ungrounded_sti_tests(test* t, bool ignore_un
     }
 }
 
-o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_id)
+uint64_t Variablization_Manager::get_updated_o_id_info(uint64_t old_o_id)
 {
-    std::map< uint64_t, o_id_update_info* >::iterator iter = (*o_id_update_map).find(old_o_id);
+    std::map< uint64_t, uint64_t >::iterator iter = (*o_id_update_map).find(old_o_id);
     if (iter != (*o_id_update_map).end())
     {
         dprint(DT_VM_MAPS, "...found o%u(%y) in o_id_update_map for o%u\n",
-            iter->second->o_id, iter->second->rule_symbol, old_o_id, get_ovar_for_o_id(old_o_id));
+            iter->second, get_ovar_for_o_id(iter->second), old_o_id, get_ovar_for_o_id(old_o_id));
 
         return iter->second;
     } else {
@@ -74,15 +74,10 @@ o_id_update_info* Variablization_Manager::get_updated_o_id_info(uint64_t old_o_i
     return 0;
 }
 
-void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, Symbol* new_ovar, uint64_t new_o_id, condition* pos_cond, WME_Field pos_cond_field)
+void Variablization_Manager::add_updated_o_id_info(uint64_t old_o_id, uint64_t new_o_id)
 {
     assert(get_updated_o_id_info(old_o_id) == 0);
-    o_id_update_info* new_o_id_info = new o_id_update_info();
-    new_o_id_info->rule_symbol = new_ovar;
-    new_o_id_info->o_id = new_o_id;
-    new_o_id_info->positive_cond = pos_cond;
-    new_o_id_info->field = pos_cond_field;
-    (*o_id_update_map)[old_o_id] = new_o_id_info;
+    (*o_id_update_map)[old_o_id] = new_o_id;
 }
 
 void Variablization_Manager::create_consistent_identity_for_result_element(preference* result, uint64_t pI_id, WME_Field field)
@@ -90,79 +85,58 @@ void Variablization_Manager::create_consistent_identity_for_result_element(prefe
 
     if (field == ID_ELEMENT)
     {
-        create_consistent_identity_for_chunk(&(result->original_symbols.id), &(result->o_ids.id), pI_id, true);
+        create_consistent_identity_for_chunk(&(result->o_ids.id), pI_id, true);
     } else if (field == ATTR_ELEMENT) {
-        create_consistent_identity_for_chunk(&(result->original_symbols.attr), &(result->o_ids.attr), pI_id, true);
+        create_consistent_identity_for_chunk(&(result->o_ids.attr), pI_id, true);
     } else if (field == VALUE_ELEMENT) {
-        create_consistent_identity_for_chunk(&(result->original_symbols.value), &(result->o_ids.value), pI_id, true);
+        create_consistent_identity_for_chunk(&(result->o_ids.value), pI_id, true);
     }
 }
 
-void Variablization_Manager::create_consistent_identity_for_chunk(Symbol** pOvar, uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
+void Variablization_Manager::create_consistent_identity_for_chunk(uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult)
 {
-    uint64_t new_o_id = 0;
-    Symbol* new_ovar = NULL;
+    uint64_t new_o_id = 0, found_o_id = 0;
+    Symbol* lOvar = NULL;
     bool found_unique = false;
 
     if (!(*pO_id)) return;
 
-    dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation called for %y o%u i%u %s\n", (*pOvar), (*pO_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
-    o_id_update_info* new_o_id_info = get_updated_o_id_info((*pO_id));
-    if (new_o_id_info)
+    dprint(DT_CHUNK_ID_MAINTENANCE, "update_o_id_for_new_instantiation called for o%u i%u %s\n",(*pO_id), pNew_i_id, pIsResult ? "isResult" : "isNotResult");
+    found_o_id = get_updated_o_id_info((*pO_id));
+    if (found_o_id)
     {
-        (*pO_id) = new_o_id_info->o_id;
-        if ((*pOvar) != new_o_id_info->rule_symbol)
-        {
-            dprint(DT_OVAR_MAPPINGS, "...found existing variable update %y(o%u)\n", new_o_id_info->rule_symbol, new_o_id_info->o_id);
-            symbol_remove_ref(thisAgent, (*pOvar));
-            (*pOvar) = new_o_id_info->rule_symbol;
-            symbol_add_ref(thisAgent, (*pOvar));
-        }
+        assert((*pO_id) != found_o_id);
+        (*pO_id) = found_o_id;
+        dprint(DT_CHUNK_ID_MAINTENANCE, "...found existing variable update %y(o%u)\n", get_ovar_for_o_id(found_o_id), found_o_id);
     } else {
         if (pIsResult)
         {
             /* A RHS variable that was local to the substate, so it won't be variablized and doesn't need
              * these values.*/
-            dprint(DT_OVAR_MAPPINGS, "...did not find update info for result %y(o%u).  Must be ungrounded.\n", (*pOvar), (*pO_id));
-            if ((*pOvar))
-            {
-                symbol_remove_ref(thisAgent, (*pOvar));
-            } else {
-                /* MToDo|  Remove logic.  There should always be an oVar. */
-                assert(false);
-            }
-            (*pOvar) = NULL;
+            dprint(DT_CHUNK_ID_MAINTENANCE, "...did not find update info for result %y(o%u).  Must be ungrounded.\n",  get_ovar_for_o_id((*pO_id)), (*pO_id));
             (*pO_id) = 0;
         } else {
-            new_o_id = get_existing_o_id((*pOvar), pNew_i_id);
+            /* This o_id is for an existing instantiation and has not been re-assigned for this chunk */
+            lOvar = get_ovar_for_o_id(*pO_id);
+            assert(lOvar);
+            new_o_id = get_existing_o_id(lOvar, pNew_i_id);
             if (new_o_id)
             {
                 /* Ovar needs to be made unique.  This ovar has an existing o_id for new instantiation but no
                  * update info entry for the o_id.  That means that the previously seen case of this ovar
                  * had a different o_id. */
-                std::string lVarName((*pOvar)->var->name+1);
+                std::string lVarName(lOvar->var->name+1);
                 lVarName.erase(lVarName.length()-1);
                 lVarName.append("-other");
-                new_ovar = generate_new_variable(thisAgent, lVarName.c_str());
-                //            dprint(DT_OVAR_MAPPINGS, "update_o_id_for_new_instantiation generated new variable %y from %s (%y o%u i%u %s).\n", new_ovar, lVarName.c_str(), ts, tu1, pNew_i_id, pIsResult ? "isResult" : "isNotResult");
-                new_o_id = get_or_create_o_id(new_ovar, pNew_i_id);
-                dprint(DT_OVAR_MAPPINGS, "...var name already used.  Generated new identity %y(%u) from varname root %s.\n", new_ovar, new_o_id, lVarName.c_str());
-                add_updated_o_id_info((*pO_id), new_ovar, new_o_id);
-                if ((*pOvar))
-                {
-                    symbol_remove_ref(thisAgent, (*pOvar));
-                } else {
-                    /* MToDo|  Remove logic.  There should always be an oVar. */
-                    assert(false);
-                }
-                (*pOvar) = new_ovar;
+                lOvar = generate_new_variable(thisAgent, lVarName.c_str());
+                dprint(DT_CHUNK_ID_MAINTENANCE, "...var name already used.  Generated new identity %y(%u) from varname root %s.\n", lOvar, new_o_id, lVarName.c_str());
             } else {
                 /* First time this ovar has been encountered in the new instantiation.  So, create new
                  * o_id and add a new o_id_update_info entry for future tests that use the old o_id */
-                new_o_id = get_or_create_o_id((*pOvar), pNew_i_id);
-                dprint(DT_OVAR_MAPPINGS, "...var name not used.  Generated new identity for instantiation i%u %y(o%u).\n", pNew_i_id, (*pOvar), (*pO_id));
-                add_updated_o_id_info((*pO_id), (*pOvar), new_o_id);
+                dprint(DT_CHUNK_ID_MAINTENANCE, "...var name not used.  Generated new identity for instantiation i%u %y(o%u).\n", pNew_i_id, lOvar, (*pO_id));
             }
+            new_o_id = get_or_create_o_id(lOvar, pNew_i_id);
+            add_updated_o_id_info((*pO_id), new_o_id);
             (*pO_id) = new_o_id;
         }
     }
@@ -215,21 +189,18 @@ void Variablization_Manager::fix_results(preference* result, uint64_t pI_id)
 
     if (pI_id)
     {
-        if (result->original_symbols.id)
+        if (result->o_ids.id)
         {
-            assert(result->original_symbols.id->is_variable());
             unify_identity_for_result_element(thisAgent, result, ID_ELEMENT);
             create_consistent_identity_for_result_element(result, pI_id, ID_ELEMENT);
         }
-        if (result->original_symbols.attr)
+        if (result->o_ids.attr)
         {
-            assert(result->original_symbols.attr->is_variable());
             unify_identity_for_result_element(thisAgent, result, ATTR_ELEMENT);
             create_consistent_identity_for_result_element(result, pI_id, ATTR_ELEMENT);
         }
-        if (result->original_symbols.value)
+        if (result->o_ids.value)
         {
-            assert(result->original_symbols.value->is_variable());
             unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
             create_consistent_identity_for_result_element(result, pI_id, VALUE_ELEMENT);
         }

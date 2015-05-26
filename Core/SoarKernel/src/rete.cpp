@@ -2825,7 +2825,9 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
+        if (!strcmp(temp->var->name, "<x4>"))
+            assert(true);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2834,13 +2836,43 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            dprint(DT_ADD_CONSTRAINTS_ORIG_TESTS, "add_varnames_to_test adding varname %s.\n", temp->var->name);
+            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
     }
 }
 
+
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
+{
+    test New;
+    cons* c;
+    Symbol* temp;
+
+    if (vn == NIL)
+    {
+        return;
+    }
+    if (varnames_is_one_var(vn))
+    {
+        temp = varnames_to_one_var(vn);
+        t->identity = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity, temp->var->name);
+    }
+    else
+    {
+        /* MToDo | Not sure if we can have a varlist when this is called from add_additionals.  Should only
+         * be called in cases where there is one equality test.  Remove.*/
+        assert(false);
+        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
+        {
+            temp = static_cast<Symbol*>(c->first);
+            t->identity = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity, temp->var->name);
+        }
+    }
+}
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
 
@@ -4295,65 +4327,6 @@ abort_var_test_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Symbol* var_bound_in_reconstructed_original_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up)
-{
-    test t;
-    Symbol *lSym;
-    cons* c;
-
-    if (where_levels_up == 0)
-    {
-        /* -- It's in the same condition, so the identity hasn't been created yet. We
-         *    look up using the original_test pointer, which only exists until the
-         *    identity is set up. -- */
-        t = var_test_bound_in_reconstructed_conds(thisAgent, cond, where_field_num, where_levels_up);
-        assert(t);
-        assert(t->original_test);
-        return t->original_test->data.referent;
-    }
-
-    while (where_levels_up)
-    {
-        where_levels_up--;
-        cond = cond->prev;
-    }
-
-    if (where_field_num == 0)
-    {
-        t = cond->data.tests.id_test;
-    }
-    else if (where_field_num == 1)
-    {
-        t = cond->data.tests.attr_test;
-    }
-    else
-    {
-        t = cond->data.tests.value_test;
-    }
-
-    if (test_is_blank(t))
-    {
-        goto abort_var_test_bound_in_reconstructed_oconds;
-    }
-    lSym = find_equality_test_preferring_vars(t)->identity->rule_symbol;
-    return (lSym);
-
-    abort_var_test_bound_in_reconstructed_oconds:
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "Internal error in var_bound_in_reconstructed_original_conds\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-
-
 /* ----------------------------------------------------------------------
                           Rete Node To Conditions
 
@@ -4460,7 +4433,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
             }
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4520,7 +4493,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
@@ -7496,7 +7469,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
             sym = reteload_symbol_from_index(thisAgent, f);
             /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
             //symbol_add_ref(thisAgent, sym);
-            rv = allocate_rhs_value_for_symbol(thisAgent, sym, NULL, 0);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym, 0);
             break;
         case 1:
             funcall_list = NIL;

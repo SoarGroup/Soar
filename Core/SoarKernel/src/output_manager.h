@@ -39,7 +39,7 @@ typedef struct identity_struct identity_info;
 
 #ifndef SOAR_RELEASE_VERSION
     #define OM_Default_print_actual true;
-    #define OM_Default_print_original true;
+    #define OM_Default_print_original false;
     #define OM_Default_print_identity true;
 #else
     #define OM_Default_print_actual true;
@@ -116,6 +116,7 @@ class Output_Manager
 
         /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
         bool m_print_actual, m_print_original, m_print_identity;
+        bool m_print_actual_effective, m_print_original_effective, m_print_identity_effective;
         char* m_pre_string, *m_post_string;
 
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
@@ -225,18 +226,32 @@ class Output_Manager
                 }
             }
         }
-        void set_print_test_format(bool pActual, bool pOriginal, bool p_Identity)
+        void set_default_print_test_format(bool pActual, bool pOriginal, bool p_Identity)
         {
             m_print_actual = pActual;
             m_print_original = pOriginal;
             m_print_identity = p_Identity;
         }
 
-        void clear_print_test_format()
+        void set_print_test_format(bool pActual, bool pOriginal, bool p_Identity)
+        {
+            m_print_actual_effective = pActual;
+            m_print_original_effective = pOriginal;
+            m_print_identity_effective = p_Identity;
+        }
+        void reset_print_test_format()
         {
             m_print_actual = OM_Default_print_actual;
             m_print_original = OM_Default_print_original;
             m_print_identity = OM_Default_print_identity;
+            clear_print_test_format();
+        }
+
+        void clear_print_test_format()
+        {
+            m_print_actual_effective = m_print_actual;
+            m_print_original_effective = m_print_original;
+            m_print_identity_effective = m_print_identity;
         }
         void clear_print_indents() { set_print_indents(); }
 
@@ -244,7 +259,7 @@ class Output_Manager
         {
             if (debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
         }
-        void set_dprint_test_format(TraceMode mode, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        void set_dprint_test_format(TraceMode mode, bool pActual, bool pOriginal, bool p_Identity)
         {
             if (debug_mode_enabled(mode)) set_print_test_format(pActual, pOriginal, p_Identity);
         }
@@ -252,6 +267,10 @@ class Output_Manager
         {
             if (debug_mode_enabled(mode)) clear_print_indents();
         }
+        void reset_dprint_test_format(TraceMode mode) {
+            if (debug_mode_enabled(mode)) reset_print_test_format();
+        }
+
         void clear_dprint_test_format(TraceMode mode) {
             if (debug_mode_enabled(mode)) clear_print_test_format();
         }

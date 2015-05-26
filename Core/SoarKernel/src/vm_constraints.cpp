@@ -139,14 +139,14 @@ void Variablization_Manager::find_attachment_points(condition* pCond)
         {
             dprint(DT_CONSTRAINTS, "Adding attachment points for positive condition %l\n", pCond);
             test lTest = equality_test_found_in_test(pCond->data.tests.value_test);
-            if (lTest && lTest->identity->o_id)
+            if (lTest && lTest->identity)
             {
-                set_attachment_point(lTest->identity->o_id, pCond, VALUE_ELEMENT);
+                set_attachment_point(lTest->identity, pCond, VALUE_ELEMENT);
             }
             lTest = equality_test_found_in_test(pCond->data.tests.attr_test);
-            if (lTest && lTest->identity->o_id)
+            if (lTest && lTest->identity)
             {
-                set_attachment_point(lTest->identity->o_id, pCond, ATTR_ELEMENT);
+                set_attachment_point(lTest->identity, pCond, ATTR_ELEMENT);
             }
         }
         else
@@ -202,8 +202,8 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 
 void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
 {
-    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity->o_id, pEq_test, pEq_test->identity->o_id);
-    attachment_point* attachment_info = get_attachment_point(pEq_test->identity->o_id);
+    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity, pEq_test, pEq_test->identity);
+    attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
     if (attachment_info)
     {
         dprint(DT_CONSTRAINTS, "Found attachment point in condition %l.\n", attachment_info->cond);
@@ -271,14 +271,14 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
 
         dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
-        if (eq_copy->identity->o_id && has_positive_condition(eq_copy->identity->o_id))
+        if (eq_copy->identity && has_positive_condition(eq_copy->identity))
         {
             /* Attach to a positive chunk condition test of eq_test */
             dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
             attach_relational_test(eq_copy, constraint_test, pI_id);
         } else {
             /* Original identity constraint was attached to was literalized */
-            if (constraint_test->identity->o_id && has_positive_condition(constraint_test->identity->o_id))
+            if (constraint_test->identity && has_positive_condition(constraint_test->identity))
             {
                 /* Relational tests referent was not literalized, so make complement and
                  * add to a positive chunk condition test for the referent */

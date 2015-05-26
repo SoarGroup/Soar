@@ -26,6 +26,8 @@
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
+#include "variablization_manager.h"
+
 #define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
@@ -134,13 +136,15 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
         {
             test t = va_arg(args, test);
             test ct = NULL;
+            sym = NULL;
             if (t)
             {
                 if (t->type != CONJUNCTIVE_TEST)
                 {
-                    if (t->identity && t->identity->rule_symbol)
+                    if (t->identity)
                     {
-                        t->identity->rule_symbol->to_string(true, ch, dest_size - (ch - dest));
+                        sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
+                        sym->to_string(true, ch, dest_size - (ch - dest));
                         while (*ch) ch++;
                     } else {
                         *(ch++) = '#';
@@ -151,9 +155,10 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
                     for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                     {
                         ct = static_cast<test>(c->first);
-                        if (ct && ct->identity && ct->identity->rule_symbol)
+                        if (ct && ct->identity)
                         {
-                            ct->identity->rule_symbol->to_string(true, ch, dest_size - (ch - dest));
+                            sym = thisAgent->variablizationManager->get_ovar_for_o_id(ct->identity);
+                            sym->to_string(true, ch, dest_size - (ch - dest));
                             while (*ch) ch++;
                         } else {
                             *(ch++) = '#';

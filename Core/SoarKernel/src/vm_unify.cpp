@@ -18,79 +18,42 @@
 
 void Variablization_Manager::unify_identity(agent* thisAgent, test t)
 {
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity->o_id);
+    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
-            t->identity->o_id, iter->second);
+            t->identity, iter->second);
 
-        t->identity->o_id = iter->second;
-        if (t->identity->rule_symbol)
-        {
-            symbol_remove_ref(thisAgent, t->identity->rule_symbol);
-            t->identity->rule_symbol = NULL;
-        }
-        if (iter->second)
-        {
-            /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
-             *         a better way to set ovar here. */
-            t->identity->rule_symbol = get_ovar_for_o_id(t->identity->o_id);
-            if (t->identity->rule_symbol)
-            {
-                symbol_add_ref(thisAgent, t->identity->rule_symbol);
-            }
-        }
+        t->identity = iter->second;
     }
 }
 void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
 {
 
     uint64_t lO_id = 0;
-    Symbol* lSym = NULL;
 
     if (field == ID_ELEMENT)
     {
         lO_id = result->o_ids.id;
-        lSym = result->original_symbols.id;
     } else if (field == ATTR_ELEMENT) {
         lO_id = result->o_ids.attr;
-        lSym = result->original_symbols.attr;
     } else if (field == VALUE_ELEMENT) {
         lO_id = result->o_ids.value;
-        lSym = result->original_symbols.value;
     }
     std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(lO_id);
     if (iter != (*unification_map).end())
     {
-        dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
-            lO_id, iter->second);
+        dprint(DT_UNIFICATION, "...found variablization unification o%u (%y) -> o%u (%y)\n",
+            lO_id, get_ovar_for_o_id(lO_id), iter->second, get_ovar_for_o_id(iter->second));
 
         lO_id = iter->second;
-        if (lSym)
-        {
-            symbol_remove_ref(thisAgent, lSym);
-            lSym = NULL;
-        }
-        if (lO_id)
-        {
-            /* MToDo | This was originally a debug table to make o_ids more intelligible, so probably should find
-             *         a better way to set ovar here. */
-            lSym = get_ovar_for_o_id(lO_id);
-            if (lSym)
-            {
-                symbol_add_ref(thisAgent, lSym);
-            }
-        }
         if (field == ID_ELEMENT)
         {
             result->o_ids.id = lO_id;
-            result->original_symbols.id = lSym;
         } else if (field == ATTR_ELEMENT) {
             result->o_ids.attr = lO_id;
-            result->original_symbols.attr = lSym;
         } else if (field == VALUE_ELEMENT) {
             result->o_ids.value = lO_id;
-            result->original_symbols.value = lSym;
         }
     }
 }

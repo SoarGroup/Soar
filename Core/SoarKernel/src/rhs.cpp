@@ -62,14 +62,10 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_DEALLOCATES, "%y(%y)\n", r->referent, r->original_rhs_variable);
+        dprint_noprefix(DT_DEALLOCATES, "%y(o%u)\n", r->referent, r->o_id);
         if (r->referent)
         {
             symbol_remove_ref(thisAgent, r->referent);
-        }
-        if (r->original_rhs_variable)
-        {
-            symbol_remove_ref(thisAgent, r->original_rhs_variable);
         }
         free_with_pool(&thisAgent->rhs_symbol_pool, r);
     }
@@ -111,7 +107,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->original_rhs_variable, r->o_id);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->o_id);
     }
 }
 
@@ -346,7 +342,7 @@ rhs_value create_RHS_value(agent* thisAgent,
 {
     cons* c, *new_c, *prev_new_c;
     list* fl, *new_fl;
-    Symbol* sym, *original_sym = NULL;
+    Symbol* sym;
     int64_t index;
     char prefix[2];
     test t, original_t;
@@ -367,7 +363,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
 //        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
-        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity->rule_symbol, t->identity->o_id);
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
     }
 
     if (rhs_value_is_unboundvar(rv))
@@ -393,13 +389,12 @@ rhs_value create_RHS_value(agent* thisAgent,
                 lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
             }
 //            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for new unbound var.\n", sym, 0, lO_id);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, sym, lO_id);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
         }
         else
         {
             /* -- unbound variable was already created in previous rhs action -- */
             sym = *(thisAgent->rhs_variable_bindings + index);
-            original_sym = sym;
         }
         if (pI_id)
         {
@@ -407,7 +402,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
 //        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for previously seen unbound var.\n", sym, original_sym, 0, lO_id);
 
-        return allocate_rhs_value_for_symbol(thisAgent, sym, sym, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
     }
 
     if (rhs_value_is_funcall(rv))
@@ -440,10 +435,9 @@ rhs_value create_RHS_value(agent* thisAgent,
         /* MToDo | If these are always literals, then we may not need to set any of the identity information.  Check. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
 //        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y/o%u) from rhs_symbol (literal RHS constant).\n",
-//                        rs->referent, rs->original_rhs_variable, rs->o_id);
-        original_sym = (add_original_vars != DONT_ADD_TESTS) ? rs->original_rhs_variable : NULL;
+//                        rs->referent, rs->o_id);
         uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
-        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, original_sym, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
     }
 }
 
@@ -482,21 +476,16 @@ action* create_RHS_action_list(agent* thisAgent,
         }
         else
         {
-//            dprint(DT_RHS_VARIABLIZATION, "ID: ");
             New->id = create_RHS_value(thisAgent, old->id, cond, 's', pI_id, add_original_vars);
-//            dprint(DT_RHS_VARIABLIZATION, "Attribute: ");
             New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', pI_id, add_original_vars);
             first_letter = first_letter_from_rhs_value(New->attr);
-//            dprint(DT_RHS_VARIABLIZATION, "Value: ");
             New->value = create_RHS_value(thisAgent, old->value, cond,
                                           first_letter, pI_id, add_original_vars);
             if (preference_is_binary(old->preference_type))
             {
-//                dprint(DT_RHS_VARIABLIZATION, "Referent: ");
                 New->referent = create_RHS_value(thisAgent, old->referent,
                                                  cond, first_letter, pI_id, add_original_vars);
             }
-//            dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
         }
         old = old->next;
     }
@@ -515,7 +504,7 @@ action* create_RHS_action_list(agent* thisAgent,
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
 /* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -526,28 +515,20 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     }
     allocate_with_pool(thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
-    if (pOrig_var && pOrig_var->is_variable())
-    {
-        new_rhs_symbol->original_rhs_variable = pOrig_var;
-        new_rhs_symbol->o_id = pO_ID;
-        symbol_add_ref(thisAgent, pOrig_var);
-    } else {
-        new_rhs_symbol->original_rhs_variable = NULL;
-        new_rhs_symbol->o_id = 0;
-    }
-    dprint_noprefix(DT_IDENTITY_PROP, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(%y/%u).\n" : ""), sym, pOrig_var, pO_ID);
+    new_rhs_symbol->o_id = pO_ID;
+    dprint_noprefix(DT_IDENTITY_PROP, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(o%u).\n" : ""), sym, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
 /* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
  *                  caller had to do the reference count update.  Possible bug source. -- */
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
 {
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pOrig_var, pO_ID);
+    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID);
 }
 

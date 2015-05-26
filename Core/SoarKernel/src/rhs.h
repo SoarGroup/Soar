@@ -41,7 +41,6 @@ typedef char* rhs_value;
 typedef struct rhs_struct
 {
     Symbol* referent;
-    Symbol* original_rhs_variable;
     uint64_t o_id;
 } rhs_info;
 typedef rhs_info* rhs_symbol;
@@ -143,10 +142,6 @@ inline Symbol*    rhs_value_to_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->referent;
 }
-inline Symbol*    rhs_value_to_original_symbol(rhs_value rv)
-{
-    return reinterpret_cast<rhs_symbol>(rv)->original_rhs_variable;
-}
 inline uint64_t   rhs_value_to_o_id(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->o_id;
@@ -214,8 +209,8 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 
 /* -- Functions to create RHS -- */
 extern action* make_action(agent* thisAgent);
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pO_ID);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
 
 rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,

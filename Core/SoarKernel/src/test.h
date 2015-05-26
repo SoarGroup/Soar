@@ -35,24 +35,6 @@ typedef signed short goal_stack_level;
 typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
-/* identity_info is a struct used to hold the rule symbol and variablization
- * identity for a test.  It is used during chunking to determine which
- * constant symbols have the same semantics.
- *
- *    Type:             Test type in condition of original production matched
- *    symbol_type:      Symbol type in condition of original production matched
- *
- * Note: Conjunctive tests will not have identity.  The individual tests will though.
- *
- * */
-
-typedef struct identity_struct
-{
-    Symbol*       rule_symbol;
-    uint64_t      o_id;
-    identity_struct() : rule_symbol(NULL), o_id(0) {}
-} identity_info;
-
 /* -- test_info stores information about a test.  If nil, the test is
  *    considered blank.
  *
@@ -77,11 +59,10 @@ typedef struct test_struct
         ::list*        disjunction_list;   /* for disjunction tests */
         ::list*        conjunct_list;      /* for conjunctive tests */
     } data;
-    test_struct*     original_test;
     test_struct*     eq_test;
     tc_number        tc_num;
-    identity_info*   identity;
-    test_struct() : type(NUM_TEST_TYPES), original_test(NULL), eq_test(NULL), tc_num(0), identity(NULL)
+    uint64_t         identity;
+    test_struct() : type(NUM_TEST_TYPES), eq_test(NULL), tc_num(0), identity(0)
     {
         data.referent = NULL;
     }
@@ -142,12 +123,12 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, boo
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
-void add_additional_tests_and_originals(agent* thisAgent, rete_node* node, condition* cond, wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-void set_identity_for_rule_variable(agent* thisAgent, test t, Symbol* pRuleSym, uint64_t pI_id);
+void add_constraints_and_identities(agent* thisAgent, rete_node* node, condition* cond, wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+//void set_identity_for_rule_variable(agent* thisAgent, test t, Symbol* pRuleSym, uint64_t pI_id);
 void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter, bool add_identity = false, uint64_t pI_id = 0);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);

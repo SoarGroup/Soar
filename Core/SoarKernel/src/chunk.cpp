@@ -648,7 +648,7 @@ void make_clones_of_results(agent* thisAgent, preference* results,
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->original_symbols, result_p->o_ids);
+                            result_p->o_ids);
         symbol_add_ref(thisAgent, p->id);
         symbol_add_ref(thisAgent, p->attr);
         symbol_add_ref(thisAgent, p->value);
@@ -867,6 +867,25 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
     return generated_name;
 }
 
+/* ====================================================================
+
+                        Chunk Instantiation
+
+   This the main chunking routine.  It takes an instantiation, and a
+   flag "variablize"--if false, the chunk will not be
+   variablized.  (If true, it may still not be variablized, due to
+   chunk-free-problem-spaces, ^quiescence t, etc.)
+==================================================================== */
+
+void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
+{
+    thisAgent->variablizationManager->clear_variablization_maps();
+    thisAgent->variablizationManager->clear_cached_constraints();
+    thisAgent->variablizationManager->clear_o_id_substitution_map();
+    thisAgent->variablizationManager->clear_o_id_update_map();
+    thisAgent->variablizationManager->clear_attachment_map();
+}
+
 bool should_variablize(agent* thisAgent, instantiation* inst)
 {
     preference* p;
@@ -914,26 +933,7 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
     return true;
 }
 
-/* ====================================================================
-
-                        Chunk Instantiation
-
-   This the main chunking routine.  It takes an instantiation, and a
-   flag "variablize"--if false, the chunk will not be
-   variablized.  (If true, it may still not be variablized, due to
-   chunk-free-problem-spaces, ^quiescence t, etc.)
-==================================================================== */
-
-void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
-{
-    thisAgent->variablizationManager->clear_variablization_maps();
-    thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_o_id_substitution_map();
-    thisAgent->variablizationManager->clear_o_id_update_map();
-    thisAgent->variablizationManager->clear_attachment_map();
-}
-
-void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list)
+void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learning, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -992,7 +992,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
+    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called...\n");
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1060,7 +1060,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_string(thisAgent, " ");
         }
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->original_symbols.id, pref->o_ids);
+            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -1091,8 +1091,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     thisAgent->variablizationManager->print_constraints(DT_CONSTRAINTS);
 
-    dprint(DT_OVAR_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
-    thisAgent->variablizationManager->print_o_id_substitution_map(DT_OVAR_PROP);
+    dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
+    thisAgent->variablizationManager->print_o_id_substitution_map(DT_IDENTITY_PROP);
 
     free_list(thisAgent, thisAgent->positive_potentials);
 
@@ -1104,7 +1104,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
     }
 
-    variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
+    variablize = allow_learning && reliable && should_variablize(thisAgent, inst);
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
@@ -1135,7 +1135,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
-    dprint(DT_FUNC_PRODUCTIONS, "Backtracing done.  Building chunk %y\n", prod_name);
+    dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
 
     /* --- if there aren't any grounds, exit --- */
     if (!inst_top)
@@ -1164,7 +1164,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP, true);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP, true);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
@@ -1184,11 +1184,11 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
     dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing Results =\n");
-    dprint_set_indents(DT_OVAR_PROP, "          ");
-    dprint_noprefix(DT_OVAR_PROP, "%6", vrblz_top, results);
-    dprint_clear_indents(DT_OVAR_PROP);
+    dprint_set_indents(DT_IDENTITY_PROP, "          ");
+    dprint_noprefix(DT_IDENTITY_PROP, "%6", vrblz_top, results);
+    dprint_clear_indents(DT_IDENTITY_PROP);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_OVAR_PROP);
+    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
@@ -1284,7 +1284,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
     /* MToDo | Remove the print_name parameter disabling here. */
-    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name || true);
+    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
            ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
@@ -1361,9 +1361,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
-        chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list);
-        dprint(DT_FUNC_PRODUCTIONS, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
+        dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
+        chunk_instantiation(thisAgent, chunk_inst, allow_learning, custom_inst_list);
+        dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
 
     return;
@@ -1373,7 +1373,7 @@ chunking_abort:
         chunk_instantiation_cleanup(thisAgent, prod_name);
         if (prod_name)
         {
-            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
+            dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
             symbol_remove_ref(thisAgent, prod_name);
         }
     }

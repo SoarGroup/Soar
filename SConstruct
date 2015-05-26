@@ -69,7 +69,7 @@ def vc_version():
         Exit(1)
     line = p.stdout.readline()
     # for line in iter(p.stdout.readline, b''):
-    #     print line,
+    #   print line,
     p.communicate()
     m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
     if m:
@@ -334,7 +334,7 @@ if COMMAND_LINE_TARGETS == ['list']:
 
 # Set default targets
 for a in DEF_TARGETS:
-	if a in all_aliases:
-		Default(a)
+    if a in all_aliases:
+        Default(a)
 
 InstallDLLs(env)

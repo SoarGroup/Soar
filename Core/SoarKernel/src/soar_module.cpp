@@ -83,7 +83,7 @@ namespace soar_module
 
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
     {
-        dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "make_fake_instantiation() called.\n");
+        dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
 
         // make fake instantiation
         instantiation* inst;
@@ -114,7 +114,6 @@ namespace soar_module
                 assert(!(*a_it)->attr->is_variable());
                 assert(!(*a_it)->value->is_variable());
                 pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
-                    soar_module::symbol_triple(NULL, NULL, NULL),
                     soar_module::identity_triple(0,0,0));
                 pref->o_supported = true;
                 symbol_add_ref(thisAgent, pref->id);

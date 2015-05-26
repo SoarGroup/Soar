@@ -138,9 +138,9 @@ void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHea
         dprint(mode, "EMPTY MAP\n");
     }
 
-    for (std::map< uint64_t, o_id_update_info* >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
+    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
     {
-        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second->o_id, it->second->rule_symbol);
+        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second, get_ovar_for_o_id(it->second));
     }
 
 }
