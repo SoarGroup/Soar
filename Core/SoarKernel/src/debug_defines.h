@@ -52,11 +52,11 @@
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        false
-#define TRACE_Init_DT_CONSTRAINTS                 true
+#define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
-#define TRACE_Init_DT_RL_VARIABLIZATION           true
+#define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false

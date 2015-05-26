@@ -321,51 +321,54 @@ void create_identity_for_test(agent* thisAgent, test t, test orig_test, uint64_t
  *           tests.  This produced two equality tests for the same symbol, one with and one without
  *           the original test, which caused problems with other aspects of chunking. -- */
 
-void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id)
+void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true)
 {
-    // Handle case where relational test is equality test
-    if ((*dest_test_address) && new_test && (new_test->type == EQUALITY_TEST))
+    if (has_referent)
     {
-        test destination = *dest_test_address;
-        if (destination->type == EQUALITY_TEST)
+        // Handle case where relational test is equality test
+        if ((*dest_test_address) && new_test && (new_test->type == EQUALITY_TEST))
         {
-            if (destination->data.referent == new_test->data.referent)
+            test destination = *dest_test_address;
+            if (destination->type == EQUALITY_TEST)
             {
-                if (!destination->identity && new_test->identity)
+                if (destination->data.referent == new_test->data.referent)
                 {
-                    /* This is the special case */
-                    destination->identity = new_test->identity;
-                    dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %y\n",
-                        destination, thisAgent->variablizationManager->get_ovar_for_o_id(destination->identity));
-                    deallocate_test(thisAgent, new_test);
-                    return;
-                }
-                else
-                {
-                    /* Identical referents and possibly identical originals.  Ignore. */
-                    return;
-                }
-            } // else different referents and should be added as new test
-        }
-        else if (destination->type == CONJUNCTIVE_TEST)
-        {
-            cons* c;
-            test check_test;
-            for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                check_test = static_cast<test>(c->first);
-                if (check_test->type == EQUALITY_TEST)
-                {
-                    if (check_test->data.referent == new_test->data.referent)
+                    if (!destination->identity && new_test->identity)
                     {
-                        if (!check_test->identity && new_test->identity)
+                        /* This is the special case */
+                        destination->identity = new_test->identity;
+                        dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %y\n",
+                            destination, thisAgent->variablizationManager->get_ovar_for_o_id(destination->identity));
+                        deallocate_test(thisAgent, new_test);
+                        return;
+                    }
+                    else
+                    {
+                        /* Identical referents and possibly identical originals.  Ignore. */
+                        return;
+                    }
+                } // else different referents and should be added as new test
+            }
+            else if (destination->type == CONJUNCTIVE_TEST)
+            {
+                cons* c;
+                test check_test;
+                for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
+                {
+                    check_test = static_cast<test>(c->first);
+                    if (check_test->type == EQUALITY_TEST)
+                    {
+                        if (check_test->data.referent == new_test->data.referent)
                         {
-                            /* This is the special case */
-                            check_test->identity = new_test->identity;
-                            dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
-                                thisAgent->variablizationManager->get_ovar_for_o_id(check_test->identity));
-                            deallocate_test(thisAgent, new_test);
-                            return;
+                            if (!check_test->identity && new_test->identity)
+                            {
+                                /* This is the special case */
+                                check_test->identity = new_test->identity;
+                                dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
+                                    thisAgent->variablizationManager->get_ovar_for_o_id(check_test->identity));
+                                deallocate_test(thisAgent, new_test);
+                                return;
+                            }
                         }
                     }
                 }
@@ -1083,67 +1086,27 @@ void add_hash_info_to_original_id_test(agent* thisAgent,
    - MMA 2013
 
 ---------------------------------------------------------------------- */
-void add_additional_tests_and_originals(agent* thisAgent,
-                                        rete_node* node,
-                                        condition* cond,
-                                        wme* w,
-                                        node_varnames* nvn,
-                                        uint64_t pI_id,
-                                        AddAdditionalTestsMode additional_tests)
+void add_inequalities(agent* thisAgent,
+    rete_node* node,
+    condition* cond,
+    wme* w,
+    node_varnames* nvn,
+    uint64_t pI_id,
+    AddAdditionalTestsMode additional_tests)
 {
-    Symbol* referent = NULL, *original_referent = NULL;
+
+    Symbol* referent = NULL;
     test chunk_test = NULL;
     TestType test_type;
-    soar_module::symbol_triple* orig = NULL;
-    wme* relational_wme = NULL;
     rete_test* rt = node->b.posneg.other_tests;
 
     /* --- Store original referent information.  Note that sometimes the
      *     original referent equality will be stored in the beta nodes extra tests
      *     data structure rather than the alpha memory --- */
-    alpha_mem* am;
-    am = node->b.posneg.alpha_mem_;
-
     dprint(DT_ADD_ADDITIONALS, "-=-=-=-=-=-\n");
-    dprint(DT_ADD_ADDITIONALS, "add_additional_tests_and_originals called for %s (mode = %s).\n",
-           thisAgent->newly_created_instantiations->prod->name->sc->name,
-           ((additional_tests == ALL_ORIGINALS) ? "ALL" : ((additional_tests == JUST_INEQUALITIES) ? "JUST INEQUALITIES" : "NONE")));
+    dprint(DT_ADD_ADDITIONALS, "add_inequalities called for rl instantiation %s.\n",
+           thisAgent->newly_created_instantiations->prod->name->sc->name);
     dprint(DT_ADD_ADDITIONALS, "%l\n", cond);
-    dprint(DT_ADD_ADDITIONALS, "AM: (%y ^%y %y)\n", am->id , am->attr, am->value);
-
-    if (additional_tests == ALL_ORIGINALS)
-    {
-
-        if (nvn)
-        {
-            dprint(DT_ADD_ADDITIONALS, "adding var names node to original tests:\n");
-            dprint_varnames_node(DT_ADD_ADDITIONALS, nvn);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "Done adding var names to original tests resulting in: %l\n", cond);
-        }
-
-        /* --- on hashed nodes, add equality test for the hash function --- */
-        if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
-        {
-            dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for MP_BNODE or NEGATIVE_BNODE...\n");
-            add_hash_info_to_original_id_test(thisAgent, cond,
-                                              node->left_hash_loc_field_num,
-                                              node->left_hash_loc_levels_up);
-            dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-
-        }
-        else if (node->node_type == POSITIVE_BNODE)
-        {
-            dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for POSITIVE_BNODE...\n");
-            add_hash_info_to_original_id_test(thisAgent, cond,
-                                              node->parent->left_hash_loc_field_num,
-                                              node->parent->left_hash_loc_levels_up);
-            dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-
-        }
-    } // endif (additional_tests == ALL_ORIGINALS)
 
     /* -- Now process any additional relational test -- */
     dprint(DT_ADD_ADDITIONALS, "Processing additional tests to add to condition %l...\n", cond);
@@ -1151,118 +1114,37 @@ void add_additional_tests_and_originals(agent* thisAgent,
     {
         dprint(DT_ADD_ADDITIONALS, "Processing additional test...\n");
         chunk_test = NULL;
-        /* MToDo | Do we really need to add impasse or goal tests ever? I think they're re-added later anyway. */
-        if (additional_tests == ALL_ORIGINALS && (
-//            (rt->type ==ID_IS_GOAL_RETE_TEST) ||
-//            (rt->type ==ID_IS_IMPASSE_RETE_TEST) ||
-            (rt->type ==DISJUNCTION_RETE_TEST)))
-        {
-            if (rt->type ==DISJUNCTION_RETE_TEST) {
-                dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
-                chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-                chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
-            } else if (rt->type ==ID_IS_GOAL_RETE_TEST) {
-                dprint(DT_ADD_ADDITIONALS, "Creating goal test.\n");
-                chunk_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
-            } else if (rt->type ==ID_IS_IMPASSE_RETE_TEST) {
-                dprint(DT_ADD_ADDITIONALS, "Creating impasse test.\n");
-                chunk_test =  make_test(thisAgent, NIL, IMPASSE_ID_TEST);;
-            }
-            if (rt->right_field_num == 0)
-            {
-                add_test(thisAgent, &(cond->data.tests.id_test), chunk_test);
-                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to id resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-
-            }
-            else if (rt->right_field_num == 1)
-            {
-                add_test(thisAgent, &(cond->data.tests.attr_test), chunk_test);
-                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to attr resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-
-            }
-            else
-            {
-                add_test(thisAgent, &(cond->data.tests.value_test), chunk_test);
-                dprint(DT_ADD_ADDITIONALS, "adding disjunction test to value resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-            }
-        } else {
-            if ((additional_tests == ALL_ORIGINALS) && test_is_constant_relational_test(rt->type))
-            {
-                dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
-                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                referent = rt->data.constant_referent;
-                chunk_test = make_test(thisAgent, referent, test_type);
-            }
-            else if (test_is_variable_relational_test(rt->type))
+        if (test_is_variable_relational_test(rt->type))
             {
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
-
-                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                    rt->data.variable_referent.field_num,
-                    rt->data.variable_referent.levels_up);
-                referent = ref_test->data.referent;
-                if (additional_tests == JUST_INEQUALITIES)
+                /* We may need to add equality tests if we start variablizing STIs like
+                 * constants, because we'd need the identity from the equality test processed
+                 * as a relational here because of weird rete case. Then again, we would need to
+                 * generate identities in this function if we had to do that.  Right now, identities
+                 * are not needed for RL because we only use them to variablize constants and RL
+                 * only variablizes STis.*/
+//                if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
+                    if (test_type == NOT_EQUAL_TEST)
                 {
-                    if (((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
-                        && (referent != NIL)
-                        && referent->is_identifier())
+                    dprint(DT_ADD_ADDITIONALS, "Creating variable relational rl test.\n");
+
+                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+                        rt->data.variable_referent.field_num,
+                        rt->data.variable_referent.levels_up);
+                    referent = ref_test->data.referent;
+                    if(referent->is_identifier())
                     {
                         chunk_test = make_test(thisAgent, referent, test_type);
                         dprint(DT_RL_VARIABLIZATION, "Creating valid relational test for template %t [%g].\n", chunk_test, chunk_test);
                     }
                     else
                     {
-                        dprint(DT_RL_VARIABLIZATION, "Relational test is not a valid template relational test.  Ignoring.\n");
+                        dprint(DT_RL_VARIABLIZATION, "Relational test referent is not an STI.  Ignoring.\n");
                     }
                 }
-                else if (additional_tests == ALL_ORIGINALS)
+                else
                 {
-                    chunk_test = make_test(thisAgent, referent, test_type);
-                    chunk_test->identity = ref_test->identity;
-                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
-                }
-            }
-            /* -- Make sure we have an equality test for each element for both the condition and the original rule condition -- */
-            if (!rt->data.variable_referent.levels_up)
-            {
-                switch (rt->data.variable_referent.field_num)
-                {
-                    case 0:
-                        if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
-                        {
-                            assert(false);
-                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for id element.  Adding gensymmed test...\n");
-                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
-
-                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-                        }
-                        break;
-                    case 1:
-                        if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
-                        {
-                            assert(false);
-                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for attr element.  Adding gensymmed test...\n");
-                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
-
-                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-                        }
-                        break;
-                    case 2:
-                        if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
-                        {
-                            assert(false);
-                            dprint(DT_ADD_ADDITIONALS, "Test contains no equality test for value element.  Adding gensymmed test...\n");
-                            add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
-                                first_letter_from_test(cond->data.tests.attr_test));
-
-                            dprint(DT_ADD_ADDITIONALS, "Resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-                        }
-
-                        break;
-                    default:
-                        assert(false);
-                        break;
+                    dprint(DT_RL_VARIABLIZATION, "Relational test type is not a valid template relational test.  Ignoring.\n");
                 }
             }
             if (chunk_test)
@@ -1286,12 +1168,129 @@ void add_additional_tests_and_originals(agent* thisAgent,
                     dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
                 }
             }
-        }
+
     }
 
     dprint(DT_ADD_ADDITIONALS, "add_additional_tests_and_originals finished for %s.\n",
            thisAgent->newly_created_instantiations->prod->name->sc->name);
     dprint(DT_ADD_ADDITIONALS, "Final test after add_additional_tests and creating identity: %l\n", cond);
+}
+
+void add_constraints_and_identities(agent* thisAgent,
+                                        rete_node* node,
+                                        condition* cond,
+                                        wme* w,
+                                        node_varnames* nvn,
+                                        uint64_t pI_id,
+                                        AddAdditionalTestsMode additional_tests)
+{
+    rete_test* rt = node->b.posneg.other_tests;
+
+    if (additional_tests == JUST_INEQUALITIES)
+    {
+        add_inequalities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+        return;
+    }
+    /* --- Store original referent information.  Note that sometimes the
+     *     original referent equality will be stored in the beta nodes extra tests
+     *     data structure rather than the alpha memory --- */
+    alpha_mem* am;
+    am = node->b.posneg.alpha_mem_;
+
+    dprint(DT_ADD_ADDITIONALS, "-=-=-=-=-=-\n");
+    dprint(DT_ADD_ADDITIONALS, "add_constraints_and_identities called for %s.\n",
+           thisAgent->newly_created_instantiations->prod->name->sc->name);
+    dprint(DT_ADD_ADDITIONALS, "%l\n", cond);
+    dprint(DT_ADD_ADDITIONALS, "AM: (%y ^%y %y)\n", am->id , am->attr, am->value);
+
+    if (nvn)
+    {
+        dprint(DT_ADD_ADDITIONALS, "adding var names node to original tests:\n");
+        dprint_varnames_node(DT_ADD_ADDITIONALS, nvn);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id);
+        dprint(DT_ADD_ADDITIONALS, "Done adding var names to original tests resulting in: %l\n", cond);
+    }
+
+    /* --- on hashed nodes, add equality test for the hash function --- */
+    if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
+    {
+        dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for MP_BNODE or NEGATIVE_BNODE...\n");
+        add_hash_info_to_original_id_test(thisAgent, cond,
+            node->left_hash_loc_field_num,
+            node->left_hash_loc_levels_up);
+        dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+
+    }
+    else if (node->node_type == POSITIVE_BNODE)
+    {
+        dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for POSITIVE_BNODE...\n");
+        add_hash_info_to_original_id_test(thisAgent, cond,
+            node->parent->left_hash_loc_field_num,
+            node->parent->left_hash_loc_levels_up);
+        dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+
+    }
+
+    /* -- Now process any additional relational test -- */
+    dprint(DT_ADD_ADDITIONALS, "Processing additional tests to add to condition %l...\n", cond);
+
+    test chunk_test = NULL;
+    TestType test_type;
+    bool has_referent;
+    for (; rt != NIL; rt = rt->next)
+    {
+        chunk_test = NULL;
+        has_referent = true;
+        /* MToDo | Do we really need to add impasse or goal tests ever? I think they're re-added later anyway. */
+        if (rt->type ==DISJUNCTION_RETE_TEST)
+        {
+            dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
+            chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
+            chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            has_referent = false;
+        } else {
+            if (test_is_constant_relational_test(rt->type))
+            {
+                dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
+                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+                chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+            }
+            else if (test_is_variable_relational_test(rt->type))
+            {
+                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+                dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
+
+                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+                    rt->data.variable_referent.field_num,
+                    rt->data.variable_referent.levels_up);
+                chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+                chunk_test->identity = ref_test->identity;
+                dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+            }
+        }
+        if (chunk_test)
+        {
+            if (rt->right_field_num == 0)
+            {
+                add_relational_test(thisAgent, &(cond->data.tests.id_test), chunk_test, pI_id, has_referent);
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+            }
+            else if (rt->right_field_num == 1)
+            {
+                add_relational_test(thisAgent, &(cond->data.tests.attr_test), chunk_test, pI_id, has_referent);
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+            }
+            else
+            {
+                add_relational_test(thisAgent, &(cond->data.tests.value_test), chunk_test, pI_id, has_referent);
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+            }
+        }
+    }
+
+    dprint(DT_ADD_ADDITIONALS, "Final test after add_constraints_and_identities: %l\n", cond);
 }
 
 /* UITODO| Make these methods of test */

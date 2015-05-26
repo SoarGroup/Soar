@@ -4433,7 +4433,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
             }
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4493,7 +4493,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (additional_tests != DONT_ADD_TESTS)
             {
-                add_additional_tests_and_originals(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
