@@ -58,6 +58,31 @@ void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent,
     }
 }
 
+void Variablization_Manager::unify_identities_for_results(preference* result)
+{
+
+    if (!result) return;
+
+    dprint(DT_FIX_CONDITIONS, "Fixing result %p\n", result);
+//    print_o_id_substitution_map(DT_FIX_CONDITIONS);
+    print_o_id_tables(DT_FIX_CONDITIONS);
+
+    if (result->o_ids.id)
+    {
+        unify_identity_for_result_element(thisAgent, result, ID_ELEMENT);
+    }
+    if (result->o_ids.attr)
+    {
+        unify_identity_for_result_element(thisAgent, result, ATTR_ELEMENT);
+    }
+    if (result->o_ids.value)
+    {
+        unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
+    }
+    unify_identities_for_results(result->next_result);
+    /* MToDo | Do we need to fix o_ids in clones too? */
+}
+
 void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::map< uint64_t, uint64_t >::iterator iter;

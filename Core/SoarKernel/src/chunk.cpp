@@ -1176,18 +1176,16 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
     /* -- Clean up unification constraints and merge redundant conditions
      *    Note that this is needed even for justifications -- */
-    thisAgent->variablizationManager->fix_conditions(vrblz_top, chunk_new_i_id, !variablize);
+    thisAgent->variablizationManager->remove_ungrounded_sti_constraints(vrblz_top, !variablize);
     thisAgent->variablizationManager->merge_conditions(vrblz_top);
-    thisAgent->variablizationManager->fix_conditions(inst_top, chunk_new_i_id, true);
-    dprint(DT_VARIABLIZATION_MANAGER, "Updating variablization IDs for results... \n");
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing Results =\n");
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n");
     dprint_set_indents(DT_IDENTITY_PROP, "          ");
     dprint_noprefix(DT_IDENTITY_PROP, "%6", vrblz_top, results);
     dprint_clear_indents(DT_IDENTITY_PROP);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
-    thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
+    thisAgent->variablizationManager->unify_identities_for_results(results);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n");
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");

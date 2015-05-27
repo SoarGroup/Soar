@@ -666,11 +666,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
 
 
-            dprint(DT_RL_VARIABLIZATION, "Polishing variablized conditions...\n");
-
-            /* -- Clean up unification constraints and merge redundant conditions
-             *    Note that this is needed even for justifications -- */
-            thisAgent->variablizationManager->fix_conditions(cond_top, 0);
+            dprint(DT_RL_VARIABLIZATION, "Removing ungrounded STIs...\n");
+            thisAgent->variablizationManager->remove_ungrounded_sti_constraints(cond_top);
 
             dprint(DT_RL_VARIABLIZATION, "Final conditions: \n");
             dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond_top);
