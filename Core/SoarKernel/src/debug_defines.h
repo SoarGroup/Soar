@@ -46,14 +46,14 @@
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             true
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
-#define TRACE_Init_DT_VM_MAPS                     false
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VM_MAPS                     true
 #define TRACE_Init_DT_BACKTRACE                   false
-#define TRACE_Init_DT_IDENTITY_PROP               false
-#define TRACE_Init_DT_UNIFICATION                 false
-#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        false
+#define TRACE_Init_DT_IDENTITY_PROP               true
+#define TRACE_Init_DT_UNIFICATION                 true
+#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        true
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          false
+#define TRACE_Init_DT_LHS_VARIABLIZATION          true
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false

@@ -8,6 +8,8 @@
 #ifndef VARIABLIZATION_MANAGER_H_
 #define VARIABLIZATION_MANAGER_H_
 
+//#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+
 #include "portability.h"
 #include "symtab.h"
 #include "test.h"

@@ -117,6 +117,7 @@ void Variablization_Manager::create_consistent_identity_for_chunk(uint64_t* pO_i
             (*pO_id) = 0;
         } else {
             /* This o_id is for an existing instantiation and has not been re-assigned for this chunk */
+#ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
             lOvar = get_ovar_for_o_id(*pO_id);
             assert(lOvar);
             new_o_id = get_existing_o_id(lOvar, pNew_i_id);
@@ -136,6 +137,9 @@ void Variablization_Manager::create_consistent_identity_for_chunk(uint64_t* pO_i
                 dprint(DT_CHUNK_ID_MAINTENANCE, "...var name not used.  Generated new identity for instantiation i%u %y(o%u).\n", pNew_i_id, lOvar, (*pO_id));
             }
             new_o_id = get_or_create_o_id(lOvar, pNew_i_id);
+#else
+            new_o_id = ++ovar_id_counter;
+#endif
             add_updated_o_id_info((*pO_id), new_o_id);
             (*pO_id) = new_o_id;
         }

@@ -200,7 +200,9 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t p
         ++ovar_id_counter;
         (*ovar_to_o_id_map)[orig_var][pI_id] = ovar_id_counter;
         symbol_add_ref(thisAgent, orig_var);
+#ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
+#endif
         dprint(DT_VM_MAPS, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {
@@ -210,6 +212,9 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t p
 
 Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
 {
+#ifndef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    return NULL;
+#endif
     if (o_id == 0) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);

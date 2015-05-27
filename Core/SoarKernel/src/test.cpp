@@ -27,8 +27,6 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void create_identity_for_tests(agent* thisAgent, test t, uint64_t pI_id);
-
 /* =================================================================
 
                       Utility Routines for Tests
@@ -289,22 +287,6 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     c->first = new_test;
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
-}
-
-void create_identity_for_test(agent* thisAgent, test t, test orig_test, uint64_t pI_id)
-{
-    if (!t || !orig_test ||
-        !test_has_referent(t) ||
-        !test_has_referent(orig_test) ||
-//        t->data.referent->is_sti() ||
-        !orig_test->data.referent->is_variable())
-    {
-        return;
-    }
-    assert (t->type == orig_test->type);
-    assert(pI_id);
-
-    t->identity = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
 }
 
 /* -- This function is a special purpose function for adding relational tests to another test. It
