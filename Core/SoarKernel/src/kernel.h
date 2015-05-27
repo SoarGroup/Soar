@@ -46,11 +46,15 @@ extern void print(agent* thisAgent, const char* format, ...);
     /* -- High-level information on the instantiations that created an
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
-#endif
 
-//#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-#define MEM_POOLS_ENABLED 1
-#define USE_MEM_POOL_ALLOCATORS 1
+    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+//    #define MEM_POOLS_ENABLED 1
+//    #define USE_MEM_POOL_ALLOCATORS 1
+#else
+    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    #define MEM_POOLS_ENABLED 1
+    #define USE_MEM_POOL_ALLOCATORS 1
+#endif
 
 /* -------------------------------------------------- */
 /*     Global constants, type declarations, etc.      */
