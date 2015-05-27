@@ -28,7 +28,6 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     attachment_points = new std::map< uint64_t, attachment_point* >();
 
     unification_map = new std::map< uint64_t, uint64_t >();
-    o_id_update_map = new std::map< uint64_t, uint64_t >();
 
     cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
 
@@ -47,8 +46,6 @@ Variablization_Manager::~Variablization_Manager()
     delete ovar_to_o_id_map;
     delete unification_map;
     delete o_id_to_ovar_debug_map;
-    delete o_id_update_map;
-
 }
 
 void Variablization_Manager::reinit()

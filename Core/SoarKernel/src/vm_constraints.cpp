@@ -92,7 +92,6 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
     } else {
         dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
         print_attachment_points(DT_CONSTRAINTS);
-        print_o_id_update_map(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -200,7 +199,7 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 
 }
 
-void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
+void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test)
 {
     dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity, pEq_test, pEq_test->identity);
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
@@ -242,7 +241,7 @@ void Variablization_Manager::prune_redundant_constraints()
     dprint(DT_CONSTRAINTS, "Final pruned constraints is a set of size %u.\n", static_cast<uint64_t>(constraints->size()));
 }
 
-void Variablization_Manager::add_additional_constraints(condition* cond, uint64_t pI_id)
+void Variablization_Manager::add_additional_constraints(condition* cond)
 {
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;
@@ -266,8 +265,8 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;
-        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
-        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
+        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
+        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
 
         dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
@@ -275,7 +274,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
         {
             /* Attach to a positive chunk condition test of eq_test */
             dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
-            attach_relational_test(eq_copy, constraint_test, pI_id);
+            attach_relational_test(eq_copy, constraint_test);
         } else {
             /* Original identity constraint was attached to was literalized */
             if (constraint_test->identity && has_positive_condition(constraint_test->identity))
@@ -284,7 +283,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
                  * add to a positive chunk condition test for the referent */
                 dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
                 invert_relational_test(&eq_copy, &constraint_test);
-                attach_relational_test(eq_copy, constraint_test, pI_id);
+                attach_relational_test(eq_copy, constraint_test);
 
             } else {
                 // Both tests are literals.  Delete.

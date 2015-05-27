@@ -36,7 +36,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity, uint64_t pI_id)
+list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity)
 {
     cons* new_c;
 
@@ -45,8 +45,8 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pI_id);
-    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity, pI_id);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity);
     return new_c;
 }
 
@@ -54,7 +54,7 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, uint64_t pI_id)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
 {
     Symbol* referent;
     test new_ct;
@@ -76,7 +76,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity, pI_id);
+            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity);
 
             break;
         default:
@@ -95,17 +95,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                 if (new_ct->identity)
                 {
                     thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
-                    /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
-                     * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
-                     * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
-                    if (new_ct->identity && pI_id)
-                    {
-                        dprint(DT_CHUNK_ID_MAINTENANCE, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n",
-                            new_ct->identity, thisAgent->variablizationManager->get_ovar_for_o_id(new_ct->identity), pI_id);
-                        thisAgent->variablizationManager->create_consistent_identity_for_chunk(&(new_ct->identity), pI_id);
-                        dprint(DT_CHUNK_ID_MAINTENANCE, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                        assert(new_ct->identity != t->identity);
-                    }
                 }
             }
 

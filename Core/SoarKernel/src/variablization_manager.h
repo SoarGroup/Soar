@@ -76,7 +76,6 @@ class Variablization_Manager
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
         void clear_variablization_maps();
-        void clear_o_id_update_map();
         void clear_attachment_map();
         void clear_cached_constraints();
         void clear_ovar_to_o_id_map();
@@ -94,13 +93,11 @@ class Variablization_Manager
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
         void cache_constraints_in_cond(condition* c);
-        void add_additional_constraints(condition* cond, uint64_t pI_id);
+        void add_additional_constraints(condition* cond);
         bool has_positive_condition(uint64_t pO_id);
 
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
-
-        void create_consistent_identity_for_chunk(uint64_t* pO_id, uint64_t pNew_i_id, bool pIsResult = false);
 
         void fix_conditions(condition* top_cond, uint64_t pI_id, bool ignore_ungroundeds = false);
         void fix_results(preference* result, uint64_t pI_id);
@@ -112,7 +109,6 @@ class Variablization_Manager
         void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
         void print_tables(TraceMode mode);
-        void print_o_id_update_map(TraceMode mode, bool printHeader = true);
         void print_o_id_tables(TraceMode mode);
         void print_attachment_points(TraceMode mode);
         void print_constraints(TraceMode mode);
@@ -148,8 +144,6 @@ class Variablization_Manager
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 
-        uint64_t get_updated_o_id_info(uint64_t old_o_id);
-        void add_updated_o_id_info(uint64_t old_o_id, uint64_t new_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
@@ -161,7 +155,7 @@ class Variablization_Manager
         void find_attachment_points(condition* cond);
         void prune_redundant_constraints();
         void invert_relational_test(test* pEq_test, test* pRelational_test);
-        void attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id);
+        void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
@@ -170,9 +164,7 @@ class Variablization_Manager
         std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
         std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
 
-        /* This is a map of original variable symbols to its map of instantiations to o_ids */
         std::map< uint64_t, uint64_t >*                         unification_map;
-        std::map< uint64_t, uint64_t >*                         o_id_update_map;
 
         /* -- Look-up tables for LHS variablization -- */
         std::map< uint64_t, variablization* >*   o_id_to_var_map;

@@ -24,19 +24,7 @@ void Variablization_Manager::clear_data()
     clear_ovar_to_o_id_map();
     clear_o_id_substitution_map();
     clear_o_id_to_ovar_debug_map();
-    clear_o_id_update_map();
     clear_attachment_map();
-}
-
-void Variablization_Manager::clear_o_id_update_map()
-{
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_update table...\n");
-//    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
-//    {
-//        dprint(DT_VM_MAPS, "Clearing %u -> %y(%u)\n", it->first, get_ovar_for_o_id(it->second), it->second);
-//        delete it->second;
-//    }
-    o_id_update_map->clear();
 }
 
 void Variablization_Manager::clear_attachment_map()

@@ -413,8 +413,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                             condition** inst_top,
                             condition** vrblz_top,
                             tc_number tc_to_use,
-                            bool* reliable,
-                            uint64_t pI_id)
+                            bool* reliable)
 {
     cons* c;
     condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz, *copy_cond;
@@ -438,7 +437,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_inst = copy_condition(thisAgent, ground, true, pI_id);
+        c_inst = copy_condition(thisAgent, ground, true);
 
         /* -- Removed stripping of relational constraints b/c it was losing them in
          *    non-chunky problem spaces but was needed later for a chunky one. --  */
@@ -471,7 +470,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 print_string(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_inst = copy_condition(thisAgent, cc->cond, true, pI_id);
+            c_inst = copy_condition(thisAgent, cc->cond, true);
 
             add_cond(&c_inst, &prev_inst, &first_inst);
         }
@@ -507,7 +506,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
     dprint(DT_UNIFICATION, "Conditions after identity unification: \n");
     dprint_noprefix(DT_UNIFICATION, "%1", *inst_top);
 
-    thisAgent->variablizationManager->add_additional_constraints(*inst_top, pI_id);
+    thisAgent->variablizationManager->add_additional_constraints(*inst_top);
 
     copy_cond = *inst_top;
     while (copy_cond)
@@ -882,7 +881,6 @@ void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
     thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
     thisAgent->variablizationManager->clear_o_id_substitution_map();
-    thisAgent->variablizationManager->clear_o_id_update_map();
     thisAgent->variablizationManager->clear_attachment_map();
 }
 
@@ -1101,7 +1099,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable, chunk_new_i_id);
+        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = allow_learning && reliable && should_variablize(thisAgent, inst);
@@ -1164,7 +1162,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     dprint_set_indents(DT_VARIABLIZATION_MANAGER, "          ");
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     dprint_clear_indents(DT_VARIABLIZATION_MANAGER);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP, true);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
@@ -1188,7 +1185,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     dprint_noprefix(DT_IDENTITY_PROP, "%6", vrblz_top, results);
     dprint_clear_indents(DT_IDENTITY_PROP);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
-    thisAgent->variablizationManager->print_o_id_update_map(DT_IDENTITY_PROP);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
     thisAgent->variablizationManager->fix_results(results, chunk_new_i_id);
     dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done Fixing Results =\n");
