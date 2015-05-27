@@ -52,10 +52,8 @@ Output_Manager::Output_Manager()
     m_db = NIL;
 
     m_print_actual = OM_Default_print_actual;
-    m_print_original = OM_Default_print_original;
     m_print_identity = OM_Default_print_identity;
     m_print_actual_effective = OM_Default_print_actual;
-    m_print_original_effective = OM_Default_print_original;
     m_print_identity_effective = OM_Default_print_identity;
     m_pre_string = NULL;
     m_post_string = NULL;
