@@ -46,17 +46,18 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 //--
-#define TRACE_Init_DT_MILESTONES                  true
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
+#define TRACE_Init_DT_MILESTONES                  false
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
-#define TRACE_Init_DT_IDENTITY_PROP               true
-#define TRACE_Init_DT_UNIFICATION                 true
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           true
+#define TRACE_Init_DT_IDENTITY_PROP               false
+#define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          false
+#define TRACE_Init_DT_LHS_VARIABLIZATION          true
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
@@ -69,8 +70,6 @@
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 #define TRACE_Init_DT_NONE_5                      false
-#define TRACE_Init_DT_NONE_6                      false
-
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -122,6 +121,7 @@
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
@@ -138,7 +138,6 @@
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 #define TRACE_Init_DT_NONE_5                      false
-#define TRACE_Init_DT_NONE_6                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

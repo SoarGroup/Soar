@@ -56,12 +56,12 @@ enum TraceMode
     DT_FIX_CONDITIONS,
     DT_UNIFICATION,
     DT_VM_MAPS,
+    DT_BUILD_CHUNK_CONDS,
     DT_NONE_1,
     DT_NONE_2,
     DT_NONE_3,
     DT_NONE_4,
     DT_NONE_5,
-    DT_NONE_6,
     num_trace_modes
 };
 
