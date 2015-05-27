@@ -665,12 +665,10 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
             thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
 
-
             dprint(DT_RL_VARIABLIZATION, "Removing ungrounded STIs...\n");
-            thisAgent->variablizationManager->remove_ungrounded_sti_constraints(cond_top);
+            thisAgent->variablizationManager->remove_ungrounded_sti_constraints_and_cache_eq_tests(cond_top);
 
-            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n");
-            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond_top);
+            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n%1", cond_top);
 
             dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
 
@@ -709,9 +707,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
             }
-            dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n");
-            dprint_set_indents(DT_RL_VARIABLIZATION, "          ");
-            dprint(DT_RL_VARIABLIZATION, "%4", cond_top, new_action);
+            dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
             /* MToDo | Normally fifth parameter, warn_on_duplicate, set to false.  Turned on for debugging. */
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, true) == DUPLICATE_PRODUCTION)

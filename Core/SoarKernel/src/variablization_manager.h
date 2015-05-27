@@ -8,10 +8,6 @@
 #ifndef VARIABLIZATION_MANAGER_H_
 #define VARIABLIZATION_MANAGER_H_
 
-//#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-#define EBC_MERGE_CONDITIONS
-#define EBC_ADD_CONSTRAINTS_IDENTITIES
-
 #include "portability.h"
 #include "symtab.h"
 #include "test.h"
@@ -101,7 +97,7 @@ class Variablization_Manager
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
 
-        void remove_ungrounded_sti_constraints(condition* top_cond, bool ignore_ungroundeds = false);
+        void remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond);
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
 
@@ -142,7 +138,7 @@ class Variablization_Manager
         void variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
 
-        void remove_ungrounded_sti_from_test(test* t, bool ignore_ungroundeds);
+        void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
 

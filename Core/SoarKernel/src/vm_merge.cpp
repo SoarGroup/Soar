@@ -75,7 +75,9 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
  *              to other conditions)
  *    Effects:  This function merges redundant conditions in a condition list
  *              by combining constraints of conditions that share identical
- *              equality tests for all three elements of the condition.
+ *              equality tests for all three elements of the condition.  At this
+ *              point the conditions are variablized, so it is merging based
+ *              on the unified variables, not the wmes matched.
  * -- */
 
 inline int64_t count_conditions(condition* top_cond)
@@ -105,10 +107,7 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 
 void Variablization_Manager::merge_conditions(condition* top_cond)
 {
-    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n");
-    dprint_set_indents(DT_MERGE, "          ");
-    dprint_noprefix(DT_MERGE, "%1", top_cond);
-    dprint_clear_indents(DT_MERGE);
+    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
 
@@ -165,7 +164,6 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
                 /* -- First condition with these equality tests.  Add to merge map. -- */
                 dprint(DT_MERGE, "...did not find condition that matched.  Creating entry in merge map.\n");
                 (*cond_merge_map)[cond->data.tests.id_test->eq_test->data.referent][cond->data.tests.attr_test->eq_test->data.referent][cond->data.tests.value_test->eq_test->data.referent] = cond;
-//                set_cond_for_id_attr_tests(cond);
             }
         }
         else
@@ -177,9 +175,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint_header(DT_MERGE, PrintBefore, "");
-    dprint_set_indents(DT_MERGE, "          ");
     dprint_noprefix(DT_MERGE, "%1", top_cond);
-    dprint_clear_indents(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);

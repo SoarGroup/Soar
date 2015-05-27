@@ -1009,11 +1009,8 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint_start_fresh_line(DT_MILESTONES);
-    dprint(DT_MILESTONES, "---------------------------------------------------------\n");
-    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n");
-    dprint_set_indents(DT_PRINT_INSTANTIATIONS, "          ");
-    dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_MILESTONES, "%f---------------------------------------------------------\n");
+    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? true : false,

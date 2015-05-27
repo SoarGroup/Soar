@@ -297,7 +297,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond)
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
 }
 
-void Variablization_Manager::remove_ungrounded_sti_from_test(test* t, bool ignore_ungroundeds)
+void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(test* t)
 {
     assert(t);
 
@@ -316,7 +316,7 @@ void Variablization_Manager::remove_ungrounded_sti_from_test(test* t, bool ignor
             tt = static_cast<test>(c->first);
 
             // For all tests, check if referent is STI.  If so, it's ungrounded.  Delete.
-            if (!ignore_ungroundeds && test_has_referent(tt) && (tt->data.referent->is_sti()))
+            if (test_has_referent(tt) && (tt->data.referent->is_sti()))
             {
                 dprint(DT_FIX_CONDITIONS, "Ungrounded STI found: %y\n", tt->data.referent);
                 c = delete_test_from_conjunct(thisAgent, t, c);
@@ -341,24 +341,20 @@ void Variablization_Manager::remove_ungrounded_sti_from_test(test* t, bool ignor
     }
 }
 
-void Variablization_Manager::remove_ungrounded_sti_constraints(condition* top_cond, bool ignore_ungroundeds)
+void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond)
 {
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Fixing conditions =\n");
-    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
-    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintAfter, "");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
     {
-        dprint(DT_FIX_CONDITIONS, "Finding redundancies in condition: %l\n", cond);
+        dprint(DT_FIX_CONDITIONS, "Processing condition: %l\n", cond);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
-            remove_ungrounded_sti_from_test(&(cond->data.tests.id_test), ignore_ungroundeds);
-            remove_ungrounded_sti_from_test(&(cond->data.tests.attr_test), ignore_ungroundeds);
-            remove_ungrounded_sti_from_test(&(cond->data.tests.value_test), ignore_ungroundeds);
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.id_test));
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.attr_test));
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.value_test));
         }
         else
         {
@@ -368,9 +364,5 @@ void Variablization_Manager::remove_ungrounded_sti_constraints(condition* top_co
         cond = next_cond;
     }
 
-    dprint_header(DT_FIX_CONDITIONS, PrintBefore, "");
-    dprint_set_indents(DT_FIX_CONDITIONS, "          ");
-    dprint_noprefix(DT_FIX_CONDITIONS, "%1", top_cond);
-    dprint_clear_indents(DT_FIX_CONDITIONS);
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done fixing conditions =\n");
+    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
 }

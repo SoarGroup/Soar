@@ -15,6 +15,10 @@
 //#define DEBUG_FREE_SETTINGS
 #define DEBUG_UNITTEST_SETTINGS
 
+//#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
 
@@ -45,16 +49,16 @@
 #define TRACE_Init_DT_MILESTONES                  true
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
-#define TRACE_Init_DT_ADD_ADDITIONALS             true
+#define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
-#define TRACE_Init_DT_VM_MAPS                     true
+#define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_IDENTITY_PROP               true
 #define TRACE_Init_DT_UNIFICATION                 true
 #define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        true
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          true
-#define TRACE_Init_DT_RHS_VARIABLIZATION          false
+#define TRACE_Init_DT_RHS_VARIABLIZATION          true
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_FIX_CONDITIONS              false

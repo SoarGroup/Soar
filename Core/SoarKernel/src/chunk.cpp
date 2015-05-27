@@ -50,6 +50,7 @@
 #include "wma.h"
 #include "test.h"
 #include "debug.h"
+#include "debug_defines.h"
 #include "variablization_manager.h"
 
 #include <ctype.h>
@@ -1155,18 +1156,18 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
+        /* -- Clean up unification constraints and merge redundant conditions
+         *    Note that this is needed even for justifications -- */
+        thisAgent->variablizationManager->remove_ungrounded_sti_constraints_and_cache_eq_tests(vrblz_top);
+        #ifdef EBC_MERGE_CONDITIONS
+        thisAgent->variablizationManager->merge_conditions(vrblz_top);
+        #endif
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
 
-    /* -- Clean up unification constraints and merge redundant conditions
-     *    Note that this is needed even for justifications -- */
-    thisAgent->variablizationManager->remove_ungrounded_sti_constraints(vrblz_top, !variablize);
-    #ifdef EBC_MERGE_CONDITIONS
-    thisAgent->variablizationManager->merge_conditions(vrblz_top);
-    #endif
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
     thisAgent->variablizationManager->print_variablization_tables(DT_FIX_CONDITIONS);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
