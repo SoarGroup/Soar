@@ -4430,11 +4430,12 @@ void rete_node_to_conditions(agent* thisAgent,
 
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
-
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
             }
+#endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
@@ -4491,12 +4492,14 @@ void rete_node_to_conditions(agent* thisAgent,
 
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: %l\n", cond);
 
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
+#endif
             {
                 /* --- if there are other tests, add them too --- */
                 if (node->b.posneg.other_tests)
@@ -4569,7 +4572,6 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     {
         w = NIL;    /* just for safety */
     }
-//    dprint(DT_LHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
     reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
@@ -4584,7 +4586,6 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
 
     if (dest_rhs)
     {
-//        dprint(DT_RHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
         thisAgent->highest_rhs_unboundvar_index = -1;
         if (prod->rhs_unbound_variables)
         {

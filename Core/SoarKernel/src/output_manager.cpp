@@ -55,7 +55,7 @@ Output_Manager::Output_Manager()
     m_print_identity = OM_Default_print_identity;
     m_print_actual_effective = OM_Default_print_actual;
     m_print_identity_effective = OM_Default_print_identity;
-    m_pre_string = NULL;
+    m_pre_string = strdup("          ");
     m_post_string = NULL;
 
     next_output_string = 0;

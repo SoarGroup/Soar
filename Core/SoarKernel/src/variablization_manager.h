@@ -9,6 +9,8 @@
 #define VARIABLIZATION_MANAGER_H_
 
 //#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
 
 #include "portability.h"
 #include "symtab.h"
