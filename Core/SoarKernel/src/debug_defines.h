@@ -55,10 +55,9 @@
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_IDENTITY_PROP               true
 #define TRACE_Init_DT_UNIFICATION                 true
-#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        true
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          true
-#define TRACE_Init_DT_RHS_VARIABLIZATION          true
+#define TRACE_Init_DT_LHS_VARIABLIZATION          false
+#define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_FIX_CONDITIONS              false
@@ -70,6 +69,7 @@
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 #define TRACE_Init_DT_NONE_5                      false
+#define TRACE_Init_DT_NONE_6                      false
 
 
 /* -- Which output listeners should be initially turned on -- */
@@ -124,7 +124,6 @@
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
-#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        false
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
@@ -139,6 +138,7 @@
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 #define TRACE_Init_DT_NONE_5                      false
+#define TRACE_Init_DT_NONE_6                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

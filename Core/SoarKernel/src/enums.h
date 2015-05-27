@@ -43,10 +43,8 @@ enum TraceMode
     DT_EPMEM_CMD,
     DT_PARSER,
     DT_MILESTONES,
-    DT_CHUNK_ID_MAINTENANCE,
     DT_REORDERER,
     DT_BACKTRACE,
-    DT_NONE_3,
     DT_GDS,
     DT_RL_VARIABLIZATION,
     DT_NCC_VARIABLIZATION,
@@ -56,12 +54,14 @@ enum TraceMode
     DT_CONSTRAINTS,
     DT_MERGE,
     DT_FIX_CONDITIONS,
-    DT_NONE_4,
-    DT_NONE_5,
     DT_UNIFICATION,
     DT_VM_MAPS,
     DT_NONE_1,
     DT_NONE_2,
+    DT_NONE_3,
+    DT_NONE_4,
+    DT_NONE_5,
+    DT_NONE_6,
     num_trace_modes
 };
 
