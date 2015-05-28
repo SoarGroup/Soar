@@ -16,9 +16,9 @@
 
 void Variablization_Manager::print_o_id_tables(TraceMode mode)
 {
-    print_ovar_to_o_id_map(mode);
-    print_o_id_substitution_map(mode);
-    print_o_id_to_ovar_debug_map(mode);
+    dprint_ovar_to_o_id_map(mode);
+    dprint_o_id_substitution_map(mode);
+    dprint_o_id_to_ovar_debug_map(mode);
 
 }
 
@@ -190,6 +190,6 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 
 void Variablization_Manager::print_tables(TraceMode mode)
 {
-    print_variablization_tables(mode);
-    print_o_id_tables(mode);
+    dprint_variablization_tables(mode);
+    dprint_o_id_tables(mode);
 }

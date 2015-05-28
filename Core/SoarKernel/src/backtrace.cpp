@@ -233,7 +233,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for identifier element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, 0);
             }
-            thisAgent->variablizationManager->print_o_id_substitution_map(DT_IDENTITY_PROP);
+            dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
         if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && lAttr)
         {
@@ -246,7 +246,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for attribute element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, 0);
             }
-            thisAgent->variablizationManager->print_o_id_substitution_map(DT_IDENTITY_PROP);
+            dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
         if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && lValue)
         {
@@ -259,7 +259,7 @@ void backtrace_through_instantiation(agent* thisAgent,
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for value element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
                 thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, 0);
             }
-            thisAgent->variablizationManager->print_o_id_substitution_map(DT_IDENTITY_PROP);
+            dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
     }
 

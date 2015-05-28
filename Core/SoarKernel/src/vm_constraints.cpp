@@ -91,7 +91,7 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
         return it->second;
     } else {
         dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-        print_attachment_points(DT_CONSTRAINTS);
+        dprint_attachment_points(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -107,8 +107,8 @@ bool Variablization_Manager::has_positive_condition(uint64_t pO_id)
         return true;
     } else {
         dprint(DT_CONSTRAINTS, "...did not find positive condition, returning false for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-//        print_attachment_points(DT_CONSTRAINTS);
-//        print_o_id_update_map(DT_CONSTRAINTS);
+//        dprint_attachment_points(DT_CONSTRAINTS);
+//        dprint_o_id_update_map(DT_CONSTRAINTS);
     }
     return false;
 }
@@ -260,7 +260,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond)
     }
 
     find_attachment_points(cond);
-    print_attachment_points(DT_CONSTRAINTS);
+    dprint_attachment_points(DT_CONSTRAINTS);
 
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {

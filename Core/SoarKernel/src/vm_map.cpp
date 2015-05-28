@@ -32,7 +32,8 @@ void Variablization_Manager::clear_attachment_map()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing attachment map...\n");
     for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
-        dprint(DT_VM_MAPS, "Clearing %u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
+        // Don't print anything from condition b/c it could be deallocated when this is being cleared
+        dprint(DT_VM_MAPS, "Clearing %u -> %s of a condition in chunk.\n", it->first, field_to_string(it->second->field));
         delete it->second;
     }
     attachment_points->clear();
@@ -88,7 +89,7 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     else
     {
         dprint(DT_VM_MAPS, "...did not find o%u in non-STI variablization table.\n", index_id);
-        print_variablization_tables(DT_LHS_VARIABLIZATION, 2);
+        dprint_variablization_tables(DT_LHS_VARIABLIZATION, 2);
         return NULL;
     }
 }
@@ -105,7 +106,7 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
     else
     {
         dprint(DT_VM_MAPS, "...did not find %y in STI variablization table.\n", index_sym);
-        print_variablization_tables(DT_VM_MAPS, 1);
+        dprint_variablization_tables(DT_VM_MAPS, 1);
         return NULL;
     }
 }
@@ -174,10 +175,10 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
-    print_ovar_to_o_id_map(DT_EBC_CLEANUP);
+    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
 
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-    print_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
     std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
     std::map< Symbol*, uint64_t >::iterator iter_inst;
@@ -189,10 +190,10 @@ void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_
             o_id_to_ovar_debug_map->erase(iter_inst->second);
         }
     }
-    print_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 #endif
     rulesym_to_identity_map->erase(pI_id);
-    print_ovar_to_o_id_map(DT_EBC_CLEANUP);
+    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
     dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
 }
 

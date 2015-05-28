@@ -106,7 +106,6 @@ class Variablization_Manager
         action* variablize_results(preference* result, bool variablize);
         action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
-        void print_OSD_table(TraceMode mode);
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
         void print_tables(TraceMode mode);
         void print_o_id_tables(TraceMode mode);

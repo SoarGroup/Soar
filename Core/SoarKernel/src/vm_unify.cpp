@@ -64,8 +64,7 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
     if (!result) return;
 
     dprint(DT_FIX_CONDITIONS, "Fixing result %p\n", result);
-//    print_o_id_substitution_map(DT_FIX_CONDITIONS);
-    print_o_id_tables(DT_FIX_CONDITIONS);
+    dprint_o_id_tables(DT_FIX_CONDITIONS);
 
     if (result->o_ids.id)
     {
@@ -119,7 +118,7 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
             dprint(DT_UNIFICATION, "Did not find o_id to o_id_substitution_map entry for o%u.  Adding %y[o%u] -> %y[o%u].\n", pNew_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             newID = pNew_o_id;
             dprint(DT_UNIFICATION, "Old identity propagation map:\n");
-            print_o_id_substitution_map(DT_UNIFICATION);
+            dprint_o_id_substitution_map(DT_UNIFICATION);
         }
         else
         {
@@ -174,6 +173,6 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
 
     /* Unify identity in this instantiation with final identity */
     dprint(DT_UNIFICATION, "New identity propagation map:\n");
-    print_o_id_substitution_map(DT_UNIFICATION);
+    dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 

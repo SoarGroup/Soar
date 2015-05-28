@@ -195,10 +195,10 @@ void deallocate_test(agent* thisAgent, test t)
     cons* c, *next_c;
 
     dprint(DT_DEALLOCATES, "DEALLOCATE test %t\n", t);
-    if (!t)
-    {
-        return;
-    }
+//    if (!t)
+//    {
+//        return;
+//    }
 
     switch (t->type)
     {
