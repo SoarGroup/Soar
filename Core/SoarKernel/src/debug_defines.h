@@ -64,12 +64,12 @@
 #define TRACE_Init_DT_FIX_CONDITIONS              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
+#define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 #define TRACE_Init_DT_NONE_1                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
-#define TRACE_Init_DT_NONE_5                      true
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -132,12 +132,12 @@
 #define TRACE_Init_DT_FIX_CONDITIONS              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
+#define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 #define TRACE_Init_DT_NONE_1                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
-#define TRACE_Init_DT_NONE_5                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

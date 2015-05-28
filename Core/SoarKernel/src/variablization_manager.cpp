@@ -21,8 +21,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     sym_to_var_map = new std::map< Symbol*, variablization* >();
     o_id_to_var_map = new std::map< uint64_t, variablization* >();
 
-    ovar_to_o_id_map = new std::map< Symbol*, std::map< uint64_t, uint64_t > >();
-    instantiation_cleanup_map = new std::map< uint64_t, std::set< Symbol * > >();
+    rulesym_to_identity_map = new std::map< uint64_t, std::map< Symbol*, uint64_t > >();
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
 
     constraints = new std::list< constraint* >;
@@ -44,10 +43,9 @@ Variablization_Manager::~Variablization_Manager()
     delete constraints;
     delete attachment_points;
     delete cond_merge_map;
-    delete ovar_to_o_id_map;
+    delete rulesym_to_identity_map;
     delete unification_map;
     delete o_id_to_ovar_debug_map;
-    delete instantiation_cleanup_map;
 }
 
 void Variablization_Manager::reinit()

@@ -78,11 +78,10 @@ class Variablization_Manager
         void clear_variablization_maps();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_ovar_to_o_id_map();
+        void clear_rulesym_to_identity_map();
         void clear_merge_map();
         void clear_o_id_to_ovar_debug_map();
         void clear_o_id_substitution_map();
-        void clear_instantiation_cleanup_map();
         void clear_data();
         void reinit();
 
@@ -124,8 +123,6 @@ class Variablization_Manager
     private:
         agent* thisAgent;
 
-        void store_sym_for_instantiation_cleanup(Symbol* pSym, uint64_t pI_id) { (*instantiation_cleanup_map)[pI_id].insert(pSym); }
-
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
 
         variablization* get_variablization_for_symbol(std::map< Symbol*, variablization* >* pMap, Symbol* index_sym);
@@ -164,10 +161,8 @@ class Variablization_Manager
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
 
-        std::map< Symbol*, std::map< uint64_t, uint64_t > >*    ovar_to_o_id_map;
-        std::map< uint64_t, std::set< Symbol* > >*            instantiation_cleanup_map;
+        std::map< uint64_t, std::map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
         std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
-
         std::map< uint64_t, uint64_t >*                         unification_map;
 
         /* -- Look-up tables for LHS variablization -- */

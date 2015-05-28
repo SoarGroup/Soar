@@ -203,12 +203,12 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
+    mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
 
     mode_info[DT_NONE_1].prefix =                       strdup("| ");
     mode_info[DT_NONE_2].prefix =                       strdup("| ");
     mode_info[DT_NONE_3].prefix =                       strdup("| ");
     mode_info[DT_NONE_4].prefix =                       strdup("| ");
-    mode_info[DT_NONE_5].prefix =                       strdup("| ");
 
     mode_info[TM_EPMEM].enabled =                       TRACE_Init_TM_EPMEM;
     mode_info[TM_SMEM].enabled =                        TRACE_Init_TM_SMEM;
@@ -250,12 +250,12 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_REORDERER].enabled =                   TRACE_Init_DT_REORDERER;
     mode_info[DT_MERGE].enabled =                       TRACE_Init_DT_MERGE;
     mode_info[DT_BUILD_CHUNK_CONDS].enabled =           TRACE_Init_DT_BUILD_CHUNK_CONDS;
+    mode_info[DT_EBC_CLEANUP].enabled =                 TRACE_Init_DT_EBC_CLEANUP;
 
     mode_info[DT_NONE_1].enabled =                      TRACE_Init_DT_NONE_1;
     mode_info[DT_NONE_2].enabled =                      TRACE_Init_DT_NONE_2;
     mode_info[DT_NONE_3].enabled =                      TRACE_Init_DT_NONE_3;
     mode_info[DT_NONE_4].enabled =                      TRACE_Init_DT_NONE_4;
-    mode_info[DT_NONE_5].enabled =                      TRACE_Init_DT_NONE_5;
 }
 
 

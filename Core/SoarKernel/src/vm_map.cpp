@@ -21,8 +21,7 @@ void Variablization_Manager::clear_data()
     clear_cached_constraints();
     clear_variablization_maps();
     clear_merge_map();
-    clear_ovar_to_o_id_map();
-    clear_instantiation_cleanup_map();
+    clear_rulesym_to_identity_map();
     clear_o_id_substitution_map();
     clear_o_id_to_ovar_debug_map();
     clear_attachment_map();
@@ -141,78 +140,60 @@ void Variablization_Manager::clear_o_id_substitution_map()
 }
 
 
-void Variablization_Manager::clear_instantiation_cleanup_map()
-{
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing instantiation_cleanup_map...\n");
-    instantiation_cleanup_map->clear();
-}
-
-void Variablization_Manager::clear_ovar_to_o_id_map()
+void Variablization_Manager::clear_rulesym_to_identity_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
-    /* -- Clear original variable map -- */
-    for (std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator it = (*ovar_to_o_id_map).begin(); it != (*ovar_to_o_id_map).end(); ++it)
-    {
-        dprint(DT_VM_MAPS, "Clearing %y\n", it->first);
-        symbol_remove_ref(thisAgent, it->first);
-    }
-    ovar_to_o_id_map->clear();
+    rulesym_to_identity_map->clear();
 }
 
 uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 {
-    std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
-    std::map< uint64_t, uint64_t >::iterator iter_inst;
+    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
+    std::map< Symbol*, uint64_t >::iterator iter_inst;
 
-//    dprint(DT_VM_MAPS, "...looking for symbol %y\n", orig_var);
+    //        dprint(DT_VM_MAPS, "...Looking  for instantiation id %u\n", inst_id);
     assert(orig_var && pI_id);
 
-    iter_sym = ovar_to_o_id_map->find(orig_var);
-    if (iter_sym != ovar_to_o_id_map->end())
+    iter_sym = rulesym_to_identity_map->find(pI_id);
+    if (iter_sym != rulesym_to_identity_map->end())
     {
-//        dprint(DT_VM_MAPS, "...Found.  Looking  for instantiation id %u\n", inst_id);
-        iter_inst = iter_sym->second.find(pI_id);
+        //    dprint(DT_VM_MAPS, "...Found.  Looking for symbol %y\n", orig_var);
+        iter_inst = iter_sym->second.find(orig_var);
         if (iter_inst != iter_sym->second.end())
         {
-            dprint(DT_VM_MAPS, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id %u\n", orig_var, pI_id, iter_inst->second);
+            dprint(DT_VM_MAPS, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_inst->second);
             return iter_inst->second;
         }
     }
 
     dprint(DT_VM_MAPS, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
-    /* MToDo | Remove */
     return 0;
 
 }
 
 void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
-    dprint(DT_NONE_5, "Cleaning up for deallocation of instantiation %u\n", pI_id);
-    std::map< uint64_t, std::set< Symbol * > >::iterator inst_iter;
-    inst_iter = instantiation_cleanup_map->find(pI_id);
-    if (inst_iter != instantiation_cleanup_map->end())
+    dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
+    print_ovar_to_o_id_map(DT_EBC_CLEANUP);
+
+#ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    print_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+
+    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
+    std::map< Symbol*, uint64_t >::iterator iter_inst;
+    iter_sym = rulesym_to_identity_map->find(pI_id);
+    if (iter_sym != rulesym_to_identity_map->end())
     {
-        std::set< Symbol * >::iterator symbol_iter;
-        for (symbol_iter = inst_iter->second.begin(); symbol_iter != inst_iter->second.end(); ++symbol_iter)
+        for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
         {
-            std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator rio_symbol_iter;
-            rio_symbol_iter = ovar_to_o_id_map->find(*symbol_iter);
-            if (rio_symbol_iter != ovar_to_o_id_map->end())
-            {
-                std::map< uint64_t, uint64_t >::iterator rio_inst_iter;
-                rio_inst_iter = rio_symbol_iter->second.find(pI_id);
-                if (rio_inst_iter != rio_symbol_iter->second.end())
-                {
-                    rio_symbol_iter->second.erase(pI_id);
-                }
-                if (rio_symbol_iter->second.size() == 0)
-                {
-                    ovar_to_o_id_map->erase(*symbol_iter);
-                }
-            }
+            o_id_to_ovar_debug_map->erase(iter_inst->second);
         }
-        instantiation_cleanup_map->erase(pI_id);
     }
+    print_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+#endif
+    rulesym_to_identity_map->erase(pI_id);
+    print_ovar_to_o_id_map(DT_EBC_CLEANUP);
+    dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
 }
 
 uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
@@ -224,9 +205,7 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t p
     if (!existing_o_id)
     {
         ++ovar_id_counter;
-        (*ovar_to_o_id_map)[orig_var][pI_id] = ovar_id_counter;
-        store_sym_for_instantiation_cleanup(orig_var, pI_id);
-        symbol_add_ref(thisAgent, orig_var);
+        (*rulesym_to_identity_map)[pI_id][orig_var] = ovar_id_counter;
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
 #endif

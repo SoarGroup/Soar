@@ -58,21 +58,20 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
     dprint(mode, "        ovar_to_o_id_map Map\n");
     dprint(mode, "------------------------------------\n");
 
-    if (ovar_to_o_id_map->size() == 0)
+    if (rulesym_to_identity_map->size() == 0)
     {
         dprint(mode, "EMPTY MAP\n");
     }
 
-    std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
-    std::map< uint64_t, uint64_t >::iterator iter_inst;
+    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_inst;
+    std::map< Symbol*, uint64_t > ::iterator iter_sym;
 
-    for (iter_sym = ovar_to_o_id_map->begin(); iter_sym != ovar_to_o_id_map->end(); ++iter_sym)
+    for (iter_inst = rulesym_to_identity_map->begin(); iter_inst != rulesym_to_identity_map->end(); ++iter_inst)
     {
-        dprint(mode, "o_id's for %y: \n", iter_sym->first);
-        for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
+        dprint(mode, "o_id's for i%u: \n", iter_inst->first);
+        for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
         {
-                dprint(mode, "   i%u = o%u(%y)\n", iter_inst->first, iter_inst->second,
-                    thisAgent->variablizationManager->get_ovar_for_o_id(iter_inst->second));
+                dprint(mode, "   %y = o%u\n", iter_sym->first, iter_sym->second);
         }
     }
 

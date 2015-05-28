@@ -61,7 +61,7 @@ enum TraceMode
     DT_NONE_2,
     DT_NONE_3,
     DT_NONE_4,
-    DT_NONE_5,
+    DT_EBC_CLEANUP,
     num_trace_modes
 };
 
