@@ -175,7 +175,7 @@ void substitute_for_placeholders_in_test(agent* thisAgent, test* t)
     cons* c;
     test ct;
 
-    if (test_is_blank(*t))
+    if (!(*t))
     {
         return;
     }
@@ -559,7 +559,7 @@ test parse_test(agent* thisAgent, Lexer* lexer)
     }
     /* --- parse and return conjunctive test --- */
     lexer->get_lexeme();
-    t = make_blank_test();
+    t = NULL;
     do
     {
         temp = parse_simple_test(thisAgent, lexer);
@@ -1012,12 +1012,12 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         }
         else
         {
-            id_goal_impasse_test = make_blank_test();
+            id_goal_impasse_test = NULL;
         }
     }
     else
     {
-        id_goal_impasse_test = make_blank_test();
+        id_goal_impasse_test = NULL;
     }
 
     /* --- read optional id test; create dummy one if none given --- */

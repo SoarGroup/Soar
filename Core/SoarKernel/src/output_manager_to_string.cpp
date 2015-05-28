@@ -111,7 +111,7 @@ char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool 
     }
     ch = dest;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
         dest[dest_size - 1] = 0; /* ensure null termination */
@@ -230,7 +230,7 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
 
     ch = dest;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         strcpy(dest, "[BLANK TEST]");
         dest[dest_size - 1] = 0; /* ensure null termination */

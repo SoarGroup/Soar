@@ -257,7 +257,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
-    if (test_is_blank(*t))
+    if (!(*t))
     {
         sym = generate_new_variable(thisAgent, "dummy-");
         //    *t = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
@@ -292,7 +292,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
             {
                 subtest = static_cast<test>(c->first);
-                if (!test_is_blank(subtest) && (subtest->type == EQUALITY_TEST))
+                if (subtest && (subtest->type == EQUALITY_TEST))
                 {
                     if (subtest->data.referent->is_constant() && sym && sym->is_variable())
                     {
@@ -671,7 +671,7 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return starting_list;
     }
@@ -892,7 +892,7 @@ bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -960,9 +960,9 @@ int64_t cost_of_adding_condition(agent* thisAgent,
     /* --- handle the common simple case quickly up front --- */
     if ((! root_vars_not_bound_yet) &&
             (cond->type == POSITIVE_CONDITION) &&
-            (! test_is_blank(cond->data.tests.id_test)) &&
-            (! test_is_blank(cond->data.tests.attr_test)) &&
-            (! test_is_blank(cond->data.tests.value_test)) &&
+            (cond->data.tests.id_test) &&
+            (cond->data.tests.attr_test) &&
+            (cond->data.tests.value_test) &&
             (cond->data.tests.id_test->type == EQUALITY_TEST) &&
             (cond->data.tests.attr_test->type == EQUALITY_TEST) &&
             (cond->data.tests.value_test->type == EQUALITY_TEST))
@@ -1315,7 +1315,7 @@ bool test_tests_for_root(test t, list* roots)
 
     /* Gather variables from test. */
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -1385,7 +1385,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
     cons* c;
 
     // we only care about relational tests other than equality
-    if (test_is_blank(t))
+    if (!t)
     {
         return true;
     }

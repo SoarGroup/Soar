@@ -473,7 +473,7 @@ void debug_test_structs()
     test intEqTest06 = make_test(debug_agent, newInt06, EQUALITY_TEST);
     test intEqTest07 = make_test(debug_agent, newInt07, EQUALITY_TEST);
     test intEqTest08 = make_test(debug_agent, newInt08, EQUALITY_TEST);
-    test blankTest = make_blank_test();
+    test blankTest = NULL;
 
 
     test dest, add_me;

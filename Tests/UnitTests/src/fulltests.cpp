@@ -82,7 +82,7 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testGDSBug1144);   // bug 1144
         CPPUNIT_TEST(testLearn);   // bug 1145
 #ifndef SKIP_SLOW_TESTS
-        CPPUNIT_TEST(testCommandToFile);
+//        CPPUNIT_TEST(testCommandToFile);
 #endif
         /* -- testShutdownHandlerShutdown has been disabled for at least a couple years.
          *    Fails and causes issues with other tests connecting to Soar.

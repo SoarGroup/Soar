@@ -518,7 +518,7 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -570,7 +570,7 @@ bool test_is_in_tc(test t, tc_number tc)
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -993,7 +993,7 @@ uint32_t canonical_test(test t)
 {
     Symbol* sym;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return NON_EQUAL_TEST_RETURN_VAL;
     }

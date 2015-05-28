@@ -72,16 +72,6 @@ typedef struct test_struct
  *     considered blank when that pointer is nil. --- */
 typedef test_info* test;
 
-/* MToDo | Is this really necessary? */
-inline test make_blank_test()
-{
-    return static_cast<test>(0);
-}
-inline bool test_is_blank(test t)
-{
-    return (t == 0);
-}
-
 /* ----------------------------------------------------------------
    Returns true iff the test contains a test for a variable
    symbol.  Assumes test is not a conjunctive one and does not

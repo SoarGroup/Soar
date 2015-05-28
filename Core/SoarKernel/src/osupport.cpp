@@ -166,7 +166,7 @@ bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol* excluded_sym)
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -700,7 +700,7 @@ yes_no_maybe test_is_for_symbol(test t, Symbol* sym)
     bool maybe_found;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return MAYBE;
     }
