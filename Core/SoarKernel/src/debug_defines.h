@@ -15,7 +15,7 @@
 //#define DEBUG_FREE_SETTINGS
 #define DEBUG_UNITTEST_SETTINGS
 
-//#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+#define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
 
@@ -50,14 +50,14 @@
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
-#define TRACE_Init_DT_BUILD_CHUNK_CONDS           true
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          true
+#define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
@@ -69,7 +69,7 @@
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
-#define TRACE_Init_DT_NONE_5                      false
+#define TRACE_Init_DT_NONE_5                      true
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

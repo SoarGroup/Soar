@@ -1134,7 +1134,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
 
         level = inst->match_goal_level;
-
+        thisAgent->variablizationManager->cleanup_for_instantiation_deallocation(inst->i_id);
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
         {
