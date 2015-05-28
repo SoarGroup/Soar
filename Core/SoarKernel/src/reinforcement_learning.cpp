@@ -64,14 +64,6 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning = new rl_learning_param("learning", off, new soar_module::f_predicate<boolean>(), new_agent);
     add(learning);
 
-    // meta-learning-rate
-    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
-    add(meta_learning_rate);
-
-    // update-log-path
-    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    add(update_log_path);
-
     // discount-rate
     discount_rate = new soar_module::decimal_param("discount-rate", 0.9, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(discount_rate);
@@ -80,10 +72,20 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning_rate = new soar_module::decimal_param("learning-rate", 0.3, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
 
+    // step-size-parameter
+    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(step_size_parameter);
+
+    // meta-learning-rate
+    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(meta_learning_rate);
+
     // learning-policy
     learning_policy = new soar_module::constant_param<learning_choices>("learning-policy", sarsa, new soar_module::f_predicate<learning_choices>());
     learning_policy->add_mapping(sarsa, "sarsa");
     learning_policy->add_mapping(q, "q-learning");
+    learning_policy->add_mapping(on_policy_gql, "on-policy-gq-lambda");
+    learning_policy->add_mapping(off_policy_gql, "off-policy-gq-lambda");
     add(learning_policy);
 
     // decay-mode
@@ -114,14 +116,6 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     temporal_discount = new soar_module::boolean_param("temporal-discount", on, new soar_module::f_predicate<boolean>());
     add(temporal_discount);
 
-    // gq-lambda
-    gq_lambda = new soar_module::boolean_param("gq-lambda", off, new soar_module::f_predicate<boolean>());
-    add(gq_lambda);
-
-    // step-size-parameter
-    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
-    add(step_size_parameter);
-
     // chunk-stop
     chunk_stop = new soar_module::boolean_param("chunk-stop", on, new soar_module::f_predicate<boolean>());
     add(chunk_stop);
@@ -129,6 +123,10 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     // meta
     meta = new soar_module::boolean_param("meta", off, new soar_module::f_predicate<boolean>());
     add(meta);
+
+    // update-log-path
+    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    add(update_log_path);
 
     // apoptosis
     apoptosis = new rl_apoptosis_param("apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), thisAgent);
@@ -963,7 +961,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 }
             }
 
-            if (thisAgent->rl_params->gq_lambda->get_value() == on)
+            if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
             {
                 for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
                 {
@@ -1107,7 +1105,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_gql = new_gql;
                 }
 
-                if (thisAgent->rl_params->gq_lambda->get_value() == on)
+                if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
                 {
                     for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
                     {

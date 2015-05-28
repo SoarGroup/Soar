@@ -598,7 +598,7 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
     bool top_rl = candidates->rl_contribution;
     
     // should find highest valued candidate in q-learning
-    if (my_rl_enabled && my_learning_policy == rl_param_container::q)
+    if (my_rl_enabled && (my_learning_policy & rl_param_container::off_policy))
     {
         double num_top_values = 0u;
 
@@ -665,18 +665,14 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
         rl_tabulate_reward_values(thisAgent);
 
         // should find highest valued candidate in q-learning
-        if (my_learning_policy == rl_param_container::sarsa)
+        if (my_learning_policy == rl_param_container::on_policy_gql)
         {
             // set \rho to 1.0 throughout for online exploration
             for (preference* cand = candidates; cand; cand = cand->next_candidate)
                 cand->rl_rho = 1.0;
         }
 
-        if (my_learning_policy == rl_param_container::sarsa)
-        {
-            rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
-        }
-        else if (my_learning_policy == rl_param_container::q)
+        if (my_learning_policy & rl_param_container::off_policy)
         {
             rl_perform_update(thisAgent, top_value, top_rl, s->id);
             
@@ -684,6 +680,10 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
             {
                 rl_watkins_clear(thisAgent, s->id);
             }
+        }
+        else
+        {
+            rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
         }
     }
     

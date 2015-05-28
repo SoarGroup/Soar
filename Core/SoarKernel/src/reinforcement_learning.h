@@ -81,7 +81,12 @@ class rl_dbd_h_accessor : public param_accessor<double>
 class rl_param_container: public soar_module::param_container
 {
     public:
-        enum learning_choices { sarsa, q };
+        enum learning_choices { off_policy     = 0x01, ///< For testing if learning is off-policy
+                                gql            = 0x10, ///< For testing if GQ(\lambda) is enabled
+                                sarsa          = 0x00,
+                                q              = 0x01,
+                                on_policy_gql  = 0x10,
+                                off_policy_gql = 0x11};
         
         // How the learning rate cools over time.
         // normal_decay: default, same learning rate for each rule
@@ -95,6 +100,7 @@ class rl_param_container: public soar_module::param_container
         rl_learning_param* learning;
         soar_module::decimal_param* discount_rate;
         soar_module::decimal_param* learning_rate;
+        soar_module::decimal_param* step_size_parameter;
         soar_module::decimal_param* meta_learning_rate; // For delta bar delta
         soar_module::constant_param<learning_choices>* learning_policy;
         soar_module::constant_param<decay_choices>* decay_mode;
@@ -104,9 +110,6 @@ class rl_param_container: public soar_module::param_container
         soar_module::boolean_param* hrl_discount;
         soar_module::boolean_param* temporal_discount;
 
-        soar_module::boolean_param* gq_lambda;
-        soar_module::decimal_param* step_size_parameter;
-        
         soar_module::boolean_param* chunk_stop;
         soar_module::boolean_param* meta; // Whether doc strings are used for storing metadata.
         soar_module::string_param* update_log_path; // If non-null and size > 0, log all RL updates to this file.
