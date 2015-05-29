@@ -872,12 +872,18 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
-void chunk_instantiation_cleanup (agent* thisAgent, condition** vrblz_top)
+void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, condition** vrblz_top)
 {
     if (vrblz_top)
     {
         deallocate_condition_list(thisAgent, (*vrblz_top));
         (*vrblz_top) = NULL;
+    }
+    if (*prod_name)
+    {
+        dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", *prod_name);
+        symbol_remove_ref(thisAgent, *prod_name);
+        *prod_name = NULL;
     }
     thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
@@ -1318,7 +1324,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = chunk_inst;
 
-    chunk_instantiation_cleanup(thisAgent, prod_name, &(vrblz_top));
+    chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1338,12 +1344,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
 chunking_abort:
     {
-        chunk_instantiation_cleanup(thisAgent, &(vrblz_top));
-        if (prod_name)
-        {
-            dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
-            symbol_remove_ref(thisAgent, prod_name);
-        }
+        chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
     }
 
 #ifndef NO_TIMING_STUFF
