@@ -309,6 +309,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 sym = generate_new_variable(thisAgent, "dummy-");
                 //MToDoRefcnt This used to be: New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
                 New = make_test(thisAgent, sym, EQUALITY_TEST);
+                /* -- generate variable already creates refcount -- */
+                symbol_remove_ref(thisAgent, sym);
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;
@@ -382,6 +384,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             var = generate_new_variable(thisAgent, "dummy-");
             //    New = make_test_without_refcount (thisAgent, var, EQUALITY_TEST);
             New = make_test(thisAgent, var, EQUALITY_TEST);
+            /* -- generate variable already creates refcount -- */
+            symbol_remove_ref(thisAgent, var);
             allocate_with_pool(thisAgent, &thisAgent->saved_test_pool, &saved);
             saved->next = old_sts;
             old_sts = saved;
