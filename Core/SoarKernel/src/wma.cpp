@@ -484,6 +484,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 
 			temp_el->just_created = true;
 			temp_el->num_references = wma_calculate_initial_boost( my_agent, w );
+			temp_el->num_references = 0;
 
 			temp_el->touches.history_ct = 0;
 			temp_el->touches.next_p = 0;
