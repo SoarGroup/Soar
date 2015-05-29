@@ -183,11 +183,11 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-    dprint(DT_BACKTRACE, "backtrace_through_instantiation called at level %d for i%u with orig vars (%y ^%y %y) for condition:\n", grounds_level, inst->i_id,
-        thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id),
-        thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr),
-        thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value));
-    dprint_noprefix(DT_BACKTRACE, "%l\n", trace_cond);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (level %d) with RHS preference\n", inst->i_id, grounds_level);
+    dprint(DT_BACKTRACE, "(%y [%y o%u] ^%y [%y o%u] %y [%y o%u]) that matched condition %l\n",
+        ovars_matched_syms.id, thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
+        ovars_matched_syms.attr, thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
+        ovars_matched_syms.value, thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
 

@@ -259,11 +259,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 
     if (!(*t))
     {
-        sym = generate_new_variable(thisAgent, "dummy-");
-        //    *t = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
-        *t = make_test(thisAgent, sym, EQUALITY_TEST);
-        /* -- generate variable already creates refcount -- */
-        symbol_remove_ref(thisAgent, sym);
+        add_gensymmed_equality_test(thisAgent, t, 'd');
         dprint_noprefix(DT_REORDERER, "\n");
         dprint(DT_REORDERER, "...returning by reference dummy equality test with %y.\n", sym);
         dprint(DT_REORDERER, "...equality...skipping....\n");
@@ -306,11 +302,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
             {
-                sym = generate_new_variable(thisAgent, "dummy-");
-                //MToDoRefcnt This used to be: New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
-                New = make_test(thisAgent, sym, EQUALITY_TEST);
-                /* -- generate variable already creates refcount -- */
-                symbol_remove_ref(thisAgent, sym);
+                add_gensymmed_equality_test(thisAgent, &New, 'd');
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;

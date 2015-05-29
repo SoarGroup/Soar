@@ -118,7 +118,7 @@ void add_constraints_and_identities(agent* thisAgent, rete_node* node, condition
 void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter, bool add_identity = false, uint64_t pI_id = 0);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
