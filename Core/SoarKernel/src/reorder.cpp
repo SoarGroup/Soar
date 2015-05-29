@@ -359,6 +359,18 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 }
                 c = next_c;
             }
+            /* Check if the conjunction is really just a single test after simplification */
+            if (ct->data.conjunct_list->rest == NULL)
+            {
+                test tempTest = static_cast<test>(ct->data.conjunct_list->first);
+                free_cons(thisAgent, ct->data.conjunct_list);
+                ct->data.conjunct_list = NULL;
+                /* Switch type to a goal_id test, so that deallocate won't try to deallocate
+                 * anything extra */
+                ct->type = GOAL_ID_TEST;
+                deallocate_test(thisAgent, ct);
+                *t = tempTest;
+            }
             break;
 
         default:
@@ -1295,7 +1307,7 @@ void reorder_condition_list(agent* thisAgent,
 
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
     reorder_simplified_conditions(thisAgent, top_of_conds, roots, tc, reorder_nccs);
-    dprint(DT_REORDERER, "After Reorder Conditons:\n");
+    dprint(DT_REORDERER, "After Reorder Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
     restore_and_deallocate_saved_tests(thisAgent, *top_of_conds, tc, saved_tests);
