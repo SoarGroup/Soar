@@ -275,7 +275,7 @@ void backtrace_through_instantiation(agent* thisAgent,
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
-        dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n", trace_cond);
+        dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
     inst->backtrace_number = thisAgent->backtrace_number;

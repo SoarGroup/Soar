@@ -48,8 +48,8 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_GDS_HIGH
 
     #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-//    #define MEM_POOLS_ENABLED 1
-//    #define USE_MEM_POOL_ALLOCATORS 1
+    #define MEM_POOLS_ENABLED 1
+    #define USE_MEM_POOL_ALLOCATORS 1
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
