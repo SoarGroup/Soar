@@ -132,12 +132,12 @@ class Variablization_Manager
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
 
-        void variablize_equality_tests(test* t);
+        void variablize_equality_tests(test t);
 
-        void variablize_rl_test(test* chunk_test);
+        void variablize_rl_test(test chunk_test);
 
-        void variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities);
-        void variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities);
+        void variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
 
         void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);

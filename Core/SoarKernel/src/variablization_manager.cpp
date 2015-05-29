@@ -269,27 +269,25 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
  *
  * ========================================================================= */
 
-void Variablization_Manager::variablize_equality_tests(test* t)
+void Variablization_Manager::variablize_equality_tests(test t)
 {
     cons* c;
-    test* tt;
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", *t);
-    assert(*t);
+    test tt;
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", t);
+    assert(t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
-        // Original test should always be null for a conjunctive tests.
-        // MToDo | Previous logic wouldn't assert false but print an error out instead.  Remove.
 
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
-            tt = reinterpret_cast<test*>(&(c->first));
-            if (((*tt)->type == EQUALITY_TEST) &&
-                (((*tt)->identity && (*tt)->data.referent->is_variablizable()) || (*tt)->data.referent->is_sti()))
+            tt = reinterpret_cast<test>(c->first);
+            if ((tt->type == EQUALITY_TEST) &&
+                ((tt->identity && tt->data.referent->is_variablizable()) || tt->data.referent->is_sti()))
             {
-                variablize_lhs_symbol(&((*tt)->data.referent), (*tt)->identity);
+                variablize_lhs_symbol(&(tt->data.referent), tt->identity);
             }
         }
 
@@ -298,10 +296,10 @@ void Variablization_Manager::variablize_equality_tests(test* t)
     }
     else
     {
-        if (((*t)->type == EQUALITY_TEST) &&
-            (((*t)->identity && (*t)->data.referent->is_variablizable()) || (*t)->data.referent->is_sti()))
+        if ((t->type == EQUALITY_TEST) &&
+            ((t->identity && t->data.referent->is_variablizable()) || t->data.referent->is_sti()))
         {
-            variablize_lhs_symbol(&((*t)->data.referent), (*t)->identity);
+            variablize_lhs_symbol(&(t->data.referent), t->identity);
         }
     }
 }
@@ -315,52 +313,52 @@ void Variablization_Manager::variablize_equality_tests(test* t)
  *           when variablizing the equality test.
  *
  * ========================================================================= */
-void Variablization_Manager::variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities)
+void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
     variablization* found_variablization = NULL;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", *t);
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", t);
 
-    if (pSkipTopLevelEqualities && ((*t)->type == EQUALITY_TEST))
+    if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
     {
         /* -- Wrong test type for this variablization pass -- */
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return;
     }
-    found_variablization = get_variablization(*t);
+    found_variablization = get_variablization(t);
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, (*t)->data.referent);
-        (*t)->data.referent = found_variablization->variablized_symbol;
+        symbol_remove_ref(thisAgent, t->data.referent);
+        t->data.referent = found_variablization->variablized_symbol;
         symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "%s", (*t)->data.referent->is_sti() ?
+        dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
     }
 
-    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", *t);
+    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", t);
     dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 
 }
 
-void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities)
+void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
 
     cons* c;
-    test* tt;
+    test tt;
     bool isGrounded;
-//    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", *t);
+//    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", t);
 
-    assert(*t);
+    assert(t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: \n");
             /* -- Note that we ignore what variablize_test_by_lookup returns b/c merge will later delete
@@ -368,8 +366,8 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
              *    deleted.  We just leave them as a literal. We only use the return value of
              *    variablize_test_by_lookup when variablizing constraints collected during
              *    backtracing, since we can just avoid adding them to the condition list. -- */
-            tt = reinterpret_cast<test*>(&(c->first));
-            if (test_has_referent(*tt) && ((*tt)->identity || (*tt)->data.referent->is_sti()))
+            tt = reinterpret_cast<test>(c->first);
+            if (test_has_referent(tt) && (tt->identity || tt->data.referent->is_sti()))
             {
                 variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
             }
@@ -380,7 +378,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
     }
     else
     {
-        if (test_has_referent(*t) && ((*t)->identity || (*t)->data.referent->is_sti()))
+        if (test_has_referent(t) && (t->identity || t->data.referent->is_sti()))
         {
             variablize_test_by_lookup(t, pSkipTopLevelEqualities);
         }
@@ -404,11 +402,11 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
             {
                 dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
 //                dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-                variablize_equality_tests(&(cond->data.tests.id_test));
+                variablize_equality_tests(cond->data.tests.id_test);
 //                dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-                variablize_equality_tests(&(cond->data.tests.attr_test));
+                variablize_equality_tests(cond->data.tests.attr_test);
 //                dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-                variablize_equality_tests(&(cond->data.tests.value_test));
+                variablize_equality_tests(cond->data.tests.value_test);
             }
         }
     }
@@ -419,21 +417,21 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
+            variablize_tests_by_lookup(cond->data.tests.id_test, false);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
 //            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
+            variablize_tests_by_lookup(cond->data.tests.value_test, false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -445,21 +443,21 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
-void Variablization_Manager::variablize_rl_test(test* t)
+void Variablization_Manager::variablize_rl_test(test t)
 {
     cons* c;
     test ct;
 
-    assert(*t);
-    dprint(DT_RL_VARIABLIZATION, "%t\n", *t);
+    assert(t);
+    dprint(DT_RL_VARIABLIZATION, "%t\n", t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_RL_VARIABLIZATION, "Iterating through conjunction list.\n");
-        ct = *t;
+        ct = t;
         for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
         {
-            variablize_rl_test(reinterpret_cast<test*>(&(c->first)));
+            variablize_rl_test(reinterpret_cast<test>(c->first));
         }
 
         dprint(DT_RL_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -468,11 +466,11 @@ void Variablization_Manager::variablize_rl_test(test* t)
     }
     else
     {
-        if (test_has_referent((*t)) && ((*t)->data.referent->is_sti()))
+        if (test_has_referent(t) && (t->data.referent->is_sti()))
         {
             dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %y\n",
-                   test_type_to_string((*t)->type), (*t)->data.referent);
-            thisAgent->variablizationManager->variablize_lhs_symbol(&((*t)->data.referent), 0);
+                   test_type_to_string(t->type), t->data.referent);
+            thisAgent->variablizationManager->variablize_lhs_symbol(&(t->data.referent), 0);
         }
         else
         {
@@ -481,7 +479,7 @@ void Variablization_Manager::variablize_rl_test(test* t)
         }
     }
 
-    dprint(DT_RL_VARIABLIZATION, "Resulting in  %t\n", (*t));
+    dprint(DT_RL_VARIABLIZATION, "Resulting in  %t\n", t);
     dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
 }
 
@@ -524,11 +522,11 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
             {
                 dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL identifier: ");
-                variablize_rl_test(&(cond->data.tests.id_test));
+                variablize_rl_test(cond->data.tests.id_test);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL attribute: ");
-                variablize_rl_test(&(cond->data.tests.attr_test));
+                variablize_rl_test(cond->data.tests.attr_test);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL value: ");
-                variablize_rl_test(&(cond->data.tests.value_test));
+                variablize_rl_test(cond->data.tests.value_test);
             }
         }
     }
@@ -538,16 +536,16 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
             dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
+            variablize_tests_by_lookup(cond->data.tests.id_test, false);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
+            variablize_tests_by_lookup(cond->data.tests.value_test, false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
