@@ -872,7 +872,7 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
-void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name, condition** vrblz_top)
+void chunk_instantiation_cleanup (agent* thisAgent, condition** vrblz_top)
 {
     if (vrblz_top)
     {
@@ -1185,7 +1185,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
-
     if (!prod)
     {
         print(thisAgent, "\nUnable to reorder this chunk:\n  ");
@@ -1209,6 +1208,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
         goto chunking_abort;
     }
+
+    /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
+    prod_name = NULL;
 
     {
         condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
@@ -1336,7 +1338,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
 chunking_abort:
     {
-        chunk_instantiation_cleanup(thisAgent, prod_name, &(vrblz_top));
+        chunk_instantiation_cleanup(thisAgent, &(vrblz_top));
         if (prod_name)
         {
             dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", prod_name);
