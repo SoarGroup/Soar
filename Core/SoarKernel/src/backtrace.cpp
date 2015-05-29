@@ -513,6 +513,7 @@ void backtrace_through_instantiation(agent* thisAgent,
         /* mvp done */
 
         xml_begin_tag(thisAgent, kTagNots);
+        xml_begin_tag(thisAgent, kTagNot);
         xml_end_tag(thisAgent, kTagNot);
         xml_end_tag(thisAgent, kTagNots);
         xml_end_tag(thisAgent, kTagBacktrace);
