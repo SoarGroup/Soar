@@ -128,6 +128,37 @@ void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCo
     (*attachment_points)[pO_id] = new attachment_point(pCond, pField);;
 }
 
+/* -- We also cache the main equality test for each element in each condition
+ *    since it's easy to do here. This allows us to avoid searching conjunctive
+ *    tests repeatedly during merging. -- */
+
+inline test cache_equality_tests_found_in_test(test t)
+{
+    cons* c;
+
+    assert(t);
+    if (t->type == EQUALITY_TEST)
+    {
+        t->eq_test = t;
+        return t;
+    }
+    else if (t->type == CONJUNCTIVE_TEST)
+    {
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            if (static_cast<test>(c->first)->type == EQUALITY_TEST)
+            {
+                t->eq_test = static_cast<test>(c->first);
+                static_cast<test>(c->first)->eq_test = static_cast<test>(c->first);
+                return (static_cast<test>(c->first));
+            }
+        }
+    }
+    t->eq_test = NULL;
+
+    return NULL;
+}
+
 void Variablization_Manager::find_attachment_points(condition* pCond)
 {
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Scanning conditions for constraint attachment points...\n%1", pCond);
@@ -318,9 +349,9 @@ void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(t
             // For all tests, check if referent is STI.  If so, it's ungrounded.  Delete.
             if (test_has_referent(tt) && (tt->data.referent->is_sti()))
             {
-                dprint(DT_FIX_CONDITIONS, "Ungrounded STI found: %y\n", tt->data.referent);
+                dprint(DT_UNGROUNDED_STI, "Ungrounded STI found: %y\n", tt->data.referent);
                 c = delete_test_from_conjunct(thisAgent, t, c);
-                dprint(DT_FIX_CONDITIONS, "          ...after deletion: %t [%g]\n", (*t), (*t));
+                dprint(DT_UNGROUNDED_STI, "          ...after deletion: %t [%g]\n", (*t), (*t));
             }
             else if (tt->type == EQUALITY_TEST)
             {
@@ -343,12 +374,12 @@ void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(t
 
 void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond)
 {
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
+    dprint_header(DT_UNGROUNDED_STI, PrintBoth, "= Removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
 
     condition* next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond;)
     {
-        dprint(DT_FIX_CONDITIONS, "Processing condition: %l\n", cond);
+        dprint(DT_UNGROUNDED_STI, "Processing condition: %l\n", cond);
         next_cond = cond->next;
         if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -364,5 +395,5 @@ void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_test
         cond = next_cond;
     }
 
-    dprint_header(DT_FIX_CONDITIONS, PrintBoth, "= Done removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
+    dprint_header(DT_UNGROUNDED_STI, PrintBoth, "= Done removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
 }

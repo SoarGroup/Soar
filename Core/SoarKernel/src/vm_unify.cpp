@@ -63,8 +63,8 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
 
     if (!result) return;
 
-    dprint(DT_FIX_CONDITIONS, "Fixing result %p\n", result);
-    dprint_o_id_tables(DT_FIX_CONDITIONS);
+    dprint(DT_UNIFICATION, "Fixing result %p\n", result);
+    dprint_o_id_tables(DT_UNIFICATION);
 
     if (result->o_ids.id)
     {
@@ -91,7 +91,7 @@ void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64
 
         if ((iter->second == pOld_o_id) || (pOld_o_id_2 && (iter->second == pOld_o_id_2)))
         {
-            dprint(DT_FIX_CONDITIONS, "...found secondary o_id unification mapping that needs updated: o%u = o%u -> o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
+            dprint(DT_UNIFICATION, "...found secondary o_id unification mapping that needs updated: o%u = o%u -> o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
             (*unification_map)[iter->first] = pNew_o_id;
         }
     }

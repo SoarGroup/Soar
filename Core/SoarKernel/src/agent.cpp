@@ -297,6 +297,7 @@ agent* create_soar_agent(char* agent_name)                                      
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
     thisAgent->variablizationManager = new Variablization_Manager(thisAgent);
+//    thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
     // Timers must be initialized after sysparams

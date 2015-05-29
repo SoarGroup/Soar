@@ -199,7 +199,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
-    mode_info[DT_FIX_CONDITIONS].prefix =               strdup("Fix Cond| ");
+    mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
@@ -246,7 +246,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_RHS_VARIABLIZATION].enabled =          TRACE_Init_DT_RHS_VARIABLIZATION;
     mode_info[DT_RL_VARIABLIZATION].enabled =           TRACE_Init_DT_RL_VARIABLIZATION;
     mode_info[DT_NCC_VARIABLIZATION].enabled =          TRACE_Init_DT_NCC_VARIABLIZATION;
-    mode_info[DT_FIX_CONDITIONS].enabled =              TRACE_Init_DT_FIX_CONDITIONS;
+    mode_info[DT_UNGROUNDED_STI].enabled =              TRACE_Init_DT_UNGROUNDED_STI;
     mode_info[DT_REORDERER].enabled =                   TRACE_Init_DT_REORDERER;
     mode_info[DT_MERGE].enabled =                       TRACE_Init_DT_MERGE;
     mode_info[DT_BUILD_CHUNK_CONDS].enabled =           TRACE_Init_DT_BUILD_CHUNK_CONDS;
