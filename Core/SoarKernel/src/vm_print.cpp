@@ -16,10 +16,9 @@
 
 void Variablization_Manager::print_o_id_tables(TraceMode mode)
 {
-    print_ovar_to_o_id_map(mode);
-    print_o_id_substitution_map(mode);
-    print_o_id_update_map(mode);
-    print_o_id_to_ovar_debug_map(mode);
+    dprint_ovar_to_o_id_map(mode);
+    dprint_o_id_substitution_map(mode);
+    dprint_o_id_to_ovar_debug_map(mode);
 
 }
 
@@ -59,21 +58,20 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
     dprint(mode, "        ovar_to_o_id_map Map\n");
     dprint(mode, "------------------------------------\n");
 
-    if (ovar_to_o_id_map->size() == 0)
+    if (rulesym_to_identity_map->size() == 0)
     {
         dprint(mode, "EMPTY MAP\n");
     }
 
-    std::map< Symbol*, std::map< uint64_t, uint64_t > >::iterator iter_sym;
-    std::map< uint64_t, uint64_t >::iterator iter_inst;
+    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_inst;
+    std::map< Symbol*, uint64_t > ::iterator iter_sym;
 
-    for (iter_sym = ovar_to_o_id_map->begin(); iter_sym != ovar_to_o_id_map->end(); ++iter_sym)
+    for (iter_inst = rulesym_to_identity_map->begin(); iter_inst != rulesym_to_identity_map->end(); ++iter_inst)
     {
-        dprint(mode, "o_id's for %y: \n", iter_sym->first);
-        for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
+        dprint(mode, "o_id's for i%u: \n", iter_inst->first);
+        for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
         {
-                dprint(mode, "   i%u = o%u(%y)\n", iter_inst->first, iter_inst->second,
-                    thisAgent->variablizationManager->get_ovar_for_o_id(iter_inst->second));
+                dprint(mode, "   %y = o%u\n", iter_sym->first, iter_sym->second);
         }
     }
 
@@ -124,34 +122,13 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
 
     dprint(mode, "------------------------------------\n");
 }
-void Variablization_Manager::print_o_id_update_map(TraceMode mode, bool printHeader)
-{
-    if (printHeader)
-    {
-        dprint(mode, "------------------------------------\n");
-        dprint(mode, "           o_id_update_map\n");
-        dprint(mode, "------------------------------------\n");
-    }
-
-    if (o_id_update_map->size() == 0)
-    {
-        dprint(mode, "EMPTY MAP\n");
-    }
-
-    for (std::map< uint64_t, uint64_t >::iterator it = (*o_id_update_map).begin(); it != (*o_id_update_map).end(); ++it)
-    {
-        dprint(mode, "o%u -> o%u (%y)\n", it->first, it->second, get_ovar_for_o_id(it->second));
-    }
-
-}
-
 void Variablization_Manager::print_attachment_points(TraceMode mode)
 {
     dprint(mode, "------------------------------------\n");
     dprint(mode, "   Attachment Points in conditions\n");
     dprint(mode, "------------------------------------\n");
 
-    if (o_id_update_map->size() == 0)
+    if (attachment_points->size() == 0)
     {
         dprint(mode, "EMPTY MAP\n");
     }
@@ -213,6 +190,6 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 
 void Variablization_Manager::print_tables(TraceMode mode)
 {
-    print_variablization_tables(mode);
-    print_o_id_tables(mode);
+    dprint_variablization_tables(mode);
+    dprint_o_id_tables(mode);
 }

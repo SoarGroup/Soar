@@ -111,7 +111,7 @@ char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool 
     }
     ch = dest;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
         dest[dest_size - 1] = 0; /* ensure null termination */
@@ -230,7 +230,7 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
 
     ch = dest;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         strcpy(dest, "[BLANK TEST]");
         dest[dest_size - 1] = 0; /* ensure null termination */
@@ -292,21 +292,9 @@ char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, cha
             cond->data.tests.attr_test, cond->data.tests.value_test);
             while (*ch) ch++;
         }
-//        if (m_print_original_effective) {
-//            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%o %s^%o %o)/(%y %s^%y %y)",
-//                (m_print_actual) ? ", " : NULL,
-//                cond->data.tests.id_test,
-//                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-//                cond->data.tests.attr_test, cond->data.tests.value_test,
-//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.id_test->identity->original_var_id),
-//                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
-//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.attr_test->identity->original_var_id),
-//                thisAgent->variablizationManager->get_ovar_for_o_id(cond->data.tests.value_test->identity->original_var_id));
-//            while (*ch) ch++;
-//        }
         if (m_print_identity_effective) {
             sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%g %s^%g %g)",
-                (m_print_actual_effective || m_print_original_effective) ? ", " : NULL,
+                m_print_actual_effective ? ", " : NULL,
                 cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
                 cond->data.tests.attr_test, cond->data.tests.value_test);
@@ -369,8 +357,6 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         if (this->m_print_actual_effective)
         {
             sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->referent);
-        } else if (m_print_original_effective) {
-            sprinta_sf(thisAgent, dest, dest_size, "%y", thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
         } else if (m_print_identity_effective) {
             sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
         }
@@ -569,7 +555,7 @@ char* Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_test_format(true, false, false);
+        set_print_test_format(true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
@@ -578,24 +564,11 @@ char* Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond
         while (*ch) ch++;
         clear_print_test_format();
     }
-//    if (m_print_original)
-//    {
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
-//        while (*ch) ch++;
-//        set_print_test_format(false, true, false);
-//        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-//        while (*ch) ch++;
-//        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        clear_print_test_format();
-//    }
     if (m_print_identity)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
         while (*ch) ch++;
-        set_print_test_format(false, false, true);
+        set_print_test_format(false, true);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
@@ -618,7 +591,7 @@ char* Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_co
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_test_format(true, false, false);
+        set_print_test_format(true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
@@ -627,24 +600,11 @@ char* Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_co
         while (*ch) ch++;
         clear_print_test_format();
     }
-//    if (m_print_original)
-//    {
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
-//        while (*ch) ch++;
-//        set_print_test_format(false, true, false);
-//        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-//        while (*ch) ch++;
-//        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        clear_print_test_format();
-//    }
     if (m_print_identity)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
         while (*ch) ch++;
-        set_print_test_format(false, false, true);
+        set_print_test_format(false, true);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
@@ -667,7 +627,7 @@ char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_co
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
         while (*ch) ch++;
-        set_print_test_format(true, false, false);
+        set_print_test_format(true, false);
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
@@ -676,23 +636,10 @@ char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_co
         while (*ch) ch++;
         clear_print_test_format();
     }
-//    if (m_print_original)
-//    {
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "-------------------------- Original ------------------------\n");
-//        while (*ch) ch++;
-//        set_print_test_format(false, true, false);
-//        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-//        while (*ch) ch++;
-//        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
-//        while (*ch) ch++;
-//        clear_print_test_format();
-//    }
     if (m_print_identity)
     {
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
-        set_print_test_format(false, false, true);
+        set_print_test_format(false, true);
         while (*ch) ch++;
         condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
         while (*ch) ch++;

@@ -450,8 +450,6 @@ action* create_RHS_action_list(agent* thisAgent,
     action* old, *New, *prev, *first;
     char first_letter;
 
-//    dprint(DT_RHS_VARIABLIZATION, "In create_RHS_action_list()\n");
-//    dprint(DT_RHS_VARIABLIZATION, "-----------------------\n");
     prev = NIL;
     first = NIL;
     old = actions;
@@ -497,7 +495,6 @@ action* create_RHS_action_list(agent* thisAgent,
     {
         first = NIL;
     }
-//    dprint(DT_RHS_VARIABLIZATION, "Done create_RHS_action_list()\n");
     return first;
 }
 
@@ -510,13 +507,13 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
 
     if (!sym)
     {
-        dprint(DT_DEBUG, "allocate_rhs_value_no_refcount called with nil.\n");
+        dprint(DT_RHS_VARIABLIZATION, "allocate_rhs_value_no_refcount called with nil.\n");
         return reinterpret_cast<rhs_value>(NIL);
     }
     allocate_with_pool(thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
-    dprint_noprefix(DT_IDENTITY_PROP, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(o%u).\n" : ""), sym, pO_ID);
+    dprint_noprefix(DT_RHS_VARIABLIZATION, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(o%u).\n" : ""), sym, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

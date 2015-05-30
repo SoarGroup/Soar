@@ -2123,11 +2123,9 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
     init_condition(cond);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-//    set_identity_for_rule_variable(thisAgent, cond->data.tests.id_test, thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.id_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-//    set_identity_for_rule_variable(thisAgent, cond->data.tests.value_test, thisAgent->o_context_variable, inst->i_id);
     cond->data.tests.value_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
     uint64_t fake_s_o_id = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id);
 
@@ -2419,9 +2417,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     dprint_noprefix(DT_GDS, "\n");
                     dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
                            cand, cand->id->id->level, cand->inst->match_goal_level);
-                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint_set_indents(DT_GDS, "           ");
-                    dprint(DT_GDS, "%7", cand->inst);
+                    dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
                 }
                 dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
                 dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);

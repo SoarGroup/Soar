@@ -142,7 +142,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, uint64_t pI_id)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity)
 {
     condition* New;
 
@@ -161,14 +161,14 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
             New->bt = cond->bt;
         /* ... and fall through to next case */
         case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pI_id);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pI_id);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pI_id);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom), pUnify_variablization_identity, pI_id);
+                                &(New->data.ncc.bottom), pUnify_variablization_identity);
             break;
     }
     return New;
@@ -183,14 +183,14 @@ void copy_condition_list(agent* thisAgent,
                          condition* top_cond,
                          condition** dest_top,
                          condition** dest_bottom,
-                         bool pUnify_variablization_identity, uint64_t pI_id)
+                         bool pUnify_variablization_identity)
 {
     condition* New, *prev;
 
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pI_id);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity);
         if (prev)
         {
             prev->next = New;
@@ -518,7 +518,7 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -570,7 +570,7 @@ bool test_is_in_tc(test t, tc_number tc)
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -994,7 +994,7 @@ uint32_t canonical_test(test t)
 {
     Symbol* sym;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return NON_EQUAL_TEST_RETURN_VAL;
     }

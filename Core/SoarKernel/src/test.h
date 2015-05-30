@@ -72,16 +72,6 @@ typedef struct test_struct
  *     considered blank when that pointer is nil. --- */
 typedef test_info* test;
 
-/* MToDo | Is this really necessary? */
-inline test make_blank_test()
-{
-    return static_cast<test>(0);
-}
-inline bool test_is_blank(test t)
-{
-    return (t == 0);
-}
-
 /* ----------------------------------------------------------------
    Returns true iff the test contains a test for a variable
    symbol.  Assumes test is not a conjunctive one and does not
@@ -112,7 +102,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, uint64_t pI_id = 0);
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false);
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 test copy_test_without_relationals(agent* thisAgent, test t);
 
@@ -128,7 +118,7 @@ void add_constraints_and_identities(agent* thisAgent, rete_node* node, condition
 void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_hash_info_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter, bool add_identity = false, uint64_t pI_id = 0);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);

@@ -91,8 +91,7 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
         return it->second;
     } else {
         dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-        print_attachment_points(DT_CONSTRAINTS);
-        print_o_id_update_map(DT_CONSTRAINTS);
+        dprint_attachment_points(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -108,8 +107,8 @@ bool Variablization_Manager::has_positive_condition(uint64_t pO_id)
         return true;
     } else {
         dprint(DT_CONSTRAINTS, "...did not find positive condition, returning false for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-//        print_attachment_points(DT_CONSTRAINTS);
-//        print_o_id_update_map(DT_CONSTRAINTS);
+//        dprint_attachment_points(DT_CONSTRAINTS);
+//        dprint_o_id_update_map(DT_CONSTRAINTS);
     }
     return false;
 }
@@ -127,6 +126,37 @@ void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCo
     dprint(DT_CONSTRAINTS, "Recording attachment point: %y(o%u) -> %s of %l\n",
         get_ovar_for_o_id(pO_id), pO_id, field_to_string(pField), pCond);
     (*attachment_points)[pO_id] = new attachment_point(pCond, pField);;
+}
+
+/* -- We also cache the main equality test for each element in each condition
+ *    since it's easy to do here. This allows us to avoid searching conjunctive
+ *    tests repeatedly during merging. -- */
+
+inline test cache_equality_tests_found_in_test(test t)
+{
+    cons* c;
+
+    assert(t);
+    if (t->type == EQUALITY_TEST)
+    {
+        t->eq_test = t;
+        return t;
+    }
+    else if (t->type == CONJUNCTIVE_TEST)
+    {
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            if (static_cast<test>(c->first)->type == EQUALITY_TEST)
+            {
+                t->eq_test = static_cast<test>(c->first);
+                static_cast<test>(c->first)->eq_test = static_cast<test>(c->first);
+                return (static_cast<test>(c->first));
+            }
+        }
+    }
+    t->eq_test = NULL;
+
+    return NULL;
 }
 
 void Variablization_Manager::find_attachment_points(condition* pCond)
@@ -200,7 +230,7 @@ void Variablization_Manager::invert_relational_test(test* pEq_test, test* pRelat
 
 }
 
-void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test, uint64_t pI_id)
+void Variablization_Manager::attach_relational_test(test pEq_test, test pRelational_test)
 {
     dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity, pEq_test, pEq_test->identity);
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
@@ -242,7 +272,7 @@ void Variablization_Manager::prune_redundant_constraints()
     dprint(DT_CONSTRAINTS, "Final pruned constraints is a set of size %u.\n", static_cast<uint64_t>(constraints->size()));
 }
 
-void Variablization_Manager::add_additional_constraints(condition* cond, uint64_t pI_id)
+void Variablization_Manager::add_additional_constraints(condition* cond)
 {
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;
@@ -261,13 +291,13 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
     }
 
     find_attachment_points(cond);
-    print_attachment_points(DT_CONSTRAINTS);
+    dprint_attachment_points(DT_CONSTRAINTS);
 
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;
-        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true, pI_id);
-        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true, pI_id);
+        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
+        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
 
         dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
@@ -275,7 +305,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
         {
             /* Attach to a positive chunk condition test of eq_test */
             dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
-            attach_relational_test(eq_copy, constraint_test, pI_id);
+            attach_relational_test(eq_copy, constraint_test);
         } else {
             /* Original identity constraint was attached to was literalized */
             if (constraint_test->identity && has_positive_condition(constraint_test->identity))
@@ -284,7 +314,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
                  * add to a positive chunk condition test for the referent */
                 dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
                 invert_relational_test(&eq_copy, &constraint_test);
-                attach_relational_test(eq_copy, constraint_test, pI_id);
+                attach_relational_test(eq_copy, constraint_test);
 
             } else {
                 // Both tests are literals.  Delete.
@@ -296,4 +326,74 @@ void Variablization_Manager::add_additional_constraints(condition* cond, uint64_
         deallocate_test(thisAgent, eq_copy);
     }
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
+}
+
+void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(test* t)
+{
+    assert(t);
+
+    if ((*t)->type == EQUALITY_TEST)
+    {
+        /* Cache main equality test.  Clearly redundant for an equality test, but simplifies code. */
+        (*t)->eq_test = (*t);
+        return;
+    }
+    else if ((*t)->type == CONJUNCTIVE_TEST)
+    {
+        test tt, found_eq_test;
+        ::list* c = (*t)->data.conjunct_list;
+        while (c)
+        {
+            tt = static_cast<test>(c->first);
+
+            // For all tests, check if referent is STI.  If so, it's ungrounded.  Delete.
+            if (test_has_referent(tt) && (tt->data.referent->is_sti()))
+            {
+                dprint(DT_UNGROUNDED_STI, "Ungrounded STI found: %y\n", tt->data.referent);
+                c = delete_test_from_conjunct(thisAgent, t, c);
+                dprint(DT_UNGROUNDED_STI, "          ...after deletion: %t [%g]\n", (*t), (*t));
+            }
+            else if (tt->type == EQUALITY_TEST)
+            {
+                found_eq_test = tt;
+                c = c->rest;
+            }
+            else
+            {
+                c = c->rest;
+            }
+        }
+
+        /* -- We also cache the main equality test for each element in each condition
+         *    since it's easy to do here. This allows us to avoid searching conjunctive
+         *    tests repeatedly during merging. -- */
+        (*t)->eq_test = found_eq_test;
+        found_eq_test->eq_test = found_eq_test;
+    }
+}
+
+void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond)
+{
+    dprint_header(DT_UNGROUNDED_STI, PrintBoth, "= Removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
+
+    condition* next_cond, *last_cond = NULL;
+    for (condition* cond = top_cond; cond;)
+    {
+        dprint(DT_UNGROUNDED_STI, "Processing condition: %l\n", cond);
+        next_cond = cond->next;
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.id_test));
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.attr_test));
+            remove_ungrounded_sti_from_test_and_cache_eq_test(&(cond->data.tests.value_test));
+        }
+        else
+        {
+            /* MToDo | Check if we need for NCCs.  It could be possible to get ungroundeds in NCCs */
+        }
+        last_cond = cond;
+        cond = next_cond;
+    }
+
+    dprint_header(DT_UNGROUNDED_STI, PrintBoth, "= Done removing constraints with ungrounded STIs as referents and caching equality tests for merging =\n%1", top_cond);
 }

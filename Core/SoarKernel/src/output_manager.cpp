@@ -52,12 +52,10 @@ Output_Manager::Output_Manager()
     m_db = NIL;
 
     m_print_actual = OM_Default_print_actual;
-    m_print_original = OM_Default_print_original;
     m_print_identity = OM_Default_print_identity;
     m_print_actual_effective = OM_Default_print_actual;
-    m_print_original_effective = OM_Default_print_original;
     m_print_identity_effective = OM_Default_print_identity;
-    m_pre_string = NULL;
+    m_pre_string = strdup("          ");
     m_post_string = NULL;
 
     next_output_string = 0;
@@ -196,21 +194,21 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
     mode_info[DT_IDENTITY_PROP].prefix =                strdup("ID Prop | ");
     mode_info[DT_UNIFICATION].prefix =                  strdup("Unify   | ");
-    mode_info[DT_CHUNK_ID_MAINTENANCE].prefix =         strdup("ChunkID | ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
-    mode_info[DT_FIX_CONDITIONS].prefix =               strdup("Fix Cond| ");
+    mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
+    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
+    mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
 
     mode_info[DT_NONE_1].prefix =                       strdup("| ");
     mode_info[DT_NONE_2].prefix =                       strdup("| ");
     mode_info[DT_NONE_3].prefix =                       strdup("| ");
     mode_info[DT_NONE_4].prefix =                       strdup("| ");
-    mode_info[DT_NONE_5].prefix =                       strdup("| ");
 
     mode_info[TM_EPMEM].enabled =                       TRACE_Init_TM_EPMEM;
     mode_info[TM_SMEM].enabled =                        TRACE_Init_TM_SMEM;
@@ -243,22 +241,21 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_BACKTRACE].enabled =                   TRACE_Init_DT_BACKTRACE;
     mode_info[DT_IDENTITY_PROP].enabled =               TRACE_Init_DT_IDENTITY_PROP;
     mode_info[DT_UNIFICATION].enabled =                 TRACE_Init_DT_UNIFICATION;
-    mode_info[DT_CHUNK_ID_MAINTENANCE].enabled =        TRACE_Init_DT_CHUNK_ID_MAINTENANCE;
     mode_info[DT_CONSTRAINTS].enabled =                 TRACE_Init_DT_CONSTRAINTS;
     mode_info[DT_LHS_VARIABLIZATION].enabled =          TRACE_Init_DT_LHS_VARIABLIZATION;
     mode_info[DT_RHS_VARIABLIZATION].enabled =          TRACE_Init_DT_RHS_VARIABLIZATION;
     mode_info[DT_RL_VARIABLIZATION].enabled =           TRACE_Init_DT_RL_VARIABLIZATION;
     mode_info[DT_NCC_VARIABLIZATION].enabled =          TRACE_Init_DT_NCC_VARIABLIZATION;
-    mode_info[DT_FIX_CONDITIONS].enabled =              TRACE_Init_DT_FIX_CONDITIONS;
+    mode_info[DT_UNGROUNDED_STI].enabled =              TRACE_Init_DT_UNGROUNDED_STI;
     mode_info[DT_REORDERER].enabled =                   TRACE_Init_DT_REORDERER;
     mode_info[DT_MERGE].enabled =                       TRACE_Init_DT_MERGE;
+    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           TRACE_Init_DT_BUILD_CHUNK_CONDS;
+    mode_info[DT_EBC_CLEANUP].enabled =                 TRACE_Init_DT_EBC_CLEANUP;
 
     mode_info[DT_NONE_1].enabled =                      TRACE_Init_DT_NONE_1;
     mode_info[DT_NONE_2].enabled =                      TRACE_Init_DT_NONE_2;
     mode_info[DT_NONE_3].enabled =                      TRACE_Init_DT_NONE_3;
     mode_info[DT_NONE_4].enabled =                      TRACE_Init_DT_NONE_4;
-    mode_info[DT_NONE_5].enabled =                      TRACE_Init_DT_NONE_5;
-
 }
 
 

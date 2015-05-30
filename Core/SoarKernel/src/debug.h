@@ -60,7 +60,19 @@
     #define dprint_varnames_node(mode, var_names_node) Output_Manager::Get_OM().print_varnames_node (mode, var_names_node)
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
+
+    #define dprint_variablization_tables(mode, ...) thisAgent->variablizationManager->print_variablization_tables (mode , ##__VA_ARGS__)
+    #define dprint_tables(mode) thisAgent->variablizationManager->print_tables (mode)
+    #define dprint_o_id_tables(mode) thisAgent->variablizationManager->print_o_id_tables (mode)
+    #define dprint_attachment_points(mode) thisAgent->variablizationManager->print_attachment_points (mode)
+    #define dprint_constraints(mode) thisAgent->variablizationManager->print_constraints (mode)
+    #define dprint_merge_map(mode) thisAgent->variablizationManager->print_merge_map (mode)
+    #define dprint_ovar_to_o_id_map(mode) thisAgent->variablizationManager->print_ovar_to_o_id_map (mode)
+    #define dprint_o_id_substitution_map(mode) thisAgent->variablizationManager->print_o_id_substitution_map (mode)
+    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->variablizationManager->print_o_id_to_ovar_debug_map (mode)
+
 #else
+
     #define dprint(mode, format, ...) ((void)0)
     #define dprint_set_indents(mode, ...) ((void)0)
     #define dprint_set_default_test_format(mode, ...) ((void)0)
@@ -78,6 +90,17 @@
     #define dprint_varnames(mode, var_names) ((void)0)
     #define dprint_varnames_node(mode, var_names_node) ((void)0)
     #define dprint_all_inst(mode) ((void)0)
+
+    #define dprint_variablization_tables(mode, ...) ((void)0)
+    #define dprint_tables(mode) ((void)0)
+    #define dprint_o_id_tables(mode) ((void)0)
+    #define dprint_attachment_points(mode) ((void)0)
+    #define dprint_constraints(mode) ((void)0)
+    #define dprint_merge_map(mode) ((void)0)
+    #define dprint_ovar_to_o_id_map(mode) ((void)0)
+    #define dprint_o_id_substitution_map(mode) ((void)0)
+    #define dprint_o_id_to_ovar_debug_map(mode) ((void)0)
+
 #endif
 
 extern void debug_init_db(agent* thisAgent);

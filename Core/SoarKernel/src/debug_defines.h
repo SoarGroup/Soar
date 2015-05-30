@@ -15,6 +15,9 @@
 //#define DEBUG_FREE_SETTINGS
 #define DEBUG_UNITTEST_SETTINGS
 
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
 
@@ -45,28 +48,27 @@
 #define TRACE_Init_DT_MILESTONES                  true
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
-#define TRACE_Init_DT_ADD_ADDITIONALS             true
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
+#define TRACE_Init_DT_ADD_ADDITIONALS             false
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_VM_MAPS                     false
-#define TRACE_Init_DT_BACKTRACE                   false
+#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
-#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        false
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
-#define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
+#define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 #define TRACE_Init_DT_NONE_1                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
-#define TRACE_Init_DT_NONE_5                      false
-
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -118,23 +120,23 @@
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
-#define TRACE_Init_DT_CHUNK_ID_MAINTENANCE        false
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
-#define TRACE_Init_DT_FIX_CONDITIONS              false
+#define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
+#define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 #define TRACE_Init_DT_NONE_1                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
-#define TRACE_Init_DT_NONE_5                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

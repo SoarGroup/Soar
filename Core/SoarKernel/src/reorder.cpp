@@ -257,13 +257,9 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
-    if (test_is_blank(*t))
+    if (!(*t))
     {
-        sym = generate_new_variable(thisAgent, "dummy-");
-        //    *t = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
-        *t = make_test(thisAgent, sym, EQUALITY_TEST);
-        /* -- generate variable already creates refcount -- */
-        symbol_remove_ref(thisAgent, sym);
+        add_gensymmed_equality_test(thisAgent, t, 'd');
         dprint_noprefix(DT_REORDERER, "\n");
         dprint(DT_REORDERER, "...returning by reference dummy equality test with %y.\n", sym);
         dprint(DT_REORDERER, "...equality...skipping....\n");
@@ -292,7 +288,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
             {
                 subtest = static_cast<test>(c->first);
-                if (!test_is_blank(subtest) && (subtest->type == EQUALITY_TEST))
+                if (subtest && (subtest->type == EQUALITY_TEST))
                 {
                     if (subtest->data.referent->is_constant() && sym && sym->is_variable())
                     {
@@ -306,9 +302,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
             {
-                sym = generate_new_variable(thisAgent, "dummy-");
-                //MToDoRefcnt This used to be: New = make_test_without_refcount (thisAgent, sym, EQUALITY_TEST);
-                New = make_test(thisAgent, sym, EQUALITY_TEST);
+                add_gensymmed_equality_test(thisAgent, &New, 'd');
                 c->first = New;
                 c->rest = ct->data.conjunct_list;
                 ct->data.conjunct_list = c;
@@ -359,6 +353,18 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 }
                 c = next_c;
             }
+            /* Check if the conjunction is really just a single test after simplification */
+            if (ct->data.conjunct_list->rest == NULL)
+            {
+                test tempTest = static_cast<test>(ct->data.conjunct_list->first);
+                free_cons(thisAgent, ct->data.conjunct_list);
+                ct->data.conjunct_list = NULL;
+                /* Switch type to a goal_id test, so that deallocate won't try to deallocate
+                 * anything extra */
+                ct->type = GOAL_ID_TEST;
+                deallocate_test(thisAgent, ct);
+                *t = tempTest;
+            }
             break;
 
         default:
@@ -370,6 +376,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             var = generate_new_variable(thisAgent, "dummy-");
             //    New = make_test_without_refcount (thisAgent, var, EQUALITY_TEST);
             New = make_test(thisAgent, var, EQUALITY_TEST);
+            /* -- generate variable already creates refcount -- */
+            symbol_remove_ref(thisAgent, var);
             allocate_with_pool(thisAgent, &thisAgent->saved_test_pool, &saved);
             saved->next = old_sts;
             old_sts = saved;
@@ -671,7 +679,7 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return starting_list;
     }
@@ -892,7 +900,7 @@ bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -960,9 +968,9 @@ int64_t cost_of_adding_condition(agent* thisAgent,
     /* --- handle the common simple case quickly up front --- */
     if ((! root_vars_not_bound_yet) &&
             (cond->type == POSITIVE_CONDITION) &&
-            (! test_is_blank(cond->data.tests.id_test)) &&
-            (! test_is_blank(cond->data.tests.attr_test)) &&
-            (! test_is_blank(cond->data.tests.value_test)) &&
+            (cond->data.tests.id_test) &&
+            (cond->data.tests.attr_test) &&
+            (cond->data.tests.value_test) &&
             (cond->data.tests.id_test->type == EQUALITY_TEST) &&
             (cond->data.tests.attr_test->type == EQUALITY_TEST) &&
             (cond->data.tests.value_test->type == EQUALITY_TEST))
@@ -1295,7 +1303,7 @@ void reorder_condition_list(agent* thisAgent,
 
     saved_tests = simplify_condition_list(thisAgent, *top_of_conds);
     reorder_simplified_conditions(thisAgent, top_of_conds, roots, tc, reorder_nccs);
-    dprint(DT_REORDERER, "After Reorder Conditons:\n");
+    dprint(DT_REORDERER, "After Reorder Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
     dprint(DT_REORDERER, "Saved Tests:\n");
     restore_and_deallocate_saved_tests(thisAgent, *top_of_conds, tc, saved_tests);
@@ -1315,7 +1323,7 @@ bool test_tests_for_root(test t, list* roots)
 
     /* Gather variables from test. */
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -1385,7 +1393,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
     cons* c;
 
     // we only care about relational tests other than equality
-    if (test_is_blank(t))
+    if (!t)
     {
         return true;
     }

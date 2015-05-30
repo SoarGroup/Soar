@@ -106,9 +106,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
 test make_placeholder_test(agent* thisAgent, char first_letter)
 {
     Symbol* new_var = make_placeholder_var(thisAgent, first_letter);
-    //  return make_test_without_refcount (thisAgent, new_var, EQUALITY_TEST);
     test new_test = make_test(thisAgent, new_var, EQUALITY_TEST);
-    /* MToDoRefCnt | make placeholder already increases.  So decrease here or use a new version of make_test without refcount */
     symbol_remove_ref(thisAgent, new_var);
     return new_test;
 }
@@ -175,7 +173,7 @@ void substitute_for_placeholders_in_test(agent* thisAgent, test* t)
     cons* c;
     test ct;
 
-    if (test_is_blank(*t))
+    if (!(*t))
     {
         return;
     }
@@ -559,7 +557,7 @@ test parse_test(agent* thisAgent, Lexer* lexer)
     }
     /* --- parse and return conjunctive test --- */
     lexer->get_lexeme();
-    t = make_blank_test();
+    t = NULL;
     do
     {
         temp = parse_simple_test(thisAgent, lexer);
@@ -1012,12 +1010,12 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         }
         else
         {
-            id_goal_impasse_test = make_blank_test();
+            id_goal_impasse_test = NULL;
         }
     }
     else
     {
-        id_goal_impasse_test = make_blank_test();
+        id_goal_impasse_test = NULL;
     }
 
     /* --- read optional id test; create dummy one if none given --- */

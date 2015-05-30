@@ -28,15 +28,17 @@
 #include "test.h"
 #include "variablization_manager.h"
 
-#define PRINT_BUFSIZE 70000   /* --- size of output buffer for a calls to print routines --- */
+/* MToDo | This is far too large, but we're setting it to this until we fix a bug we previously had
+ *         with strncpy corrupting memory. */
+#define OM_BUFFER_SIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
-    char buf[PRINT_BUFSIZE];
+    char buf[OM_BUFFER_SIZE];
 
     va_start(args, format);
-    vsnprint_sf(pSoarAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprint_sf(pSoarAgent, buf, OM_BUFFER_SIZE, format, args);
     va_end(args);
     printa(pSoarAgent, buf);
 }
@@ -80,10 +82,10 @@ void Output_Manager::print_sf(const char* format, ...)
     if (m_defaultAgent)
     {
         va_list args;
-        char buf[PRINT_BUFSIZE];
+        char buf[OM_BUFFER_SIZE];
 
         va_start(args, format);
-        vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+        vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
         va_end(args);
         printa(m_defaultAgent, buf);
     }
@@ -363,7 +365,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 
     if (!m_defaultAgent) return;
 
-    char buf[PRINT_BUFSIZE];
+    char buf[OM_BUFFER_SIZE];
     strcpy(buf, mode_info[mode].prefix);
     int s = strlen(buf);
     strcpy((buf + s), msg);
@@ -376,12 +378,12 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     if (!m_defaultAgent) return;
 
     va_list args;
-    char buf[PRINT_BUFSIZE];
+    char buf[OM_BUFFER_SIZE];
 
     strcpy(buf, mode_info[mode].prefix);
     int s = strlen(buf);
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
+    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
     va_end(args);
     printa(m_defaultAgent, buf);
 }
@@ -392,10 +394,10 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     if (!m_defaultAgent) return;
 
     va_list args;
-    char buf[PRINT_BUFSIZE];
+    char buf[OM_BUFFER_SIZE];
 
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, buf, PRINT_BUFSIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
     va_end(args);
 
     printa(m_defaultAgent, buf);
@@ -410,12 +412,12 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
         debug_print(mode, "=========================================================\n");
     va_list args;
-    char buf[PRINT_BUFSIZE];
+    char buf[OM_BUFFER_SIZE];
 
     strcpy(buf, mode_info[mode].prefix);
     int s = strlen(buf);
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), PRINT_BUFSIZE, format, args);
+    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
     va_end(args);
     if (strlen(buf) > s)
     {

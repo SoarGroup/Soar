@@ -113,6 +113,7 @@
 #include "decide.h"
 #include "variablization_manager.h"
 #include "debug.h"
+#include "debug_defines.h"
 
 #include "assert.h"
 
@@ -2638,7 +2639,7 @@ void bind_variables_in_test(agent* thisAgent,
     Symbol* referent;
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -2891,7 +2892,7 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return starting_vn;
     }
@@ -3050,7 +3051,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
     rete_test* new_rt;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -4242,7 +4243,7 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         t = cond->data.tests.value_test;
     }
 
-    if (test_is_blank(t))
+    if (!t)
     {
         goto abort_var_bound_in_reconstructed_conds;
     }
@@ -4253,7 +4254,7 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
     else if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if ((! test_is_blank(static_cast<test>(c->first))) &&
+            if (static_cast<test>(c->first) &&
                     (static_cast<test>(c->first)->type == EQUALITY_TEST))
             {
                 return static_cast<test>(c->first)->data.referent;
@@ -4299,7 +4300,7 @@ test var_test_bound_in_reconstructed_conds(
         t = cond->data.tests.value_test;
     }
 
-    if (test_is_blank(t))
+    if (!t)
     {
         goto abort_var_test_bound_in_reconstructed_conds;
     }
@@ -4310,7 +4311,7 @@ test var_test_bound_in_reconstructed_conds(
     else if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if ((! test_is_blank(static_cast<test>(c->first))) &&
+            if (static_cast<test>(c->first) &&
                     (static_cast<test>(c->first)->type == EQUALITY_TEST))
             {
                 return static_cast<test>(c->first);
@@ -4430,11 +4431,12 @@ void rete_node_to_conditions(agent* thisAgent,
 
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
-
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
             }
+#endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
@@ -4491,12 +4493,14 @@ void rete_node_to_conditions(agent* thisAgent,
 
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: %l\n", cond);
 
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_ADD_TESTS)
             {
                 add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
+#endif
             {
                 /* --- if there are other tests, add them too --- */
                 if (node->b.posneg.other_tests)
@@ -4569,7 +4573,6 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     {
         w = NIL;    /* just for safety */
     }
-//    dprint(DT_LHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing LHS.\n");
     reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
@@ -4584,7 +4587,6 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
 
     if (dest_rhs)
     {
-//        dprint(DT_RHS_VARIABLIZATION, "p_node_to_conditions_and_rhs reconstructing RHS.\n");
         thisAgent->highest_rhs_unboundvar_index = -1;
         if (prod->rhs_unbound_variables)
         {
@@ -9142,7 +9144,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
 
                 // Reset the ch pointer
                 ch = temp ;
-                if (! test_is_blank(c->data.tests.value_test))
+                if (c->data.tests.value_test)
                 {
                     *(ch++) = ' ';
                     Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);

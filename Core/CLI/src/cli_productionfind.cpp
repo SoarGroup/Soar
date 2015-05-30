@@ -227,9 +227,9 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
     test t2;
 
     /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-    if (test_is_blank(t1))
+    if (!t1)
     {
-        return (test_is_blank(test2) == 0);
+        return (test2 != 0);
     }
 
     /* If the pattern doesn't include "(state", but the test from the
@@ -248,7 +248,7 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
     }
     if (t1->type == EQUALITY_TEST)
     {
-        if (!((t2->type == EQUALITY_TEST) && !(test_is_blank(t2))))
+        if (!(t2 && (t2->type == EQUALITY_TEST)))
         {
             dealloc_and_return(thisAgent, t2, false);
         }

@@ -58,6 +58,30 @@ void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent,
     }
 }
 
+void Variablization_Manager::unify_identities_for_results(preference* result)
+{
+
+    if (!result) return;
+
+    dprint(DT_UNIFICATION, "Fixing result %p\n", result);
+    dprint_o_id_tables(DT_UNIFICATION);
+
+    if (result->o_ids.id)
+    {
+        unify_identity_for_result_element(thisAgent, result, ID_ELEMENT);
+    }
+    if (result->o_ids.attr)
+    {
+        unify_identity_for_result_element(thisAgent, result, ATTR_ELEMENT);
+    }
+    if (result->o_ids.value)
+    {
+        unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
+    }
+    unify_identities_for_results(result->next_result);
+    /* MToDo | Do we need to fix o_ids in clones too? */
+}
+
 void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::map< uint64_t, uint64_t >::iterator iter;
@@ -67,7 +91,7 @@ void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64
 
         if ((iter->second == pOld_o_id) || (pOld_o_id_2 && (iter->second == pOld_o_id_2)))
         {
-            dprint(DT_FIX_CONDITIONS, "...found secondary o_id unification mapping that needs updated: o%u = o%u -> o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
+            dprint(DT_UNIFICATION, "...found secondary o_id unification mapping that needs updated: o%u = o%u -> o%u = o%u.\n", iter->first, iter->second, iter->first, pNew_o_id );
             (*unification_map)[iter->first] = pNew_o_id;
         }
     }
@@ -94,7 +118,7 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
             dprint(DT_UNIFICATION, "Did not find o_id to o_id_substitution_map entry for o%u.  Adding %y[o%u] -> %y[o%u].\n", pNew_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             newID = pNew_o_id;
             dprint(DT_UNIFICATION, "Old identity propagation map:\n");
-            print_o_id_substitution_map(DT_UNIFICATION);
+            dprint_o_id_substitution_map(DT_UNIFICATION);
         }
         else
         {
@@ -149,6 +173,6 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
 
     /* Unify identity in this instantiation with final identity */
     dprint(DT_UNIFICATION, "New identity propagation map:\n");
-    print_o_id_substitution_map(DT_UNIFICATION);
+    dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 

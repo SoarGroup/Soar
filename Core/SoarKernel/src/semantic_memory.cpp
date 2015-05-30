@@ -1321,7 +1321,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 
 void _smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
 {
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }

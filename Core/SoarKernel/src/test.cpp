@@ -27,8 +27,6 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void create_identity_for_tests(agent* thisAgent, test t, uint64_t pI_id);
-
 /* =================================================================
 
                       Utility Routines for Tests
@@ -38,7 +36,7 @@ void create_identity_for_tests(agent* thisAgent, test t, uint64_t pI_id);
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity, uint64_t pI_id)
+list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity)
 {
     cons* new_c;
 
@@ -47,8 +45,8 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pI_id);
-    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity, pI_id);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity);
     return new_c;
 }
 
@@ -56,14 +54,14 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, uint64_t pI_id)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
 {
     Symbol* referent;
     test new_ct;
 
-    if (test_is_blank(t))
+    if (!t)
     {
-        return make_blank_test();
+        return NULL;
     }
 
     switch (t->type)
@@ -78,7 +76,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity, pI_id);
+            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity);
 
             break;
         default:
@@ -97,17 +95,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, ui
                 if (new_ct->identity)
                 {
                     thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
-                    /* At this point, we can also generate new o_ids for the chunk.  They currently have o_ids that came from the
-                     * conditions of the rules backtraced through and any unifications that occurred.  pI_id should only be
-                     * 0 in the case of reinforcement rules being created.  RL rules won't need o_ids for templates*/
-                    if (new_ct->identity && pI_id)
-                    {
-                        dprint(DT_CHUNK_ID_MAINTENANCE, "Creating new o_ids and o_vars for chunk using o%u(%y) for i%u.\n",
-                            new_ct->identity, thisAgent->variablizationManager->get_ovar_for_o_id(new_ct->identity), pI_id);
-                        thisAgent->variablizationManager->create_consistent_identity_for_chunk(&(new_ct->identity), pI_id);
-                        dprint(DT_CHUNK_ID_MAINTENANCE, "Test after ovar update is now %t [%g].\n", new_ct, new_ct);
-                        assert(new_ct->identity != t->identity);
-                    }
                 }
             }
 
@@ -137,18 +124,18 @@ test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t,
             break;
         case GOAL_ID_TEST:
             *removed_goal = true;
-            return make_blank_test();
+            return NULL;
         case IMPASSE_ID_TEST:
             *removed_impasse = true;
-            return make_blank_test();
+            return NULL;
         case CONJUNCTIVE_TEST:
-            new_t = make_blank_test();
+            new_t = NULL;
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 temp = copy_test_removing_goal_impasse_tests(thisAgent, static_cast<test>(c->first),
                         removed_goal,
                         removed_impasse);
-                if (! test_is_blank(temp))
+                if (temp)
                 {
                     add_test(thisAgent, &new_t, temp);
                 }
@@ -178,11 +165,11 @@ test copy_test_without_relationals(agent* thisAgent, test t)
             return copy_test(thisAgent, t);
             break;
         case CONJUNCTIVE_TEST:
-            new_t = make_blank_test();
+            new_t = NULL;
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 temp = copy_test_without_relationals(thisAgent, static_cast<test>(c->first));
-                if (! test_is_blank(temp))
+                if (temp)
                 {
                     add_test(thisAgent, &new_t, temp);
                 }
@@ -195,7 +182,7 @@ test copy_test_without_relationals(agent* thisAgent, test t)
             return new_t;
 
         default:  /* relational tests other than equality */
-            return make_blank_test();
+            return NULL;
     }
 }
 
@@ -208,10 +195,10 @@ void deallocate_test(agent* thisAgent, test t)
     cons* c, *next_c;
 
     dprint(DT_DEALLOCATES, "DEALLOCATE test %t\n", t);
-    if (test_is_blank(t))
-    {
-        return;
-    }
+//    if (!t)
+//    {
+//        return;
+//    }
 
     switch (t->type)
     {
@@ -263,12 +250,12 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     test destination = 0, original = 0;
     cons* c, *c_orig;
 
-    if (test_is_blank(new_test))
+    if (!new_test)
     {
         return;
     }
 
-    if (test_is_blank(*dest_test_address))
+    if (!(*dest_test_address))
     {
         *dest_test_address = new_test;
         return;
@@ -289,22 +276,6 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     c->first = new_test;
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
-}
-
-void create_identity_for_test(agent* thisAgent, test t, test orig_test, uint64_t pI_id)
-{
-    if (!t || !orig_test ||
-        !test_has_referent(t) ||
-        !test_has_referent(orig_test) ||
-//        t->data.referent->is_sti() ||
-        !orig_test->data.referent->is_variable())
-    {
-        return;
-    }
-    assert (t->type == orig_test->type);
-    assert(pI_id);
-
-    t->identity = thisAgent->variablizationManager->get_or_create_o_id(orig_test->data.referent, pI_id);
 }
 
 /* -- This function is a special purpose function for adding relational tests to another test. It
@@ -601,7 +572,7 @@ uint32_t hash_test(agent* thisAgent, test t)
     cons* c;
     uint32_t result;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return 0;
     }
@@ -660,7 +631,7 @@ bool test_includes_equality_test_for_symbol(test t, Symbol* sym)
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -732,7 +703,7 @@ test copy_of_equality_test_found_in_test(agent* thisAgent, test t)
     cons* c;
     char msg[BUFFER_MSG_SIZE];
 
-    if (test_is_blank(t))
+    if (!t)
     {
         strncpy(msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -745,7 +716,7 @@ test copy_of_equality_test_found_in_test(agent* thisAgent, test t)
     if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if ((!test_is_blank(static_cast<test>(c->first))) &&
+            if (static_cast<test>(c->first) &&
                     (static_cast<test>(c->first)->type == EQUALITY_TEST))
             {
                 return copy_test(thisAgent, static_cast<test>(c->first));
@@ -813,7 +784,7 @@ void add_all_variables_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -847,7 +818,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -880,7 +851,7 @@ char first_letter_from_test(test t)
     cons* c;
     char ch;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return '*';
     }
@@ -915,7 +886,7 @@ char first_letter_from_test(test t)
    for equality with a new gensym variable.
 ---------------------------------------------------------------------- */
 
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter, bool add_identity, uint64_t pI_id)
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
 {
     Symbol* New;
     test eq_test = 0;
@@ -925,7 +896,7 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter, b
     prefix[1] = 0;
     New = generate_new_variable(thisAgent, prefix);
     eq_test = make_test(thisAgent, New, EQUALITY_TEST);
-    //symbol_remove_ref (thisAgent, New);
+    symbol_remove_ref (thisAgent, New);
     add_test(thisAgent, t, eq_test);
 }
 

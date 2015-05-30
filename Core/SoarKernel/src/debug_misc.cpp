@@ -374,9 +374,6 @@ void debug_test(int type)
             t1->identity = 23;
             t2->identity = 33;
             t3->identity = 91;
-//            t1->identity->rule_symbol = sym2;
-//            t2->identity->rule_symbol = sym1;
-//            t3->identity->rule_symbol = sym1;
             dprint(DT_DEBUG, "%y %y %u\n", sym1, sym2, t1->identity);
             dprint(DT_DEBUG, "%y %y %u %u\n", sym1, sym2, t2->identity, t1->identity);
             dprint(DT_DEBUG, "%y %y %y %u\n", newSym1, newSym2, newSym3, t1->identity);
@@ -387,8 +384,20 @@ void debug_test(int type)
             break;
         }
         case 6:
+        {
+            agent* thisAgent = debug_agent;
+            dprint_variablization_tables(DT_DEBUG);
+            dprint_variablization_tables(DT_DEBUG, 1);
+            dprint_o_id_tables(DT_DEBUG);
+            dprint_attachment_points(DT_DEBUG);
+            dprint_constraints(DT_DEBUG);
+            dprint_merge_map(DT_DEBUG);
+            dprint_ovar_to_o_id_map(DT_DEBUG);
+            dprint_o_id_substitution_map(DT_DEBUG);
+            dprint_o_id_to_ovar_debug_map(DT_DEBUG);
+            dprint_tables(DT_DEBUG);
             break;
-
+        }
         case 7:
             debug_agent->variablizationManager->print_o_id_tables(DT_DEBUG);
             break;
@@ -473,7 +482,7 @@ void debug_test_structs()
     test intEqTest06 = make_test(debug_agent, newInt06, EQUALITY_TEST);
     test intEqTest07 = make_test(debug_agent, newInt07, EQUALITY_TEST);
     test intEqTest08 = make_test(debug_agent, newInt08, EQUALITY_TEST);
-    test blankTest = make_blank_test();
+    test blankTest = NULL;
 
 
     test dest, add_me;
