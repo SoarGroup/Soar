@@ -109,10 +109,6 @@ namespace soar_module
 
             for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
             {
-                /* MToDo | If any of these can ever be variables, then we need to pass in ovars.  Don't think they can.  Remove.*/
-                assert(!(*a_it)->id->is_variable());
-                assert(!(*a_it)->attr->is_variable());
-                assert(!(*a_it)->value->is_variable());
                 pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
                     soar_module::identity_triple(0,0,0));
                 pref->o_supported = true;

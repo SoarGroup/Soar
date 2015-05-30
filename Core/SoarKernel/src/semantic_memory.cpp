@@ -1387,7 +1387,6 @@ bool smem_valid_production(condition* lhs_top, action* rhs_top)
     }
 
     // validate ltis in actions
-    // copied primarily from add_all_variables_in_action
     {
         Symbol* id;
         action* a;

@@ -2230,7 +2230,6 @@ action* destructively_reverse_action_list(action* a)
    If any error occurred, it returns NIL (and may or may not read
    the rest of the body of the sp).
 ================================================================= */
-
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result)
 {
     Symbol* name;
@@ -2387,8 +2386,16 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     lhs_top = lhs;
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
-    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
-
+    /* Not sure if this is needed here, but it was in make_production before.  Don't
+     * think we can get ungrounded LTIs in chunks now, but maybe we can still get
+     * there here from the parser. */
+    if (!smem_valid_production(lhs_top, rhs))
+    {
+        print(thisAgent,  "ungrounded LTI in production\n");
+        p = NULL;
+    } else {
+        p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
+    }
     if (!p)
     {
         if (documentation)

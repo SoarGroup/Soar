@@ -1164,7 +1164,6 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             }
             SNPRINTF(dest, dest_size, "%#.16g", fc->value);
             dest[dest_size - 1] = 0; /* ensure null termination */
-            /* MToDo | Is stripping off trailing zero's still necessary? -- */
             {
                 /* --- strip off trailing zeros --- */
                 char* start_of_exponent;

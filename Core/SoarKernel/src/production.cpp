@@ -503,7 +503,6 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-/* MToDo | This can also be moved to a symbol method -- */
 void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
                       list** id_list, list** var_list)
 {
@@ -793,12 +792,14 @@ production* make_production(agent* thisAgent,
             return NIL;
         }
 
-        /* MToDo | Do we need to check smem_valid_production any more? */
-        if (!smem_valid_production(*lhs_top, *rhs_top))
-        {
-            print(thisAgent,  "ungrounded LTI in production\n");
-            return NIL;
-        }
+        /* Don't think we need this any more.  We should never get ungrounded
+         * LTIs from the 9.5 chunker.  We may need a call like this in the
+         * parser perhaps, so moved there. */
+//        if (!smem_valid_production(*lhs_top, *rhs_top))
+//        {
+//            print(thisAgent,  "ungrounded LTI in production\n");
+//            return NIL;
+//        }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);

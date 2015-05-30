@@ -12,7 +12,7 @@
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifndef SOAR_RELEASE_VERSION
     /* --  The following enables debugging traces/modes. Individual debug
@@ -78,8 +78,6 @@ typedef unsigned char byte;
 //#define DO_TOP_LEVEL_REF_CTS
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
-/* MToDo | Setting this to true may make chunks less readable since variable names are now used
- *         and re-used when chunking */
 #define DISCARD_CHUNK_VARNAMES false
 
 /* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */

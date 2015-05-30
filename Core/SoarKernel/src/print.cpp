@@ -112,9 +112,6 @@ void print_string(agent* thisAgent, const char* s)
     Output_Manager::Get_OM().printa(thisAgent, s);
 }
 
-/* MToDo | This is just a test to see if previously inlined version is faster
- *         at all.  Had to remove inline from print_string() b/c of linker error. */
-
 inline void inline_print_string(agent* thisAgent, const char* s)
 {
     Output_Manager::Get_OM().printa(thisAgent, s);
