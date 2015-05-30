@@ -492,9 +492,6 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must do the reference count update */
-/* MToDoRefCnt | May not need these b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
-
 rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
 {
     rhs_symbol new_rhs_symbol;
@@ -512,8 +509,6 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-/* MToDoRefCnt | symbol_to_rhs_value() (what this function used to be) didn't symbol_add_ref. The
- *                  caller had to do the reference count update.  Possible bug source. -- */
 rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
 {
     if (sym)

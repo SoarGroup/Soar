@@ -468,9 +468,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
         case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
             lexer->get_lexeme();
-            //      t = make_test_without_refcount (thisAgent, referent, test_type);
             t = make_test(thisAgent, referent, test_type);
-            /* MToDoRefCnt | make_symbol_for_lexeme already increases.  So decrease here or use a new version of make_test without refcount */
             symbol_remove_ref(thisAgent, referent);
             return t;
 
@@ -923,8 +921,6 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
         if (!attr_test)
         {
             deallocate_condition_list(thisAgent, first_c);
-            /* MToDo | I think we need to deallocate id_test in several places in this function.  It's
-             *            also copied around. */
             return NIL;
         }
         /* AGR 544 begin */
@@ -1510,7 +1506,6 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
     {
         // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
-        // make_symbol_for_lexeme already increments refcount
         rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
         lexer->get_lexeme();
         return rv;
@@ -1757,8 +1752,6 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
         a->type = MAKE_ACTION;
         a->preference_type = preference_type;
         a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
-        /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-        // symbol_add_ref(thisAgent, id);
         a->attr = copy_rhs_value(thisAgent, attr);
         a->value = copy_rhs_value(thisAgent, value);
         if (preference_is_binary(preference_type))
@@ -1887,8 +1880,6 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
             a->type = MAKE_ACTION;
             a->preference_type = preference_type;
             a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
-            /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-            //symbol_add_ref(thisAgent, id);
             a->attr = copy_rhs_value(thisAgent, attr);
             a->value = copy_rhs_value(thisAgent, value);
         }
@@ -1914,8 +1905,6 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
                 a->type = MAKE_ACTION;
                 a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
                 a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
-                /* MToDoRefCnt | May not need these refcount adds b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-                // symbol_add_ref(thisAgent, id);
                 a->attr = copy_rhs_value(thisAgent, attr);
                 a->value = copy_rhs_value(thisAgent, value);
             }
@@ -2083,7 +2072,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         all_actions = make_action(thisAgent);
         all_actions->type = FUNCALL_ACTION;
-        all_actions->next = NIL; /* MToDo | Added from 9.4.  Needed? */
         all_actions->value = funcall_value;
         return all_actions;
     }
@@ -2102,7 +2090,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         else
         {
             var = smem_lti_soar_make(thisAgent, lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-            /* MToDo | I don't think we need to add these two here to the parser clean up list.  It seems it cleans it up at the end --*/
+            /* I don't think we need to add these two here to the parser clean up list.  It seems it cleans it up at the end --*/
             // push (thisAgent, (var), thisAgent->parser_syms);
         }
     }

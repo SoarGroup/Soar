@@ -901,9 +901,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     need_to_do_support_calculations = false;
     for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next)
     {
-        /* MToDo | Disabled this assert.  May re-enable later when testing. rhs_vars should not be able to differ from action_list */
-        if ((a && !a2) || (!a && a2))
-            assert(false);
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
             pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
@@ -1016,7 +1013,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     chunk_instantiation(thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? true : false,
                         &(thisAgent->newly_created_instantiations));
 
-    /* MToDoRefCnt | Note that the 9.3.2 did not deallocate the action list. */
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_PRINT_INSTANTIATIONS, PrintBoth, "create_instantiation() finished for %y\n", inst->prod->name);

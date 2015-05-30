@@ -522,7 +522,6 @@ inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* 
     }
 }
 
-/* MToDo | The part that Nate commented out might need to be fixed.  He may have just punted on it. */
 void rl_get_test_constant(test* p_test, test* i_test, rl_symbol_map* constants)
 {
     if (!(*p_test))
@@ -611,9 +610,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         condition* c_top;
         condition* c_bottom;
 
-//    p_node_to_conditions_and_rhs( thisAgent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, JUST_INEQUALITIES );
-
-        /* MToDo | Seems to be the same call as in recmem.cpp, which is what set up conditions in my_template_instance.  Couldn't we just copy condition list? */
         p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
     }
@@ -709,7 +705,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
-            /* MToDo | Normally fifth parameter, warn_on_duplicate, set to false.  Turned on for debugging. */
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, true) == DUPLICATE_PRODUCTION)
             {
                 excise_production(thisAgent, new_production, false);

@@ -71,10 +71,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
 
 void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
-    /* MToDo| Verify we don't need to do id element.  It should always be an equality test */
-    //  assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
+    assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
-    /* MToDo| Re-enable attribute constraint caching here.  Disabled just to simplify debugging for now */
+    /* I don't think we can get a constraint in id element.  It should always be an equality test */
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }
@@ -389,7 +388,6 @@ void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_test
         }
         else
         {
-            /* MToDo | Check if we need for NCCs.  It could be possible to get ungroundeds in NCCs */
         }
         last_cond = cond;
         cond = next_cond;

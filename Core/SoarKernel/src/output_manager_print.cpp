@@ -28,8 +28,8 @@
 #include "test.h"
 #include "variablization_manager.h"
 
-/* MToDo | This is far too large, but we're setting it to this until we fix a bug we previously had
- *         with strncpy corrupting memory. */
+/* This is far too large, but we're setting it to this until we fix a bug we previously had
+ * with strncpy corrupting memory. */
 #define OM_BUFFER_SIZE 70000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)

@@ -1214,7 +1214,6 @@ void add_constraints_and_identities(agent* thisAgent,
     {
         chunk_test = NULL;
         has_referent = true;
-        /* MToDo | Do we really need to add impasse or goal tests ever? I think they're re-added later anyway. */
         if (rt->type ==DISJUNCTION_RETE_TEST)
         {
             dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");

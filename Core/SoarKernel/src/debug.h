@@ -40,6 +40,12 @@
 #endif
 #ifdef SOAR_DEBUG_PRINTING
 
+    /* Sometimes it's useful to break when a single, hardcoded ID is encountered
+     * in a piece of code being debugged.  You can set this variable to the name
+     * of the symbol and call check_symbol or check_symbol_in_test to break there */
+    //#define DEBUG_CHECK_SYMBOL "topfoo-copy"
+    //#define DEBUG_TRACE_REFCOUNT_FOR "R7"
+
     //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
 
     #define dprint(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)
@@ -112,11 +118,6 @@ extern void debug_store_refcount(Symbol* sym, bool isAdd);
 extern void debug_destroy_for_refcount(agent* delete_agent);
 
 extern void debug_test(int type = 1);
-
-/* Sometimes it's useful to break when a single, hardcoded ID is encountered
- * in a piece of code being debugged.  You can set this variable to the name
- * of the symbol and call check_symbol or check_symbol_in_test to break there */
-//#define DEBUG_CHECK_SYMBOL "topfoo-copy"
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 extern bool check_symbol(agent* thisAgent, Symbol* sym, const char* message = "ChkSym | ");

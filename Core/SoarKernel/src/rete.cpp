@@ -2863,7 +2863,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     }
     else
     {
-        /* MToDo | Not sure if we can have a varlist when this is called from add_additionals.  Should only
+        /* Not sure if we can have a varlist when this is called from add_additionals.  Should only
          * be called in cases where there is one equality test.  Remove.*/
         assert(false);
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
@@ -3742,11 +3742,6 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
             if (!rhs_values_equal(a1->referent, a2->referent))
             {
                 bool stop = true;
-                /* MToDo | Might need to look at this when doing templates...
-                 *         Normally if referents aren't the same, will return false. The
-                 *         following block seems to allow function to return true when rl_chunk_stop
-                 *         is enabled, the two rhs_values are different numeric symbols and
-                 *         each action list has only that one action.  Not sure why. -- */
                 if (rl_chunk_stop)
                 {
                     if (rhs_value_is_symbol(a1->referent) && rhs_value_is_symbol(a2->referent))
@@ -4347,8 +4342,6 @@ abort_var_test_bound_in_reconstructed_conds:
 
 ---------------------------------------------------------------------- */
 
-/* MToDo | Remove */
-#include "debug.h"
 void rete_node_to_conditions(agent* thisAgent,
                              rete_node* node,
                              node_varnames* nvn,
@@ -7466,17 +7459,13 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
     {
         case 0:
             sym = reteload_symbol_from_index(thisAgent, f);
-            /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does -- */
-            //symbol_add_ref(thisAgent, sym);
             rv = allocate_rhs_value_for_symbol(thisAgent, sym, 0);
             break;
         case 1:
             funcall_list = NIL;
             sym = reteload_symbol_from_index(thisAgent, f);
 
-            /* MToDoRefCnt | Nate: I'm fairly certain function calls do not need an added ref.
-            *
-             * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol
+            /* I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol
              * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a
              * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed
              * later via remove_built_in_rhs_functions (-1 ref).
@@ -8690,7 +8679,6 @@ void print_partial_match_information(agent* thisAgent, rete_node* p_node,
     condition* top_cond, *bottom_cond;
     int64_t n;
     token* tokens, *t;
-    /* MToDo | Does matches command need to pull complex conditions.  Probably not. */
     p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL);
     n = ppmi_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
@@ -9688,7 +9676,6 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
     token* tokens, *t;
 
     xml_begin_tag(thisAgent, kTagProduction) ;
-    /* MToDo | Does matches command need to pull complex conditions.  Probably not. */
     p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL);
     n = xml_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,

@@ -79,7 +79,6 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
         unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
     }
     unify_identities_for_results(result->next_result);
-    /* MToDo | Do we need to fix o_ids in clones too? */
 }
 
 void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
@@ -143,7 +142,6 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
                 /* The existing identity we're unifying with is already literalized from a different trace.  So,
                  * literalize any tests with identity of parent in this trace */
                 dprint(DT_UNIFICATION, "Literalization exists for o%u.  Propagating literalization substitution with %y[o%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
-                /* MToDo | This might be redundant.  Wouldn't it be literalized already? */
                 (*unification_map)[newID] = 0;
                 update_unification_table(newID, 0);
             } else {

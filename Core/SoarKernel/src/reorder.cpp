@@ -374,7 +374,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *    saved.
              *    - Must make sure dummy variable also gets cleaned up-- */
             var = generate_new_variable(thisAgent, "dummy-");
-            //    New = make_test_without_refcount (thisAgent, var, EQUALITY_TEST);
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
             symbol_remove_ref(thisAgent, var);
@@ -382,10 +381,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
-            /* MToDoRefCnt | Removed this b/c it used to make a test without a refcount.
-             *               Logically, it already had two refcounts, one when it was
-             *               generated and one when the test was made with it.  That
-             *               should cover saved_var and the test */
             // symbol_add_ref(thisAgent, var);
             saved->the_test = *t;
             *t = New;
@@ -415,11 +410,8 @@ saved_test* simplify_condition_list(agent* thisAgent, condition* conds_list)
         if (c->type == POSITIVE_CONDITION)
         {
 #endif
-//      dprint(DT_REORDERER, "Simplifying tests for cond's id:\n");
             sts = simplify_test(thisAgent, &(c->data.tests.id_test), sts);
-//      dprint(DT_REORDERER, "Simplifying tests for cond's attr:\n");
             sts = simplify_test(thisAgent, &(c->data.tests.attr_test), sts);
-//      dprint(DT_REORDERER, "Simplifying tests for cond's value:\n");
             sts = simplify_test(thisAgent, &(c->data.tests.value_test), sts);
         }
     }
@@ -524,7 +516,6 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
-                        /* MToDo | If we need to reverse original test as well, we do it here.  */
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;

@@ -42,11 +42,6 @@
 #include <map>
 #include <sstream>
 
-/* MToDo | Temporary debugging code.  Remove.
-           Allows refcount debug trace for a single, hardcoded ID.
-           Quicker than using full refcount inventory system. */
-//#define DEBUG_TRACE_REFCOUNT_FOR "R7"
-
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
@@ -274,9 +269,6 @@ inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
     return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc));
 };
 
-/* MToDo | Might need to expand is_in_tc to other symbol types b/c of new variablization? Note:
- *         callers are only testing this for equality tests, if that matters*/
-
 inline bool Symbol::is_in_tc(tc_number tc)
 {
     if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE))
@@ -478,7 +470,6 @@ extern double get_number_from_symbol(Symbol* sym);
  *      that sends a bunch of trace information to the debug database for deeper analysis of possible
  *      bugs. -- */
 
-/* MToDo | Remove.  Just for debugging. */
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 #include <string>
 extern std::string get_refcount_stacktrace_string(const char* prefix);
