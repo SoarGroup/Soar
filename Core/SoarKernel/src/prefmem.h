@@ -161,6 +161,7 @@ typedef struct preference_struct
     unsigned int total_preferences_for_candidate;
     double numeric_value;
     bool rl_contribution;
+    double rl_rho;                // ratio of target policy to behavior policy
 
     wma_pooled_wme_set* wma_o_set;
 

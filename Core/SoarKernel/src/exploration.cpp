@@ -598,14 +598,36 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
     bool top_rl = candidates->rl_contribution;
     
     // should find highest valued candidate in q-learning
-    if (my_rl_enabled && my_learning_policy == rl_param_container::q)
+    if (my_rl_enabled && (my_learning_policy & rl_param_container::off_policy))
     {
+        double num_top_values = 0u;
+
         for (const preference* cand = candidates; cand; cand = cand->next_candidate)
         {
             if (cand->numeric_value > top_value)
             {
                 top_value = cand->numeric_value;
                 top_rl = cand->rl_contribution;
+                num_top_values = 1u;
+            }
+            else if (cand->numeric_value == top_value)
+                ++num_top_values;
+        }
+
+        if (exploration_policy == USER_SELECT_FIRST || exploration_policy == USER_SELECT_LAST)
+        {
+            // set \rho to 1.0 throughout for degenerate exploration policies
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
+                cand->rl_rho = 1.0;
+        }
+        else {
+            // temporarily set \rho assuming a purely greedy policy
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
+            {
+                if (cand->numeric_value == top_value)
+                    cand->rl_rho = 1.0 / num_top_values;
+                else
+                    cand->rl_rho = 0.0;
             }
         }
     }
@@ -641,12 +663,15 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
     if (my_rl_enabled)
     {
         rl_tabulate_reward_values(thisAgent);
-        
-        if (my_learning_policy == rl_param_container::sarsa)
+
+        if (my_learning_policy == rl_param_container::on_policy_gql)
         {
-            rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
+            // set \rho to 1.0 throughout for online exploration
+            for (preference* cand = candidates; cand; cand = cand->next_candidate)
+                cand->rl_rho = 1.0;
         }
-        else if (my_learning_policy == rl_param_container::q)
+
+        if (my_learning_policy & rl_param_container::off_policy)
         {
             rl_perform_update(thisAgent, top_value, top_rl, s->id);
             
@@ -654,6 +679,10 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
             {
                 rl_watkins_clear(thisAgent, s->id);
             }
+        }
+        else
+        {
+            rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
         }
     }
     
@@ -789,12 +818,18 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
 /***************************************************************************
  * Function     : exploration_randomly_select
  **************************************************************************/
-preference* exploration_randomly_select(preference* candidates)
+preference* exploration_randomly_select(preference* candidates, const bool &update_rho)
 {
     unsigned int cand_count = 0;
     for (const preference* cand = candidates; cand; cand = cand->next_candidate)
     {
         ++cand_count;
+    }
+    if (update_rho) {
+        for (preference* cand = candidates; cand; cand = cand->next_candidate)
+        {
+            cand->rl_rho /= 1.0 / cand_count;
+        }
     }
     
     preference* cand = candidates;
@@ -826,7 +861,19 @@ preference* exploration_probabilistically_select(preference* candidates)
     {
         return exploration_randomly_select(candidates);
     }
-    
+
+    for (preference* cand = candidates; cand; cand = cand->next_candidate)
+    {
+        if(cand->numeric_value)
+            cand->rl_rho /= cand->numeric_value / total_probability;
+        else {
+            if(cand->rl_rho > 0)
+                cand->rl_rho = std::numeric_limits<double>::max();
+            else if(cand->rl_rho < 0)
+                cand->rl_rho = -std::numeric_limits<double>::max();
+        }
+    }
+
     // choose a random preference within the distribution
     const double selected_probability = total_probability * SoarRand();
     
@@ -894,6 +941,11 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
         expvals.push_back(v);
         exptotal += v;
     }
+
+    for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, ++i)
+    {
+        c->rl_rho /= *i / exptotal;
+    }
     
     // output trace information
     if (thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ])
@@ -948,14 +1000,27 @@ preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* cand
         }
     }
     
+    preference *cand;
     if (SoarRand() < epsilon)
     {
-        return exploration_randomly_select(candidates);
+        cand = exploration_randomly_select(candidates, false);
     }
     else
     {
-        return exploration_get_highest_q_value_pref(candidates);
+        cand = exploration_get_highest_q_value_pref(candidates);
     }
+
+    unsigned int cand_count = 0;
+    for (const preference* cand = candidates; cand; cand = cand->next_candidate)
+    {
+        ++cand_count;
+    }
+    for (preference* cand = candidates; cand; cand = cand->next_candidate)
+    {
+        cand->rl_rho /= (1.0 - epsilon) * cand->rl_rho + epsilon / cand_count;
+    }
+
+    return cand;
 }
 
 /***************************************************************************

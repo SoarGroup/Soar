@@ -80,6 +80,7 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->total_preferences_for_candidate = 0;
     p->numeric_value = 0;
     p->rl_contribution = false;
+    p->rl_rho = 1.0;
     p->wma_o_set = NIL;
     p->next_clone = NIL;
     p->prev_clone = NIL;

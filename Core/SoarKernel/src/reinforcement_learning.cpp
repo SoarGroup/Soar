@@ -64,14 +64,6 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning = new rl_learning_param("learning", off, new soar_module::f_predicate<boolean>(), new_agent);
     add(learning);
 
-    // meta-learning-rate
-    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
-    add(meta_learning_rate);
-
-    // update-log-path
-    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    add(update_log_path);
-
     // discount-rate
     discount_rate = new soar_module::decimal_param("discount-rate", 0.9, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(discount_rate);
@@ -80,10 +72,20 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning_rate = new soar_module::decimal_param("learning-rate", 0.3, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
 
+    // step-size-parameter
+    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(step_size_parameter);
+
+    // meta-learning-rate
+    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(meta_learning_rate);
+
     // learning-policy
     learning_policy = new soar_module::constant_param<learning_choices>("learning-policy", sarsa, new soar_module::f_predicate<learning_choices>());
     learning_policy->add_mapping(sarsa, "sarsa");
     learning_policy->add_mapping(q, "q-learning");
+    learning_policy->add_mapping(on_policy_gql, "on-policy-gq-lambda");
+    learning_policy->add_mapping(off_policy_gql, "off-policy-gq-lambda");
     add(learning_policy);
 
     // decay-mode
@@ -121,6 +123,10 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     // meta
     meta = new soar_module::boolean_param("meta", off, new soar_module::f_predicate<boolean>());
     add(meta);
+
+    // update-log-path
+    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    add(update_log_path);
 
     // apoptosis
     apoptosis = new rl_apoptosis_param("apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), thisAgent);
@@ -291,6 +297,7 @@ void rl_reset_data(agent* thisAgent)
 
         data->previous_q = 0;
         data->reward = 0;
+        data->rho = 1.0;
 
         data->gap_age = 0;
         data->hrl_age = 0;
@@ -702,6 +709,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
+                new_production->rl_gql = 0.0;
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
@@ -844,6 +852,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     if (just_fired)
     {
         data->previous_q = cand->numeric_value;
+        data->rho = cand->rl_rho;
     }
     else
     {
@@ -865,6 +874,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
             }
 
             data->previous_q = cand->numeric_value;
+            data->rho = 1.0;
         }
         else
         {
@@ -889,6 +899,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
         {
             rl_et_map::iterator iter;
             double alpha = thisAgent->rl_params->learning_rate->get_value();
+            double eta = thisAgent->rl_params->step_size_parameter->get_value();
             double lambda = thisAgent->rl_params->et_decay_rate->get_value();
             double gamma = thisAgent->rl_params->discount_rate->get_value();
             double tolerance = thisAgent->rl_params->et_tolerance->get_value();
@@ -938,12 +949,23 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 }
             }
 
+            if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+            {
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    iter->second *= data->rho;
+                }
+            }
+
             // Update trace for just fired prods
             double sum_old_ecr = 0.0;
             double sum_old_efr = 0.0;
+            double dot_w_phi = 0.0;
             if (!data->prev_op_rl_rules->empty())
             {
-                double trace_increment = (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
+                /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
+                const double I = goal->id->lower_goal && update_efr ? 0.0 : 1.0;
+                double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
@@ -961,15 +983,23 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     {
                         (*data->eligibility_traces)[(*p) ] = trace_increment;
                     }
+
+                    dot_w_phi += (*p)->rl_gql;
                 }
             }
 
             // For each prod with a trace, perform update
             {
-                double old_ecr, old_efr;
+                double old_ecr, old_efr, old_gql;
                 double delta_ecr, delta_efr;
-                double new_combined, new_ecr, new_efr;
+                double new_combined, new_ecr, new_efr, new_gql;
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
+
+                double dot_w_e = 0.0;
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    dot_w_e += iter->first->rl_gql * iter->second;
+                }
 
                 for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
                 {
@@ -978,6 +1008,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     // get old vals
                     old_ecr = prod->rl_ecr;
                     old_efr = prod->rl_efr;
+                    old_gql = prod->rl_gql;
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
@@ -1026,6 +1057,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     new_ecr = (old_ecr + delta_ecr);
                     new_efr = (old_efr + delta_efr);
                     new_combined = (new_ecr + new_efr);
+                    new_gql = old_gql + eta * (delta_ecr + delta_efr);
 
                     // print as necessary
                     if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
@@ -1058,6 +1090,25 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
+                    prod->rl_gql = new_gql;
+                }
+
+                if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+                {
+                    for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
+                    {
+                        pref->inst->prod->rl_gql -= alpha * gamma * (1 - lambda) * dot_w_e;
+                    }
+
+                    for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
+                    {
+                        (*p)->rl_gql -= alpha * eta * dot_w_phi;
+                    }
+                }
+
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    production* prod = iter->first;
 
                     // change documentation
                     if (thisAgent->rl_params->meta->get_value() == on)
