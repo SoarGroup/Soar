@@ -664,7 +664,6 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
     {
         rl_tabulate_reward_values(thisAgent);
 
-        // should find highest valued candidate in q-learning
         if (my_learning_policy == rl_param_container::on_policy_gql)
         {
             // set \rho to 1.0 throughout for online exploration
