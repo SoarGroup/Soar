@@ -139,10 +139,6 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
 
     if (!((*sym)->is_sti()))
     {
-        /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that.
-         *         Currently identity parameter can be null for RL tests, should probably just change
-         *         this function to take just a test parameter and require that it's an equality test.*/
-        assert(pIdentity);
         var_info = get_variablization(pIdentity);
     }
     else
@@ -177,7 +173,6 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
 
         store_variablization((*sym), var, pIdentity);
 
-        /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
         symbol_remove_ref(thisAgent, *sym);
         *sym = var;
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
@@ -253,8 +248,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
         else
         {
             /* -- RHS constant with an original variable that does not map onto a LHS condition.  Do not variablize. -- */
-            /* MToDo | Remove.  Is this even possible?  Won't this be caught by not having an original var above? */
-            dprint(DT_RHS_VARIABLIZATION, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
+            dprint(DT_RHS_VARIABLIZATION, "...matched a constant with an ungrounded variable that that did not appear on the LHS.  Not variablizing.\n");
         }
     }
 }
@@ -384,9 +378,6 @@ void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLev
         }
     }
 }
-
-/* MToDo | Check what was meant by...  This gets passed in a copy of the chunk instantiation's condition lists, which
- * will get thrown away */
 
 void Variablization_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
@@ -552,7 +543,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* Variablization_Manager::variablize_results(preference* result, bool variablize)
+action* Variablization_Manager::variablize_results_into_actions(preference* result, bool variablize)
 {
     action* a;
 
@@ -587,17 +578,9 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
-    else
-    {
-        /* MToDo | We might need to set these g_ids properly.  For example, do
-         *         we need g_ids when we have chunk-less states that are being
-         *         chunked through from a chunky state. So justifications need
-         *         them? -- */
-    }
-
 
     a->preference_type = result->type;
 
-    a->next = variablize_results(result->next_result, variablize);
+    a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
 }

@@ -113,9 +113,9 @@ extern void debug_destroy_for_refcount(agent* delete_agent);
 
 extern void debug_test(int type = 1);
 
-/* MToDo | Temporary debugging code.  Remove.
-           Allows breakpointing on a single, hardcoded ID when encountered by
-           calls to check_symbol or check_symbol_in_test. */
+/* Sometimes it's useful to break when a single, hardcoded ID is encountered
+ * in a piece of code being debugged.  You can set this variable to the name
+ * of the symbol and call check_symbol or check_symbol_in_test to break there */
 //#define DEBUG_CHECK_SYMBOL "topfoo-copy"
 
 extern std::string get_stacktrace(const char* prefix = NULL);

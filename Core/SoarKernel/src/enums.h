@@ -110,10 +110,6 @@ enum Print_Header_Type
     PrintAfter = 1,
     PrintBefore = 2
 };
-/* MToDo | This was moved from soar_module to make it easier to use debug_defines without including soar_module,
- *    since that file is included in many places.  Naming doesn't seem to conflict with other things, but
- *    this seems risky.  Maybe we can move it back and just do some sort of forward declaration or perhaps
- *    rename to something less common. -- */
 
 /* -- An implementation of an on/off boolean parameter --*/
 
@@ -145,7 +141,6 @@ enum TestType
     NUM_TEST_TYPES
 };
 
-/* MToDo | Change these to enums -- */
 /* -------------------------------
       Types of Productions
 ------------------------------- */

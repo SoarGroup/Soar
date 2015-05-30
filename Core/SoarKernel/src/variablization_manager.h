@@ -61,16 +61,12 @@ typedef struct attachment_struct
  *
  * -- */
 
-/* MToDo | Check if all of these functions really still need to be public */
-
 class Variablization_Manager
 {
     public:
 
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
-        uint64_t get_new_ovar_id() { return (++ovar_id_counter); };
 
-        void variablize_relational_constraints();
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
@@ -78,9 +74,6 @@ class Variablization_Manager
         void clear_variablization_maps();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_rulesym_to_identity_map();
-        void clear_merge_map();
-        void clear_o_id_to_ovar_debug_map();
         void clear_o_id_substitution_map();
         void clear_data();
         void reinit();
@@ -103,7 +96,7 @@ class Variablization_Manager
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
 
-        action* variablize_results(preference* result, bool variablize);
+        action* variablize_results_into_actions(preference* result, bool variablize);
         action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -155,6 +148,10 @@ class Variablization_Manager
         void prune_redundant_constraints();
         void invert_relational_test(test* pEq_test, test* pRelational_test);
         void attach_relational_test(test pEq_test, test pRelational_test);
+
+        void clear_merge_map();
+        void clear_o_id_to_ovar_debug_map();
+        void clear_rulesym_to_identity_map();
 
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data

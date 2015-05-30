@@ -691,7 +691,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             // make new production
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);
 
-            thisAgent->variablizationManager->clear_data();
+            thisAgent->variablizationManager->clear_variablization_maps();
 
             // set initial expected reward values
             {

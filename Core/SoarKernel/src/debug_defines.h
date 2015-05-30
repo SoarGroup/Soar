@@ -83,10 +83,6 @@
 #endif
 
 #ifdef DEBUG_UNITTEST_SETTINGS
-/* ------------------------------------------------------------------------------------
- * -- MToDo | Remove these. Just a quick set of init settings for unit tests and TSP --
- * ------------------------------------------------------------------------------------ */
-
 /* -- Which trace messages should be printed -- */
 
 #define TRACE_Init_No_Mode                      true

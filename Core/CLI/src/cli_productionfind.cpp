@@ -432,7 +432,6 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
                 (but don't necc. need to save them -- maybe can just print them as we go). */
 
                 match = true;
-                /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top, &bottom, NIL);
 
                 free_binding_list(thisAgent, bindings);
@@ -531,7 +530,6 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
                 free_binding_list(thisAgent, bindings);
                 bindings = NIL;
 
-                /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top_cond, &bottom_cond, &rhs);
                 deallocate_condition_list(thisAgent, top_cond);
                 for (a = alist; a != NIL; a = a->next)

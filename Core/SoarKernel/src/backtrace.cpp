@@ -221,18 +221,16 @@ void backtrace_through_instantiation(agent* thisAgent,
         lId = equality_test_found_in_test(trace_cond->data.tests.id_test);
         lAttr = equality_test_found_in_test(trace_cond->data.tests.attr_test);
         lValue = equality_test_found_in_test(trace_cond->data.tests.value_test);
-        /* MToDo | Both cases in innermost if will do the same thing.  If literalization doesn't do anything special, remove.*/
         if (!ovars_matched_syms.id->is_sti() && o_ids_to_replace.id && lId)
         {
             if (lId->identity)
             {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id,
                     thisAgent->variablizationManager->get_ovar_for_o_id(lId->identity), lId->identity);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity);
             } else {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for identifier element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, 0);
             }
+            thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity);
             dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
         if (!ovars_matched_syms.attr->is_sti() && o_ids_to_replace.attr && lAttr)
@@ -241,11 +239,10 @@ void backtrace_through_instantiation(agent* thisAgent,
             {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr,
                     thisAgent->variablizationManager->get_ovar_for_o_id(lAttr->identity), lAttr->identity);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
             } else {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for attribute element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, 0);
             }
+            thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
             dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
         if (!ovars_matched_syms.value->is_sti() && o_ids_to_replace.value && lValue)
@@ -254,11 +251,10 @@ void backtrace_through_instantiation(agent* thisAgent,
             {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
                     thisAgent->variablizationManager->get_ovar_for_o_id(lValue->identity), lValue->identity);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity);
             } else {
                 dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for value element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
-                thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, 0);
             }
+            thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity);
             dprint_o_id_substitution_map(DT_IDENTITY_PROP);
         }
     }
@@ -584,10 +580,9 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         xml_begin_tag(thisAgent, kTagCDPSPreference);
                         print_preference(thisAgent, p);
                     }
-                    /* MToDo | We might actually need to pass NULL in instead of cond, because these
-                     *         are results!  That's what chunk_instantiation does with results */
-
-                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
+//                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
+//                        soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
+                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6,
                         soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -829,7 +824,6 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
         backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0,
             soar_module::symbol_triple_struct(bt_pref->id, bt_pref->attr, bt_pref->value), bt_pref->o_ids);
 
-        /* MMA 8-2012: now backtrace through CDPS of potentials */
         if (potential->bt.CDPS)
         {
             for (CDPS = potential->bt.CDPS; CDPS != NIL; CDPS = CDPS->rest)
@@ -841,10 +835,10 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     xml_begin_tag(thisAgent, kTagCDPSPreference);
                     print_preference(thisAgent, p);
                 }
-                /* MToDo | We might actually need to pass NULL in instead of potential, because these
-                 *         are results!  That's what chunk_instantiation does with results */
 
-                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
+//                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
+//                    soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
+                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6,
                     soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -853,7 +847,6 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                 }
             }
         }
-        /* MMA end */
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {

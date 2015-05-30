@@ -362,7 +362,6 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-//        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y[%g] from reteloc.\n", t->data.referent, t);
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
     }
 
@@ -388,7 +387,6 @@ rhs_value create_RHS_value(agent* thisAgent,
             {
                 lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
             }
-//            dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(g0 o%u) for new unbound var.\n", sym, 0, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
         }
         else
@@ -400,7 +398,6 @@ rhs_value create_RHS_value(agent* thisAgent,
         {
             lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
         }
-//        dprint_noprefix(DT_RHS_VARIABLIZATION, "Created rhs_value for %y(%y o%u) for previously seen unbound var.\n", sym, original_sym, 0, lO_id);
 
         return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
     }
@@ -432,10 +429,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         /* -- rv is a rhs_symbol
          *    This case seems to only be for literal values including those in function calls. -- */
 
-        /* MToDo | If these are always literals, then we may not need to set any of the identity information.  Check. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-//        dprint_noprefix(DT_RHS_VARIABLIZATION, "%y (%y/o%u) from rhs_symbol (literal RHS constant).\n",
-//                        rs->referent, rs->o_id);
         uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
     }

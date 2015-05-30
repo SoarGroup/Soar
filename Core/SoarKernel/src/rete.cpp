@@ -4089,10 +4089,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             production_addition_result = REFRACTED_INST_MATCHED;
         }
     }
-
     /* --- if not a chunk, store variable name information --- */
-    /* MToDo | May want to remove ability to throw out of chunk variable names now.  A chunk based on an instantiation
-     *         from a chunk may need them as original variables. May not be necessary.  Recheck later. */
   if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
       p->p_node->b.p.parents_nvn = NIL;
       p->rhs_unbound_variables = NIL;

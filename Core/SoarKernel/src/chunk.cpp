@@ -1178,9 +1178,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     thisAgent->variablizationManager->unify_identities_for_results(results);
     dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n%6", vrblz_top, results);
 
-    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list...\n");
-    rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
-    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS results...\n");
+    rhs = thisAgent->variablizationManager->variablize_results_into_actions(results, variablize);
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS results.\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n%1", vrblz_top);
@@ -1260,7 +1260,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
         //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
-    /* MToDo | Remove the print_name parameter disabling here. */
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
@@ -1284,14 +1283,14 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
         }
         else
         {
-            /* RBD 4/6/95 if excised the chunk, discard previously-copied stuff */
+            /* If excised the chunk, discard previously-copied stuff */
             deallocate_condition_list(thisAgent, temp_explain_chunk.conds);
             deallocate_action_list(thisAgent, temp_explain_chunk.actions);
         }
     }
 
     /* --- deallocate chunks conds and variablized conditions --- */
-    deallocate_condition_list(thisAgent, vrblz_top);    /* MToDo | Do we need to deallocate the rhs here? It doesn't seem to be done anywhere.*/
+    deallocate_condition_list(thisAgent, vrblz_top);
     vrblz_top = NULL;
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
