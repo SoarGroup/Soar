@@ -565,7 +565,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
 
     for (c = conds; c != NIL; c = c->next)
     {
-        thisAgent->memPoolManager->allocate_with_pool(MP_dl_cons, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = c;
         if (conds_not_yet_printed)
         {
@@ -599,7 +599,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
         c = static_cast<condition_struct*>(dc->item);
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             inline_print_string(thisAgent, "-{");
             xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition);
             print_condition_list(thisAgent, c->data.ncc.top, indent + 2, internal);
@@ -657,7 +657,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
             dc = conds_for_this_id;
             conds_for_this_id = conds_for_this_id->next;
             c = static_cast<condition_struct*>(dc->item);
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
 
             {
                 /* --- build and print attr/value test for condition c --- */
@@ -765,7 +765,7 @@ void print_action_list(agent* thisAgent, action* actions,
     tail_of_actions_not_yet_printed = NIL;
     for (a = actions; a != NIL; a = a->next)
     {
-        thisAgent->memPoolManager->allocate_with_pool(MP_dl_cons, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = a;
         if (actions_not_yet_printed)
         {
@@ -797,7 +797,7 @@ void print_action_list(agent* thisAgent, action* actions,
         a = static_cast<action_struct*>(dc->item);
         if (a->type == FUNCALL_ACTION)
         {
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             xml_begin_tag(thisAgent, kTagAction);
             inline_print_string(thisAgent, rhs_value_to_string(a->value, NULL, 0));
             xml_att_val(thisAgent, kAction, rhs_value_to_string(a->value, NULL, 0));
@@ -830,7 +830,7 @@ void print_action_list(agent* thisAgent, action* actions,
             dc = actions_for_this_id;
             actions_for_this_id = actions_for_this_id->next;
             a = static_cast<action_struct*>(dc->item);
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
 
             {
                 /* --- build and print attr/value test for action a --- */

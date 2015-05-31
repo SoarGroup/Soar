@@ -1097,7 +1097,7 @@ void consume_last_postponed_assertion(agent* thisAgent)
     remove_from_dll(thisAgent->postponed_assertions, msc, next, prev);
 
     // kill it
-    thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 }
 
 void restore_postponed_assertions(agent* thisAgent)
@@ -1162,7 +1162,7 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
         remove_from_dll(msc->p_node->b.p.tentative_retractions, msc,
                         next_of_node, prev_of_node);
     *inst = msc->inst;
-    thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
     return true;
 }
 
@@ -1201,7 +1201,7 @@ bool get_next_nil_goal_retraction(agent* thisAgent, instantiation** inst)
                         next_of_node, prev_of_node);
     }
     *inst = msc->inst;
-    thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
     return true;
 
 }
@@ -1307,7 +1307,7 @@ void add_wme_to_alpha_mem(agent* thisAgent, wme* w, alpha_mem* am)
     uint32_t hv;
 
     /* --- allocate new right_mem, fill it fields --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_right_mem, &rm);
+    thisAgent->memoryManager->allocate_with_pool(MP_right_mem, &rm);
     rm->w = w;
     rm->am = am;
 
@@ -1339,7 +1339,7 @@ void remove_wme_from_alpha_mem(agent* thisAgent, right_mem* rm)
     remove_from_dll(w->right_mems, rm, next_from_wme, prev_from_wme);
 
     /* --- deallocate it --- */
-    thisAgent->memPoolManager->free_with_pool(MP_right_mem, rm);
+    thisAgent->memoryManager->free_with_pool(MP_right_mem, rm);
 }
 
 /* --- Looks for an existing alpha mem, returns it or NIL if not found --- */
@@ -1382,7 +1382,7 @@ alpha_mem* find_or_make_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
     }
 
     /* --- no existing alpha_mem found, so create a new one --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_alpha_mem, &am);
+    thisAgent->memoryManager->allocate_with_pool(MP_alpha_mem, &am);
     am->next_in_hash_table = NIL;
     am->right_mems = NIL;
     am->beta_nodes = NIL;
@@ -1765,7 +1765,7 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
             remove_from_dll(w->tokens, tok, next_from_wme, prev_from_wme);
             remove_from_dll(left->negrm_tokens, tok,
                             a.neg.next_negrm, a.neg.prev_negrm);
-            thisAgent->memPoolManager->free_with_pool(MP_token, tok);
+            thisAgent->memoryManager->free_with_pool(MP_token, tok);
             if (! left->negrm_tokens)   /* just went to 0, so call children */
             {
                 for (child = node->first_child; child != NIL; child = child->next_sibling)
@@ -1810,7 +1810,7 @@ void remove_ref_to_alpha_mem(agent* thisAgent, alpha_mem* am)
     {
         remove_wme_from_alpha_mem(thisAgent, am->right_mems);
     }
-    thisAgent->memPoolManager->free_with_pool(MP_alpha_mem, am);
+    thisAgent->memoryManager->free_with_pool(MP_alpha_mem, am);
 }
 
 
@@ -1855,14 +1855,14 @@ inline uint32_t get_next_beta_node_id(agent* thisAgent)
 void init_dummy_top_node(agent* thisAgent)
 {
     /* --- create the dummy top node --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &thisAgent->dummy_top_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &thisAgent->dummy_top_node);
     init_new_rete_node_with_type(thisAgent, thisAgent->dummy_top_node, DUMMY_TOP_BNODE);
     thisAgent->dummy_top_node->parent = NIL;
     thisAgent->dummy_top_node->first_child = NIL;
     thisAgent->dummy_top_node->next_sibling = NIL;
 
     /* --- create the dummy top token --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &thisAgent->dummy_top_token);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &thisAgent->dummy_top_token);
     thisAgent->dummy_top_token->parent = NIL;
     thisAgent->dummy_top_token->node = thisAgent->dummy_top_node;
     thisAgent->dummy_top_token->w = NIL;
@@ -2011,7 +2011,7 @@ rete_node* make_new_mem_node(agent* thisAgent,
     rete_node* node;
 
     /* --- create the node data structure, fill in fields --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent;
     node->next_sibling = parent->first_child;
@@ -2046,7 +2046,7 @@ rete_node* make_new_positive_node(agent* thisAgent,
     rete_node* node;
 
     /* --- create the node data structure, fill in fields --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent_mem;
     node->next_sibling = parent_mem->first_child;
@@ -2117,7 +2117,7 @@ rete_node* split_mp_node(agent* thisAgent, rete_node* mp_node)
     pos_node = mp_node;
 
     /* --- create the new M node, transfer the MP node's tokens to it --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &mem_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &mem_node);
     init_new_rete_node_with_type(thisAgent, mem_node, mem_node_type);
     set_sharing_factor(mem_node, mp_copy.sharing_factor);
 
@@ -2218,7 +2218,7 @@ rete_node* merge_into_mp_node(agent* thisAgent, rete_node* mem_node)
 
     remove_node_from_parents_list_of_children(mem_node);
     update_stats_for_destroying_node(thisAgent, mem_node);   /* clean up rete stats stuff */
-    thisAgent->memPoolManager->free_with_pool(MP_rete_node, mem_node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, mem_node);
 
     /* --- set MP node's unlinking status according to pos_copy's --- */
     make_mp_bnode_left_linked(mp_node);
@@ -2273,7 +2273,7 @@ rete_node* make_new_negative_node(agent* thisAgent,
 {
     rete_node* node;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent;
     node->next_sibling = parent->first_child;
@@ -2321,9 +2321,9 @@ rete_node* make_new_cn_node(agent* thisAgent,
         ncc_subconditions_top_node = node;
     }
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, CN_BNODE);
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &partner);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &partner);
     init_new_rete_node_with_type(thisAgent, partner, CN_PARTNER_BNODE);
 
     /* NOTE: for improved efficiency, <node> should be on the parent's
@@ -2371,7 +2371,7 @@ rete_node* make_new_production_node(agent* thisAgent,
 {
     rete_node* p_node;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_node, &p_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &p_node);
     init_new_rete_node_with_type(thisAgent, p_node, P_BNODE);
     new_prod->p_node = p_node;
     p_node->parent = parent;
@@ -2423,7 +2423,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
             deallocate_symbol_list_removing_references(thisAgent, rt->data.disjunction_list);
         }
 
-        thisAgent->memPoolManager->free_with_pool(MP_rete_test, rt);
+        thisAgent->memoryManager->free_with_pool(MP_rete_test, rt);
         rt = next_rt;
     }
 }
@@ -2493,7 +2493,7 @@ void deallocate_rete_node(agent* thisAgent, rete_node* node)
     }
 
     update_stats_for_destroying_node(thisAgent, node);   /* clean up rete stats stuff */
-    thisAgent->memPoolManager->free_with_pool(MP_rete_node, node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, node);
 
     /* --- if parent has no other children, deallocate it, and recurse  --- */
     /* Added check to make sure that parent wasn't deallocated in previous merge */
@@ -2798,7 +2798,7 @@ void deallocate_node_varnames(agent* thisAgent,
         node = real_parent_node(node);
         temp = nvn;
         nvn = nvn->parent;
-        thisAgent->memPoolManager->free_with_pool(MP_node_varnames, temp);
+        thisAgent->memoryManager->free_with_pool(MP_node_varnames, temp);
     }
 }
 
@@ -2922,7 +2922,7 @@ node_varnames* make_nvn_for_posneg_cond(agent* thisAgent,
 
     vars_bound = NIL;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_node_varnames, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &New);
     New->parent = parent_nvn;
 
     /* --- fill in varnames for id test --- */
@@ -2972,7 +2972,7 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
                 New = make_nvn_for_posneg_cond(thisAgent, cond, parent_nvn);
                 break;
             case CONJUNCTIVE_NEGATION_CONDITION:
-                thisAgent->memPoolManager->allocate_with_pool(MP_node_varnames, &New);
+                thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &New);
                 New->parent = parent_nvn;
                 New->data.bottom_of_subconditions =
                     get_nvn_for_condition_list(thisAgent, cond->data.ncc.top, parent_nvn);
@@ -3070,7 +3070,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             /* --- if constant, make = constant test --- */
             if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {
-                thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
                 new_rt->data.constant_referent = referent;
@@ -3097,7 +3097,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             }
 
             /* --- else make variable equality test --- */
-            thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
             new_rt->data.variable_referent = where;
@@ -3114,7 +3114,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             /* --- if constant, make constant test --- */
             if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {
-                thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
                                test_type_to_relational_test_type(t->type);
@@ -3135,7 +3135,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
-            thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
                            test_type_to_relational_test_type(t->type);
@@ -3145,7 +3145,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             return;
 
         case DISJUNCTION_TEST:
-            thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = DISJUNCTION_RETE_TEST;
             new_rt->data.disjunction_list =
@@ -3163,7 +3163,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             return;
 
         case GOAL_ID_TEST:
-            thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_GOAL_RETE_TEST;
             new_rt->right_field_num = 0;
             new_rt->next = *rt;
@@ -3171,7 +3171,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             return;
 
         case IMPASSE_ID_TEST:
-            thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_IMPASSE_RETE_TEST;
             new_rt->right_field_num = 0;
             new_rt->next = *rt;
@@ -3867,10 +3867,10 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
 {
     if (num_for_new_production > thisAgent->max_rhs_unbound_variables)
     {
-        thisAgent->memPoolManager->free_memory(thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
         thisAgent->max_rhs_unbound_variables = num_for_new_production;
         thisAgent->rhs_variable_bindings = (Symbol**)
-                                           thisAgent->memPoolManager->allocate_memory_and_zerofill(thisAgent->max_rhs_unbound_variables *
+                                           thisAgent->memoryManager->allocate_memory_and_zerofill(thisAgent->max_rhs_unbound_variables *
                                                    sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
     }
 }
@@ -4011,7 +4011,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         insert_at_head_of_dll(p->instantiations, refracted_inst, next, prev);
         refracted_inst->rete_token = NIL;
         refracted_inst->rete_wme = NIL;
-        thisAgent->memPoolManager->allocate_with_pool(MP_ms_change, &msc);
+        thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = refracted_inst;
         msc->p_node = p_node;
         /* Because the RETE 'artificially' refracts this instantiation (ie, it is
@@ -4074,7 +4074,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             }
 
 
-            thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+            thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 
         }
         else
@@ -4140,7 +4140,7 @@ void excise_production_from_rete(agent* thisAgent, production* p)
     /* --- finally, excise the p_node --- */
     remove_node_from_parents_list_of_children(p_node);
     update_stats_for_destroying_node(thisAgent, p_node);    /* clean up rete stats stuff */
-    thisAgent->memPoolManager->free_with_pool(MP_rete_node, p_node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, p_node);
 
     /* --- update sharing factors on the path from here to the top node --- */
     adjust_sharing_factors_from_here_to_top(parent, -1);
@@ -4355,7 +4355,7 @@ void rete_node_to_conditions(agent* thisAgent,
     condition* cond;
     alpha_mem* am;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_condition, &cond);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
     init_condition(cond);
     if (real_parent_node(node) == cutoff)
     {
@@ -5045,7 +5045,7 @@ void beta_memory_node_left_addition(agent* thisAgent, rete_node* node,
 
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -5074,7 +5074,7 @@ void unhashed_beta_memory_node_left_addition(agent* thisAgent,
 
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -5232,7 +5232,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
 
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -5309,7 +5309,7 @@ void unhashed_mp_node_left_addition(agent* thisAgent, rete_node* node,
 
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -5622,7 +5622,7 @@ void negative_node_left_addition(agent* thisAgent, rete_node* node,
 
     /* --- build new token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -5655,7 +5655,7 @@ void negative_node_left_addition(agent* thisAgent, rete_node* node,
         }
         {
             token* t;
-            thisAgent->memPoolManager->allocate_with_pool(MP_token, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = rm->w;
@@ -5700,7 +5700,7 @@ void unhashed_negative_node_left_addition(agent* thisAgent, rete_node* node,
 
     /* --- build new token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -5723,7 +5723,7 @@ void unhashed_negative_node_left_addition(agent* thisAgent, rete_node* node,
         }
         {
             token* t;
-            thisAgent->memPoolManager->allocate_with_pool(MP_token, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = rm->w;
@@ -5785,7 +5785,7 @@ void negative_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         /* --- match found: build new negrm token, remove descendent tokens --- */
         {
             token* t;
-            thisAgent->memPoolManager->allocate_with_pool(MP_token, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = w;
@@ -5836,7 +5836,7 @@ void unhashed_negative_node_right_addition(agent* thisAgent, rete_node* node, wm
         /* --- match found: build new negrm token, remove descendent tokens --- */
         {
             token* t;
-            thisAgent->memPoolManager->allocate_with_pool(MP_token, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = w;
@@ -5885,7 +5885,7 @@ void cn_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
 
     /* --- build left token, add it to the hash table --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->negrm_tokens = NIL;
@@ -5913,7 +5913,7 @@ void cn_partner_node_left_addition(agent* thisAgent, rete_node* node,
 
     /* --- build new negrm token --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &negrm_tok);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &negrm_tok);
     new_left_token(negrm_tok, node, tok, w);
 
     /* --- advance (tok,w) up to the token from the top of the branch --- */
@@ -5937,7 +5937,7 @@ void cn_partner_node_left_addition(agent* thisAgent, rete_node* node,
     if (!left)
     {
         token_added(partner);
-        thisAgent->memPoolManager->allocate_with_pool(MP_token, &left);
+        thisAgent->memoryManager->allocate_with_pool(MP_token, &left);
         new_left_token(left, partner, tok, w);
         insert_token_into_left_ht(thisAgent, left, hv);
         left->negrm_tokens = NIL;
@@ -6017,7 +6017,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* --- build new left token (used only for tree-based remove) --- */
     token_added(node);
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
 
     /* --- check for match in tentative_retractions --- */
@@ -6094,7 +6094,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
         }
 
-        thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+        thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
         print_with_symbols(thisAgent, "\nRemoving tentative retraction: %y",
                            node->b.p.prod->name);
@@ -6109,7 +6109,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                        node->b.p.prod->name);
 #endif
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_ms_change, &msc);
+    thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
     msc->tok = tok;
     msc->w = w;
     msc->p_node = node;
@@ -6502,7 +6502,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 next_in_level, prev_in_level);
             }
 
-            thisAgent->memPoolManager->free_with_pool(MP_ms_change, msc);
+            thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
             print_with_symbols(thisAgent, "\nRemoving tentative assertion: %y",
                                node->b.p.prod->name);
@@ -6529,7 +6529,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
-        thisAgent->memPoolManager->allocate_with_pool(MP_ms_change, &msc);
+        thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = inst;
         msc->p_node = node;
         msc->tok = NIL;     /* just for safety */
@@ -6727,7 +6727,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
             {
                 next_t = t->a.neg.next_negrm;
                 fast_remove_from_dll(t->w->tokens, t, token, next_from_wme, prev_from_wme);
-                thisAgent->memPoolManager->free_with_pool(MP_token, t);
+                thisAgent->memoryManager->free_with_pool(MP_token, t);
             }
 
             /* --- for Memory nodes --- */
@@ -6772,7 +6772,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
                                      next_of_node, prev_of_node);
                 fast_remove_from_dll(t->parent->first_child, t, token,
                                      next_sibling, prev_sibling);
-                thisAgent->memPoolManager->free_with_pool(MP_token, t);
+                thisAgent->memoryManager->free_with_pool(MP_token, t);
             }
 
             /* --- for CN Partner nodes --- */
@@ -6802,7 +6802,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
             abort_with_fatal_error(thisAgent, msg);
         }
 
-        thisAgent->memPoolManager->free_with_pool(MP_token, tok);
+        thisAgent->memoryManager->free_with_pool(MP_token, tok);
         if (tok == root)
         {
             break;    /* if leftmost leaf was the root, we're done */
@@ -7101,7 +7101,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
 
     /* --- allocate memory for the symbol table --- */
     thisAgent->reteload_symbol_table = (Symbol**)
-                                       thisAgent->memPoolManager->allocate_memory(thisAgent->reteload_num_syms * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
+                                       thisAgent->memoryManager->allocate_memory(thisAgent->reteload_num_syms * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
 
     /* --- read in all the symbols from the file --- */
     current_place_in_symtab = thisAgent->reteload_symbol_table;
@@ -7157,7 +7157,7 @@ void reteload_free_symbol_table(agent* thisAgent)
     {
         symbol_remove_ref(thisAgent, (*(thisAgent->reteload_symbol_table + i)));
     }
-    thisAgent->memPoolManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ----------------------------------------------------------------------
@@ -7224,7 +7224,7 @@ void reteload_alpha_memories(agent* thisAgent, FILE* f)
 
     thisAgent->reteload_num_ams = reteload_eight_bytes(f);
     thisAgent->reteload_am_table = (alpha_mem**)
-                                   thisAgent->memPoolManager->allocate_memory(thisAgent->reteload_num_ams * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
+                                   thisAgent->memoryManager->allocate_memory(thisAgent->reteload_num_ams * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
     for (i = 0; i < thisAgent->reteload_num_ams; i++)
     {
         id = reteload_symbol_from_index(thisAgent, f);
@@ -7259,7 +7259,7 @@ void reteload_free_am_table(agent* thisAgent)
     {
         remove_ref_to_alpha_mem(thisAgent, *(thisAgent->reteload_am_table + i));
     }
-    thisAgent->memPoolManager->free_memory(thisAgent->reteload_am_table, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(thisAgent->reteload_am_table, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ----------------------------------------------------------------------
@@ -7368,7 +7368,7 @@ node_varnames* reteload_node_varnames(agent* thisAgent, rete_node* node, FILE* f
     {
         return NIL;
     }
-    thisAgent->memPoolManager->allocate_with_pool(MP_node_varnames, &nvn);
+    thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &nvn);
     if (node->node_type == CN_BNODE)
     {
         temp = node->b.cn.partner->parent;
@@ -7677,7 +7677,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     uint64_t count;
     list* temp;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_rete_test, &rt);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &rt);
     rt->type = reteload_one_byte(f);
     rt->right_field_num = reteload_one_byte(f);
 
@@ -8009,7 +8009,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             break;
 
         case P_BNODE:
-            thisAgent->memPoolManager->allocate_with_pool(MP_production, &prod);
+            thisAgent->memoryManager->allocate_with_pool(MP_production, &prod);
             prod->reference_count = 1;
             prod->firing_count = 0;
             prod->trace_firings = false;
@@ -8477,7 +8477,7 @@ void dummy_matches_node_left_addition(agent* thisAgent, rete_node* /*node*/, tok
     token* New;
 
     /* --- just add a token record to dummy_matches_node_tokens --- */
-    thisAgent->memPoolManager->allocate_with_pool(MP_token, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     New->node = NIL;
     New->parent = tok;
     New->w = w;
@@ -8507,7 +8507,7 @@ void deallocate_token_list(agent* thisAgent, token* t)
     while (t)
     {
         next = t->next_of_node;
-        thisAgent->memPoolManager->free_with_pool(MP_token, t);
+        thisAgent->memoryManager->free_with_pool(MP_token, t);
         t = next;
     }
 }
@@ -8770,7 +8770,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
@@ -8801,7 +8801,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
@@ -8831,7 +8831,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace),
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                         MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
@@ -8863,7 +8863,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
@@ -8891,7 +8891,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     }
                     else
                     {
-                        tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace),
+                        tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
@@ -8931,7 +8931,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
@@ -9002,7 +9002,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
 
     for (c = conds; c != NIL; c = c->next)
     {
-        thisAgent->memPoolManager->allocate_with_pool(MP_dl_cons, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = c;
         if (conds_not_yet_printed)
         {
@@ -9036,7 +9036,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
         c = static_cast<condition_struct*>(dc->item);
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             //print_string (thisAgent, "-{");
             xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition);
             xml_condition_list(thisAgent, c->data.ncc.top, indent + 2, internal);
@@ -9097,7 +9097,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
             dc = conds_for_this_id;
             conds_for_this_id = conds_for_this_id->next;
             c = static_cast<condition_struct*>(dc->item);
-            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
 
             {
                 /* --- build and print attr/value test for condition c --- */
@@ -9334,7 +9334,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
@@ -9368,7 +9368,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
                 //  print(thisAgent, "\n");
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
@@ -9406,7 +9406,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace),
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                         MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
@@ -9442,7 +9442,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //else
                 //  print(thisAgent, "\n");
 
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
@@ -9472,7 +9472,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     }
                     else
                     {
-                        tmp = static_cast<match_set_trace*>(thisAgent->memPoolManager->allocate_memory(sizeof(MS_trace),
+                        tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
@@ -9518,7 +9518,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
                 //  print(thisAgent, "\n");
-                thisAgent->memPoolManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
@@ -9760,18 +9760,18 @@ void init_rete(agent* thisAgent)
 
     int i;
 
-    thisAgent->memPoolManager->init_memory_pool(MP_alpha_mem, sizeof(alpha_mem),
+    thisAgent->memoryManager->init_memory_pool(MP_alpha_mem, sizeof(alpha_mem),
                      "alpha mem");
-    thisAgent->memPoolManager->init_memory_pool(MP_rete_test, sizeof(rete_test),
+    thisAgent->memoryManager->init_memory_pool(MP_rete_test, sizeof(rete_test),
                      "rete test");
-    thisAgent->memPoolManager->init_memory_pool(MP_rete_node, sizeof(rete_node),
+    thisAgent->memoryManager->init_memory_pool(MP_rete_node, sizeof(rete_node),
                      "rete node");
-    thisAgent->memPoolManager->init_memory_pool(MP_node_varnames, sizeof(node_varnames),
+    thisAgent->memoryManager->init_memory_pool(MP_node_varnames, sizeof(node_varnames),
                      "node varnames");
-    thisAgent->memPoolManager->init_memory_pool(MP_token, sizeof(token), "token");
-    thisAgent->memPoolManager->init_memory_pool(MP_right_mem, sizeof(right_mem),
+    thisAgent->memoryManager->init_memory_pool(MP_token, sizeof(token), "token");
+    thisAgent->memoryManager->init_memory_pool(MP_right_mem, sizeof(right_mem),
                      "right mem");
-    thisAgent->memPoolManager->init_memory_pool(MP_ms_change, sizeof(ms_change),
+    thisAgent->memoryManager->init_memory_pool(MP_ms_change, sizeof(ms_change),
                      "ms change");
 
     for (i = 0; i < 16; i++)
@@ -9779,14 +9779,14 @@ void init_rete(agent* thisAgent)
         thisAgent->alpha_hash_tables[i] = make_hash_table(thisAgent, 0, hash_alpha_mem);
     }
 
-    thisAgent->left_ht = thisAgent->memPoolManager->allocate_memory_and_zerofill(sizeof(char*) * LEFT_HT_SIZE, HASH_TABLE_MEM_USAGE);
-    thisAgent->right_ht = thisAgent->memPoolManager->allocate_memory_and_zerofill(sizeof(char*) * RIGHT_HT_SIZE, HASH_TABLE_MEM_USAGE);
+    thisAgent->left_ht = thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(char*) * LEFT_HT_SIZE, HASH_TABLE_MEM_USAGE);
+    thisAgent->right_ht = thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(char*) * RIGHT_HT_SIZE, HASH_TABLE_MEM_USAGE);
 
     init_dummy_top_node(thisAgent);
 
     thisAgent->max_rhs_unbound_variables = 1;
     thisAgent->rhs_variable_bindings = (Symbol**)
-                                       thisAgent->memPoolManager->allocate_memory_and_zerofill(sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
+                                       thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
 
     /* This is still not thread-safe. -AJC (8/9/02) */
     static bool bInit = false;

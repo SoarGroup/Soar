@@ -60,7 +60,7 @@ char* make_memory_block_for_string(agent* thisAgent, char const* s)
     size_t size;
 
     size = strlen(s) + 1; /* plus one for trailing null character */
-    p = static_cast<char*>(thisAgent->memPoolManager->allocate_memory(size, STRING_MEM_USAGE));
+    p = static_cast<char*>(thisAgent->memoryManager->allocate_memory(size, STRING_MEM_USAGE));
     strncpy(p, s, size);
     p[size - 1] = 0; /* ensure null termination */
     return p;
@@ -68,7 +68,7 @@ char* make_memory_block_for_string(agent* thisAgent, char const* s)
 
 void free_memory_block_for_string(agent* thisAgent, char* p)
 {
-    thisAgent->memPoolManager->free_memory(p, STRING_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(p, STRING_MEM_USAGE);
 }
 
 #define INITIAL_GROWABLE_STRING_SIZE 100
@@ -77,7 +77,7 @@ growable_string make_blank_growable_string(agent* thisAgent)
 {
     growable_string gs;
 
-    gs = thisAgent->memPoolManager->allocate_memory(2 * sizeof(int*) + INITIAL_GROWABLE_STRING_SIZE,
+    gs = thisAgent->memoryManager->allocate_memory(2 * sizeof(int*) + INITIAL_GROWABLE_STRING_SIZE,
                          STRING_MEM_USAGE);
     memsize_of_growable_string(gs) = INITIAL_GROWABLE_STRING_SIZE;
     length_of_growable_string(gs) = 0;
@@ -101,10 +101,10 @@ void add_to_growable_string(agent* thisAgent, growable_string* gs,
         {
             new_memsize = new_memsize * 2;
         }
-        New = thisAgent->memPoolManager->allocate_memory(new_memsize + 2 * sizeof(int*), STRING_MEM_USAGE);
+        New = thisAgent->memoryManager->allocate_memory(new_memsize + 2 * sizeof(int*), STRING_MEM_USAGE);
         memsize_of_growable_string(New) = static_cast<int>(new_memsize);
         strcpy(text_of_growable_string(New), text_of_growable_string(*gs));
-        thisAgent->memPoolManager->free_memory(*gs, STRING_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(*gs, STRING_MEM_USAGE);
         *gs = New;
     }
     strcpy(text_of_growable_string(*gs) + current_length, string_to_add);
@@ -113,7 +113,7 @@ void add_to_growable_string(agent* thisAgent, growable_string* gs,
 
 void free_growable_string(agent* thisAgent, growable_string gs)
 {
-    thisAgent->memPoolManager->free_memory(gs, STRING_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(gs, STRING_MEM_USAGE);
 }
 
 
@@ -349,7 +349,7 @@ struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2si
 {
     hash_table* ht;
 
-    ht = static_cast<hash_table_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(hash_table),
+    ht = static_cast<hash_table_struct*>(thisAgent->memoryManager->allocate_memory(sizeof(hash_table),
                                          HASH_TABLE_MEM_USAGE));
     ht->count = 0;
     if (minimum_log2size < 1)
@@ -359,7 +359,7 @@ struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2si
     ht->size = static_cast<uint32_t>(1) << minimum_log2size;
     ht->log2size = minimum_log2size;
     ht->minimum_log2size = minimum_log2size;
-    ht->buckets = static_cast<item_in_hash_table_struct**>(thisAgent->memPoolManager->allocate_memory_and_zerofill(ht->size * sizeof(char*),
+    ht->buckets = static_cast<item_in_hash_table_struct**>(thisAgent->memoryManager->allocate_memory_and_zerofill(ht->size * sizeof(char*),
                   HASH_TABLE_MEM_USAGE));
     ht->h = h;
     return ht;
@@ -375,7 +375,7 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
 
     new_size = static_cast<uint32_t>(1) << new_log2size;
     new_buckets =
-        (bucket_array*) thisAgent->memPoolManager->allocate_memory_and_zerofill(new_size * sizeof(char*),
+        (bucket_array*) thisAgent->memoryManager->allocate_memory_and_zerofill(new_size * sizeof(char*),
                 HASH_TABLE_MEM_USAGE);
 
     for (i = 0; i < ht->size; i++)
@@ -390,7 +390,7 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
         }
     }
 
-    thisAgent->memPoolManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
     ht->buckets = new_buckets;
     ht->size = new_size;
     ht->log2size = new_log2size;
@@ -399,8 +399,8 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
 /* RPM 6/09 */
 void free_hash_table(agent* thisAgent, struct hash_table_struct* ht)
 {
-    thisAgent->memPoolManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
-    thisAgent->memPoolManager->free_memory(ht, HASH_TABLE_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(ht, HASH_TABLE_MEM_USAGE);
 }
 
 void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht,
@@ -502,7 +502,7 @@ void do_for_all_items_in_hash_bucket(struct hash_table_struct* ht,
 
 void init_memory_utilities(agent* thisAgent)
 {
-    thisAgent->memPoolManager->init_memory_pool(MP_cons_cell, sizeof(cons), "cons cell");
-    thisAgent->memPoolManager->init_memory_pool(MP_dl_cons, sizeof(dl_cons), "dl cons");
+    thisAgent->memoryManager->init_memory_pool(MP_cons_cell, sizeof(cons), "cons cell");
+    thisAgent->memoryManager->init_memory_pool(MP_dl_cons, sizeof(dl_cons), "dl cons");
 }
 

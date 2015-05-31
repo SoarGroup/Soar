@@ -39,11 +39,11 @@
 
 void init_production_utilities(agent* thisAgent)
 {
-    thisAgent->memPoolManager->init_memory_pool(MP_test, sizeof(test_info), "test");
-    thisAgent->memPoolManager->init_memory_pool(MP_condition, sizeof(condition), "condition");
-    thisAgent->memPoolManager->init_memory_pool(MP_production, sizeof(production), "production");
-    thisAgent->memPoolManager->init_memory_pool(MP_action, sizeof(action), "action");
-    thisAgent->memPoolManager->init_memory_pool(MP_rhs_symbol, sizeof(rhs_info), "rhs symbol");
+    thisAgent->memoryManager->init_memory_pool(MP_test, sizeof(test_info), "test");
+    thisAgent->memoryManager->init_memory_pool(MP_condition, sizeof(condition), "condition");
+    thisAgent->memoryManager->init_memory_pool(MP_production, sizeof(production), "production");
+    thisAgent->memoryManager->init_memory_pool(MP_action, sizeof(action), "action");
+    thisAgent->memoryManager->init_memory_pool(MP_rhs_symbol, sizeof(rhs_info), "rhs symbol");
     init_reorderer(thisAgent);
 }
 
@@ -64,7 +64,7 @@ void deallocate_condition(agent* thisAgent, condition* cond)
         deallocate_test(thisAgent, cond->data.tests.attr_test);
         deallocate_test(thisAgent, cond->data.tests.value_test);
     }
-    thisAgent->memPoolManager->free_with_pool(MP_condition, cond);
+    thisAgent->memoryManager->free_with_pool(MP_condition, cond);
 }
 
 void deallocate_condition_list(agent* thisAgent,
@@ -87,7 +87,7 @@ void deallocate_condition_list(agent* thisAgent,
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);
         }
-        thisAgent->memPoolManager->free_with_pool(MP_condition, c);
+        thisAgent->memoryManager->free_with_pool(MP_condition, c);
     }
 }
 
@@ -111,7 +111,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
     {
         return NIL;
     }
-    thisAgent->memPoolManager->allocate_with_pool(MP_condition, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
     init_condition(New);
     New->type = cond->type;
 
@@ -150,7 +150,7 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     {
         return NIL;
     }
-    thisAgent->memPoolManager->allocate_with_pool(MP_condition, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
     init_condition(New);
     New->type = cond->type;
     New->counterpart = cond->counterpart;
@@ -831,7 +831,7 @@ production* make_production(agent* thisAgent,
         }
     }
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_production, &p);
+    thisAgent->memoryManager->allocate_with_pool(MP_production, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
 
@@ -916,7 +916,7 @@ void deallocate_production(agent* thisAgent, production* prod)
         delete prod->rl_template_instantiations;
     }
 
-    thisAgent->memPoolManager->free_with_pool(MP_production, prod);
+    thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)

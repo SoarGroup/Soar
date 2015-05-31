@@ -295,7 +295,7 @@ void wma_deinit(agent* thisAgent)
     for (wma_forget_p_queue::iterator pq_p = thisAgent->wma_forget_pq->begin(); pq_p != thisAgent->wma_forget_pq->end(); pq_p++)
     {
         pq_p->second->~wma_decay_set();
-        thisAgent->memPoolManager->free_with_pool(MP_wma_decay_set, pq_p->second);
+        thisAgent->memoryManager->free_with_pool(MP_wma_decay_set, pq_p->second);
     }
     thisAgent->wma_forget_pq->clear();
 
@@ -486,7 +486,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         // if decay structure doesn't exist, create it
         if (!temp_el)
         {
-            thisAgent->memPoolManager->allocate_with_pool(MP_wma_decay_element, &temp_el);
+            thisAgent->memoryManager->allocate_with_pool(MP_wma_decay_element, &temp_el);
 
             temp_el->this_wme = w;
             temp_el->just_removed = false;
@@ -596,7 +596,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         // if doesn't have an o_set, populate
         if (!my_o_set)
         {
-            thisAgent->memPoolManager->allocate_with_pool(MP_wma_wme_oset, &my_o_set);
+            thisAgent->memoryManager->allocate_with_pool(MP_wma_wme_oset, &my_o_set);
 #ifdef USE_MEM_POOL_ALLOCATORS
             my_o_set = new(my_o_set) wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
 #else
@@ -706,7 +706,7 @@ void wma_remove_decay_element(agent* thisAgent, wme* w)
             xml_generate_warning(thisAgent, msg.c_str());
         }
 
-        thisAgent->memPoolManager->free_with_pool(MP_wma_decay_element, temp_el);
+        thisAgent->memoryManager->free_with_pool(MP_wma_decay_element, temp_el);
         w->wma_decay_el = NULL;
     }
 }
@@ -724,7 +724,7 @@ void wma_remove_pref_o_set(agent* thisAgent, preference* pref)
         }
 
         victim->~wma_pooled_wme_set();
-        thisAgent->memPoolManager->free_with_pool(MP_wma_wme_oset, victim);
+        thisAgent->memoryManager->free_with_pool(MP_wma_wme_oset, victim);
     }
 }
 
@@ -748,7 +748,7 @@ inline void wma_forgetting_add_to_p_queue(agent* thisAgent, wma_decay_element* d
         if (pq_p == thisAgent->wma_forget_pq->end())
         {
             wma_decay_set* newbie;
-            thisAgent->memPoolManager->allocate_with_pool(MP_wma_decay_set, &newbie);
+            thisAgent->memoryManager->allocate_with_pool(MP_wma_decay_set, &newbie);
 #ifdef USE_MEM_POOL_ALLOCATORS
             newbie = new(newbie) wma_decay_set(std::less< wma_decay_element* >(), soar_module::soar_memory_pool_allocator< wma_decay_element* >(thisAgent));
 #else
@@ -1017,7 +1017,7 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
             if ((pq_p != thisAgent->wma_forget_pq->end()) && (pq_p->second->empty()))
             {
                 pq_p->second->~wma_decay_set();
-                thisAgent->memPoolManager->free_with_pool(MP_wma_decay_set, pq_p->second);
+                thisAgent->memoryManager->free_with_pool(MP_wma_decay_set, pq_p->second);
 
                 thisAgent->wma_forget_pq->erase(pq_p);
             }

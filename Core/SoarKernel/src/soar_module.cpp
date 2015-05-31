@@ -87,7 +87,7 @@ namespace soar_module
 
         // make fake instantiation
         instantiation* inst;
-        thisAgent->memPoolManager->allocate_with_pool(MP_instantiation, &inst);
+        thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
         inst->prod = NULL;
         inst->next = inst->prev = NULL;
         inst->rete_token = NULL;
@@ -131,7 +131,7 @@ namespace soar_module
             for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
             {
                 // construct the condition
-                thisAgent->memPoolManager->allocate_with_pool(MP_condition, &cond);
+                thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
                 init_condition(cond);
                 cond->type = POSITIVE_CONDITION;
                 cond->prev = prev_cond;

@@ -233,11 +233,11 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort)
     AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleFireCountCycle,        sml_Names::kTypeInt,    to_string(thisAgent->max_dc_production_firing_count_cycle, temp));
     AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleFireCountValue,        sml_Names::kTypeInt,    to_string(thisAgent->max_dc_production_firing_count_value, temp));
 
-    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,            sml_Names::kTypeInt,    to_string(thisAgent->memPoolManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE], temp));
-    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,                        sml_Names::kTypeInt,    to_string(thisAgent->memPoolManager->memory_for_usage[HASH_TABLE_MEM_USAGE], temp));
-    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,                    sml_Names::kTypeInt,    to_string(thisAgent->memPoolManager->memory_for_usage[STRING_MEM_USAGE], temp));
-    AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,                        sml_Names::kTypeInt,    to_string(thisAgent->memPoolManager->memory_for_usage[POOL_MEM_USAGE], temp));
-    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,            sml_Names::kTypeInt,    to_string(thisAgent->memPoolManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], temp));
+    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,            sml_Names::kTypeInt,    to_string(thisAgent->memoryManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE], temp));
+    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,                        sml_Names::kTypeInt,    to_string(thisAgent->memoryManager->memory_for_usage[HASH_TABLE_MEM_USAGE], temp));
+    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,                    sml_Names::kTypeInt,    to_string(thisAgent->memoryManager->memory_for_usage[STRING_MEM_USAGE], temp));
+    AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,                        sml_Names::kTypeInt,    to_string(thisAgent->memoryManager->memory_for_usage[POOL_MEM_USAGE], temp));
+    AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,            sml_Names::kTypeInt,    to_string(thisAgent->memoryManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], temp));
 
     if (options.test(STATS_RESET))
     {
@@ -540,15 +540,15 @@ void CommandLineInterface::GetMemoryStats()
     size_t total = 0;
     for (int i = 0; i < NUM_MEM_USAGE_CODES; i++)
     {
-        total += thisAgent->memPoolManager->memory_for_usage[i];
+        total += thisAgent->memoryManager->memory_for_usage[i];
     }
 
     m_Result << std::setw(8) << total << " bytes total memory allocated\n";
-    m_Result << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] << " bytes statistics overhead\n";
-    m_Result << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[STRING_MEM_USAGE] << " bytes for strings\n";
-    m_Result << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[HASH_TABLE_MEM_USAGE] << " bytes for hash tables\n";
-    m_Result << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[POOL_MEM_USAGE] << " bytes for various memory pools\n";
-    m_Result << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE] << " bytes for miscellaneous other things\n";
+    m_Result << std::setw(8) << thisAgent->memoryManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] << " bytes statistics overhead\n";
+    m_Result << std::setw(8) << thisAgent->memoryManager->memory_for_usage[STRING_MEM_USAGE] << " bytes for strings\n";
+    m_Result << std::setw(8) << thisAgent->memoryManager->memory_for_usage[HASH_TABLE_MEM_USAGE] << " bytes for hash tables\n";
+    m_Result << std::setw(8) << thisAgent->memoryManager->memory_for_usage[POOL_MEM_USAGE] << " bytes for various memory pools\n";
+    m_Result << std::setw(8) << thisAgent->memoryManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE] << " bytes for miscellaneous other things\n";
 
     GetMemoryPoolStatistics();
 }
@@ -565,7 +565,7 @@ void CommandLineInterface::GetMemoryPoolStatistics()
     m_Result << "---------------  ---------  -------  ------  -----------\n";
 #endif
 
-    for (memory_pool* p = thisAgent->memPoolManager->memory_pools_in_use; p != NIL; p = p->next)
+    for (memory_pool* p = thisAgent->memoryManager->memory_pools_in_use; p != NIL; p = p->next)
     {
         m_Result << std::setw(MAX_POOL_NAME_LENGTH) << p->name;
 #ifdef MEMORY_POOL_STATS

@@ -22,7 +22,7 @@
 
 #include "backtrace.h"
 #include "mem.h"
-#include "mempool_manager.h"
+#include "memory_manager.h"
 #include "kernel.h"
 #include "print.h"
 #include "wmem.h"

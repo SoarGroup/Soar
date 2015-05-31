@@ -27,7 +27,7 @@
 #include "misc.h"
 #include "symtab.h"
 //#include "mem.h"
-#include "mempool_manager.h"
+#include "memory_manager.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;

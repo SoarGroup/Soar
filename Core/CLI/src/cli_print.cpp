@@ -28,7 +28,7 @@
 #include "rhs.h"
 #include "decide.h"
 #include "output_manager.h"
-#include "mempool_manager.h"
+#include "memory_manager.h"
 
 using namespace cli;
 using namespace sml;
@@ -272,7 +272,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     }
 
     /* --- next, construct the array of wme pointers and sort them --- */
-    list = (wme**)thisAgent->memPoolManager->allocate_memory(num_attr * sizeof(wme*), MISCELLANEOUS_MEM_USAGE);
+    list = (wme**)thisAgent->memoryManager->allocate_memory(num_attr * sizeof(wme*), MISCELLANEOUS_MEM_USAGE);
     attr = 0;
     for (w = id->id->impasse_wmes; w != NIL; w = w->next)
     {
@@ -371,7 +371,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     }
 
     // deallocate the array
-    thisAgent->memPoolManager->free_memory(list, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(list, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* RPM 4/07 bug 988

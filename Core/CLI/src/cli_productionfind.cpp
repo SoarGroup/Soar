@@ -34,7 +34,7 @@ void free_binding_list(agent* thisAgent, list* bindings)
 
     for (c = bindings; c != NIL; c = c->rest)
     {
-        thisAgent->memPoolManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
     }
     free_list(thisAgent, bindings);
 }
@@ -57,7 +57,7 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
     while (c != *current_binding_point)
     {
         c_next = c->rest;
-        thisAgent->memPoolManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
         free_cons(thisAgent, c);
         c = c_next;
     }
@@ -111,7 +111,7 @@ bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, l
     bvar = get_binding(s1, *bindings);
     if (bvar == NIL)
     {
-        b = static_cast<Binding*>(thisAgent->memPoolManager->allocate_memory(sizeof(Binding), MISCELLANEOUS_MEM_USAGE));
+        b = static_cast<Binding*>(thisAgent->memoryManager->allocate_memory(sizeof(Binding), MISCELLANEOUS_MEM_USAGE));
         b->from = s1;
         b->to = s2;
         push(thisAgent, b, *bindings);

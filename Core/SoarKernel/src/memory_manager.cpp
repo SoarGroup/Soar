@@ -1,5 +1,3 @@
-#include "mempool_manager.h"
-
 #include "mem.h"
 #include "agent.h"
 #include "init_soar.h"
@@ -10,6 +8,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include "memory_manager.h"
 #include <iostream>
 
 /* ====================================================================
@@ -41,7 +40,7 @@
    number, must be prime */
 #define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
 
-void MemPool_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
+void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
 
     m_Kernel = pKernel;
@@ -59,12 +58,12 @@ void MemPool_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* 
     dprint(DT_SOAR_INSTANCE, "MemPool_Manager initialized.\n");
 }
 
-MemPool_Manager::MemPool_Manager()
+Memory_Manager::Memory_Manager()
 {
 //    std::cout << "MemPool Manager constructor called.\n";
 }
 
-MemPool_Manager::~MemPool_Manager()
+Memory_Manager::~Memory_Manager()
 {
     dprint(DT_SOAR_INSTANCE, "~MemPoolManager called.\n");
     /* Releasing memory pools */
@@ -86,7 +85,7 @@ MemPool_Manager::~MemPool_Manager()
     delete dyn_memory_pools;
 }
 
-void MemPool_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name)
+void Memory_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name)
 {
 //    std::cout << "Init memory pool by ptr called for" << pThisPool->name << std::endl;
 
@@ -126,7 +125,7 @@ void MemPool_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t ite
 
 }
 
-void MemPool_Manager::init_memory_pool(MemoryPoolType mempool_index, size_t item_size, const char* name)
+void Memory_Manager::init_memory_pool(MemoryPoolType mempool_index, size_t item_size, const char* name)
 {
 //    std::cout << "Init memory pool called for" << name << std::endl;
     memory_pool* lThisPool = &(memory_pools[mempool_index]);
@@ -134,7 +133,7 @@ void MemPool_Manager::init_memory_pool(MemoryPoolType mempool_index, size_t item
     lThisPool->index = mempool_index;
 }
 
-memory_pool* MemPool_Manager::get_memory_pool(size_t size)
+memory_pool* Memory_Manager::get_memory_pool(size_t size)
 {
     memory_pool* return_val = NULL;
 
@@ -156,7 +155,7 @@ memory_pool* MemPool_Manager::get_memory_pool(size_t size)
     return return_val;
 }
 
-void MemPool_Manager::free_memory_pool_by_ptr(memory_pool* pThisPool)
+void Memory_Manager::free_memory_pool_by_ptr(memory_pool* pThisPool)
 {
 //    std::cout << "Free memory pool called for" << pThisPool->name << std::endl;
     char* cur_block = static_cast<char*>(pThisPool->first_block);
@@ -170,13 +169,13 @@ void MemPool_Manager::free_memory_pool_by_ptr(memory_pool* pThisPool)
     }
     pThisPool->num_blocks = 0;
 }
-void MemPool_Manager::free_memory_pool(MemoryPoolType mempool_index)
+void Memory_Manager::free_memory_pool(MemoryPoolType mempool_index)
 {
     free_memory_pool_by_ptr(&(memory_pools[mempool_index]));
 }
 
 /* This is only called by the CLI DoAllocate command */
-bool MemPool_Manager::add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks)
+bool Memory_Manager::add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks)
 {
     char* new_block;
     size_t size, i, item_num, interleave_factor;
@@ -198,7 +197,7 @@ bool MemPool_Manager::add_block_to_memory_pool_by_name(const std::string& pool_n
     return true;
 }
 
-void MemPool_Manager::add_block_to_memory_pool(memory_pool* pThisPool)
+void Memory_Manager::add_block_to_memory_pool(memory_pool* pThisPool)
 {
     char* new_block;
     size_t size, i, item_num, interleave_factor;
@@ -271,7 +270,7 @@ thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
    Print_memory_statistics() prints out stats on the memory usage.
 ==================================================================== */
 
-void* MemPool_Manager::allocate_memory(size_t size, int usage_code)
+void* Memory_Manager::allocate_memory(size_t size, int usage_code)
 {
     char* p;
 
@@ -303,7 +302,7 @@ void* MemPool_Manager::allocate_memory(size_t size, int usage_code)
     return p;
 }
 
-void* MemPool_Manager::allocate_memory_and_zerofill(size_t size, int usage_code)
+void* Memory_Manager::allocate_memory_and_zerofill(size_t size, int usage_code)
 {
     void* p;
 
@@ -312,7 +311,7 @@ void* MemPool_Manager::allocate_memory_and_zerofill(size_t size, int usage_code)
     return p;
 }
 
-void MemPool_Manager::free_memory(void* mem, int usage_code)
+void Memory_Manager::free_memory(void* mem, int usage_code)
 {
     size_t size;
 
@@ -331,7 +330,7 @@ void MemPool_Manager::free_memory(void* mem, int usage_code)
     free(mem);
 }
 
-void MemPool_Manager::print_memory_statistics()
+void Memory_Manager::print_memory_statistics()
 {
     size_t total;
     int i;
@@ -355,7 +354,7 @@ void MemPool_Manager::print_memory_statistics()
           memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
 
-void MemPool_Manager::debug_print_memory_stats(agent* thisAgent)
+void Memory_Manager::debug_print_memory_stats(agent* thisAgent)
 {
     // Hostname
     char hostname[256];
@@ -623,15 +622,15 @@ void MemPool_Manager::debug_print_memory_stats(agent* thisAgent)
 
     for (int i = 0; i < NUM_MEM_USAGE_CODES; i++)
     {
-        total += thisAgent->memPoolManager->memory_for_usage[i];
+        total += thisAgent->memoryManager->memory_for_usage[i];
     }
 
     std::cout << std::setw(8) << total << " bytes total memory allocated\n";
-    std::cout << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] << " bytes statistics overhead\n";
-    std::cout << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[STRING_MEM_USAGE] << " bytes for strings\n";
-    std::cout << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[HASH_TABLE_MEM_USAGE] << " bytes for hash tables\n";
-    std::cout << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[POOL_MEM_USAGE] << " bytes for various memory pools\n";
-    std::cout << std::setw(8) << thisAgent->memPoolManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE] << " bytes for miscellaneous other things\n";
+    std::cout << std::setw(8) << thisAgent->memoryManager->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] << " bytes statistics overhead\n";
+    std::cout << std::setw(8) << thisAgent->memoryManager->memory_for_usage[STRING_MEM_USAGE] << " bytes for strings\n";
+    std::cout << std::setw(8) << thisAgent->memoryManager->memory_for_usage[HASH_TABLE_MEM_USAGE] << " bytes for hash tables\n";
+    std::cout << std::setw(8) << thisAgent->memoryManager->memory_for_usage[POOL_MEM_USAGE] << " bytes for various memory pools\n";
+    std::cout << std::setw(8) << thisAgent->memoryManager->memory_for_usage[MISCELLANEOUS_MEM_USAGE] << " bytes for miscellaneous other things\n";
 
     std::cout << "Memory pool statistics:\n\n";
 #ifdef MEMORY_POOL_STATS

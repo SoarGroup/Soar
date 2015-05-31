@@ -87,7 +87,7 @@ void add_rhs_function(agent* thisAgent,
         }
     }
 
-    rf = static_cast<rhs_function_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE));
+    rf = static_cast<rhs_function_struct*>(thisAgent->memoryManager->allocate_memory(sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE));
 
     /* Insertion into the list */
     rf->next = thisAgent->rhs_functions;
@@ -153,7 +153,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
             prev->next = rf->next;
         }
 
-        thisAgent->memPoolManager->free_memory(rf, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(rf, MISCELLANEOUS_MEM_USAGE);
     }
 
     // DJP-FREE: The name reference needs to be released now the function is gone

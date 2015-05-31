@@ -5,6 +5,7 @@
  *      Author: mazzin
  */
 
+#include "memory_manager.h"
 #include <iostream>
 
 #include "soar_instance.h"
@@ -14,7 +15,6 @@
 #include "sml_AgentSML.h"
 #include "debug.h"
 #include "agent.h"
-#include "mempool_manager.h"
 
 Soar_Instance::Soar_Instance() :
     m_Kernel(NULL),
@@ -32,7 +32,7 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
     /* -- Sets up the Output Manager -- */
     m_Output_Manager = &Output_Manager::Get_OM();
     m_Output_Manager->init_Output_Manager(pKernel, this);
-    m_Memory_Manager = &MemPool_Manager::Get_MPM();
+    m_Memory_Manager = &Memory_Manager::Get_MPM();
     m_Memory_Manager->init_MemPool_Manager(pKernel, this);
 
 }

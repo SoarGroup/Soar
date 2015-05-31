@@ -54,7 +54,7 @@ void debug_test(int type)
             break;
         }
         case 4:
-            debug_agent->memPoolManager->debug_print_memory_stats(debug_agent);
+            debug_agent->memoryManager->debug_print_memory_stats(debug_agent);
             break;
 
         case 5:

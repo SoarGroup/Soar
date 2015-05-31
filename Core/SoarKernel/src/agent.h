@@ -20,12 +20,12 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+#include "memory_manager.h"
 #include "gsysparam.h"
 #include "kernel.h"
 #include "init_soar.h"
 #include "soar_module.h"
 #include "mem.h"
-#include "mempool_manager.h"
 #include "callback.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
@@ -63,7 +63,7 @@ class AgentOutput_Info;
 class debug_param_container;
 class Output_Manager;
 class Variablization_Manager;
-class MemPool_Manager;
+class Memory_Manager;
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -187,8 +187,8 @@ typedef struct agent_struct
     Symbol*             current_production_name;
 
     Variablization_Manager* variablizationManager;
-    MemPool_Manager*        memPoolManager;
-//    Output_Manager*         outputManager;
+    Memory_Manager*         memoryManager;
+//    Output_Manager*       outputManager;
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at
@@ -892,13 +892,13 @@ typedef struct agent_struct
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer)
 {
-    thisAgent->memPoolManager->allocate_with_pool(MP_cons_cell, (dest_cons_pointer));
+    thisAgent->memoryManager->allocate_with_pool(MP_cons_cell, (dest_cons_pointer));
 }
 
 template <typename T>
 inline void free_cons(agent* thisAgent, T* c)
 {
-    thisAgent->memPoolManager->free_with_pool(MP_cons_cell, (c));
+    thisAgent->memoryManager->free_with_pool(MP_cons_cell, (c));
 }
 
 template <typename P, typename T>

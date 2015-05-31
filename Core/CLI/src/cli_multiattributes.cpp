@@ -19,7 +19,7 @@
 #include "production.h"
 #include "print.h"
 #include "symtab.h"
-#include "mempool_manager.h"
+#include "memory_manager.h"
 
 using namespace cli;
 using namespace sml;
@@ -104,7 +104,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     }
 
     /* sym wasn't in the table if we get here, so add it */
-    maList = static_cast<multi_attribute*>(thisAgent->memPoolManager->allocate_memory(sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
+    maList = static_cast<multi_attribute*>(thisAgent->memoryManager->allocate_memory(sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
     assert(maList);
 
     maList->value = n;

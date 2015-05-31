@@ -18,7 +18,7 @@ bool CommandLineInterface::DoAllocate(const std::string& pool, int blocks)
     }
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (thisAgent->memPoolManager->add_block_to_memory_pool_by_name(pool, blocks))
+    if (thisAgent->memoryManager->add_block_to_memory_pool_by_name(pool, blocks))
     {
         m_Result << pool << " blocks increased by " << blocks;
         return true;

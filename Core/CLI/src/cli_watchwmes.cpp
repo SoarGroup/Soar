@@ -211,7 +211,7 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
         }
     }
 
-    wme_filter* wf = static_cast<wme_filter*>(thisAgent->memPoolManager->allocate_memory(sizeof(wme_filter), MISCELLANEOUS_MEM_USAGE));
+    wme_filter* wf = static_cast<wme_filter*>(thisAgent->memoryManager->allocate_memory(sizeof(wme_filter), MISCELLANEOUS_MEM_USAGE));
     wf->id = pId;
     wf->attr = pAttr;
     wf->value = pValue;
@@ -267,7 +267,7 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
             symbol_remove_ref(thisAgent, pId);
             symbol_remove_ref(thisAgent, pAttr);
             symbol_remove_ref(thisAgent, pValue);
-            thisAgent->memPoolManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
+            thisAgent->memoryManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
             free_cons(thisAgent, c);
             return 0; /* assume that AddWMEFilter did not add duplicates */
         }
@@ -297,7 +297,7 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
             symbol_remove_ref(thisAgent, wf->id);
             symbol_remove_ref(thisAgent, wf->attr);
             symbol_remove_ref(thisAgent, wf->value);
-            thisAgent->memPoolManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
+            thisAgent->memoryManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
             free_cons(thisAgent, c);
             didRemoveSome = true;
         }

@@ -20,7 +20,7 @@ namespace sml
 }
 
 class Output_Manager;
-class MemPool_Manager;
+class Memory_Manager;
 
 typedef struct agent_struct agent;
 
@@ -101,7 +101,7 @@ class EXPORT Soar_Instance
 
         sml::Kernel*             m_Kernel;
         Output_Manager*          m_Output_Manager;
-        MemPool_Manager*         m_Memory_Manager;
+        Memory_Manager*         m_Memory_Manager;
 
         std::map< char*, Agent_Info*, cmp_str>* m_agent_table;
         std::map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;

@@ -100,18 +100,18 @@ inline void decrement_used_count(P p)
 
 #endif /* MEMORY_POOL_STATS */
 
-class MemPool_Manager
+class Memory_Manager
 {
         /* CLI is a friend because it prints out mempool stats */
         friend class cli::CommandLineInterface;
 
     public:
-        static MemPool_Manager& Get_MPM()
+        static Memory_Manager& Get_MPM()
         {
-            static MemPool_Manager instance;
+            static Memory_Manager instance;
             return instance;
         }
-        virtual ~MemPool_Manager();
+        virtual ~Memory_Manager();
 
         void init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void add_block_to_memory_pool(memory_pool* pThisPool);
@@ -130,11 +130,11 @@ class MemPool_Manager
 
     private:
 
-        MemPool_Manager();
+        Memory_Manager();
 
         /* The following two functions are declared but not implemented to avoid copies of singletons */
-        MemPool_Manager(MemPool_Manager const&) {};
-        void operator=(MemPool_Manager const&) {};
+        Memory_Manager(Memory_Manager const&) {};
+        void operator=(Memory_Manager const&) {};
 
         Soar_Instance*                            m_Soar_Instance;
         sml::Kernel*                              m_Kernel;

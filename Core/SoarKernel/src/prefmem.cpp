@@ -66,7 +66,7 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
 {
     preference* p;
 
-    thisAgent->memPoolManager->allocate_with_pool(MP_preference, &p);
+    thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
     p->type = type;
     p->in_tm = false;
     p->o_supported = false;
@@ -145,7 +145,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     }
 
     /* --- free the memory --- */
-    thisAgent->memPoolManager->free_with_pool(MP_preference, pref);
+    thisAgent->memoryManager->free_with_pool(MP_preference, pref);
 }
 
 /* ----------------------------------------------------------------------
@@ -329,7 +329,7 @@ void add_preference_to_tm(agent* thisAgent, preference* pref)
         {
             if (s->wma_val_references == NIL)
             {
-                thisAgent->memPoolManager->allocate_with_pool(MP_wma_slot_refs, &(s->wma_val_references));
+                thisAgent->memoryManager->allocate_with_pool(MP_wma_slot_refs, &(s->wma_val_references));
 #ifdef USE_MEM_POOL_ALLOCATORS
                 s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >(thisAgent));
 #else

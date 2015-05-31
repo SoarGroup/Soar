@@ -1,3 +1,4 @@
+#include "memory_manager.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -25,7 +26,6 @@
 #include "agent.h"
 #include "debug.h"
 #include "kernel.h"
-#include "mempool_manager.h"
 #include "mem.h"
 #include "lexer.h"
 #include "symtab.h"
@@ -88,26 +88,26 @@ void init_soar_agent(agent* thisAgent)
     select_init(thisAgent);
     predict_init(thisAgent);
 
-    thisAgent->memPoolManager->init_memory_pool(MP_gds, sizeof(goal_dependency_set), "gds");
+    thisAgent->memoryManager->init_memory_pool(MP_gds, sizeof(goal_dependency_set), "gds");
 
-    thisAgent->memPoolManager->init_memory_pool(MP_rl_info, sizeof(rl_data), "rl_id_data");
-    thisAgent->memPoolManager->init_memory_pool(MP_rl_et, sizeof(rl_et_map), "rl_et");
-    thisAgent->memPoolManager->init_memory_pool(MP_rl_rule, sizeof(rl_rule_list), "rl_rules");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_info, sizeof(rl_data), "rl_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_et, sizeof(rl_et_map), "rl_et");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_rule, sizeof(rl_rule_list), "rl_rules");
 
-    thisAgent->memPoolManager->init_memory_pool(MP_wma_decay_element, sizeof(wma_decay_element), "wma_decay");
-    thisAgent->memPoolManager->init_memory_pool(MP_wma_decay_set, sizeof(wma_decay_set), "wma_decay_set");
-    thisAgent->memPoolManager->init_memory_pool(MP_wma_wme_oset, sizeof(wma_pooled_wme_set), "wma_oset");
-    thisAgent->memPoolManager->init_memory_pool(MP_wma_slot_refs, sizeof(wma_sym_reference_map), "wma_slot_ref");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_decay_element, sizeof(wma_decay_element), "wma_decay");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_decay_set, sizeof(wma_decay_set), "wma_decay_set");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_wme_oset, sizeof(wma_pooled_wme_set), "wma_oset");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_slot_refs, sizeof(wma_sym_reference_map), "wma_slot_ref");
 
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
-    thisAgent->memPoolManager->init_memory_pool(MP_smem_wmes, sizeof(smem_wme_stack), "smem_wmes");
-    thisAgent->memPoolManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(smem_wme_stack), "smem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
 
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_pedge, sizeof(epmem_pedge), "epmem_pedges");
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_uedge, sizeof(epmem_uedge), "epmem_uedges");
-    thisAgent->memPoolManager->init_memory_pool(MP_epmem_interval, sizeof(epmem_interval), "epmem_intervals");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_pedge, sizeof(epmem_pedge), "epmem_pedges");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_uedge, sizeof(epmem_uedge), "epmem_uedges");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_interval, sizeof(epmem_interval), "epmem_intervals");
 
     thisAgent->epmem_params->exclusions->set_value("epmem");
     thisAgent->epmem_params->exclusions->set_value("smem");
@@ -289,7 +289,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     //
     // This call is needed to set up callbacks.
-    thisAgent->memPoolManager = &MemPool_Manager::Get_MPM();
+    thisAgent->memoryManager = &Memory_Manager::Get_MPM();
     init_memory_utilities(thisAgent);
 
     //
@@ -520,10 +520,10 @@ void destroy_soar_agent(agent* delete_agent)
 
         symbol_remove_ref(delete_agent, curmattr->symbol);
 
-        delete_agent->memPoolManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
+        delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
         lastmattr = curmattr;
     }
-    delete_agent->memPoolManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
 
     /* Freeing all the productions owned by this agent */
     excise_all_productions(delete_agent, false);
@@ -533,8 +533,8 @@ void destroy_soar_agent(agent* delete_agent)
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
 
     /* Releasing rete stuff RPM 11/06 */
-    delete_agent->memPoolManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
-    delete_agent->memPoolManager->free_with_pool(MP_token, delete_agent->dummy_top_token);
+    delete_agent->memoryManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
+    delete_agent->memoryManager->free_with_pool(MP_token, delete_agent->dummy_top_token);
 
     /* Cleaning up the various callbacks
        TODO: Not clear why callbacks need to take the agent pointer essentially twice.
@@ -543,9 +543,9 @@ void destroy_soar_agent(agent* delete_agent)
 
     /* RPM 9/06 begin */
 
-    delete_agent->memPoolManager->free_memory(delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
-    delete_agent->memPoolManager->free_memory(delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
-    delete_agent->memPoolManager->free_memory(delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
 
     /* Releasing trace formats (needs to happen before tracing hashtables are released) */
     remove_trace_format(delete_agent, false, FOR_ANYTHING_TF, NIL);
