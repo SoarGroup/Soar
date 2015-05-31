@@ -29,7 +29,7 @@ sp {apply*loose*constraint
     (state <s> ^superstate <ss>
                ^operator <o>)
     (<ss> ^word2 <w2>)
-    (<o> ^word { <> not-object <> <w2> <no> })
+    (<o> ^word { << object 7 >> <> not-object <> <w2> <no> })
     -->
     (<s> ^sub-result 1 +)
 }
