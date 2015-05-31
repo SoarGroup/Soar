@@ -394,6 +394,7 @@ void Variablization_Manager::remove_ungrounded_sti_constraints_and_cache_eq_test
         }
         else
         {
+            remove_ungrounded_sti_constraints_and_cache_eq_tests(cond->data.ncc.top);
         }
         last_cond = cond;
         cond = next_cond;
