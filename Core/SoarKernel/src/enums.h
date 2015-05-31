@@ -111,6 +111,9 @@ MP_epmem_literal,
 MP_epmem_pedge,
 MP_epmem_uedge,
 MP_epmem_interval,
+MP_variablizations,
+MP_constraints,
+MP_attachments,
 num_memory_pools
 };
 

@@ -58,7 +58,9 @@ void Variablization_Manager::reinit()
 
 inline variablization* copy_variablization(agent* thisAgent, variablization* v)
 {
-    variablization* new_variablization = new variablization;
+    variablization* new_variablization;
+    thisAgent->memoryManager->allocate_with_pool(MP_variablizations, &new_variablization);
+
     new_variablization->instantiated_symbol = v->instantiated_symbol;
     new_variablization->variablized_symbol = v->variablized_symbol;
     symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
@@ -75,7 +77,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
     dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(o%u) to %y.\n",
            instantiated_sym, pIdentity, variable);
 
-    new_variablization = new variablization;
+    thisAgent->memoryManager->allocate_with_pool(MP_variablizations, &new_variablization);
     new_variablization->instantiated_symbol = instantiated_sym;
     new_variablization->variablized_symbol = variable;
     symbol_add_ref(thisAgent, instantiated_sym);

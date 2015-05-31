@@ -996,36 +996,36 @@ namespace soar_module
                 return thisAgent;
             }
 
-            soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL), mem_pool_manager(NULL)
+            soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL), memory_manager(NULL)
             {
-                mem_pool_manager = &(MemPool_Manager::Get_MPM());
-                mem_pool = mem_pool_manager->get_memory_pool(sizeof(value_type));
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
-            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL), mem_pool_manager(NULL)
+            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL), memory_manager(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
-                mem_pool_manager = &(MemPool_Manager::Get_MPM());
-                mem_pool = mem_pool_manager->get_memory_pool(sizeof(value_type));
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
-            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL), mem_pool_manager(NULL)
+            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL), memory_manager(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
-                mem_pool_manager = &(MemPool_Manager::Get_MPM());
-                mem_pool = mem_pool_manager->get_memory_pool(sizeof(value_type));
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
             template <class _other>
-            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL), mem_pool_manager(NULL)
+            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL), memory_manager(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( T ).name() );
                 // std::string temp_other( typeid( _other ).name() );
-                    mem_pool_manager = &(MemPool_Manager::Get_MPM());
-                    mem_pool = mem_pool_manager->get_memory_pool(sizeof(value_type));
+                    memory_manager = &(Memory_Manager::Get_MPM());
+                    mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
             pointer allocate(size_type
@@ -1035,9 +1035,9 @@ namespace soar_module
                              , const void* = 0)
             {
                 assert(n == 1);
-                assert(mem_pool && mem_pool_manager);
+                assert(mem_pool && memory_manager);
                 pointer t;
-                mem_pool_manager->allocate_with_pool_ptr(mem_pool, &t);
+                memory_manager->allocate_with_pool_ptr(mem_pool, &t);
                 assert(t);
                 return t;
             }
@@ -1049,10 +1049,10 @@ namespace soar_module
                            )
             {
                 assert(n == 1);
-                assert(mem_pool_manager && mem_pool);
+                assert(memory_manager && mem_pool);
                 if (p)
                 {
-                    mem_pool_manager->free_with_pool_ptr(mem_pool, p);
+                    memory_manager->free_with_pool_ptr(mem_pool, p);
                 }
             }
 
@@ -1090,7 +1090,7 @@ namespace soar_module
 
         private:
             agent* thisAgent;
-            MemPool_Manager* mem_pool_manager;
+            Memory_Manager* memory_manager;
             memory_pool* mem_pool;
 
     };

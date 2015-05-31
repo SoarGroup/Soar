@@ -1364,6 +1364,9 @@ chunking_abort:
 void init_chunker(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memoryManager->init_memory_pool(MP_variablizations, sizeof(variablization_struct), "variablizations");
+    thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
+    thisAgent->memoryManager->init_memory_pool(MP_attachments, sizeof(attachment_struct), "attachments");
     init_chunk_cond_set(&thisAgent->negated_set);
 }
 

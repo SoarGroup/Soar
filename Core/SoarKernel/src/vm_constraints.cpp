@@ -21,7 +21,7 @@ void Variablization_Manager::clear_cached_constraints()
         /* We intentionally used the tests in the conditions backtraced through instead of copying
          * them, so we don't need to deallocate the tests in the constraint. We just delete the
          * constraint struct that contains the two pointers.*/
-        delete *it;
+        thisAgent->memoryManager->free_with_pool(MP_constraints, *it);
     }
     constraints->clear();
 }
@@ -60,7 +60,9 @@ void Variablization_Manager::cache_constraints_in_test(test t)
             case NOT_EQUAL_TEST:
             case SAME_TYPE_TEST:
             case DISJUNCTION_TEST:
-                new_constraint = new constraint(equality_test, ctest);
+                thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
+                new_constraint->eq_test = equality_test;
+                new_constraint->constraint_test = ctest;
                 constraints->push_back(new_constraint);
                 break;
             default:
@@ -124,7 +126,11 @@ void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCo
 
     dprint(DT_CONSTRAINTS, "Recording attachment point: %y(o%u) -> %s of %l\n",
         get_ovar_for_o_id(pO_id), pO_id, field_to_string(pField), pCond);
-    (*attachment_points)[pO_id] = new attachment_point(pCond, pField);;
+    attachment_point* new_attachment;
+    thisAgent->memoryManager->allocate_with_pool(MP_attachments, &new_attachment);
+    new_attachment->cond = pCond;
+    new_attachment->field = pField;
+    (*attachment_points)[pO_id] = new_attachment;
 }
 
 /* -- We also cache the main equality test for each element in each condition

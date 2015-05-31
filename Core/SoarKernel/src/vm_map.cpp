@@ -34,7 +34,7 @@ void Variablization_Manager::clear_attachment_map()
     {
         // Don't print anything from condition b/c it could be deallocated when this is being cleared
         dprint(DT_VM_MAPS, "Clearing %u -> %s of a condition in chunk.\n", it->first, field_to_string(it->second->field));
-        delete it->second;
+        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
     }
     attachment_points->clear();
 }
@@ -52,7 +52,7 @@ void Variablization_Manager::clear_variablization_maps()
                it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
         symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
         symbol_remove_ref(thisAgent, it->second->variablized_symbol);
-        delete it->second;
+        thisAgent->memoryManager->free_with_pool(MP_variablizations, it->second);
     }
     sym_to_var_map->clear();
 
@@ -66,7 +66,7 @@ void Variablization_Manager::clear_variablization_maps()
                it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
         symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
         symbol_remove_ref(thisAgent, it->second->variablized_symbol);
-        delete it->second;
+        thisAgent->memoryManager->free_with_pool(MP_variablizations, it->second);
     }
     o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
