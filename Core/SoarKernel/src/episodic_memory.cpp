@@ -3977,7 +3977,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
     cue_wmes.insert(cue_wme);
     Symbol* value = cue_wme->value;
     epmem_literal* literal;
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_literal_pool), &literal);
+    thisAgent->memPoolManager->allocate_with_pool(MP_epmem_literal, &literal);
     new(&(literal->parents)) epmem_literal_set();
     new(&(literal->children)) epmem_literal_set();
 
@@ -4006,7 +4006,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
             thisAgent->epmem_stmts_graph->find_lti->reinitialize();
             literal->parents.~epmem_literal_set();
             literal->children.~epmem_literal_set();
-            free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+            thisAgent->memPoolManager->free_with_pool(MP_epmem_literal, literal);
             return NULL;
         }
     }
@@ -4053,7 +4053,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
             {
                 literal->parents.~epmem_literal_set();
                 literal->children.~epmem_literal_set();
-                free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+                thisAgent->memPoolManager->free_with_pool(MP_epmem_literal, literal);
                 return NULL;
             }
             literal->is_leaf = false;
@@ -4132,7 +4132,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
         }
         if (pedge_sql->execute() == soar_module::row)
         {
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_pedge_pool), &child_pedge);
+            thisAgent->memPoolManager->allocate_with_pool(MP_epmem_pedge, &child_pedge);
             child_pedge->triple = triple;
             child_pedge->value_is_id = literal->value_is_id;
             child_pedge->sql = pedge_sql;
@@ -4577,7 +4577,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
 
     // variables needed for building the DNF
     epmem_literal* root_literal;
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_literal_pool), &root_literal);
+    thisAgent->memPoolManager->allocate_with_pool(MP_epmem_literal, &root_literal);
     epmem_literal_set leaf_literals;
 
     // priority queues for interval walk
@@ -4698,7 +4698,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             // we make an SQL statement just so we don't have to do anything special at cleanup
             epmem_triple triple = {EPMEM_NODEID_BAD, EPMEM_NODEID_BAD, EPMEM_NODEID_ROOT};
             epmem_pedge* root_pedge;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_pedge_pool), &root_pedge);
+            thisAgent->memPoolManager->allocate_with_pool(MP_epmem_pedge, &root_pedge);
             root_pedge->triple = triple;
             root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
             new(&(root_pedge->literals)) epmem_literal_set();
@@ -4712,7 +4712,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
 
             epmem_uedge* root_uedge;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_uedge_pool), &root_uedge);
+            thisAgent->memPoolManager->allocate_with_pool(MP_epmem_uedge, &root_uedge);
             root_uedge->triple = triple;
             root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
             root_uedge->activation_count = 0;
@@ -4722,7 +4722,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             uedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_uedge;
 
             epmem_interval* root_interval;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &root_interval);
+            thisAgent->memPoolManager->allocate_with_pool(MP_epmem_interval, &root_interval);
             root_interval->uedge = root_uedge;
             root_interval->is_end_point = true;
             root_interval->sql = thisAgent->epmem_stmts_graph->pool_dummy->request();
@@ -4788,7 +4788,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                 {
                     // create a uedge for this
                     epmem_uedge* uedge;
-                    allocate_with_pool(thisAgent, &(thisAgent->epmem_uedge_pool), &uedge);
+                    thisAgent->memPoolManager->allocate_with_pool(MP_epmem_uedge, &uedge);
                     uedge->triple = triple;
                     uedge->value_is_id = pedge->value_is_id;
                     uedge->activation_count = 0;
@@ -4873,7 +4873,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                             if (interval_sql->execute() == soar_module::row)
                             {
                                 epmem_interval* interval;
-                                allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &interval);
+                                thisAgent->memPoolManager->allocate_with_pool(MP_epmem_interval, &interval);
                                 interval->is_end_point = point_type;
                                 interval->uedge = uedge;
                                 // If it's an start point of a range (ie. not a point) and it's before the promo time
@@ -4905,7 +4905,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                         {
                             // insert a dummy promo time start for LTIs
                             epmem_interval* start_interval;
-                            allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &start_interval);
+                            thisAgent->memPoolManager->allocate_with_pool(MP_epmem_interval, &start_interval);
                             start_interval->uedge = uedge;
                             start_interval->is_end_point = EPMEM_RANGE_START;
                             start_interval->time = promo_time - 1;
@@ -4919,7 +4919,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     else
                     {
                         uedge->pedges.~epmem_pedge_set();
-                        free_with_pool(&(thisAgent->epmem_uedge_pool), uedge);
+                        thisAgent->memPoolManager->free_with_pool(MP_epmem_uedge, uedge);
                     }
                 }
                 else
@@ -5016,7 +5016,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                         if (uedge->intervals)
                         {
                             interval_cleanup.erase(interval);
-                            free_with_pool(&(thisAgent->epmem_interval_pool), interval);
+                            thisAgent->memPoolManager->free_with_pool(MP_epmem_interval, interval);
                         }
                         else
                         {
@@ -5221,7 +5221,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
         {
             interval->sql->get_pool()->release(interval->sql);
         }
-        free_with_pool(&(thisAgent->epmem_interval_pool), interval);
+        thisAgent->memPoolManager->free_with_pool(MP_epmem_interval, interval);
     }
     for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++)
     {
@@ -5233,13 +5233,13 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                 pedge->sql->get_pool()->release(pedge->sql);
             }
             pedge->literals.~epmem_literal_set();
-            free_with_pool(&(thisAgent->epmem_pedge_pool), pedge);
+            thisAgent->memPoolManager->free_with_pool(MP_epmem_pedge, pedge);
         }
         for (epmem_triple_uedge_map::iterator iter = uedge_caches[type].begin(); iter != uedge_caches[type].end(); iter++)
         {
             epmem_uedge* uedge = (*iter).second;
             uedge->pedges.~epmem_pedge_set();
-            free_with_pool(&(thisAgent->epmem_uedge_pool), uedge);
+            thisAgent->memPoolManager->free_with_pool(MP_epmem_uedge, uedge);
         }
     }
     for (epmem_wme_literal_map::iterator iter = literal_cache.begin(); iter != literal_cache.end(); iter++)
@@ -5249,7 +5249,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
         literal->children.~epmem_literal_set();
         literal->matches.~epmem_node_pair_set();
         literal->values.~epmem_node_int_map();
-        free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+        thisAgent->memPoolManager->free_with_pool(MP_epmem_literal, literal);
     }
     thisAgent->epmem_timers->query_cleanup->stop();
 

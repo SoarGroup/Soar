@@ -30,6 +30,7 @@
 #include "misc.h"
 #include "soar_instance.h"
 #include "output_manager.h"
+#include "mempool_manager.h"
 
 #include <iostream>
 #include <sstream>
@@ -726,6 +727,7 @@ inline Soar_Instance* instantiate_singletons()
      *    debug output during initialization.  -- */
 
     Output_Manager::Get_OM();
+    MemPool_Manager::Get_MPM();
     return (&Soar_Instance::Get_Soar_Instance());
 }
 

@@ -25,13 +25,13 @@
 #include "init_soar.h"
 #include "soar_module.h"
 #include "mem.h"
+#include "mempool_manager.h"
 #include "callback.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-
 #include <string>
 #include <map>
 
@@ -63,6 +63,7 @@ class AgentOutput_Info;
 class debug_param_container;
 class Output_Manager;
 class Variablization_Manager;
+class MemPool_Manager;
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -162,36 +163,6 @@ typedef struct agent_struct
     uint64_t            num_wmes_in_rete;
     wme*                all_wmes_in_rete;
 
-    /* Memory pools */
-    memory_pool         rete_node_pool;
-    memory_pool         rete_test_pool;
-    memory_pool         right_mem_pool;
-    memory_pool         token_pool;
-    memory_pool         alpha_mem_pool;
-    memory_pool         ms_change_pool;
-    memory_pool         node_varnames_pool;
-
-    memory_pool         gds_pool;
-
-    memory_pool         rl_info_pool;
-    memory_pool         rl_et_pool;
-    memory_pool         rl_rule_pool;
-
-    memory_pool         wma_decay_element_pool;
-    memory_pool         wma_decay_set_pool;
-    memory_pool         wma_wme_oset_pool;
-    memory_pool         wma_slot_refs_pool;
-
-    memory_pool         epmem_wmes_pool;
-    memory_pool         epmem_info_pool;
-    memory_pool         smem_wmes_pool;
-    memory_pool         smem_info_pool;
-
-    memory_pool         epmem_literal_pool;
-    memory_pool         epmem_pedge_pool;
-    memory_pool         epmem_uedge_pool;
-    memory_pool         epmem_interval_pool;
-
     /* Dummy nodes and tokens */
     struct rete_node_struct* dummy_top_node;
     struct token_struct* dummy_top_token;
@@ -216,6 +187,7 @@ typedef struct agent_struct
     Symbol*             current_production_name;
 
     Variablization_Manager* variablizationManager;
+    MemPool_Manager*        memPoolManager;
 //    Output_Manager*         outputManager;
 
     /* ---------------- Predefined Symbols -------------------------
@@ -336,12 +308,6 @@ typedef struct agent_struct
     struct hash_table_struct* int_constant_hash_table;
     struct hash_table_struct* str_constant_hash_table;
     struct hash_table_struct* variable_hash_table;
-
-    memory_pool         float_constant_pool;
-    memory_pool         identifier_pool;
-    memory_pool         int_constant_pool;
-    memory_pool         str_constant_pool;
-    memory_pool         variable_pool;
 
     /* ----------------------- Top-level stuff -------------------------- */
 
@@ -583,7 +549,6 @@ typedef struct agent_struct
     /* ----------------------- Chunker stuff -------------------------- */
 
     tc_number           backtrace_number;
-    memory_pool         chunk_cond_pool;
     uint64_t            chunk_count;
     uint64_t            justification_count;
     ::list*             grounds;
@@ -600,30 +565,6 @@ typedef struct agent_struct
     bool                quiescence_t_flag;
     char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
 
-    /* ----------------------- Misc. top-level stuff -------------------------- */
-
-    memory_pool         action_pool;
-    memory_pool         test_pool;
-    memory_pool         condition_pool;
-    memory_pool         not_pool;
-    memory_pool         production_pool;
-    memory_pool         rhs_symbol_pool;
-
-    /* ----------------------- Reorderer stuff -------------------------- */
-
-    memory_pool         saved_test_pool;
-
-    /* ----------------------- Memory utilities -------------------------- */
-
-    /* Counters for memory usage of various types */
-    size_t              memory_for_usage[NUM_MEM_USAGE_CODES];
-
-    /* List of all memory pools being used */
-    memory_pool*        memory_pools_in_use;
-
-    memory_pool         cons_cell_pool; /* pool for cons cells */
-    memory_pool         dl_cons_pool;   /* doubly-linked list cells */
-
     /* ----------------------- Explain.c stuff -------------------------- */
 
     backtrace_str*      explain_backtrace_list;     /* AGR 564 */
@@ -634,7 +575,6 @@ typedef struct agent_struct
 
     /* ----------------------- Firer stuff -------------------------- */
 
-    memory_pool         instantiation_pool;
     instantiation*      newly_created_instantiations;
 
     /* production_being_fired -- during firing, points to the prod. being fired */
@@ -647,10 +587,8 @@ typedef struct agent_struct
        Decider stuff
        =================================================================== */
 
-    memory_pool         preference_pool;
 
     uint64_t            current_wme_timetag;
-    memory_pool         wme_pool;
     ::list*             wmes_to_add;
     ::list*             wmes_to_remove;
 
@@ -668,7 +606,6 @@ typedef struct agent_struct
     Symbol*             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
     dl_list*            context_slots_with_changed_acceptable_preferences;
-    memory_pool         slot_pool;
     ::list*             slots_for_possible_removal;
 
     dl_list*            disconnected_ids;
@@ -709,7 +646,6 @@ typedef struct agent_struct
     struct output_link_struct* existing_output_links;
 
     struct output_link_struct* output_link_for_tc;
-    memory_pool         output_link_pool;
     tc_number           output_link_tc_num;
 
     bool                output_link_changed;
@@ -720,7 +656,6 @@ typedef struct agent_struct
     Symbol*             io_header_input;
     Symbol*             io_header_output;
 
-    memory_pool         io_wme_pool;
     Symbol*             prev_top_state;
 
     /* ------------ Varible Generator stuff (in production.c) ---------------- */
@@ -888,9 +823,6 @@ typedef struct agent_struct
     smem_pooled_symbol_set* smem_changed_ids;
     bool smem_ignore_changes;
 
-    // dynamic memory pools
-    std::map< size_t, memory_pool* >* dyn_memory_pools;
-
     // dynamic RHS counters
     std::map< std::string, uint64_t >* dyn_counters;
 
@@ -960,13 +892,13 @@ typedef struct agent_struct
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer)
 {
-    allocate_with_pool(thisAgent, &thisAgent->cons_cell_pool, (dest_cons_pointer));
+    thisAgent->memPoolManager->allocate_with_pool(MP_cons_cell, (dest_cons_pointer));
 }
 
 template <typename T>
 inline void free_cons(agent* thisAgent, T* c)
 {
-    free_with_pool(&thisAgent->cons_cell_pool, (c));
+    thisAgent->memPoolManager->free_with_pool(MP_cons_cell, (c));
 }
 
 template <typename P, typename T>

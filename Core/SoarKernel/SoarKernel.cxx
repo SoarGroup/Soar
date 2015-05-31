@@ -17,6 +17,7 @@
 #include "src/io_soar.cpp"
 #include "src/lexer.cpp"
 #include "src/mem.cpp"
+#include "src/mempool_manager.cpp"
 #include "src/osupport.cpp"
 #include "src/output_manager.cpp"
 #include "src/output_manager_db.cpp"

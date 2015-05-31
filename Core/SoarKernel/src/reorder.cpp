@@ -329,7 +329,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 if (subtest->type != EQUALITY_TEST)
                 {
                     /* -- create saved_test, splice this cons out of conjunct_list -- */
-                    allocate_with_pool(thisAgent, &thisAgent->saved_test_pool, &saved);
+                    thisAgent->memPoolManager->allocate_with_pool(MP_saved_test, &saved);
                     saved->next = old_sts;
                     old_sts = saved;
                     saved->var = sym;
@@ -377,7 +377,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
             symbol_remove_ref(thisAgent, var);
-            allocate_with_pool(thisAgent, &thisAgent->saved_test_pool, &saved);
+            thisAgent->memPoolManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
@@ -534,7 +534,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 tests_to_restore = next_st;
             }
             symbol_remove_ref(thisAgent, st->var);
-            free_with_pool(&thisAgent->saved_test_pool, st);
+            thisAgent->memPoolManager->free_with_pool(MP_saved_test, st);
         }
         else
         {
@@ -1536,6 +1536,6 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
 
 void init_reorderer(agent* thisAgent)     /* called from init_production_utilities() */
 {
-    init_memory_pool(thisAgent, &thisAgent->saved_test_pool, sizeof(saved_test), "saved test");
+    thisAgent->memPoolManager->init_memory_pool(MP_saved_test, sizeof(saved_test), "saved test");
 }
 

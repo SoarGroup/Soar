@@ -87,7 +87,7 @@ namespace soar_module
 
         // make fake instantiation
         instantiation* inst;
-        allocate_with_pool(thisAgent, &(thisAgent->instantiation_pool), &inst);
+        thisAgent->memPoolManager->allocate_with_pool(MP_instantiation, &inst);
         inst->prod = NULL;
         inst->next = inst->prev = NULL;
         inst->rete_token = NULL;
@@ -131,7 +131,7 @@ namespace soar_module
             for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
             {
                 // construct the condition
-                allocate_with_pool(thisAgent, &(thisAgent->condition_pool), &cond);
+                thisAgent->memPoolManager->allocate_with_pool(MP_condition, &cond);
                 init_condition(cond);
                 cond->type = POSITIVE_CONDITION;
                 cond->prev = prev_cond;
@@ -184,30 +184,5 @@ namespace soar_module
     }
 
 
-    /////////////////////////////////////////////////////////////
-    // Memory Pool Allocators
-    /////////////////////////////////////////////////////////////
-
-    memory_pool* get_memory_pool(agent* thisAgent, size_t size)
-    {
-        memory_pool* return_val = NULL;
-
-        std::map< size_t, memory_pool* >::iterator it = thisAgent->dyn_memory_pools->find(size);
-        if (it == thisAgent->dyn_memory_pools->end())
-        {
-            memory_pool* newbie = new memory_pool;
-
-            init_memory_pool(thisAgent, newbie, size, "dynamic");
-            thisAgent->dyn_memory_pools->insert(std::make_pair(size, newbie));
-
-            return_val = newbie;
-        }
-        else
-        {
-            return_val = it->second;
-        }
-
-        return return_val;
-    }
 }
 

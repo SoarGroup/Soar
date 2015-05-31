@@ -119,7 +119,7 @@ void deallocate_trace_format_list(agent* thisAgent, trace_format* tf)
                 break; /* do nothing */
         }
         next = tf->next;
-        free_memory(thisAgent, tf, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memPoolManager->free_memory(tf, MISCELLANEOUS_MEM_USAGE);
         tf = next;
     }
 }
@@ -372,7 +372,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
             *ch++ = *format++;
         }
         *ch = 0;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = STRING_TFT;
         tf->data.string = make_memory_block_for_string(thisAgent, buf);
@@ -389,7 +389,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = VALUES_TFT;
         tf->data.attribute_path = attribute_path;
@@ -404,7 +404,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = VALUES_RECURSIVELY_TFT;
         tf->data.attribute_path = attribute_path;
@@ -419,7 +419,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = ATTS_AND_VALUES_TFT;
         tf->data.attribute_path = attribute_path;
@@ -434,7 +434,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = ATTS_AND_VALUES_RECURSIVELY_TFT;
         tf->data.attribute_path = attribute_path;
@@ -444,7 +444,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%cs", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = CURRENT_STATE_TFT;
         return tf;
@@ -453,7 +453,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%co", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = CURRENT_OPERATOR_TFT;
         return tf;
@@ -462,7 +462,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%dc", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = DECISION_CYCLE_COUNT_TFT;
         return tf;
@@ -471,7 +471,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%ec", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = ELABORATION_CYCLE_COUNT_TFT;
         return tf;
@@ -480,7 +480,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%%", 2))
     {
         format += 2;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = PERCENT_TFT;
         return tf;
@@ -489,7 +489,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%[", 2))
     {
         format += 2;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = L_BRACKET_TFT;
         return tf;
@@ -498,7 +498,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%]", 2))
     {
         format += 2;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = R_BRACKET_TFT;
         return tf;
@@ -507,7 +507,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%sd", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = SUBGOAL_DEPTH_TFT;
         return tf;
@@ -516,7 +516,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%id", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = IDENTIFIER_TFT;
         return tf;
@@ -530,7 +530,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = IF_ALL_DEFINED_TFT;
         tf->data.subformat = pattern;
@@ -567,7 +567,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = LEFT_JUSTIFY_TFT;
         tf->num = n;
@@ -605,7 +605,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = RIGHT_JUSTIFY_TFT;
         tf->num = n;
@@ -621,7 +621,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
         {
             return NIL;
         }
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = REPEAT_SUBGOAL_DEPTH_TFT;
         tf->data.subformat = pattern;
@@ -631,7 +631,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
     if (!strncmp(format, "%nl", 3))
     {
         format += 3;
-        tf = static_cast<trace_format_struct*>(allocate_memory(thisAgent, sizeof(trace_format),
+        tf = static_cast<trace_format_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(trace_format),
                                                MISCELLANEOUS_MEM_USAGE));
         tf->type = NEWLINE_TFT;
         return tf;
@@ -929,7 +929,7 @@ bool remove_trace_format(agent* thisAgent,
         }
         deallocate_trace_format_list(thisAgent, tr->format);
         remove_from_hash_table(thisAgent, ht, tr);
-        free_memory(thisAgent, tr, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memPoolManager->free_memory(tr, MISCELLANEOUS_MEM_USAGE);
         symbol_remove_ref(thisAgent, name_restriction);
         return true;
     }
@@ -983,7 +983,7 @@ bool add_trace_format(agent* thisAgent,
         {
             ht = thisAgent->object_tr_ht[type_restriction];
         }
-        tr = static_cast<tracing_rule_struct*>(allocate_memory(thisAgent, sizeof(tracing_rule),
+        tr = static_cast<tracing_rule_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(tracing_rule),
                                                MISCELLANEOUS_MEM_USAGE));
         tr->type_restriction = type_restriction;
         tr->name_restriction = name_restriction;

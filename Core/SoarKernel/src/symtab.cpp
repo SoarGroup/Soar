@@ -225,11 +225,11 @@ void init_symbol_tables(agent* thisAgent)
     thisAgent->int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
     thisAgent->float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
 
-    init_memory_pool(thisAgent, &thisAgent->variable_pool, sizeof(varSymbol), "variable");
-    init_memory_pool(thisAgent, &thisAgent->identifier_pool, sizeof(idSymbol), "identifier");
-    init_memory_pool(thisAgent, &thisAgent->str_constant_pool, sizeof(strSymbol), "str constant");
-    init_memory_pool(thisAgent, &thisAgent->int_constant_pool, sizeof(intSymbol), "int constant");
-    init_memory_pool(thisAgent, &thisAgent->float_constant_pool, sizeof(floatSymbol), "float constant");
+    thisAgent->memPoolManager->init_memory_pool(MP_variable, sizeof(varSymbol), "variable");
+    thisAgent->memPoolManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
+    thisAgent->memPoolManager->init_memory_pool(MP_str_constant, sizeof(strSymbol), "str constant");
+    thisAgent->memPoolManager->init_memory_pool(MP_int_constant, sizeof(intSymbol), "int constant");
+    thisAgent->memPoolManager->init_memory_pool(MP_float_constant, sizeof(floatSymbol), "float constant");
 
     reset_id_counters(thisAgent);
 }
@@ -336,7 +336,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
         return sym;
     }
 
-    allocate_with_pool(thisAgent, &thisAgent->variable_pool, &sym);
+    thisAgent->memPoolManager->allocate_with_pool(MP_variable, &sym);
     sym->symbol_type = VARIABLE_SYMBOL_TYPE;
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -371,7 +371,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     {
         name_letter = 'I';
     }
-    allocate_with_pool(thisAgent, &thisAgent->identifier_pool, &sym);
+    thisAgent->memPoolManager->allocate_with_pool(MP_identifier, &sym);
     sym->symbol_type = IDENTIFIER_SYMBOL_TYPE;
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -456,7 +456,7 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->str_constant_pool, &sym);
+        thisAgent->memPoolManager->allocate_with_pool(MP_str_constant, &sym);
         sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -489,7 +489,7 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->int_constant_pool, &sym);
+        thisAgent->memPoolManager->allocate_with_pool(MP_int_constant, &sym);
         sym->symbol_type = INT_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -521,7 +521,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->float_constant_pool, &sym);
+        thisAgent->memPoolManager->allocate_with_pool(MP_float_constant, &sym);
         sym->symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -558,24 +558,24 @@ void deallocate_symbol(agent* thisAgent, Symbol* sym)
         case VARIABLE_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->variable_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->var->name);
-            free_with_pool(&thisAgent->variable_pool, sym);
+            thisAgent->memPoolManager->free_with_pool(MP_variable, sym);
             break;
         case IDENTIFIER_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->identifier_hash_table, sym);
-            free_with_pool(&thisAgent->identifier_pool, sym);
+            thisAgent->memPoolManager->free_with_pool(MP_identifier, sym);
             break;
         case STR_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->str_constant_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->sc->name);
-            free_with_pool(&thisAgent->str_constant_pool, sym);
+            thisAgent->memPoolManager->free_with_pool(MP_str_constant, sym);
             break;
         case INT_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->int_constant_hash_table, sym);
-            free_with_pool(&thisAgent->int_constant_pool, sym);
+            thisAgent->memPoolManager->free_with_pool(MP_int_constant, sym);
             break;
         case FLOAT_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->float_constant_hash_table, sym);
-            free_with_pool(&thisAgent->float_constant_pool, sym);
+            thisAgent->memPoolManager->free_with_pool(MP_float_constant, sym);
             break;
         default:
         {

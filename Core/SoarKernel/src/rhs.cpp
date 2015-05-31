@@ -67,7 +67,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
         {
             symbol_remove_ref(thisAgent, r->referent);
         }
-        free_with_pool(&thisAgent->rhs_symbol_pool, r);
+        thisAgent->memPoolManager->free_with_pool(MP_rhs_symbol, r);
     }
 }
 
@@ -139,7 +139,7 @@ void deallocate_action_list(agent* thisAgent, action* actions)
                 deallocate_rhs_value(thisAgent, a->referent);
             }
         }
-        free_with_pool(&thisAgent->action_pool, a);
+        thisAgent->memPoolManager->free_with_pool(MP_action, a);
     }
 }
 
@@ -312,7 +312,7 @@ void add_bound_variables_in_action_list(agent* thisAgent, action* actions, tc_nu
 action* make_action(agent* thisAgent)
 {
     action* new_action;
-    allocate_with_pool(thisAgent, &thisAgent->action_pool,  &new_action);
+    thisAgent->memPoolManager->allocate_with_pool(MP_action,  &new_action);
     new_action->next = NIL;
     new_action->id = NIL;
     new_action->attr = NIL;
@@ -501,7 +501,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
         dprint(DT_RHS_VARIABLIZATION, "allocate_rhs_value_no_refcount called with nil.\n");
         return reinterpret_cast<rhs_value>(NIL);
     }
-    allocate_with_pool(thisAgent, &thisAgent->rhs_symbol_pool, &new_rhs_symbol);
+    thisAgent->memPoolManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
     dprint_noprefix(DT_RHS_VARIABLIZATION, (pO_ID ? "Allocated new rhs_value for new rhs_symbol %y(o%u).\n" : ""), sym, pO_ID);

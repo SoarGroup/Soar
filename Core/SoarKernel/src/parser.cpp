@@ -731,12 +731,12 @@ condition* negate_condition_list(agent* thisAgent, condition* conds)
                 return conds;
             case CONJUNCTIVE_NEGATION_CONDITION:
                 temp = conds->data.ncc.top;
-                free_with_pool(&thisAgent->condition_pool, conds);
+                thisAgent->memPoolManager->free_with_pool(MP_condition, conds);
                 return temp;
         }
     }
     /* --- more than one condition; so build a conjunctive negation --- */
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &temp);
+    thisAgent->memPoolManager->allocate_with_pool(MP_condition,  &temp);
     init_condition(temp);
     temp->type = CONJUNCTIVE_NEGATION_CONDITION;
     temp->data.ncc.top = conds;
@@ -769,7 +769,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
             (lexer->current_lexeme.type == R_PAREN_LEXEME))
     {
         /* --- value omitted, so create dummy value test --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memPoolManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.value_test = make_placeholder_test(thisAgent, first_letter);
@@ -813,7 +813,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
             lexer->get_lexeme();
         }
         /* --- build condition using the new value test --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memPoolManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.value_test = value_test;
@@ -891,7 +891,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
         lexer->get_lexeme();  /* consume the "." */
         /* --- setup for next attribute in path:  make a dummy variable,
            create a new condition in the path --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memPoolManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         if (last_c)
@@ -1088,7 +1088,7 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type == R_PAREN_LEXEME)
     {
         lexer->get_lexeme();       /* consume the right parenthesis */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memPoolManager->allocate_with_pool(MP_condition, &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.attr_test = make_placeholder_test(thisAgent, 'a');

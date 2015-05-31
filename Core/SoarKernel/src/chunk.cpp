@@ -319,7 +319,7 @@ chunk_cond* make_chunk_cond_for_negated_condition(agent* thisAgent, condition* c
     chunk_cond* cc;
     uint32_t remainder, hv;
 
-    allocate_with_pool(thisAgent, &thisAgent->chunk_cond_pool, &cc);
+    thisAgent->memPoolManager->allocate_with_pool(MP_chunk_cond, &cc);
     cc->cond = cond;
     cc->hash_value = hash_condition(thisAgent, cond);
     remainder = cc->hash_value;
@@ -348,7 +348,7 @@ bool add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* ne
     if (old)
     {
         /* --- the new condition was already in the set; so don't add it --- */
-        free_with_pool(&thisAgent->chunk_cond_pool, new_cc);
+        thisAgent->memPoolManager->free_with_pool(MP_chunk_cond, new_cc);
         return false;
     }
     /* --- add new_cc to the table --- */
@@ -485,7 +485,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 *reliable = false;
             }
 
-            free_with_pool(&thisAgent->chunk_cond_pool, cc);
+            thisAgent->memPoolManager->free_with_pool(MP_chunk_cond, cc);
         }
     }
 
@@ -1229,7 +1229,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
             temp_explain_chunk.all_grounds = inst_lhs_top;    /* Not a copy yet */
         }
 
-        allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &chunk_inst);
+        thisAgent->memPoolManager->allocate_with_pool(MP_instantiation, &chunk_inst);
         chunk_inst->prod = prod;
         chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
@@ -1363,7 +1363,7 @@ chunking_abort:
 
 void init_chunker(agent* thisAgent)
 {
-    init_memory_pool(thisAgent, &thisAgent->chunk_cond_pool, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memPoolManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
     init_chunk_cond_set(&thisAgent->negated_set);
 }
 

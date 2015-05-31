@@ -766,8 +766,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
 
 void init_firer(agent* thisAgent)
 {
-    init_memory_pool(thisAgent, &thisAgent->instantiation_pool,
-                     sizeof(instantiation), "instantiation");
+    thisAgent->memPoolManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
@@ -806,7 +805,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     //}
 #endif
 
-    allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &inst);
+    thisAgent->memPoolManager->allocate_with_pool(MP_instantiation, &inst);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
     inst->prod = prod;
@@ -1281,7 +1280,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         }
 
         /* --- free the memory --- */
-        free_with_pool(&thisAgent->preference_pool, temp->bt.trace);
+        thisAgent->memPoolManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
     // free instantiations in the reverse order
@@ -1297,7 +1296,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         {
             production_remove_ref(thisAgent, temp->prod);
         }
-        free_with_pool(&thisAgent->instantiation_pool, temp);
+        thisAgent->memPoolManager->free_with_pool(MP_instantiation, temp);
     }
 }
 

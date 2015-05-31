@@ -15,6 +15,7 @@
 //#define DEBUG_FREE_SETTINGS
 #define DEBUG_UNITTEST_SETTINGS
 
+/* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
 
@@ -39,19 +40,19 @@
 #define TRACE_Init_DT_DEALLOCATE_SYMBOLS          false
 #define TRACE_Init_DT_ID_LEAKING                  false
 //--
-#define TRACE_Init_DT_SOAR_INSTANCE               false
+#define TRACE_Init_DT_SOAR_INSTANCE               true
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 #define TRACE_Init_DT_EPMEM_CMD                   false
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 //--
-#define TRACE_Init_DT_MILESTONES                  true
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
+#define TRACE_Init_DT_MILESTONES                  false
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
-#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false

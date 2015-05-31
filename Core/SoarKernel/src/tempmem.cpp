@@ -82,7 +82,7 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     }
 
     /* JC: need to create a new slot */
-    allocate_with_pool(thisAgent, &thisAgent->slot_pool, &s);
+    thisAgent->memPoolManager->allocate_with_pool(MP_slot, &s);
     insert_at_head_of_dll(id->id->slots, s, next, prev);
 
     /* Context slots are goals and operators; operator slots get
@@ -149,7 +149,7 @@ void mark_slot_as_changed(agent* thisAgent, slot* s)
     {
         if (! s->changed)
         {
-            allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+            thisAgent->memPoolManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = s;
             s->changed = dc;
 
@@ -236,7 +236,7 @@ void remove_garbage_slots(agent* thisAgent)
         if (s->changed && (!s->isa_context_slot))
         {
             remove_from_dll(thisAgent->changed_slots, s->changed, next, prev);
-            free_with_pool(&thisAgent->dl_cons_pool, s->changed);
+            thisAgent->memPoolManager->free_with_pool(MP_dl_cons, s->changed);
         }
         remove_from_dll(s->id->id->slots, s, next, prev);
         symbol_remove_ref(thisAgent, s->id);
@@ -244,10 +244,10 @@ void remove_garbage_slots(agent* thisAgent)
         if (s->wma_val_references != NIL)
         {
             s->wma_val_references->~wma_sym_reference_map();
-            free_with_pool(&(thisAgent->wma_slot_refs_pool), s->wma_val_references);
+            thisAgent->memPoolManager->free_with_pool(MP_wma_slot_refs, s->wma_val_references);
             s->wma_val_references = NIL;
         }
-        free_with_pool(&thisAgent->slot_pool, s);
+        thisAgent->memPoolManager->free_with_pool(MP_slot, s);
     }
 }
 

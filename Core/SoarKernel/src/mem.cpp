@@ -20,110 +20,13 @@
 #include <stdlib.h>
 
 #include "mem.h"
-#include "kernel.h"
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"
 
 #include <assert.h>
 
-/* ====================================================================
 
-                   Basic Memory Allocation Utilities
-
-   All memory blocks are allocated via calls to allocate_memory().  It
-   calls malloc() and aborts if we run out of memory.  Free_memory() is
-   the inverse of allocate_memory().  Allocate_memory_and_zerofill()
-   does the obvious thing.  These routines take a usage_code indicating
-   what purpose the memory is for (hash tables, strings, etc.).  This
-   is used purely for statistics keeping.
-
-   Print_memory_statistics() prints out stats on the memory usage.
-==================================================================== */
-
-void* allocate_memory(agent* thisAgent, size_t size, int usage_code)
-{
-    char* p;
-    
-    thisAgent->memory_for_usage[usage_code] += size;
-    size += sizeof(size_t);
-    thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(size_t);
-    
-    p = static_cast<char*>(malloc(size));
-    if (p == NULL)
-    {
-        char msg[BUFFER_MSG_SIZE];
-        SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %llu bytes of memory.\n", static_cast<long long unsigned>(size));
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    if (reinterpret_cast<uintptr_t>(p) & 3)
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    
-    fill_with_zeroes(p, size);
-    
-    *(reinterpret_cast<size_t*>(p)) = size;
-    p += sizeof(size_t);
-    
-    return p;
-}
-
-void* allocate_memory_and_zerofill(agent* thisAgent, size_t size, int usage_code)
-{
-    void* p;
-    
-    p = allocate_memory(thisAgent, size, usage_code);
-    memset(p, 0, size);
-    return p;
-}
-
-void free_memory(agent* thisAgent, void* mem, int usage_code)
-{
-    size_t size;
-    
-    if (mem == 0)
-    {
-        return;
-    }
-    
-    mem = static_cast<char*>(mem) - sizeof(size_t);
-    size = *(static_cast<size_t*>(mem));
-    fill_with_garbage(mem, size);
-    
-    thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] -= sizeof(size_t);
-    thisAgent->memory_for_usage[usage_code] -= (size - sizeof(size_t));
-    
-    free(mem);
-}
-
-void print_memory_statistics(agent* thisAgent)
-{
-    size_t total;
-    int i;
-    
-    total = 0;
-    for (i = 0; i < NUM_MEM_USAGE_CODES; i++)
-    {
-        total += thisAgent->memory_for_usage[i];
-    }
-    
-    print(thisAgent,  "%8lu bytes total memory allocated\n", total);
-    print(thisAgent,  "%8lu bytes statistics overhead\n",
-          thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
-    print(thisAgent,  "%8lu bytes for strings\n",
-          thisAgent->memory_for_usage[STRING_MEM_USAGE]);
-    print(thisAgent,  "%8lu bytes for hash tables\n",
-          thisAgent->memory_for_usage[HASH_TABLE_MEM_USAGE]);
-    print(thisAgent,  "%8lu bytes for various memory pools\n",
-          thisAgent->memory_for_usage[POOL_MEM_USAGE]);
-    print(thisAgent,  "%8lu bytes for miscellaneous other things\n",
-          thisAgent->memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
-}
 
 /* ====================================================================
 
@@ -155,9 +58,9 @@ char* make_memory_block_for_string(agent* thisAgent, char const* s)
 {
     char* p;
     size_t size;
-    
+
     size = strlen(s) + 1; /* plus one for trailing null character */
-    p = static_cast<char*>(allocate_memory(thisAgent, size, STRING_MEM_USAGE));
+    p = static_cast<char*>(thisAgent->memPoolManager->allocate_memory(size, STRING_MEM_USAGE));
     strncpy(p, s, size);
     p[size - 1] = 0; /* ensure null termination */
     return p;
@@ -165,7 +68,7 @@ char* make_memory_block_for_string(agent* thisAgent, char const* s)
 
 void free_memory_block_for_string(agent* thisAgent, char* p)
 {
-    free_memory(thisAgent, p, STRING_MEM_USAGE);
+    thisAgent->memPoolManager->free_memory(p, STRING_MEM_USAGE);
 }
 
 #define INITIAL_GROWABLE_STRING_SIZE 100
@@ -173,8 +76,8 @@ void free_memory_block_for_string(agent* thisAgent, char* p)
 growable_string make_blank_growable_string(agent* thisAgent)
 {
     growable_string gs;
-    
-    gs = allocate_memory(thisAgent, 2 * sizeof(int*) + INITIAL_GROWABLE_STRING_SIZE,
+
+    gs = thisAgent->memPoolManager->allocate_memory(2 * sizeof(int*) + INITIAL_GROWABLE_STRING_SIZE,
                          STRING_MEM_USAGE);
     memsize_of_growable_string(gs) = INITIAL_GROWABLE_STRING_SIZE;
     length_of_growable_string(gs) = 0;
@@ -187,7 +90,7 @@ void add_to_growable_string(agent* thisAgent, growable_string* gs,
 {
     size_t current_length, length_to_add, new_length, new_memsize;
     growable_string New;
-    
+
     current_length = length_of_growable_string(*gs);
     length_to_add = strlen(string_to_add);
     new_length = current_length + length_to_add;
@@ -198,10 +101,10 @@ void add_to_growable_string(agent* thisAgent, growable_string* gs,
         {
             new_memsize = new_memsize * 2;
         }
-        New = allocate_memory(thisAgent, new_memsize + 2 * sizeof(int*), STRING_MEM_USAGE);
+        New = thisAgent->memPoolManager->allocate_memory(new_memsize + 2 * sizeof(int*), STRING_MEM_USAGE);
         memsize_of_growable_string(New) = static_cast<int>(new_memsize);
         strcpy(text_of_growable_string(New), text_of_growable_string(*gs));
-        free_memory(thisAgent, *gs, STRING_MEM_USAGE);
+        thisAgent->memPoolManager->free_memory(*gs, STRING_MEM_USAGE);
         *gs = New;
     }
     strcpy(text_of_growable_string(*gs) + current_length, string_to_add);
@@ -210,141 +113,12 @@ void add_to_growable_string(agent* thisAgent, growable_string* gs,
 
 void free_growable_string(agent* thisAgent, growable_string gs)
 {
-    free_memory(thisAgent, gs, STRING_MEM_USAGE);
+    thisAgent->memPoolManager->free_memory(gs, STRING_MEM_USAGE);
 }
 
-/* ====================================================================
 
-                          Memory Pool Routines
 
-   To allocate and free memory items efficiently at run time, we use
-   pools of small fixed-size items and do allocation and freeing using
-   inline macros.  Different memory pools are used for different things
-   and contain different size items.  Each pool consists of a memory_pool
-   structure (used for maintaining the pool) and a chain of big blocks
-   of memory (currently about 32K per block) obtained from allocate_memory().
-   We maintain a free_list of small items not being used, and allocate by
-   grabbing the first item on the free list.  If the free list is empty,
-   we add another big block to the pool.
 
-   Init_memory_pool() should be called to initialize a memory_pool
-   structure before it is used.  After that, the macro forms
-   allocate_with_pool (&mem_pool, &pointer_to_be_set_to_new_item) and
-   free_with_pool (&mem_pool, pointer_to_item)
-   are used to allocate and free items.  Print_memory_pool_statistics()
-   prints stats about the various pools in use and how much memory each
-   is using.
-==================================================================== */
-
-#define DEFAULT_INTERLEAVE_FACTOR 1
-/* should be 1 for maximum speed, but to avoid a gradual slowdown due
-   to a gradually decreasing CPU cache hit ratio, make this a larger
-   number, must be prime */
-#define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
-
-void add_block_to_memory_pool(agent* thisAgent, memory_pool* p)
-{
-    char* new_block;
-    size_t size, i, item_num, interleave_factor;
-    char* item, *prev_item;
-    
-    /* --- allocate a new block for the pool --- */
-    size = p->item_size * p->items_per_block + sizeof(char*);
-    new_block = static_cast<char*>(allocate_memory(thisAgent, size, POOL_MEM_USAGE));
-    *(char**)new_block = static_cast<char*>(p->first_block);
-    p->first_block = new_block;
-    p->num_blocks++;
-    
-    /* somewhere in here, need to check if total mem usage exceeds limit set by user
-    we only check when increasing pools, because the other memories are small by comparison,
-    we shouldn't check for every block added to any pool, since that is unduly expensive
-    can we keep a block counter on the agent and check it modulo some function of the limit?
-    */
-    /*
-    uint64_t total = 0;
-    for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
-    
-    if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {
-    soar_invoke_callbacks(thisAgent, thisAgent,
-    MAX_MEMORY_USAGE_CALLBACK,
-    (soar_call_data) NULL);
-    print (thisAgent, "%8lu bytes total memory allocated\n", total);
-    print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n",
-    thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
-    }
-    
-    */
-    
-    /* --- link up the new entries onto the free list --- */
-    interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
-    if (interleave_factor >= p->items_per_block)
-    {
-        interleave_factor = 1;
-    }
-    
-    item_num = interleave_factor;
-    prev_item = new_block + sizeof(char*);   /* prev_item is item number 0 */
-    for (i = 0; i < p->items_per_block - 1; i++)
-    {
-        item = new_block + sizeof(char*) + item_num * p->item_size;
-        *(char**)prev_item = item;
-        prev_item = item;
-        item_num = item_num + interleave_factor;
-        if (item_num >= p->items_per_block)
-        {
-            item_num -= p->items_per_block;
-        }
-    }
-    *(char**)prev_item = static_cast<char*>(p->free_list);
-    p->free_list = new_block + sizeof(char*);
-}
-
-/* RPM 6/09, with help from AMN */
-void free_memory_pool(agent* thisAgent, memory_pool* p)
-{
-
-    char* cur_block = static_cast<char*>(p->first_block);
-    char* next_block;
-    for (size_t i = 0; i < p->num_blocks; i++)
-    {
-        // the first 4 bytes point to the next block
-        next_block = *(char**)cur_block;
-        free_memory(thisAgent, cur_block, POOL_MEM_USAGE);
-        cur_block = next_block;
-    }
-    p->num_blocks = 0;
-}
-
-void init_memory_pool(agent* thisAgent, memory_pool* p, size_t item_size, const char* name)
-{
-    if (item_size < sizeof(char*))
-    {
-        item_size = sizeof(char*);
-    }
-    while (item_size & 3)
-    {
-        item_size++;    /* make sure item_size is multiple of 4 */
-    }
-    p->item_size = item_size;
-    p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
-    p->num_blocks = 0;
-    p->first_block = NIL;
-    p->free_list = NIL;
-#ifdef MEMORY_POOL_STATS
-    p->used_count = 0;
-#endif
-    p->next = thisAgent->memory_pools_in_use;
-    thisAgent->memory_pools_in_use = p;
-    if (strlen(name) > MAX_POOL_NAME_LENGTH)
-    {
-        char msg[2 * MAX_POOL_NAME_LENGTH];
-        SNPRINTF(msg, 2 * MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n", name);
-        msg[2 * MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    strncpy(p->name, name, MAX_POOL_NAME_LENGTH);
-    p->name[MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
-}
 
 /* ====================================================================
 
@@ -379,7 +153,7 @@ void init_memory_pool(agent* thisAgent, memory_pool* p, size_t item_size, const 
 cons* destructively_reverse_list(cons* c)
 {
     cons* prev, *current, *next;
-    
+
     prev = NIL;
     current = c;
     while (current)
@@ -408,7 +182,7 @@ bool member_of_list(void* item, list* the_list)
 list* add_if_not_member(agent* thisAgent, void* item, list* old_list)
 {
     cons* c;
-    
+
     for (c = old_list; c != NIL; c = c->rest)
         if (c->first == item)
         {
@@ -423,7 +197,7 @@ list* add_if_not_member(agent* thisAgent, void* item, list* old_list)
 void free_list(agent* thisAgent, list* the_list)
 {
     cons* c;
-    
+
     while (the_list)
     {
         c = the_list;
@@ -436,10 +210,10 @@ list* extract_list_elements(agent* thisAgent, list** header, cons_test_fn f, voi
 {
     cons* first_extracted_element, *tail_of_extracted_elements;
     cons* c, *prev_c, *next_c;
-    
+
     first_extracted_element = NIL;
     tail_of_extracted_elements = NIL;
-    
+
     prev_c = NIL;
     for (c = (*header); c != NIL; c = next_c)
     {
@@ -449,7 +223,7 @@ list* extract_list_elements(agent* thisAgent, list** header, cons_test_fn f, voi
             prev_c = c;
             continue;
         }
-        
+
         if (prev_c)
         {
             prev_c->rest = next_c;
@@ -466,15 +240,15 @@ list* extract_list_elements(agent* thisAgent, list** header, cons_test_fn f, voi
         {
             first_extracted_element = c;
         }
-        
+
         tail_of_extracted_elements = c;
     }
-    
+
     if (first_extracted_element)
     {
         tail_of_extracted_elements->rest = NIL;
     }
-    
+
     return first_extracted_element;
 }
 
@@ -482,21 +256,21 @@ dl_list* extract_dl_list_elements(agent* thisAgent, dl_list** header, dl_cons_te
 {
     dl_cons* first_extracted_element, *tail_of_extracted_elements;
     dl_cons* dc, *next_dc;
-    
+
     first_extracted_element = NIL;
     tail_of_extracted_elements = NIL;
-    
+
     for (dc = (*header); dc != NIL; dc = next_dc)
     {
         next_dc = dc->next;
-        
+
         if (!f(dc, thisAgent))
         {
             continue;
         }
-        
+
         remove_from_dll((*header), dc, next, prev);
-        
+
         if (first_extracted_element)
         {
             tail_of_extracted_elements->next = dc;
@@ -505,18 +279,18 @@ dl_list* extract_dl_list_elements(agent* thisAgent, dl_list** header, dl_cons_te
         {
             first_extracted_element = dc;
         }
-        
+
         dc->prev = tail_of_extracted_elements;
         tail_of_extracted_elements = dc;
     }
-    
+
     /************************************************************************/
-    
+
     if (first_extracted_element)
     {
         tail_of_extracted_elements->next = NIL;
     }
-    
+
     return first_extracted_element;
 }
 
@@ -574,8 +348,8 @@ struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2si
         hash_function h)
 {
     hash_table* ht;
-    
-    ht = static_cast<hash_table_struct*>(allocate_memory(thisAgent, sizeof(hash_table),
+
+    ht = static_cast<hash_table_struct*>(thisAgent->memPoolManager->allocate_memory(sizeof(hash_table),
                                          HASH_TABLE_MEM_USAGE));
     ht->count = 0;
     if (minimum_log2size < 1)
@@ -585,7 +359,7 @@ struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2si
     ht->size = static_cast<uint32_t>(1) << minimum_log2size;
     ht->log2size = minimum_log2size;
     ht->minimum_log2size = minimum_log2size;
-    ht->buckets = static_cast<item_in_hash_table_struct**>(allocate_memory_and_zerofill(thisAgent, ht->size * sizeof(char*),
+    ht->buckets = static_cast<item_in_hash_table_struct**>(thisAgent->memPoolManager->allocate_memory_and_zerofill(ht->size * sizeof(char*),
                   HASH_TABLE_MEM_USAGE));
     ht->h = h;
     return ht;
@@ -598,12 +372,12 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
     item_in_hash_table* item, *next;
     uint32_t hash_value;
     uint32_t new_size;
-    
+
     new_size = static_cast<uint32_t>(1) << new_log2size;
     new_buckets =
-        (bucket_array*) allocate_memory_and_zerofill(thisAgent, new_size * sizeof(char*),
+        (bucket_array*) thisAgent->memPoolManager->allocate_memory_and_zerofill(new_size * sizeof(char*),
                 HASH_TABLE_MEM_USAGE);
-                
+
     for (i = 0; i < ht->size; i++)
     {
         for (item = *(ht->buckets + i); item != NIL; item = next)
@@ -615,8 +389,8 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
             *(new_buckets + hash_value) = item;
         }
     }
-    
-    free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
+
+    thisAgent->memPoolManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
     ht->buckets = new_buckets;
     ht->size = new_size;
     ht->log2size = new_log2size;
@@ -625,8 +399,8 @@ void resize_hash_table(agent* thisAgent, hash_table* ht, short new_log2size)
 /* RPM 6/09 */
 void free_hash_table(agent* thisAgent, struct hash_table_struct* ht)
 {
-    free_memory(thisAgent, ht->buckets, HASH_TABLE_MEM_USAGE);
-    free_memory(thisAgent, ht, HASH_TABLE_MEM_USAGE);
+    thisAgent->memPoolManager->free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
+    thisAgent->memPoolManager->free_memory(ht, HASH_TABLE_MEM_USAGE);
 }
 
 void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht,
@@ -634,7 +408,7 @@ void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht,
 {
     uint32_t hash_value;
     item_in_hash_table* this_one, *prev;
-    
+
     this_one = static_cast<item_in_hash_table_struct*>(item);
     hash_value = (*(ht->h))(item, ht->log2size);
     if (*(ht->buckets + hash_value) == this_one)
@@ -672,7 +446,7 @@ void add_to_hash_table(agent* thisAgent, struct hash_table_struct* ht,
 {
     uint32_t hash_value;
     item_in_hash_table* this_one;
-    
+
     this_one = static_cast<item_in_hash_table_struct*>(item);
     ht->count++;
     if (ht->count >= ht->size * 2)
@@ -691,7 +465,7 @@ void do_for_all_items_in_hash_table(agent* thisAgent,
 {
     uint32_t hash_value;
     item_in_hash_table* item;
-    
+
     for (hash_value = 0; hash_value < ht->size; hash_value++)
     {
         item = (item_in_hash_table*)(*(ht->buckets + hash_value));
@@ -708,7 +482,7 @@ void do_for_all_items_in_hash_bucket(struct hash_table_struct* ht,
                                      uint32_t hash_value)
 {
     item_in_hash_table* item;
-    
+
     hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];
     item = (item_in_hash_table*)(*(ht->buckets + hash_value));
     for (; item != NIL; item = item->next)
@@ -728,13 +502,7 @@ void do_for_all_items_in_hash_bucket(struct hash_table_struct* ht,
 
 void init_memory_utilities(agent* thisAgent)
 {
-    int i;
-    
-    init_memory_pool(thisAgent, &thisAgent->cons_cell_pool, sizeof(cons), "cons cell");
-    init_memory_pool(thisAgent, &thisAgent->dl_cons_pool, sizeof(dl_cons), "dl cons");
-    for (i = 0; i < NUM_MEM_USAGE_CODES; i++)
-    {
-        thisAgent->memory_for_usage[i] = 0;
-    }
+    thisAgent->memPoolManager->init_memory_pool(MP_cons_cell, sizeof(cons), "cons cell");
+    thisAgent->memPoolManager->init_memory_pool(MP_dl_cons, sizeof(dl_cons), "dl cons");
 }
 

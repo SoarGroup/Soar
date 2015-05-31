@@ -81,7 +81,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     wme* w;
 
     thisAgent->num_existing_wmes++;
-    allocate_with_pool(thisAgent, &thisAgent->wme_pool, &w);
+    thisAgent->memPoolManager->allocate_with_pool(MP_wme, &w);
     w->id = id;
     w->attr = attr;
     w->value = value;
@@ -166,7 +166,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
             {
                 w->gds->goal->id->gds = NIL;
             }
-            free_with_pool(&(thisAgent->gds_pool), w->gds);
+            thisAgent->memPoolManager->free_with_pool(MP_gds, w->gds);
             /* printf("REMOVING GDS FROM MEMORY. \n"); */
         }
     }
@@ -327,7 +327,7 @@ void deallocate_wme(agent* thisAgent, wme* w)
     symbol_remove_ref(thisAgent, w->attr);
     symbol_remove_ref(thisAgent, w->value);
 
-    free_with_pool(&thisAgent->wme_pool, w);
+    thisAgent->memPoolManager->free_with_pool(MP_wme, w);
     thisAgent->num_existing_wmes--;
 }
 

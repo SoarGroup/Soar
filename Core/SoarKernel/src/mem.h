@@ -137,38 +137,6 @@
 
 extern void init_memory_utilities(agent* thisAgent);
 
-/* ----------------------- */
-/* basic memory allocation */
-/* ----------------------- */
-
-#ifdef DEBUG_MEMORY
-template <typename T>
-inline void fill_with_garbage(T* block, size_t size)
-{
-    memset(static_cast<void*>(block), 0xBB, (size));
-}
-template <typename T>
-inline void fill_with_zeroes(T* block, size_t size)
-{
-    memset(static_cast<void*>(block), 0, (size));
-}
-#else
-#define fill_with_garbage(block,size) { }
-#define fill_with_zeroes(block,size) { }
-#endif
-
-#define MISCELLANEOUS_MEM_USAGE  0
-#define HASH_TABLE_MEM_USAGE     1
-#define STRING_MEM_USAGE         2
-#define POOL_MEM_USAGE           3
-#define STATS_OVERHEAD_MEM_USAGE 4
-
-#define NUM_MEM_USAGE_CODES 5
-
-extern void* allocate_memory(agent* thisAgent, size_t size, int usage_code);
-extern void* allocate_memory_and_zerofill(agent* thisAgent, size_t size, int usage_code);
-extern void free_memory(agent* thisAgent, void* mem, int usage_code);
-extern void print_memory_statistics(agent* thisAgent);
 
 /* ---------------- */
 /* string utilities */
@@ -206,104 +174,7 @@ extern growable_string make_blank_growable_string(agent* thisAgent);
 extern void add_to_growable_string(agent* thisAgent, growable_string* gs, const char* string_to_add);
 extern void free_growable_string(agent* thisAgent, growable_string gs);
 
-/* ------------ */
-/* memory pools */
-/* ------------ */
 
-#define MAX_POOL_NAME_LENGTH 15
-
-typedef struct memory_pool_struct
-{
-    void* free_list;             /* header of chain of free items */
-    size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
-    size_t item_size;               /* bytes per item */
-    size_t items_per_block;        /* number of items in each big block */
-    size_t num_blocks;             /* number of big blocks in use by this pool */
-    void* first_block;           /* header of chain of blocks */
-    char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
-    struct memory_pool_struct* next;  /* next in list of all memory pools */
-} memory_pool;
-
-extern void add_block_to_memory_pool(agent* thisAgent, memory_pool* p);
-extern void init_memory_pool(agent* thisAgent, memory_pool* p, size_t item_size, const char* name);
-extern void free_memory_pool(agent*, memory_pool* p);  /* RPM 6/09, with help from AMN */
-
-#ifdef MEMORY_POOL_STATS
-
-template <typename P>
-inline void increment_used_count(P p)
-{
-    (p)->used_count++;
-}
-
-template <typename P>
-inline void decrement_used_count(P p)
-{
-    (p)->used_count--;
-}
-
-#else
-
-#define increment_used_count(p) { }
-#define decrement_used_count(p) { }
-
-#endif /* MEMORY_POOL_STATS */
-
-template <typename T>
-inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_pointer)
-{
-
-#if MEM_POOLS_ENABLED
-    // if there's no memory blocks left in the pool, then allocate a new one
-    if (!(p)->free_list)
-    {
-        add_block_to_memory_pool(thisAgent, p);
-    }
-    // take the beginning of the next free block and give it to the T pointer
-    *(dest_item_pointer) = static_cast< T* >((p)->free_list);
-    // we think this line increments free_list to the next available memory block
-    // we thought it took advantage of the fact that free_list is the first
-    //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
-    // if it helps, we think this line is equivalent to the following
-    //  (at least, everything appears to work properly if you swap these lines):
-    // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
-    (p)->free_list =  *(void**)(*(dest_item_pointer));
-
-    increment_used_count(p);
-
-#else // !MEM_POOLS_ENABLED
-    // this is for debugging -- it disables the memory pool usage and just allocates
-    //  new memory every time.  If you want to use it, be sure to make the corresponding
-    //  change to free_with_pool below
-    *dest_item_pointer = static_cast< T* >(malloc(sizeof(T)));
-
-    // simply prevents compiler warnings when memory pools disabled
-//   thisAgent=thisAgent;
-//   p=p;
-
-#endif // !MEM_POOLS_ENABLED
-    fill_with_zeroes(*(dest_item_pointer), (p)->item_size);
-}
-
-template <typename T>
-inline void free_with_pool(memory_pool* p, T* item)
-{
-    fill_with_garbage((item), (p)->item_size);
-#if MEM_POOLS_ENABLED
-    *(void**)(item) = (p)->free_list;
-    (p)->free_list = (void*)(item);
-    decrement_used_count(p);
-
-#else // !MEM_POOLS_ENABLED
-    // this is for debugging -- it disables the memory pool usage and just deallocates
-    //  the memory every time.  If you want to use it, be sure to make the corresponding
-    //  change to allocate_with_pool above
-    free(item);
-
-    // simply prevents compiler warnings when memory pools disabled
-//   p=p;
-#endif // !MEM_POOLS_ENABLED
-}
 
 /* ---------------------------------------------------------------------
      Macros for Inserting and Removing Stuff from Doubly-Linked Lists

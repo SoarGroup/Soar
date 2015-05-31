@@ -28,6 +28,8 @@
 #include "test.h"
 #include "variablization_manager.h"
 
+#include <iostream>
+
 /* This is far too large, but we're setting it to this until we fix a bug we previously had
  * with strncpy corrupting memory. */
 #define OM_BUFFER_SIZE 70000   /* --- size of output buffer for a calls to print routines --- */
@@ -363,7 +365,11 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
     if (!debug_mode_enabled(mode)) return;
 
-    if (!m_defaultAgent) return;
+    if (!m_defaultAgent)
+    {
+        std::cout << msg;
+        return;
+    }
 
     char buf[OM_BUFFER_SIZE];
     strcpy(buf, mode_info[mode].prefix);
@@ -375,7 +381,11 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    if (!m_defaultAgent) return;
+    if (!m_defaultAgent)
+    {
+        std::cout << format;
+        return;
+    }
 
     va_list args;
     char buf[OM_BUFFER_SIZE];
@@ -391,7 +401,11 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    if (!m_defaultAgent) return;
+    if (!m_defaultAgent)
+    {
+        std::cout << format;
+        return;
+    }
 
     va_list args;
     char buf[OM_BUFFER_SIZE];
@@ -407,7 +421,11 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
 {
     if (!debug_mode_enabled(mode)) return;
-    if (!m_defaultAgent) return;
+    if (!m_defaultAgent)
+    {
+        std::cout << format;
+        return;
+    }
 
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
         debug_print(mode, "=========================================================\n");
@@ -431,7 +449,11 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
     if (!debug_mode_enabled(mode)) return;
 
-    if (!m_defaultAgent) return;
+    if (!m_defaultAgent)
+    {
+        std::cout << std::endl;
+        return;
+    }
 
     if ((global_printer_output_column != 1) || (m_defaultAgent->output_settings->printer_output_column != 1))
     {

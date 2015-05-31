@@ -234,7 +234,7 @@ void deallocate_test(agent* thisAgent, test t)
      *    don't need to decrease the refcount here. -- */
     t->eq_test = NULL;
 
-    free_with_pool(&thisAgent->test_pool, t);
+    thisAgent->memPoolManager->free_with_pool(MP_test, t);
     dprint(DT_DEALLOCATES, "DEALLOCATE test done.\n");
 }
 
@@ -1333,7 +1333,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
 {
     test new_ct;
 
-    allocate_with_pool(thisAgent, &thisAgent->test_pool, &new_ct);
+    thisAgent->memPoolManager->allocate_with_pool(MP_test, &new_ct);
 
     new_ct->type = test_type;
     new_ct->data.referent = sym;
