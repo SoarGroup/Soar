@@ -5,7 +5,24 @@
 
 /*************************************************************************
  *
- *  file:  mempool_manager.h
+ *  file:  memory_manager.h
+ *
+ * A memory manager class that decouples memory pools from the individual
+ * agent.
+ *
+ * - MPM is a singleton like the OutputManager and SoarInstance.  It
+ *   is created on Kernel creation.
+ *
+ * - MPM uses an enum list for all the core memory pool types.  Kernel
+ *   calls that deal with memory pools now pass in a parameter to
+ *   specify which pool instead of the actual pool itself (which was
+ *   in the agent, but is now in the MPM)
+ *
+ * - Memory pools now have an initialized flag, since more than one
+ *   agent may try to initialize a pool.
+ *
+ * - Agent caches a pointer to MPM to ease access.  Also made
+ *   refactoring slightly less painful.
  *
  * =======================================================================
  */
