@@ -539,13 +539,12 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                            id, attr);
         goto abort_execute_action;
     }
-
     /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
     return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
                            soar_module::identity_triple(
-                               ((original_id && !rhs_value_is_funcall(a->id)) ? rhs_value_to_o_id(original_id) : 0),
-                               ((original_attr && !rhs_value_is_funcall(a->attr)) ? rhs_value_to_o_id(original_attr) : 0),
-                               ((original_value && !rhs_value_is_funcall(a->value)) ? rhs_value_to_o_id(original_value) : 0)));
+                               ((!original_id || rhs_value_is_funcall(a->id)) ? 0 : rhs_value_to_o_id(original_id)),
+                               ((!original_attr || rhs_value_is_funcall(a->attr)) ? 0 : rhs_value_to_o_id(original_attr)),
+                               ((!original_value || rhs_value_is_funcall(a->value)) ? 0 : rhs_value_to_o_id(original_value))));
 
 abort_execute_action: /* control comes here when some error occurred */
     if (id)
@@ -814,7 +813,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->reliable = true;
     inst->in_ms = true;
     inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
-//    assert(inst->i_id != 15000);
 
     /*  We want to initialize the GDS_evaluated_already flag
      *  when a new instantiation is created.
