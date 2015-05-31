@@ -1277,7 +1277,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
                 && ((prod_type != JUSTIFICATION_PRODUCTION_TYPE)
                     || (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH)))
         {
-            strncpy(temp_explain_chunk.name, prod_name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+            strncpy(temp_explain_chunk.name, prod->name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
             temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
             explain_add_temp_to_chunk_list(thisAgent, &temp_explain_chunk);
         }
