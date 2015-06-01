@@ -177,8 +177,6 @@ namespace soar_module
             }
         }
 
-        //dprint(DT_DEBUG, "Fake instantiation created for epmem or smem: \n%7", inst);
-
         return inst;
     }
 

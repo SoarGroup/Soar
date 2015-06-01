@@ -66,9 +66,9 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
                             const soar_module::rhs_triple rhs_funcs)
 {
     preference* p;
-    dprint(DT_DEBUG, "%fRHS Value a is %y %r\n", id, rhs_funcs.id);
-    dprint(DT_DEBUG, "%fRHS Value b is %y %r\n", attr, rhs_funcs.attr);
-    dprint(DT_DEBUG, "%fRHS Value c is %y %r\n", value, rhs_funcs.value);
+    dprint(DT_RHS_VARIABLIZATION, "%fRHS Value a is %y %r\n", id, rhs_funcs.id);
+    dprint(DT_RHS_VARIABLIZATION, "%fRHS Value b is %y %r\n", attr, rhs_funcs.attr);
+    dprint(DT_RHS_VARIABLIZATION, "%fRHS Value c is %y %r\n", value, rhs_funcs.value);
 
     thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
     p->type = type;

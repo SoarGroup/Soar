@@ -180,19 +180,26 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
 }
-/* ======================================================================================================
- *
- *                                          variablize_rhs_symbol
- *
- *      The logic for variablizing the rhs is slightly different than the lhs.
- *
- * ====================================================================================================== */
 
 void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
     variablization* found_variablization = NULL;
+
+    if (rhs_value_is_funcall(pRhs_val))
+    {
+        list* fl = rhs_value_to_funcall_list(pRhs_val);
+        cons* c;
+
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS value %r\n", static_cast<char*>(c->first));
+            variablize_rhs_symbol(static_cast<char*>(c->first));
+            dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
+        }
+        return;
+    }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
@@ -494,11 +501,6 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     return rhs;
 }
 
-//void Variablization_Manager::variablize_rhs_function_arglist()
-//{
-//
-//}
-
 void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
 
@@ -561,13 +563,31 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
 
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
-    if (result->rhs_funcs.value)
+
+    if (!result->rhs_funcs.id)
     {
-        dprint(DT_DEBUG, "VM found rhs_func:  %r", result->rhs_funcs.value);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.id);
+        a->id = result->rhs_funcs.id;
+        result->rhs_funcs.id = NULL;
     }
-    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
-    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
-    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
+    if (!result->rhs_funcs.attr)
+    {
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.attr);
+        a->attr = result->rhs_funcs.attr;
+        result->rhs_funcs.attr = NULL;
+    }
+    if (!result->rhs_funcs.value)
+    {
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.value);
+        a->value = result->rhs_funcs.value;
+        result->rhs_funcs.value = NULL;
+    }
     if (preference_is_binary(result->type))
     {
         a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, 0);

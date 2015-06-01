@@ -12,8 +12,8 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-//#define DEBUG_FREE_SETTINGS
-#define DEBUG_UNITTEST_SETTINGS
+#define DEBUG_FREE_SETTINGS
+//#define DEBUG_UNITTEST_SETTINGS
 
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
@@ -46,11 +46,11 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 //--
-#define TRACE_Init_DT_MILESTONES                  false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_MILESTONES                  true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
@@ -95,8 +95,8 @@
 #define TRACE_Init_TM_WMA                       true
 
 /* -- Which debug messages should be printed -- */
-#define TRACE_Init_DT_No_Mode                     true
-#define TRACE_Init_DT_DEBUG                       true
+#define TRACE_Init_DT_No_Mode                     false
+#define TRACE_Init_DT_DEBUG                       false
 //--
 #define TRACE_Init_DT_REFCOUNT_ADDS               false
 #define TRACE_Init_DT_REFCOUNT_REMS               false

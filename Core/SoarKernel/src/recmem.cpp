@@ -960,10 +960,10 @@ void create_instantiation(agent* thisAgent, production* prod,
         {
             if (a2)
             {
-                dprint(DT_DEBUG, "Executing action:\n%a\n[%a]\n", a, a2);
+                dprint(DT_RHS_VARIABLIZATION, "Executing action:\n%a\n[%a]\n", a, a2);
                 pref = execute_action(thisAgent, a, tok, w, a2, inst->top_of_instantiated_conditions);
             } else {
-                dprint(DT_DEBUG, "Executing action:\n%a\n", a);
+                dprint(DT_RHS_VARIABLIZATION, "Executing action:\n%a\n", a);
                 pref = execute_action(thisAgent, a, tok, w, NULL, inst->top_of_instantiated_conditions);
             }
         }
