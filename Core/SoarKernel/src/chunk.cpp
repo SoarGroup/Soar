@@ -643,7 +643,7 @@ void make_clones_of_results(agent* thisAgent, preference* results,
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->o_ids);
+                            result_p->o_ids, result_p->rhs_funcs);
         symbol_add_ref(thisAgent, p->id);
         symbol_add_ref(thisAgent, p->attr);
         symbol_add_ref(thisAgent, p->value);

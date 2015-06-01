@@ -44,6 +44,7 @@ typedef unsigned char byte;
 typedef struct agent_struct agent;
 typedef struct preference_struct preference;
 typedef struct symbol_struct Symbol;
+typedef char* rhs_value;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
@@ -138,6 +139,7 @@ typedef struct preference_struct
      *    lhs one, since the instantiated value is not sufficient. -- */
 
     soar_module::identity_triple o_ids;
+    soar_module::rhs_triple rhs_funcs;
 
     struct slot_struct* slot;
 
@@ -171,7 +173,8 @@ extern bool remove_preference_from_clones(agent* thisAgent, preference* pref);
 
 extern preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
                                    Symbol* value, Symbol* referent,
-                                   const soar_module::identity_triple o_ids = soar_module::identity_triple(0, 0, 0));
+                                   const soar_module::identity_triple o_ids = soar_module::identity_triple(0, 0, 0),
+                                   const soar_module::rhs_triple rhs_funcs = soar_module::rhs_triple(NULL, NULL, NULL));
 
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
 

@@ -109,8 +109,7 @@ namespace soar_module
 
             for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
             {
-                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
-                    soar_module::identity_triple(0,0,0));
+                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
                 pref->o_supported = true;
                 symbol_add_ref(thisAgent, pref->id);
                 symbol_add_ref(thisAgent, pref->attr);

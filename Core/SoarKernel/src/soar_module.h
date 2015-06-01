@@ -31,6 +31,7 @@
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
+typedef char* rhs_value;
 
 // separates this functionality
 // just for Soar modules
@@ -60,6 +61,15 @@ namespace soar_module
 
         identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0): id(new_id), attr(new_attr), value(new_value) {}
     } identity_triple;
+
+    typedef struct rhs_triple_struct
+    {
+            rhs_value id;
+            rhs_value attr;
+            rhs_value value;
+
+            rhs_triple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
+    } rhs_triple;
 
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);

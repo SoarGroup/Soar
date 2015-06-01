@@ -356,9 +356,14 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         rsym = rhs_value_to_rhs_symbol(rv);
         if (this->m_print_actual_effective)
         {
-            sprinta_sf(thisAgent, dest, dest_size, "%y", rsym->referent);
-        } else if (m_print_identity_effective) {
-            sprinta_sf(thisAgent, dest, dest_size, "%y [%y/o%u]", rsym->referent, thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id));
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%y", rsym->referent);
+            while (*ch) ch++;
+        }
+        if (m_print_identity_effective) {
+            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), " [%y/o%u]",
+                thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id),
+                rsym->o_id);
+            while (*ch) ch++;
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -383,26 +388,13 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);
 
-//        print_sf("(");
-//        if (!strcmp(rf->name->sc->name, "+"))
-//        {
-//            print_sf("+");
-//        }
-//        else if (!strcmp(rf->name->sc->name, "-"))
-//        {
-//            print_sf("-");
-//        }
-//        else
-//        {
-//            print_sf("(%y", rf->name);
-//        }
         sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y", rf->name);
         while (*ch) ch++;
 
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             *(ch++) = ' ';
-            rhs_value_to_string(thisAgent, static_cast<rhs_value>(c->first), ch, dest_size - (ch - dest), tok, w);
+            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), ch, dest_size - (ch - dest), tok, w);
             while (*ch) ch++;
         }
         *(ch++) = ')';

@@ -248,7 +248,29 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             action* la = va_arg(args, action *);
             if (la)
             {
-                action_to_string(thisAgent, la, ch, dest_size - (ch - dest) );
+                this->action_to_string(thisAgent, la, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
+            format += 2;
+        } else if (*(format + 1) == 'n')
+        {
+            list* la = va_arg(args, list *);
+            if (la)
+            {
+                this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            } else {
+                *(ch++) = '#';
+            }
+            format += 2;
+        } else if (*(format + 1) == 'r')
+        {
+            char* la = va_arg(args, char *);
+            if (la)
+            {
+                this->rhs_value_to_string(thisAgent, la, ch, dest_size - (ch - dest), NULL );
                 while (*ch) ch++;
             } else {
                 *(ch++) = '#';
@@ -290,19 +312,31 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == '1')
         {
-            condition_list_to_string(thisAgent, va_arg(args, condition *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
+            condition* temp = va_arg(args, condition *);
+            if (temp)
+            {
+                condition_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+                format += 2;
+            }
         } else if (*(format + 1) == '2')
         {
-            action_list_to_string(thisAgent, va_arg(args, action *), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
+            action* temp = va_arg(args, action *);
+            if (temp)
+            {
+                action_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+                format += 2;
+            }
         } else if (*(format + 1) == '3')
         {
-            condition_cons_to_string(thisAgent, va_arg(args, cons*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
+            cons* temp = va_arg(args, cons*);
+            if (temp)
+            {
+                condition_cons_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+                format += 2;
+            }
         } else if (*(format + 1) == '4')
         {
             cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), ch, dest_size - (ch - dest) );
@@ -320,8 +354,12 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             format += 2;
         } else if (*(format + 1) == '7')
         {
-            instantiation_to_string(thisAgent, va_arg(args, instantiation*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            instantiation* temp = va_arg(args, instantiation*);
+            if (temp)
+            {
+                instantiation_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
+                while (*ch) ch++;
+            }
             format += 2;
         } else if (*(format + 1) == '8')
         {

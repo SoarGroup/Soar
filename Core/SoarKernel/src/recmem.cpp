@@ -320,7 +320,6 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
 
         result = rhs_value_to_symbol(rv);
-
         /*
          Long-Winded Case-by-Case [Hopeful] Explanation
 
@@ -473,7 +472,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 }
 
 preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok, wme* w,
-                           rhs_value original_id, rhs_value original_attr, rhs_value original_value,
+                           action* rule_action,
                            condition* cond)
 {
     Symbol* id, *attr, *value, *referent;
@@ -540,11 +539,62 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         goto abort_execute_action;
     }
     /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
+    uint64_t oid_id, oid_attr, oid_value;
+    rhs_value f_id, f_attr, f_value;
+    if (rule_action)
+    {
+        if (rule_action->id)
+        {
+            if (rhs_value_is_funcall(rule_action->id))
+            {
+                oid_id = 0;
+                f_id = rule_action->id;
+                /* rule_action will get deallocated in create_instantiation, but we want it
+                 * in the preference for learning, so we just steal this copy and set
+                 * rule_action's to null */
+                rule_action->id = NULL;
+            } else {
+                oid_id = rhs_value_to_o_id(rule_action->id);
+                f_id = 0;
+            }
+        } else {
+            oid_id = 0;
+            f_id = 0;
+        }
+        if (rule_action->attr)
+        {
+            if (rhs_value_is_funcall(rule_action->attr))
+            {
+                oid_attr = 0;
+                f_attr = rule_action->attr;
+                rule_action->attr = NULL;
+            } else {
+                oid_attr = rhs_value_to_o_id(rule_action->attr);
+                f_attr = 0;
+            }
+        } else {
+            oid_attr = 0;
+            f_attr = 0;
+        }
+        if (rule_action->value)
+        {
+            if (rhs_value_is_funcall(rule_action->value))
+            {
+                oid_value = 0;
+                f_value = rule_action->value;
+                rule_action->value = NULL;
+            } else {
+                oid_value = rhs_value_to_o_id(rule_action->value);
+                f_value = 0;
+            }
+        } else {
+            oid_value = 0;
+            f_value = 0;
+        }
+    }
     return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
-                           soar_module::identity_triple(
-                               ((!original_id || rhs_value_is_funcall(a->id)) ? 0 : rhs_value_to_o_id(original_id)),
-                               ((!original_attr || rhs_value_is_funcall(a->attr)) ? 0 : rhs_value_to_o_id(original_attr)),
-                               ((!original_value || rhs_value_is_funcall(a->value)) ? 0 : rhs_value_to_o_id(original_value))));
+                           soar_module::identity_triple(oid_id, oid_attr, oid_value),
+                           soar_module::rhs_triple(f_id, f_attr, f_value));
 
 abort_execute_action: /* control comes here when some error occurred */
     if (id)
@@ -788,7 +838,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     instantiation* inst;
     condition* cond;
     preference* pref;
-    action* a, *a2, *rhs_vars;
+    action* a, *a2, *rhs_vars = NULL;
     cons* c;
     bool need_to_do_support_calculations;
     bool trace_it;
@@ -845,11 +895,18 @@ void create_instantiation(agent* thisAgent, production* prod,
         additional_test_mode = DONT_ADD_TESTS;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
-    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-                                 &(inst->top_of_instantiated_conditions),
-                                 &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-                                 inst->i_id, additional_test_mode);
-
+    if (additional_test_mode != DONT_ADD_TESTS)
+    {
+        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+            &(inst->top_of_instantiated_conditions),
+            &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+            inst->i_id, additional_test_mode);
+    } else {
+        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+            &(inst->top_of_instantiated_conditions),
+            &(inst->bottom_of_instantiated_conditions), NULL,
+            inst->i_id, additional_test_mode);
+    }
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
@@ -896,11 +953,19 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- execute the RHS actions, collect the results --- */
     inst->preferences_generated = NIL;
     need_to_do_support_calculations = false;
-    for (a = prod->action_list, a2 = rhs_vars; a != NIL; a = a->next, a2 = a2->next)
+    a2 = rhs_vars;
+    for (a = prod->action_list; a != NIL; a = a->next)
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
-            pref = execute_action(thisAgent, a, tok, w, a2->id, a2->attr, a2->value, inst->top_of_instantiated_conditions);
+            if (a2)
+            {
+                dprint(DT_DEBUG, "Executing action:\n%a\n[%a]\n", a, a2);
+                pref = execute_action(thisAgent, a, tok, w, a2, inst->top_of_instantiated_conditions);
+            } else {
+                dprint(DT_DEBUG, "Executing action:\n%a\n", a);
+                pref = execute_action(thisAgent, a, tok, w, NULL, inst->top_of_instantiated_conditions);
+            }
         }
         else
         {
@@ -962,7 +1027,8 @@ void create_instantiation(agent* thisAgent, production* prod,
             {
                 wme* tempwme = glbDeepCopyWMEs;
                 pref = make_preference(thisAgent, a->preference_type,
-                                       tempwme->id, tempwme->attr, tempwme->value, NULL);
+                                       tempwme->id, tempwme->attr, tempwme->value,
+                                       NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
                 glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
             }
@@ -970,6 +1036,10 @@ void create_instantiation(agent* thisAgent, production* prod,
             {
                 pref = 0;
             }
+        }
+        if (a2)
+        {
+            a2 = a2->next;
         }
     }
 

@@ -190,11 +190,6 @@ inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2)
     return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
 }
 
-inline bool rhs_values_symbols_equal_with_originals(rhs_value rv1, rhs_value rv2)
-{
-    return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
-}
-
 inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 {
     if (rhs_value_is_symbol(rv1) && rhs_value_is_symbol(rv2))

@@ -37,6 +37,8 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     cons* c;
     list* fl;
 
+    if (rv == NULL) return;
+
     dprint(DT_DEALLOCATES, "Deallocating rhs value ");
 
     if (rhs_value_is_reteloc(rv))
@@ -418,8 +420,13 @@ rhs_value create_RHS_value(agent* thisAgent,
                                             first_letter,
                                             pI_id,
                                             add_original_vars);
+//            uint64_t test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
+//            rhs_symbol test_rsym = rhs_value_to_rhs_symbol(static_cast<char*>(new_c->first));
+//            test_oid  = test_rsym->o_id;
+//            test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
+//            dprint(DT_DEBUG, "%fRHS Value1 is %r\n", static_cast<char*>(c->first));
         }
         prev_new_c->rest = NIL;
         return funcall_list_to_rhs_value(new_fl);
@@ -473,6 +480,7 @@ action* create_RHS_action_list(agent* thisAgent,
             first_letter = first_letter_from_rhs_value(New->attr);
             New->value = create_RHS_value(thisAgent, old->value, cond,
                                           first_letter, pI_id, add_original_vars);
+            dprint(DT_DEBUG, "%fRHS Value2 is %r\n", New->value);
             if (preference_is_binary(old->preference_type))
             {
                 New->referent = create_RHS_value(thisAgent, old->referent,

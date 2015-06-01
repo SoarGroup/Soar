@@ -299,8 +299,10 @@ class Output_Manager
  *
  *       %a   action
  *       %l   condition
+ *       %n   funcall list
  *       %7   instantiation
  *       %p   preference
+ *       %r   rhs value
  *       %y   symbol
  *       %o   symbol's original variable(s)
  *       %t   test

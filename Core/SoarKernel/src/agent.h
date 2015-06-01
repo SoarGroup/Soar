@@ -188,7 +188,7 @@ typedef struct agent_struct
 
     Variablization_Manager* variablizationManager;
     Memory_Manager*         memoryManager;
-//    Output_Manager*       outputManager;
+    Output_Manager*       outputManager;
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at

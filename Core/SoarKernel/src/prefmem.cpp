@@ -62,9 +62,13 @@ const char* preference_name[] =
 
 preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
-                            const soar_module::identity_triple o_ids)
+                            const soar_module::identity_triple o_ids,
+                            const soar_module::rhs_triple rhs_funcs)
 {
     preference* p;
+    dprint(DT_DEBUG, "%fRHS Value a is %y %r\n", id, rhs_funcs.id);
+    dprint(DT_DEBUG, "%fRHS Value b is %y %r\n", attr, rhs_funcs.attr);
+    dprint(DT_DEBUG, "%fRHS Value c is %y %r\n", value, rhs_funcs.value);
 
     thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
     p->type = type;
@@ -95,10 +99,13 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->next_candidate = NIL;
     p->next_result = NIL;
 
-
     p->o_ids.id = o_ids.id;
     p->o_ids.attr = o_ids.attr;
     p->o_ids.value = o_ids.value;
+
+    p->rhs_funcs.id = rhs_funcs.id;
+    p->rhs_funcs.attr = rhs_funcs.attr;
+    p->rhs_funcs.value = rhs_funcs.value;
 
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));

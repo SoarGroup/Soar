@@ -288,7 +288,6 @@ agent* create_soar_agent(char* agent_name)                                      
     soar_init_callbacks(thisAgent);
 
     //
-    // This call is needed to set up callbacks.
     thisAgent->memoryManager = &Memory_Manager::Get_MPM();
     init_memory_utilities(thisAgent);
 
@@ -298,7 +297,7 @@ agent* create_soar_agent(char* agent_name)                                      
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
     thisAgent->variablizationManager = new Variablization_Manager(thisAgent);
-//    thisAgent->outputManager = &Output_Manager::Get_OM();
+    thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
     // Timers must be initialized after sysparams

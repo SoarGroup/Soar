@@ -40,7 +40,7 @@
 #define TRACE_Init_DT_DEALLOCATE_SYMBOLS          false
 #define TRACE_Init_DT_ID_LEAKING                  false
 //--
-#define TRACE_Init_DT_SOAR_INSTANCE               true
+#define TRACE_Init_DT_SOAR_INSTANCE               false
 #define TRACE_Init_DT_CLI_LIBRARIES               false
 #define TRACE_Init_DT_EPMEM_CMD                   false
 #define TRACE_Init_DT_PARSER                      false
