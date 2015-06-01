@@ -675,7 +675,7 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
         {
             rl_perform_update(thisAgent, top_value, top_rl, s->id);
             
-            if (return_val->numeric_value != top_value)
+            if (my_learning_policy == rl_param_container::q && return_val->numeric_value != top_value)
             {
                 rl_watkins_clear(thisAgent, s->id);
             }
