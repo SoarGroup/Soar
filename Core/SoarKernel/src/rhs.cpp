@@ -385,7 +385,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
-            if (pI_id)
+            if (add_original_vars && pI_id)
             {
                 lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
             }
@@ -396,7 +396,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             /* -- unbound variable was already created in previous rhs action -- */
             sym = *(thisAgent->rhs_variable_bindings + index);
         }
-        if (pI_id)
+        if (add_original_vars && pI_id)
         {
             lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
         }

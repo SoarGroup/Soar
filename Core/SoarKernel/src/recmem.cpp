@@ -895,18 +895,18 @@ void create_instantiation(agent* thisAgent, production* prod,
         additional_test_mode = DONT_ADD_TESTS;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
-    if (additional_test_mode != DONT_ADD_TESTS)
-    {
+//    if (additional_test_mode != DONT_ADD_TESTS)
+//    {
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
             &(inst->top_of_instantiated_conditions),
             &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
             inst->i_id, additional_test_mode);
-    } else {
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), NULL,
-            inst->i_id, additional_test_mode);
-    }
+//    } else {
+//        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+//            &(inst->top_of_instantiated_conditions),
+//            &(inst->bottom_of_instantiated_conditions), NULL,
+//            inst->i_id, additional_test_mode);
+//    }
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)

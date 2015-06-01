@@ -12,8 +12,8 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-#define DEBUG_FREE_SETTINGS
-//#define DEBUG_UNITTEST_SETTINGS
+//#define DEBUG_FREE_SETTINGS
+#define DEBUG_UNITTEST_SETTINGS
 
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
