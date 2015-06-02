@@ -317,8 +317,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             {
                 condition_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
                 while (*ch) ch++;
-                format += 2;
             }
+                format += 2;
         } else if (*(format + 1) == '2')
         {
             action* temp = va_arg(args, action *);
@@ -326,8 +326,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             {
                 action_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
                 while (*ch) ch++;
-                format += 2;
             }
+                format += 2;
         } else if (*(format + 1) == '3')
         {
             cons* temp = va_arg(args, cons*);
@@ -335,8 +335,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             {
                 condition_cons_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
                 while (*ch) ch++;
-                format += 2;
             }
+                format += 2;
         } else if (*(format + 1) == '4')
         {
             cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), ch, dest_size - (ch - dest) );
@@ -378,6 +378,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
         }
     }
     *ch = 0;
+    va_end(args);
 }
 
 void Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
