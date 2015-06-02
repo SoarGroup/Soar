@@ -1187,7 +1187,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
+    dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
+     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
@@ -1244,9 +1245,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
-    dprint(DT_VARIABLIZATION_MANAGER, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
+    dprint(DT_DEBUG, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
+    dprint(DT_DEBUG, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint(DT_DEBUG, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
