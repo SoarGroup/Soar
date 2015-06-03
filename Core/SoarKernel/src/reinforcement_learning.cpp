@@ -928,7 +928,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             if (!data->prev_op_rl_rules->empty())
             {
                 /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
-                const double I = goal->id->lower_goal && update_efr ? 0.0 : 1.0;
+                const double I = goal->id->lower_goal ? 0.0 : 1.0;
                 double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
@@ -1061,7 +1061,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 {
                     for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
                     {
-                        pref->inst->prod->rl_gql -= alpha * gamma * (1 - lambda) * dot_w_e;
+                        pref->inst->prod->rl_efr -= alpha * gamma * (1 - lambda) * dot_w_e;
                     }
 
                     for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
