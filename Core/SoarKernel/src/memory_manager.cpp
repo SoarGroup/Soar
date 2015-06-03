@@ -61,6 +61,8 @@ void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* p
 Memory_Manager::Memory_Manager()
 {
 //    std::cout << "MemPool Manager constructor called.\n";
+
+    memory_for_usage_overhead = memory_for_usage + STATS_OVERHEAD_MEM_USAGE;
 }
 
 Memory_Manager::~Memory_Manager()
@@ -276,7 +278,7 @@ void* Memory_Manager::allocate_memory(size_t size, int usage_code)
 
     memory_for_usage[usage_code] += size;
     size += sizeof(size_t);
-    memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(size_t);
+    (*memory_for_usage_overhead) += sizeof(size_t);
 
     p = static_cast<char*>(malloc(size));
     if (p == NULL)

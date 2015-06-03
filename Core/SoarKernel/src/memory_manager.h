@@ -163,7 +163,7 @@ class Memory_Manager
 
         /* List of all memory pools being used */
         memory_pool*        memory_pools_in_use;
-
+        size_t* memory_for_usage_overhead;
         void free_memory_pool_by_ptr(memory_pool* pThisPool);
 
     public:
