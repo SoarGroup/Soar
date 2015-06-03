@@ -541,46 +541,20 @@ void rl_get_test_constant(test* p_test, test* i_test, rl_symbol_map* constants)
         rl_get_symbol_constant(*(reinterpret_cast<Symbol**>(p_test)), *(reinterpret_cast<Symbol**>(i_test)), constants);
 
         return;
+    } else if ((*p_test)->type == CONJUNCTIVE_TEST) {
+        cons* p_c=(*p_test)->data.conjunct_list;
+        cons* i_c=(*i_test)->data.conjunct_list;
+
+        while ( p_c )
+        {
+            rl_get_test_constant( reinterpret_cast<test*>( &( p_c->first ) ), reinterpret_cast<test*>( &( i_c->first ) ), constants );
+
+            p_c = p_c->rest;
+            i_c = i_c->rest;
+        }
+
+        return;
     }
-
-
-    // complex test stuff
-    // NLD: If the code below is uncommented, it accesses bad memory on the first
-    //      id test and segfaults.  I'm honestly unsure why (perhaps something
-    //      about state test?).  Most of this code was copied/adapted from
-    //      the variablize_test code in production.cpp.
-    /*
-    {
-        complex_test* p_ct = complex_test_from_test( *p_test );
-        complex_test* i_ct = complex_test_from_test( *i_test );
-
-        if ( ( p_ct->type == GOAL_ID_TEST ) || ( p_ct->type == IMPASSE_ID_TEST ) || ( p_ct->type == DISJUNCTION_TEST ) )
-        {
-            return;
-        }
-        else if ( p_ct->type == CONJUNCTIVE_TEST )
-        {
-            cons* p_c=p_ct->data.conjunct_list;
-            cons* i_c=i_ct->data.conjunct_list;
-
-            while ( p_c )
-            {
-                rl_get_test_constant( reinterpret_cast<test*>( &( p_c->first ) ), reinterpret_cast<test*>( &( i_c->first ) ), constants );
-
-                p_c = p_c->rest;
-                i_c = i_c->rest;
-            }
-
-            return;
-        }
-        else
-        {
-            rl_get_symbol_constant( p_ct->data.referent, i_ct->data.referent, constants );
-
-            return;
-        }
-    }
-    */
 }
 
 void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol_map* constants)
@@ -611,16 +585,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 {
     Symbol* return_val = NULL;
 
-    // initialize production conditions
-    if (my_template_instance->prod->rl_template_conds == NIL)
-    {
-        condition* c_top;
-        condition* c_bottom;
-
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
-        my_template_instance->prod->rl_template_conds = c_top;
-    }
-
     // initialize production instantiation set
     if (my_template_instance->prod->rl_template_instantiations == NIL)
     {
@@ -630,7 +594,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
     // get constants
     rl_symbol_map constant_map;
     {
-        rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
+        rl_get_template_constants(my_template_instance->top_of_instantiated_conditions, my_template_instance->top_of_instantiated_conditions, &(constant_map));
     }
 
     // try to insert into instantiation set

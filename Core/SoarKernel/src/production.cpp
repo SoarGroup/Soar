@@ -875,7 +875,6 @@ production* make_production(agent* thisAgent,
             p->rl_efr = get_number_from_symbol(rhs_value_to_symbol(p->action_list->referent));
         }
     }
-    p->rl_template_conds = NIL;
     p->rl_template_instantiations = NIL;
 
     rl_update_template_tracking(thisAgent, name->sc->name);
@@ -905,11 +904,6 @@ void deallocate_production(agent* thisAgent, production* prod)
     if (prod->filename)
     {
         free_memory_block_for_string(thisAgent, prod->filename);
-    }
-
-    if (prod->rl_template_conds)
-    {
-        deallocate_condition_list(thisAgent, prod->rl_template_conds);
     }
     if (prod->rl_template_instantiations)
     {

@@ -202,7 +202,6 @@ typedef struct production_struct
     double rl_efr;                // expected future reward (discounted next state)
     double rl_gql;                // second value for implementation of GQ(\lambda)
 
-    condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;
 } production;
 

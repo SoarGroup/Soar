@@ -12,9 +12,12 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
+#ifdef SOAR_RELEASE_VERSION
+#define DEBUG_UNITTEST_SETTINGS
+#else
 //#define DEBUG_FREE_SETTINGS
 #define DEBUG_UNITTEST_SETTINGS
-
+#endif
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
