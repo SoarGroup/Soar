@@ -2813,7 +2813,7 @@ void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1)
+void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->start();
@@ -2861,7 +2861,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // prematurely)
         symbol_remove_ref(thisAgent, lti);
     }
-    
+    bool triggered = false;
     // if no children, then retrieve children
     // merge may override this behavior
     if (((thisAgent->smem_params->merge->get_value() == smem_param_container::merge_add) ||
@@ -2870,6 +2870,11 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
              (lti->id->slots == NIL)))
             || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
     {
+        if (visited == NULL)
+        {
+            triggered = true;
+            visited = new std::set<smem_lti_id>;
+        }
         soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
@@ -2877,7 +2882,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
         expand_q->bind_int(1, lti_id);
         
-        std::list<Symbol*> children;
+        std::set<Symbol*> children;
         
         while (expand_q->execute() == soar_module::row)
         {
@@ -2890,7 +2895,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
                 value_sym = smem_lti_soar_make(thisAgent, static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), lti->id->level);
                 if (depth > 1)
                 {
-                    children.push_back(value_sym);
+                    children.insert(value_sym);
                 }
             }
             else
@@ -2909,14 +2914,22 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         expand_q->reinitialize();
         
         //Attempt to find children for the case of depth.
-        std::list<Symbol*>::iterator iterator;
-        std::list<Symbol*>::iterator end = children.end();
+        std::set<Symbol*>::iterator iterator;
+        std::set<Symbol*>::iterator end = children.end();
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
-            smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth - 1);
+            if (visited->find((*iterator)->id->smem_lti) == visited->end())
+            {
+                visited->insert((*iterator)->id->smem_lti);
+                smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, wm_install, depth - 1, visited);
+            }
         }
+
     }
-    
+    if (triggered)
+    {
+        delete visited;
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->stop();
