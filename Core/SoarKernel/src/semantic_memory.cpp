@@ -3218,7 +3218,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, int number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL)
+smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, int number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, int depth = 1, smem_install_type install_type = wm_install)
 {
 
     //Going to loop through the prohibits and note that they have been prohibited, thus removing the most recent activation event.
@@ -3597,8 +3597,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
             ////////////////////////////////////////////////////////////////////////////
             thisAgent->smem_timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
-            
-            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes);
+            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
         }
         else
         {
@@ -4886,8 +4885,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         
         std::list<smem_lti_id> match_ids;
         
-        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids));
-        
+        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
         if (!match_ids.empty())
         {
             for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
@@ -5569,7 +5567,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                         prohibit_lti.insert((*sym_p)->id->smem_lti);
                     }
                     
-                    smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes);
+                    smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
                     
                     // add one to the cbr stat
                     thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
