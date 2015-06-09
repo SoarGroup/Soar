@@ -74,7 +74,7 @@ namespace
 			libraryPath = path.substr( 0, path.find_last_of("/") + 1);
 #endif
 		}
-		~dynamic_library_load_unload_handler()s
+		~dynamic_library_load_unload_handler()
 		{
 			libraryPath = "";
 		}
