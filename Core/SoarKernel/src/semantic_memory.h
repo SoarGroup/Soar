@@ -46,6 +46,7 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
+        enum spreading_types { ppr, ppr_noloop, actr };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
@@ -55,7 +56,9 @@ class smem_param_container: public soar_module::param_container
         enum act_choices { act_recency, act_frequency, act_base };
         
         soar_module::boolean_param* learning;
+        soar_module::boolean_param* spreading;//clearly, for spreading.
         soar_module::constant_param<db_choices>* database;
+        soar_module::constant_param<spreading_types>* spreading_type;
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
@@ -67,11 +70,14 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<opt_choices>* opt;
         
         soar_module::integer_param* thresh;
+        soar_module::decimal_param* number_trajectories;
         
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
+        soar_module::decimal_param* spreading_baseline;
+        soar_module::decimal_param* restart_probability;
         
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
@@ -273,12 +279,27 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* history_get;
         soar_module::sqlite_statement* history_push;
         soar_module::sqlite_statement* history_add;
+        soar_module::sqlite_statement* prohibit_set;
+        soar_module::sqlite_statement* prohibit_add;
+        soar_module::sqlite_statement* prohibit_check;
+        soar_module::sqlite_statement* prohibit_reset;
+        soar_module::sqlite_statement* prohibit_remove;
+        soar_module::sqlite_statement* history_remove;
         
         soar_module::sqlite_statement* vis_lti;
         soar_module::sqlite_statement* vis_lti_act;
         soar_module::sqlite_statement* vis_value_const;
         soar_module::sqlite_statement* vis_value_lti;
         
+        //The ones below are for spreading
+        soar_module::sqlite_statement* web_val_parent;
+        soar_module::sqlite_statement* web_val_parent_2;
+        soar_module::sqlite_statement* web_val_child;
+        soar_module::sqlite_statement* web_val_both;
+        soar_module::sqlite_statement* lti_all;
+        soar_module::sqlite_statement* trajectory_add;
+        soar_module::sqlite_statement* trajectory_get;
+
         smem_statement_container(agent* new_agent);
         
     private:
@@ -323,6 +344,7 @@ typedef uint64_t smem_hash_id;
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;
 typedef std::set<smem_lti_id> smem_lti_set;
+typedef std::map<smem_lti_id, uint64_t> smem_lti_map;
 
 // a list of symbols
 typedef std::list<Symbol*> smem_sym_list;
@@ -459,6 +481,9 @@ enum smem_install_type { wm_install, fake_install };
 
 extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
+
+extern bool smem_calc_spread_trajectory(agent* thisAgent);
+extern bool smem_calc_spread_trajectories(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);

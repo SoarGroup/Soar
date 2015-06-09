@@ -33,6 +33,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
@@ -53,6 +54,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
+        PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
+        PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
+        PrintCLIMessage_Item("restart-probability:", thisAgent->smem_params->restart_probability, 40);
         PrintCLIMessage("");
         
         return true;
@@ -333,6 +338,41 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                                     "         Soar will erase the semantic memory database.\n");
                 }
                 
+            }
+            if (!strcmp(pAttr->c_str(), "spreading-type"))
+            {
+                //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
+                if (pVal)
+                {
+                    if ((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr"))
+                    {
+                        assert(false); //This shouldn't happen while I'm testing.
+                    }
+                }
+            }
+            if (!strcmp(pAttr->c_str(), "spreading"))
+            {
+                if (thisAgent->smem_params->spreading->get_value() == on)
+                {
+                    PrintCLIMessage("This might take a long while.\n");
+                    //This is where a huge batch processing of all of SMem can be run.
+                    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                    {
+                        smem_calc_spread_trajectory(thisAgent);
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
+                    {
+                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr)
+                    {
+                        smem_calc_spread_trajectories(thisAgent);
+                    }
+                    else
+                    {
+                        assert(false);
+                    }
+                }
             }
         }
         return result;
