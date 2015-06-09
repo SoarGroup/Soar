@@ -25,6 +25,7 @@ command_table_entry* extract_once_command_entry();
 command_table_entry* add_node_command_entry();
 command_table_entry* copy_node_command_entry();
 command_table_entry* set_transform_command_entry();
+command_table_entry* copy_transform_command_entry();
 command_table_entry* delete_node_command_entry();
 
 command_table_entry* set_tag_command_entry();
@@ -41,6 +42,7 @@ command_table::command_table()
     add(add_node_command_entry());
     add(copy_node_command_entry());
     add(set_transform_command_entry());
+		add(copy_transform_command_entry());
     add(delete_node_command_entry());
     
     add(set_tag_command_entry());

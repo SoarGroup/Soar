@@ -41,8 +41,14 @@ double compare_axis_distance(sgnode* a, sgnode* b, const filter_params* p)
     {
         return 0;
     }
-    int axis = tolower(axisName[0]) - 'x';
-    return axis_distance(a, b, axis);
+		char axis = tolower(axisName[0]);
+		int dim = 0;
+		if(axis >= 'x' && axis <= 'z'){
+			dim = axis - 'x';
+		} else if(axis >= '0' && axis <= '2'){
+			dim = axis - '0';
+		}
+    return axis_distance(a, b, dim);
 }
 
 ///// filter axis_distance //////

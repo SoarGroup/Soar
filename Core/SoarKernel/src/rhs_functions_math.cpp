@@ -471,6 +471,162 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
        (a/b)*b + a%b == a. */
 }
 
+/* --------------------------------------------------------------------
+                                Min
+
+   Takes any number of int_constant or float_constant arguments, 
+   and returns the minimum value in the list
+-------------------------------------------------------------------- */
+
+Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    bool float_found;
+    bool first = true;
+    int64_t min_i = 0;
+    double min_f = 0;
+    Symbol* arg;
+    cons* c;
+    
+    for (c = args; c != NIL; c = c->rest)
+    {
+        arg = static_cast<symbol_struct*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            print_with_symbols(thisAgent, "Error: non-number (%y) passed to min function\n",
+                               arg);
+            return NIL;
+        }
+    }
+    
+    float_found = false;
+    while (args)
+    {
+        arg = static_cast<symbol_struct*>(args->first);
+        if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+        {
+            if (float_found)
+            {
+                if (first || arg->ic->value < min_f)
+                {
+                    min_f = arg->ic->value;
+                }
+            }
+            else
+            {
+                if (first || arg->ic->value < min_i)
+                {
+                    min_i = arg->ic->value;
+                }
+            }
+        }
+        else
+        {
+            if (float_found)
+            {
+                if (first || arg->ic->value < min_f)
+                {
+                    min_f = arg->fc->value;
+                }
+            }
+            else
+            {
+                float_found = true;
+                min_f = min_i;
+                if (first || arg->ic->value < min_f)
+                {
+                    min_f = arg->fc->value;
+                }
+            }
+        }
+        args = args->rest;
+        first = false;
+    }
+    if (float_found)
+    {
+        return make_float_constant(thisAgent, min_f);
+    }
+    return make_int_constant(thisAgent, min_i);
+}
+
+/* --------------------------------------------------------------------
+                               Max 
+
+   Takes any number of int_constant or float_constant arguments, 
+   and returns the maximum value in the list
+-------------------------------------------------------------------- */
+
+Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    bool float_found;
+    bool first = true;
+    int64_t max_i = 0;
+    double max_f = 0;
+    Symbol* arg;
+    cons* c;
+    
+    for (c = args; c != NIL; c = c->rest)
+    {
+        arg = static_cast<symbol_struct*>(c->first);
+        if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
+                (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
+        {
+            print_with_symbols(thisAgent, "Error: non-number (%y) passed to max function\n",
+                               arg);
+            return NIL;
+        }
+    }
+    
+    float_found = false;
+    while (args)
+    {
+        arg = static_cast<symbol_struct*>(args->first);
+        if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+        {
+            if (float_found)
+            {
+                if (first || arg->ic->value > max_f)
+                {
+                    max_f = arg->ic->value;
+                }
+            }
+            else
+            {
+                if (first || arg->ic->value > max_i)
+                {
+                    max_i = arg->ic->value;
+                }
+            }
+        }
+        else
+        {
+            if (float_found)
+            {
+                if (first || arg->ic->value > max_f)
+                {
+                    max_f = arg->fc->value;
+                }
+            }
+            else
+            {
+                float_found = true;
+                max_f = max_i;
+                if (first || arg->ic->value > max_f)
+                {
+                    max_f = arg->fc->value;
+                }
+            }
+        }
+        args = args->rest;
+        first = false;
+    }
+    if (float_found)
+    {
+        return make_float_constant(thisAgent, max_f);
+    }
+    return make_int_constant(thisAgent, max_i);
+}
+
 /*
  * SIN_RHS_FUNCTION_CODE
  *
@@ -1671,6 +1827,12 @@ add_rhs_function(thisAgent, make_str_constant(thisAgent, "sum"), sum_rhs_functio
                      1, true, false, 0);
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "mod"), mod_rhs_function_code,
                      2, true, false, 0);
+    add_rhs_function(thisAgent, make_str_constant(thisAgent, "min"), min_rhs_function_code,
+                     -1, true, false, 0);
+    add_rhs_function(thisAgent, make_str_constant(thisAgent, "max"), max_rhs_function_code,
+                     -1, true, false, 0);
+
+                     
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "sin"),
                      sin_rhs_function_code,
                      1,
@@ -1745,6 +1907,8 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
 	remove_rhs_function(thisAgent, find_str_constant(thisAgent, "size"));
 	remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sum"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "mod"));
+    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "min"));
+    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "max"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sin"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "cos"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "atan2"));

@@ -43,6 +43,12 @@ filter_table_entry* smaller_select_filter_entry();
 filter_table_entry* axis_distance_filter_entry();
 filter_table_entry* axis_distance_select_filter_entry();
 
+// filters/axis_relation.cpp
+filter_table_entry* axis_relation_select_filter_entry();
+
+// filters/calculate_placement.cpp
+filter_table_entry* calculate_placement_filter_entry();
+
 // filters/intersect.cpp
 filter_table_entry* intersect_filter_entry();
 filter_table_entry* intersect_select_filter_entry();
@@ -50,6 +56,17 @@ filter_table_entry* intersect_select_filter_entry();
 // filters/contain.cpp
 filter_table_entry* contain_filter_entry();
 filter_table_entry* contain_select_filter_entry();
+
+// filters/occlusion.cpp
+filter_table_entry* occlusion_filter_entry();
+
+// filters/overlap.cpp
+filter_table_entry* overlap_filter_entry();
+filter_table_entry* contain_select_filter_entry();
+
+// filters/monitor_object.cpp
+filter_table_entry* monitor_position_filter_entry();
+filter_table_entry* monitor_volume_filter_entry();
 
 // filters/tag_select.cpp
 filter_table_entry* tag_select_filter_entry();
@@ -83,13 +100,25 @@ filter_table::filter_table()
     
     add(axis_distance_filter_entry());
     add(axis_distance_select_filter_entry());
+
+		add(axis_relation_select_filter_entry());
+
+		add(calculate_placement_filter_entry());
     
     add(intersect_filter_entry());
     add(intersect_select_filter_entry());
     
     add(contain_filter_entry());
     add(contain_select_filter_entry());
+
+		add(occlusion_filter_entry());
+
+		add(overlap_filter_entry());
+		add(overlap_select_filter_entry());
     
+		add(monitor_volume_filter_entry());
+		add(monitor_position_filter_entry());
+
     add(tag_select_filter_entry());
 }
 

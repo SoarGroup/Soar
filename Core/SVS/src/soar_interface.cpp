@@ -108,7 +108,9 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
     return true;
 }
 
-
+#include <iostream>
+#include "symtab.h"
+using namespace std;
 bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
 {
     vec3 res;
@@ -120,17 +122,23 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
         return false;
     }
     Symbol* vec3_root = get_wme_val(vec3_wme);
+
+		string vec_id_name;
+		vec3_root->get_id_name(vec_id_name);
     
     // Then find each dimension to make up the vec3
-    const char* dims[] = { "x", "y", "z" };
+    string dims[] = { "x", "y", "z" };
     for (int d = 0; d < 3; d++)
     {
         wme* dim_wme;
         double dim_val;
-        if (!find_child_wme(vec3_root, dims[d], dim_wme)
-                || !get_symbol_value(get_wme_val(dim_wme), dim_val))
+        if (!find_child_wme(vec3_root, dims[d].c_str(), dim_wme))
+				{
+					return false;
+				}
+				if( !get_symbol_value(get_wme_val(dim_wme), dim_val))
         {
-            return false;
+          return false;
         }
         res[d] = dim_val;
     }

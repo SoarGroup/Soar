@@ -66,9 +66,11 @@ class set_transform_command : public command
                 return false;
             }
             
+						cout << "setting " << props.size() << " properties" << endl;
             map<char, vec3>::iterator pi;
             for (pi = props.begin(); pi != props.end(); pi++)
             {
+								cout << "setting " << pi->first << " for " << n->get_id() << " to " << pi->second << endl;
                 n->set_trans(pi->first, pi->second);
             }
             
