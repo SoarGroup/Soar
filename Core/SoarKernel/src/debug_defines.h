@@ -21,6 +21,7 @@
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
+//#define EBC_MAP_MERGE_DUPE_GROUNDS
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */

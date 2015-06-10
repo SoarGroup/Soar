@@ -73,9 +73,8 @@ void Variablization_Manager::cache_constraints_in_test(test t)
 
 void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
-    assert(!c->data.tests.id_test || (c->data.tests.id_test->type == EQUALITY_TEST));
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
-    /* I don't think we can get a constraint in id element.  It should always be an equality test */
+    cache_constraints_in_test(c->data.tests.id_test);
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
 }

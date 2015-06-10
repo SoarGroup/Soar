@@ -37,6 +37,7 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "debug.h"
+#include "debug_defines.h"
 #include "prefmem.h"
 #include "variablization_manager.h"
 #include "soar_module.h"
@@ -84,7 +85,7 @@ using namespace soar_TraceNames;
    the grounds.
 ==================================================================== */
 
-
+#ifndef EBC_MAP_MERGE_DUPE_GROUNDS
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
     cons* c;
@@ -94,7 +95,6 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
         (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
     }
     push(thisAgent, (cond), thisAgent->grounds);
-    cond->bt.wme_->chunker_bt_last_ground_cond = cond;
 }
 
 inline void add_to_potentials(agent* thisAgent, condition* cond)
@@ -116,7 +116,75 @@ inline void add_to_locals(agent* thisAgent, condition* cond)
     }
     push(thisAgent, (cond), thisAgent->locals);
 }
+#else
+inline void add_to_grounds(agent* thisAgent, condition* cond)
+{
+    if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
+    {
+        (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
+        push(thisAgent, (cond), thisAgent->grounds);
+        /* Store a pointer to the cond in the wme, so that we can cache
+         * constraints and add identity mappings for any future conditions
+         * that match that wme */
+        cond->bt.wme_->chunker_bt_last_ground_cond = cond;
+    } else {
+        /* MToDo | Should skip if we don't need to learn */
+        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Adding constraints and identity mappings for: %l\n", cond);
+        condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
+        dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for dupe ground: %l from %l\n", cond, last_cond);
 
+        test cond_id = equality_test_found_in_test(cond->data.tests.id_test);
+        test cond_attr = equality_test_found_in_test(cond->data.tests.attr_test);
+        test cond_value = equality_test_found_in_test(cond->data.tests.value_test);
+        test last_cond_id = equality_test_found_in_test(last_cond->data.tests.id_test);
+        test last_cond_attr = equality_test_found_in_test(last_cond->data.tests.attr_test);
+        test last_cond_value = equality_test_found_in_test(last_cond->data.tests.value_test);
+
+        thisAgent->variablizationManager->cache_constraints_in_cond(cond);
+        if (cond_id->identity)
+        {
+            thisAgent->variablizationManager->add_identity_unification(cond_id->identity, last_cond_id->identity);
+        }
+        if (cond_attr->identity)
+        {
+            thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, last_cond_attr->identity);
+        }
+        if (cond_value->identity)
+        {
+            thisAgent->variablizationManager->add_identity_unification(cond_value->identity, last_cond_value->identity);
+        }
+        dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    }
+}
+
+inline void add_to_potentials(agent* thisAgent, condition* cond)
+{
+    if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
+    {
+        (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc;
+        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
+        push(thisAgent, (cond), thisAgent->positive_potentials);
+    }
+    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
+    {
+        push(thisAgent, (cond), thisAgent->positive_potentials);
+    }
+}
+
+inline void add_to_locals(agent* thisAgent, condition* cond)
+{
+    if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
+    {
+        (cond)->bt.wme_->locals_tc = thisAgent->locals_tc;
+        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
+        push(thisAgent, (cond), thisAgent->locals);
+    }
+    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
+    {
+        push(thisAgent, (cond), thisAgent->locals);
+    }
+}
+#endif
 /* -------------------------------------------------------------------
                      Backtrace Through Instantiation
 
@@ -336,6 +404,7 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    chunk, whether the original condition the constraint came from made it into
          *    the chunk or not.  Since the constraint was necessary for the problem-solving
          *    -- */
+        /* MToDo | Should skip if we don't need to build chunk */
         thisAgent->variablizationManager->cache_constraints_in_cond(c);
 
         thisID = equality_test_found_in_test(c->data.tests.id_test)->data.referent;
@@ -581,8 +650,8 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                         xml_begin_tag(thisAgent, kTagCDPSPreference);
                         print_preference(thisAgent, p);
                     }
-//                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, cond, reliable, 6,
-//                        soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
+                    /* This used to pass in cond instead of NULL, but I think CDPS prefs are
+                     * essentially like results in this context, which get NULL in that parameter */
                     backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6,
                         soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
 
@@ -718,6 +787,7 @@ void trace_grounded_potentials(agent* thisAgent)
                 }
                 else     /* pot was already in the grounds, do don't add it */
                 {
+#ifndef EBC_MAP_MERGE_DUPE_GROUNDS
                     dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
@@ -725,6 +795,32 @@ void trace_grounded_potentials(agent* thisAgent)
                     thisAgent->grounds = c;
                     pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
+#else
+                    condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
+                    dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
+                    dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
+                    dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for potential: %l from %l\n", pot, last_cond);
+                    test cond_id = equality_test_found_in_test(pot->data.tests.id_test);
+                    test cond_attr = equality_test_found_in_test(pot->data.tests.attr_test);
+                    test cond_value = equality_test_found_in_test(pot->data.tests.value_test);
+                    test last_cond_id = equality_test_found_in_test(last_cond->data.tests.id_test);
+                    test last_cond_attr = equality_test_found_in_test(last_cond->data.tests.attr_test);
+                    test last_cond_value = equality_test_found_in_test(last_cond->data.tests.value_test);
+                    thisAgent->variablizationManager->cache_constraints_in_cond(pot);
+                    if (cond_id->identity)
+                    {
+                        thisAgent->variablizationManager->add_identity_unification(cond_id->identity, last_cond_id->identity);
+                    }
+                    if (cond_attr->identity)
+                    {
+                        thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, last_cond_attr->identity);
+                    }
+                    if (cond_value->identity)
+                    {
+                        thisAgent->variablizationManager->add_identity_unification(cond_value->identity, last_cond_value->identity);
+                    }
+                    free_cons(thisAgent, c);
+#endif
                 }
             }
             else
@@ -837,8 +933,8 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
                     print_preference(thisAgent, p);
                 }
 
-//                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, potential, reliable, 6,
-//                    soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
+                /* This used to pass in potential instead of NULL, but I think CDPS prefs are
+                 * essentially like results in this context, which get NULL in that parameter */
                 backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6,
                     soar_module::symbol_triple_struct(p->id, p->attr, p->value), p->o_ids);
 
