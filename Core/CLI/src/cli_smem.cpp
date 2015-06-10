@@ -344,7 +344,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
                 if (pVal)
                 {
-                    if ((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr"))
+                    if ((((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr")) && strcmp(pVal->c_str(), "ppr-backwards")) && strcmp(pVal->c_str(), "ppr-both"))
                     {
                         assert(false); //This shouldn't happen while I'm testing.
                     }
@@ -364,7 +364,9 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     {
                         smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
                     }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr)
+                    else if ((thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr
+                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
+                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
                     {
                         smem_calc_spread_trajectories(thisAgent);
                     }

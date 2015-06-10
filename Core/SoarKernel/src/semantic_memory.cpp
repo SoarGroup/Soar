@@ -85,6 +85,8 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // spreading type
     spreading_type = new soar_module::constant_param<spreading_types>("spreading-type", ppr, new soar_module::f_predicate<spreading_types>());
     spreading_type->add_mapping(ppr, "ppr");//personalized pagerank log(prob)
+    spreading_type->add_mapping(ppr_backwards, "ppr-backwards");
+    spreading_type->add_mapping(ppr_both, "ppr-both");
     spreading_type->add_mapping(actr, "actr");//Using act-r's depth 1 log-odds.
     spreading_type->add_mapping(ppr_noloop, "ppr-noloop");//Same as ppr, but with a restriction that trajectories don't loop.
     //Need to code up and add the one with variable depth ACT-R...
@@ -1290,8 +1292,19 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;//web_val_child;//web_val_parent_2;
-
+        soar_module::sqlite_statement* children_q;
+        if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
+        {
+            children_q = thisAgent->smem_stmts->web_val_parent_2;
+        }
+        else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
+        {
+            children_q = thisAgent->smem_stmts->web_val_both;
+        }
+        else
+        {
+            children_q = thisAgent->smem_stmts->web_val_child;//web_val_child;//web_val_parent_2;
+        }
         std::list<smem_lti_id> children;
 
         //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
