@@ -27,7 +27,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testSoarRand);
         CPPUNIT_TEST(testPreferenceDeallocation);
 #ifndef SKIP_SLOW_TESTS
-        CPPUNIT_TEST(testInstiationDeallocationStackOverflow);
+        CPPUNIT_TEST(testInstantiationDeallocationStackOverflow);
         CPPUNIT_TEST(testSmemArithmetic);
 #endif
         /* This test has not been kept up to date.  Disabled for quite some time
@@ -41,7 +41,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
         void tearDown();
 
     protected:
-        void testInstiationDeallocationStackOverflow();
+        void testInstantiationDeallocationStackOverflow();
         void test_clog();
         void test_gp();
         void test_echo();
@@ -100,7 +100,7 @@ void MiscTest::tearDown()
     pAgent = 0;
 }
 
-void MiscTest::testInstiationDeallocationStackOverflow()
+void MiscTest::testInstantiationDeallocationStackOverflow()
 {
     source("count-and-die.soar");
     pAgent->ExecuteCommandLine("w 0");
