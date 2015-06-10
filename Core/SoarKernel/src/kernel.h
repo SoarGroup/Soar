@@ -60,6 +60,11 @@ extern void print(agent* thisAgent, const char* format, ...);
     #endif
 #endif
 
+//#define NO_TIMING_STUFF
+#ifndef NO_TIMING_STUFF
+//#define DETAILED_TIMING_STATS
+#endif
+
 /* -------------------------------------------------- */
 /*     Global constants, type declarations, etc.      */
 /* -------------------------------------------------- */
@@ -78,7 +83,6 @@ typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
-//#define NO_TIMING_STUFF
 //#define DO_TOP_LEVEL_REF_CTS
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
@@ -89,9 +93,6 @@ typedef unsigned char byte;
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
 
-#ifndef NO_TIMING_STUFF
-#define DETAILED_TIMING_STATS
-#endif
 
 //#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */
 //#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
