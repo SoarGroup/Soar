@@ -86,6 +86,7 @@ using namespace soar_TraceNames;
 ==================================================================== */
 
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
+// Add everything
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
     cons* c;
@@ -96,7 +97,6 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
     }
     push(thisAgent, (cond), thisAgent->grounds);
 }
-
 #else
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
@@ -112,14 +112,20 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
         /* MToDo | Should skip if we don't need to learn */
         dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
         condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
+#ifdef EBC_SUPERMERGE
+        thisAgent->variablizationManager->cache_constraints_in_cond(cond);
+        thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, cond);
+#else
         if (!thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, cond))
         {
             push(thisAgent, (cond), thisAgent->grounds);
             cond->bt.wme_->chunker_bt_last_ground_cond = cond;
         }
+#endif
     }
 }
 #endif
+
 inline void add_to_potentials(agent* thisAgent, condition* cond)
 {
     if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
@@ -701,14 +707,18 @@ void trace_grounded_potentials(agent* thisAgent)
                 else     /* pot was already in the grounds, do don't add it */
                 {
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
-                    dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
+                    dprint(DT_BACKTRACE, "Moving potential to grounds. Wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
                     pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
-#else
+#endif
+#ifdef EBC_SUPERMERGE
+                    thisAgent->variablizationManager->cache_constraints_in_cond(pot);
+#endif
+#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
                     condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
                     dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);

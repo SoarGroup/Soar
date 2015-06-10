@@ -21,7 +21,16 @@
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
-//#define EBC_MAP_MERGE_DUPE_GROUNDS
+
+/* These have to do with how backtracing adds conditions to the grounds */
+#define EBC_MAP_MERGE_DUPE_GROUNDS
+#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
+/* MToDo | Supermerge mode has small issue.  Look at Opaque chunking unit test.
+ *         There's an identity mapping not getting created.  I'm not sure if
+ *         we're going to use this mode, so will fix later.   There's a version
+ *         in the history that does a complete merge correctly from 6/10. */
+//#define EBC_SUPERMERGE
+#endif
 
 #ifdef DEBUG_FREE_SETTINGS
 /* -- Which trace messages should be printed -- */
@@ -58,9 +67,9 @@
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   true
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
-#define TRACE_Init_DT_IDENTITY_PROP               true
+#define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
-#define TRACE_Init_DT_CONSTRAINTS                 false
+#define TRACE_Init_DT_CONSTRAINTS                 true
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
