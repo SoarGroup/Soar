@@ -174,7 +174,7 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
     dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 
-bool Variablization_Manager::unify_backtraced_conditions(condition* ground_cond, condition* new_cond)
+bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
 {
     dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for potential: %l from %l\n", new_cond, ground_cond);
     test cond_id = equality_test_found_in_test(new_cond->data.tests.id_test);
@@ -198,4 +198,49 @@ bool Variablization_Manager::unify_backtraced_conditions(condition* ground_cond,
     }
     dprint_o_id_substitution_map(DT_IDENTITY_PROP);
     return true;
+}
+
+void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
+                                                         const soar_module::identity_triple o_ids_to_replace)
+{
+    test lId = 0, lAttr = 0, lValue = 0;
+    lId = equality_test_found_in_test(parent_cond->data.tests.id_test);
+    lAttr = equality_test_found_in_test(parent_cond->data.tests.attr_test);
+    lValue = equality_test_found_in_test(parent_cond->data.tests.value_test);
+    if (!lId->data.referent->is_sti() && o_ids_to_replace.id && lId)
+    {
+        if (lId->identity)
+        {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id,
+                thisAgent->variablizationManager->get_ovar_for_o_id(lId->identity), lId->identity);
+        } else {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for identifier element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
+        }
+        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity);
+        dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    }
+    if (!lAttr->data.referent->is_sti() && o_ids_to_replace.attr && lAttr)
+    {
+        if (lAttr->identity)
+        {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr,
+                thisAgent->variablizationManager->get_ovar_for_o_id(lAttr->identity), lAttr->identity);
+        } else {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for attribute element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
+        }
+        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
+        dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    }
+    if (!lValue->data.referent->is_sti() && o_ids_to_replace.value && lValue)
+    {
+        if (lValue->identity)
+        {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
+                thisAgent->variablizationManager->get_ovar_for_o_id(lValue->identity), lValue->identity);
+        } else {
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for value element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
+        }
+        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity);
+        dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    }
 }

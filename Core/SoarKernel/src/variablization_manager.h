@@ -21,6 +21,11 @@ typedef char* rhs_value;
 typedef struct chunk_cond_struct chunk_cond;
 tc_number get_new_tc_number(agent* thisAgent);
 
+namespace soar_module
+{
+    typedef struct identity_triple_struct identity_triple;
+}
+
 typedef struct variablization_struct
 {
     Symbol* instantiated_symbol;
@@ -91,7 +96,8 @@ class Variablization_Manager
 
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(agent* thisAgent, test t);
-        bool unify_backtraced_conditions(condition* ground_cond, condition* new_cond);
+        bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
+        void unify_backtraced_conditions(condition* parent_cond, const soar_module::identity_triple o_ids_to_replace);
 
         void remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond);
         void unify_identities_for_results(preference* result);

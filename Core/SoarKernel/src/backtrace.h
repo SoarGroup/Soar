@@ -57,8 +57,7 @@ extern void backtrace_through_instantiation(agent* thisAgent,
         condition* trace_cond,
         bool* reliable,
         int indent,
-        soar_module::symbol_triple ovars_matched_syms,
-        soar_module::identity_triple parent_cond_o_ids);
+        const soar_module::identity_triple o_ids_to_replace);
 
 // To print out the message similar to: a chunk was not created because...
 void report_local_negation(agent* thisAgent, condition* c);

@@ -1062,8 +1062,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
             print_preference(thisAgent, pref);
             print_string(thisAgent, " ");
         }
-        backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0,
-            soar_module::symbol_triple_struct(pref->id, pref->attr, pref->value), pref->o_ids);
+        backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0, pref->o_ids);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
