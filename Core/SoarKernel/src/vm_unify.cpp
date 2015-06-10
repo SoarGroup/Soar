@@ -102,6 +102,11 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
     uint64_t newID;
 
     assert(pOld_o_id);
+    if (pOld_o_id == pNew_o_id)
+    {
+        dprint(DT_UNIFICATION, "Attempting to unify identical conditions %y[o%u].  Skipping.\n", pNew_o_id);
+        return;
+    }
     if (pNew_o_id == 0)
     {
         /* Do not check if a unification already exists if we're propagating back a literalization */
@@ -176,25 +181,89 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
 
 bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
 {
-    dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for potential: %l from %l\n", new_cond, ground_cond);
-    test cond_id = equality_test_found_in_test(new_cond->data.tests.id_test);
-    test cond_attr = equality_test_found_in_test(new_cond->data.tests.attr_test);
-    test cond_value = equality_test_found_in_test(new_cond->data.tests.value_test);
-    test ground_cond_id = equality_test_found_in_test(ground_cond->data.tests.id_test);
-    test ground_cond_attr = equality_test_found_in_test(ground_cond->data.tests.attr_test);
-    test ground_cond_value = equality_test_found_in_test(ground_cond->data.tests.value_test);
-    thisAgent->variablizationManager->cache_constraints_in_cond(new_cond);
-    if (cond_id->identity)
+    dprint(DT_IDENTITY_PROP, "Adding identity mappings for dupe match condition: %l from %l\n", new_cond, ground_cond);
+    test new_cond_id, new_cond_attr, new_cond_value, ground_cond_id, ground_cond_attr, ground_cond_value;
+
+    new_cond_id = new_cond_attr = new_cond_value = NULL;
+    if (new_cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
     {
-        thisAgent->variablizationManager->add_identity_unification(cond_id->identity, ground_cond_id->identity);
+        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
+        return false;
+        new_cond_id = equality_test_found_in_test(new_cond->data.tests.id_test);
+    } else {
+        new_cond_id = new_cond->data.tests.id_test;
+        assert(new_cond_id->type == EQUALITY_TEST);
     }
-    if (cond_attr->identity)
+    if (new_cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
     {
-        thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, ground_cond_attr->identity);
+        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
+        return false;
+        new_cond_attr = equality_test_found_in_test(new_cond->data.tests.attr_test);
+    } else {
+        new_cond_attr = new_cond->data.tests.attr_test;
+        assert(new_cond_attr->type == EQUALITY_TEST);
     }
-    if (cond_value->identity)
+    if (new_cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
     {
-        thisAgent->variablizationManager->add_identity_unification(cond_value->identity, ground_cond_value->identity);
+        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
+        return false;
+        new_cond_value = equality_test_found_in_test(new_cond->data.tests.value_test);
+    } else {
+        new_cond_value = new_cond->data.tests.value_test;
+        assert(new_cond_value->type == EQUALITY_TEST);
+    }
+
+    if (!new_cond_id && !new_cond_attr && !new_cond_value)
+    {
+        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
+        return false;
+    }
+
+    bool mismatched_literal = false;
+    ground_cond_id = equality_test_found_in_test(ground_cond->data.tests.id_test);
+    ground_cond_attr = equality_test_found_in_test(ground_cond->data.tests.attr_test);
+    ground_cond_value = equality_test_found_in_test(ground_cond->data.tests.value_test);
+
+    if (!new_cond_id->identity || !ground_cond_id->identity)
+    {
+        if (new_cond_id->identity != ground_cond_id->identity)
+        {
+            mismatched_literal = true;
+        }
+    }
+    if (!mismatched_literal && (!new_cond_attr->identity || !ground_cond_attr->identity))
+    {
+        if (new_cond_attr->identity != ground_cond_attr->identity)
+        {
+            mismatched_literal = true;
+        }
+    }
+    if (!mismatched_literal && (!new_cond_value->identity || !ground_cond_value->identity))
+    {
+        if (new_cond_value->identity != ground_cond_value->identity)
+        {
+            mismatched_literal = true;
+        }
+    }
+
+
+    if (mismatched_literal)
+    {
+        dprint(DT_IDENTITY_PROP, "One of the conditions has a literal not in the other condition.  Not unifying.\n");
+        return false;
+    }
+    /* We now know either both conds are literal or both have identities */
+    if (new_cond_id->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(new_cond_id->identity, ground_cond_id->identity);
+    }
+    if (new_cond_attr->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(new_cond_attr->identity, ground_cond_attr->identity);
+    }
+    if (new_cond_value->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(new_cond_value->identity, ground_cond_value->identity);
     }
     dprint_o_id_substitution_map(DT_IDENTITY_PROP);
     return true;
@@ -207,7 +276,7 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
     lId = equality_test_found_in_test(parent_cond->data.tests.id_test);
     lAttr = equality_test_found_in_test(parent_cond->data.tests.attr_test);
     lValue = equality_test_found_in_test(parent_cond->data.tests.value_test);
-    if (!lId->data.referent->is_sti() && o_ids_to_replace.id && lId)
+    if (!lId->data.referent->is_sti() && o_ids_to_replace.id)
     {
         if (lId->identity)
         {
@@ -218,8 +287,12 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
         }
         thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    } else {
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
+                lId->data.referent->is_sti() ? "is STI " : "",
+                !o_ids_to_replace.id ? "RHS pref is literal " : "");
     }
-    if (!lAttr->data.referent->is_sti() && o_ids_to_replace.attr && lAttr)
+    if (!lAttr->data.referent->is_sti() && o_ids_to_replace.attr)
     {
         if (lAttr->identity)
         {
@@ -230,8 +303,12 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
         }
         thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    } else {
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
+                lAttr->data.referent->is_sti() ? "is STI " : "",
+                !o_ids_to_replace.attr ? "RHS pref is literal " : "");
     }
-    if (!lValue->data.referent->is_sti() && o_ids_to_replace.value && lValue)
+    if (!lValue->data.referent->is_sti() && o_ids_to_replace.value)
     {
         if (lValue->identity)
         {
@@ -242,5 +319,9 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
         }
         thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    } else {
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
+                lValue->data.referent->is_sti() ? "is STI " : "",
+                !o_ids_to_replace.value ? "RHS pref is literal " : "");
     }
 }

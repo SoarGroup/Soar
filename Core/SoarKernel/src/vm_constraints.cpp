@@ -63,6 +63,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
                 thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
                 new_constraint->eq_test = equality_test;
                 new_constraint->constraint_test = ctest;
+                dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
                 constraints->push_back(new_constraint);
                 break;
             default:
@@ -77,6 +78,7 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
     cache_constraints_in_test(c->data.tests.id_test);
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
+    print_constraints(DT_CONSTRAINTS);
 }
 
 

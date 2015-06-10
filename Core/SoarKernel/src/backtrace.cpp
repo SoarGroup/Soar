@@ -97,6 +97,29 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
     push(thisAgent, (cond), thisAgent->grounds);
 }
 
+#else
+inline void add_to_grounds(agent* thisAgent, condition* cond)
+{
+    if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
+    {
+        (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
+        push(thisAgent, (cond), thisAgent->grounds);
+        /* Store a pointer to the cond in the wme, so that we can cache
+         * constraints and add identity mappings for any future conditions
+         * that match that wme */
+        cond->bt.wme_->chunker_bt_last_ground_cond = cond;
+    } else {
+        /* MToDo | Should skip if we don't need to learn */
+        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
+        condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
+        if (!thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, cond))
+        {
+            push(thisAgent, (cond), thisAgent->grounds);
+            cond->bt.wme_->chunker_bt_last_ground_cond = cond;
+        }
+    }
+}
+#endif
 inline void add_to_potentials(agent* thisAgent, condition* cond)
 {
     if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
@@ -116,53 +139,7 @@ inline void add_to_locals(agent* thisAgent, condition* cond)
     }
     push(thisAgent, (cond), thisAgent->locals);
 }
-#else
-inline void add_to_grounds(agent* thisAgent, condition* cond)
-{
-    if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
-    {
-        (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
-        push(thisAgent, (cond), thisAgent->grounds);
-        /* Store a pointer to the cond in the wme, so that we can cache
-         * constraints and add identity mappings for any future conditions
-         * that match that wme */
-        cond->bt.wme_->chunker_bt_last_ground_cond = cond;
-    } else {
-        /* MToDo | Should skip if we don't need to learn */
-        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
-        condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
-        thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, cond);
-    }
-}
 
-inline void add_to_potentials(agent* thisAgent, condition* cond)
-{
-    if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
-    {
-        (cond)->bt.wme_->potentials_tc = thisAgent->potentials_tc;
-        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
-        push(thisAgent, (cond), thisAgent->positive_potentials);
-    }
-    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
-    {
-        push(thisAgent, (cond), thisAgent->positive_potentials);
-    }
-}
-
-inline void add_to_locals(agent* thisAgent, condition* cond)
-{
-    if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
-    {
-        (cond)->bt.wme_->locals_tc = thisAgent->locals_tc;
-        (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
-        push(thisAgent, (cond), thisAgent->locals);
-    }
-    else if ((cond)->bt.wme_->chunker_bt_pref != (cond)->bt.trace)
-    {
-        push(thisAgent, (cond), thisAgent->locals);
-    }
-}
-#endif
 /* -------------------------------------------------------------------
                      Backtrace Through Instantiation
 
@@ -229,7 +206,7 @@ void backtrace_through_instantiation(agent* thisAgent,
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
     backtrace_str temp_explain_backtrace;
-    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (level %d) with RHS preference\n", inst->i_id, grounds_level);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod ? inst->prod->name : NULL, grounds_level);
     dprint(DT_BACKTRACE, "(%y [o%u] ^%y [o%u] %y [o%u]) that matched condition %l\n",
         thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
         thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
@@ -735,8 +712,10 @@ void trace_grounded_potentials(agent* thisAgent)
                     condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
                     dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
-                    thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, pot);
-                    free_cons(thisAgent, c);
+                    if (thisAgent->variablizationManager->unify_backtraced_dupe_conditions(last_cond, pot))
+                    {
+                        free_cons(thisAgent, c);
+                    }
 #endif
                 }
             }
