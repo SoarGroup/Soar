@@ -174,3 +174,28 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
     dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 
+bool Variablization_Manager::unify_backtraced_conditions(condition* ground_cond, condition* new_cond)
+{
+    dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for potential: %l from %l\n", new_cond, ground_cond);
+    test cond_id = equality_test_found_in_test(new_cond->data.tests.id_test);
+    test cond_attr = equality_test_found_in_test(new_cond->data.tests.attr_test);
+    test cond_value = equality_test_found_in_test(new_cond->data.tests.value_test);
+    test ground_cond_id = equality_test_found_in_test(ground_cond->data.tests.id_test);
+    test ground_cond_attr = equality_test_found_in_test(ground_cond->data.tests.attr_test);
+    test ground_cond_value = equality_test_found_in_test(ground_cond->data.tests.value_test);
+    thisAgent->variablizationManager->cache_constraints_in_cond(new_cond);
+    if (cond_id->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(cond_id->identity, ground_cond_id->identity);
+    }
+    if (cond_attr->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, ground_cond_attr->identity);
+    }
+    if (cond_value->identity)
+    {
+        thisAgent->variablizationManager->add_identity_unification(cond_value->identity, ground_cond_value->identity);
+    }
+    dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+    return true;
+}

@@ -129,31 +129,9 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
         cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     } else {
         /* MToDo | Should skip if we don't need to learn */
-        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Adding constraints and identity mappings for: %l\n", cond);
+        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
         condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
-        dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for dupe ground: %l from %l\n", cond, last_cond);
-
-        test cond_id = equality_test_found_in_test(cond->data.tests.id_test);
-        test cond_attr = equality_test_found_in_test(cond->data.tests.attr_test);
-        test cond_value = equality_test_found_in_test(cond->data.tests.value_test);
-        test last_cond_id = equality_test_found_in_test(last_cond->data.tests.id_test);
-        test last_cond_attr = equality_test_found_in_test(last_cond->data.tests.attr_test);
-        test last_cond_value = equality_test_found_in_test(last_cond->data.tests.value_test);
-
-        thisAgent->variablizationManager->cache_constraints_in_cond(cond);
-        if (cond_id->identity)
-        {
-            thisAgent->variablizationManager->add_identity_unification(cond_id->identity, last_cond_id->identity);
-        }
-        if (cond_attr->identity)
-        {
-            thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, last_cond_attr->identity);
-        }
-        if (cond_value->identity)
-        {
-            thisAgent->variablizationManager->add_identity_unification(cond_value->identity, last_cond_value->identity);
-        }
-        dprint_o_id_substitution_map(DT_IDENTITY_PROP);
+        thisAgent->variablizationManager->unify_backtraced_conditions(last_cond, cond);
     }
 }
 
@@ -799,26 +777,7 @@ void trace_grounded_potentials(agent* thisAgent)
                     condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
                     dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
-                    dprint(DT_IDENTITY_PROP, "Adding constraints and identity mappings for potential: %l from %l\n", pot, last_cond);
-                    test cond_id = equality_test_found_in_test(pot->data.tests.id_test);
-                    test cond_attr = equality_test_found_in_test(pot->data.tests.attr_test);
-                    test cond_value = equality_test_found_in_test(pot->data.tests.value_test);
-                    test last_cond_id = equality_test_found_in_test(last_cond->data.tests.id_test);
-                    test last_cond_attr = equality_test_found_in_test(last_cond->data.tests.attr_test);
-                    test last_cond_value = equality_test_found_in_test(last_cond->data.tests.value_test);
-                    thisAgent->variablizationManager->cache_constraints_in_cond(pot);
-                    if (cond_id->identity)
-                    {
-                        thisAgent->variablizationManager->add_identity_unification(cond_id->identity, last_cond_id->identity);
-                    }
-                    if (cond_attr->identity)
-                    {
-                        thisAgent->variablizationManager->add_identity_unification(cond_attr->identity, last_cond_attr->identity);
-                    }
-                    if (cond_value->identity)
-                    {
-                        thisAgent->variablizationManager->add_identity_unification(cond_value->identity, last_cond_value->identity);
-                    }
+                    thisAgent->variablizationManager->unify_backtraced_conditions(last_cond, pot);
                     free_cons(thisAgent, c);
 #endif
                 }
