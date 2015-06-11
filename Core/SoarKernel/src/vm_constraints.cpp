@@ -283,7 +283,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond)
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;
 
-    dprint_header(DT_CONSTRAINTS, PrintBefore, "Propagating additional constraints...\n");
+    dprint_header(DT_CONSTRAINTS, PrintBefore, "Additing additional constraints...\n");
 
     /* Most constraints should already be in a chunk condition.  We marked
      * them with a tc_num as they were copied from the grounds to the
@@ -298,7 +298,7 @@ void Variablization_Manager::add_additional_constraints(condition* cond)
 
     find_attachment_points(cond);
     dprint_attachment_points(DT_CONSTRAINTS);
-
+    dprint_constraints(DT_CONSTRAINTS);
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;

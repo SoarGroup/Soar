@@ -162,12 +162,12 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
         iter_inst = iter_sym->second.find(orig_var);
         if (iter_inst != iter_sym->second.end())
         {
-            dprint(DT_VM_MAPS, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_inst->second);
+            dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_inst->second);
             return iter_inst->second;
         }
     }
 
-    dprint(DT_VM_MAPS, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
+    dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     return 0;
 
 }
@@ -210,7 +210,7 @@ uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t p
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
 #endif
-        dprint(DT_VM_MAPS, "%f...Created and returning new o_id %u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
+        dprint(DT_IDENTITY_PROP, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;
