@@ -23,7 +23,8 @@
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
 
 /* These have to do with how backtracing adds conditions to the grounds */
-#define EBC_MAP_MERGE_DUPE_GROUNDS
+//#define EBC_MAP_MERGE_DUPE_GROUNDS
+
 #ifdef EBC_MAP_MERGE_DUPE_GROUNDS
 /* MToDo | Supermerge mode has small issue.  Look at Opaque chunking unit test.
  *         There's an identity mapping not getting created.  I'm not sure if

@@ -6,16 +6,7 @@ learn --on
 sp {init-superstate
     (state <s> ^superstate nil)
 -->
-    (<s> ^test-item 9 7 6
-         ^test-item2 9 7
-         ^test-param <tp> <tp2> <tp3>
-         ^test-param2 <tp3>
-         ^test-current 1
-         ^bar blue
-         ^test-id <ti>)
-    (<tp3> ^foo <tp> ^foo <tp2>)
-    (<tp> ^value 9 8)
-    (<tp2> ^value <dummy1> <dummy2>)
+    (<s> ^test-item2 9 7)
     (write (crlf) |Starting chunking unit test.|)
 }
 
@@ -41,13 +32,8 @@ sp {apply*test-failed
     (halt)
 }
 
-sp {init-substate
-    (state <s> ^superstate.superstate nil)
--->
-    (<s> ^name substate)}
-
 sp {propose*test
-    (state <s> ^name substate)
+    (state <s> ^superstate.superstate nil)
 -->
     (<s> ^operator <o> +)
     (<o> ^name test)}
@@ -56,8 +42,7 @@ sp {apply25f1
     (state <s> ^superstate <ss>
                ^operator)
     (<ss> ^test-item2 <y>
-          ^test-item2 { < <y> <x> }
-          ^test-current 1)
+          ^test-item2 { < <y> <x> })
          -{(<ss> ^test-item2 { <> <x> <> <y> <dupe> })}
 -->
     (<s> ^lowest <x>)
@@ -68,8 +53,7 @@ sp {apply25f2
                ^operator <o>
                ^lowest <low>)
     (<ss> ^test-item2 <y>
-          ^test-item2 { > <y> <x> }
-          ^test-current 1)
+          ^test-item2 { > <y> <x> })
          -{(<ss> ^test-item2 { <> <x> > <x> <dupe> })}
 -->
     (<ss> ^highest <x> ^lowest <low>

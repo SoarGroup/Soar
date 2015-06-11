@@ -10,8 +10,7 @@
 #}
 
 sp {answer*chunk*apply25f2*onc*t3-1
-    (state <s1> ^test-current 1)
-    (<s1> ^superstate nil)
+    (state <s1> ^superstate nil)
     (<s1> ^test-item2 <c4>)
     (<s1> -^test-item2 { <> <c4> > <c4> <dupe> })
     (<s1> ^test-item2 <c1>)
