@@ -45,6 +45,42 @@ using namespace soarxml;
 
 const char* DEBUGGER_NAME = "SoarJavaDebugger.jar";
 
+std::string libraryPath;
+
+void initialize()
+{}
+
+namespace
+{
+	class dynamic_library_load_unload_handler
+	{
+	public:
+		dynamic_library_load_unload_handler()
+		{
+#ifdef _WIN32
+			HMODULE soarModule = GetModuleHandle("Soar.dll");
+			char* str = new char[256];
+			int libNameLength = GetModuleFileName(soarModule, str, 256);
+			
+			std::string path(str);
+			libraryPath = path.substr(0, path.find_last_of("\\") + 1);
+			
+			delete[] str;
+#else
+			Dl_info dl_info;
+			dladdr((void *) initialize, &dl_info);
+			
+			std::string path(dl_info.dli_fname);
+			libraryPath = path.substr( 0, path.find_last_of("/") + 1);
+#endif
+		}
+		~dynamic_library_load_unload_handler()
+		{
+			libraryPath = "";
+		}
+	} dynamic_library_load_unload_handler_hook;
+}
+
 namespace sml
 {
     struct DebuggerProcessInformation
@@ -1421,7 +1457,7 @@ bool isfile(const char* path)
 
 bool Agent::SpawnDebugger(int port, const char* jarpath)
 {
-    std::string p;
+	std::string p;
     if (jarpath)
     {
         if (!isfile(jarpath))
@@ -1434,26 +1470,54 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     {
         p = DEBUGGER_NAME;
     }
-    else
-    {
-        char* e = getenv("SOAR_HOME");
-        if (!e)
-        {
-            return false;
-        }
-        std::string h(e);
-        if (h.find_last_of("/\\") != h.size() - 1)
-        {
-            h += '/';
-        }
-        h += DEBUGGER_NAME;
-        if (!isfile(h.c_str()))
-        {
-            return false;
-        }
-        p = h;
-    }
-    
+	
+	if (p.length() == 0)
+	{
+		char* e = getenv("SOAR_HOME");
+		std::string h;
+		
+		if (e)
+		{
+			h = e;
+			
+			if (h.find_last_of("/\\") != h.size() - 1)
+			{
+				h += '/';
+			}
+			h += DEBUGGER_NAME;
+			
+			if (isfile(h.c_str()))
+			{
+				p = h;
+			}
+		}
+	}
+	
+	if (p.length() == 0)
+	{
+		std::string h;
+
+		// Last resort, Library path
+		h = libraryPath;
+		
+		if (h.find_last_of("/\\") != h.size() - 1)
+		{
+			h += '/';
+		}
+		
+		h += DEBUGGER_NAME;
+		
+		if (isfile(h.c_str()))
+		{
+			p = h;
+		}
+	}
+	
+	if (p.length() == 0)
+	{
+		return false;
+	}
+	
     if (port == -1)
     {
         port = m_Kernel->GetListenerPort();
@@ -1472,7 +1536,23 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     
     // Start the child process.
     std::stringstream commandLine;
-    commandLine << "javaw.exe -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
+	
+	std::string path;
+	char* pathC = getenv("PATH");
+	
+	if (pathC)
+	{
+		path = pathC;
+		
+		path += ":";
+		path += libraryPath;
+	}
+	else
+	{
+		path = libraryPath;
+	}
+	
+    commandLine << "javaw.exe -Djava.library.path=" << path << " -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
     
     BOOL ret = CreateProcess(
                    0,
@@ -1497,24 +1577,57 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     
 #else // _WIN32
     m_pDPI->debuggerPid = fork();
+	
     if (m_pDPI->debuggerPid < 0)
     {
         delete m_pDPI;
         m_pDPI = 0;
         return false;
     }
-    
+	
+	
     if (m_pDPI->debuggerPid == 0)
     {
         // child
-        std::string portstring;
+		std::string portstring;
         to_string(port, portstring);
-    
+		
+		std::string path;
+		char* pathC;
+		
 #if (defined(__APPLE__) && defined(__MACH__))
-        execlp("java", "java", "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
+		pathC = getenv("DYLD_LIBRARY_PATH");
+		
+		if (pathC)
+		{
+			path = pathC;
+			
+			path += ":";
+			path += libraryPath;
+		}
+		else
+		{
+			path = libraryPath;
+		}
+		
+        execlp("java", "java", ("-Djava.library.path=" + path).c_str(), "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #else
-        execlp("java", "java", "-jar", p.c_str(), "-remote",
+		pathC = getenv("LD_LIBRARY_PATH");
+		
+		if (pathC)
+		{
+			path = pathC;
+			
+			path += ":";
+			path += libraryPath;
+		}
+		else
+		{
+			path = libraryPath;
+		}
+		
+        execlp("java", "java", ("-Djava.library.path=" + path).c_str(), "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #endif
         // does not return on success
