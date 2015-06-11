@@ -166,7 +166,9 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
                  * of the parent in this trace */
                 dprint(DT_UNIFICATION, "Unification with another identity exists for o%u.  Adding %y[o%u] -> %y[o%u].\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
                 (*unification_map)[pNew_o_id] = existing_mapping;
+                (*unification_map)[newID] = existing_mapping;
                 update_unification_table(newID, existing_mapping);
+                update_unification_table(pNew_o_id, existing_mapping);
             }
         }
     } else {

@@ -3,7 +3,7 @@ sp {answer*chunk*make-chunk*snc*t2-1
     (<s1> ^word2 <c2>)
     (<s1> ^word { >= object <> not-object <= object <> <c2> <c1> })
     -->
-    (<s1> ^result1 object +)
+    (<s1> ^result1 <c1> +)
     (<s1> ^result2 <c1> +)
     (<s1> ^result3 <c2> +)
 }
