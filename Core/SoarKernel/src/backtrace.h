@@ -31,6 +31,7 @@ namespace soar_module
 {
     typedef struct symbol_triple_struct symbol_triple;
     typedef struct identity_triple_struct identity_triple;
+    typedef struct rhs_triple_struct rhs_triple;
 }
 
 #define BUFFER_PROD_NAME_SIZE 256
@@ -57,7 +58,8 @@ extern void backtrace_through_instantiation(agent* thisAgent,
         condition* trace_cond,
         bool* reliable,
         int indent,
-        const soar_module::identity_triple o_ids_to_replace);
+        const soar_module::identity_triple o_ids_to_replace,
+        const soar_module::rhs_triple rhs_funcs);
 
 // To print out the message similar to: a chunk was not created because...
 void report_local_negation(agent* thisAgent, condition* c);

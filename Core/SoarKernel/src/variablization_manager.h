@@ -24,6 +24,7 @@ tc_number get_new_tc_number(agent* thisAgent);
 namespace soar_module
 {
     typedef struct identity_triple_struct identity_triple;
+    typedef struct rhs_triple_struct rhs_triple;
 }
 
 typedef struct variablization_struct
@@ -95,9 +96,11 @@ class Variablization_Manager
         bool has_positive_condition(uint64_t pO_id);
 
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        void unify_identity(agent* thisAgent, test t);
+        void unify_identity(test t);
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
-        void unify_backtraced_conditions(condition* parent_cond, const soar_module::identity_triple o_ids_to_replace);
+        void unify_backtraced_conditions(condition* parent_cond,
+            const soar_module::identity_triple o_ids_to_replace,
+            const soar_module::rhs_triple rhs_funcs);
 
         void remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond);
         void unify_identities_for_results(preference* result);

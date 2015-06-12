@@ -203,7 +203,8 @@ void backtrace_through_instantiation(agent* thisAgent,
                                      condition* trace_cond,
                                      bool* reliable,
                                      int indent,
-                                     const soar_module::identity_triple o_ids_to_replace)
+                                     const soar_module::identity_triple o_ids_to_replace,
+                                     const soar_module::rhs_triple rhs_funcs)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */
@@ -246,7 +247,7 @@ void backtrace_through_instantiation(agent* thisAgent,
 
     if (trace_cond)
     {
-        thisAgent->variablizationManager->unify_backtraced_conditions(trace_cond, o_ids_to_replace);
+        thisAgent->variablizationManager->unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
     }
 
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
@@ -556,7 +557,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0, bt_pref->o_ids);
+            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -572,7 +573,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
                     }
                     /* This used to pass in cond instead of NULL, but I think CDPS prefs are
                      * essentially like results in this context, which get NULL in that parameter */
-                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids);
+                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -824,7 +825,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
-        backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0, bt_pref->o_ids);
+        backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
         if (potential->bt.CDPS)
         {
@@ -840,7 +841,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
 
                 /* This used to pass in potential instead of NULL, but I think CDPS prefs are
                  * essentially like results in this context, which get NULL in that parameter */
-                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids);
+                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

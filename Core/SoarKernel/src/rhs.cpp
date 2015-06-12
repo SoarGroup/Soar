@@ -511,7 +511,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
-    dprint(DT_RHS_VARIABLIZATION, "Allocated new rhs_value for new rhs_symbol %y(o%u).\n", sym, pO_ID);
+//    dprint(DT_RHS_VARIABLIZATION, "Allocated new rhs_value for new rhs_symbol %y(o%u).\n", sym, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

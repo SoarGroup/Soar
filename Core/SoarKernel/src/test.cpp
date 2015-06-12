@@ -94,7 +94,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
                 }
                 if (new_ct->identity)
                 {
-                    thisAgent->variablizationManager->unify_identity(thisAgent, new_ct);
+                    thisAgent->variablizationManager->unify_identity(new_ct);
                 }
             }
 

@@ -13,10 +13,11 @@
 #include "test.h"
 #include "print.h"
 #include "wmem.h"
+#include "rhs.h"
 #include "debug.h"
 
 
-void Variablization_Manager::unify_identity(agent* thisAgent, test t)
+void Variablization_Manager::unify_identity(test t)
 {
     std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
@@ -257,39 +258,43 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     /* We now know either both conds are literal or both have identities */
     if (new_cond_id->identity)
     {
-        thisAgent->variablizationManager->add_identity_unification(new_cond_id->identity, ground_cond_id->identity);
+        add_identity_unification(new_cond_id->identity, ground_cond_id->identity);
     }
     if (new_cond_attr->identity)
     {
-        thisAgent->variablizationManager->add_identity_unification(new_cond_attr->identity, ground_cond_attr->identity);
+        add_identity_unification(new_cond_attr->identity, ground_cond_attr->identity);
     }
     if (new_cond_value->identity)
     {
-        thisAgent->variablizationManager->add_identity_unification(new_cond_value->identity, ground_cond_value->identity);
+        add_identity_unification(new_cond_value->identity, ground_cond_value->identity);
     }
     dprint_o_id_substitution_map(DT_IDENTITY_PROP);
     return true;
 }
 
 void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
-                                                         const soar_module::identity_triple o_ids_to_replace)
+                                                         const soar_module::identity_triple o_ids_to_replace,
+                                                         const soar_module::rhs_triple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
     lId = equality_test_found_in_test(parent_cond->data.tests.id_test);
     lAttr = equality_test_found_in_test(parent_cond->data.tests.attr_test);
     lValue = equality_test_found_in_test(parent_cond->data.tests.value_test);
+
     if (!lId->data.referent->is_sti() && o_ids_to_replace.id)
     {
         if (lId->identity)
         {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id,
-                thisAgent->variablizationManager->get_ovar_for_o_id(lId->identity), lId->identity);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for identifier element: %y [o%u] -> %y [o%u]\n", get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id,
+                get_ovar_for_o_id(lId->identity), lId->identity);
         } else {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for identifier element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for identifier element: %y [o%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
         }
-        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.id, lId->identity);
+        add_identity_unification(o_ids_to_replace.id, lId->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
-    } else {
+    }
+    else
+    {
         dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
                 lId->data.referent->is_sti() ? "is STI " : "",
                 !o_ids_to_replace.id ? "RHS pref is literal " : "");
@@ -298,12 +303,12 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
     {
         if (lAttr->identity)
         {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr,
-                thisAgent->variablizationManager->get_ovar_for_o_id(lAttr->identity), lAttr->identity);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for attribute element: %y [o%u] -> %y [o%u]\n", get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr,
+                get_ovar_for_o_id(lAttr->identity), lAttr->identity);
         } else {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for attribute element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for attribute element: %y [o%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
         }
-        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
+        add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
     } else {
         dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
@@ -314,14 +319,32 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
     {
         if (lValue->identity)
         {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
-                thisAgent->variablizationManager->get_ovar_for_o_id(lValue->identity), lValue->identity);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to replace for value element: %y [o%u] -> %y [o%u]\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
+                get_ovar_for_o_id(lValue->identity), lValue->identity);
         } else {
-            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for value element: %y [o%u] -> %t\n", thisAgent->variablizationManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
+            dprint(DT_IDENTITY_PROP, "Found an o_id to literalize for value element: %y [o%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
         }
-        thisAgent->variablizationManager->add_identity_unification(o_ids_to_replace.value, lValue->identity);
+        add_identity_unification(o_ids_to_replace.value, lValue->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
-    } else {
+    }
+    else if (rhs_value_is_funcall(rhs_funcs.value))
+    {
+        /* Assign identities of all arguments in rhs fun call to null identity set*/
+        list* fl = rhs_value_to_funcall_list(rhs_funcs.value);
+        cons* c;
+
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
+            rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+            if (rs->o_id && !rs->referent->is_sti())
+            {
+                add_identity_unification(rs->o_id, 0);
+            }
+        }
+    }
+    else
+    {
         dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
                 lValue->data.referent->is_sti() ? "is STI " : "",
                 !o_ids_to_replace.value ? "RHS pref is literal " : "");

@@ -9,31 +9,25 @@
 #ifndef DEBUG_DEFINES_H_
 #define DEBUG_DEFINES_H_
 
+//#define DEBUG_OUTPUT_ON
+
+/* ---------------------------------------------------------------------*/
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-#ifdef SOAR_RELEASE_VERSION
-#define DEBUG_UNITTEST_SETTINGS
-#else
-//#define DEBUG_FREE_SETTINGS
-#define DEBUG_UNITTEST_SETTINGS
-#endif
 /* These are just for experimental purposes.  Should not be commented out */
-#define EBC_MERGE_CONDITIONS
-#define EBC_ADD_CONSTRAINTS_IDENTITIES
-
-/* These have to do with how backtracing adds conditions to the grounds */
-//#define EBC_MAP_MERGE_DUPE_GROUNDS
-
-#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
 /* MToDo | Supermerge mode has small issue.  Look at Opaque chunking unit test.
  *         There's an identity mapping not getting created.  I'm not sure if
  *         we're going to use this mode, so will fix later.   There's a version
  *         in the history that does a complete merge correctly from 6/10. */
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+//#define EBC_MAP_MERGE_DUPE_GROUNDS
+#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
 //#define EBC_SUPERMERGE
 #endif
 
-#ifdef DEBUG_FREE_SETTINGS
+#ifdef DEBUG_OUTPUT_ON
 /* -- Which trace messages should be printed -- */
 
 #define TRACE_Init_No_Mode                      true
@@ -95,9 +89,9 @@
 #define OM_Init_db_dbg_mode       off
 #define OM_Init_callback_dbg_mode off
 #define OM_Init_stdout_dbg_mode   on
-#endif
 
-#ifdef DEBUG_UNITTEST_SETTINGS
+#else
+
 /* -- Which trace messages should be printed -- */
 
 #define TRACE_Init_No_Mode                      true
@@ -160,5 +154,14 @@
 #define OM_Init_callback_dbg_mode off
 #define OM_Init_stdout_dbg_mode   off
 #endif
+
+#ifdef SOAR_RELEASE_VERSION
+#undef DEBUG_OUTPUT_ON
+#undef EBC_MAP_MERGE_DUPE_GROUNDS
+#undef EBC_SUPERMERGE
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+#endif
+
 
 #endif /* DEBUG_DEFINES_H_ */
