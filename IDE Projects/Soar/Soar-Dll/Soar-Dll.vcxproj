@@ -5,17 +5,9 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
@@ -175,27 +167,6 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.cpp" />
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp" />
     <ClCompile Include="..\..\..\Core\pcre\pcre.cxx" />
-    <ClCompile Include="..\..\..\Core\pcre\pcreposix.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_chartables.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_compile.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_config.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_dfa_exec.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_exec.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_fullinfo.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_get.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_globals.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_info.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_maketables.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_newline.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_ord2utf8.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_refcount.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_study.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_tables.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_try_flipped.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_ucp_searchfuncs.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_valid_utf8.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_version.c" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre_xclass.c" />
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp" />
@@ -372,13 +343,7 @@
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_SystemListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h" />
-    <ClInclude Include="..\..\..\Core\pcre\config.h" />
     <ClInclude Include="..\..\..\Core\pcre\pcre.h" />
-    <ClInclude Include="..\..\..\Core\pcre\pcrecpp.h" />
-    <ClInclude Include="..\..\..\Core\pcre\pcre_internal.h" />
-    <ClInclude Include="..\..\..\Core\pcre\ucp.h" />
-    <ClInclude Include="..\..\..\Core\pcre\ucpinternal.h" />
-    <ClInclude Include="..\..\..\Core\pcre\ucptable.h" />
     <ClInclude Include="..\..\..\Core\shared\Export.h" />
     <ClInclude Include="..\..\..\Core\shared\misc.h" />
     <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h" />
@@ -474,10 +439,9 @@
     <ClInclude Include="..\..\..\Core\SVS\src\windows\platform_specific.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\Core\pcre\AUTHORS" />
-    <None Include="..\..\..\Core\pcre\COPYING" />
-    <None Include="..\..\..\Core\pcre\LICENCE" />
-    <None Include="..\..\..\Core\pcre\NON-UNIX-USE" />
+    <Text Include="..\..\..\Core\shared\msvc\changelog.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\..\Core\SVS\eigen\Eigen\Array" />
     <None Include="..\..\..\Core\SVS\eigen\Eigen\Cholesky" />
     <None Include="..\..\..\Core\SVS\eigen\Eigen\CholmodSupport" />
@@ -505,42 +469,26 @@
     <None Include="..\..\..\Core\SVS\eigen\Eigen\SVD" />
     <None Include="..\..\..\Core\SVS\eigen\Eigen\UmfPackSupport" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\..\Core\shared\msvc\changelog.txt" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{bf10629d-ee4a-43d6-8a17-032311192095}</ProjectGuid>
-    <Keyword>DynamicLibrary</Keyword>
+    <ProjectGuid>{E41EA276-486B-4ED1-96A9-377C9CEEEAB9}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SoarDll</RootNamespace>
     <ProjectName>Soar</ProjectName>
-    <RootNamespace>Soar</RootNamespace>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-    <AppContainerApplication>true</AppContainerApplication>
-    <ApplicationType>Windows Store</ApplicationType>
-    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -553,123 +501,54 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <GenerateManifest>false</GenerateManifest>
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared;Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared\msvc;Y:\Developer\SoarGroupProjects\Soar\develop\Core\CLI\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ClientSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ConnectionSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ElementXML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\KernelSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\pcre;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\eigen;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\ccd;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SoarKernel\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src\windows</AdditionalIncludeDirectories>
-      <EnablePREfast>true</EnablePREfast>
-      <CreateHotpatchableImage>true</CreateHotpatchableImage>
-      <PreprocessorDefinitions>_WINDLL;WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP;_DEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared;Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared\msvc;Y:\Developer\SoarGroupProjects\Soar\develop\Core\CLI\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ClientSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ConnectionSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ElementXML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\KernelSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\pcre;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\eigen;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\ccd;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SoarKernel\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src\windows</AdditionalIncludeDirectories>
-      <EnablePREfast>true</EnablePREfast>
-      <PreprocessorDefinitions>_WINDLL;WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP;_DEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm'">
-    <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared;Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared\msvc;Y:\Developer\SoarGroupProjects\Soar\develop\Core\CLI\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ClientSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ConnectionSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ElementXML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\KernelSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\pcre;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\eigen;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\ccd;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SoarKernel\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src\windows</AdditionalIncludeDirectories>
-      <CompileAsManaged>false</CompileAsManaged>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <CreateHotpatchableImage>
-      </CreateHotpatchableImage>
-      <EnablePREfast>true</EnablePREfast>
-      <PreprocessorDefinitions>_WINDLL;WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP;_DEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <AdditionalIncludeDirectories>Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared;Y:\Developer\SoarGroupProjects\Soar\develop\Core\shared\msvc;Y:\Developer\SoarGroupProjects\Soar\develop\Core\CLI\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ClientSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ConnectionSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\ElementXML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\KernelSML\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\pcre;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\eigen;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\ccd;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SoarKernel\src;Y:\Developer\SoarGroupProjects\Soar\develop\Core\SVS\src\windows</AdditionalIncludeDirectories>
-      <CompileAsManaged>false</CompileAsManaged>
-      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <CreateHotpatchableImage>
-      </CreateHotpatchableImage>
-      <EnablePREfast>true</EnablePREfast>
-      <PreprocessorDefinitions>_WINDLL;WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP;_DEBUG;_USRDLL;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

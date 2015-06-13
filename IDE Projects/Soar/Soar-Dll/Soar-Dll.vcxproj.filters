@@ -1,63 +1,80 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{667aa5b5-dab1-448c-aa29-8108e2b35692}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Source Files\CLI">
-      <UniqueIdentifier>{c630c007-eaa3-46b1-a097-de4773ac7c26}</UniqueIdentifier>
+      <UniqueIdentifier>{0047f26c-d04a-46dd-82be-3d252918ca2e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\ClientSML">
-      <UniqueIdentifier>{74aecad8-c05c-4b0c-9cb3-8dcd22c269f3}</UniqueIdentifier>
+      <UniqueIdentifier>{820aa629-c14f-4696-92c3-979d9d85dc0b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\ConnectionSML">
-      <UniqueIdentifier>{b7bd33aa-3d99-4685-94a0-1777cf4c1901}</UniqueIdentifier>
+      <UniqueIdentifier>{9034eaac-8731-4d48-a311-b4f97187ed7a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\ElementXML">
-      <UniqueIdentifier>{97a817d0-b5fd-4191-8e65-496079e518d5}</UniqueIdentifier>
+      <UniqueIdentifier>{f2b5ca12-c6fa-4e9b-a036-f8022fe383ad}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\KernelSML">
-      <UniqueIdentifier>{db545188-a6db-42b8-9c37-5cdb6f262ed5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SoarKernel">
-      <UniqueIdentifier>{7a1323aa-59a1-4d2d-aeb4-ba9262d672fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS">
-      <UniqueIdentifier>{647bbaf6-1021-482d-bb18-0467301bd56e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\commands">
-      <UniqueIdentifier>{f6862125-2149-4975-a318-3a361723d56f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\filters">
-      <UniqueIdentifier>{ca4c5416-cb3b-4351-ac61-5ff12aa2803c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\eigen">
-      <UniqueIdentifier>{233698e4-465e-4cc3-b786-0e724ab7bfef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\eigen\Eigen">
-      <UniqueIdentifier>{1f99ecc8-a374-4edf-85ca-2e6a5b18997d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\ccd">
-      <UniqueIdentifier>{ec0e6775-54ee-41b6-92ad-5ef384c37b7e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\SVS\windows">
-      <UniqueIdentifier>{b6e88972-638d-4357-84db-c09005c27fad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\shared">
-      <UniqueIdentifier>{2c6d8157-4172-4925-bb68-1f41c687d37c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\shared\msvc">
-      <UniqueIdentifier>{b874e8bf-44e9-489d-894d-0502af9c3f3f}</UniqueIdentifier>
+      <UniqueIdentifier>{f3dbe1a8-0d04-4ad5-8156-57888f2c4778}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\pcre">
-      <UniqueIdentifier>{f3c4d5e6-7668-4581-b086-61e6a4d016b6}</UniqueIdentifier>
+      <UniqueIdentifier>{346753e3-9ba0-46fd-bf05-a98707636a34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{681e3b01-aa6b-48ef-98ce-f699fa8276d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared\msvc">
+      <UniqueIdentifier>{ca6859e2-8800-4f43-a9e5-ac0e9388a2b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarKernel">
+      <UniqueIdentifier>{02e0637a-1037-4ab9-9272-168452cf6945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS">
+      <UniqueIdentifier>{3fb8d507-ab6c-4232-a3dc-b7e93c68c1f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\commands">
+      <UniqueIdentifier>{875cb1ec-0c6b-45ce-bf35-40f033702046}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\filters">
+      <UniqueIdentifier>{4907661c-3d26-488a-b0ce-72c3dabfe2e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\eigen">
+      <UniqueIdentifier>{c0113ea1-8bdb-4316-8e27-55baa485b584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\eigen\Eigen">
+      <UniqueIdentifier>{1bd90bf3-45da-4d40-a7bd-1fb1075e4a6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\ccd">
+      <UniqueIdentifier>{5ea97554-1bdd-4e67-bfe8-dc962426351f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SVS\windows">
+      <UniqueIdentifier>{1cbc0d41-caf7-4874-b1d4-081982730b3e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_addwme.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_alias.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_allocate.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_captureinput.cpp">
+      <Filter>Source Files\CLI</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Core\CLI\src\cli_cd.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
@@ -280,17 +297,14 @@
     <ClCompile Include="..\..\..\Core\CLI\src\cli_wma.cpp">
       <Filter>Source Files\CLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_addwme.cpp">
-      <Filter>Source Files\CLI</Filter>
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.cpp">
+      <Filter>Source Files\ClientSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_alias.cpp">
-      <Filter>Source Files\CLI</Filter>
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.cpp">
+      <Filter>Source Files\ClientSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_allocate.cpp">
-      <Filter>Source Files\CLI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\CLI\src\cli_captureinput.cpp">
-      <Filter>Source Files\CLI</Filter>
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientErrors.cpp">
+      <Filter>Source Files\ClientSML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientFloatElement.cpp">
       <Filter>Source Files\ClientSML</Filter>
@@ -328,14 +342,14 @@
     <ClCompile Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.cpp">
       <Filter>Source Files\ClientSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.cpp">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.cpp">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.cpp">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.cpp">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientErrors.cpp">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Connection.cpp">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnection.cpp">
       <Filter>Source Files\ConnectionSML</Filter>
@@ -427,15 +441,6 @@
     <ClCompile Include="..\..\..\Core\ConnectionSML\src\thread_Thread.cpp">
       <Filter>Source Files\ConnectionSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.cpp">
-      <Filter>Source Files\ConnectionSML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.cpp">
-      <Filter>Source Files\ConnectionSML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Connection.cpp">
-      <Filter>Source Files\ConnectionSML</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\ElementXML\src\ElementXMLImpl.cpp">
       <Filter>Source Files\ElementXML</Filter>
     </ClCompile>
@@ -450,6 +455,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Core\ElementXML\src\ParseXMLString.cpp">
       <Filter>Source Files\ElementXML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\KernelSML\src\KernelSMLInterface.cpp">
+      <Filter>Source Files\KernelSML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentListener.cpp">
+      <Filter>Source Files\KernelSML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.cpp">
+      <Filter>Source Files\KernelSML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentSML.cpp">
       <Filter>Source Files\KernelSML</Filter>
@@ -514,14 +528,17 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp">
       <Filter>Source Files\KernelSML</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\KernelSML\src\KernelSMLInterface.cpp">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClCompile Include="..\..\..\Core\pcre\pcre.cxx">
+      <Filter>Source Files\pcre</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentListener.cpp">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.cpp">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\callback.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\SoarKernel\src\chunk.cpp">
       <Filter>Source Files\SoarKernel</Filter>
@@ -649,27 +666,6 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\src\xml.cpp">
       <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\callback.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\sgnode_algs.cpp">
-      <Filter>Source Files\SVS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\soar_interface.cpp">
-      <Filter>Source Files\SVS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\svs.cpp">
-      <Filter>Source Files\SVS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\SVS\src\cliproxy.cpp">
       <Filter>Source Files\SVS</Filter>
     </ClCompile>
@@ -706,29 +702,23 @@
     <ClCompile Include="..\..\..\Core\SVS\src\sgnode.cpp">
       <Filter>Source Files\SVS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\intersect.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\sgnode_algs.cpp">
+      <Filter>Source Files\SVS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\node.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\soar_interface.cpp">
+      <Filter>Source Files\SVS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\tag_select.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\svs.cpp">
+      <Filter>Source Files\SVS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\volume.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\add_node.cpp">
+      <Filter>Source Files\SVS\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_distance.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_node.cpp">
+      <Filter>Source Files\SVS\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\base_node_filters.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\contain.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\filters\distance.cpp">
-      <Filter>Source Files\SVS\filters</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_node.cpp">
+      <Filter>Source Files\SVS\commands</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_tag.cpp">
       <Filter>Source Files\SVS\commands</Filter>
@@ -742,14 +732,35 @@
     <ClCompile Include="..\..\..\Core\SVS\src\commands\set_transform.cpp">
       <Filter>Source Files\SVS\commands</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\commands\add_node.cpp">
-      <Filter>Source Files\SVS\commands</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_distance.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_node.cpp">
-      <Filter>Source Files\SVS\commands</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\base_node_filters.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_node.cpp">
-      <Filter>Source Files\SVS\commands</Filter>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\contain.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\distance.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\intersect.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\node.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\tag_select.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\volume.cpp">
+      <Filter>Source Files\SVS\filters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\ccd\ccd.c">
+      <Filter>Source Files\SVS\ccd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SVS\ccd\mpr.c">
+      <Filter>Source Files\SVS\ccd</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\SVS\ccd\polytope.c">
       <Filter>Source Files\SVS\ccd</Filter>
@@ -760,83 +771,17 @@
     <ClCompile Include="..\..\..\Core\SVS\ccd\vec3.c">
       <Filter>Source Files\SVS\ccd</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\ccd\ccd.c">
-      <Filter>Source Files\SVS\ccd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SVS\ccd\mpr.c">
-      <Filter>Source Files\SVS\ccd</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\SVS\src\windows\platform_specific.cpp">
       <Filter>Source Files\SVS\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcreposix.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre.cxx">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_chartables.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_compile.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_config.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_dfa_exec.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_exec.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_fullinfo.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_get.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_globals.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_info.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_maketables.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_newline.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_ord2utf8.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_refcount.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_study.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_tables.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_try_flipped.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_ucp_searchfuncs.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_valid_utf8.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_version.c">
-      <Filter>Source Files\pcre</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre_xclass.c">
-      <Filter>Source Files\pcre</Filter>
+    <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h">
+      <Filter>Source Files\CLI</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Cli.h">
       <Filter>Source Files\CLI</Filter>
     </ClInclude>
@@ -852,8 +797,17 @@
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Parser.h">
       <Filter>Source Files\CLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h">
-      <Filter>Source Files\CLI</Filter>
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_Client.h">
+      <Filter>Source Files\ClientSML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.h">
+      <Filter>Source Files\ClientSML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.h">
+      <Filter>Source Files\ClientSML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientDirect.h">
+      <Filter>Source Files\ClientSML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientErrors.h">
       <Filter>Source Files\ClientSML</Filter>
@@ -900,17 +854,14 @@
     <ClInclude Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.h">
       <Filter>Source Files\ClientSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_Client.h">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\EmbeddedSMLInterface.h">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.h">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.h">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.h">
-      <Filter>Source Files\ClientSML</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientDirect.h">
-      <Filter>Source Files\ClientSML</Filter>
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.h">
+      <Filter>Source Files\ConnectionSML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Connection.h">
       <Filter>Source Files\ConnectionSML</Filter>
@@ -1011,14 +962,11 @@
     <ClInclude Include="..\..\..\Core\ConnectionSML\src\thread_Thread.h">
       <Filter>Source Files\ConnectionSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ConnectionSML\src\EmbeddedSMLInterface.h">
-      <Filter>Source Files\ConnectionSML</Filter>
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXML.h">
+      <Filter>Source Files\ElementXML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.h">
-      <Filter>Source Files\ConnectionSML</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.h">
-      <Filter>Source Files\ConnectionSML</Filter>
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLHandle.h">
+      <Filter>Source Files\ElementXML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLImpl.h">
       <Filter>Source Files\ElementXML</Filter>
@@ -1038,11 +986,14 @@
     <ClInclude Include="..\..\..\Core\ElementXML\src\XMLTrace.h">
       <Filter>Source Files\ElementXML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXML.h">
-      <Filter>Source Files\ElementXML</Filter>
+    <ClInclude Include="..\..\..\Core\KernelSML\src\KernelHeaders.h">
+      <Filter>Source Files\KernelSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLHandle.h">
-      <Filter>Source Files\ElementXML</Filter>
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentListener.h">
+      <Filter>Source Files\KernelSML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.h">
+      <Filter>Source Files\KernelSML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentSML.h">
       <Filter>Source Files\KernelSML</Filter>
@@ -1104,14 +1055,47 @@
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h">
       <Filter>Source Files\KernelSML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\KernelSML\src\KernelHeaders.h">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClInclude Include="..\..\..\Core\pcre\pcre.h">
+      <Filter>Source Files\pcre</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentListener.h">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClInclude Include="..\..\..\Core\shared\Export.h">
+      <Filter>Source Files\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.h">
-      <Filter>Source Files\KernelSML</Filter>
+    <ClInclude Include="..\..\..\Core\shared\misc.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\pcreposix.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\portability.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\portability_windows.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\soarversion.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\soar_TraceNames.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\tokenizer.h">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h">
+      <Filter>Source Files\shared\msvc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\msvc\stdint.h">
+      <Filter>Source Files\shared\msvc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\agent.h">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\backtrace.h">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\callback.h">
+      <Filter>Source Files\SoarKernel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\SoarKernel\src\chunk.h">
       <Filter>Source Files\SoarKernel</Filter>
@@ -1254,27 +1238,6 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\xml.h">
       <Filter>Source Files\SoarKernel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\agent.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\backtrace.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\callback.h">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SVS\src\sgnode_algs.h">
-      <Filter>Source Files\SVS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SVS\src\soar_interface.h">
-      <Filter>Source Files\SVS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SVS\src\svs.h">
-      <Filter>Source Files\SVS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\SVS\src\svs_interface.h">
-      <Filter>Source Files\SVS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Core\SVS\src\change_tracking_list.h">
       <Filter>Source Files\SVS</Filter>
     </ClInclude>
@@ -1323,6 +1286,18 @@
     <ClInclude Include="..\..\..\Core\SVS\src\sgnode.h">
       <Filter>Source Files\SVS</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Core\SVS\src\sgnode_algs.h">
+      <Filter>Source Files\SVS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SVS\src\soar_interface.h">
+      <Filter>Source Files\SVS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SVS\src\svs.h">
+      <Filter>Source Files\SVS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SVS\src\svs_interface.h">
+      <Filter>Source Files\SVS</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Core\SVS\src\filters\base_node_filters.h">
       <Filter>Source Files\SVS\filters</Filter>
     </ClInclude>
@@ -1362,70 +1337,24 @@
     <ClInclude Include="..\..\..\Core\SVS\src\windows\platform_specific.h">
       <Filter>Source Files\SVS\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\Export.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\misc.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\pcreposix.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\portability.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\portability_windows.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\soar_TraceNames.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\soarversion.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\tokenizer.h">
-      <Filter>Source Files\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\msvc\stdint.h">
-      <Filter>Source Files\shared\msvc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h">
-      <Filter>Source Files\shared\msvc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\pcrecpp.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\ucp.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\ucpinternal.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\ucptable.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\config.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\pcre.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\pcre_internal.h">
-      <Filter>Source Files\pcre</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\Core\pcre\AUTHORS">
-      <Filter>Source Files\pcre</Filter>
+    <Text Include="..\..\..\Core\shared\msvc\changelog.txt">
+      <Filter>Source Files\shared\msvc</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Array">
+      <Filter>Source Files\SVS\eigen\Eigen</Filter>
     </None>
-    <None Include="..\..\..\Core\pcre\COPYING">
-      <Filter>Source Files\pcre</Filter>
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Cholesky">
+      <Filter>Source Files\SVS\eigen\Eigen</Filter>
     </None>
-    <None Include="..\..\..\Core\pcre\LICENCE">
-      <Filter>Source Files\pcre</Filter>
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\CholmodSupport">
+      <Filter>Source Files\SVS\eigen\Eigen</Filter>
     </None>
-    <None Include="..\..\..\Core\pcre\NON-UNIX-USE">
-      <Filter>Source Files\pcre</Filter>
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Core">
+      <Filter>Source Files\SVS\eigen\Eigen</Filter>
     </None>
     <None Include="..\..\..\Core\SVS\eigen\Eigen\Dense">
       <Filter>Source Files\SVS\eigen\Eigen</Filter>
@@ -1493,22 +1422,5 @@
     <None Include="..\..\..\Core\SVS\eigen\Eigen\UmfPackSupport">
       <Filter>Source Files\SVS\eigen\Eigen</Filter>
     </None>
-    <None Include="..\..\..\Core\SVS\eigen\Eigen\Array">
-      <Filter>Source Files\SVS\eigen\Eigen</Filter>
-    </None>
-    <None Include="..\..\..\Core\SVS\eigen\Eigen\Cholesky">
-      <Filter>Source Files\SVS\eigen\Eigen</Filter>
-    </None>
-    <None Include="..\..\..\Core\SVS\eigen\Eigen\CholmodSupport">
-      <Filter>Source Files\SVS\eigen\Eigen</Filter>
-    </None>
-    <None Include="..\..\..\Core\SVS\eigen\Eigen\Core">
-      <Filter>Source Files\SVS\eigen\Eigen</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\..\Core\shared\msvc\changelog.txt">
-      <Filter>Source Files\shared\msvc</Filter>
-    </Text>
   </ItemGroup>
 </Project>
