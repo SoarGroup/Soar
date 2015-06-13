@@ -306,18 +306,18 @@ sgnode* group_node::clone_sub() const
     return c;
 }
 
-sgnode* group_node::get_child(int i)
+sgnode* group_node::get_child(size_t i)
 {
-    if (0 <= i && i < children.size())
+    if (i < children.size())
     {
         return children[i];
     }
     return NULL;
 }
 
-const sgnode* group_node::get_child(int i) const
+const sgnode* group_node::get_child(size_t i) const
 {
-    if (0 <= i && i < children.size())
+    if (i < children.size())
     {
         return children[i];
     }
@@ -374,7 +374,7 @@ void group_node::update_shape()
     }
     
     bbox b = children[0]->get_bounds();
-    for (int i = 1; i < children.size(); ++i)
+    for (size_t i = 1; i < children.size(); ++i)
     {
         b.include(children[i]->get_bounds());
     }
@@ -485,7 +485,7 @@ void convex_node::get_shape_sgel(string& s) const
 {
     stringstream ss;
     ss << "v ";
-    for (int i = 0; i < verts.size(); ++i)
+    for (size_t i = 0; i < verts.size(); ++i)
     {
         ss << verts[i](0) << " " << verts[i](1) << " " << verts[i](2) << " ";
     }
@@ -498,9 +498,9 @@ void convex_node::get_shape_sgel(string& s) const
 void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
 {
     double dp, best = 0.0;
-    int best_i = -1;
+    long long best_i = -1;
     
-    for (int i = 0; i < verts.size(); ++i)
+    for (size_t i = 0; i < verts.size(); ++i)
     {
         dp = dir.dot(verts[i]);
         if (best_i == -1 || dp > best)
@@ -509,7 +509,7 @@ void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
             best_i = i;
         }
     }
-    support = verts[best_i];
+    support = verts[static_cast<size_t>(best_i)];
 }
 
 void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)

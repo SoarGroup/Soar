@@ -101,11 +101,12 @@ void sample(int k, int low, int high, std::vector<int>& output)
     }
 }
 
-ostream& histogram(const vector<double>& vals, int nbins, ostream& os)
+ostream& histogram(const vector<double>& vals, size_t nbins, ostream& os)
 {
     assert(nbins > 0);
     double min, max, binsize, hashes_per;
-    int i, b, maxcount = 0;
+	size_t i;
+	int b, maxcount = 0;
     vector<int> counts(nbins, 0);
     min = *min_element(vals.begin(), vals.end());
     max = *max_element(vals.begin(), vals.end());
@@ -118,7 +119,7 @@ ostream& histogram(const vector<double>& vals, int nbins, ostream& os)
     for (i = 0; i < vals.size(); ++i)
     {
         b = static_cast<int>((vals[i] - min) / binsize);
-        assert(b < counts.size());
+		assert(b < static_cast<int>(counts.size()));
         counts[b]++;
     }
     maxcount = *max_element(counts.begin(), counts.end());
@@ -230,30 +231,30 @@ void table_printer::set_spacer_width(int w)
 void table_printer::print(ostream& os) const
 {
     std::vector<int> widths;
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
         const vector<string>& row = rows[i];
         if (row.size() > widths.size())
         {
             widths.resize(row.size());
         }
-        for (int j = 0; j < row.size(); ++j)
+        for (size_t j = 0; j < row.size(); ++j)
         {
-            if (row[j].size() > widths[j])
+            if (static_cast<int>(row[j].size()) > widths[j])
             {
                 widths[j] = static_cast<int>(row[j].size());
             }
         }
     }
     
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
         const vector<string>& row = rows[i];
-        for (int j = 0; j < row.size(); ++j)
+        for (size_t j = 0; j < row.size(); ++j)
         {
             int a = -1, pad;
             
-            map_get(alignments, j, a);
+            map_get(alignments, static_cast<int>(j), a);
             switch (a)
             {
                 case -1:

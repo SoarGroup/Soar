@@ -4182,8 +4182,8 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
         free_memory(thisAgent, thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
         thisAgent->max_rhs_unbound_variables = num_for_new_production;
         thisAgent->rhs_variable_bindings = (Symbol**)
-                                           allocate_memory_and_zerofill(thisAgent, thisAgent->max_rhs_unbound_variables *
-                                                   sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
+                                           allocate_memory_and_zerofill(thisAgent, static_cast<size_t>(thisAgent->max_rhs_unbound_variables *
+                                                   sizeof(Symbol*)), MISCELLANEOUS_MEM_USAGE);
     }
 }
 
@@ -7801,7 +7801,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
                                    
     /* --- allocate memory for the symbol table --- */
     thisAgent->reteload_symbol_table = (Symbol**)
-                                       allocate_memory(thisAgent, thisAgent->reteload_num_syms * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
+                                       allocate_memory(thisAgent, static_cast<size_t>(thisAgent->reteload_num_syms * sizeof(char*)), MISCELLANEOUS_MEM_USAGE);
                                        
     /* --- read in all the symbols from the file --- */
     current_place_in_symtab = thisAgent->reteload_symbol_table;
@@ -7924,7 +7924,7 @@ void reteload_alpha_memories(agent* thisAgent, FILE* f)
     
     thisAgent->reteload_num_ams = reteload_eight_bytes(f);
     thisAgent->reteload_am_table = (alpha_mem**)
-                                   allocate_memory(thisAgent, thisAgent->reteload_num_ams * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
+                                   allocate_memory(thisAgent, static_cast<size_t>(thisAgent->reteload_num_ams * sizeof(char*)), MISCELLANEOUS_MEM_USAGE);
     for (i = 0; i < thisAgent->reteload_num_ams; i++)
     {
         id = reteload_symbol_from_index(thisAgent, f);

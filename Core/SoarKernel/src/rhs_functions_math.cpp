@@ -1368,7 +1368,7 @@ inline double _dice_zero_tolerance(double in)
 // http://www.brpreiss.com/books/opus4/html/page467.html
 uint64_t _dice_binom(uint64_t n, uint64_t m)
 {
-    uint64_t* b = new uint64_t[ n + 1 ];
+    uint64_t* b = new uint64_t[static_cast<size_t>(n + 1)];
     uint64_t i, j, ret;
     
     b[0] = 1;

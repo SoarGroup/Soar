@@ -2926,7 +2926,7 @@ namespace cli
                 }
                 
                 std::string arg;
-                for (int i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
+                for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
                 {
                     if (!arg.empty())
                     {

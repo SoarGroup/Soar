@@ -14,7 +14,6 @@
 
 ------------------------------------------------------------------ */
 
-
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -408,7 +407,7 @@ inline Symbol* epmem_reverse_hash(agent* thisAgent, epmem_hash_id s_id_lookup, b
         soar_module::exec_result res = thisAgent->epmem_stmts_common->hash_get_type->execute();
         (void)res; // quells compiler warning
         assert(res == soar_module::row);
-        sym_type = thisAgent->epmem_stmts_common->hash_get_type->column_int(0);
+        sym_type = static_cast<byte>(thisAgent->epmem_stmts_common->hash_get_type->column_int(0));
         thisAgent->epmem_stmts_common->hash_get_type->reinitialize();
     }
     
@@ -460,7 +459,7 @@ inline void epmem_reverse_hash_print(agent* thisAgent, epmem_hash_id s_id_lookup
         (void)res; // quells compiler warning
         assert(res == soar_module::row);
         // check if should be column_int
-        sym_type = thisAgent->epmem_stmts_common->hash_get_type->column_int(0);
+        sym_type = static_cast<byte>(thisAgent->epmem_stmts_common->hash_get_type->column_int(0));
         thisAgent->epmem_stmts_common->hash_get_type->reinitialize();
     }
     
@@ -2333,7 +2332,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
                     temp_q->execute();
                     if (temp_q->column_type(0) != soar_module::null_t)
                     {
-                        std::vector<bool>::size_type num_ids = temp_q->column_int(0);
+						std::vector<bool>::size_type num_ids = static_cast<size_t>(temp_q->column_int(0));
                         
                         minmax_max[i]->resize(num_ids, true);
                         minmax_min[i]->resize(num_ids, time_max);
@@ -2916,10 +2915,10 @@ inline void _epmem_store_level(agent* thisAgent,
                 (*thisAgent->epmem_edge_removals)[(*w_p)->epmem_id ] = false;
                 
                 // we add ONLY if the last thing we did was remove
-                if ((*thisAgent->epmem_edge_maxes)[(*w_p)->epmem_id - 1 ])
+                if ((*thisAgent->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)])
                 {
                     epmem_edge.push((*w_p)->epmem_id);
-                    (*thisAgent->epmem_edge_maxes)[(*w_p)->epmem_id - 1 ] = false;
+                    (*thisAgent->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)] = false;
                 }
             }
             
@@ -3023,10 +3022,10 @@ inline void _epmem_store_level(agent* thisAgent,
                     (*thisAgent->epmem_node_removals)[(*w_p)->epmem_id ] = false;
                     
                     // add ONLY if the last thing we did was add
-                    if ((*thisAgent->epmem_node_maxes)[(*w_p)->epmem_id - 1 ])
+                    if ((*thisAgent->epmem_node_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)])
                     {
                         epmem_node.push((*w_p)->epmem_id);
-                        (*thisAgent->epmem_node_maxes)[(*w_p)->epmem_id - 1 ] = false;
+                        (*thisAgent->epmem_node_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)] = false;
                     }
                 }
             }
@@ -3120,7 +3119,7 @@ void epmem_new_episode(agent* thisAgent)
                 thisAgent->epmem_stmts_graph->add_epmem_wmes_constant_now->execute(soar_module::op_reinit);
                 
                 // update min
-                (*thisAgent->epmem_node_mins)[(*temp_node) - 1 ] = time_counter;
+                (*thisAgent->epmem_node_mins)[static_cast<size_t>((*temp_node) - 1)] = time_counter;
                 
                 epmem_node.pop();
             }
@@ -3137,7 +3136,7 @@ void epmem_new_episode(agent* thisAgent)
                 thisAgent->epmem_stmts_graph->add_epmem_wmes_identifier_now->execute(soar_module::op_reinit);
                 
                 // update min
-                (*thisAgent->epmem_edge_mins)[(*temp_node) - 1 ] = time_counter;
+                (*thisAgent->epmem_edge_mins)[static_cast<size_t>((*temp_node) - 1)] = time_counter;
                 
                 thisAgent->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(1, LLONG_MAX);
                 thisAgent->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, *temp_node);
@@ -3165,7 +3164,7 @@ void epmem_new_episode(agent* thisAgent)
                     thisAgent->epmem_stmts_graph->delete_epmem_wmes_constant_now->bind_int(1, r->first);
                     thisAgent->epmem_stmts_graph->delete_epmem_wmes_constant_now->execute(soar_module::op_reinit);
                     
-                    range_start = (*thisAgent->epmem_node_mins)[ r->first - 1 ];
+                    range_start = (*thisAgent->epmem_node_mins)[static_cast<size_t>(r->first - 1)];
                     range_end = (time_counter - 1);
                     
                     // point (id, start_episode_id)
@@ -3182,7 +3181,7 @@ void epmem_new_episode(agent* thisAgent)
                     }
                     
                     // update max
-                    (*thisAgent->epmem_node_maxes)[ r->first - 1 ] = true;
+                    (*thisAgent->epmem_node_maxes)[static_cast<size_t>(r->first - 1)] = true;
                 }
                 
                 r++;
@@ -3200,7 +3199,7 @@ void epmem_new_episode(agent* thisAgent)
                     thisAgent->epmem_stmts_graph->delete_epmem_wmes_identifier_now->bind_int(1, r->first);
                     thisAgent->epmem_stmts_graph->delete_epmem_wmes_identifier_now->execute(soar_module::op_reinit);
                     
-                    range_start = (*thisAgent->epmem_edge_mins)[ r->first - 1 ];
+                    range_start = (*thisAgent->epmem_edge_mins)[static_cast<size_t>(r->first - 1)];
                     range_end = (time_counter - 1);
                     
                     thisAgent->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(1, range_end);
@@ -3220,7 +3219,7 @@ void epmem_new_episode(agent* thisAgent)
                     }
                     
                     // update max
-                    (*thisAgent->epmem_edge_maxes)[ r->first - 1 ] = true;
+                    (*thisAgent->epmem_edge_maxes)[static_cast<size_t>(r->first - 1)] = true;
                 }
                 
                 r++;
@@ -5798,7 +5797,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
                 if (((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) &&
                         ((path == 0) || (path == 3)))
                 {
-                    if ((before == EPMEM_MEMID_NONE) || ((*w_p)->value->ic->value < before))
+                    if ((before == EPMEM_MEMID_NONE) || (static_cast<epmem_time_id>((*w_p)->value->ic->value) < before))
                     {
                         before = (*w_p)->value->ic->value;
                     }
@@ -5814,7 +5813,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
                 if (((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE) &&
                         ((path == 0) || (path == 3)))
                 {
-                    if (after < (*w_p)->value->ic->value)
+                    if (after < static_cast<epmem_time_id>((*w_p)->value->ic->value))
                     {
                         after = (*w_p)->value->ic->value;
                     }

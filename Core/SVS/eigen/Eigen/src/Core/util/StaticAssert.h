@@ -4,24 +4,9 @@
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 // Copyright (C) 2008 Benoit Jacob <jacob.benoit.1@gmail.com>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_STATIC_ASSERT_H
 #define EIGEN_STATIC_ASSERT_H
@@ -47,6 +32,8 @@
     #define EIGEN_STATIC_ASSERT(X,MSG) static_assert(X,#MSG);
 
   #else // not CXX0X
+
+    namespace Eigen {
 
     namespace internal {
 
@@ -101,11 +88,17 @@
         THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES,
         YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED,
         YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED,
-        THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE
+        THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE,
+        THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH,
+        OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG,
+        IMPLICIT_CONVERSION_TO_SCALAR_IS_FOR_INNER_PRODUCT_ONLY,
+        STORAGE_LAYOUT_DOES_NOT_MATCH
       };
     };
 
     } // end namespace internal
+
+    } // end namespace Eigen
 
     // Specialized implementation for MSVC to avoid "conditional
     // expression is constant" warnings.  This implementation doesn't

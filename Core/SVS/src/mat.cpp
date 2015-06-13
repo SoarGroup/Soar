@@ -7,10 +7,10 @@
 using namespace std;
 dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0), released(false) {}
 
-dyn_mat::dyn_mat(int nrows, int ncols)
+dyn_mat::dyn_mat(size_t nrows, size_t ncols)
     : buf(nrows, ncols), r(nrows), c(ncols), released(false) {}
 
-dyn_mat::dyn_mat(int nrows, int ncols, int init_row_capacity, int init_col_capacity)
+dyn_mat::dyn_mat(size_t nrows, size_t ncols, size_t init_row_capacity, size_t init_col_capacity)
     : buf(init_row_capacity, init_col_capacity), r(nrows), c(ncols), released(false) {}
 
 dyn_mat::dyn_mat(const_mat_view m)
@@ -25,20 +25,20 @@ dyn_mat::dyn_mat(const dyn_mat& other)
     assert(!other.released);
 }
 
-void dyn_mat::resize(int nrows, int ncols)
+void dyn_mat::resize(size_t nrows, size_t ncols)
 {
     assert(!released);
     r = nrows;
     c = ncols;
-    if (r > buf.rows() && c > buf.cols())
+    if (r > static_cast<size_t>(buf.rows()) && c > static_cast<size_t>(buf.cols()))
     {
         buf.conservativeResize(r, c);
     }
-    else if (r > buf.rows())
+    else if (r > static_cast<size_t>(buf.rows()))
     {
         buf.conservativeResize(r, Eigen::NoChange);
     }
-    else if (c > buf.cols())
+    else if (c > static_cast<size_t>(buf.cols()))
     {
         buf.conservativeResize(Eigen::NoChange, c);
     }
@@ -47,7 +47,7 @@ void dyn_mat::resize(int nrows, int ncols)
 void dyn_mat::append_row()
 {
     assert(!released);
-    if (r >= buf.rows())
+    if (r >= static_cast<size_t>(buf.rows()))
     {
         buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
     }
@@ -61,31 +61,31 @@ void dyn_mat::append_row(const rvec& row)
     buf.block(r - 1, 0, 1, c) = row;
 }
 
-void dyn_mat::insert_row(int i)
+void dyn_mat::insert_row(size_t i)
 {
     assert(!released && 0 <= i && i <= r);
-    if (r >= buf.rows())
+    if (r >= static_cast<size_t>(buf.rows()))
     {
         buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
     }
-    for (int j = static_cast<int>(r); j > i; --j)
+    for (int j = static_cast<int>(r); j > static_cast<int>(i); --j)
     {
         buf.block(j, 0, 1, c) = buf.block(j - 1, 0, 1, c);
     }
     ++r;
 }
 
-void dyn_mat::insert_row(int i, const rvec& row)
+void dyn_mat::insert_row(size_t i, const rvec& row)
 {
     assert(!released && row.size() == c);
     insert_row(i);
     buf.block(i, 0, 1, c) = row;
 }
 
-void dyn_mat::remove_row(int i)
+void dyn_mat::remove_row(size_t i)
 {
     assert(!released && 0 <= i && i < r);
-    for (int j = i + 1; j < r; ++j)
+    for (size_t j = i + 1; j < r; ++j)
     {
         buf.block(j - 1, 0, 1, c) = buf.block(j, 0, 1, c);
     }
@@ -95,7 +95,7 @@ void dyn_mat::remove_row(int i)
 void dyn_mat::append_col()
 {
     assert(!released);
-    if (c >= buf.cols())
+    if (c >= static_cast<size_t>(buf.cols()))
     {
         buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
     }
@@ -109,31 +109,31 @@ void dyn_mat::append_col(const cvec& col)
     buf.block(0, c - 1, r, 1) = col;
 }
 
-void dyn_mat::insert_col(int i)
+void dyn_mat::insert_col(size_t i)
 {
     assert(!released && 0 <= i && i <= c);
-    if (c >= buf.cols())
+    if (c >= static_cast<size_t>(buf.cols()))
     {
         buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
     }
-    for (int j = static_cast<int>(c); j > i; --j)
+    for (int j = static_cast<int>(c); j > static_cast<int>(i); --j)
     {
         buf.block(0, j, r, 1) = buf.block(0, j - 1, r, 1);
     }
     ++c;
 }
 
-void dyn_mat::insert_col(int i, const cvec& col)
+void dyn_mat::insert_col(size_t i, const cvec& col)
 {
     assert(!released && col.size() == r);
     insert_col(i);
     buf.block(0, i, r, 1) = col;
 }
 
-void dyn_mat::remove_col(int i)
+void dyn_mat::remove_col(size_t i)
 {
     assert(!released && 0 <= i && i < c);
-    for (int j = i + 1; j < c; ++j)
+    for (size_t j = i + 1; j < c; ++j)
     {
         buf.block(0, j - 1, r, 1) = buf.block(0, j, r, 1);
     }
@@ -162,7 +162,7 @@ ostream& output_rvec(ostream& os, const rvec& v, const string& sep)
         return os;
     }
     
-    for (int i = 0; i < n - 1; ++i)
+    for (size_t i = 0; i < n - 1; ++i)
     {
         os << v(i) << sep;
     }
@@ -178,7 +178,7 @@ ostream& output_cvec(ostream& os, const cvec& v, const string& sep)
         return os;
     }
     
-    for (int i = 0; i < n - 1; ++i)
+    for (size_t i = 0; i < n - 1; ++i)
     {
         os << v(i) << sep;
     }
@@ -194,9 +194,9 @@ ostream& output_mat(ostream& os, const_mat_view m)
         return os;
     }
     
-    for (int i = 0; i < r; ++i)
+    for (size_t i = 0; i < r; ++i)
     {
-        for (int j = 0; j < c - 1; ++j)
+        for (size_t j = 0; j < c - 1; ++j)
         {
             os << m(i, j) << " ";
         }
@@ -249,7 +249,7 @@ void del_uniform_cols(mat_view X, int ncols, vector<int>& cols)
 void pick_cols(const_mat_view X, const vector<int>& cols, mat& result)
 {
     result.resize(X.rows(), cols.size());
-    for (int i = 0; i < cols.size(); ++i)
+    for (size_t i = 0; i < cols.size(); ++i)
     {
         result.col(i) = X.col(cols[i]);
     }
@@ -261,7 +261,7 @@ void pick_rows(const_mat_view X, const vector<int>& rows, mat& result)
     {
         result.resize(rows.size(), X.cols());
     }
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
         result.row(i) = X.row(rows[i]);
     }
@@ -269,11 +269,11 @@ void pick_rows(const_mat_view X, const vector<int>& rows, mat& result)
 
 void pick_cols(mat_view X, const vector<int>& cols)
 {
-    assert(X.cols() >= cols.size());
+    assert(static_cast<size_t>(X.cols()) >= cols.size());
     bool need_copy = false;
-    for (int i = 0; i < cols.size(); ++i)
+    for (size_t i = 0; i < cols.size(); ++i)
     {
-        if (cols[i] < i)
+        if (cols[i] < static_cast<int>(i))
         {
             need_copy = true;
             break;
@@ -282,14 +282,14 @@ void pick_cols(mat_view X, const vector<int>& cols)
     if (need_copy)
     {
         mat c = X;
-        for (int i = 0; i < cols.size(); ++i)
+        for (size_t i = 0; i < cols.size(); ++i)
         {
             X.col(i) = c.col(cols[i]);
         }
     }
     else
     {
-        for (int i = 0; i < cols.size(); ++i)
+        for (size_t i = 0; i < cols.size(); ++i)
         {
             X.col(i) = X.col(cols[i]);
         }
@@ -298,11 +298,11 @@ void pick_cols(mat_view X, const vector<int>& cols)
 
 void pick_rows(mat_view X, const vector<int>& rows)
 {
-    assert(X.rows() >= rows.size());
+    assert(static_cast<size_t>(X.rows()) >= rows.size());
     bool need_copy = false;
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
-        if (rows[i] < i)
+        if (rows[i] < static_cast<int>(i))
         {
             need_copy = true;
             break;
@@ -311,16 +311,16 @@ void pick_rows(mat_view X, const vector<int>& rows)
     if (need_copy)
     {
         mat c = X;
-        for (int i = 0; i < rows.size(); ++i)
+        for (size_t i = 0; i < rows.size(); ++i)
         {
             X.row(i) = c.row(rows[i]);
         }
     }
     else
     {
-        for (int i = 0; i < rows.size(); ++i)
+        for (size_t i = 0; i < rows.size(); ++i)
         {
-            if (rows[i] > i)
+            if (rows[i] > static_cast<int>(i))
             {
                 X.row(i) = X.row(rows[i]);
             }

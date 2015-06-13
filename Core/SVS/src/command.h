@@ -52,7 +52,7 @@ class command
         wme*            status_wme;
         std::string     curr_status;
         size_t             subtree_size;
-        size_t             prev_max_time;
+        uint64_t           prev_max_time;
         bool            first;
         
 };

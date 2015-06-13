@@ -1100,10 +1100,9 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
                 }
             }
             
-            const double zero = 0.0;
             const double probability = cand->rl_contribution
                                        ? exploration_probability_according_to_policy(thisAgent, candidates->slot, candidates, cand)
-                                       : zero / zero;
+                                       : nan("");
                                        
 //       std::cerr << "rl-trace: =" << probability << std::endl;
 

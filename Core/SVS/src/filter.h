@@ -650,7 +650,7 @@ class select_filter : public typed_filter<T>
                     }
                 }
             }
-            for (int i = 0; i < input->num_removed(); ++i)
+            for (size_t i = 0; i < input->num_removed(); ++i)
             {
                 const filter_params* params = input->get_removed(i);
                 active_outputs.erase(params);

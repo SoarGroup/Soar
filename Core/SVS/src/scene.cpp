@@ -50,7 +50,7 @@ bool parse_vec3(vector<string>& f, int& start, vec3& v, string& error)
 {
     for (int i = 0; i < 3; ++start, ++i)
     {
-        if (start >= f.size() || !parse_double(f[start], v[i]))
+        if (start >= static_cast<int>(f.size()) || !parse_double(f[start], v[i]))
         {
             error = "expecting a number";
             return false;
@@ -62,7 +62,7 @@ bool parse_vec3(vector<string>& f, int& start, vec3& v, string& error)
 bool parse_verts(vector<string>& f, int& start, ptlist& verts, string& error)
 {
     verts.clear();
-    while (start < f.size())
+    while (start < static_cast<int>(f.size()))
     {
         vec3 v;
         int i = start;
@@ -204,7 +204,7 @@ bool parse_mods(vector<string>& f, int& start, string& mods, vector<ptlist>& val
 {
     ptlist v;
     char m;
-    while (start < f.size())
+    while (start < static_cast<int>(f.size()))
     {
         if (f[start].size() != 1)
         {
@@ -232,7 +232,7 @@ bool parse_mods(vector<string>& f, int& start, string& mods, vector<ptlist>& val
             case 'b':
                 ++start;
                 v.push_back(vec3());
-                if (start >= f.size() || !parse_double(f[start], v[0](0)))
+                if (start >= static_cast<int>(f.size()) || !parse_double(f[start], v[0](0)))
                 {
                     error = "expecting radius";
                     return false;
@@ -425,7 +425,7 @@ int scene::parse_tag(vector<string>& f, string& error)
     int p = 0;
     
     // Parameter 1: subcommand
-    if (p >= f.size())
+    if (p >= static_cast<int>(f.size()))
     {
         error = "Tag Command P1: Expecting subcommand";
         return p;
@@ -434,7 +434,7 @@ int scene::parse_tag(vector<string>& f, string& error)
     p++;
     
     // Parameters 2: node id
-    if (p >= f.size())
+    if (p >= static_cast<int>(f.size()))
     {
         error = "Tag Command P2: Expecting node id";
         return p;
@@ -450,7 +450,7 @@ int scene::parse_tag(vector<string>& f, string& error)
     p++;
     
     // Parameter 3: tag name
-    if (p >= f.size())
+    if (p >= static_cast<int>(f.size()))
     {
         error = "Tag Command P3: Expecting tag name";
         return p;
@@ -462,7 +462,7 @@ int scene::parse_tag(vector<string>& f, string& error)
     string tag_value;
     if (subcommand == 'a' || subcommand == 'c')
     {
-        if (p >= f.size())
+        if (p >= static_cast<int>(f.size()))
         {
             error = "Tag Command P4: Expecting tag value";
             return p;

@@ -69,7 +69,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort)
     }
     
     // Set precision now, RESET BEFORE RETURN
-    size_t oldPrecision = m_Result.precision(3);
+    size_t oldPrecision = static_cast<size_t>(m_Result.precision(3));
     m_Result << std::setiosflags(std::ios_base::fixed);
     
     if (options.test(STATS_MEMORY))

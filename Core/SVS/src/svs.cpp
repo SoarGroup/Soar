@@ -39,7 +39,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
     if (node->is_group())
     {
         group_node* g = node->as_group();
-        for (int i = 0; i < g->num_children(); ++i)
+        for (size_t i = 0; i < g->num_children(); ++i)
         {
             add_child(g->get_child(i));
         }
@@ -418,7 +418,7 @@ void svs::state_deletion_callback(Symbol* state)
 
 void svs::proc_input(svs_state* s)
 {
-    for (int i = 0; i < env_inputs.size(); ++i)
+    for (size_t i = 0; i < env_inputs.size(); ++i)
     {
         strip(env_inputs[i], " \t");
         s->get_scene()->parse_sgel(env_inputs[i]);

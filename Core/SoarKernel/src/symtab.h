@@ -367,7 +367,7 @@ inline bool get_symbol_value(Symbol* sym, long& v)
 {
     if (sym->is_int())
     {
-        v = sym->ic->value;
+        v = static_cast<long>(sym->ic->value);
         return true;
     }
     return false;

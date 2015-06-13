@@ -244,4 +244,3 @@ void product_filter_input::erase_param_set(filter_params* s)
         l.erase(find(l.begin(), l.end(), s));
     }
 }
-

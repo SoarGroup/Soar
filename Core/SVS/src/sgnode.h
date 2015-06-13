@@ -142,8 +142,8 @@ class group_node : public sgnode
         group_node(const std::string& id) : sgnode(id, true) {}
         ~group_node();
         
-        sgnode* get_child(int i);
-        const sgnode* get_child(int i) const;
+        sgnode* get_child(size_t i);
+        const sgnode* get_child(size_t i) const;
         bool attach_child(sgnode* c);
         void detach_child(sgnode* c);
         void walk(std::vector<sgnode*>& result);

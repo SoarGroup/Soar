@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cctype>
 
 #include "cli_Commands.h"
 
@@ -514,22 +515,36 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
             {
                 // Transform if varprint, see print command
                 std::string message(msg);
-                
-                regex_t comp;
-                regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
-                
-                regmatch_t match;
-                memset(&match, 0, sizeof(regmatch_t));
-                
-                while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0)
-                {
-                    message.insert(match.rm_so, "<");
-                    message.insert(match.rm_eo + 1, ">");
-                    match.rm_eo += 2;
-                }
-                
-                regfree(&comp);
-                
+				
+				size_t i = 0;
+				
+				// [A-Z][0-9]+
+				while (i < message.size())
+				{
+					if (isupper(message[i]))
+					{
+						// Potential match
+						// Check next character
+						size_t next = i+1;
+						
+						if (next < message.size() && isdigit(message[i]))
+						{
+							// Match
+							message.insert(i, "<");
+							
+							i = next+1;
+							
+							while (i < message.size() && isdigit(message[i]))
+								++i;
+							
+							message.insert(i, ">");
+						}
+					}
+					
+					++i;
+				}
+				
+				
                 // Simply append to message result
                 if (m_TrapPrintEvents)
                 {
@@ -603,16 +618,20 @@ void CommandLineInterface::PrintCLIMessage(std::ostringstream* printString, bool
 void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    long long left_width, right_width, middle_width;
+    size_t left_width, right_width, middle_width;
     std::string sep_string("");
     
     left_width = strlen(prefixString);
     right_width = strlen(printString);
-    middle_width = column_width - left_width - right_width;
-    if (middle_width < 0)
+    if ((column_width - static_cast<int>(left_width) - static_cast<int>(right_width)) < 0)
     {
         middle_width = 1;
     }
+	else
+	{
+		middle_width = column_width - left_width - right_width;
+	}
+
     sep_string.insert(0, middle_width, ' ');
     
     tempString << prefixString << sep_string << printString;
@@ -631,7 +650,7 @@ void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_m
 void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    long long left_width, right_width, header_width;
+    size_t left_width, right_width, header_width;
     std::string left_string(""), right_string(""), sep_string("");
     
     header_width = strlen(headerString) + 2;
@@ -651,7 +670,7 @@ void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int 
 void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    long long left_width, right_width, header_width;
+    size_t left_width, right_width, header_width;
     std::string left_string(""), right_string("");
     
     header_width = strlen(headerString) + 2;

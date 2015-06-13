@@ -117,6 +117,7 @@ class product_filter_input : public filter_input
         void clear_sub();
         
         typedef std::list<filter_params*> param_set_list;
+
         typedef std::map<filter_val*, param_set_list > val2param_map;
         val2param_map val2params;
         

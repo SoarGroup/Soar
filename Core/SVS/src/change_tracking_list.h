@@ -97,7 +97,7 @@ class change_tracking_list
         virtual void add(T* v)
         {
             current.push_back(v);
-            for (int i = 0; i < listeners.size(); ++i)
+            for (size_t i = 0; i < listeners.size(); ++i)
             {
                 listeners[i]->handle_ctlist_add(v);
             }
@@ -109,7 +109,7 @@ class change_tracking_list
         virtual void remove(const T* v)
         {
             bool found = false;
-            for (int i = 0; i < current.size(); ++i)
+            for (size_t i = 0; i < current.size(); ++i)
             {
                 if (current[i] == v)
                 {
@@ -124,7 +124,7 @@ class change_tracking_list
                 }
             }
             assert(found);
-            for (int i = 0; i < changed.size(); ++i)
+            for (size_t i = 0; i < changed.size(); ++i)
             {
                 if (changed[i] == v)
                 {
@@ -132,7 +132,7 @@ class change_tracking_list
                     break;
                 }
             }
-            for (int i = 0; i < listeners.size(); ++i)
+            for (size_t i = 0; i < listeners.size(); ++i)
             {
                 listeners[i]->handle_ctlist_remove(v);
             }
@@ -142,7 +142,7 @@ class change_tracking_list
         //   will invoke ctlist_listener::handle_ctlist_change
         virtual void change(const T* v)
         {
-            for (int i = 0; i < current.size(); ++i)
+            for (size_t i = 0; i < current.size(); ++i)
             {
                 if (current[i] == v)
                 {
@@ -150,7 +150,7 @@ class change_tracking_list
                             find(changed.begin(), changed.end(), current[i]) == changed.end())
                     {
                         changed.push_back(current[i]);
-                        for (int i = 0; i < listeners.size(); ++i)
+                        for (size_t i = 0; i < listeners.size(); ++i)
                         {
                             listeners[i]->handle_ctlist_change(current[i]);
                         }
@@ -193,9 +193,9 @@ class change_tracking_list
             
             // Clear current list
             m_added_begin = 0;
-            for (int i = 0; i < current.size(); i++)
+            for (size_t i = 0; i < current.size(); i++)
             {
-                for (int j = 0; j < listeners.size(); ++j)
+                for (size_t j = 0; j < listeners.size(); ++j)
                 {
                     listeners[j]->handle_ctlist_remove(current[i]);
                 }

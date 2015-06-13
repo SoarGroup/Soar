@@ -689,7 +689,8 @@ namespace soar_module
     }
     inline bool sqlite_database::sql_is_new_db(bool& return_value)
     {
-        int64_t numTables, value_retrieved;
+        int64_t numTables;
+		bool value_retrieved;
         
         value_retrieved = sql_simple_get_int("SELECT count(*) FROM sqlite_master WHERE type='table'", numTables);
         if (value_retrieved)
