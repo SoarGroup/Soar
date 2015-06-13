@@ -447,25 +447,10 @@ Temporary Items
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
-### Soar ###
-
-/.sconf_temp/
-/.externalToolBuilders/
-/.settings/
-/build*/
-/config.log
-/.gitignore*
-/.cproject
-.project
-/.pydevproject
-/.sconsign.dblite
-/out
-out/
-build/
-user-env*.*
-build_*.*
-**/*.pyc
-*.pyc
+### SCons ###
+# for projects that use SCons for building: http://http://www.scons.org/
+.sconsign.dblite
+.sconf_temp/
 
 ### Eclipse ###
 *.pydevproject
@@ -504,4 +489,8 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
+
+### Soar ###
+out*/
+build*/
 
