@@ -110,12 +110,12 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
         this->name.append(local_address.sun_path);
 		
 #ifdef __clang__
-#pragma clang diagnostics push
-#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
         int len = SUN_LEN(&local_address);
 #ifdef __clang__
-#pragma clang diagnostics pop
+#pragma clang diagnostic pop
 #endif
 		
         // Create the socket

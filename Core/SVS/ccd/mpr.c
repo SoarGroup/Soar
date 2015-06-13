@@ -16,8 +16,8 @@
  */
 
 #ifdef __clang__
-#pragma clang diagnostics push
-#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
 
 #include <stdlib.h>
@@ -539,5 +539,5 @@ _ccd_inline int portalCanEncapsuleOrigin(const ccd_simplex_t *portal,
 }
 
 #ifdef __clang__
-#pragma clang diagnostics pop
+#pragma clang diagnostic pop
 #endif

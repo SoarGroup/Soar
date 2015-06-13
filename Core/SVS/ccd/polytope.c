@@ -16,8 +16,8 @@
  */
 
 #ifdef __clang__
-#pragma clang diagnostics push
-#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
 
 #include <stdio.h>
@@ -303,5 +303,5 @@ void ccdPtDumpSVT2(ccd_pt_t *pt, FILE *fout)
 }
 
 #ifdef __clang__
-#pragma clang diagnostics pop
+#pragma clang diagnostic pop
 #endif
