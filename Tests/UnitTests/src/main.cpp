@@ -23,6 +23,47 @@ BOOL WINAPI handle_ctrlc(DWORD dwCtrlType)
 
 bool g_NoRemote = true;
 
+#ifdef __APPLE__
+#include <assert.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/sysctl.h>
+
+static bool AmIBeingDebugged(void)
+// Returns true if the current process is being debugged (either
+// running under the debugger or has a debugger attached post facto).
+{
+	int                 junk;
+	int                 mib[4];
+	struct kinfo_proc   info;
+	size_t              size;
+	
+	// Initialize the flags so that, if sysctl fails for some bizarre
+	// reason, we get a predictable result.
+	
+	info.kp_proc.p_flag = 0;
+	
+	// Initialize mib, which tells sysctl the info we want, in this case
+	// we're looking for information about a specific process ID.
+	
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PID;
+	mib[3] = getpid();
+	
+	// Call sysctl.
+	
+	size = sizeof(info);
+	junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+	assert(junk == 0);
+	
+	// We're being debugged if the P_TRACED flag is set.
+	
+	return ( (info.kp_proc.p_flag & P_TRACED) != 0 );
+}
+#endif
+
 int main(int argc, char** argv)
 {
 #ifdef _WIN32
@@ -30,9 +71,21 @@ int main(int argc, char** argv)
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     SetConsoleCtrlHandler(handle_ctrlc, TRUE);
 #endif // _WIN32
-    
-    set_working_directory_to_executable_path();
-    
+	
+	bool debugged = false;
+	
+#ifdef __APPLE__
+	if (AmIBeingDebugged())
+	{
+		debugged = true;
+	}
+#endif
+	
+	if (!debugged)
+	{
+		set_working_directory_to_executable_path();
+	}
+	
     for (int index = 1; index < argc; ++index)
     {
         std::string argument(argv[index]);
