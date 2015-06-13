@@ -219,7 +219,7 @@ if compiler == 'g++':
 			cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
 elif compiler == 'msvc':
-	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
+	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
 
 	if GetOption('defflags'):
 		if GetOption('opt'):
