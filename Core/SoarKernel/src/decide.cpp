@@ -2419,8 +2419,8 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                            cand, cand->id->id->level, cand->inst->match_goal_level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
                 }
-                dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
-                dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
+//                dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
+//                dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;

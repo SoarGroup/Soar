@@ -428,7 +428,6 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 
     va_list args;
     char buf[OM_BUFFER_SIZE];
-
     strcpy(buf, mode_info[mode].prefix);
     int s = strlen(buf);
     va_start(args, format);

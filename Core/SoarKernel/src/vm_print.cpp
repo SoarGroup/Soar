@@ -16,14 +16,16 @@
 
 void Variablization_Manager::print_o_id_tables(TraceMode mode)
 {
-    dprint_ovar_to_o_id_map(mode);
-    dprint_o_id_substitution_map(mode);
-    dprint_o_id_to_ovar_debug_map(mode);
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    print_ovar_to_o_id_map(mode);
+    print_o_id_substitution_map(mode);
+    print_o_id_to_ovar_debug_map(mode);
 
 }
 
 void Variablization_Manager::print_merge_map(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "            Merge Map\n");
     dprint(mode, "------------------------------------\n");
@@ -54,6 +56,7 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
 
 void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "        ovar_to_o_id_map Map\n");
     dprint(mode, "------------------------------------\n");
@@ -71,7 +74,7 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
         dprint(mode, "o_id's for i%u: \n", iter_inst->first);
         for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
         {
-                dprint(mode, "   %y = o%u\n", iter_sym->first, iter_sym->second);
+            dprint(mode, "   %y = o%u\n", iter_sym->first, iter_sym->second);
         }
     }
 
@@ -81,6 +84,7 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
 
 void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "     o_id_substitution_map Map\n");
     dprint(mode, "------------------------------------\n");
@@ -104,6 +108,7 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
 
 void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "     o_id_to_ovar_debug_map Map\n");
     dprint(mode, "------------------------------------\n");
@@ -124,6 +129,7 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
 }
 void Variablization_Manager::print_attachment_points(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "   Attachment Points in conditions\n");
     dprint(mode, "------------------------------------\n");
@@ -141,6 +147,7 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
 }
 void Variablization_Manager::print_constraints(TraceMode mode)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     dprint(mode, "    Relational Constraints List\n");
     dprint(mode, "------------------------------------\n");
@@ -159,6 +166,7 @@ void Variablization_Manager::print_constraints(TraceMode mode)
 
 void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
 {
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     dprint(mode, "------------------------------------\n");
     if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
     {
@@ -182,7 +190,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         for (std::map< uint64_t, variablization* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
         {
             dprint(mode, "o%u -> %y/%y\n", it->first,
-                   it->second->variablized_symbol, it->second->instantiated_symbol);
+                it->second->variablized_symbol, it->second->instantiated_symbol);
         }
     }
     dprint(mode, "------------------------------------\n");
@@ -190,6 +198,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
 
 void Variablization_Manager::print_tables(TraceMode mode)
 {
-    dprint_variablization_tables(mode);
-    dprint_o_id_tables(mode);
+    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    print_variablization_tables(mode);
+    print_o_id_tables(mode);
 }

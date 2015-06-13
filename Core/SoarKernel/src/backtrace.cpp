@@ -95,6 +95,7 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
     {
         (cond)->bt.wme_->grounds_tc = thisAgent->grounds_tc;
     }
+//    cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     push(thisAgent, (cond), thisAgent->grounds);
 }
 #else
@@ -700,7 +701,7 @@ void trace_grounded_potentials(agent* thisAgent)
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
-                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
+//                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
 
                     need_another_pass = true;
@@ -708,12 +709,11 @@ void trace_grounded_potentials(agent* thisAgent)
                 else     /* pot was already in the grounds, do don't add it */
                 {
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
-                    dprint(DT_BACKTRACE, "Moving potential to grounds. Wme already marked: %l\n", pot);
-                    dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
+                    dprint(DT_BACKTRACE, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
-                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
+//                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
 #endif
 #ifdef EBC_SUPERMERGE

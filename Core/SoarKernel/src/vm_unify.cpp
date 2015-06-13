@@ -65,7 +65,7 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
     if (!result) return;
 
     dprint(DT_UNIFICATION, "Fixing result %p\n", result);
-    dprint_o_id_tables(DT_UNIFICATION);
+    dprint_o_id_substitution_map(DT_UNIFICATION);
 
     if (result->o_ids.id)
     {

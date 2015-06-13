@@ -167,7 +167,7 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
         }
     }
 
-    dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
+//    dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     return 0;
 
 }
@@ -175,10 +175,10 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
-    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
+//    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
 
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+//    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
     std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
     std::map< Symbol*, uint64_t >::iterator iter_inst;
@@ -190,10 +190,10 @@ void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_
             o_id_to_ovar_debug_map->erase(iter_inst->second);
         }
     }
-    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+//    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 #endif
     rulesym_to_identity_map->erase(pI_id);
-    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
+//    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
     dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
 }
 

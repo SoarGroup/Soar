@@ -266,7 +266,7 @@ char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, s
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
-            strcpy(ch, "g0/o0/#");
+            strcpy(ch, "o0/#");
             ch += 2;
             break;
         default:

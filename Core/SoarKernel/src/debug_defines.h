@@ -55,10 +55,10 @@
 #define TRACE_Init_DT_GDS                         false
 //--
 #define TRACE_Init_DT_MILESTONES                  true
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   true
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           true
