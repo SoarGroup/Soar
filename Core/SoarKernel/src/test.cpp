@@ -36,7 +36,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_identity)
+list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity)
 {
     cons* new_c;
 
@@ -46,7 +46,11 @@ list* copy_test_list(agent* thisAgent, cons* c, bool pUnify_variablization_ident
     }
     allocate_cons(thisAgent, &new_c);
     new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
-    new_c->rest = copy_test_list(thisAgent, c->rest, pUnify_variablization_identity);
+    if (static_cast<test>(new_c->first)->type == EQUALITY_TEST)
+    {
+        *pEq_test = static_cast<test>(new_c->first);
+    }
+    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity);
     return new_c;
 }
 
@@ -76,12 +80,16 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
             break;
         case CONJUNCTIVE_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, pUnify_variablization_identity);
+            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity);
 
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
             new_ct->identity = t->identity;
+            if (t->type == EQUALITY_TEST)
+            {
+                new_ct->eq_test = new_ct;
+            }
             if (pUnify_variablization_identity)
             {
                 /* Mark this test as seen.  The tests in the constraint lists are copies of
@@ -100,7 +108,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
 
             break;
     }
-
     return new_ct;
 }
 
@@ -267,15 +274,24 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
         destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
         allocate_cons(thisAgent, &c);
         destination->data.conjunct_list = c;
+        destination->eq_test = (*dest_test_address)->eq_test;
         c->first = *dest_test_address;
         c->rest = NIL;
         *dest_test_address = destination;
     }
+    if (!destination->eq_test)
+    {
+        destination->eq_test = new_test->eq_test;
+    } else {
+        assert(new_test->type != EQUALITY_TEST);
+    }
+
     /* --- now add add_test to the conjunct list --- */
     allocate_cons(thisAgent, &c);
     c->first = new_test;
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
+
 }
 
 /* -- This function is a special purpose function for adding relational tests to another test. It
@@ -1337,8 +1353,13 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
 
     new_ct->type = test_type;
     new_ct->data.referent = sym;
-    new_ct->eq_test = NULL;
     new_ct->identity = 0;
+    if (test_type == EQUALITY_TEST)
+    {
+        new_ct->eq_test = new_ct;
+    } else {
+        new_ct->eq_test = NULL;
+    }
 
     if (sym)
     {
@@ -1398,6 +1419,8 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
         deallocate_test(thisAgent, old_conjunct);
         /* -- There are no remaining tests in conjunct list, so return NULL --*/
         return NULL;
+    } else {
+        (*t)->eq_test = equality_test_found_in_test(*t);
     }
 
     return next;
@@ -1473,21 +1496,4 @@ void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool consi
     }
 }
 
-/* No longer used, but could be again in the future */
-void cache_eq_test(test t)
-{
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        t->eq_test = equality_test_found_in_test(t);
-        t->eq_test->eq_test = t->eq_test;
-    }
-    else if (t->type == EQUALITY_TEST)
-    {
-        t->eq_test = t;
-    }
-    else
-    {
-        t->eq_test = NULL;
-    }
-}
 

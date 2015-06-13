@@ -285,12 +285,15 @@ void Variablization_Manager::variablize_equality_tests(test t)
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
             tt = reinterpret_cast<test>(c->first);
-            if ((tt->type == EQUALITY_TEST) &&
-                ((tt->identity && tt->data.referent->is_variablizable()) || tt->data.referent->is_sti()))
+            if (tt->type == EQUALITY_TEST)
             {
-                variablize_lhs_symbol(&(tt->data.referent), tt->identity);
+                dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", tt);
+                if ((tt->identity && tt->data.referent->is_variablizable()) || tt->data.referent->is_sti())
+                {
+                    variablize_lhs_symbol(&(tt->data.referent), tt->identity);
+                }
+                dprint(DT_LHS_VARIABLIZATION, "Setting conjunctive test %t's eq_test to: %t\n", t, tt);
             }
         }
 
@@ -302,7 +305,10 @@ void Variablization_Manager::variablize_equality_tests(test t)
         if ((t->type == EQUALITY_TEST) &&
             ((t->identity && t->data.referent->is_variablizable()) || t->data.referent->is_sti()))
         {
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", t);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
             variablize_lhs_symbol(&(t->data.referent), t->identity);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
         }
     }
 }

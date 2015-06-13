@@ -134,37 +134,6 @@ void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCo
     (*attachment_points)[pO_id] = new_attachment;
 }
 
-/* -- We also cache the main equality test for each element in each condition
- *    since it's easy to do here. This allows us to avoid searching conjunctive
- *    tests repeatedly during merging. -- */
-
-inline test cache_equality_tests_found_in_test(test t)
-{
-    cons* c;
-
-    assert(t);
-    if (t->type == EQUALITY_TEST)
-    {
-        t->eq_test = t;
-        return t;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            if (static_cast<test>(c->first)->type == EQUALITY_TEST)
-            {
-                t->eq_test = static_cast<test>(c->first);
-                static_cast<test>(c->first)->eq_test = static_cast<test>(c->first);
-                return (static_cast<test>(c->first));
-            }
-        }
-    }
-    t->eq_test = NULL;
-
-    return NULL;
-}
-
 void Variablization_Manager::find_attachment_points(condition* pCond)
 {
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Scanning conditions for constraint attachment points...\n%1", pCond);
@@ -340,8 +309,7 @@ void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(t
 
     if ((*t)->type == EQUALITY_TEST)
     {
-        /* Cache main equality test.  Clearly redundant for an equality test, but simplifies code. */
-        (*t)->eq_test = (*t);
+        assert((*t)->eq_test == (*t));
         return;
     }
     else if ((*t)->type == CONJUNCTIVE_TEST)
@@ -370,11 +338,8 @@ void Variablization_Manager::remove_ungrounded_sti_from_test_and_cache_eq_test(t
             }
         }
 
-        /* -- We also cache the main equality test for each element in each condition
-         *    since it's easy to do here. This allows us to avoid searching conjunctive
-         *    tests repeatedly during merging. -- */
-        (*t)->eq_test = found_eq_test;
-        found_eq_test->eq_test = found_eq_test;
+        assert((*t)->eq_test == found_eq_test);
+        assert(found_eq_test->eq_test = found_eq_test);
     }
 }
 
