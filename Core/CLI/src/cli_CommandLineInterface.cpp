@@ -603,7 +603,7 @@ void CommandLineInterface::PrintCLIMessage(std::ostringstream* printString, bool
 void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    int left_width, right_width, middle_width;
+    long long left_width, right_width, middle_width;
     std::string sep_string("");
     
     left_width = strlen(prefixString);
@@ -631,7 +631,7 @@ void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_m
 void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    int left_width, right_width, header_width;
+    long long left_width, right_width, header_width;
     std::string left_string(""), right_string(""), sep_string("");
     
     header_width = strlen(headerString) + 2;
@@ -651,7 +651,7 @@ void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int 
 void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf)
 {
     std::ostringstream tempString;
-    int left_width, right_width, header_width;
+    long long left_width, right_width, header_width;
     std::string left_string(""), right_string("");
     
     header_width = strlen(headerString) + 2;

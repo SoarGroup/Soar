@@ -203,7 +203,7 @@ class filter
 template <typename T>
 inline bool get_filter_param(filter* f, const filter_params* params, const std::string& name, T& val)
 {
-    const filter_val* fv;
+    const filter_val* fv = NULL;
     std::stringstream ss;
     filter_params::const_iterator i;
     bool found = false;
@@ -535,7 +535,7 @@ class map_filter : public typed_filter<T>
         {
             const filter_input* input = filter::get_input();
             
-            for (int i = input->first_added(); i < input->num_current(); ++i)
+            for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
                 T out;
@@ -545,7 +545,7 @@ class map_filter : public typed_filter<T>
                 }
                 typed_filter<T>::set_output(params, out);
             }
-            for (int i = 0; i < input->num_changed(); ++i)
+            for (size_t i = 0; i < input->num_changed(); ++i)
             {
                 const filter_params* params = input->get_changed(i);
                 T out;
@@ -555,7 +555,7 @@ class map_filter : public typed_filter<T>
                 }
                 typed_filter<T>::set_output(params, out);
             }
-            for (int i = 0; i < input->num_removed(); ++i)
+            for (size_t i = 0; i < input->num_removed(); ++i)
             {
                 const filter_params* params = input->get_removed(i);
                 typed_filter<T>::remove_output(params);
@@ -598,7 +598,7 @@ class select_filter : public typed_filter<T>
         {
             const filter_input* input = filter::get_input();
             
-            for (int i = input->first_added(); i < input->num_current(); ++i)
+            for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
                 const filter_params* params = input->get_current(i);
                 T out;
@@ -613,7 +613,7 @@ class select_filter : public typed_filter<T>
                     typed_filter<T>::set_output(params, out);
                 }
             }
-            for (int i = 0; i < input->num_changed(); ++i)
+            for (size_t i = 0; i < input->num_changed(); ++i)
             {
                 const filter_params* params = input->get_changed(i);
                 T out;
@@ -689,7 +689,7 @@ class rank_filter : public typed_filter<double>
             bool changed = false;
             
             // Added inputs
-            for (int i = input->first_added(); i < input->num_current(); ++i)
+            for (size_t i = input->first_added(); i < input->num_current(); ++i)
             {
                 p = input->get_current(i);
                 if (!rank(p, r))
@@ -701,7 +701,7 @@ class rank_filter : public typed_filter<double>
             }
             
             // Changed inputs
-            for (int i = 0; i < input->num_changed(); ++i)
+            for (size_t i = 0; i < input->num_changed(); ++i)
             {
                 p = input->get_changed(i);
                 if (!rank(p, r))
@@ -713,7 +713,7 @@ class rank_filter : public typed_filter<double>
             }
             
             // Removed inputs
-            for (int i = 0; i < input->num_removed(); ++i)
+            for (size_t i = 0; i < input->num_removed(); ++i)
             {
                 p = input->get_removed(i);
                 elems.erase(p);

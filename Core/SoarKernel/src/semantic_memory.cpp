@@ -2107,7 +2107,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     ////////////////////////////////////////////////////////////////////////////
     
     // get the ^result header for this state
-    Symbol* result_header;
+    Symbol* result_header = NULL;
     if (install_type == wm_install)
     {
         result_header = state->id->smem_result_header;
@@ -2522,7 +2522,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, int number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, int depth = 1, smem_install_type install_type = wm_install)
+smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -3033,7 +3033,7 @@ void smem_init_db(agent* thisAgent)
     ////////////////////////////////////////////////////////////////////////////
     
     const char* db_path;
-    bool tabula_rasa;
+    bool tabula_rasa = false;
     
     if (thisAgent->smem_params->database->get_value() == smem_param_container::memory)
     {
@@ -3064,7 +3064,7 @@ void smem_init_db(agent* thisAgent)
         
         if (strcmp(db_path, ":memory:")) // Check if database mode is to a file
         {
-            bool switch_to_memory, versions_exists, sql_is_new;
+            bool switch_to_memory, sql_is_new;
             std::string schema_version, version_error_message;
             
             /* -- Set switch_to_memory true in case we have any errors with the database -- */
@@ -3937,7 +3937,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     
     Symbol* root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
     //It's main purpose is to contain augmentations
-    Symbol* negative_cues;  //This is supposed to contain the negative augmentations.
+    Symbol* negative_cues = NULL;  //This is supposed to contain the negative augmentations.
     
     bool trigger_first = true; //Just for managing my loop.
     bool minus_ever = false; //Did a negative cue ever show up?
@@ -4220,6 +4220,18 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     return good_cue;
 }
 
+void initialize_smem_chunk_value_lti(smem_chunk_value_lti& lti)
+{
+	lti.val_type = smem_cue_element_type_none;
+	lti.val_value = NULL;
+}
+
+void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
+{
+	constant.val_type = smem_cue_element_type_none;
+	constant.val_value = NULL;
+}
+
 /*
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
@@ -4253,7 +4265,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
     
     good_command = thisAgent->lexeme.type == IDENTIFIER_LEXEME;
     
-    smem_lti_id lti_id;
+    smem_lti_id lti_id = 0;
     
     if (good_command)
     {
@@ -4295,6 +4307,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
                         smem_chunk_value_constant temp_const;
+
+						initialize_smem_chunk_value_lti(temp_lti);
+						initialize_smem_chunk_value_constant(temp_const);
+
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4310,6 +4326,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     {
                         smem_chunk_value_constant temp_const;
                         smem_chunk_value_lti temp_lti;
+
+						initialize_smem_chunk_value_lti(temp_lti);
+						initialize_smem_chunk_value_constant(temp_const);
+
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
@@ -4326,6 +4346,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
                         smem_chunk_value_constant temp_const;
+
+						initialize_smem_chunk_value_lti(temp_lti);
+						initialize_smem_chunk_value_constant(temp_const);
+
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4341,6 +4365,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     {
                         smem_chunk_value_constant temp_const;
                         smem_chunk_value_lti temp_lti;
+
+						initialize_smem_chunk_value_lti(temp_lti);
+						initialize_smem_chunk_value_constant(temp_const);
+
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
@@ -5761,7 +5789,7 @@ void smem_print_store(agent* thisAgent, std::string* return_val)
     q->reinitialize();
 }
 
-void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history)
+void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
 {
     std::set< smem_lti_id > visited;
     std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;

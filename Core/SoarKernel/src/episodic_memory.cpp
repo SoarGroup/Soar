@@ -2006,7 +2006,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
         
         if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
         {
-            bool switch_to_memory, versions_exists, sql_is_new;
+            bool switch_to_memory, sql_is_new;
             std::string schema_version, version_error_message;
             
             switch_to_memory = true;
@@ -2496,10 +2496,8 @@ inline void _epmem_store_level(agent* thisAgent,
     epmem_id_reservation* new_id_reservation;
     
     // identifier recursion
-    epmem_wme_list* wmes = NULL;
     epmem_wme_list::iterator w_p2;
-    bool good_recurse = false;
-    
+	
 #ifdef DEBUG_EPMEM_WME_ADD
     fprintf(stderr, "==================================================\nDEBUG _epmem_store_level called for parent_id %d\n==================================================\n", (unsigned int) parent_id);
 #endif

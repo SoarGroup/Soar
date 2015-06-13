@@ -179,8 +179,6 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 
 void Output_Manager::print_db_agent(agent* pSoarAgent, MessageType msgType, TraceMode mode, const char* msg)
 {
-    soar_module::sqlite_statement*   target_statement = NIL;
-    
     if (((msgType == trace_msg) && mode_info[mode].trace_enabled) ||
             ((msgType == debug_msg) && mode_info[mode].debug_enabled))
     {
@@ -239,7 +237,6 @@ void Output_Manager::print_agent(agent* pSoarAgent, const char* msg)
 
 void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
 {
-    bool printer_column_updated = false;
     std::string newTrace;
     
     if (mode_info[mode].debug_enabled && dprint_enabled)
@@ -278,9 +275,7 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
 }
 
 void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
-{
-    bool printer_column_updated = false;
-    
+{    
     std::string newTrace;
     
     if (mode_info[mode].trace_enabled)

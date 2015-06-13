@@ -5,8 +5,17 @@
 #include <vector>
 #include "serializable.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#endif
+
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 typedef Eigen::Vector3d vec3;
 typedef Eigen::Vector4d vec4;
@@ -51,7 +60,7 @@ class mat_view : public mat_map
 {
     public:
         mat_view(mat& m)               : mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
-        mat_view(mat& m, int r, int c) : mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+        mat_view(mat& m, size_t r, size_t c) : mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
         mat_view(const mat_view& m)    : mat_map(m) {}
 };
 
@@ -64,7 +73,7 @@ class const_mat_view : public const_mat_map
         const_mat_view(const mat& m)                 : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
         const_mat_view(const rvec& v)                : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
         const_mat_view(const cvec& v)                : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
-        const_mat_view(const mat& m, int r, int c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+        const_mat_view(const mat& m, size_t r, size_t c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
         
         // for things like m.block
         const_mat_view(const mat_block& b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
@@ -163,13 +172,13 @@ class dyn_mat : public serializable
             return const_mat_view(buf, r, c);
         }
         
-        inline int rows() const
+        inline size_t rows() const
         {
             assert(!released);
             return r;
         }
         
-        inline int cols() const
+        inline size_t cols() const
         {
             assert(!released);
             return c;
@@ -189,7 +198,7 @@ class dyn_mat : public serializable
         
     public:
         mat buf;
-        int r, c;
+        size_t r, c;
         bool released;
 };
 

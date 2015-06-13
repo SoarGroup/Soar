@@ -358,7 +358,7 @@ typedef struct smem_data_struct
 
 //
 
-enum smem_cue_element_type { attr_t, value_const_t, value_lti_t };
+enum smem_cue_element_type { attr_t, value_const_t, value_lti_t, smem_cue_element_type_none };
 
 typedef struct smem_weighted_cue_element_struct
 {
@@ -419,13 +419,13 @@ struct smem_chunk_struct
 
 struct smem_chunk_value_constant
 {
-    smem_cue_element_type val_type;
+	smem_cue_element_type val_type;
     Symbol* val_value;
 };
 
 struct smem_chunk_value_lti
 {
-    smem_cue_element_type val_type;
+	smem_cue_element_type val_type;
     smem_chunk* val_value;
 };
 
@@ -467,7 +467,7 @@ extern bool smem_parse_remove(agent* thisAgent, const char* chunks, std::string*
 extern void smem_visualize_store(agent* thisAgent, std::string* return_val);
 extern void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val);
 extern void smem_print_store(agent* thisAgent, std::string* return_val);
-extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history = false);
+extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;

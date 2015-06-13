@@ -448,7 +448,7 @@ namespace sml
             static std::string  Wme2String(wme* pWME, bool refCounts);
             static void         PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts = false);
             static void         PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
-            void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count);
+            void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count);
             
         protected:
             KernelSML(int portToListenOn);

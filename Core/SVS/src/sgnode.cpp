@@ -405,7 +405,7 @@ void group_node::set_transform_dirty_sub()
 
 void group_node::proxy_get_children(map<string, cliproxy*>& c)
 {
-    for (int i = 0, iend = children.size(); i < iend; ++i)
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
     {
         c[children[i]->get_id()] = children[i];
     }
@@ -497,7 +497,7 @@ void convex_node::get_shape_sgel(string& s) const
 */
 void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
 {
-    double dp, best;
+    double dp, best = 0.0;
     int best_i = -1;
     
     for (int i = 0; i < verts.size(); ++i)
@@ -517,7 +517,7 @@ void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
     sgnode::proxy_use_sub(args, os);
     
     table_printer t;
-    for (int i = 0, iend = verts.size(); i < iend; ++i)
+    for (size_t i = 0, iend = verts.size(); i < iend; ++i)
     {
         t.add_row() << verts[i](0) << verts[i](1) << verts[i](2);
     }

@@ -77,8 +77,8 @@ static EIGEN_DONT_INLINE void product_selfadjoint_vector(
   for (Index j=FirstTriangular ? bound : 0;
        j<(FirstTriangular ? size : bound);j+=2)
   {
-    register const Scalar* EIGEN_RESTRICT A0 = lhs + j*lhsStride;
-    register const Scalar* EIGEN_RESTRICT A1 = lhs + (j+1)*lhsStride;
+    const Scalar* EIGEN_RESTRICT A0 = lhs + j*lhsStride;
+    const Scalar* EIGEN_RESTRICT A1 = lhs + (j+1)*lhsStride;
 
     Scalar t0 = cjAlpha * rhs[j];
     Packet ptmp0 = pset1<Packet>(t0);
@@ -145,7 +145,7 @@ static EIGEN_DONT_INLINE void product_selfadjoint_vector(
   }
   for (Index j=FirstTriangular ? 0 : bound;j<(FirstTriangular ? bound : size);j++)
   {
-    register const Scalar* EIGEN_RESTRICT A0 = lhs + j*lhsStride;
+    const Scalar* EIGEN_RESTRICT A0 = lhs + j*lhsStride;
 
     Scalar t1 = cjAlpha * rhs[j];
     Scalar t2 = 0;

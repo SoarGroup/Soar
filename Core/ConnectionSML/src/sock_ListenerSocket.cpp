@@ -101,9 +101,16 @@ bool ListenerSocket::CreateListener(int port, bool local)
         
         // BADBAD: should check to see if it's in use?
         unlink(local_address.sun_path); // in case it already exists
-        
+		
+#ifdef __clang__
+#pragma clang diagnostics push
+#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#endif
         int len = SUN_LEN(&local_address);
-        
+#ifdef __clang__
+#pragma clang diagnostics pop
+#endif
+		
         // create directory where socket file will live (if the directory already exists, this will fail, but we don't care)
         res = mkdir(sock::GetLocalSocketDir().c_str(), 0700);
         

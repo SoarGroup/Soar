@@ -1064,8 +1064,6 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
     {
         if (cand->inst && cand->inst->prod)
         {
-            const production* const& prod = cand->inst->prod;
-            
 //       std::cerr << "rl-trace: " << cand->inst->prod->name->sc->name << std::endl;
 
 //       for(preference *pref = cand->inst->match_goal->id->operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
@@ -1185,11 +1183,10 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
     preference* p, *p2, *cand, *prev_cand;
-    bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst;
+    bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst = false;
     preference* candidates;
     Symbol* value;
-    cons* CDPS, *prev_cons;
-    
+	
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore the CDPS when:
      * - Run_preference_semantics is called for a consistency check (don't want side effects)

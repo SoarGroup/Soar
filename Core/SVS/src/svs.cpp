@@ -365,7 +365,7 @@ svs::svs(agent* a)
 
 svs::~svs()
 {
-    for (int i = 0, iend = state_stack.size(); i < iend; ++i)
+    for (size_t i = 0, iend = state_stack.size(); i < iend; ++i)
     {
         delete state_stack[i];
     }
@@ -434,7 +434,6 @@ void svs::output_callback()
     }
     vector<svs_state*>::iterator i;
     string sgel;
-    svs_state* topstate = state_stack.front();
     
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
@@ -495,7 +494,7 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["filters"]           = &get_filter_table();
     c["commands"]          = &get_command_table();
     
-    for (int j = 0, jend = state_stack.size(); j < jend; ++j)
+    for (size_t j = 0, jend = state_stack.size(); j < jend; ++j)
     {
         c[state_stack[j]->get_name()] = state_stack[j];
     }
@@ -512,7 +511,7 @@ bool svs::do_cli_command(const vector<string>& args, string& output)
         return false;
     }
     
-    for (int i = 2, iend = args.size(); i < iend; ++i)
+    for (size_t i = 2, iend = args.size(); i < iend; ++i)
     {
         rest.push_back(args[i]);
     }
@@ -532,7 +531,7 @@ void svs::cli_connect_viewer(const vector<string>& args, ostream& os)
     if (draw->connect(args[0]))
     {
         os << "connection successful" << endl;
-        for (int i = 0, iend = state_stack.size(); i < iend; ++i)
+        for (size_t i = 0, iend = state_stack.size(); i < iend; ++i)
         {
             state_stack[i]->get_scene()->refresh_draw();
         }

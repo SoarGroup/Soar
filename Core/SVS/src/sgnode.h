@@ -148,7 +148,7 @@ class group_node : public sgnode
         void detach_child(sgnode* c);
         void walk(std::vector<sgnode*>& result);
         
-        int num_children() const
+        size_t num_children() const
         {
             return children.size();
         }

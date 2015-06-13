@@ -233,17 +233,17 @@ class change_tracking_list
         // current:
         //   all items in the list (including added + changed)
         //   but not those that have been removed
-        int num_current() const
+        size_t num_current() const
         {
             return current.size();
         }
         
-        T* get_current(int i)
+        T* get_current(size_t i)
         {
             return current[i];
         }
         
-        const T* get_current(int i) const
+        const T* get_current(size_t i) const
         {
             return current[i];
         }
@@ -252,41 +252,41 @@ class change_tracking_list
         //   All items added since clear_changes was last called
         //   Added items can be accessed by get_current
         //   from index i where first_added() <= i < to num_current()
-        int first_added() const
+        size_t first_added() const
         {
             return m_added_begin;
         }
         
         // changed:
         //   All items changed since clear_changes was last called
-        int num_changed() const
+        size_t num_changed() const
         {
             return changed.size();
         }
         
-        T* get_changed(int i)
+        T* get_changed(size_t i)
         {
             return changed[i];
         }
         
-        const T* get_changed(int i) const
+        const T* get_changed(size_t i) const
         {
             return changed[i];
         }
         
         // removed:
         //   All items removed since clear_changes was last called
-        int num_removed() const
+        size_t num_removed() const
         {
             return removed.size();
         }
         
-        T* get_removed(int i)
+        T* get_removed(size_t i)
         {
             return removed[i];
         }
         
-        const T* get_removed(int i) const
+        const T* get_removed(size_t i) const
         {
             return removed[i];
         }
@@ -296,7 +296,7 @@ class change_tracking_list
         // Deletes all items in the removed list and clears it
         virtual void clear_removed()
         {
-            for (int i = 0; i < removed.size(); ++i)
+            for (size_t i = 0; i < removed.size(); ++i)
             {
                 delete removed[i];
             }
@@ -310,7 +310,7 @@ class change_tracking_list
         // (all items in changed are also in current)
         
         // Index of the first new element in the current list
-        int m_added_begin;
+        size_t m_added_begin;
         
         std::vector<ctlist_listener<T>*> listeners;
 };

@@ -10,7 +10,7 @@
 #include <crtdbg.h> // Check for memory leaks
 #endif
 
-#include <windows.h>
+#include <Windows.h>
 #include <process.h>
 #include <winsock2.h>
 #include <direct.h>
@@ -19,6 +19,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdio.h>
+#include <direct.h>
 
 // ISO C9x  compliant stdint.h for Microsoft Visual Studio
 #include <stdint.h> // this is in shared/msvc for older Visual Studios systems

@@ -68,7 +68,7 @@ class soar_interface
         
         tc_number    new_tc_num();
         
-        int          get_timetag(wme* w);
+        uint64_t          get_timetag(wme* w);
         common_syms& get_common_syms()
         {
             return cs;
@@ -130,7 +130,7 @@ inline Symbol* soar_interface::get_wme_val(wme* w)
     return w->value;
 }
 
-inline int soar_interface::get_timetag(wme* w)
+inline uint64_t soar_interface::get_timetag(wme* w)
 {
     return w->timetag;
 }

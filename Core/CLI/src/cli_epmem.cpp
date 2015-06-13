@@ -78,8 +78,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     else if (pOp == 'c')
     {
         const char* msg = "Episodic memory database closed.";
-        const char* tag_type = sml_Names::kTypeString;
-        
+		
         epmem_close(thisAgent);
         PrintCLIMessage(msg);
         return true;

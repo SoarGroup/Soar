@@ -68,7 +68,7 @@ void dyn_mat::insert_row(int i)
     {
         buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
     }
-    for (int j = r; j > i; --j)
+    for (int j = static_cast<int>(r); j > i; --j)
     {
         buf.block(j, 0, 1, c) = buf.block(j - 1, 0, 1, c);
     }
@@ -116,7 +116,7 @@ void dyn_mat::insert_col(int i)
     {
         buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
     }
-    for (int j = c; j > i; --j)
+    for (int j = static_cast<int>(c); j > i; --j)
     {
         buf.block(0, j, r, 1) = buf.block(0, j - 1, r, 1);
     }
@@ -156,7 +156,7 @@ void dyn_mat::unserialize(istream& is)
 
 ostream& output_rvec(ostream& os, const rvec& v, const string& sep)
 {
-    int n = v.size();
+    size_t n = v.size();
     if (n == 0)
     {
         return os;
@@ -172,7 +172,7 @@ ostream& output_rvec(ostream& os, const rvec& v, const string& sep)
 
 ostream& output_cvec(ostream& os, const cvec& v, const string& sep)
 {
-    int n = v.size();
+    size_t n = v.size();
     if (n == 0)
     {
         return os;
@@ -188,7 +188,7 @@ ostream& output_cvec(ostream& os, const cvec& v, const string& sep)
 
 ostream& output_mat(ostream& os, const_mat_view m)
 {
-    int r = m.rows(), c = m.cols();
+    size_t r = m.rows(), c = m.cols();
     if (r == 0 || c == 0)
     {
         return os;
@@ -361,8 +361,8 @@ vec3 project(const vec3& v, const vec3& u)
 double dir_separation(const ptlist& a, const ptlist& b, const vec3& u)
 {
     vec3 p;
-    double x, minx, maxx;
-    for (int i = 0, iend = a.size(); i < iend; ++i)
+    double x, minx = 0.0, maxx = 0.0;
+    for (size_t i = 0, iend = a.size(); i < iend; ++i)
     {
         p = project(a[i], u);
         x = p(0) / u(0);
@@ -371,7 +371,7 @@ double dir_separation(const ptlist& a, const ptlist& b, const vec3& u)
             minx = x;
         }
     }
-    for (int i = 0, iend = b.size(); i < iend; ++i)
+    for (size_t i = 0, iend = b.size(); i < iend; ++i)
     {
         p = project(b[i], u);
         x = p(0) / u(0);

@@ -15,6 +15,11 @@
  *  See the License for more information.
  */
 
+#ifdef __clang__
+#pragma clang diagnostics push
+#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#endif
+
 #include <stdio.h>
 #include <float.h>
 #include <ccd/ccd.h>
@@ -1109,3 +1114,7 @@ static int nextSupport(const void *obj1, const void *obj2, const ccd_t *ccd,
 
     return 0;
 }
+
+#ifdef __clang__
+#pragma clang diagnostics pop
+#endif

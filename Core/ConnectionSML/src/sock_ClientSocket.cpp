@@ -93,7 +93,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
     
     SOCKET sock = 0;
     
-    int res = 1; // if any of this fails, fall back on creating an internet socket
+    size_t res = 1; // if any of this fails, fall back on creating an internet socket
     
 #ifdef ENABLE_LOCAL_SOCKETS
     
@@ -108,9 +108,16 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
         // set the name of the datasender
         this->name = "file ";
         this->name.append(local_address.sun_path);
-        
+		
+#ifdef __clang__
+#pragma clang diagnostics push
+#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#endif
         int len = SUN_LEN(&local_address);
-        
+#ifdef __clang__
+#pragma clang diagnostics pop
+#endif
+		
         // Create the socket
         sock = socket(AF_UNIX, SOCK_STREAM, 0) ;
         

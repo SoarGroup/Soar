@@ -105,7 +105,7 @@ scene* scene::clone(const string& cname) const
     // Replace with copy of root
     c->root = root->clone()->as_group(); // root->clone copies entire scene graph
     c->root->walk(c->nodes);
-    for (int i = 0, iend = c->nodes.size(); i < iend; ++i)
+    for (size_t i = 0, iend = c->nodes.size(); i < iend; ++i)
     {
         c->nodes[i]->listen(c);
     }
@@ -151,7 +151,7 @@ group_node* scene::get_group(const string& id)
 void scene::get_all_nodes(vector<sgnode*>& n)
 {
     n.resize(nodes.size());
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    for (size_t i = 0, iend = nodes.size(); i < iend; ++i)
     {
         n[i] = nodes[i];
     }
@@ -160,7 +160,7 @@ void scene::get_all_nodes(vector<sgnode*>& n)
 void scene::get_all_nodes(vector<const sgnode*>& n) const
 {
     n.resize(nodes.size());
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    for (size_t i = 0, iend = nodes.size(); i < iend; ++i)
     {
         n[i] = nodes[i];
     }
@@ -192,7 +192,7 @@ bool scene::del_node(const string& id)
 
 void scene::clear()
 {
-    for (int i = root->num_children() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(root->num_children()) - 1; i >= 0; --i)
     {
         delete root->get_child(i);
     }
@@ -257,12 +257,12 @@ int scene::parse_add(vector<string>& f, string& error)
     string id, mods;
     vector<ptlist> vals;
     ptlist vertices;
-    double radius;
+    double radius = 0.0;
     bool is_convex, is_ball;
     
     if (f.size() < 1)
     {
-        return f.size();
+        return static_cast<int>(f.size());
     }
     id = f[0];
     if (get_node(id))
@@ -289,7 +289,7 @@ int scene::parse_add(vector<string>& f, string& error)
     */
     is_convex = false;
     is_ball = false;
-    for (int i = 0, iend = mods.size(); i < iend; ++i)
+    for (size_t i = 0, iend = mods.size(); i < iend; ++i)
     {
         switch (mods[i])
         {
@@ -324,7 +324,7 @@ int scene::parse_add(vector<string>& f, string& error)
     /*
      Go through again to apply transforms
     */
-    for (int i = 0, iend = mods.size(); i < iend; ++i)
+    for (size_t i = 0, iend = mods.size(); i < iend; ++i)
     {
         switch (mods[i])
         {
@@ -345,7 +345,7 @@ int scene::parse_del(vector<string>& f, string& error)
     if (f.size() < 1)
     {
         error = "expecting node id";
-        return f.size();
+        return static_cast<int>(f.size());
     }
     if (!del_node(f[0]))
     {
@@ -367,7 +367,7 @@ int scene::parse_change(vector<string>& f, string& error)
     if (f.size() < 1)
     {
         error = "expecting node id";
-        return f.size();
+        return static_cast<int>(f.size());
     }
     if (!(n = get_node(f[0])))
     {
@@ -381,7 +381,7 @@ int scene::parse_change(vector<string>& f, string& error)
         return p;
     }
     
-    for (int i = 0, iend = mods.size(); i < iend; ++i)
+    for (size_t i = 0, iend = mods.size(); i < iend; ++i)
     {
         switch (mods[i])
         {
@@ -563,7 +563,7 @@ void scene::node_update(sgnode* n, sgnode::change_type t, const std::string& upd
         return;
     }
     
-    int i, iend;
+    size_t i, iend;
     for (i = 0, iend = nodes.size(); i < iend && nodes[i] != n; ++i)
         ;
     assert(i != nodes.size());
@@ -628,7 +628,7 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
     const char* axes = "xyz";
     
     // For each node, add each property to the output
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    for (size_t i = 0, iend = nodes.size(); i < iend; ++i)
     {
         string id = nodes[i]->get_id();
         
@@ -656,7 +656,7 @@ void scene::cli_props(const vector<string>& args, ostream& os) const
 void scene::cli_sgel(const vector<string>& args, ostream& os)
 {
     stringstream ss;
-    for (int i = 0, iend = args.size(); i < iend; ++i)
+    for (size_t i = 0, iend = args.size(); i < iend; ++i)
     {
         ss << args[i] << " ";
     }
@@ -694,7 +694,7 @@ void scene::refresh_draw()
     
     drawer* d = owner->get_drawer();
     d->delete_scene(name);
-    for (int i = 1, iend = nodes.size(); i < iend; ++i)
+    for (size_t i = 1, iend = nodes.size(); i < iend; ++i)
     {
         d->add(name, nodes[i]);
     }
@@ -702,7 +702,7 @@ void scene::refresh_draw()
 
 void scene::verify_listeners() const
 {
-    for (int i = 0, iend = nodes.size(); i < iend; ++i)
+    for (size_t i = 0, iend = nodes.size(); i < iend; ++i)
     {
         std::list<sgnode_listener*> l;
         nodes[i]->get_listeners(l);

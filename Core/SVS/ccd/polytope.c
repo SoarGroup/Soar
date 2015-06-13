@@ -15,6 +15,11 @@
  *  See the License for more information.
  */
 
+#ifdef __clang__
+#pragma clang diagnostics push
+#pragma clang diagnostics ignored "-Wshorten-64-to-32"
+#endif
+
 #include <stdio.h>
 #include <float.h>
 #include <ccd/polytope.h>
@@ -296,3 +301,7 @@ void ccdPtDumpSVT2(ccd_pt_t *pt, FILE *fout)
         fprintf(fout, "%d %d %d\n", a->id, b->id, c->id);
     }
 }
+
+#ifdef __clang__
+#pragma clang diagnostics pop
+#endif

@@ -14,7 +14,7 @@ const double INF = std::numeric_limits<double>::infinity();
 
 void split(const string& s, const string& delim, vector<string>& fields)
 {
-    int start = 0, end = 0, sz = s.size();
+    size_t start = 0, end = 0, sz = s.size();
     while (end < sz)
     {
         if (delim.empty())
@@ -63,7 +63,7 @@ istream& get_nonblank_line(istream& is, string& line)
 {
     while (getline(is, line))
     {
-        for (int i = 0, iend = line.size(); i < iend; ++i)
+        for (size_t i = 0, iend = line.size(); i < iend; ++i)
         {
             if (!isspace(line[i]))
             {
@@ -79,7 +79,9 @@ istream& get_nonblank_line(istream& is, string& line)
 */
 void sample(int k, int low, int high, std::vector<int>& output)
 {
-    int range = high - low, start = output.size();
+	int range = high - low;
+	size_t start = output.size();
+	
     assert(k <= range);
     output.resize(start + k);
     for (int i = 0; i < range; ++i)
@@ -159,7 +161,7 @@ bool parse_int(const string& s, int& v)
     }
     
     char* end;
-    v = strtol(s.c_str(), &end, 10);
+    v = static_cast<int>(strtol(s.c_str(), &end, 10));
     if (*end != '\0')
     {
         return false;
@@ -239,7 +241,7 @@ void table_printer::print(ostream& os) const
         {
             if (row[j].size() > widths[j])
             {
-                widths[j] = row[j].size();
+                widths[j] = static_cast<int>(row[j].size());
             }
         }
     }
@@ -258,7 +260,7 @@ void table_printer::print(ostream& os) const
                     os << left << setw(widths[j]) << row[j];
                     break;
                 case 0:
-                    pad = (widths[j] - row[j].size()) / 2;
+                    pad = (widths[j] - static_cast<int>(row[j].size())) / 2;
                     os << setw(pad) << " ";
                     os << left << setw(widths[j] - pad) << row[j];
                     break;

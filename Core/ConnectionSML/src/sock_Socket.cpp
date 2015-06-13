@@ -110,7 +110,7 @@ uint32_t sock::GetLocalIP()
         lpstHostent = gethostbyname(szLclHost);
         if (lpstHostent)
         {
-            stLclAddr.sin_addr.s_addr = *((u_long*)(lpstHostent->h_addr));
+            stLclAddr.sin_addr.s_addr = *((u_int*)(lpstHostent->h_addr));
         }
     }
     
@@ -210,7 +210,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
     }
     
     uint32_t bytesSent = 0 ;
-    int    thisSend = 0 ;
+    size_t   thisSend = 0 ;
     
     // May need repeated calls to send all of the data.
     while (bytesSent < bufferSize)
@@ -362,7 +362,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
     }
     
     uint32_t bytesRead = 0 ;
-    int    thisRead  = 0 ;
+    size_t   thisRead  = 0 ;
     
     // Check our incoming data is valid
     if (!pRecvBuffer || !hSock)

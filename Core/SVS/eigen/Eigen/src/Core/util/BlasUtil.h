@@ -175,7 +175,7 @@ template<typename XprType> struct blas_traits
     ExtractType,
     typename _ExtractType::PlainObject
     >::type DirectLinearAccessType;
-  static inline const ExtractType extract(const XprType& x) { return x; }
+  static inline ExtractType extract(const XprType& x) { return x; }
   static inline const Scalar extractScalarFactor(const XprType&) { return Scalar(1); }
 };
 

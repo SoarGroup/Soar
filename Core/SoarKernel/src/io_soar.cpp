@@ -940,7 +940,7 @@ bool tio_whitespace[256];
 
 Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_string)
 {
-    int int_val;
+    long int_val;
     double float_val;
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool rereadable;

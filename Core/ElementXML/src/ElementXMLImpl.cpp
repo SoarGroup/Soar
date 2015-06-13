@@ -213,24 +213,24 @@ static const int kLenEncodeHex     = static_cast<int>(strlen(kEncodeHex)) ;
 static const int kLenCommentStartString = static_cast<int>(strlen(kCommentStartString)) ;
 static const int kLenCommentEndString = static_cast<int>(strlen(kCommentEndString)) ;
 
-inline static char const* ConvertSpecial(char base)
-{
-    switch (base)
-    {
-        case '<'  :
-            return kLT ;
-        case '>'  :
-            return kGT;
-        case '&'  :
-            return kAMP ;
-        case '\"' :
-            return kQUOT ;
-        case '\'' :
-            return kAPOS ;
-        default:
-            return NULL ;
-    }
-}
+//inline static char const* ConvertSpecial(char base)
+//{
+//    switch (base)
+//    {
+//        case '<'  :
+//            return kLT ;
+//        case '>'  :
+//            return kGT;
+//        case '&'  :
+//            return kAMP ;
+//        case '\"' :
+//            return kQUOT ;
+//        case '\'' :
+//            return kAPOS ;
+//        default:
+//            return NULL ;
+//    }
+//}
 
 inline static int CharLength(char base)
 {

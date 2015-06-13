@@ -86,7 +86,7 @@ class all_nodes_filter : public filter, public sgnode_listener
             scn->get_all_nodes(nodes);
             nodes[0]->listen(this);
             
-            for (int i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
+            for (size_t i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
             {
                 add_node(nodes[i]);
             }

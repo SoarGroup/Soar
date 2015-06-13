@@ -421,7 +421,7 @@ namespace soar
                     {
                         const char* echo_args[] = {"echo", " "};
                         std::vector<std::string> echo_command(echo_args, echo_args + sizeof(echo_args) / sizeof(echo_args[0]));
-                        bool echoresult = callback->handle_command(echo_command);
+                        callback->handle_command(echo_command);
                     }
                     if (!callback->handle_command(argv))
                     {
