@@ -707,7 +707,7 @@ void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_cond
             continue;
         }
 
-        id = equality_test_found_in_test(cond->data.tests.id_test)->data.referent;
+        id = cond->data.tests.id_test->eq_test->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) && (id->tc_num != tc))
         {
             t = make_test(thisAgent, NIL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));

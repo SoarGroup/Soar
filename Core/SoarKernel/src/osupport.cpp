@@ -205,10 +205,8 @@ bool id_or_value_of_condition_list_is_in_os_tc(agent* thisAgent, condition* cond
         {
             case POSITIVE_CONDITION:
             case NEGATIVE_CONDITION:
-                if (test_includes_equality_test_for_symbol(conds->data.tests.id_test,
-                        match_state_to_exclude_test_of_the_operator_off_of) &&
-                        test_includes_equality_test_for_symbol(conds->data.tests.attr_test,
-                                thisAgent->operator_symbol))
+                if ((conds->data.tests.id_test->eq_test->data.referent ==  match_state_to_exclude_test_of_the_operator_off_of) &&
+                    (conds->data.tests.attr_test->eq_test->data.referent == thisAgent->operator_symbol))
                 {
                     break;
                 }
@@ -955,8 +953,7 @@ bool condition_list_has_id_test_for_sym(condition* conds, Symbol* sym)
         {
             case POSITIVE_CONDITION:
             case NEGATIVE_CONDITION:
-                if (test_includes_equality_test_for_symbol(conds->data.tests.id_test,
-                        sym))
+                if (conds->data.tests.id_test->eq_test->data.referent == sym)
                 {
                     return true;
                 }
@@ -990,8 +987,7 @@ bool match_state_tests_non_operator_slot(agent* thisAgent, condition* conds,
         {
             case POSITIVE_CONDITION:
             case NEGATIVE_CONDITION:
-                if (test_includes_equality_test_for_symbol(conds->data.tests.id_test,
-                        match_state))
+                if (conds->data.tests.id_test->eq_test->data.referent == match_state)
                 {
                     ynm = test_is_for_symbol(conds->data.tests.attr_test, thisAgent->operator_symbol);
                     if (ynm == NO)

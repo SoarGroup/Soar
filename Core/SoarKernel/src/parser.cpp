@@ -800,7 +800,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
                 deallocate_condition_list(thisAgent, first_c);
                 return NIL;
             }
-            if (! test_includes_equality_test_for_symbol(value_test, NIL))
+            if (!value_test->eq_test)
             {
                 add_test(thisAgent, &value_test, make_placeholder_test(thisAgent, first_letter));
             }
@@ -879,7 +879,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     {
         return NIL;
     }
-    if (! test_includes_equality_test_for_symbol(attr_test, NIL))
+    if (!attr_test->eq_test)
     {
         add_test(thisAgent, &attr_test, make_placeholder_test(thisAgent, 'a'));
     }
@@ -924,7 +924,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
             return NIL;
         }
         /* AGR 544 begin */
-        if (! test_includes_equality_test_for_symbol(attr_test, NIL))
+        if (!attr_test->eq_test)
         {
             add_test(thisAgent, &attr_test, make_placeholder_test(thisAgent, 'a'));
         }
@@ -1025,7 +1025,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
             deallocate_test(thisAgent, id_goal_impasse_test);
             return NIL;
         }
-        if (! test_includes_equality_test_for_symbol(id_test, NIL))
+        if (!id_test->eq_test)
         {
             add_test
             (thisAgent, &id_test, make_placeholder_test(thisAgent, first_letter_if_no_id_given));

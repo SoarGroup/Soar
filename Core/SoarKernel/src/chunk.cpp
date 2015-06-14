@@ -561,7 +561,7 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             continue;
         }
-        id = equality_test_found_in_test(cc->data.tests.id_test)->data.referent;
+        id = cc->data.tests.id_test->eq_test->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) &&
                 (id->tc_num != tc))
         {

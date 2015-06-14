@@ -638,40 +638,6 @@ uint32_t hash_test(agent* thisAgent, test t)
 }
 
 /* ----------------------------------------------------------------
-   Returns true iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns true iff the test contains any
-   equality test.
----------------------------------------------------------------- */
-
-bool test_includes_equality_test_for_symbol(test t, Symbol* sym)
-{
-    cons* c;
-
-    if (!t)
-    {
-        return false;
-    }
-
-    if (t->type == EQUALITY_TEST)
-    {
-        if (sym)
-        {
-            return (t->data.referent == sym);
-        }
-        return true;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_includes_equality_test_for_symbol(static_cast<test>(c->first), sym))
-            {
-                return true;
-            }
-    }
-    return false;
-}
-
-/* ----------------------------------------------------------------
    Looks for goal or impasse tests (as directed by the two flag
    parameters) in the given test, and returns true if one is found.
 ---------------------------------------------------------------- */
@@ -748,6 +714,7 @@ test equality_test_found_in_test(test t)
     cons* c;
 
     assert(t);
+    return (t->eq_test);
     if (t->type == EQUALITY_TEST)
     {
         return t;
@@ -756,27 +723,6 @@ test equality_test_found_in_test(test t)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             if (static_cast<test>(c->first)->type == EQUALITY_TEST)
-            {
-                return (static_cast<test>(c->first));
-            }
-    }
-
-    return NULL;
-}
-
-test equality_var_test_found_in_test(test t)
-{
-    cons* c;
-
-    assert(t);
-    if ((t->type == EQUALITY_TEST) && (t->data.referent->is_variable()))
-    {
-        return t;
-    }
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if ((static_cast<test>(c->first)->type == EQUALITY_TEST) && (static_cast<test>(c->first)->data.referent->is_variable()))
             {
                 return (static_cast<test>(c->first));
             }
@@ -968,21 +914,21 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                    there to test against --- */
                 if (rt->data.variable_referent.field_num == 0)
                 {
-                    if (!test_includes_equality_test_for_symbol(cond->data.tests.id_test, NIL))
+                    if (!cond->data.tests.id_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                     }
                 }
                 else if (rt->data.variable_referent.field_num == 1)
                 {
-                    if (!test_includes_equality_test_for_symbol(cond->data.tests.attr_test, NIL))
+                    if (!cond->data.tests.attr_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                     }
                 }
                 else
                 {
-                    if (!test_includes_equality_test_for_symbol(cond->data.tests.value_test, NIL))
+                    if (!cond->data.tests.value_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
                     }

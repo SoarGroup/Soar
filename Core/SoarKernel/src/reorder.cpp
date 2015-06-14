@@ -486,7 +486,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             /* ... otherwise fall through to the next case below ... */
             case DISJUNCTION_TEST:
                 dprint_noprefix(DT_REORDERER, "test is goal/impasse/disj...\n");
-                if (test_includes_equality_test_for_symbol(*t, st->var))
+                if ((*t)->eq_test->data.referent == st->var)
                 {
                     dprint(DT_REORDERER, "Found match with  using index var %y: %t\n", st->var, st->the_test);
                     dprint(DT_REORDERER, "Removing entry with index %y and adding test.\n", st->var);
@@ -497,7 +497,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             default:  /* --- st->test is a relational test --- */
                 dprint_noprefix(DT_REORDERER, "test is relational...\n");
                 referent = st->the_test->data.referent;
-                if (test_includes_equality_test_for_symbol(*t, st->var))
+                if ((*t)->eq_test->data.referent == st->var)
                 {
                     dprint(DT_REORDERER, "Found match using index var %y: %t\n", st->var, st->the_test);
                     if (referent->is_constant_or_marked_variable(bound_vars_tc_number) ||
@@ -508,7 +508,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         added_it = true;
                     }
                 }
-                else if (test_includes_equality_test_for_symbol(*t, referent))
+                else if ((*t)->eq_test->data.referent == referent)
                 {
                     dprint(DT_REORDERER, "Found match using referent %y: %t\n", referent, st->the_test);
                     if (st->var->is_constant_or_marked_variable(bound_vars_tc_number) || (st->var == referent))
@@ -831,8 +831,7 @@ list* collect_root_variables(agent* thisAgent,
                 {
                     continue;
                 }
-                if (test_includes_equality_test_for_symbol(cond->data.tests.id_test,
-                        static_cast<symbol_struct*>(c->first)))
+                if (cond->data.tests.id_test->eq_test->data.referent == static_cast<symbol_struct*>(c->first))
                     if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,
                             true, true))
                     {

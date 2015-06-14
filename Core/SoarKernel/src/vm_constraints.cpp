@@ -143,12 +143,12 @@ void Variablization_Manager::find_attachment_points(condition* pCond)
         if (pCond->type == POSITIVE_CONDITION)
         {
             dprint(DT_CONSTRAINTS, "Adding attachment points for positive condition %l\n", pCond);
-            test lTest = equality_test_found_in_test(pCond->data.tests.value_test);
+            test lTest = pCond->data.tests.value_test->eq_test;
             if (lTest && lTest->identity)
             {
                 set_attachment_point(lTest->identity, pCond, VALUE_ELEMENT);
             }
-            lTest = equality_test_found_in_test(pCond->data.tests.attr_test);
+            lTest = pCond->data.tests.attr_test->eq_test;
             if (lTest && lTest->identity)
             {
                 set_attachment_point(lTest->identity, pCond, ATTR_ELEMENT);

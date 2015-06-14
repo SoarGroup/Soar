@@ -192,7 +192,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
         return false;
-        new_cond_id = equality_test_found_in_test(new_cond->data.tests.id_test);
+        new_cond_id = new_cond->data.tests.id_test->eq_test;
     } else {
         new_cond_id = new_cond->data.tests.id_test;
         assert(new_cond_id->type == EQUALITY_TEST);
@@ -201,7 +201,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
         return false;
-        new_cond_attr = equality_test_found_in_test(new_cond->data.tests.attr_test);
+        new_cond_attr = new_cond->data.tests.attr_test->eq_test;
     } else {
         new_cond_attr = new_cond->data.tests.attr_test;
         assert(new_cond_attr->type == EQUALITY_TEST);
@@ -210,7 +210,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
         return false;
-        new_cond_value = equality_test_found_in_test(new_cond->data.tests.value_test);
+        new_cond_value = new_cond->data.tests.value_test->eq_test;
     } else {
         new_cond_value = new_cond->data.tests.value_test;
         assert(new_cond_value->type == EQUALITY_TEST);
@@ -223,9 +223,9 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     }
 
     bool mismatched_literal = false;
-    ground_cond_id = equality_test_found_in_test(ground_cond->data.tests.id_test);
-    ground_cond_attr = equality_test_found_in_test(ground_cond->data.tests.attr_test);
-    ground_cond_value = equality_test_found_in_test(ground_cond->data.tests.value_test);
+    ground_cond_id = ground_cond->data.tests.id_test->eq_test;
+    ground_cond_attr = ground_cond->data.tests.attr_test->eq_test;
+    ground_cond_value = ground_cond->data.tests.value_test->eq_test;
 
     if (!new_cond_id->identity || !ground_cond_id->identity)
     {
@@ -277,9 +277,9 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
                                                          const soar_module::rhs_triple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
-    lId = equality_test_found_in_test(parent_cond->data.tests.id_test);
-    lAttr = equality_test_found_in_test(parent_cond->data.tests.attr_test);
-    lValue = equality_test_found_in_test(parent_cond->data.tests.value_test);
+    lId = parent_cond->data.tests.id_test->eq_test;
+    lAttr = parent_cond->data.tests.attr_test->eq_test;
+    lValue = parent_cond->data.tests.value_test->eq_test;
 
     if (!lId->data.referent->is_sti() && o_ids_to_replace.id)
     {

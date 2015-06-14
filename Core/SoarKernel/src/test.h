@@ -88,15 +88,10 @@ inline bool test_has_referent(test t)
 char first_letter_from_test(test t);
 bool tests_are_equal(test t1, test t2, bool neg);
 bool tests_identical(test t1, test t2, bool considerIdentity = false);
-bool test_includes_equality_test_for_symbol(test t, Symbol* sym);
 bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
 bool test_is_variable(agent* thisAgent, test t);
 test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
-void cache_eq_test(test t);
 test equality_test_found_in_test(test t);
-test equality_var_test_found_in_test(test t);
-test find_equality_test_preferring_vars(test t);
-test find_original_equality_test_preferring_vars(test t);
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
