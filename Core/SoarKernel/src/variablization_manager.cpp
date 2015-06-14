@@ -56,6 +56,45 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
+Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_id)
+{
+    if (index_id == 0)
+    {
+        return NULL;
+    }
+
+    std::map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    if (iter != (*o_id_to_var_map).end())
+    {
+        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y/%y\n", index_id,
+               iter->second->variablized_symbol, iter->second->instantiated_symbol);
+        return iter->second;
+    }
+    else
+    {
+        dprint(DT_VM_MAPS, "...did not find o%u in non-STI variablization table.\n", index_id);
+        dprint_variablization_tables(DT_LHS_VARIABLIZATION, 2);
+        return NULL;
+    }
+}
+
+Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
+{
+    std::map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
+    if (iter != (*sym_to_var_map).end())
+    {
+        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y/%y\n", index_sym,
+               iter->second->variablized_symbol, iter->second->instantiated_symbol);
+        return iter->second;
+    }
+    else
+    {
+        dprint(DT_VM_MAPS, "...did not find %y in STI variablization table.\n", index_sym);
+        dprint_variablization_tables(DT_VM_MAPS, 1);
+        return NULL;
+    }
+}
+
 void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
         Symbol* variable,
         uint64_t pIdentity)
@@ -115,13 +154,13 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
 
     dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
 
-    if (!((*sym)->is_sti()))
+    if ((*sym)->is_sti())
     {
-        var_info = get_variablization(pIdentity);
+        var_info = get_variablization_for_sti(*sym);
     }
     else
     {
-        var_info = get_variablization(*sym);
+        var_info = get_variablization_for_identity(pIdentity);
     }
     if (var_info)
     {
@@ -185,14 +224,14 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     if (rs->referent->is_sti())
     {
         dprint(DT_RHS_VARIABLIZATION, "...searching for sti %y in variablization sym table...\n", rs->referent);
-        found_variablization = get_variablization(rs->referent);
+        found_variablization = get_variablization_for_sti(rs->referent);
     }
     else
     {
         if (rs->o_id)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", get_ovar_for_o_id(rs->o_id));
-                found_variablization = get_variablization(rs->o_id);
+                found_variablization = get_variablization_for_identity(rs->o_id);
         }
         else
         {
@@ -308,7 +347,14 @@ void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLeve
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return;
     }
-    found_variablization = get_variablization(t);
+    if (t->data.referent->is_sti())
+    {
+        found_variablization =  get_variablization_for_sti(t->data.referent);
+    }
+    else
+    {
+        found_variablization =  get_variablization_for_identity(t->identity);
+    }
     if (found_variablization)
     {
         // It has been variablized before, so just variablize

@@ -120,10 +120,8 @@ class Variablization_Manager
 
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
 
-        Symbol* get_variablization_for_symbol(std::map< Symbol*, Symbol* >* pMap, Symbol* index_sym);
-        Symbol* get_variablization(uint64_t index_id);
-        Symbol* get_variablization(test equality_test);
-        Symbol* get_variablization(Symbol* index_sym);
+        Symbol* get_variablization_for_identity(uint64_t index_id);
+        Symbol* get_variablization_for_sti(Symbol* index_sym);
 
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);

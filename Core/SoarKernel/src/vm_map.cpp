@@ -63,61 +63,6 @@ void Variablization_Manager::clear_variablization_maps()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
 }
 
-Symbol* Variablization_Manager::get_variablization(uint64_t index_id)
-{
-    if (index_id == 0)
-    {
-        return NULL;
-    }
-
-    std::map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
-    if (iter != (*o_id_to_var_map).end())
-    {
-        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y/%y\n", index_id,
-               iter->second->variablized_symbol, iter->second->instantiated_symbol);
-        return iter->second;
-    }
-    else
-    {
-        dprint(DT_VM_MAPS, "...did not find o%u in non-STI variablization table.\n", index_id);
-        dprint_variablization_tables(DT_LHS_VARIABLIZATION, 2);
-        return NULL;
-    }
-}
-
-Symbol* Variablization_Manager::get_variablization_for_symbol(std::map< Symbol*, Symbol* >* pMap, Symbol* index_sym)
-{
-    std::map< Symbol*, Symbol* >::iterator iter = (*pMap).find(index_sym);
-    if (iter != (*pMap).end())
-    {
-        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y/%y\n", index_sym,
-               iter->second->variablized_symbol, iter->second->instantiated_symbol);
-        return iter->second;
-    }
-    else
-    {
-        dprint(DT_VM_MAPS, "...did not find %y in STI variablization table.\n", index_sym);
-        dprint_variablization_tables(DT_VM_MAPS, 1);
-        return NULL;
-    }
-}
-Symbol* Variablization_Manager::get_variablization(Symbol* index_sym)
-{
-    return get_variablization_for_symbol(sym_to_var_map, index_sym);
-}
-
-Symbol* Variablization_Manager::get_variablization(test t)
-{
-    assert(t->data.referent);
-    if (t->data.referent->is_sti())
-    {
-        return get_variablization(t->data.referent);
-    }
-    else
-    {
-        return get_variablization(t->identity);
-    }
-}
 
 void Variablization_Manager::clear_o_id_to_ovar_debug_map()
 {
