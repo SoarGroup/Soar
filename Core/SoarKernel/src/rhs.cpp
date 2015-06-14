@@ -364,6 +364,8 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
+        dprint(DT_RHS_VARIABLIZATION, "create_RHS_value: reteloc %y o%u\n", t->data.referent, t->identity);
+
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
     }
 
@@ -385,10 +387,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
-            if (add_original_vars && pI_id)
-            {
-                lO_id = thisAgent->variablizationManager->get_or_create_o_id(sym, pI_id);
-            }
+            dprint(DT_RHS_VARIABLIZATION, "create_RHS_value: unbound %y o%u\n", sym, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
         }
         else
@@ -401,6 +400,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             lO_id = thisAgent->variablizationManager->get_existing_o_id(sym, pI_id);
         }
 
+        dprint(DT_RHS_VARIABLIZATION, "create_RHS_value: previous unbound %y o%u\n", sym, lO_id);
         return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
     }
 
@@ -438,6 +438,7 @@ rhs_value create_RHS_value(agent* thisAgent,
 
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
+        dprint(DT_RHS_VARIABLIZATION, "create_RHS_value: rhs_symbol %y o%u\n", rs->referent, lO_id);
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
     }
 }

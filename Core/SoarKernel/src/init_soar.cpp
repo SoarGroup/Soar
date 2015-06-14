@@ -85,6 +85,7 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
 
     Output_Manager::Get_OM().printa(thisAgent, msg);
     Output_Manager::Get_OM().printa(thisAgent, warning);
+    assert(false);
 
     xml_generate_error(thisAgent, msg);
     xml_generate_error(thisAgent, warning);
@@ -104,6 +105,7 @@ void abort_with_fatal_error_noagent(const char* msg)
 
     Output_Manager::Get_OM().print(msg);
     Output_Manager::Get_OM().print(warning);
+    assert(false);
 
     f = fopen("soar_crash_log.txt", "w");
     fprintf(f, "%s", msg);

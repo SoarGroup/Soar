@@ -18,8 +18,8 @@
 Variablization_Manager::Variablization_Manager(agent* myAgent)
 {
     thisAgent = myAgent;
-    sym_to_var_map = new std::map< Symbol*, variablization* >();
-    o_id_to_var_map = new std::map< uint64_t, variablization* >();
+    sym_to_var_map = new std::map< Symbol*, Symbol* >();
+    o_id_to_var_map = new std::map< uint64_t, Symbol* >();
 
     rulesym_to_identity_map = new std::map< uint64_t, std::map< Symbol*, uint64_t > >();
     o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
@@ -56,47 +56,22 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
-inline variablization* copy_variablization(agent* thisAgent, variablization* v)
-{
-    variablization* new_variablization;
-    thisAgent->memoryManager->allocate_with_pool(MP_variablizations, &new_variablization);
-
-    new_variablization->instantiated_symbol = v->instantiated_symbol;
-    new_variablization->variablized_symbol = v->variablized_symbol;
-    symbol_add_ref(thisAgent, new_variablization->instantiated_symbol);
-    symbol_add_ref(thisAgent, new_variablization->variablized_symbol);
-    return new_variablization;
-}
-
 void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
         Symbol* variable,
         uint64_t pIdentity)
 {
-    variablization* new_variablization;
     assert(instantiated_sym && variable);
     dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(o%u) to %y.\n",
            instantiated_sym, pIdentity, variable);
 
-    thisAgent->memoryManager->allocate_with_pool(MP_variablizations, &new_variablization);
-    new_variablization->instantiated_symbol = instantiated_sym;
-    new_variablization->variablized_symbol = variable;
-    symbol_add_ref(thisAgent, instantiated_sym);
-    symbol_add_ref(thisAgent, variable);
-
     if (instantiated_sym->is_sti())
     {
-        /* -- STI may have more than one original symbol (mostly due to the fact
-         *    that placeholder variables still exist to handle dot notation).  So, we
-         *    look them up using the identifier symbol instead of the original variable.
-         *
-         *    Note that we also store an entry using the new variable as an index. Later,
-         *    when looking for ungrounded variables in relational tests, the
-         *    identifier symbol will have already been replaced with a variable,
-         *    so we must use the variable instead to look up variablization info.
-         *    This may not be necessary after we resurrect the old NOT code. -- */
+        /* -- STI variablization is looked up using the matched symbol instead
+         *    of the identity. -- */
 
-        (*sym_to_var_map)[instantiated_sym] = new_variablization;
-        (*sym_to_var_map)[variable] = copy_variablization(thisAgent, new_variablization);
+        (*sym_to_var_map)[instantiated_sym] = variable;
+        symbol_add_ref(thisAgent, instantiated_sym);
+        symbol_add_ref(thisAgent, variable);
         dprint(DT_VM_MAPS, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
                         instantiated_sym, variable);
     }
@@ -105,7 +80,8 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
 
         /* -- A constant symbol is being variablized, so store variablization info
          *    indexed by the constant's o_id. -- */
-        (*o_id_to_var_map)[pIdentity] = new_variablization;
+        (*o_id_to_var_map)[pIdentity] = variable;
+        symbol_add_ref(thisAgent, variable);
 
         dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
     }
@@ -135,7 +111,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
 {
     char prefix[2];
     Symbol* var;
-    variablization* var_info;
+    Symbol* var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
 
@@ -149,11 +125,9 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
     }
     if (var_info)
     {
-        /* -- Symbol being passed in is being replaced, so decrease -- */
-        /* -- and increase refcount for new variable symbol being returned -- */
         symbol_remove_ref(thisAgent, (*sym));
-        *sym = var_info->variablized_symbol;
-        symbol_add_ref(thisAgent, var_info->variablized_symbol);
+        *sym = var_info;
+        symbol_add_ref(thisAgent, var_info);
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info->instantiated_symbol);
 
         return;
@@ -185,7 +159,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
-    variablization* found_variablization = NULL;
+    Symbol* found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -233,8 +207,8 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
         /* --- Grounded symbol that has been variablized before--- */
         dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization->variablized_symbol);
         symbol_remove_ref(thisAgent, rs->referent);
-        rs->referent = found_variablization->variablized_symbol;
-        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+        rs->referent = found_variablization;
+        symbol_add_ref(thisAgent, found_variablization);
         return;
     } else {
         /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
@@ -324,7 +298,7 @@ void Variablization_Manager::variablize_equality_tests(test t)
  * ========================================================================= */
 void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    variablization* found_variablization = NULL;
+    Symbol* found_variablization = NULL;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", t);
 
@@ -339,8 +313,8 @@ void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLeve
     {
         // It has been variablized before, so just variablize
         symbol_remove_ref(thisAgent, t->data.referent);
-        t->data.referent = found_variablization->variablized_symbol;
-        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+        t->data.referent = found_variablization;
+        symbol_add_ref(thisAgent, found_variablization);
     }
     else
     {
@@ -470,7 +444,7 @@ void Variablization_Manager::variablize_rl_test(test t)
         {
             dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %y\n",
                    test_type_to_string(t->type), t->data.referent);
-            thisAgent->variablizationManager->variablize_lhs_symbol(&(t->data.referent), 0);
+            thisAgent->variablizationManager->variablize_lhs_symbol(&(t->data.referent), t->identity);
         }
         else
         {

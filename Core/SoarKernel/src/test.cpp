@@ -714,7 +714,6 @@ test equality_test_found_in_test(test t)
     cons* c;
 
     assert(t);
-    return (t->eq_test);
     if (t->type == EQUALITY_TEST)
     {
         return t;

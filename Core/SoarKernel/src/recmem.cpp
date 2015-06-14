@@ -538,7 +538,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                            id, attr);
         goto abort_execute_action;
     }
-    /* -- We don't need to store original vars for referents bc they are operator preference knowledge and should always be operator IDs -- */
+    /* Populate identity and rhs_function stuff */
     uint64_t oid_id, oid_attr, oid_value;
     rhs_value f_id, f_attr, f_value;
     if (rule_action)

@@ -44,42 +44,33 @@ void Variablization_Manager::clear_variablization_maps()
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
     /* -- Clear symbol->variablization map -- */
-    for (std::map< Symbol*, variablization* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
+    for (std::map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
     {
-        dprint(DT_VM_MAPS, "Clearing %y -> %y(%u)/%y(%u)\n",
-               it->first,
-               it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
-               it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
-        symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
-        symbol_remove_ref(thisAgent, it->second->variablized_symbol);
-        thisAgent->memoryManager->free_with_pool(MP_variablizations, it->second);
+        dprint(DT_VM_MAPS, "Clearing %y -> %y\n", it->first, it->second);
+        symbol_remove_ref(thisAgent, it->first);
+        symbol_remove_ref(thisAgent, it->second);
     }
     sym_to_var_map->clear();
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
     /* -- Clear grounding_id->variablization map -- */
-    for (std::map< uint64_t, variablization* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+    for (std::map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
-        dprint(DT_VM_MAPS, "Clearing %u -> %y(%u)/%y(%u)\n",
-               it->first,
-               it->second->instantiated_symbol, it->second->instantiated_symbol->reference_count,
-               it->second->variablized_symbol,  it->second->variablized_symbol->reference_count);
-        symbol_remove_ref(thisAgent, it->second->instantiated_symbol);
-        symbol_remove_ref(thisAgent, it->second->variablized_symbol);
-        thisAgent->memoryManager->free_with_pool(MP_variablizations, it->second);
+        dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
+        symbol_remove_ref(thisAgent, it->second);
     }
     o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
 }
 
-variablization* Variablization_Manager::get_variablization(uint64_t index_id)
+Symbol* Variablization_Manager::get_variablization(uint64_t index_id)
 {
     if (index_id == 0)
     {
         return NULL;
     }
 
-    std::map< uint64_t, variablization* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    std::map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
         dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y/%y\n", index_id,
@@ -94,9 +85,9 @@ variablization* Variablization_Manager::get_variablization(uint64_t index_id)
     }
 }
 
-variablization* Variablization_Manager::get_variablization_for_symbol(std::map< Symbol*, variablization* >* pMap, Symbol* index_sym)
+Symbol* Variablization_Manager::get_variablization_for_symbol(std::map< Symbol*, Symbol* >* pMap, Symbol* index_sym)
 {
-    std::map< Symbol*, variablization* >::iterator iter = (*pMap).find(index_sym);
+    std::map< Symbol*, Symbol* >::iterator iter = (*pMap).find(index_sym);
     if (iter != (*pMap).end())
     {
         dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y/%y\n", index_sym,
@@ -110,12 +101,12 @@ variablization* Variablization_Manager::get_variablization_for_symbol(std::map< 
         return NULL;
     }
 }
-variablization* Variablization_Manager::get_variablization(Symbol* index_sym)
+Symbol* Variablization_Manager::get_variablization(Symbol* index_sym)
 {
     return get_variablization_for_symbol(sym_to_var_map, index_sym);
 }
 
-variablization* Variablization_Manager::get_variablization(test t)
+Symbol* Variablization_Manager::get_variablization(test t)
 {
     assert(t->data.referent);
     if (t->data.referent->is_sti())

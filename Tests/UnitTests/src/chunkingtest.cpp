@@ -14,7 +14,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-        CPPUNIT_TEST(RL_Variablization);
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_Variablization_Same_Type);
         CPPUNIT_TEST(Superstate_Identity_Opaque);
@@ -56,6 +55,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
         CPPUNIT_TEST(Literalization_with_BT_Constraints2);
         CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
+        CPPUNIT_TEST(RL_Variablization);
 //        CPPUNIT_TEST(testChunk43);
 //        CPPUNIT_TEST(testChunk44);
 //        CPPUNIT_TEST(testChunk45);

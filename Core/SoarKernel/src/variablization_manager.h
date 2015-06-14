@@ -27,13 +27,6 @@ namespace soar_module
     typedef struct rhs_triple_struct rhs_triple;
 }
 
-typedef struct variablization_struct
-{
-    Symbol* instantiated_symbol;
-    Symbol* variablized_symbol;
-    variablization_struct() : instantiated_symbol(NULL), variablized_symbol(NULL) {}
-} variablization;
-
 typedef struct constraint_struct
 {
     test eq_test;
@@ -127,10 +120,10 @@ class Variablization_Manager
 
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
 
-        variablization* get_variablization_for_symbol(std::map< Symbol*, variablization* >* pMap, Symbol* index_sym);
-        variablization* get_variablization(uint64_t index_id);
-        variablization* get_variablization(test equality_test);
-        variablization* get_variablization(Symbol* index_sym);
+        Symbol* get_variablization_for_symbol(std::map< Symbol*, Symbol* >* pMap, Symbol* index_sym);
+        Symbol* get_variablization(uint64_t index_id);
+        Symbol* get_variablization(test equality_test);
+        Symbol* get_variablization(Symbol* index_sym);
 
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
@@ -172,8 +165,8 @@ class Variablization_Manager
         std::map< uint64_t, uint64_t >*                         unification_map;
 
         /* -- Look-up tables for LHS variablization -- */
-        std::map< uint64_t, variablization* >*   o_id_to_var_map;
-        std::map< Symbol*, variablization* >*    sym_to_var_map;
+        std::map< uint64_t, Symbol* >*   o_id_to_var_map;
+        std::map< Symbol*, Symbol* >*    sym_to_var_map;
 
         std::list< constraint* >* constraints;
         std::map< uint64_t, attachment_point* >* attachment_points;
