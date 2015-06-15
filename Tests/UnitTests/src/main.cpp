@@ -79,6 +79,8 @@ int main(int argc, char** argv)
 	{
 		debugged = true;
 	}
+#elif _WIN32
+	debugged = IsDebuggerPresent() == TRUE;
 #endif
 	
 	if (!debugged)
@@ -126,6 +128,14 @@ int main(int argc, char** argv)
     
     CPPUNIT_NS::CompilerOutputter outputter(&result, std::cerr);
     outputter.write();
-    
+	
+#ifdef _MSC_VER
+	if (IsDebuggerPresent())
+	{
+		std::cout << "Press enter to continue..." << std::endl;
+		std::cin.get();
+	}
+#endif
+
     return result.wasSuccessful() ? 0 : 1;
 }
