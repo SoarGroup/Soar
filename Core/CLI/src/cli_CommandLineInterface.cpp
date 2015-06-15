@@ -527,7 +527,7 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 						// Check next character
 						size_t next = i+1;
 						
-						if (next < message.size() && isdigit(message[i]))
+						if (next < message.size() && isdigit(message[next]))
 						{
 							// Match
 							message.insert(i, "<");
