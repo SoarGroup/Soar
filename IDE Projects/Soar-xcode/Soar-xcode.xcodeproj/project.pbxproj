@@ -432,6 +432,8 @@
 		4D510A7F1B2B47600009AABC /* smemtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A6F1B2B47600009AABC /* smemtest.cpp */; };
 		4D510A801B2B47600009AABC /* tokenizertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A701B2B47600009AABC /* tokenizertest.cpp */; };
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D999D2C1B2F3EE800C6700E /* main.cpp */; };
+		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -442,10 +444,26 @@
 			remoteGlobalIDString = 4D5105C01B2B41A80009AABC;
 			remoteInfo = Soar;
 		};
+		4D999D311B2F3EF100C6700E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D5105C01B2B41A80009AABC;
+			remoteInfo = Soar;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		4D510A561B2B471B0009AABC /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		4D999D281B2F3EE800C6700E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -925,6 +943,8 @@
 		4D510A6F1B2B47600009AABC /* smemtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = smemtest.cpp; path = ../../../Tests/UnitTests/src/smemtest.cpp; sourceTree = "<group>"; };
 		4D510A701B2B47600009AABC /* tokenizertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tokenizertest.cpp; path = ../../../Tests/UnitTests/src/tokenizertest.cpp; sourceTree = "<group>"; };
 		4D510A711B2B47600009AABC /* unittest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unittest.h; path = ../../../Tests/UnitTests/src/unittest.h; sourceTree = "<group>"; };
+		4D999D2A1B2F3EE800C6700E /* LaunchDebugger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LaunchDebugger; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D999D2C1B2F3EE800C6700E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -943,6 +963,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D999D271B2F3EE800C6700E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -951,6 +979,7 @@
 			children = (
 				4D5105CF1B2B41D70009AABC /* Soar */,
 				4D510A591B2B471B0009AABC /* UnitTests */,
+				4D999D2B1B2F3EE800C6700E /* LaunchDebugger */,
 				4D5105C21B2B41A80009AABC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -960,6 +989,7 @@
 			children = (
 				4D5105C11B2B41A80009AABC /* libSoar.dylib */,
 				4D510A581B2B471B0009AABC /* UnitTests */,
+				4D999D2A1B2F3EE800C6700E /* LaunchDebugger */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1575,6 +1605,14 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
+		4D999D2B1B2F3EE800C6700E /* LaunchDebugger */ = {
+			isa = PBXGroup;
+			children = (
+				4D999D2C1B2F3EE800C6700E /* main.cpp */,
+			);
+			path = LaunchDebugger;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1796,6 +1834,24 @@
 			productReference = 4D510A581B2B471B0009AABC /* UnitTests */;
 			productType = "com.apple.product-type.tool";
 		};
+		4D999D291B2F3EE800C6700E /* LaunchDebugger */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D999D301B2F3EE800C6700E /* Build configuration list for PBXNativeTarget "LaunchDebugger" */;
+			buildPhases = (
+				4D999D261B2F3EE800C6700E /* Sources */,
+				4D999D271B2F3EE800C6700E /* Frameworks */,
+				4D999D281B2F3EE800C6700E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4D999D321B2F3EF100C6700E /* PBXTargetDependency */,
+			);
+			name = LaunchDebugger;
+			productName = LaunchDebugger;
+			productReference = 4D999D2A1B2F3EE800C6700E /* LaunchDebugger */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1809,6 +1865,9 @@
 						CreatedOnToolsVersion = 7.0;
 					};
 					4D510A571B2B471B0009AABC = {
+						CreatedOnToolsVersion = 7.0;
+					};
+					4D999D291B2F3EE800C6700E = {
 						CreatedOnToolsVersion = 7.0;
 					};
 				};
@@ -1827,6 +1886,7 @@
 			targets = (
 				4D5105C01B2B41A80009AABC /* Soar */,
 				4D510A571B2B471B0009AABC /* UnitTests */,
+				4D999D291B2F3EE800C6700E /* LaunchDebugger */,
 			);
 		};
 /* End PBXProject section */
@@ -1843,7 +1903,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/ tests debugger\npopd\n";
+			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/ tests sml_java debugger\npopd\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2114,6 +2174,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4D999D261B2F3EE800C6700E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2121,6 +2189,11 @@
 			isa = PBXTargetDependency;
 			target = 4D5105C01B2B41A80009AABC /* Soar */;
 			targetProxy = 4D510A811B2B47DD0009AABC /* PBXContainerItemProxy */;
+		};
+		4D999D321B2F3EF100C6700E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D5105C01B2B41A80009AABC /* Soar */;
+			targetProxy = 4D999D311B2F3EF100C6700E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2256,6 +2329,20 @@
 			};
 			name = Release;
 		};
+		4D999D2E1B2F3EE800C6700E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		4D999D2F1B2F3EE800C6700E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2285,6 +2372,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		4D999D301B2F3EE800C6700E /* Build configuration list for PBXNativeTarget "LaunchDebugger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D999D2E1B2F3EE800C6700E /* Debug */,
+				4D999D2F1B2F3EE800C6700E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
