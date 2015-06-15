@@ -1843,7 +1843,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/\npopd\n";
+			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/ tests debugger\npopd\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
