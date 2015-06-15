@@ -46,8 +46,8 @@ command::~command() {}
 
 bool command::changed()
 {
-	size_t size;
-	uint64_t max_time;
+    size_t size;
+    uint64_t max_time;
     parse_substructure(size, max_time);
     if (first || size != subtree_size || max_time > prev_max_time)
     {

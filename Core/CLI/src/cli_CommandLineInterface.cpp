@@ -515,36 +515,36 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
             {
                 // Transform if varprint, see print command
                 std::string message(msg);
-				
-				size_t i = 0;
-				
-				// [A-Z][0-9]+
-				while (i < message.size())
-				{
-					if (isupper(message[i]))
-					{
-						// Potential match
-						// Check next character
-						size_t next = i+1;
-						
-						if (next < message.size() && isdigit(message[next]))
-						{
-							// Match
-							message.insert(i, "<");
-							
-							i = next+1;
-							
-							while (i < message.size() && isdigit(message[i]))
-								++i;
-							
-							message.insert(i, ">");
-						}
-					}
-					
-					++i;
-				}
-				
-				
+                
+                size_t i = 0;
+                
+                // [A-Z][0-9]+
+                while (i < message.size())
+                {
+                    if (isupper(message[i]))
+                    {
+                        // Potential match
+                        // Check next character
+                        size_t next = i + 1;
+                        
+                        if (next < message.size() && isdigit(message[next]))
+                        {
+                            // Match
+                            message.insert(i, "<");
+                            
+                            i = next + 1;
+                            
+                            while (i < message.size() && isdigit(message[i]))
+                            { ++i; }
+                            
+                            message.insert(i, ">");
+                        }
+                    }
+                    
+                    ++i;
+                }
+                
+                
                 // Simply append to message result
                 if (m_TrapPrintEvents)
                 {
@@ -627,11 +627,11 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
     {
         middle_width = 1;
     }
-	else
-	{
-		middle_width = column_width - left_width - right_width;
-	}
-
+    else
+    {
+        middle_width = column_width - left_width - right_width;
+    }
+    
     sep_string.insert(0, middle_width, ' ');
     
     tempString << prefixString << sep_string << printString;

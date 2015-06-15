@@ -1101,7 +1101,7 @@ Symbol* generate_chunk_name_sym_constant(agent* thisAgent, instantiation* inst)
 }
 
 bool should_variablize(agent* thisAgent, instantiation* inst)
-{    
+{
     if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
     {
         return false;

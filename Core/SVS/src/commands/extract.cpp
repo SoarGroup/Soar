@@ -103,7 +103,7 @@ class extract_command : public command, public filter_input::listener
         
         void update_results()
         {
-			filter_output* out = fltr->get_output();
+            filter_output* out = fltr->get_output();
             
             for (size_t i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {

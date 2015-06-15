@@ -204,7 +204,7 @@ namespace soar_module
             }
             
         public:
-            object_container(agent* new_agent): thisAgent(new_agent), objects(new std::map<std::string, T*>) {}
+            object_container(agent* new_agent): thisAgent(new_agent), objects(new std::map<std::string, T * >) {}
             
             virtual ~object_container()
             {
@@ -514,7 +514,7 @@ namespace soar_module
             agent* thisAgent;
             
         public:
-            sym_set_param(const char* new_name, predicate<const char*>* new_prot_pred, agent* new_agent): param(new_name), my_set(new std::set<Symbol*>()), value(new std::string), prot_pred(new_prot_pred), thisAgent(new_agent) {}
+            sym_set_param(const char* new_name, predicate<const char*>* new_prot_pred, agent* new_agent): param(new_name), my_set(new std::set<Symbol * >()), value(new std::string), prot_pred(new_prot_pred), thisAgent(new_agent) {}
             
             virtual ~sym_set_param()
             {
@@ -984,7 +984,7 @@ namespace soar_module
             {
                 return thisAgent;
             }
-
+            
             soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL) {}
             
             soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL)

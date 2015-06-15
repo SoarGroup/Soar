@@ -2148,9 +2148,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // prematurely)
         symbol_remove_ref(thisAgent, lti);
     }
-
+    
     bool triggered = false;
-
+    
     // if no children, then retrieve children
     // merge may override this behavior
     if (((thisAgent->smem_params->merge->get_value() == smem_param_container::merge_add) ||
@@ -2158,14 +2158,14 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
              (lti->id->input_wmes == NIL) &&
              (lti->id->slots == NIL)))
             || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
-
+            
     {
         if (visited == NULL)
         {
             triggered = true;
             visited = new std::set<smem_lti_id>;
         }
-
+        
         soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
@@ -2216,7 +2216,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             }
         }
     }
-
+    
     if (triggered)
     {
         delete visited;
@@ -4222,14 +4222,14 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
 void initialize_smem_chunk_value_lti(smem_chunk_value_lti& lti)
 {
-	lti.val_type = smem_cue_element_type_none;
-	lti.val_value = NULL;
+    lti.val_type = smem_cue_element_type_none;
+    lti.val_value = NULL;
 }
 
 void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
 {
-	constant.val_type = smem_cue_element_type_none;
-	constant.val_value = NULL;
+    constant.val_type = smem_cue_element_type_none;
+    constant.val_value = NULL;
 }
 
 /*
@@ -4307,10 +4307,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
                         smem_chunk_value_constant temp_const;
-
-						initialize_smem_chunk_value_lti(temp_lti);
-						initialize_smem_chunk_value_constant(temp_const);
-
+                        
+                        initialize_smem_chunk_value_lti(temp_lti);
+                        initialize_smem_chunk_value_constant(temp_const);
+                        
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4326,10 +4326,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     {
                         smem_chunk_value_constant temp_const;
                         smem_chunk_value_lti temp_lti;
-
-						initialize_smem_chunk_value_lti(temp_lti);
-						initialize_smem_chunk_value_constant(temp_const);
-
+                        
+                        initialize_smem_chunk_value_lti(temp_lti);
+                        initialize_smem_chunk_value_constant(temp_const);
+                        
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;
@@ -4346,10 +4346,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         //If the chunk was retrieved and it is an identifier it is lti.
                         smem_chunk_value_lti temp_lti;
                         smem_chunk_value_constant temp_const;
-
-						initialize_smem_chunk_value_lti(temp_lti);
-						initialize_smem_chunk_value_constant(temp_const);
-
+                        
+                        initialize_smem_chunk_value_lti(temp_lti);
+                        initialize_smem_chunk_value_constant(temp_const);
+                        
                         temp_val->val_const = temp_const;
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
@@ -4365,10 +4365,10 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                     {
                         smem_chunk_value_constant temp_const;
                         smem_chunk_value_lti temp_lti;
-
-						initialize_smem_chunk_value_lti(temp_lti);
-						initialize_smem_chunk_value_constant(temp_const);
-
+                        
+                        initialize_smem_chunk_value_lti(temp_lti);
+                        initialize_smem_chunk_value_constant(temp_const);
+                        
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_const_t;
                         temp_val->val_const.val_type = value_const_t;

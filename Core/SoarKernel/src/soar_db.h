@@ -245,7 +245,7 @@ namespace soar_module
             std::list<statement*>* statements;
             
         public:
-            statement_container(): statements(new std::list<statement*>()) {}
+            statement_container(): statements(new std::list<statement * >()) {}
             
             virtual ~statement_container()
             {
@@ -690,7 +690,7 @@ namespace soar_module
     inline bool sqlite_database::sql_is_new_db(bool& return_value)
     {
         int64_t numTables;
-		bool value_retrieved;
+        bool value_retrieved;
         
         value_retrieved = sql_simple_get_int("SELECT count(*) FROM sqlite_master WHERE type='table'", numTables);
         if (value_retrieved)

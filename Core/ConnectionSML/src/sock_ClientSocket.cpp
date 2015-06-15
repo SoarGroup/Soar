@@ -108,7 +108,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
         // set the name of the datasender
         this->name = "file ";
         this->name.append(local_address.sun_path);
-		
+        
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
@@ -117,7 +117,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-		
+        
         // Create the socket
         sock = socket(AF_UNIX, SOCK_STREAM, 0) ;
         

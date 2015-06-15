@@ -10,14 +10,15 @@
 
 #include "sml_Client.h"
 
-int main(int argc, const char * argv[]) {
-	sml::Agent* agent = nullptr;
-	sml::Kernel* kernel = sml::Kernel::CreateKernelInNewThread();
-	agent = kernel->CreateAgent("soar1");
-	
-	agent->SpawnDebugger();
-	
-	sleep(-1);
-	
+int main(int argc, const char* argv[])
+{
+    sml::Agent* agent = nullptr;
+    sml::Kernel* kernel = sml::Kernel::CreateKernelInNewThread();
+    agent = kernel->CreateAgent("soar1");
+    
+    agent->SpawnDebugger();
+    
+    sleep(-1);
+    
     return 0;
 }

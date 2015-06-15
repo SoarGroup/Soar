@@ -199,7 +199,7 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 //        {'u', "update",            cli::OPTARG_NONE},
 //        {0, 0, cli::OPTARG_NONE}
 //    };
-	
+
     cli::Cli::RunBitset options(0);
     DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
     

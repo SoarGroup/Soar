@@ -165,9 +165,9 @@ class add_node_command : public command
                 case BOX_GEOM:
                     verts = bbox_vertices();
                     n = new convex_node(node_id, verts);
-					break;
-				default:
-					n	= NULL;
+                    break;
+                default:
+                    n   = NULL;
                     break;
             }
             

@@ -419,13 +419,13 @@ struct smem_chunk_struct
 
 struct smem_chunk_value_constant
 {
-	smem_cue_element_type val_type;
+    smem_cue_element_type val_type;
     Symbol* val_value;
 };
 
 struct smem_chunk_value_lti
 {
-	smem_cue_element_type val_type;
+    smem_cue_element_type val_type;
     smem_chunk* val_value;
 };
 

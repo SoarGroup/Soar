@@ -1185,7 +1185,7 @@ byte run_preference_semantics(agent* thisAgent,
     bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst = false;
     preference* candidates;
     Symbol* value;
-	
+    
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore the CDPS when:
      * - Run_preference_semantics is called for a consistency check (don't want side effects)

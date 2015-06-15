@@ -206,7 +206,7 @@ void OM_DB::compile_refcount_summary()
         /* -- Count total add_refs -- */
         count_refs->bind_text(1, "%add_ref%");
         count_refs->bind_text(2, symString);
-		count_refs->execute();
+        count_refs->execute();
         add_count = count_refs->column_int(0);
         count_refs->reinitialize();
         

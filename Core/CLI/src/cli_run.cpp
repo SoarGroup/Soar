@@ -31,7 +31,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
     //// ... unless there is a count, then the default is a decision cycle:
     //if (count >= 0) runType = sml_DECISION;
     
-    bool forever = false;
+    bool forever { = false; }
     
     // Override run type with option flag:
     if (options.test(RUN_ELABORATION))
@@ -56,7 +56,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
     else
     {
         // if there is no step size given and no count, we're going forever
-        forever = (count < 0);
+        forever { = (count < 0); }
     }
     
     if (count == -1)

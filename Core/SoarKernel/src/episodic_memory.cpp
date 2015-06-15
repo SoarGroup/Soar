@@ -2332,7 +2332,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
                     temp_q->execute();
                     if (temp_q->column_type(0) != soar_module::null_t)
                     {
-						std::vector<bool>::size_type num_ids = static_cast<size_t>(temp_q->column_int(0));
+                        std::vector<bool>::size_type num_ids = static_cast<size_t>(temp_q->column_int(0));
                         
                         minmax_max[i]->resize(num_ids, true);
                         minmax_min[i]->resize(num_ids, time_max);
@@ -2496,7 +2496,7 @@ inline void _epmem_store_level(agent* thisAgent,
     
     // identifier recursion
     epmem_wme_list::iterator w_p2;
-	
+    
 #ifdef DEBUG_EPMEM_WME_ADD
     fprintf(stderr, "==================================================\nDEBUG _epmem_store_level called for parent_id %d\n==================================================\n", (unsigned int) parent_id);
 #endif

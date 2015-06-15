@@ -79,9 +79,9 @@ istream& get_nonblank_line(istream& is, string& line)
 */
 void sample(int k, int low, int high, std::vector<int>& output)
 {
-	int range = high - low;
-	size_t start = output.size();
-	
+    int range = high - low;
+    size_t start = output.size();
+    
     assert(k <= range);
     output.resize(start + k);
     for (int i = 0; i < range; ++i)
@@ -105,8 +105,8 @@ ostream& histogram(const vector<double>& vals, size_t nbins, ostream& os)
 {
     assert(nbins > 0);
     double min, max, binsize, hashes_per;
-	size_t i;
-	int b, maxcount = 0;
+    size_t i;
+    int b, maxcount = 0;
     vector<int> counts(nbins, 0);
     min = *min_element(vals.begin(), vals.end());
     max = *max_element(vals.begin(), vals.end());
@@ -119,7 +119,7 @@ ostream& histogram(const vector<double>& vals, size_t nbins, ostream& os)
     for (i = 0; i < vals.size(); ++i)
     {
         b = static_cast<int>((vals[i] - min) / binsize);
-		assert(b < static_cast<int>(counts.size()));
+        assert(b < static_cast<int>(counts.size()));
         counts[b]++;
     }
     maxcount = *max_element(counts.begin(), counts.end());

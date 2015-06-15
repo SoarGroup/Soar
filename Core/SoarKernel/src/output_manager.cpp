@@ -275,7 +275,7 @@ void Output_Manager::print_debug_agent(agent* pSoarAgent, const char* msg, Trace
 }
 
 void Output_Manager::print_prefix_agent(agent* pSoarAgent, const char* msg, TraceMode mode, bool no_prefix)
-{    
+{
     std::string newTrace;
     
     if (mode_info[mode].trace_enabled)
