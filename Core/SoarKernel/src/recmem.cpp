@@ -1067,6 +1067,8 @@ void create_instantiation(agent* thisAgent, production* prod,
         }
     }
 
+    thisAgent->variablizationManager->set_learning_for_instantiation(inst);
+
     /* Copy any context-dependent preferences for conditions of this instantiation */
     build_CDPS(thisAgent, inst);
 
@@ -1076,8 +1078,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    chunk_instantiation(thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? true : false,
-                        &(thisAgent->newly_created_instantiations));
+    chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
 

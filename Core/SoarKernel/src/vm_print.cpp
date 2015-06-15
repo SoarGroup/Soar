@@ -100,8 +100,8 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
         outputManager->printa_sf(thisAgent, "   o%u(%y) = o%u(%y)\n",
-            iter->first, thisAgent->variablizationManager->get_ovar_for_o_id(iter->first),
-            iter->second, thisAgent->variablizationManager->get_ovar_for_o_id(iter->second));
+            iter->first, get_ovar_for_o_id(iter->first),
+            iter->second, get_ovar_for_o_id(iter->second));
     }
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");

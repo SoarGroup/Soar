@@ -14,6 +14,7 @@
 #include "print.h"
 #include "debug.h"
 #include "rhs.h"
+#include "xml.h"
 
 Variablization_Manager::Variablization_Manager(agent* myAgent)
 {
@@ -33,6 +34,8 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     inst_id_counter = 0;
     ovar_id_counter = 0;
+
+    m_learning_on = false;
 
     outputManager = &Output_Manager::Get_OM();
 }
@@ -504,7 +507,7 @@ void Variablization_Manager::variablize_rl_test(test t)
         {
             dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %y\n",
                    test_type_to_string(t->type), t->data.referent);
-            thisAgent->variablizationManager->variablize_lhs_symbol(&(t->data.referent), t->identity);
+            variablize_lhs_symbol(&(t->data.referent), t->identity);
         }
         else
         {
@@ -639,12 +642,12 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->value);
+        variablize_rhs_symbol(a->id);
+        variablize_rhs_symbol(a->attr);
+        variablize_rhs_symbol(a->value);
         if (preference_is_binary(result->type))
         {
-            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent);
+            variablize_rhs_symbol(a->referent);
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
@@ -654,3 +657,54 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
 }
+
+bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
+{
+    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
+    {
+        m_learning_on = false;
+        return false;
+    }
+
+    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
+            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
+    {
+        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        {
+            std::ostringstream message;
+            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
+            print(thisAgent,  message.str().c_str());
+            xml_generate_verbose(thisAgent, message.str().c_str());
+        }
+        m_learning_on = false;
+        return false;
+    }
+
+    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
+    {
+        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        {
+            std::ostringstream message;
+            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
+            print(thisAgent,  message.str().c_str());
+            xml_generate_verbose(thisAgent, message.str().c_str());
+        }
+        m_learning_on = false;
+        return false;
+    }
+
+    /* allow_bottom_up_chunks will be false if a chunk was already
+       learned in a lower goal
+     */
+    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
+            !inst->match_goal->id->allow_bottom_up_chunks)
+    {
+        m_learning_on = false;
+        return false;
+    }
+
+    m_learning_on = true;
+    return true;
+}
+

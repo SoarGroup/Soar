@@ -891,54 +891,54 @@ void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, conditio
     thisAgent->variablizationManager->clear_attachment_map();
 }
 
-bool should_variablize(agent* thisAgent, instantiation* inst)
-{
-    preference* p;
+//bool should_variablize(agent* thisAgent, instantiation* inst)
+//{
+//    preference* p;
+//
+//    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
+//    {
+//        return false;
+//    }
+//
+//    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
+//            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
+//    {
+//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+//        {
+//            std::ostringstream message;
+//            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
+//            print(thisAgent,  message.str().c_str());
+//            xml_generate_verbose(thisAgent, message.str().c_str());
+//        }
+//        return false;
+//    }
+//
+//    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+//            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
+//    {
+//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+//        {
+//            std::ostringstream message;
+//            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
+//            print(thisAgent,  message.str().c_str());
+//            xml_generate_verbose(thisAgent, message.str().c_str());
+//        }
+//        return false;
+//    }
+//
+//    /* allow_bottom_up_chunks will be false if a chunk was already
+//       learned in a lower goal
+//     */
+//    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
+//            !inst->match_goal->id->allow_bottom_up_chunks)
+//    {
+//        return false;
+//    }
+//
+//    return true;
+//}
 
-    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
-    {
-        return false;
-    }
-
-    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
-            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
-    {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-        {
-            std::ostringstream message;
-            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
-            print(thisAgent,  message.str().c_str());
-            xml_generate_verbose(thisAgent, message.str().c_str());
-        }
-        return false;
-    }
-
-    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
-            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
-    {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-        {
-            std::ostringstream message;
-            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
-            print(thisAgent,  message.str().c_str());
-            xml_generate_verbose(thisAgent, message.str().c_str());
-        }
-        return false;
-    }
-
-    /* allow_bottom_up_chunks will be false if a chunk was already
-       learned in a lower goal
-     */
-    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
-            !inst->match_goal->id->allow_bottom_up_chunks)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learning, instantiation** custom_inst_list)
+void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -1099,7 +1099,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
-    variablize = allow_learning && reliable && should_variablize(thisAgent, inst);
+    variablize = thisAgent->variablizationManager->learning_is_on() && reliable;
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
@@ -1332,7 +1332,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     if (!thisAgent->max_chunks_reached)
     {
         dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
-        chunk_instantiation(thisAgent, chunk_inst, allow_learning, custom_inst_list);
+        thisAgent->variablizationManager->set_learning_for_instantiation(chunk_inst);
+        chunk_instantiation(thisAgent, chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
 

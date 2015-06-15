@@ -67,6 +67,10 @@ class Variablization_Manager
 
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
 
+        void set_learning(bool pLearningOn) { m_learning_on = pLearningOn; };
+        bool learning_is_on() { return m_learning_on; };
+        bool set_learning_for_instantiation(instantiation* inst);
+
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 
@@ -179,6 +183,8 @@ class Variablization_Manager
          *    value and not considered a valid id. -- */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
+
+        bool m_learning_on;
 
         tc_number tc_num_found;
 
