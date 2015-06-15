@@ -335,7 +335,7 @@ void Variablization_Manager::variablize_equality_tests(test t)
  *           when variablizing the equality test.
  *
  * ========================================================================= */
-void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
+bool Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
     Symbol* found_variablization = NULL;
 
@@ -345,7 +345,7 @@ void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLeve
     {
         /* -- Wrong test type for this variablization pass -- */
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
-        return;
+        return true;
     }
     if (t->data.referent->is_sti())
     {
@@ -367,11 +367,13 @@ void Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLeve
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
+        return false;
     }
 
     dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", t);
     dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 
+    return true;
 }
 
 void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
@@ -387,7 +389,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLev
     if (t->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        for (c = t->data.conjunct_list; c != NIL; )
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: \n");
             /* -- Note that we ignore what variablize_test_by_lookup returns b/c merge will later delete
@@ -396,10 +398,22 @@ void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLev
              *    variablize_test_by_lookup when variablizing constraints collected during
              *    backtracing, since we can just avoid adding them to the condition list. -- */
             tt = reinterpret_cast<test>(c->first);
-            if (test_has_referent(tt) && (tt->identity || tt->data.referent->is_sti()))
+            if (test_has_referent(tt))
             {
-                variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
+                if (tt->data.referent->is_sti())
+                {
+                    if (!variablize_test_by_lookup(tt, pSkipTopLevelEqualities))
+                    {
+                        c = delete_test_from_conjunct(thisAgent, &t, c);
+                        continue;
+                    }
+                }
+                else if (tt->identity)
+                {
+                    variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
+                }
             }
+            c = c->rest;
         }
 
         dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");

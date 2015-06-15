@@ -1162,9 +1162,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool allow_learn
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
-        /* -- Clean up unification constraints and merge redundant conditions
-         *    Note that this is needed even for justifications -- */
-        thisAgent->variablizationManager->remove_ungrounded_sti_constraints_and_cache_eq_tests(vrblz_top);
         #ifdef EBC_MERGE_CONDITIONS
         thisAgent->variablizationManager->merge_conditions(vrblz_top);
         #endif

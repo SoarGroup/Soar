@@ -5,7 +5,6 @@ sp {init-superstate
     (state <s> ^superstate nil)
 -->
     (<s> ^test-item 8
-         ^test-item3 2
          ^test-param <p1>)
     (write (crlf) |Starting chunking unit test.|)
 }
@@ -60,7 +59,7 @@ sp {apply14b
                ^data2 <data-num>
                ^data1 <data-id>
                ^superstate <ss>)
-    (<ss> ^test-item3 { < 4 <data-num> }
+    (<ss> ^test-item { > <data-num> <num> }
           ^test-param { <> <data-id> <id> })
 -->
     (<ss> ^result14-ungrounded-num <data-num>

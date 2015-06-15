@@ -96,7 +96,6 @@ class Variablization_Manager
             const soar_module::rhs_triple rhs_funcs);
         bool in_null_identity_set(test t);
 
-        void remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond);
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
 
@@ -131,7 +130,7 @@ class Variablization_Manager
 
         void variablize_rl_test(test chunk_test);
 
-        void variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
 
         void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

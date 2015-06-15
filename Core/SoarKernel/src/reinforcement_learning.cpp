@@ -632,9 +632,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
             thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
 
-            dprint(DT_RL_VARIABLIZATION, "Removing ungrounded STIs...\n");
-            thisAgent->variablizationManager->remove_ungrounded_sti_constraints_and_cache_eq_tests(cond_top);
-
             dprint(DT_RL_VARIABLIZATION, "Final conditions: \n%1", cond_top);
 
             dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
