@@ -79,9 +79,15 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
             new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity);
-
+            if (pUnify_variablization_identity && thisAgent->variablizationManager->in_null_identity_set(t->eq_test))
+            {
+                new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
+                new_ct->identity = t->eq_test->identity;
+                thisAgent->variablizationManager->unify_identity(new_ct);
+            } else {
+                new_ct = make_test(thisAgent, NIL, t->type);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity);
+            }
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);

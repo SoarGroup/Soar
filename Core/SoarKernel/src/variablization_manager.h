@@ -94,6 +94,7 @@ class Variablization_Manager
         void unify_backtraced_conditions(condition* parent_cond,
             const soar_module::identity_triple o_ids_to_replace,
             const soar_module::rhs_triple rhs_funcs);
+        bool in_null_identity_set(test t);
 
         void remove_ungrounded_sti_constraints_and_cache_eq_tests(condition* top_cond);
         void unify_identities_for_results(preference* result);

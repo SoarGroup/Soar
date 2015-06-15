@@ -16,6 +16,18 @@
 #include "rhs.h"
 #include "debug.h"
 
+bool Variablization_Manager::in_null_identity_set(test t)
+{
+    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
+    if (iter != (*unification_map).end())
+    {
+        dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
+            t->identity, iter->second);
+
+        return (iter->second == NULL_IDENTITY_SET);
+    }
+    return (t->identity == NULL_IDENTITY_SET);
+}
 
 void Variablization_Manager::unify_identity(test t)
 {
