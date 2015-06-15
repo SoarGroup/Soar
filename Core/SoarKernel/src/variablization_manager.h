@@ -20,6 +20,7 @@ typedef struct preference_struct preference;
 typedef char* rhs_value;
 typedef struct chunk_cond_struct chunk_cond;
 tc_number get_new_tc_number(agent* thisAgent);
+class Output_Manager;
 
 namespace soar_module
 {
@@ -117,6 +118,7 @@ class Variablization_Manager
 
     private:
         agent* thisAgent;
+        Output_Manager* outputManager;
 
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
 

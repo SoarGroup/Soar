@@ -33,6 +33,8 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
 
     inst_id_counter = 0;
     ovar_id_counter = 0;
+
+    outputManager = &Output_Manager::Get_OM();
 }
 
 Variablization_Manager::~Variablization_Manager()
@@ -66,8 +68,7 @@ Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_i
     std::map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y/%y\n", index_id,
-               iter->second->variablized_symbol, iter->second->instantiated_symbol);
+        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y\n", index_id, iter->second);
         return iter->second;
     }
     else
@@ -83,8 +84,7 @@ Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
     std::map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
     if (iter != (*sym_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y/%y\n", index_sym,
-               iter->second->variablized_symbol, iter->second->instantiated_symbol);
+        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y\n", index_sym, iter->second);
         return iter->second;
     }
     else
@@ -167,7 +167,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
         symbol_remove_ref(thisAgent, (*sym));
         *sym = var_info;
         symbol_add_ref(thisAgent, var_info);
-        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info->instantiated_symbol);
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
 
         return;
 
@@ -244,7 +244,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
     if (found_variablization)
     {
         /* --- Grounded symbol that has been variablized before--- */
-        dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization->variablized_symbol);
+        dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization);
         symbol_remove_ref(thisAgent, rs->referent);
         rs->referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
