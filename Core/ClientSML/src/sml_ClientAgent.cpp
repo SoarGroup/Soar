@@ -1698,18 +1698,47 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		
 		path += ":";
 		path += buffer;
+		path += ":";
+		path += buffer;
+		path += "/java";
 		
 		path += ":";
 		path += libraryPath;
+		path += ":";
+		path += libraryPath;
+		path += "/java";
 		
 		if (soarHome)
 		{
 			path += ":";
 			path += soarHome;
+			path += ":";
+			path += soarHome;
+			path += "/java";
 		}
 		
-#ifdef __APPLE__
-		execlp("java", "java", ("-Djava.library.path=" + path).c_str(),	"-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
+		for (size_t i = 0;i < path.length();++i)
+		{
+			if (path[i] == ':' && i > 0 && path[i-1] == '/')
+			{
+				--i;
+				path.erase(i, 1);
+			}
+			
+			if (path[i] == '/' && i > 0 && path[i-1] == '/')
+			{
+				--i;
+				path.erase(i, 1);
+			}
+		}
+		
+		if (path[path.length()-1] == '/')
+		{
+			path.erase(path.length()-1, 1);
+		}
+		
+#ifdef __APPLE__		
+		execlp("java", "java", ("-Djava.library.path=\"" + path + "\"").c_str(), "-cp", ("\"" + path + "\"").c_str(), "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
 			   "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #else
 		execlp("java", "java", ("-Djava.library.path=" + path).c_str(),	"-jar", p.c_str(), "-remote",
