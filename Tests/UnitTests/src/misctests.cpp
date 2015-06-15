@@ -26,6 +26,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testMultipleKernels);
         CPPUNIT_TEST(testSoarRand);
         CPPUNIT_TEST(testPreferenceDeallocation);
+		CPPUNIT_TEST(testSoarDebugger);
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstiationDeallocationStackOverflow);
         CPPUNIT_TEST(testSmemArithmetic);
@@ -57,6 +58,8 @@ class MiscTest : public CPPUNIT_NS::TestCase
         
         void testSoarRand();
         void testPreferenceDeallocation();
+
+		void testSoarDebugger();
         
         void source(const std::string& path);
         
@@ -413,3 +416,21 @@ void MiscTest::testPreferenceDeallocation()
     CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
 }
 
+void MiscTest::testSoarDebugger()
+{
+	bool result = pAgent->SpawnDebugger();
+
+	CPPUNIT_ASSERT(result);
+
+#ifdef _MSC_VER
+	Sleep(10000);
+#else
+	sleep(10);
+#endif
+
+	pAgent->ExecuteCommandLine("run 10");
+
+	result = pAgent->KillDebugger();
+
+	CPPUNIT_ASSERT(result);
+}
