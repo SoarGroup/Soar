@@ -54,9 +54,6 @@ srcs = [
 # print 'LIBPATH ', kernel_env.Dump('LIBPATH')
 # print 'CPPPATH ', kernel_env.Dump('CPPPATH')
 
-if compiler == 'msvc':
-	srcs.append(('pcre/pcre.cxx', Glob('pcre/*.c')))
-
 svs_objs, svs_inc = SConscript('SVS/SConscript')
 kernel_env.Prepend(CPPPATH = svs_inc)
 

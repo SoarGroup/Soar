@@ -24,9 +24,6 @@
 // ISO C9x  compliant stdint.h for Microsoft Visual Studio
 #include <stdint.h> // this is in shared/msvc for older Visual Studios systems
 
-// A copy of this file exists in shared. The project exists in Core/pcre
-#include <pcreposix.h>
-
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
 #endif
