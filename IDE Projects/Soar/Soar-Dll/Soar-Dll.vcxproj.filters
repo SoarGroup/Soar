@@ -28,9 +28,6 @@
     <Filter Include="Source Files\KernelSML">
       <UniqueIdentifier>{f3dbe1a8-0d04-4ad5-8156-57888f2c4778}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\pcre">
-      <UniqueIdentifier>{346753e3-9ba0-46fd-bf05-a98707636a34}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\shared">
       <UniqueIdentifier>{681e3b01-aa6b-48ef-98ce-f699fa8276d1}</UniqueIdentifier>
     </Filter>
@@ -527,9 +524,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp">
       <Filter>Source Files\KernelSML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\pcre\pcre.cxx">
-      <Filter>Source Files\pcre</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp">
       <Filter>Source Files\SoarKernel</Filter>
@@ -1054,9 +1048,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h">
       <Filter>Source Files\KernelSML</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Core\pcre\pcre.h">
-      <Filter>Source Files\pcre</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\shared\Export.h">
       <Filter>Source Files\shared</Filter>

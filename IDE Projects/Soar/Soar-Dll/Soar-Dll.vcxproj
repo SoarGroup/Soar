@@ -166,7 +166,6 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_SystemListener.cpp" />
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.cpp" />
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp" />
-    <ClCompile Include="..\..\..\Core\pcre\pcre.cxx" />
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp" />
@@ -343,7 +342,6 @@
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_SystemListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h" />
-    <ClInclude Include="..\..\..\Core\pcre\pcre.h" />
     <ClInclude Include="..\..\..\Core\shared\Export.h" />
     <ClInclude Include="..\..\..\Core\shared\misc.h" />
     <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h" />
