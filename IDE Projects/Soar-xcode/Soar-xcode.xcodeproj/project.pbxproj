@@ -1767,6 +1767,7 @@
 				4D5105BD1B2B41A80009AABC /* Sources */,
 				4D5105BE1B2B41A80009AABC /* Frameworks */,
 				4D5105BF1B2B41A80009AABC /* Headers */,
+				4D999D251B2F312800C6700E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1829,6 +1830,22 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4D999D251B2F312800C6700E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/\npopd\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4D5105BD1B2B41A80009AABC /* Sources */ = {
@@ -2258,6 +2275,7 @@
 				4D5105CE1B2B41A80009AABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4D510A5C1B2B471B0009AABC /* Build configuration list for PBXNativeTarget "UnitTests" */ = {
 			isa = XCConfigurationList;
@@ -2266,6 +2284,7 @@
 				4D510A5E1B2B471B0009AABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
