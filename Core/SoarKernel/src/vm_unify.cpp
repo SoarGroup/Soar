@@ -31,6 +31,7 @@ bool Variablization_Manager::in_null_identity_set(test t)
 
 void Variablization_Manager::unify_identity(test t)
 {
+    if (!m_learning_on) return;
     std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
@@ -73,7 +74,7 @@ void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent,
 
 void Variablization_Manager::unify_identities_for_results(preference* result)
 {
-
+    if (!m_learning_on) return;
     if (!result) return;
 
     dprint(DT_UNIFICATION, "Fixing result %p\n", result);
@@ -196,6 +197,8 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
 
 bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
 {
+    if (!m_learning_on) return true;
+
     dprint(DT_IDENTITY_PROP, "Adding identity mappings for dupe match condition: %l from %l\n", new_cond, ground_cond);
     test new_cond_id, new_cond_attr, new_cond_value, ground_cond_id, ground_cond_attr, ground_cond_value;
 
@@ -288,6 +291,7 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
                                                          const soar_module::identity_triple o_ids_to_replace,
                                                          const soar_module::rhs_triple rhs_funcs)
 {
+    if (!m_learning_on) return;
     test lId = 0, lAttr = 0, lValue = 0;
     lId = parent_cond->data.tests.id_test->eq_test;
     lAttr = parent_cond->data.tests.attr_test->eq_test;

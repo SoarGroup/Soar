@@ -74,6 +74,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
 
 void Variablization_Manager::cache_constraints_in_cond(condition* c)
 {
+    if (!m_learning_on) return;
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     cache_constraints_in_test(c->data.tests.id_test);
     cache_constraints_in_test(c->data.tests.attr_test);
@@ -249,6 +250,8 @@ void Variablization_Manager::prune_redundant_constraints()
 
 void Variablization_Manager::add_additional_constraints(condition* cond)
 {
+    if (!m_learning_on) return;
+
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;
 

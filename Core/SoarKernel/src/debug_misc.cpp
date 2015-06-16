@@ -97,7 +97,7 @@ void debug_test(int type)
             break;
         }
         case 7:
-            debug_agent->variablizationManager->print_o_id_tables(DT_DEBUG);
+            debug_agent->variablizationManager->print_tables(DT_DEBUG);
             break;
         case 8:
             test_print_speed();

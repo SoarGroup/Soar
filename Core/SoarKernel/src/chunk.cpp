@@ -1099,7 +1099,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
-    variablize = thisAgent->variablizationManager->learning_is_on() && reliable;
+    variablize = thisAgent->variablizationManager->learning_is_on_for_instantiation() && reliable;
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)

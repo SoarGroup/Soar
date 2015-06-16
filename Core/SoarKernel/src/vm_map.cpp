@@ -85,6 +85,7 @@ void Variablization_Manager::clear_rulesym_to_identity_map()
 
 uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 {
+    if (!m_learning_on) return NULL_IDENTITY_SET;
     std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
     std::map< Symbol*, uint64_t >::iterator iter_inst;
 
@@ -104,12 +105,14 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
     }
 
 //    dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
-    return 0;
+    return NULL_IDENTITY_SET;
 
 }
 
 void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
+    if (!m_learning_on) return;
+
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
 
@@ -135,6 +138,7 @@ void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_
 
 uint64_t Variablization_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
 {
+    if (!m_learning_on) return 0;
     assert(orig_var->is_variable());
     int64_t existing_o_id = 0;
 
@@ -159,6 +163,7 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
     return NULL;
 #endif
     if (o_id == 0) return NULL;
+    if (!m_learning_on) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
     std::map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);

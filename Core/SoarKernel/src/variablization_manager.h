@@ -67,8 +67,7 @@ class Variablization_Manager
 
         uint64_t get_new_inst_id() { return (++inst_id_counter); };
 
-        void set_learning(bool pLearningOn) { m_learning_on = pLearningOn; };
-        bool learning_is_on() { return m_learning_on; };
+        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
         bool set_learning_for_instantiation(instantiation* inst);
 
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
@@ -86,7 +85,7 @@ class Variablization_Manager
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
 
-        void reset_constraint_found_tc_num() { tc_num_found = get_new_tc_number(thisAgent); };
+        void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
         void cache_constraints_in_cond(condition* c);
@@ -184,6 +183,7 @@ class Variablization_Manager
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
 
+        bool m_learning_on_for_instantiation;
         bool m_learning_on;
 
         tc_number tc_num_found;

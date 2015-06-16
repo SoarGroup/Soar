@@ -35,7 +35,8 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     inst_id_counter = 0;
     ovar_id_counter = 0;
 
-    m_learning_on = false;
+    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+    m_learning_on_for_instantiation = m_learning_on;
 
     outputManager = &Output_Manager::Get_OM();
 }
@@ -660,9 +661,11 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
 
 bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
 {
+    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+
     if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
     {
-        m_learning_on = false;
+        m_learning_on_for_instantiation = false;
         return false;
     }
 
@@ -676,7 +679,7 @@ bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
-        m_learning_on = false;
+        m_learning_on_for_instantiation = false;
         return false;
     }
 
@@ -690,7 +693,7 @@ bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
-        m_learning_on = false;
+        m_learning_on_for_instantiation = false;
         return false;
     }
 
@@ -700,11 +703,11 @@ bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
     if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
             !inst->match_goal->id->allow_bottom_up_chunks)
     {
-        m_learning_on = false;
+        m_learning_on_for_instantiation = false;
         return false;
     }
 
-    m_learning_on = true;
+    m_learning_on_for_instantiation = true;
     return true;
 }
 

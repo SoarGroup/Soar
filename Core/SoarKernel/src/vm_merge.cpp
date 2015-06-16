@@ -107,6 +107,8 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 
 void Variablization_Manager::merge_conditions(condition* top_cond)
 {
+    if (!m_learning_on) return;
+
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
