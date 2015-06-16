@@ -57,7 +57,9 @@ public:
 #pragma mark - Test Functions
 	
 	virtual void before() {};
-	virtual void after() {};
+	
+	// if caught, you are not allowed to throw more exceptions which, if done, will cause the unit testing framework to crash.
+	virtual void after(bool caught) {};
 };
 
 #endif /* TestCategory_cpp */

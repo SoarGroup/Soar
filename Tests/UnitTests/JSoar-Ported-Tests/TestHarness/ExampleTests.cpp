@@ -1,16 +1,16 @@
 //
-//  ExampleTest.cpp
+//  ExampleTests.cpp
 //  Soar-xcode
 //
 //  Created by Alex Turner on 6/16/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
 //
 
-#include "ExampleTest.hpp"
+#include "ExampleTests.hpp"
 
 #include <iostream>
 
-void ExampleTest::testWaterJug()
+void ExampleTests::testWaterJug()
 {
 	agent->ExecuteCommandLine("srand 1");
 	

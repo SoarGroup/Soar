@@ -49,8 +49,8 @@ public:
 	void before() { setUp(); }
 	void setUp();
 	
-	void after() { tearDown(); }
-	void tearDown();
+	void after(bool caught) { tearDown(caught); }
+	void tearDown(bool caught);
 	
 	static std::string haltHandler(sml::smlRhsEventId id,
 								   void* pUserData,

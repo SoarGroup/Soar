@@ -20,9 +20,16 @@ void TestRunner::run()
 
 	category->runner = this;
 	
-	category->before();
-	(*function)();
-	category->after();
+	
+	try {
+		category->before();
+		(*function)();
+		category->after(false);
+	} catch (std::exception& e) {
+		failed = true;
+		failureMessage = e.what();
+		category->after(true);
+	}
 	
 	done.store(true);
 	variable->notify_all();

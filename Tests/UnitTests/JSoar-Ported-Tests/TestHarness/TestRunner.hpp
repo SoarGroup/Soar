@@ -32,6 +32,9 @@ public:
 	std::atomic<bool> ready;
 	std::atomic<bool> done;
 	
+	bool failed;
+	std::string failureMessage;
+	
 	std::stringstream output;
 };
 

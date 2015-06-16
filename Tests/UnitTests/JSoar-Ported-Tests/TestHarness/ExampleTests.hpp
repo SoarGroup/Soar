@@ -8,10 +8,10 @@
 
 #include "FunctionalTestHarness.hpp"
 
-class ExampleTest : public FunctionalTestHarness
+class ExampleTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(ExampleTest)
+	FUNCTIONAL_TEST_CATEGORY(ExampleTests)
 	
 	TEST(testWaterJug, 5000)
 	void testWaterJug();

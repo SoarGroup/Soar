@@ -17,11 +17,11 @@
 
 // INCLUDE TEST HEADERS HERE
 
-#include "ExampleTest.hpp"
+#include "ExampleTests.hpp"
 
 int main(int argc, char** argv)
 {
-	const bool ShowTestOutput = true;
+	const bool ShowTestOutput = false;
 	
 	std::condition_variable variable;
 	std::mutex mutex;
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	
 	// DEFINE ALL TESTS HERE
 	
-	TEST_DECLARATION(ExampleTest);
+	TEST_DECLARATION(ExampleTests);
 	
 	for (TestCategory* category : tests)
 	{
@@ -71,9 +71,15 @@ int main(int argc, char** argv)
 				
 				runner->kill.store(true);
 			}
-			else
+			else if (!runner->failed)
 			{
 				std::cout << "Done" << std::endl;
+				std::cout.flush();
+			}
+			else
+			{
+				std::cout << "Failed: ";
+				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
 			}
 			
@@ -87,10 +93,10 @@ int main(int argc, char** argv)
 				std::cout.flush();
 			}
 			
-			if (ShowTestOutput)
+			if (ShowTestOutput || runner->failed)
 			{
-				std::cout << std::endl << std::get<2>(test) << " Output:" << std::endl;
-				std::cout << runner->output.str() << std::endl;
+				std::cout << std::get<2>(test) << " Output:" << std::endl;
+				std::cout << runner->output.str() << std::endl << std::endl;
 				std::cout.flush();
 			}
 		}

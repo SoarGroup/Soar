@@ -84,11 +84,12 @@ void FunctionalTestHarness::setUp()
 	installRHS(agent);
 }
 
-void FunctionalTestHarness::tearDown()
+void FunctionalTestHarness::tearDown(bool caught)
 {
 	kernel->DestroyAgent(agent);
 	kernel->Shutdown();
 	delete kernel;
+	kernel = nullptr;
 }
 
 std::string FunctionalTestHarness::haltHandler(sml::smlRhsEventId id,
@@ -100,6 +101,8 @@ std::string FunctionalTestHarness::haltHandler(sml::smlRhsEventId id,
 	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
 	
 	_this->halted = true;
+	_this->runner->failed = false;
+
 	return pAgent->StopSelf();
 }
 
@@ -113,6 +116,9 @@ std::string FunctionalTestHarness::failedHandler(sml::smlRhsEventId id,
 	
 	_this->halted = true;
 	_this->failed = true;
+	
+	_this->runner->failed = true;
+	
 	return pAgent->StopSelf();
 }
 
@@ -126,6 +132,8 @@ std::string FunctionalTestHarness::succeededHandler(sml::smlRhsEventId id,
 	
 	_this->halted = true;
 	_this->failed = false;
+	_this->runner->failed = false;
+	
 	return pAgent->StopSelf();
 }
 
