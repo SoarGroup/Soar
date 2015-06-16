@@ -215,6 +215,7 @@ if compiler == 'g++':
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
         if gcc_ver[0] > 3:
             env.Append(CPPFLAGS='-fvisibility=hidden')
+            
             config = Configure(env)
             if config.TryCompile('', '.cpp'):
                 cflags.append('-fvisibility=hidden')
@@ -268,6 +269,7 @@ env.Replace(
     LIBS=libs,
     LIBPATH=[os.path.realpath(GetOption('outdir'))],
 )
+env.Append(CXXFLAGS='-std=c++14')
 
 if sys.platform == 'win32':
     sys_lib_path = filter(None, os.environ.get('PATH', '').split(';'))
