@@ -439,8 +439,6 @@
 		4D98680B1B30A23D00B13711 /* ExampleTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D98680A1B30A23D00B13711 /* ExampleTests.cpp */; };
 		4D9868111B30A89A00B13711 /* FunctionalTestHarness.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D98680E1B30A7BC00B13711 /* FunctionalTestHarness.cpp */; };
 		4D9868141B30A8DC00B13711 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
-		4D98682B1B30C21200B13711 /* JSoar_Ported_Tests_Xcode.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D98682A1B30C21200B13711 /* JSoar_Ported_Tests_Xcode.m */; };
-		4D98682D1B30C21200B13711 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D999D2C1B2F3EE800C6700E /* main.cpp */; };
 		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 /* End PBXBuildFile section */
@@ -454,13 +452,6 @@
 			remoteInfo = Soar;
 		};
 		4D9868121B30A8D600B13711 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4D5105C01B2B41A80009AABC;
-			remoteInfo = Soar;
-		};
-		4D98682E1B30C21200B13711 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
 			proxyType = 1;
@@ -987,9 +978,6 @@
 		4D98680C1B30A30000B13711 /* ExampleTests.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ExampleTests.hpp; sourceTree = "<group>"; };
 		4D98680E1B30A7BC00B13711 /* FunctionalTestHarness.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTestHarness.cpp; sourceTree = "<group>"; };
 		4D98680F1B30A7BC00B13711 /* FunctionalTestHarness.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTestHarness.hpp; sourceTree = "<group>"; };
-		4D9868281B30C21200B13711 /* JSoar-Ported-Tests-Xcode.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "JSoar-Ported-Tests-Xcode.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4D98682A1B30C21200B13711 /* JSoar_Ported_Tests_Xcode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JSoar_Ported_Tests_Xcode.m; sourceTree = "<group>"; };
-		4D98682C1B30C21200B13711 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4D999D2A1B2F3EE800C6700E /* LaunchDebugger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LaunchDebugger; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D999D2C1B2F3EE800C6700E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1015,14 +1003,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D9868141B30A8DC00B13711 /* libSoar.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4D9868251B30C21200B13711 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4D98682D1B30C21200B13711 /* libSoar.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1054,7 +1034,6 @@
 				4D510A581B2B471B0009AABC /* UnitTests */,
 				4D999D2A1B2F3EE800C6700E /* LaunchDebugger */,
 				4D9867F71B30893700B13711 /* JSoar-UnitTests */,
-				4D9868281B30C21200B13711 /* JSoar-Ported-Tests-Xcode.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1674,7 +1653,6 @@
 		4D9867EA1B3083E200B13711 /* JSoar-Ported-Tests */ = {
 			isa = PBXGroup;
 			children = (
-				4D9868291B30C21200B13711 /* JSoar-Ported-Tests-Xcode */,
 				4D98680D1B30A7A000B13711 /* kernel */,
 				4D9867EB1B30840600B13711 /* TestHarness */,
 			);
@@ -1705,16 +1683,6 @@
 				4D98680F1B30A7BC00B13711 /* FunctionalTestHarness.hpp */,
 			);
 			path = kernel;
-			sourceTree = "<group>";
-		};
-		4D9868291B30C21200B13711 /* JSoar-Ported-Tests-Xcode */ = {
-			isa = PBXGroup;
-			children = (
-				4D98682A1B30C21200B13711 /* JSoar_Ported_Tests_Xcode.m */,
-				4D98682C1B30C21200B13711 /* Info.plist */,
-			);
-			name = "JSoar-Ported-Tests-Xcode";
-			path = "../../../IDE Projects/Soar-xcode/JSoar-Ported-Tests-Xcode";
 			sourceTree = "<group>";
 		};
 		4D999D2B1B2F3EE800C6700E /* LaunchDebugger */ = {
@@ -1964,24 +1932,6 @@
 			productReference = 4D9867F71B30893700B13711 /* JSoar-UnitTests */;
 			productType = "com.apple.product-type.tool";
 		};
-		4D9868271B30C21200B13711 /* JSoar-Ported-Tests-Xcode */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4D9868301B30C21200B13711 /* Build configuration list for PBXNativeTarget "JSoar-Ported-Tests-Xcode" */;
-			buildPhases = (
-				4D9868241B30C21200B13711 /* Sources */,
-				4D9868251B30C21200B13711 /* Frameworks */,
-				4D9868261B30C21200B13711 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				4D98682F1B30C21200B13711 /* PBXTargetDependency */,
-			);
-			name = "JSoar-Ported-Tests-Xcode";
-			productName = "JSoar-Ported-Tests-Xcode";
-			productReference = 4D9868281B30C21200B13711 /* JSoar-Ported-Tests-Xcode.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		4D999D291B2F3EE800C6700E /* LaunchDebugger */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4D999D301B2F3EE800C6700E /* Build configuration list for PBXNativeTarget "LaunchDebugger" */;
@@ -2018,9 +1968,6 @@
 					4D9867F61B30893700B13711 = {
 						CreatedOnToolsVersion = 7.0;
 					};
-					4D9868271B30C21200B13711 = {
-						CreatedOnToolsVersion = 7.0;
-					};
 					4D999D291B2F3EE800C6700E = {
 						CreatedOnToolsVersion = 7.0;
 					};
@@ -2042,20 +1989,9 @@
 				4D510A571B2B471B0009AABC /* UnitTests */,
 				4D999D291B2F3EE800C6700E /* LaunchDebugger */,
 				4D9867F61B30893700B13711 /* JSoar-UnitTests */,
-				4D9868271B30C21200B13711 /* JSoar-Ported-Tests-Xcode */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		4D9868261B30C21200B13711 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		4D999D251B2F312800C6700E /* ShellScript */ = {
@@ -2353,14 +2289,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4D9868241B30C21200B13711 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4D98682B1B30C21200B13711 /* JSoar_Ported_Tests_Xcode.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4D999D261B2F3EE800C6700E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2381,11 +2309,6 @@
 			isa = PBXTargetDependency;
 			target = 4D5105C01B2B41A80009AABC /* Soar */;
 			targetProxy = 4D9868121B30A8D600B13711 /* PBXContainerItemProxy */;
-		};
-		4D98682F1B30C21200B13711 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4D5105C01B2B41A80009AABC /* Soar */;
-			targetProxy = 4D98682E1B30C21200B13711 /* PBXContainerItemProxy */;
 		};
 		4D999D321B2F3EF100C6700E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2540,28 +2463,6 @@
 			};
 			name = Release;
 		};
-		4D9868311B30C21200B13711 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "JSoar-Ported-Tests-Xcode/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "edu.umich.JSoar-Ported-Tests-Xcode";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		4D9868321B30C21200B13711 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "JSoar-Ported-Tests-Xcode/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "edu.umich.JSoar-Ported-Tests-Xcode";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
 		4D999D2E1B2F3EE800C6700E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2611,14 +2512,6 @@
 			buildConfigurations = (
 				4D9867FC1B30893700B13711 /* Debug */,
 				4D9867FD1B30893700B13711 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		4D9868301B30C21200B13711 /* Build configuration list for PBXNativeTarget "JSoar-Ported-Tests-Xcode" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4D9868311B30C21200B13711 /* Debug */,
-				4D9868321B30C21200B13711 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
