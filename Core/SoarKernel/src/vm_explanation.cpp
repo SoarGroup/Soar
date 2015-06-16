@@ -144,13 +144,15 @@ void Variablization_Manager::explain_condition(rete_node* node,
                                         uint64_t pI_id,
                                         AddAdditionalTestsMode additional_tests)
 {
-    rete_test* rt = node->b.posneg.other_tests;
-
     if (additional_tests == JUST_INEQUALITIES)
     {
         explain_RL_condition(node, cond, w, nvn, pI_id, additional_tests);
         return;
     }
+
+    if (!m_learning_on) return;
+    rete_test* rt = node->b.posneg.other_tests;
+
     /* --- Store original referent information.  Note that sometimes the
      *     original referent equality will be stored in the beta nodes extra tests
      *     data structure rather than the alpha memory --- */
