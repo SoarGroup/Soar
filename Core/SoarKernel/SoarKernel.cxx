@@ -47,6 +47,7 @@
 #include "src/trace.cpp"
 #include "src/variablization_manager.cpp"
 #include "src/vm_constraints.cpp"
+#include "src/vm_explanation.cpp"
 #include "src/vm_map.cpp"
 #include "src/vm_merge.cpp"
 #include "src/vm_print.cpp"

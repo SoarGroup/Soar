@@ -4420,9 +4420,9 @@ void rete_node_to_conditions(agent* thisAgent,
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
-            if (additional_tests != DONT_ADD_TESTS)
+            if (additional_tests != DONT_EXPLAIN)
             {
-                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->variablizationManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
             }
 #endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
@@ -4482,9 +4482,9 @@ void rete_node_to_conditions(agent* thisAgent,
             dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: %l\n", cond);
 
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
-            if (additional_tests != DONT_ADD_TESTS)
+            if (additional_tests != DONT_EXPLAIN)
             {
-                add_constraints_and_identities(thisAgent, node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->variablizationManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else

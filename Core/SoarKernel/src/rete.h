@@ -400,7 +400,7 @@ extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         condition** dest_bottom_cond,
         action** dest_rhs,
         uint64_t i_id = 0,
-        AddAdditionalTestsMode additional_tests = DONT_ADD_TESTS);
+        AddAdditionalTestsMode additional_tests = DONT_EXPLAIN);
 extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
                                         byte field_num,
                                         struct token_struct* tok, wme* w);

@@ -212,12 +212,12 @@ rhs_value create_RHS_value(agent* thisAgent,
                            condition* cond,
                            char first_letter,
                            uint64_t pI_id,
-                           AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+                           AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 action* create_RHS_action_list(agent* thisAgent,
                                action* actions,
                                condition* cond,
                                uint64_t pI_id,
-                               AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+                               AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 
 
 #endif /* RHS_H_ */

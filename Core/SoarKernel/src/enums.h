@@ -142,7 +142,7 @@ enum SymbolTypes
 
 enum AddAdditionalTestsMode
 {
-    DONT_ADD_TESTS,
+    DONT_EXPLAIN,
     ALL_ORIGINALS,
     JUST_INEQUALITIES
 };

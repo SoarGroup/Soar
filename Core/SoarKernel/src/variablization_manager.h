@@ -70,6 +70,12 @@ class Variablization_Manager
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
         bool set_learning_for_instantiation(instantiation* inst);
 
+        void add_identity_to_original_id_test(condition* cond, byte field_num, rete_node_level levels_up);
+        void explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
+        void explain_RL_condition(rete_node* node, condition* cond,
+            wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+        void explain_condition(rete_node* node, condition* cond,
+            wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
 

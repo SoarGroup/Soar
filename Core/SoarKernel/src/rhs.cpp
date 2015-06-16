@@ -437,7 +437,7 @@ rhs_value create_RHS_value(agent* thisAgent,
          *    This case seems to only be for literal values including those in function calls. -- */
 
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        uint64_t lO_id = (add_original_vars != DONT_ADD_TESTS) ? rs->o_id : 0;
+        uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->o_id : 0;
         dprint(DT_RHS_VARIABLIZATION, "create_RHS_value: rhs_symbol %y o%u\n", rs->referent, lO_id);
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
     }

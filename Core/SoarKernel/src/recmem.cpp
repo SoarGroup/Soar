@@ -892,10 +892,10 @@ void create_instantiation(agent* thisAgent, production* prod,
     {
         additional_test_mode = ALL_ORIGINALS;
     } else  {
-        additional_test_mode = DONT_ADD_TESTS;
+        additional_test_mode = DONT_EXPLAIN;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
-//    if (additional_test_mode != DONT_ADD_TESTS)
+//    if (additional_test_mode != DONT_EXPLAIN)
 //    {
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
             &(inst->top_of_instantiated_conditions),
