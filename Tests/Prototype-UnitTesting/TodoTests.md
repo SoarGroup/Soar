@@ -2,7 +2,7 @@
 
 ### JSoar Unit Tests to Port
 
-- [ ] AgentTest
+- [x] AgentTest
 - [ ] BasicTests
 - [ ] ChunkingTests
 - [ ] DecisionCycleTest

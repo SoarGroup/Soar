@@ -56,7 +56,7 @@ int SoarHelper::getChunkProductionCount(sml::Agent* agent)
 {
 	std::string chunkPrefix = agent->ExecuteCommandLine("chunk-name-format -p");
 	chunkPrefix = chunkPrefix.substr(8, 5);
-
+	
 	std::string rules = agent->ExecuteCommandLine("p");
 	
 	std::stringstream ss(rules);
@@ -117,4 +117,73 @@ int SoarHelper::parseForCount(std::string search, std::string countString)
 	}
 	
 	return -1;
+}
+
+std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* agent)
+{
+	std::istringstream iss(agent->ExecuteCommandLine("set-stop-phase"));
+	
+	std::string s_before;
+	std::string s_phase;
+	std::string temp;
+	
+	iss >> temp >> s_before >> s_phase >> temp;
+	
+	bool before = false;
+	StopPhase phase = StopPhase::INPUT;
+	
+	if (s_before == "before")
+		before = true;
+	
+	if (s_phase == "input")
+		phase = StopPhase::INPUT;
+	else if (s_phase == "proposal")
+		phase = StopPhase::PROPOSAL;
+	else if (s_phase == "decision")
+		phase = StopPhase::DECISION;
+	else if (s_phase == "apply")
+		phase = StopPhase::APPLY;
+	else if (s_phase == "output")
+		phase = StopPhase::OUTPUT;
+	
+	return std::make_tuple(phase, before);
+}
+
+std::vector<std::string> SoarHelper::getGoalStack(sml::Agent* agent)
+{
+	std::string s_result = agent->ExecuteCommandLine("p --stack");
+	
+	std::stringstream ss(s_result);
+	
+	std::vector<std::string> v_result;
+	std::string line;
+	
+	while (std::getline(ss, line, '\n'))
+	{
+		size_t start = line.find("==>S: ")+6;
+		size_t end = line.find(" ", start);
+		
+		if (end == std::string::npos)
+			end = line.size();
+		
+		std::string goal = line.substr(start, end-start);
+		
+		v_result.push_back(goal);
+	}
+	
+	return v_result;
+}
+
+std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase phase)
+{
+	switch (phase)
+	{
+		case SoarHelper::StopPhase::INPUT: os << "INPUT";
+		case SoarHelper::StopPhase::PROPOSAL: os << "PROPOSAL";
+		case SoarHelper::StopPhase::DECISION: os << "DECISION";
+		case SoarHelper::StopPhase::APPLY: os << "APPLY";
+		case SoarHelper::StopPhase::OUTPUT: os << "OUTPUT";
+	}
+	
+	return os;
 }

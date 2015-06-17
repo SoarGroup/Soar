@@ -24,9 +24,24 @@ public:
 	static int getUserProductionCount(sml::Agent* agent);
 	static int getChunkProductionCount(sml::Agent* agent);
 	
+	enum class StopPhase
+	{
+		INPUT,
+		PROPOSAL,
+		DECISION,
+		APPLY,
+		OUTPUT
+	};
+	
+	// StopPhase, before=true/false
+	static std::tuple<StopPhase, bool> getStopPhase(sml::Agent* agent);
+	
+	static std::vector<std::string> getGoalStack(sml::Agent* agent);
 private:
 	static std::string getStats(sml::Agent* agent);
 	static int parseForCount(std::string search, std::string countString);
 };
+
+std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase);
 
 #endif /* SoarHelper_cpp */

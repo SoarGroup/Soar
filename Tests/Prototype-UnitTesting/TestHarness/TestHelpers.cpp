@@ -67,20 +67,6 @@ void assertFalse(std::string errorMessage, bool boolean)
 	}
 }
 
-void assertEquals(int64_t one, int64_t two)
-{
-	if (one != two)
-	{
-		std::stringstream ss;
-		ss << "Assert: Expected equal values (";
-		ss << one;
-		ss << ", ";
-		ss << two;
-		ss << ") but was unequal.";
-		throw AssertException(ss.str());
-	}
-}
-
 bool isfile(const char* path)
 {
 #ifdef _WIN32

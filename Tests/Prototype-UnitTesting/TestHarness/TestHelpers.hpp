@@ -10,6 +10,8 @@
 #define TestHelpers_cpp
 
 #include <string>
+#include <sstream>
+#include <vector>
 #include <iostream>
 
 #include <cassert>
@@ -38,15 +40,13 @@ public:
 
 #define TEST(X, Y) Test t_##X = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
 
-#define TEST_DECLARATION(X) X* testX = new X(); tests.push_back(testX);
+#define TEST_DECLARATION(X) tests.push_back(new X ());
 
 void assertTrue(std::string errorMessage, bool boolean);
 void assertTrue(bool boolean);
 
 void assertFalse(std::string errorMessage, bool boolean);
 void assertFalse(bool boolean);
-
-void assertEquals(int64_t one, int64_t two);
 
 bool isfile(const char* path);
 
@@ -84,5 +84,52 @@ protected:
 	std::string msg_;
 };
 
+template<class T>
+void assertEquals(T one, T two)
+{
+	if (one != two)
+	{
+		std::stringstream ss;
+		ss << "Assert: Expected equal values (";
+		ss << one;
+		ss << ", ";
+		ss << two;
+		ss << ") but was unequal.";
+		throw AssertException(ss.str());
+	}
+}
+
+template<class T>
+void assertEquals(std::vector<T> one, std::vector<T> two)
+{
+	if (one != two)
+	{
+		std::stringstream ss;
+		ss << "Assert: Expected equal values ([";
+		
+		auto outputter = [](std::vector<T> one) {
+			std::stringstream result;
+			
+			for (int i = 0;i < one.size();++i)
+			{
+				result << one[i];
+				
+				if ((i+1) != one.size())
+					result << ", ";
+			}
+			
+			return result;
+		};
+		
+		ss << outputter(one).str();
+		
+		ss << "], [";
+		
+		ss << outputter(two).str();
+		
+		ss << "]) but was unequal.";
+		throw AssertException(ss.str());
+	}
+}
 
 #endif /* TestHelpers_cpp */
