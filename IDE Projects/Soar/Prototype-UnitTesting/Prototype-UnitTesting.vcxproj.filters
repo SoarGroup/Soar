@@ -19,55 +19,61 @@
     <Filter Include="Source Files\kernel">
       <UniqueIdentifier>{33125eb5-21d6-4afc-bf65-fbe4eb48d35d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\SoarHelpers">
+      <UniqueIdentifier>{46cf023f-fd3b-4368-b50d-d6ed86a5775f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\ExampleTests.hpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestCategory.hpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestHelpers.hpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestRunner.hpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel\FunctionalTestHarness.hpp">
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp">
+      <Filter>Source Files\SoarHelpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\ExampleTests.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestCategory.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestHelpers.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\testMain.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestRunner.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel\FunctionalTestHarness.cpp">
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\testMain.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp">
+      <Filter>Source Files\SoarHelpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TodoTests.md">
+    <None Include="..\..\..\Tests\Prototype-UnitTesting\TodoTests.md">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

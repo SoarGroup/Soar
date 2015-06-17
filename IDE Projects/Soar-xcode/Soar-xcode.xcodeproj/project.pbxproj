@@ -1634,7 +1634,7 @@
 		4D510A591B2B471B0009AABC /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				4D9867EA1B3083E200B13711 /* JSoar-Ported-Tests */,
+				4D9867EA1B3083E200B13711 /* Prototype-UnitTesting */,
 				4D510A5F1B2B47600009AABC /* aliastest.cpp */,
 				4D510A601B2B47600009AABC /* cliparsertest.cpp */,
 				4D510A611B2B47600009AABC /* cliparsertest.h */,
@@ -1658,7 +1658,7 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
-		4D9867EA1B3083E200B13711 /* JSoar-Ported-Tests */ = {
+		4D9867EA1B3083E200B13711 /* Prototype-UnitTesting */ = {
 			isa = PBXGroup;
 			children = (
 				4DFF15811B31F131006CDD34 /* TodoTests.md */,
@@ -1666,8 +1666,8 @@
 				4D98680D1B30A7A000B13711 /* kernel */,
 				4D9867EB1B30840600B13711 /* TestHarness */,
 			);
-			name = "JSoar-Ported-Tests";
-			path = "../../../Tests/UnitTests/JSoar-Ported-Tests";
+			name = "Prototype-UnitTesting";
+			path = "../../../Tests/Prototype-UnitTesting";
 			sourceTree = "<group>";
 		};
 		4D9867EB1B30840600B13711 /* TestHarness */ = {

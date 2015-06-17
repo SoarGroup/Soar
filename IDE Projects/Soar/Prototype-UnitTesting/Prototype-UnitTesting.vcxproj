@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel;$(ProjectDir)\..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness;$(ProjectDir)\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -71,7 +71,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel;$(ProjectDir)\..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness;$(ProjectDir)\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -82,27 +82,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel\FunctionalTestHarness.hpp" />
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\ExampleTests.hpp" />
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestCategory.hpp" />
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestHelpers.hpp" />
-    <ClInclude Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestRunner.hpp" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\testMain.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\kernel\FunctionalTestHarness.cpp" />
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\ExampleTests.cpp" />
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestCategory.cpp" />
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestHelpers.cpp" />
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\testMain.cpp" />
-    <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestRunner.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TodoTests.md" />
+    <None Include="..\..\..\Tests\Prototype-UnitTesting\TodoTests.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

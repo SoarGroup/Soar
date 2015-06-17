@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 			runner->ready.store(true);
 			
 			variable.notify_all();
-			while (variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout)
+			while (variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout || !runner->done)
 			{
 				std::cout << '.';
 				std::cout.flush();
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 				std::cout << "Done" << std::endl;
 				std::cout.flush();
 			}
-			else
+			else if (runner->failed)
 			{
 				std::cout << "Failed: ";
 				std::cout << runner->failureMessage << std::endl << std::endl;
