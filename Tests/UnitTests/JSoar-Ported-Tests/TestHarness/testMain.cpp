@@ -103,6 +103,8 @@ int main(int argc, char** argv)
 				std::cout << runner->output.str() << std::endl << std::endl;
 				std::cout.flush();
 			}
+			
+			delete runner;
 		}
 	}
 
