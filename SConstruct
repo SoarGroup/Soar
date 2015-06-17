@@ -261,6 +261,9 @@ else:
 	sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
 	sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
 
+if sys.platform != 'win32':
+	env.Append(CXXFLAGS='-std=c++11')
+
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
