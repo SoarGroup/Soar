@@ -38,6 +38,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(FunctionalTests);
 	
 	size_t successCount = 0;
+	size_t testCount = 0;
 	
 	for (TestCategory* category : tests)
 	{
@@ -111,11 +112,13 @@ int main(int argc, char** argv)
 				++successCount;
 			}
 			
+			++testCount;
+			
 			delete runner;
 		}
 	}
 	
-	std::cout << "Completed " << successCount << "/" << tests.size() << " successfully.  " << tests.size() - successCount << " failed." << std::endl;
+	std::cout << "Completed " << successCount << "/" << testCount << " successfully. " << testCount - successCount << " failed." << std::endl;
 	std::cout.flush();
 
 #ifdef _MSC_VER
