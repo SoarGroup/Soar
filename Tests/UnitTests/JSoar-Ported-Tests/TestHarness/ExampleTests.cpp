@@ -12,7 +12,5 @@
 
 void ExampleTests::testWaterJug()
 {
-	agent->ExecuteCommandLine("srand 1");
-	
 	runTest("testWaterJug", -1);
 }
