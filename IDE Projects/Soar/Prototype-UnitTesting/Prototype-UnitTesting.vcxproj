@@ -101,6 +101,9 @@
     <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\testMain.cpp" />
     <ClCompile Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TestHarness\TestRunner.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TodoTests.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

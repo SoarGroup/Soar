@@ -66,4 +66,9 @@
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Tests\UnitTests\JSoar-Ported-Tests\TodoTests.md">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -443,6 +443,7 @@
 		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
+		4DFF15821B31F131006CDD34 /* TodoTests.md in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15811B31F131006CDD34 /* TodoTests.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -986,6 +987,7 @@
 		4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests.hpp; sourceTree = "<group>"; };
 		4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoarHelper.cpp; sourceTree = "<group>"; };
 		4DFF157B1B31D56E006CDD34 /* SoarHelper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SoarHelper.hpp; sourceTree = "<group>"; };
+		4DFF15811B31F131006CDD34 /* TodoTests.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = TodoTests.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1659,6 +1661,7 @@
 		4D9867EA1B3083E200B13711 /* JSoar-Ported-Tests */ = {
 			isa = PBXGroup;
 			children = (
+				4DFF15811B31F131006CDD34 /* TodoTests.md */,
 				4DFF15791B31D551006CDD34 /* Soar Helpers */,
 				4D98680D1B30A7A000B13711 /* kernel */,
 				4D9867EB1B30840600B13711 /* TestHarness */,
@@ -2303,6 +2306,7 @@
 				4D9868111B30A89A00B13711 /* FunctionalTestHarness.cpp in Sources */,
 				4D98680B1B30A23D00B13711 /* ExampleTests.cpp in Sources */,
 				4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */,
+				4DFF15821B31F131006CDD34 /* TodoTests.md in Sources */,
 				4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */,
 				4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */,
 				4D9867FE1B30894500B13711 /* TestCategory.cpp in Sources */,
