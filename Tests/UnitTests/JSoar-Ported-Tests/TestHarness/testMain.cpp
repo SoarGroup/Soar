@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 {
 	const bool ShowTestOutput = false;
 	
-	std::condition_variable variable;
+	std::condition_variable_any variable;
 	std::mutex mutex;
 	std::unique_lock<std::mutex> lock(mutex);
 	
@@ -36,6 +36,8 @@ int main(int argc, char** argv)
 	// DEFINE ALL TESTS HERE
 	
 	TEST_DECLARATION(FunctionalTests);
+	
+	size_t successCount = 0;
 	
 	for (TestCategory* category : tests)
 	{
@@ -104,9 +106,17 @@ int main(int argc, char** argv)
 				std::cout.flush();
 			}
 			
+			if (!runner->failed)
+			{
+				++successCount;
+			}
+			
 			delete runner;
 		}
 	}
+	
+	std::cout << "Completed " << successCount << "/" << tests.size() << " successfully.  " << tests.size() - successCount << " failed." << std::endl;
+	std::cout.flush();
 
 #ifdef _MSC_VER
 	if (IsDebuggerPresent())

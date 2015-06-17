@@ -21,10 +21,10 @@ class TestRunner
 	TestCategory* category;
 	TestFunction* function;
 	
-	std::condition_variable* variable;
+	std::condition_variable_any* variable;
 	
 public:
-	TestRunner(TestCategory* category, TestFunction* function, std::condition_variable* variable);
+	TestRunner(TestCategory* category, TestFunction* function, std::condition_variable_any* variable);
 	
 	void run();
 		

@@ -8,7 +8,7 @@
 
 #include "TestRunner.hpp"
 
-TestRunner::TestRunner(TestCategory* c, TestFunction* f, std::condition_variable* v)
+TestRunner::TestRunner(TestCategory* c, TestFunction* f, std::condition_variable_any* v)
 : category(c), function(f), variable(v), kill(false), ready(false), done(false)
 {}
 
