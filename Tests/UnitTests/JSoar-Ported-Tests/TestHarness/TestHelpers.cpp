@@ -41,12 +41,22 @@ const char* AssertException::what() const throw (){
 	return msg_.c_str();
 }
 
+void assertTrue(bool boolean)
+{
+	return assertTrue("Boolean true check failed.", boolean);
+}
+
 void assertTrue(std::string errorMessage, bool boolean)
 {
 	if (!boolean)
 	{
 		throw AssertException("Assert: " + errorMessage);
 	}
+}
+
+void assertFalse(bool boolean)
+{
+	return assertFalse("Boolean false check failed.", boolean);
 }
 
 void assertFalse(std::string errorMessage, bool boolean)

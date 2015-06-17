@@ -21,7 +21,7 @@
 
 // INCLUDE TEST HEADERS HERE
 
-#include "ExampleTests.hpp"
+#include "FunctionalTests.hpp"
 
 int main(int argc, char** argv)
 {
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 	
 	// DEFINE ALL TESTS HERE
 	
-	TEST_DECLARATION(ExampleTests);
+	TEST_DECLARATION(FunctionalTests);
 	
 	for (TestCategory* category : tests)
 	{

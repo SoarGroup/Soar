@@ -36,12 +36,16 @@ public:
             void (test_t::*m_fun)(); \
     };
 
-#define TEST(X, Y) Test tXY = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
+#define TEST(X, Y) Test t_##X = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
 
 #define TEST_DECLARATION(X) X* testX = new X(); tests.push_back(testX);
 
 void assertTrue(std::string errorMessage, bool boolean);
+void assertTrue(bool boolean);
+
 void assertFalse(std::string errorMessage, bool boolean);
+void assertFalse(bool boolean);
+
 void assertEquals(int64_t one, int64_t two);
 
 bool isfile(const char* path);
