@@ -1,0 +1,103 @@
+Soar Tests to Port (filled in = done, empty circle = to-do)
+
+- [ ] AgentTest
+- [ ] BasicTests
+- [ ] ChunkingTests
+- [ ] DecisionCycleTest
+- [ ] ??? DefaultProductionManager
+- [x] FunctionalTests
+- [ ] GDSTests
+- [ ] InitSoarTests
+- [ ] ??? LogManagerTest (requires log command??)
+- [ ] ParserTests
+- [ ] PreferenceTests
+- [ ] ??? ProductionFinderTests (Do we have this??)
+- [ ] ??? ProductionTest (Would this require direct access??)
+- [ ] ReteTests
+- [ ] RLTests
+- [ ] SMemEpMemCombinedFunctionalTests
+- [ ] WaterfallTests
+- [ ] ??? DebuggerCommand (Is this just a rename of `debug`?)
+- [ ] ExplainBacktracesCommand
+- [ ] ??? Handler (I don’t believe we have this command)
+- [ ] ??? LogCommandTest (I don’t believe we have this command)
+- [ ] PreferencesCommandTest
+- [ ] PrintCommandTest
+- [ ] ProductionBreakCommandTest
+- [ ] ProductionWatchCommandTest
+- [ ] ReteNetCommandTest
+- [ ] RunCommandTest
+- [ ] SaveBacktracesCommandTest
+- [ ] SetStopPhaseCommandTest
+- [ ] SourceCommandTest
+- [ ] WatchCommandTest
+- [ ] ??? DefaultEpisodicMemoryTest (requires direct OR slightly different handling)
+- [ ] ??? EpisodicMemoryDatabaseTest (requires direct)
+- [ ] EpMemFunctionalTests
+- [ ] ??? EpMemHamiltonRetrieveTest (requires direct)
+- [ ] ??? EpMemHamiltonStoreTests (requires direct)
+- [ ] ??? EpMemSaveToDbTests (requires direct)
+- [ ] OutputEventTest
+- [ ] StartEventTest
+- [ ] StopEventTest
+- [ ] CycleCountInputTest
+- [ ] InputOutputImplTest
+- [ ] ??? SoarBeanOutputManagerTest (do we have this???)
+- [ ] ??? SoarBeanReaderTest (do we have this???)
+- [ ] OutputCommandManagerTest
+- [ ] ??? DefaultQMemoryTest (do we have this???)
+- [ ] ??? SoarQMemoryAdapterTest (do we have this???)
+- [ ] ??? AutoTypeXmlToWmeTest (do we have this???)
+- [ ] ??? DefaultWmeToXmlTest (do we have this???)
+- [ ] ??? DefaultXmlToWmeTest (do we have this???)
+- [ ] ??? ManualTypeXmlToWmeTest (do we have this???)
+- [ ] ??? SoarTechWmeToXmlTest (do we have this???)
+- [ ] ??? SoarTechXmlToWmeTest (do we have this???)
+- [ ] ??? XmlMessageQueueTest (do we have this???)
+- [ ] ??? XmlToWmeToolsTest (do we have this???)
+- [ ] ExplainTest
+- [ ] ReinforcementLearningTest
+- [ ] RLParamsTests
+- [ ] ??? ContextVariableInfoTest (do we have this???)
+- [ ] DummyWmeTest
+- [ ] PreferenceTest (requires writing the tests which JSoar doesn’t have, or just porting it “as is” and requiring someone to do it in the future)
+- [ ] PreferenceTypeTest
+- [ ] RecognitionMemoryTest
+- [ ] ??? WmeImplTest
+- [ ] ??? WmesTest
+- [ ] WmeSupportInfoTest
+- [ ] WmeTest
+- [ ] ??? PredicatesTest (do we have this???)
+- [ ] ??? SoarModuleTest (I believe this is just a test we should have, eventually, but requires modularization of Soar like JSoar)
+- [ ] LexerTest
+- [ ] ParserImplTest
+- [ ] ??? ReteBuilderTest (empty test???)
+- [ ] ??? ReteNodeTypeTest (requires direct to rate???)
+- [ ] ??? ReteSerializeTest (Is this saving of rate to file and back? or?)
+- [ ] ??? ReteUnitTest (requires direct???)
+- [ ] SimplerMatcherTest
+- [ ] SoarReteListenerTest
+- [ ] RhsFunctionCallTest (requires exec <command> vs just <command> in JSoar)
+- [ ] ??? org.JSoar.kernel.rhs.functions (do we have these all?)
+- [ ] ??? DefaultSemanticMemoryTest (requires direct???)
+- [ ] ??? SemanticMemoryDatabaseTest (requires direct)
+- [ ] SMemFunctionalTests
+- [ ] IdentifierImplTest
+- [ ] StringSymbolImplTest
+- [ ] ??? SymbolFactoryImplTest (requires different method but we have this???)
+- [ ] SymbolImplTest
+- [ ] SymbolsTest
+- [ ] ??? PrinterTest (do we have an equivalent?)
+- [ ] ??? PrintEventWriterTest (do we have an equivalent?)
+- [ ] ??? TraceTest (do we have an equivalent?)
+- [ ] WmaFunctionalTests
+- [ ] ??? ThreadedAgentTest (do we have an equivalent?)
+- [ ] ??? WaitRhsFunctionTest (do we have an equivalent?)
+- [ ] ??? ScriptCommandTest (we don’t have this? This is javascript in Soar?!?!?)
+- [ ] ??? org.JSoar.util.* (we have none of these right??)
+- [ ] DefaultInterpreterParserTest
+- [ ] DefaultInterpreterTest
+- [ ] OptionProcessorTest
+- [ ] SoarEventsTest
+- [ ] ??? org.soar.util.properties.* (we have none of these???)
+- [ ] ??? DefaultExecutionTimerTest (we don’t have this right???)
