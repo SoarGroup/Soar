@@ -6,6 +6,9 @@
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
 //
 
+#ifndef ExampleTest_cpp
+#define ExampleTest_cpp
+
 #include "FunctionalTestHarness.hpp"
 
 class ExampleTests : public FunctionalTestHarness
@@ -16,3 +19,5 @@ public:
 	TEST(testWaterJug, 5000)
 	void testWaterJug();
 };
+
+#endif
