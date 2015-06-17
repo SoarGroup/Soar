@@ -35,14 +35,11 @@ private:
 public:
 	std::vector<TestCategory_test> m_TestCategory_tests;
 
-#pragma mark - Getters & Setters	
 	const std::string getCategoryName() { return m_categoryName; }
 	const std::vector<TestCategory_test> getTests() { return m_TestCategory_tests; }
 	
 	TestRunner* runner;
-	
-#pragma mark - Test Helpers
-	
+		
 	class Test
 	{
 	public:
@@ -53,9 +50,7 @@ public:
 	};
 	
 	TestCategory(std::string testCategoryName) : m_categoryName(testCategoryName) {}
-	
-#pragma mark - Test Functions
-	
+		
 	virtual void before() {};
 	
 	// if caught, you are not allowed to throw more exceptions which, if done, will cause the unit testing framework to crash.

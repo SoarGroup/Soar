@@ -15,6 +15,10 @@
 #include <atomic>
 #include <iostream>
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
 // INCLUDE TEST HEADERS HERE
 
 #include "ExampleTests.hpp"
@@ -49,7 +53,7 @@ int main(int argc, char** argv)
 			
 			std::thread (&TestRunner::run, runner).detach();
 			
-			uint64_t timeElapsed;
+			uint64_t timeElapsed = 0;
 			
 			runner->ready.store(true);
 			
@@ -101,4 +105,12 @@ int main(int argc, char** argv)
 			}
 		}
 	}
+
+#ifdef _MSC_VER
+	if (IsDebuggerPresent())
+	{
+		std::cout << "Press enter to continue..." << std::endl;
+		std::cin.get();
+	}
+#endif
 }

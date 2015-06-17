@@ -8,6 +8,10 @@
 
 #include "TestHelpers.hpp"
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
 #include <exception>
 #include <sstream>
 
