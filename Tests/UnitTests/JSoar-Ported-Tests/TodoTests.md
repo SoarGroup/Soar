@@ -127,4 +127,4 @@
 
 - [ ] Split Prototype Unit Testing into its own project and use git modules to check it out
 - [ ] Add fancier output
-- [ ] Add summary of tests in #s.
+- [x] Add summary of tests in #s.
