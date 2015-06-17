@@ -16,6 +16,7 @@
 class SoarHelper
 {
 public:
+	static int getDecisionPhasesCount(sml::Agent* agent);
 	static int getD_CYCLE_COUNT(sml::Agent* agent);
 	static int getE_CYCLE_COUNT(sml::Agent* agent);
 	static int getPE_CYCLE_COUNT(sml::Agent* agent);

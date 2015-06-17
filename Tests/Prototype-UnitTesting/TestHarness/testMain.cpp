@@ -21,8 +21,9 @@
 
 // INCLUDE TEST HEADERS HERE
 
-#include "FunctionalTests.hpp"
 #include "AgentTest.hpp"
+#include "BasicTests.hpp"
+#include "FunctionalTests.hpp"
 
 int main(int argc, char** argv)
 {
@@ -37,6 +38,7 @@ int main(int argc, char** argv)
 	// DEFINE ALL TESTS HERE
 	
 	TEST_DECLARATION(AgentTest);
+	TEST_DECLARATION(BasicTests);
 	TEST_DECLARATION(FunctionalTests);
 	
 	size_t successCount = 0;

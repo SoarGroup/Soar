@@ -8,6 +8,8 @@
 
 #include "FunctionalTestHarness.hpp"
 
+#include "SoarHelper.hpp"
+
 FunctionalTestHarness::FunctionalTestHarness(std::string categoryName)
 : TestCategory(categoryName)
 {}
@@ -21,6 +23,9 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	
 	runner->output << "Loaded Productions for " << sourceName << ":" << std::endl;
 	runner->output << result << std::endl;
+	
+	result = agent->ExecuteCommandLine("set-stop-phase --apply");
+	runner->output << "Set Stop Phase: " << result << std::endl;
 }
 
 // this function assumes some other function has set up the agent (like runTestSetup)
@@ -43,7 +48,7 @@ void FunctionalTestHarness::runTestExecute(std::string testName, int expectedDec
 	assertFalse(testName + " functional test failed", failed);
 	if(expectedDecisions >= 0)
 	{
-		assertEquals(expectedDecisions, agent->GetDecisionCycleCounter()); // deterministic!
+		assertEquals(expectedDecisions, SoarHelper::getDecisionPhasesCount(agent)); // deterministic!
 	}
 	
 	agent->ExecuteCommandLine("stats");

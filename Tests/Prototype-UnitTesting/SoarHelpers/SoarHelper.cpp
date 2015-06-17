@@ -15,6 +15,14 @@ int SoarHelper::getD_CYCLE_COUNT(sml::Agent* agent)
 	return SoarHelper::parseForCount("decisions", SoarHelper::getStats(agent));
 }
 
+int SoarHelper::getDecisionPhasesCount(sml::Agent* agent)
+{
+	std::stringstream ss(agent->ExecuteCommandLine("stats --decision"));
+	int result;
+	ss >> result;
+	return result;
+}
+
 int SoarHelper::getE_CYCLE_COUNT(sml::Agent* agent)
 {
 	return SoarHelper::parseForCount("elaboration cycles", SoarHelper::getStats(agent));
