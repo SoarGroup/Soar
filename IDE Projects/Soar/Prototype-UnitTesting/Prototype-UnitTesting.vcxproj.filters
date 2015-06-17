@@ -45,6 +45,12 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp">
       <Filter>Source Files\SoarHelpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
@@ -70,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp">
       <Filter>Source Files\SoarHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp">
+      <Filter>Source Files\kernel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -82,6 +82,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp" />
@@ -91,6 +93,8 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp" />
