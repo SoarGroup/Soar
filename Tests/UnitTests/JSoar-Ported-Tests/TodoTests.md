@@ -1,4 +1,6 @@
-Soar Tests to Port (filled in = done, empty circle = to-do)
+## Soar Tests to Port
+
+### JSoar Unit Tests to Port
 
 - [ ] AgentTest
 - [ ] BasicTests
@@ -101,3 +103,26 @@ Soar Tests to Port (filled in = done, empty circle = to-do)
 - [ ] SoarEventsTest
 - [ ] ??? org.soar.util.properties.* (we have none of these???)
 - [ ] ??? DefaultExecutionTimerTest (we don’t have this right???)
+
+### Existing Soar Tests to Port
+
+- [ ] Port `aliastest` to Prototype-UnitTesting
+- [ ] Port `cliparsertest` to Prototype-UnitTesting
+- [ ] Port `elementxmltest` to Prototype-UnitTesting
+- [ ] Port `epmemtest` to Prototype-UnitTesting
+- [ ] Port `fulltests` to Prototype-UnitTesting
+- [ ] Port `iotest` to Prototype-UnitTesting
+- [ ] Port `misctests` to Prototype-UnitTesting
+- [ ] Port `multiagenttest` to Prototype-UnitTesting
+- [ ] Port `sanitytest` to Prototype-UnitTesting
+- [ ] Port `simplelistener` to Prototype-UnitTesting
+- [ ] Port `smemmathtest` to Prototype-UnitTesting
+- [ ] Port `smemtest` to Prototype-UnitTesting
+- [ ] Port `tokenizertest` to Prototype-UnitTesting
+- [ ] Port `handlers` to Prototype-UnitTesting
+
+### Misc Todo
+
+- [ ] Split Prototype Unit Testing into its own project and use git modules to check it out
+- [ ] Add fancier output
+- [ ] Add summary of tests in #s.
