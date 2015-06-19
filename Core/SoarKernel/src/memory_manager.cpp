@@ -54,7 +54,7 @@ void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* p
     }
 
     // dynamic memory pools (should come before consumers of dynamic pools)
-    dyn_memory_pools = new std::map< size_t, memory_pool* >();
+    dyn_memory_pools = new std::unordered_map< size_t, memory_pool* >();
     dprint(DT_SOAR_INSTANCE, "MemPool_Manager initialized.\n");
 }
 
@@ -80,7 +80,7 @@ Memory_Manager::~Memory_Manager()
     }
 
     // dynamic memory pools (cleared in the last step)
-    for (std::map< size_t, memory_pool* >::iterator it = dyn_memory_pools->begin(); it != dyn_memory_pools->end(); it++)
+    for (std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools->begin(); it != dyn_memory_pools->end(); it++)
     {
         delete it->second;
     }
@@ -139,7 +139,7 @@ memory_pool* Memory_Manager::get_memory_pool(size_t size)
 {
     memory_pool* return_val = NULL;
 
-    std::map< size_t, memory_pool* >::iterator it = dyn_memory_pools->find(size);
+    std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools->find(size);
     if (it == dyn_memory_pools->end())
     {
         memory_pool* newbie = new memory_pool;

@@ -34,7 +34,7 @@
 #include <stdio.h>  // Needed for FILE token below
 #include <string.h>     // Needed for strlen, etc. below
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #ifndef _WIN32
 #include <strings.h>
@@ -143,7 +143,7 @@ class Memory_Manager
         void print_memory_statistics();
         void debug_print_memory_stats(agent* thisAgent);
 
-        std::map< size_t, memory_pool* >*   dyn_memory_pools;
+        std::unordered_map< size_t, memory_pool* >*   dyn_memory_pools;
 
     private:
 
