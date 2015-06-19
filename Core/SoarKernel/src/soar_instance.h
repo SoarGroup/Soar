@@ -9,7 +9,7 @@
 #define SOARINSTANCE_H_
 
 #include "portability.h"
-#include <map>
+#include <unordered_map>
 #include "Export.h"
 #include "enums.h"
 
@@ -36,19 +36,19 @@ typedef struct Soar_Loaded_Library_struct
  *    that CLI modules are only used within embedded kernels?)
  *     -- */
 
-typedef struct Agent_Info_Struct
-{
-    sml::AgentSML* soarAgentSML;
-} Agent_Info;
+//typedef struct Agent_Info_Struct
+//{
+//    sml::AgentSML* soarAgentSML;
+//} Agent_Info;
 
-struct cmp_str
-{
-    bool operator()(char const* a, char const* b) const
-    {
-        return strcmp(a, b) < 0;
-    }
-};
-
+//struct cmp_str
+//{
+//    bool operator()(char const* a, char const* b) const
+//    {
+//        return strcmp(a, b) < 0;
+//    }
+//};
+//
 class EXPORT Soar_Instance
 {
     public:
@@ -66,7 +66,6 @@ class EXPORT Soar_Instance
 
         void Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
         void Delete_Agent(char* pAgentName);
-        sml::AgentSML* Get_Soar_AgentSML(char* pAgentName);
 
         void Set_Kernel(sml::Kernel* pKernel)
         {
@@ -103,11 +102,12 @@ class EXPORT Soar_Instance
         Output_Manager*          m_Output_Manager;
         Memory_Manager*         m_Memory_Manager;
 
-        std::map< char*, Agent_Info*, cmp_str>* m_agent_table;
-        std::map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
+//        std::unordered_map< char*, Agent_Info*, cmp_str>* m_agent_table;
+        std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
+        std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
 
         chunkNameFormats chunkNameFormat;
-        Agent_Info* Get_Agent_Info(char* pAgentName);
+        sml::AgentSML* Get_Agent_Info(char* pAgentName);
         void Print_Agent_Table();
 
 };

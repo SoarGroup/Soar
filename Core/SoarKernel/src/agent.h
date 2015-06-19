@@ -34,6 +34,7 @@
 #include "semantic_memory.h"
 #include <string>
 #include <map>
+#include <unordered_map>
 
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
@@ -824,7 +825,7 @@ typedef struct agent_struct
     bool smem_ignore_changes;
 
     // dynamic RHS counters
-    std::map< std::string, uint64_t >* dyn_counters;
+    std::unordered_map< std::string, uint64_t >* dyn_counters;
 
 
     // JRV: Added to support XML management inside Soar

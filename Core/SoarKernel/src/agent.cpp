@@ -312,7 +312,7 @@ agent* create_soar_agent(char* agent_name)                                      
 #endif
 
     // dynamic counters
-    thisAgent->dyn_counters = new std::map< std::string, uint64_t >();
+    thisAgent->dyn_counters = new std::unordered_map< std::string, uint64_t >();
 
     // exploration initialization
     thisAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter(0.1, &exploration_validate_epsilon, "epsilon");

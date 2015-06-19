@@ -255,7 +255,7 @@ void CommandLineInterface::GetAgentStats()
     m_Result << "Counter          Value\n";
     m_Result << "---------------- -----------\n";
 
-    for (std::map< std::string, uint64_t >::iterator it = thisAgent->dyn_counters->begin(); it != thisAgent->dyn_counters->end(); it++)
+    for (std::unordered_map< std::string, uint64_t >::iterator it = thisAgent->dyn_counters->begin(); it != thisAgent->dyn_counters->end(); it++)
     {
         m_Result << std::setw(16) << it->first << " " << std::setw(11) << it->second << "\n";
     }
