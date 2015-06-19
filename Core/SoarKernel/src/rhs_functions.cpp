@@ -623,12 +623,12 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
 void recursive_deep_copy_helper(agent* thisAgent,
                                 Symbol* id_to_process,
                                 Symbol* parent_id,
-                                std::map<Symbol*, Symbol*>& processedSymbols);
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols);
 
 void recursive_wme_copy(agent* thisAgent,
                         Symbol* parent_id,
                         wme* curwme,
-                        std::map<Symbol*, Symbol*>& processedSymbols)
+                        std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
 
     bool made_new_attr_symbol = false;
@@ -642,7 +642,7 @@ void recursive_wme_copy(agent* thisAgent,
     if (curwme->attr->symbol_type == 1)
     {
         /* Have I already made a new identifier for this identifier */
-        std::map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
+        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -665,7 +665,7 @@ void recursive_wme_copy(agent* thisAgent,
     if (curwme->value->symbol_type == 1)
     {
         /* Have I already made a new identifier for this identifier */
-        std::map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->value);
+        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->value);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -709,7 +709,7 @@ void recursive_wme_copy(agent* thisAgent,
 void recursive_deep_copy_helper(agent* thisAgent,
                                 Symbol* id_to_process,
                                 Symbol* parent_id,
-                                std::map<Symbol*, Symbol*>& processedSymbols)
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
     /* If this symbol has already been processed then ignore it and return */
     if (processedSymbols.find(id_to_process) != processedSymbols.end())
@@ -770,7 +770,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     Symbol* retval = make_new_identifier(thisAgent, 'D', 1, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
-    std::map<Symbol*, Symbol*> processedSymbols;
+    std::unordered_map<Symbol*, Symbol*> processedSymbols;
     recursive_deep_copy_helper(thisAgent,
                                baseid,
                                retval,
