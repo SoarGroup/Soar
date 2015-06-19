@@ -85,7 +85,7 @@ void Variablization_Manager::cache_constraints_in_cond(condition* c)
 
 attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
 {
-    std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
+    std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
         dprint(DT_CONSTRAINTS, "...found attachment point: %y(o%u) -> %s of %l\n",
@@ -101,7 +101,7 @@ attachment_point* Variablization_Manager::get_attachment_point(uint64_t pO_id)
 
 bool Variablization_Manager::has_positive_condition(uint64_t pO_id)
 {
-    std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
+    std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
         dprint(DT_CONSTRAINTS, "...found positive condition, returning true: %y(o%u) -> %s of %l\n",
@@ -118,7 +118,7 @@ bool Variablization_Manager::has_positive_condition(uint64_t pO_id)
 
 void Variablization_Manager::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
 {
-    std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
+    std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
         dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %y(o%u) -> %s of %l\n",

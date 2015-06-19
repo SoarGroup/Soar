@@ -19,18 +19,18 @@
 Variablization_Manager::Variablization_Manager(agent* myAgent)
 {
     thisAgent = myAgent;
-    sym_to_var_map = new std::map< Symbol*, Symbol* >();
-    o_id_to_var_map = new std::map< uint64_t, Symbol* >();
+    sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
+    o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
 
-    rulesym_to_identity_map = new std::map< uint64_t, std::map< Symbol*, uint64_t > >();
-    o_id_to_ovar_debug_map = new std::map< uint64_t, Symbol* >();
+    rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
+    o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
 
     constraints = new std::list< constraint* >;
-    attachment_points = new std::map< uint64_t, attachment_point* >();
+    attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
 
-    unification_map = new std::map< uint64_t, uint64_t >();
+    unification_map = new std::unordered_map< uint64_t, uint64_t >();
 
-    cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
+    cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
 
     inst_id_counter = 0;
     ovar_id_counter = 0;
@@ -69,7 +69,7 @@ Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_i
         return NULL;
     }
 
-    std::map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
         dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y\n", index_id, iter->second);
@@ -85,7 +85,7 @@ Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_i
 
 Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
 {
-    std::map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
+    std::unordered_map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
     if (iter != (*sym_to_var_map).end())
     {
         dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y\n", index_sym, iter->second);

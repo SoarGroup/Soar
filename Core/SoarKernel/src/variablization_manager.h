@@ -13,6 +13,7 @@
 #include "test.h"
 #include <list>
 #include <set>
+#include <unordered_map>
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -169,20 +170,20 @@ class Variablization_Manager
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
 
-        std::map< uint64_t, std::map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
-        std::map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
-        std::map< uint64_t, uint64_t >*                         unification_map;
+        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
+        std::unordered_map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
+        std::unordered_map< uint64_t, uint64_t >*                         unification_map;
 
         /* -- Look-up tables for LHS variablization -- */
-        std::map< uint64_t, Symbol* >*   o_id_to_var_map;
-        std::map< Symbol*, Symbol* >*    sym_to_var_map;
+        std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
+        std::unordered_map< Symbol*, Symbol* >*    sym_to_var_map;
 
         std::list< constraint* >* constraints;
-        std::map< uint64_t, attachment_point* >* attachment_points;
+        std::unordered_map< uint64_t, attachment_point* >* attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
-        std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >* cond_merge_map;
+        std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >* cond_merge_map;
 
         /* -- A counter for variablization and instantiation id's. 0 is the default
          *    value and not considered a valid id. -- */

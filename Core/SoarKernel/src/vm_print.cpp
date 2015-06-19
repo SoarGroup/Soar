@@ -36,9 +36,9 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >::iterator iter_id;
-    std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
-    std::map< Symbol*, condition*>::iterator iter_value;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >::iterator iter_id;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> >::iterator iter_attr;
+    std::unordered_map< Symbol*, condition*>::iterator iter_value;
 
     for (iter_id = cond_merge_map->begin(); iter_id != cond_merge_map->end(); ++iter_id)
     {
@@ -67,8 +67,8 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_inst;
-    std::map< Symbol*, uint64_t > ::iterator iter_sym;
+    std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_inst;
+    std::unordered_map< Symbol*, uint64_t > ::iterator iter_sym;
 
     for (iter_inst = rulesym_to_identity_map->begin(); iter_inst != rulesym_to_identity_map->end(); ++iter_inst)
     {
@@ -95,7 +95,7 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    std::map< uint64_t, uint64_t >::iterator iter;
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
@@ -119,7 +119,7 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    std::map< uint64_t, Symbol* >::iterator iter;
+    std::unordered_map< uint64_t, Symbol* >::iterator iter;
 
     for (iter = o_id_to_ovar_debug_map->begin(); iter != o_id_to_ovar_debug_map->end(); ++iter)
     {
@@ -140,7 +140,7 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
         outputManager->printa_sf(thisAgent, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
     }
@@ -176,7 +176,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         {
             outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
         }
-        for (std::map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
+        for (std::unordered_map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
         {
             outputManager->printa_sf(thisAgent, "%y -> %y\n", it->first, it->second);
         }
@@ -188,7 +188,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
         {
             outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
         }
-        for (std::map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+        for (std::unordered_map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
         {
             outputManager->printa_sf(thisAgent, "o%u -> %y\n", it->first, it->second);
         }

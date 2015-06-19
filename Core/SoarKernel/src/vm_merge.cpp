@@ -28,9 +28,9 @@ void Variablization_Manager::merge_values_in_conds(condition* pDestCond, conditi
 
 condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
 {
-    std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >::iterator iter_id;
-    std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
-    std::map< Symbol*, condition*>::iterator iter_value;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >::iterator iter_id;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> >::iterator iter_attr;
+    std::unordered_map< Symbol*, condition*>::iterator iter_value;
 
     dprint(DT_MERGE, "...looking for id equality test %y\n", pCond->data.tests.id_test->eq_test->data.referent);
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);

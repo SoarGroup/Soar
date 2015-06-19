@@ -18,7 +18,7 @@
 
 bool Variablization_Manager::in_null_identity_set(test t)
 {
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
+    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
@@ -32,7 +32,7 @@ bool Variablization_Manager::in_null_identity_set(test t)
 void Variablization_Manager::unify_identity(test t)
 {
     if (!m_learning_on) return;
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
+    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u -> o%u\n",
@@ -54,7 +54,7 @@ void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent,
     } else if (field == VALUE_ELEMENT) {
         lO_id = result->o_ids.value;
     }
-    std::map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(lO_id);
+    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(lO_id);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification o%u (%y) -> o%u (%y)\n",
@@ -97,7 +97,7 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
 
 void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
-    std::map< uint64_t, uint64_t >::iterator iter;
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
@@ -112,7 +112,7 @@ void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64
 
 void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
-    std::map< uint64_t, uint64_t >::iterator iter;
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t newID;
 
     assert(pOld_o_id);

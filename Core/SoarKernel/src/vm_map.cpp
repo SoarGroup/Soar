@@ -30,7 +30,7 @@ void Variablization_Manager::clear_data()
 void Variablization_Manager::clear_attachment_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing attachment map...\n");
-    for (std::map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
         // Don't print anything from condition b/c it could be deallocated when this is being cleared
         dprint(DT_VM_MAPS, "Clearing %u -> %s of a condition in chunk.\n", it->first, field_to_string(it->second->field));
@@ -44,7 +44,7 @@ void Variablization_Manager::clear_variablization_maps()
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
     /* -- Clear symbol->variablization map -- */
-    for (std::map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
+    for (std::unordered_map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %y -> %y\n", it->first, it->second);
         symbol_remove_ref(thisAgent, it->first);
@@ -54,7 +54,7 @@ void Variablization_Manager::clear_variablization_maps()
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
     /* -- Clear grounding_id->variablization map -- */
-    for (std::map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+    for (std::unordered_map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
         symbol_remove_ref(thisAgent, it->second);
@@ -86,8 +86,8 @@ void Variablization_Manager::clear_rulesym_to_identity_map()
 uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 {
     if (!m_learning_on) return NULL_IDENTITY_SET;
-    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
-    std::map< Symbol*, uint64_t >::iterator iter_inst;
+    std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
+    std::unordered_map< Symbol*, uint64_t >::iterator iter_inst;
 
     //        dprint(DT_VM_MAPS, "...Looking  for instantiation id %u\n", inst_id);
     assert(orig_var && pI_id);
@@ -111,6 +111,8 @@ uint64_t Variablization_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI
 
 void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
+    assert(m_learning_on || rulesym_to_identity_map->size() == 0);
+    assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
     if (!m_learning_on) return;
 
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
@@ -119,8 +121,8 @@ void Variablization_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
-    std::map< uint64_t, std::map< Symbol*, uint64_t > >::iterator iter_sym;
-    std::map< Symbol*, uint64_t >::iterator iter_inst;
+    std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
+    std::unordered_map< Symbol*, uint64_t >::iterator iter_inst;
     iter_sym = rulesym_to_identity_map->find(pI_id);
     if (iter_sym != rulesym_to_identity_map->end())
     {
@@ -166,7 +168,7 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
     if (!m_learning_on) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
-    std::map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
+    std::unordered_map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
     if (iter != o_id_to_ovar_debug_map->end())
     {
 //        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);
