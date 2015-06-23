@@ -1,0 +1,148 @@
+smem --set learning on
+
+sp {propose-initialize
+    (state <s> ^superstate nil
+				-^goal)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name initialize)
+}
+
+sp {apply-initialize
+	(state <s> ^operator <op>)
+	(<op> ^name initialize)
+-->
+	(<s> ^goal first-query)
+}
+
+sp {propose-first-query
+	(state <s> ^superstate nil
+				^goal first-query)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name first-query)
+}
+
+sp {apply-first-query
+	(state <s> ^operator <op>
+				^smem.command <cmd>)
+	(<op> ^name first-query)
+-->
+	(<s> ^goal first-query -)
+	(<s> ^goal copy-result)
+	(<cmd> ^query.a 1)
+}
+
+sp {propose-copy-result
+	(state <s> ^superstate nil
+				^goal copy-result)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name copy-result)
+}
+
+sp {apply-copy-result
+	(state <s> ^operator <op>
+				^smem <smem>)
+	(<smem> ^result.retrieved <ret>
+			^command <cmd>)
+	(<cmd> ^query <qry>)
+	(<op> ^name copy-result)
+-->
+	(<cmd> ^query <qry> -)
+	(<s> ^goal copy-result -)
+	(<s> ^goal second-query
+			^first-result <ret>)
+}
+
+sp {propose-second-query
+	(state <s> ^superstate nil
+				^goal second-query)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name second-query)
+}
+
+sp {apply-second-query
+	(state <s> ^operator <op>
+				^smem.command <cmd>
+				^first-result <fr>)
+	(<fr> ^b <b>
+			^d <d>)
+	(<op> ^name second-query)
+-->
+	(<s> ^goal second-query -)
+	(<s> ^goal make-second-query)
+	(<cmd> ^query.a 1
+			^neg-query <nq>)
+	(<nq> ^b <b>
+			^d <d>)
+}
+
+sp {propose-make-second-query
+	(state <s> ^superstate nil
+				^goal make-second-query)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name make-second-query)
+}
+
+sp {apply-make-second-query
+	(state <s> ^operator <o>)
+	(<o> ^name make-second-query)
+-->
+	(<s> ^goal make-second-query -)
+	(<s> ^goal compare-results)
+}
+
+sp {elaborate-success
+	(state <s> ^goal compare-results
+				^first-result.b <b-good>
+				^smem.result.retrieved <ret>)
+	(<ret> -^b <b-good>
+			^b <other>)
+-->
+	(exec succeeded)
+}
+
+sp {elaborate-failure-same-memory
+	(state <s> ^goal compare-results
+				^first-result.b <b-good>
+				^smem.result.retrieved <ret>)
+	(<ret> ^b <b-good>)
+-->
+	(exec failed)
+}
+
+sp {elaborate-failure-no-memory
+	(state <s> ^goal compare-results
+				^first-result.b <b-good>
+				^smem.result.retrieved <ret>)
+	(<ret> -^b)
+-->
+	(exec failed)
+}
+
+smem --add {
+(<n1> ^a 1
+		^b two
+		^c 1 
+		^d .1)
+(<n2> ^a 1
+		^b three
+		^c 2  
+		^d .2)
+(<n3> ^a 1
+		^b four
+		^c 3  
+		^d .3)
+(<n4> ^a 2
+		^b five
+		^c 4  
+		^d .4)
+(<n5> ^a 3
+		^b six
+		^c 5  
+		^d .5)
+}
+

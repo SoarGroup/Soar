@@ -67,6 +67,19 @@ void assertFalse(std::string errorMessage, bool boolean)
 	}
 }
 
+void assertNotNull(std::string errorMessage, void* pointer)
+{
+	if (pointer == nullptr)
+	{
+		throw AssertException("Assert: " + errorMessage);
+	}
+}
+
+void assertNotNull(void* pointer)
+{
+	return assertNotNull("Null pointer check failed.", pointer);
+}
+
 bool isfile(const char* path)
 {
 #ifdef _WIN32

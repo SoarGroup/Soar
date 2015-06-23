@@ -24,9 +24,11 @@
 #include "AgentTest.hpp"
 #include "BasicTests.hpp"
 #include "FunctionalTests.hpp"
+#include "FunctionalTests_EpMem.hpp"
+#include "FunctionalTests_SMemEpMemCombined.hpp"
 
 int main(int argc, char** argv)
-{
+{	
 	const bool ShowTestOutput = false;
 	
 	std::condition_variable_any variable;
@@ -40,13 +42,15 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(AgentTest);
 	TEST_DECLARATION(BasicTests);
 	TEST_DECLARATION(FunctionalTests);
+	TEST_DECLARATION(EpMemFunctionalTests);
+	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
 	
 	for (TestCategory* category : tests)
 	{
-		std::cout << "Running " << category->getCategoryName() << ":" << std::endl;
+		std::cout << std::endl << "================================================" << std::endl << "Running " << category->getCategoryName() << std::endl << "================================================" << std::endl;
 		
 		for (TestCategory::TestCategory_test test : category->getTests())
 		{
@@ -89,7 +93,7 @@ int main(int argc, char** argv)
 			}
 			else if (runner->failed)
 			{
-				std::cout << "Failed: ";
+				std::cout << "Failed" << std::endl << "================================================" << std::endl << "Reason: ";
 				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
 			}
@@ -107,7 +111,7 @@ int main(int argc, char** argv)
 			if (ShowTestOutput || runner->failed)
 			{
 				std::cout << std::get<2>(test) << " Output:" << std::endl;
-				std::cout << runner->output.str() << std::endl << std::endl;
+				std::cout << runner->output.str() << "================================================" << std::endl << std::endl;
 				std::cout.flush();
 			}
 			

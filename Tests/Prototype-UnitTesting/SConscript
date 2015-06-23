@@ -9,7 +9,7 @@ Import('env', 'InstallDir')
 
 clone = env.Clone()
 
-clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode()])
+clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
 
 src = [Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]
 t = env.Install('$OUT_DIR', clone.Program('Prototype-UnitTesting', src))

@@ -31,7 +31,7 @@ public:
 	typedef X test_t; \
 	class Member_Function : public TestFunction { \
         public: \
-            Member_Function(test_t * const &this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
+            Member_Function(test_t * const this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
             void operator()() {(m_this->*m_fun)();} \
         private: \
             test_t * m_this; \
@@ -47,6 +47,21 @@ void assertTrue(bool boolean);
 
 void assertFalse(std::string errorMessage, bool boolean);
 void assertFalse(bool boolean);
+
+void assertNotNull(std::string errorMessage, void* pointer);
+void assertNotNull(void* pointer);
+
+template<class T>
+void assertNotNull(std::string errorMessage, T& pointer)
+{
+	return assertNotNull(errorMessage, pointer.get());
+}
+
+template<class T>
+void assertNotNull(T& pointer)
+{
+	return assertNotNull(pointer.get());
+}
 
 bool isfile(const char* path);
 
@@ -118,18 +133,34 @@ void assertEquals(std::vector<T> one, std::vector<T> two)
 					result << ", ";
 			}
 			
-			return result;
+			return result.str();
 		};
 		
-		ss << outputter(one).str();
+		ss << outputter(one);
 		
 		ss << "], [";
 		
-		ss << outputter(two).str();
+		ss << outputter(two);
 		
 		ss << "]) but was unequal.";
 		throw AssertException(ss.str());
 	}
 }
+
+template<class T>
+void assertNonZeroSize(std::string errorMessage, T& container)
+{
+	if (container.size() == 0)
+	{
+		throw AssertException(errorMessage);
+	}
+}
+
+template<class T>
+void assertNonZeroSize(T& container)
+{
+	return assertNotZeroSize("Assert: Expected container to be non-zero in size.", container);
+}
+
 
 #endif /* TestHelpers_cpp */

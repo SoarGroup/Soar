@@ -1,0 +1,629 @@
+epmem --set learning on
+epmem --set trigger none
+watch --epmem
+
+##############################################################
+# Initialization
+##############################################################
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name epmem-add)
+}
+
+##############################################################
+# Create memories
+##############################################################
+
+### First memory
+
+# Test that we can force-add a memory without messing up the regular epmem storage/retrieval loop,
+# especially since epmem initially queues the entire top state for storage (see the bottom of: epmem_init_db_ex)
+
+sp {propose*create-memory-1
+   (state <s> ^name epmem-add
+             -^do-storage
+              ^epmem.present-id 1)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-memory-1)
+}
+
+sp {apply*create-memory-1
+   (state <s> ^operator.name create-memory-1)
+-->
+   (cmd epmem --add |(<v> ^multivalued-attribute 4 5) (state <s> ^attr <v> ^test.anonymous.ids true ^symbol <sym>)|)
+   (log info |Creating memory #1 using epmem --add|)
+}
+
+### Second memory
+
+# Test that we can still create regular memories, too.
+
+sp {propose*create-memory-2
+   (state <s> ^name epmem-add
+             -^do-storage
+              ^epmem.present-id 2)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-memory-2)
+}
+
+sp {apply*create-memory-2
+   (state <s> ^operator.name create-memory-2)
+-->
+   (<s> ^deliberate.storage true ^also-test <test>)
+   (<test> ^this <this> ^and-that 2 birds)
+   (<s> ^do-storage true)
+   (log info |Creating memory #2 using deliberate storage.|)
+}
+
+### Third memory
+
+# Test that we can do a force-add while their is still "stuff" on the top state (from the second memory)
+# but not mix any of the memories together. We will even create the ^also-test attribute on the top state like the previous test.
+
+sp {propose*create-memory-3
+   (state <s> ^name epmem-add
+             -^do-storage
+              ^epmem.present-id 3)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-memory-3)
+}
+
+sp {apply*create-memory-3
+   (state <s> ^operator.name create-memory-3)
+-->
+   (cmd epmem --add |(state <s> ^second-test <test> ^also-test <also-test>) (<test> ^simple memory) (<also-test> ^and-that 2)|)
+   (log info |Creating memory #3 using epmem --add|)
+}
+
+### Fourth memory
+
+# Test that nothing has gotten messed up from the previous back-and-forth with deliberate storage and force-add.
+
+sp {propose*create-memory-4
+   (state <s> ^name epmem-add
+             -^do-storage
+              ^epmem.present-id 4)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-memory-4)
+}
+
+sp {apply*create-memory-4
+   (state <s> ^operator.name create-memory-4
+              ^deliberate <deliberate>
+              ^also-test <also-test>)
+-->
+   (<s> ^deliberate <deliberate> -)
+   (<s> ^also-test <also-test> -)
+   (<s> ^testing-again true)
+   (<s> ^do-storage true)
+   (log info |Creating memory #4 using deliberate storage.|)
+}
+
+### Fifth and sixth memories
+
+# Test a multi-episode add command.
+
+sp {propose*create-memory-56
+   (state <s> ^name epmem-add
+             -^do-storage
+              ^epmem.present-id 5)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-memory-56)
+}
+
+sp {apply*create-memory-56
+   (state <s> ^operator.name create-memory-56)
+-->
+   (cmd epmem --add |{(state <s> ^multi <multi>) (<multi> ^test 1)} {(state <s> ^multi <multi>) (<multi> ^test <c>) (<c> ^v 2)}|)
+   (log info |Creating memories #5 and #6 using epmem --add|)
+}
+
+##############################################################
+# Clean up
+# NOTE: This is where the total number of memories and
+# retrieval tests are specified.
+##############################################################
+
+# Clean up before moving on to the retrieval tests.
+
+sp {propose*prepare
+   (state <s> ^name epmem-add
+              ^epmem.present-id 7     # <-- Total number of memories plus 1
+             -^ready
+             -^do-storage)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name prepare)
+}
+
+sp {apply*prepare
+   (state <s> ^operator.name prepare
+              ^testing-again true)
+-->
+   (<s> ^testing-again true -
+        ^ready 1
+        ^total-tests 8)              # <-- Total number of retrieval tests
+}
+
+##############################################################
+# Retrieval tests
+##############################################################
+
+##############################################################
+# Graph match tests
+
+### First retrieval
+
+# Do the query
+sp {apply*do-retrieval-1
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 1)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^attr <attr>
+        ^test.anonymous.ids true
+        ^symbol <sym>)
+   (<attr> ^multivalued-attribute 4 5)
+   (log info |Starting test #1|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-1
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 1)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^testing-again
+        -^deliberate
+        -^also-test
+        -^second-test
+        -^multi
+        -^io
+        -^reward-link
+        -^superstate
+        -^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Second retrieval
+
+# Do the query
+sp {apply*do-retrieval-2
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 2)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^deliberate.storage true
+        ^also-test <test>)
+   (<test> ^this <this> ^and-that 2 birds)
+   (log info |Starting test #2|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-2
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 2)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^second-test
+        -^testing-again
+        -^multi
+         ^io
+         ^reward-link
+         ^superstate
+         ^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Third retrieval
+
+# Do the query
+sp {apply*do-retrieval-3
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 3)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^second-test <test>
+        ^also-test <also-test>)
+   (<test> ^simple memory)
+   (<also-test> ^and-that 2)
+   (log info |Starting test #3|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-3
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 3)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^deliberate
+        -^testing-again
+        -^multi
+        -^io
+        -^reward-link
+        -^superstate
+        -^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Fourth retrieval
+
+# Do the query
+sp {apply*do-retrieval-4
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 4)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^testing-again true)
+   (log info |Starting test #4|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-4
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 4)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^deliberate
+        -^also-test
+        -^second-test
+        -^multi
+         ^io
+         ^reward-link
+         ^superstate
+         ^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+##############################################################
+# Complex matches
+
+### Fifth retrieval
+# Test that we can partial-match on force-add memories.
+# Also test that multivalued attributes still seem to work.
+
+# Do the query
+sp {apply*do-retrieval-5
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 5)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^attr.multivalued-attribute 6
+        ^symbol <sym>)
+   (log info |Starting test #5|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-5
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 5)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 0
+             ^retrieved <r>)
+   (<r> -^testing-again
+        -^deliberate
+        -^also-test
+        -^second-test
+        -^multi
+        -^io
+        -^reward-link
+        -^superstate
+        -^type
+         ^attr.multivalued-attribute 4 5
+         ^symbol
+         ^test.anonymous.ids true)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Sixth retrieval
+# Test that we can still find the correct (most recent) memory
+# when we query on attribute that exists in multiple memories.
+
+# Do the query
+sp {apply*do-retrieval-6
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 6)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^also-test.and-that 2)
+   (log info |Starting test #6|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-6
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 6)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^deliberate
+         ^second-test.simple memory
+         ^also-test.and-that 2
+        -^also-test.and-that birds
+        -^testing-again
+        -^multi
+        -^io
+        -^reward-link
+        -^superstate
+        -^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Seventh retrieval
+# 1st test that we can retrieve a memory stored in a multi-episode add command.
+
+# Do the query
+sp {apply*do-retrieval-7
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 7)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^multi.test 1)
+   (log info |Starting test #7|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-7
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 7)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^deliberate
+        -^also-test
+        -^second-test
+        -^testing-again
+        -^multi.test.v
+        -^io
+        -^reward-link
+        -^superstate
+        -^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+### Eighth retrieval
+# 2nd test that we can retrieve a memory stored in a multi-episode add command.
+
+# Do the query
+sp {apply*do-retrieval-8
+   (state <s> ^operator <o>
+              ^epmem.command <cmd>)
+   (<o> ^name do-retrieval
+        ^test 8)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^multi.test.v 2)
+   (log info |Starting test #8|)
+}
+
+# Test the query
+sp {propose*verify-retrieval-8
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready 8)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^graph-match 1
+             ^retrieved <r>)
+   (<r> -^attr
+        -^test
+        -^symbol
+        -^deliberate
+        -^also-test
+        -^second-test
+        -^testing-again
+        -^multi.test 1
+        -^io
+        -^reward-link
+        -^superstate
+        -^type)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-retrieval)
+}
+
+##############################################################
+# Retrieval test success / continue
+##############################################################
+
+# Propose the next test
+
+sp {propose*do-retrieval
+   (state <s> ^name epmem-add
+              ^total-tests <total-tests>
+             -^epmem.command.query
+              ^ready <ready> <= <total-tests>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name do-retrieval
+        ^test <ready>)
+}
+
+# Success of one retrieval test
+
+sp {apply*verify-retrieval
+   (state <s> ^operator.name verify-retrieval
+              ^epmem.command <cmd>
+              ^ready <ready>)
+   (<cmd> ^query <q>)
+-->
+   (<cmd> ^query <q> -)
+   (<s> ^ready <ready> - (+ <ready> 1))
+   (log info |Test #{} succeeded.| <ready>)
+}
+
+# Success of all retrieval tests
+
+sp {propose*success
+   (state <s> ^name epmem-add
+              ^total-tests <total-tests>
+              ^ready > <total-tests>)
+-->
+   (<s> ^operator <o> + <)
+   (<o> ^name epmem-success)
+}
+
+sp {apply*success
+   (state <s> ^operator.name epmem-success)
+-->
+   (log info |All tests succeeded.|)
+   (exec succeeded)
+}
+
+##############################################################
+# Retrival test failure
+##############################################################
+
+sp {select*failure*over*success
+   (state <s> ^operator <o1> + <o2> +)
+   (<o1> ^name epmem-failure)
+   (<o2> ^name epmem-success)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {propose*verify*failure
+   (state <s> ^name epmem-add
+              ^epmem <epmem>
+              ^ready <ready>)
+   (<epmem> ^command.query
+            ^result)
+-->
+   (<s> ^operator <o> + <)
+   (<o> ^name epmem-failure
+        ^reason <ready>)
+}
+
+sp {apply*epmem-failure
+   (state <s> ^operator <o>)
+   (<o> ^name epmem-failure
+        ^reason <reason>)
+-->
+   (log error |Epmem retrieval failed. Reason: {}| <reason>)
+   (exec failed)
+}
+
+##############################################################
+# Deliberate storage helper operators
+##############################################################
+
+# If there is not currently an epmem "store" command,
+# and if the user has put "^do-storage true" on the top-state,
+# then propose doing an epmem storage.
+sp {propose*store
+   (state <s> ^name epmem-add
+              ^epmem.command <cmd>
+              ^do-storage true)
+  -(<cmd> ^store)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name store)
+}
+
+# Do an epmem storage.
+sp {apply*store
+   (state <s> ^operator.name store
+              ^epmem.command <cmd>)
+-->
+   (<cmd> ^store true)
+   (log info |Setting deliberate storage flag...|)
+}
+
+# Once we have completed epmem storage, propose clearing the storage command.
+sp {propose*clear
+   (state <s> ^name epmem-add
+              ^epmem <epmem>)
+   (<epmem> ^command.store <q>
+            ^result.success <q>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name clear)
+}
+
+# Clear the storage command, and remove the user's ^do-storage flag.
+sp {apply*clear
+   (state <s> ^operator.name clear
+              ^epmem.command <cmd>
+              ^do-storage <d>)
+   (<cmd> ^store <store>)
+-->
+   (<cmd> ^store <store> -)
+   (<s> ^do-storage <d> -)
+   (log info |Epmem storage complete. Clearing deliberate storage flag...|)
+}

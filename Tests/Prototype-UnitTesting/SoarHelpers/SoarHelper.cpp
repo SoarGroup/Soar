@@ -10,6 +10,11 @@
 
 #include <sstream>
 
+#include "portability.h"
+#include "portable-dirent.h"
+
+std::string SoarHelper::ResourceDirectory = "./";
+
 int SoarHelper::getD_CYCLE_COUNT(sml::Agent* agent)
 {
 	return SoarHelper::parseForCount("decisions", SoarHelper::getStats(agent));
@@ -194,4 +199,65 @@ std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase phase)
 	}
 	
 	return os;
+}
+
+std::string SoarHelper::GetResource(std::string resource)
+{
+	return FindFile(resource, ResourceDirectory);
+}
+
+std::string SoarHelper::FindFile(std::string filename, std::string path)
+{
+	DIR* directory = opendir(path.c_str());
+	
+	if (!directory)
+		return "";
+	
+	struct dirent* entry;
+	
+	while ((entry = readdir(directory)) != nullptr)
+	{
+#ifndef _WIN32
+		if (entry->d_type == DT_UNKNOWN)
+		{
+			struct stat file_info;
+			
+			lstat((path + std::string(entry->d_name)).c_str(), &file_info);
+			
+			if (S_ISDIR(file_info.st_mode))
+			{
+				entry->d_type = DT_DIR;
+			}
+			else if (S_ISREG(file_info.st_mode))
+			{
+				entry->d_type = DT_REG;
+			}
+		}
+#endif
+		
+		if (entry->d_type == DT_DIR)
+		{
+			// Another directory
+			std::string directory = entry->d_name;
+			
+			if (directory == "." || directory == "..")
+				continue;
+			
+			std::string result = FindFile(filename, path + directory + "/");
+			
+			if (result.size() != 0)
+				return result;
+		}
+		else
+		{
+			std::string result = entry->d_name;
+						
+			if (filename == result)
+				return path + result;
+		}
+	}
+	
+	closedir(directory);
+	
+	return "";
 }

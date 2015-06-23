@@ -16,9 +16,11 @@ class BasicTests : public FunctionalTestHarness
 public:
 	FUNCTIONAL_TEST_CATEGORY(BasicTests);
 	
+	// TODO: Fix 'testBasicElaborationAndMatch: Failed: Assert: Expected equal values (0, 1) but was unequal.'
 	TEST(testBasicElaborationAndMatch, -1)
 	void testBasicElaborationAndMatch();
 	
+	// TODO: Fix 'testInitialState: Failed: Assert: testInitialState functional test did not halt'
 	TEST(testInitialState, -1)
 	void testInitialState();
 };

@@ -1,0 +1,897 @@
+excise --all
+epmem --reinit
+init-soar
+
+epmem --set learning on
+epmem --set trigger none
+watch --epmem
+
+##############################################################
+# Sub-state support
+##############################################################
+
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+   (log info |Entering substate: {}| <name>)
+}
+
+sp {elaborate*state*operator-args-base
+   (state <s> ^superstate.operator)
+-->
+   (<s> ^args <args>)
+}
+
+sp {elaborate*state*operator-args
+   (state <s> ^superstate.operator.<att> <val>
+              ^args <args>)
+-->
+   (<args> ^<att> <val>)
+}
+
+##############################################################
+# Initialization
+##############################################################
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name epmem-filter
+        ^next-test 1)
+}
+
+##############################################################
+# Sequentially propose each test in its own substate.
+##############################################################
+
+# If the current test hasn't been completed, propose it.
+# This will enter the substate-test substate.
+
+sp {propose*test
+   (state <s> ^name epmem-filter
+              ^next-test <test>
+             -^completed <test>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name substate-test
+        ^test <test>
+        ^result <s>)
+}
+
+# Once we've returned from the substate, move on to the next test.
+
+sp {propose*increment-test
+   (state <s> ^name epmem-filter
+              ^next-test <test>
+              ^completed <test>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name increment-test)
+}
+
+sp {apply*increment-test
+   (state <s> ^name epmem-filter
+              ^operator.name increment-test
+              ^next-test <test>)
+-->
+   (<s> ^next-test <test> - (+ <test> 1))
+   (log info |Completed test {}. Moving on to the next test.| <test>)
+}
+
+##############################################################
+# Test framework
+##############################################################
+
+# Order of operations: init, perform, verify, cleanup
+# Each test is expected to implement its own init, perform,
+# and verify, but there is only one cleanup.
+
+sp {select*init*over*perform
+   (state <s> ^name substate-test
+              ^operator <o1> + <o2> +)
+   (<o1> ^name init-test)
+   (<o2> ^name perform-test)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {select*perform*over*verify
+   (state <s> ^name substate-test
+              ^operator <o1> + <o2> +)
+   (<o1> ^name perform-test)
+   (<o2> ^name verify-test)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+# Initialize the test.
+
+sp {propose*init-test
+   (state <s> ^name substate-test
+              ^args.test <test>
+             -^state initialized)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name init-test
+        ^test <test>)
+}
+
+# Perform the test
+
+sp {propose*perform-test
+   (state <s> ^name substate-test
+              ^args.test <test>
+             -^state performed)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name perform-test
+        ^test <test>)
+}
+
+# Verify the test results are correct.
+
+sp {propose*verify-test
+   (state <s> ^name substate-test
+              ^args.test <test>
+             -^state verified)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name verify-test
+        ^test <test>)
+}
+
+# Leave the substate.
+
+sp {propose*cleanup-test
+   (state <s> ^name substate-test
+              ^state verified)
+-->
+   (<s> ^operator <o> + <)
+   (<o> ^name cleanup-test)
+}
+
+sp {apply*cleanup-test
+   (state <s> ^name substate-test
+              ^args <args>
+              ^operator.name cleanup-test)
+   (<args> ^test <test>
+           ^result <result>)
+-->
+   (<result> ^completed <test>)
+}
+
+##############################################################
+# The actual tests
+##############################################################
+
+################
+# Test 1
+# Episode: ^a.b.c
+# Filter:  ^a.b
+# Result:  ^a.b.c
+
+sp {apply*init-test*1
+   (state <s> ^name substate-test
+              ^args.test 1
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c <c>)}|)
+}
+
+sp {apply*perform-test*1
+   (state <s> ^name substate-test
+              ^args.test 1
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c <c>
+          ^filter.a.b <b>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*1
+   (state <s> ^name substate-test
+              ^args.test 1
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a.b.c)
+-->
+   (<s> ^state verified)
+}
+
+################
+# Test 2
+# Episode: ^a.b.c
+# Filter:  ^z
+# Result:  ---
+
+sp {apply*init-test*2
+   (state <s> ^name substate-test
+              ^args.test 2
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c <c>)}|)
+}
+
+sp {apply*perform-test*2
+   (state <s> ^name substate-test
+              ^args.test 2
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c <c>
+          ^filter.z <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*2
+   (state <s> ^name substate-test
+              ^args.test 2
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> -^<attr>)
+-->
+   (<s> ^state verified)
+}
+
+################
+# Test 3
+# Episode: ^a.b.c
+# Filter:  ^a.b.d
+# Result:  ---
+
+sp {apply*init-test*3
+   (state <s> ^name substate-test
+              ^args.test 3
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c <c>)}|)
+}
+
+sp {apply*perform-test*3
+   (state <s> ^name substate-test
+              ^args.test 3
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c <c>
+          ^filter.a.b.d <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*3
+   (state <s> ^name substate-test
+              ^args.test 3
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> -^<attr>)
+-->
+   (<s> ^state verified)
+}
+
+################
+# Test 4
+# Episode: (<s> ^a <s> ^b.c <c>) (<c> ^d.e 5 ^f 6 ^f <f>) (<f> ^g 10)
+# Filter:  ^a.b.c.d
+# Result:  <s> ^a <s> ^b.c.d.e 5
+
+sp {apply*init-test*4
+   (state <s> ^name substate-test
+              ^args.test 4
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <s> ^b.c <c>) (<c> ^d.e 5 ^f 6 ^f <f>) (<f> ^g 10)}|)
+}
+
+sp {apply*perform-test*4
+   (state <s> ^name substate-test
+              ^args.test 4
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c.d.e 5
+          ^filter.a.b.c.d <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*4
+   (state <s> ^name substate-test
+              ^args.test 4
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <r>
+   	    ^b.c <c>)
+   (<c> ^d.e 5
+   	   -^f)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 5
+# Episode: ^a.b.c 4
+# Filter:  ^a.b.c
+# Result:  ^a.b.c 4
+
+sp {apply*init-test*5
+   (state <s> ^name substate-test
+              ^args.test 5
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c 4)}|)
+}
+
+sp {apply*perform-test*5
+   (state <s> ^name substate-test
+              ^args.test 5
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c 4
+          ^filter.a.b.c <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*5
+   (state <s> ^name substate-test
+              ^args.test 5
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a.b.c 4)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 6
+# Episode: (state <s> ^a.b <b>) (<b> ^c 5 ^c.d <d>) (<d> ^e.f <f> ^g 10)
+# Filter:  (state <s> ^a <a>) (<a> ^b.c 5 ^b.c.d.g <g>)
+# Result:  (<s> ^a.b <b>) (<b> ^c 5 ^c.d.g 10)
+
+sp {apply*init-test*6
+   (state <s> ^name substate-test
+              ^args.test 6
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b <b>) (<b> ^c 5 ^c.d <d>) (<d> ^e.f <f> ^g 10)}|)
+}
+
+sp {apply*perform-test*6
+   (state <s> ^name substate-test
+              ^args.test 6
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c 5
+          ^filter.a <a>)
+   (<a> ^b.c 5
+   	    ^b.c.d.g <g>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*6
+   (state <s> ^name substate-test
+              ^args.test 6
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a.b <b>)
+   (<b> ^c 5
+   	    ^c.d <d>)
+   (<d> ^g 10
+   	   -^e)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 7
+# Episode: (state <s> ^a.b <b>) (<b> ^c 5 ^c.d <d>) (<d> ^e.f <f> ^g 10)
+# Filter:  (state <s> ^a <a>) (<a> ^b.c 5 ^b.c.d.h <h>)
+# Result:  (<s> ^a.b <b>) (<b> ^c 5)
+
+sp {apply*init-test*7
+   (state <s> ^name substate-test
+              ^args.test 7
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b <b>) (<b> ^c 5 ^c.d <d>) (<d> ^e.f <f> ^g 10)}|)
+}
+
+sp {apply*perform-test*7
+   (state <s> ^name substate-test
+              ^args.test 7
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c 5
+          ^filter.a <a>)
+   (<a> ^b.c 5
+   	    ^b.c.d.h <h>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*7
+   (state <s> ^name substate-test
+              ^args.test 7
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a.b <b>)
+   (<b> ^c 5
+   	   -^c <> 5
+   	   -^c.<attr>)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 8
+# Episode:
+# Filter:
+# Result:
+
+sp {apply*init-test*8
+   (state <s> ^name substate-test
+              ^args.test 8
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <a>) (<a> ^b.c.d <join> ^f <join>) (<join> ^e 5)}|)
+}
+
+sp {apply*perform-test*8
+   (state <s> ^name substate-test
+              ^args.test 8
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.f.e 5
+          ^filter.a.b.c.d.e <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*8
+   (state <s> ^name substate-test
+              ^args.test 8
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <a>)
+   (<a> ^b.c.d.e 5
+   	   -^{<attr> <> b})
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 9
+# Episode:
+# Filter:
+# Result:
+
+sp {apply*init-test*9
+   (state <s> ^name substate-test
+              ^args.test 9
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <a>) (<a> ^b.c.d <join> ^f <join>) (<join> ^e <e>)}|)
+}
+
+sp {apply*perform-test*9
+   (state <s> ^name substate-test
+              ^args.test 9
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.f.e <e>
+          ^filter.a.b.c.d <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*9
+   (state <s> ^name substate-test
+              ^args.test 9
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <a>)
+   (<a> ^b.c.d.e <e>
+   	   -^{<attr> <> b})
+   (<e> -^<attr2>)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 10
+# Episode:
+# Filter:
+# Result:
+
+sp {apply*init-test*10
+   (state <s> ^name substate-test
+              ^args.test 10
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <a>) (<a> ^b.c.d <join> ^f <join>)}|)
+}
+
+sp {apply*perform-test*10
+   (state <s> ^name substate-test
+              ^args.test 10
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.f <f>
+          ^filter.a.b <b>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*10
+   (state <s> ^name substate-test
+              ^args.test 10
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <a>)
+   (<a> ^b.c.d <join>
+   	   -^{<attr> <> b})
+   (<join> -^<attr2>)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 11
+# Episode:
+# Filter:
+# Result:
+
+sp {apply*init-test*11
+   (state <s> ^name substate-test
+              ^args.test 11
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <a>) (<a> ^b.c <c>) (<c> ^f 10 ^d.e <a>)}|)
+}
+
+sp {apply*perform-test*11
+   (state <s> ^name substate-test
+              ^args.test 11
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c.f 10
+          ^filter.a.b.c <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*11
+   (state <s> ^name substate-test
+              ^args.test 11
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <a>)
+   (<a> ^b.c <c>)
+   (<c> ^f 10
+   	    ^d.e <a>)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 12
+# Episode:
+# Filter:
+# Result:
+
+sp {apply*init-test*12
+   (state <s> ^name substate-test
+              ^args.test 12
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a <a>) (<a> ^b.c <c>) (<c> ^f 10 ^d.e <a>)}|)
+}
+
+sp {apply*perform-test*12
+   (state <s> ^name substate-test
+              ^args.test 12
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c.f 10
+          ^filter.a.b.c.f <dummy>)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*12
+   (state <s> ^name substate-test
+              ^args.test 12
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a <a>)
+   (<a> ^b.c <c>)
+   (<c> ^f 10
+   	   -^{<dummy> <> f})
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 13
+# Episode: ^a.b.c 4
+# Filter:  ^a.b.c 5
+# Result:  ---
+
+sp {apply*init-test*13
+   (state <s> ^name substate-test
+              ^args.test 13
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c 4)}|)
+}
+
+sp {apply*perform-test*13
+   (state <s> ^name substate-test
+              ^args.test 13
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c 4
+          ^filter.a.b.c 5)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*13
+   (state <s> ^name substate-test
+              ^args.test 13
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> -^<attr>)
+-->
+   (<s> ^state verified)
+}
+
+#######
+# Test 14
+# Episode: (state <s> ^a.b <b>) (<b> ^c 4 true)
+# Filter:  ^a.b.c true
+# Result:  ^a.b.c true
+
+sp {apply*init-test*14
+   (state <s> ^name substate-test
+              ^args.test 14
+              ^operator.name init-test
+              ^epmem.present-id <epmem-id>)
+-->
+   (<s> ^id <epmem-id>
+        ^state initialized)
+   (cmd epmem --add |{(state <s> ^a.b.c 4 true)}|)
+}
+
+sp {apply*perform-test*14
+   (state <s> ^name substate-test
+              ^args.test 14
+              ^operator.name perform-test
+              ^epmem <epmem>)
+   (<epmem> ^command <cmd>)
+-->
+   (<cmd> ^query.a.b.c 4
+          ^filter.a.b.c true)
+   (<s> ^state performed)
+}
+
+sp {apply*verify-test*14
+   (state <s> ^name substate-test
+              ^args.test 14
+              ^id <expected-id>
+              ^operator.name verify-test
+              ^epmem <epmem>)
+   (<epmem> ^command.query <query>
+            ^result <result>)
+   (<result> ^success <query>
+             ^memory-id <expected-id>
+             ^retrieved <r>)
+   (<r> ^a.b <b>)
+   (<b> ^c true
+   	   -^c 4)
+-->
+   (<s> ^state verified)
+}
+
+##############################################################
+# Success / Failure / Cleanup
+##############################################################
+
+# Once the substate-test:propose*init-test hits an operator
+# no-change impasse, we're done, so propose success.
+
+sp {propose*success*no-more-tests
+   (state <s> ^name init-test
+              ^impasse no-change
+              ^choices none
+              ^attribute operator
+              ^args.test <test>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name success
+        ^reason (concat |Successfully completed tests: | (- <test> 1)))
+}
+
+# Failure
+
+sp {propose*failure*verify-failed
+   (state <s> ^name verify-test
+              ^impasse no-change
+              ^choices none
+              ^attribute operator
+              ^args.test <test>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name failure
+        ^reason (concat |Failed to verify test: | <test>))
+}
+
+sp {apply*failure
+   (state <s> ^operator <o>)
+   (<o> ^name failure
+       -^reason)
+-->
+   (log info |One of the tests failed.|)
+   (exec failed)
+}
+
+sp {apply*failure*with-reason
+   (state <s> ^operator <o>)
+   (<o> ^name failure
+        ^reason <reason>)
+-->
+   (log info |Test failed: {}| <reason>)
+   (exec failed)
+}
+
+# Success
+
+sp {apply*success
+   (state <s> ^operator <o>)
+   (<o> ^name success
+       -^reason)
+-->
+   (log info |All tests succeeded.|)
+   (exec succeeded)
+}
+
+sp {apply*success*with-reason
+   (state <s> ^operator <o>)
+   (<o> ^name success
+        ^reason <reason>)
+-->
+   (log info |Success: {}| <reason>)
+   (exec succeeded)
+}

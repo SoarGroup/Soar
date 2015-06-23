@@ -18,8 +18,10 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 {
 	std::string sourceName = this->getCategoryName() + "_" + testName + ".soar";
 	
-	assertTrue("Could not find test file " + sourceName, isfile(("Tests/" + sourceName).c_str()));
-	const char* result = agent->ExecuteCommandLine(("source Tests/" + sourceName).c_str());
+	std::string path = SoarHelper::GetResource(sourceName);
+	assertNonZeroSize("Could not find test file " + sourceName, path);
+	
+	const char* result = agent->ExecuteCommandLine(("source " + path).c_str());
 	
 	runner->output << "Loaded Productions for " << sourceName << ":" << std::endl;
 	runner->output << result << std::endl;
@@ -41,7 +43,7 @@ void FunctionalTestHarness::runTestExecute(std::string testName, int expectedDec
 	{
 		result = agent->RunSelfForever();
 	}
-
+	
 	runner->output << result << std::endl;
 	
 	assertTrue(testName + " functional test did not halt", halted);
@@ -98,24 +100,24 @@ void FunctionalTestHarness::tearDown(bool caught)
 }
 
 std::string FunctionalTestHarness::haltHandler(sml::smlRhsEventId id,
-													  void* pUserData,
-													  sml::Agent* pAgent,
-													  char const* pFunctionName,
-													  char const* pArgument)
+											   void* pUserData,
+											   sml::Agent* pAgent,
+											   char const* pFunctionName,
+											   char const* pArgument)
 {
 	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
 	
 	_this->halted = true;
 	_this->runner->failed = false;
-
+	
 	return pAgent->StopSelf();
 }
 
 std::string FunctionalTestHarness::failedHandler(sml::smlRhsEventId id,
-														void* pUserData,
-														sml::Agent* pAgent,
-														char const* pFunctionName,
-														char const* pArgument)
+												 void* pUserData,
+												 sml::Agent* pAgent,
+												 char const* pFunctionName,
+												 char const* pArgument)
 {
 	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
 	
@@ -128,10 +130,10 @@ std::string FunctionalTestHarness::failedHandler(sml::smlRhsEventId id,
 }
 
 std::string FunctionalTestHarness::succeededHandler(sml::smlRhsEventId id,
-														   void* pUserData,
-														   sml::Agent* pAgent,
-														   char const* pFunctionName,
-														   char const* pArgument)
+													void* pUserData,
+													sml::Agent* pAgent,
+													char const* pFunctionName,
+													char const* pArgument)
 {
 	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
 	
@@ -152,10 +154,10 @@ void FunctionalTestHarness::installRHS(sml::Agent* agent)
 	// set up the agent with common RHS functions
 	agent->GetKernel()->AddRhsFunction("halt", FunctionalTestHarness::haltHandler, this);
 	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-
+	
 	agent->GetKernel()->AddRhsFunction("failed", FunctionalTestHarness::failedHandler, this);
 	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-
+	
 	agent->GetKernel()->AddRhsFunction("succeeded", FunctionalTestHarness::succeededHandler, this);
 	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 }

@@ -1,0 +1,177 @@
+epmem --set learning on
+epmem --set trigger none
+watch --epmem
+
+sp {propose*init
+   (state <s> ^superstate nil
+            -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^name test-deliberate-storage
+        ^flags <flags>)
+}
+
+sp {propose*create-structure
+   (state <s> ^name test-deliberate-storage
+             -^flags.structure-created)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-structure)
+}
+
+sp {apply*create-structure
+   (state <s> ^operator.name create-structure
+              ^flags <flags>)
+-->
+   (<s> ^base <base>)
+   (<base> ^bar <bar> ^jaz <jaz>)
+   (<bar> ^chef <chef> ^foo <foo>)
+   (<chef> ^x 3 ^y 4 ^foo 0)
+   (<foo> ^x 5 ^y 6)
+   (<jaz> ^x 1 ^y 2)
+
+   (<flags> ^structure-created true)
+}
+
+sp {propose*do-storage
+   (state <s> ^name test-deliberate-storage
+              ^flags <flags>)
+   (<flags> ^structure-created
+           -^storage-done)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name do-storage)
+}
+
+sp {apply*do-storage
+   (state <s> ^operator.name do-storage
+              ^epmem.command <cmd>
+              ^flags <flags>)
+-->
+   (<cmd> ^store true)
+   (<flags> ^storage-done true)
+}
+
+sp {propose*storage-success
+   (state <s> ^name test-deliberate-storage
+              ^flags <flags>
+              ^epmem.result.success true)
+   (<flags> ^storage-done
+           -^storage-success)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name storage-success)
+}
+
+sp {apply*storage-success
+   (state <s> ^operator.name storage-success
+              ^flags <flags>
+              ^epmem.command <cmd>)
+-->
+   (<flags> ^storage-success true)
+   (<cmd> ^store true -)
+}
+
+sp {propose*remove-structure
+   (state <s> ^name test-deliberate-storage
+              ^flags <flags>)
+   (<flags> ^storage-success
+           -^structure-removed)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name remove-structure)
+}
+
+sp {apply*remove-structure
+   (state <s> ^operator.name remove-structure
+              ^base <base>
+              ^flags <flags>)
+-->
+   (<s> ^base <base> -)
+   (<flags> ^structure-removed true)
+}
+
+sp {propose*do-query
+   (state <s> ^name test-deliberate-storage
+              ^flags <flags>)
+   (<flags> ^structure-removed
+           -^query-performed)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name do-query)
+}
+
+sp {apply*do-query
+   (state <s> ^operator.name do-query
+              ^epmem.command <cmd>
+              ^flags <flags>)
+-->
+   (<cmd> ^query <query>)
+   (<query> ^base.jaz.x 1)
+   (<flags> ^query-performed true)
+}
+
+sp {propose*epmem-success
+   (state <s> ^name test-deliberate-storage
+              ^flags.query-performed true
+              ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result <result>)
+   (<result> ^success <q>
+             ^retrieved <memory>)
+   (<memory> ^base <base>)
+   (<base> ^bar <bar> ^jaz <jaz>)
+   (<bar> ^chef <chef> ^foo <foo>)
+   (<chef> ^x 3 ^y 4 ^foo 0)
+   (<foo> ^x 5 ^y 6)
+   (<jaz> ^x 1 ^y 2)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name epmem-success)
+}
+
+sp {propose*epmem-failure*failure
+   (state <s> ^name test-deliberate-storage
+              ^flags.query-performed true
+              ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.failure)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name epmem-failure
+        ^reason |result.failure|)
+}
+
+sp {propose*epmem-failure*bad-command
+   (state <s> ^name test-deliberate-storage
+              ^flags.query-performed true
+              ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.status bad-cmd)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name epmem-failure
+        ^reason |result.status bad-cmd|)
+}
+
+sp {apply*epmem-success
+   (state <s> ^operator.name epmem-success)
+-->
+   (log error |Success!|)
+   (exec succeeded)
+}
+
+sp {apply*epmem-failure
+   (state <s> ^operator <o>)
+   (<o> ^name epmem-failure
+        ^reason <reason>)
+-->
+   (log error |Failure: {}| <reason>)
+   (exec failed)
+}

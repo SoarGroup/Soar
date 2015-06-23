@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -71,7 +71,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\kernel;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\TestHarness;$(ProjectDir)\..\..\include\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\;$(ProjectDir)\..\..\..\Tests\Prototype-UnitTesting\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -86,17 +86,23 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_EpMem.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_SMemEpMemCombined.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\portable-dirent.h" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\windows\msdirent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_EpMem.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_SMemEpMemCombined.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.cpp" />

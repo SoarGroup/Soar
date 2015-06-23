@@ -81,7 +81,7 @@ public:
 	typedef X test_t; \
 	class Member_Function : public TestFunction { \
         public: \
-            Member_Function(test_t * const &this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
+            Member_Function(test_t * const this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
             void operator()() {(m_this->*m_fun)();} \
         private: \
             test_t * m_this; \
