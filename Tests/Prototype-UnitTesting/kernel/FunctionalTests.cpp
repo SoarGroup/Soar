@@ -12,30 +12,30 @@
 
 void FunctionalTests::testWaterJug()
 {
-	runTest("testWaterJug", -1);
+    runTest("testWaterJug", -1);
 }
 void FunctionalTests::testWaterJugLookAhead()
 {
-	runTest("testWaterJugLookAhead", -1);
+    runTest("testWaterJugLookAhead", -1);
 }
 void FunctionalTests::testWaterJugHierarchy()
 {
-	runTest("testWaterJugHierarchy", -1);
+    runTest("testWaterJugHierarchy", -1);
 }
 
 void FunctionalTests::testTowersOfHanoi()
 {
-	runTest("testTowersOfHanoi", 2048+1);
+    runTest("testTowersOfHanoi", 2048);
 }
 
 void FunctionalTests::testTowersOfHanoiFast()
 {
-	runTest("testTowersOfHanoiFast", 2047+1);
+    runTest("testTowersOfHanoiFast", 2047);
 }
 
 void FunctionalTests::testEightPuzzle()
 {
-	runTest("testEightPuzzle", -1);
+    runTest("testEightPuzzle", -1);
 }
 
 void FunctionalTests::testBlocksWorld()
@@ -45,7 +45,7 @@ void FunctionalTests::testBlocksWorld()
 
 void FunctionalTests::testBlocksWorldOperatorSubgoaling()
 {
-	runTest("testBlocksWorldOperatorSubgoaling", 5+1);
+	runTest("testBlocksWorldOperatorSubgoaling", 5);
 }
 
 void FunctionalTests::testBlocksWorldLookAhead()
@@ -53,7 +53,7 @@ void FunctionalTests::testBlocksWorldLookAhead()
 	std::string testName = "testBlocksWorldLookAhead";
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 1");
-	runTestExecute(testName, 27+1);
+	runTestExecute(testName, 27);
 }
 
 void FunctionalTests::testBlocksWorldLookAhead2()
@@ -61,7 +61,7 @@ void FunctionalTests::testBlocksWorldLookAhead2()
 	std::string testName = "testBlocksWorldLookAhead";
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 100000000002");
-	runTestExecute(testName, 29+1);
+	runTestExecute(testName, 29);
 }
 
 void FunctionalTests::testBlocksWorldLookAheadRandom()
@@ -77,7 +77,7 @@ void FunctionalTests::testArithmetic()
 
 void FunctionalTests::testCountTest()
 {
-	runTest("testCountTest", 45047+1);
+	runTest("testCountTest", 45047);
 	assertEquals(42, SoarHelper::getUserProductionCount(agent));
 	assertEquals(15012, SoarHelper::getChunkProductionCount(agent));
 	assertEquals(115136, SoarHelper::getE_CYCLE_COUNT(agent));
