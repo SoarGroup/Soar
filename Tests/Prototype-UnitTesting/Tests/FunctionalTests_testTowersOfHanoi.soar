@@ -68,7 +68,7 @@ sp {towers-of-hanoi*desired-of-disk*satisfied
   (<peg-c> ^name |C|)
   -->
   (write (crlf) |Success!|)
-  (exec halt)}
+  (halt)}
 
 sp {towers-of-hanoi*monitor*operator-execution*move-disk
     (state <s> ^operator <o>)

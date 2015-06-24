@@ -123,6 +123,6 @@ sp {monitor*achieved
 (<j> ^achieved *yes*)
 -->
 (write (crlf) |### Achieved desired state with jug | <j>)
-(exec halt)
+(halt)
 }
 

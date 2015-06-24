@@ -50,5 +50,5 @@ sp {success
          ^value 5
          ^value -2)
 -->
-  (exec succeeded)
+  (succeeded)
 }

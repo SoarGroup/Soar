@@ -45,5 +45,5 @@ sp {success
   (<lti> ^name val
          ^value 4)
 -->
-  (exec succeeded)
+  (succeeded)
 }

@@ -15,7 +15,7 @@ sp {top-goal*halt*success
               ^<< required-success success >> <eb>)
 -->
    (write (crlf)   <name>  | achieved |)
-   (exec succeeded)}
+   (succeeded)}
 
 sp {top-goal*halt*failure
    :default
@@ -25,7 +25,7 @@ sp {top-goal*halt*failure
               ^ << prohibit-failure failure >> <eb>)
 -->
    (write (crlf)  <name>  | failed|)
-   (exec failed)}
+   (failed)}
 
 sp {selection*elaborate*name*selection
    :default

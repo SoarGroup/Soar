@@ -93,12 +93,12 @@ sp {graph-match-unit*apply*retrieve*success
                ^node (^cue <boston-n> ^retrieved <boston>))
 -->
     (write (crlf) |success|)
-    (exec halt)
+    (halt)
 }
 
 sp {graph-match-unit*apply*retrieve*failure
     (state <s> ^superstate.superstate.name graph-match-unit)
 -->
     (write (crlf) |FAILURE!|)
-    (exec halt)
+    (halt)
 }

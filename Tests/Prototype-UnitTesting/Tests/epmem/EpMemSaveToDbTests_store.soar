@@ -20,7 +20,7 @@ sp {apply*halt
    (state <s> ^operator <o>)
    (<o> ^name halt)
 -->
-   (exec halt)
+   (halt)
 }
 
 sp {propose*initialize-count-epmem

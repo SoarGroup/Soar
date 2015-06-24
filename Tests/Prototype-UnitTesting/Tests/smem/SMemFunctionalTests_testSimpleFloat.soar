@@ -110,7 +110,7 @@ sp {apply*check-smem*success
                   ^status success)
 -->
    (write |Success!| (crlf))
-   (exec succeeded)
+   (succeeded)
 }
 
 sp {apply*check-smem*failure
@@ -120,5 +120,5 @@ sp {apply*check-smem*failure
                   ^condition <condition>)
 -->
    (write |Failed because '| <condition> |'!| (crlf))
-   (exec failed)
+   (failed)
 }

@@ -26,6 +26,6 @@ sp {report*intial-state
          -^io <> <io>
          -^superstate <> nil)
 -->
-   (exec succeeded)
+   (succeeded)
    (write (crlf) |correct initial state detected|)
 }

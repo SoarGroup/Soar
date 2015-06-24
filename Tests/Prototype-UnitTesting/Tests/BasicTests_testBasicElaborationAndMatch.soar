@@ -10,6 +10,6 @@ sp {monitor*contents
 (state <s> ^jug <j>)
 (<j> ^contents <contents>)
 -->
-(exec succeeded)
+(succeeded)
 }
 

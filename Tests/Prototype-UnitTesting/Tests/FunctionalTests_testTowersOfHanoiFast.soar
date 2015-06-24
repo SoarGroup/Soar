@@ -344,7 +344,7 @@ sp {tower-of-hanoi*desired-of-disk*satisfied
     (<peg-c> ^name |C|)
     -->
     (write (crlf) |Success!|)
-    (exec halt)}
+    (halt)}
 
 ###
 ### TOWER-OF-HANOI MONITOR

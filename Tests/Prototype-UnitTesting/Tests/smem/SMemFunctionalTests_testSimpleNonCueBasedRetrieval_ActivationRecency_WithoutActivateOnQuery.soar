@@ -50,7 +50,7 @@ sp {success
   (<lti> ^x 2 ^y 3 ^z 1)
 -->
   (write |Success!|)
-  (exec halt)
+  (halt)
 }
 
 

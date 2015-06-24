@@ -16,7 +16,7 @@ sp {water-jug*detect*goal*achieved
    (<j> ^volume 3 ^contents 1)
 -->
    (write (crlf) |The problem has been solved.|)
-   (exec succeeded)}
+   (succeeded)}
 
 sp {water-jug*monitor*state 
    (state <s> ^name water-jug

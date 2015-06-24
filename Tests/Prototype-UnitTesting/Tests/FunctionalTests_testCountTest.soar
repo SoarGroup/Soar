@@ -380,7 +380,7 @@ sp {count-test*apply*no-next-test
    (<ct> ^next-test nil)
 -->
    (write (crlf) |**************Tests all complete.**********|)
-   (exec succeeded)
+   (succeeded)
 }
 
 sp {count-test*propose*set-up-current-test

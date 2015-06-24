@@ -114,7 +114,7 @@ sp {apply*check-epmem*success
                   ^status success)
 -->
    (write |Success!| (crlf))
-   (exec halt)
+   (halt)
 }
 
 sp {apply*check-epmem*failure
@@ -124,5 +124,5 @@ sp {apply*check-epmem*failure
                   ^condition <condition>)
 -->
    (write |Failed because '| <condition> |'!| (crlf))
-   (exec halt)
+   (halt)
 }

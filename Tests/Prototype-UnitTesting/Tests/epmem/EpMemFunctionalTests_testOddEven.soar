@@ -108,12 +108,12 @@ sp {apply*success
    (state <s> ^operator.name success)
 -->
    (write |Success!!!!!| (crlf))
-   (exec succeeded)
+   (succeeded)
 }
 
 sp {apply*failed
    (state <s> ^operator.name failed)
 -->
    (write |Failed!!!!!| (crlf)) 
-   (exec failed)
+   (failed)
 }

@@ -27,5 +27,5 @@ sp {apply-query
 sp {elaborate-success
 	(state <s> ^smem.result.success)
 -->
-	(exec succeeded)
+	(succeeded)
 }

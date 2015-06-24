@@ -79,5 +79,5 @@ sp {success
   (state <s> ^smem.result.retrieved <lti>)
   (<lti> ^test.test |Test!|)
 -->
-  (exec succeeded)
+  (succeeded)
 }

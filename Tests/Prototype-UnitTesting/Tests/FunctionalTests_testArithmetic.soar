@@ -255,7 +255,7 @@ sp {arithmetic*elaborate*state*compare-results*not-equal
          ^result-number { <> <cr> <rn>})
 -->
    (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))
-   (exec failed)
+   (failed)
 }
 
 sp {arithmetic*propose*finish-problem
@@ -1154,6 +1154,6 @@ sp {arithmetic*apply*stop-arithmetic
    (<op> ^name stop-arithmetic)
 -->
    (write |Finished|)
-   (exec succeeded)
+   (succeeded)
 }
 

@@ -51,7 +51,7 @@ sp {elaborations*elaborate*state*bad-retrieval*gm
    (state <s> ^epmem.result.graph-match 0)
 -->
    (write |BAD RETRIEVAL!!!|)
-   (exec halt)
+   (halt)
 
 }
 
@@ -158,7 +158,7 @@ sp {apply*done
    (<op> ^name done)
 -->
    (write |COUNTING TEST SUCCEEDED!|)
-   (exec halt)
+   (halt)
 
 }
 

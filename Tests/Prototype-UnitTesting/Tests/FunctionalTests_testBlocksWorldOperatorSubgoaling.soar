@@ -43,7 +43,7 @@ sp {blocks-world*elaborate*state*success
    (<ontop3> ^top-block <blockC>
              ^bottom-block <table>)
 -->
-   (exec succeeded)
+   (succeeded)
    (write (crlf) |Achieved Goal.|)
    }
 

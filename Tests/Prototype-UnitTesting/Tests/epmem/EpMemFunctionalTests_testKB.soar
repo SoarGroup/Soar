@@ -48,7 +48,7 @@ sp {apply*done
    (<op> ^name done)
 -->
    (write (crlf) |All tests complete!| (crlf))
-   (exec halt)
+   (halt)
 }
 
 sp {propose*initialize-kb
@@ -1213,7 +1213,7 @@ sp {apply*test-notify*failure
    
 -->
    (write | | <step> |: failed.| (crlf) | |)
-   (exec halt)
+   (halt)
 }
 
 sp {kb*propose*test-result

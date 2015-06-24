@@ -48,7 +48,7 @@ sp {done*succeeded
    (state <s> ^epmem.result.retrieved.random.num 42)
 -->
    (write |Remebered number| (crlf))
-   (exec halt)
+   (halt)
 }
 
 sp {done*failed
@@ -57,5 +57,5 @@ sp {done*failed
    -(<n> ^num 42)
 -->
    (write |Failed to remebered number| (crlf))
-   (exec halt)
+   (halt)
 }

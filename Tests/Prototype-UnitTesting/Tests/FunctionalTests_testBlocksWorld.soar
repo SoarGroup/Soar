@@ -44,7 +44,7 @@ sp {blocks-world*elaborate*state*success
              ^bottom-block <table>)
 -->
    (write (crlf) |Finished Stacking the Blocks.|)
-   (exec succeeded)}
+   (succeeded)}
 
 sp {blocks-world*monitor*world-state
    (state <s> ^ontop <ontop>)

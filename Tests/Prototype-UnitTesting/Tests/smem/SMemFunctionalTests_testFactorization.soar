@@ -18,7 +18,7 @@ sp {complete
          ^complete true)
 -->
    (write |Finished Factorization Stress Test!|)
-   (exec halt)
+   (halt)
 }
 
 watch 0
@@ -31,7 +31,7 @@ sp {wrong-answer
         -^correct)
 -->
    (write |Wrong Answer! | <fo>)
-   (exec halt)
+   (halt)
 }
 
 ##########################################

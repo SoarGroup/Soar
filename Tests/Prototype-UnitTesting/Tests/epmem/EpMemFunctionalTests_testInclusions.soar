@@ -129,7 +129,7 @@ sp {apply*epmem-success
    (state <s> ^operator.name epmem-success)
 -->
    (log error |Success!|)
-   (exec succeeded)
+   (succeeded)
 }
 
 sp {apply*epmem-failure
@@ -138,5 +138,5 @@ sp {apply*epmem-failure
         ^reason <reason>)
 -->
    (log error |Failure: {}| <reason>)
-   (exec failed)
+   (failed)
 }

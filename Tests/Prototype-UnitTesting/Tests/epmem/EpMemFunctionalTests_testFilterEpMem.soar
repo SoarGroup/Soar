@@ -864,7 +864,7 @@ sp {apply*failure
        -^reason)
 -->
    (log info |One of the tests failed.|)
-   (exec failed)
+   (failed)
 }
 
 sp {apply*failure*with-reason
@@ -873,7 +873,7 @@ sp {apply*failure*with-reason
         ^reason <reason>)
 -->
    (log info |Test failed: {}| <reason>)
-   (exec failed)
+   (failed)
 }
 
 # Success
@@ -884,7 +884,7 @@ sp {apply*success
        -^reason)
 -->
    (log info |All tests succeeded.|)
-   (exec succeeded)
+   (succeeded)
 }
 
 sp {apply*success*with-reason
@@ -893,5 +893,5 @@ sp {apply*success*with-reason
         ^reason <reason>)
 -->
    (log info |Success: {}| <reason>)
-   (exec succeeded)
+   (succeeded)
 }

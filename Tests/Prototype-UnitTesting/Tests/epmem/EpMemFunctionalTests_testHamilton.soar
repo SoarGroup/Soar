@@ -91,11 +91,11 @@ sp {graph-match-unit*apply*retrieve*success
                ^node (^cue <atlanta-n> ^retrieved <atlanta>)
                ^node (^cue <boston-n> ^retrieved <boston>))
 -->
-    (exec succeeded)
+    (succeeded)
 }
 
 sp {graph-match-unit*apply*retrieve*failure
     (state <s> ^superstate.superstate.name graph-match-unit)
 -->
-    (exec failed)
+    (failed)
 }

@@ -88,7 +88,7 @@ sp {success
          ^email |jobs@apple.com|)
 -->
   (write |Success!|)
-  (exec halt)
+  (halt)
 }
 
 sp {failed-to-mirror
@@ -97,6 +97,6 @@ sp {failed-to-mirror
          -^name Bill)
 -->
    (write |Failed to mirror!|)
-   (exec halt)
+   (halt)
 }
 

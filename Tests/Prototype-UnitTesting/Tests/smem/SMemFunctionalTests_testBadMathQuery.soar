@@ -49,5 +49,5 @@ sp {apply*query
 sp {success
   (state <s> ^smem.result.failure <lti>)
 -->
-  (exec succeeded)
+  (succeeded)
 }

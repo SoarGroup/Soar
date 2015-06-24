@@ -137,7 +137,7 @@ sp {apply*inc*done
 -->
    (write (crlf) |done: a=| <m> |, v=| <m> (crlf))
    #(write (cmd smem -p))
-   (exec halt)
+   (halt)
 }
 
 sp {propose*initialize-neg

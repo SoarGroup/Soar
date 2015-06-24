@@ -543,7 +543,7 @@ sp {apply*success
    (state <s> ^operator.name epmem-success)
 -->
    (log info |All tests succeeded.|)
-   (exec succeeded)
+   (succeeded)
 }
 
 ##############################################################
@@ -576,7 +576,7 @@ sp {apply*epmem-failure
         ^reason <reason>)
 -->
    (log error |Epmem retrieval failed. Reason: {}| <reason>)
-   (exec failed)
+   (failed)
 }
 
 ##############################################################

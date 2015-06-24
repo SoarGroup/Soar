@@ -27,7 +27,7 @@ sp {success
   (<lti> ^name Bill
          ^email |billg@microsoft.com|)
 -->
-  (exec succeeded)
+  (succeeded)
 }
 
 

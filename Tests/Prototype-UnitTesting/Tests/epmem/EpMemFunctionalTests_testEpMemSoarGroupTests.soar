@@ -433,7 +433,7 @@ sp {apply*report*halt*success
 -->
     (<s> ^report-status overview -)
     (write (crlf) succeeeded)
-    (exec succeeded)
+    (succeeded)
 }
 
 sp {apply*report*halt*failed
@@ -445,5 +445,5 @@ sp {apply*report*halt*failed
 -->
     (<s> ^report-status overview -)
     (write (crlf) failed)
-    (exec failed)
+    (failed)
 }

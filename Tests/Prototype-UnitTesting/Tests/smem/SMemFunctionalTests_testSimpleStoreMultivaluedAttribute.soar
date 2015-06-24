@@ -48,7 +48,7 @@ sp {success
          ^name Bill
          ^email |jobs@apple.com|)
 -->
-  (exec succeeded)
+  (succeeded)
 }
 
 

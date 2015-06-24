@@ -22,7 +22,7 @@ sp {success
   (state <s> ^smem.result.bad-cmd)
 -->
   (write |Success!|)
-  (exec halt)
+  (halt)
 }
 
 
