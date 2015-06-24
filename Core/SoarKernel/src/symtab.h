@@ -42,6 +42,8 @@
 #include <map>
 #include <sstream>
 
+#include "Export.h"
+
 #ifdef SOAR_DEBUG_UTILITIES
 /* MToDo | Temporary debugging code.  Remove.
            Allows refcount debug trace for a single, hardcoded ID.
@@ -92,7 +94,7 @@ struct strSymbol;
  *
  * -- */
 
-typedef struct symbol_struct
+typedef struct EXPORT symbol_struct
 {
     struct symbol_struct* next_in_hash_table;
     uint64_t reference_count;
@@ -461,22 +463,22 @@ extern void print_internal_symbols(agent* thisAgent);
 extern void debug_store_refcount(Symbol* sym, bool isAdd);
 #endif
 
-extern Symbol* make_variable(agent* thisAgent, const char* name);
-extern Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* make_float_constant(agent* thisAgent, double value);
-extern Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
+extern EXPORT Symbol* make_variable(agent* thisAgent, const char* name);
+extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
 extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
 
-extern void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent = 0);
-extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list, long indent = 0);
+extern EXPORT void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent = 0);
+extern EXPORT void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list, long indent = 0);
 ::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
 
-extern Symbol* find_variable(agent* thisAgent, const char* name);
-extern Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
-extern Symbol* find_str_constant(agent* thisAgent, const char* name);
-extern Symbol* find_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* find_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* find_variable(agent* thisAgent, const char* name);
+extern EXPORT Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
+extern EXPORT Symbol* find_str_constant(agent* thisAgent, const char* name);
+extern EXPORT Symbol* find_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* find_float_constant(agent* thisAgent, double value);
 
 extern bool reset_id_counters(agent* thisAgent);
 extern void reset_id_and_variable_tc_numbers(agent* thisAgent);

@@ -135,7 +135,7 @@ namespace sml
     *        between two entities that are communicating through
     *        SML messages.
     *************************************************************/
-    class Connection
+    class EXPORT Connection
     {
         public:
             enum { kDefaultSMLPort = 12121 } ;

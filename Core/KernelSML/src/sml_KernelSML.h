@@ -72,7 +72,7 @@ namespace sml
     typedef KernelAgentMap::iterator                KernelAgentMapIter ;
     typedef KernelAgentMap::const_iterator          KernelAgentMapConstIter ;
     
-    class KernelSML
+    class EXPORT KernelSML
     {
             // Allow the kernel listener to execute command lines directly
             friend class AgentListener;

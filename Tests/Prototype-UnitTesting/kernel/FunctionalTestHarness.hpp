@@ -16,10 +16,9 @@
 
 #include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
-#include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
-#include "sml_RhsFunction.h"
 #include "agent.h"
+#include "sml_RhsFunction.h"
 #include "rhs_functions.h"
 
 #include <string>
@@ -30,6 +29,19 @@ public:
 	FunctionalTestHarness(std::string categoryName);
 	
 protected:
+	struct user_data_struct
+	{
+		user_data_struct(std::function<::Symbol* ()> routine)
+		: function(routine)
+		{}
+		
+		std::function<::Symbol* ()> function;
+	};
+	
+	user_data_struct haltData;
+	user_data_struct failedData;
+	user_data_struct succeededData;
+	
 	sml::Agent* agent;
 	sml::Kernel* kernel;
 	sml::KernelSML* internal_kernel;

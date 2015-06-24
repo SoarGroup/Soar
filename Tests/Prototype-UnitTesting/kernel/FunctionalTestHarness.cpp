@@ -11,9 +11,13 @@
 #include "SoarHelper.hpp"
 
 #include "sml_EmbeddedConnectionSynch.h"
+#include "sml_AgentSML.h"
 
 FunctionalTestHarness::FunctionalTestHarness(std::string categoryName)
-: TestCategory(categoryName)
+: TestCategory(categoryName),
+haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),
+failedData(std::bind(&FunctionalTestHarness::failedHandler, this)),
+succeededData(std::bind(&FunctionalTestHarness::succeededHandler, this))
 {}
 
 void FunctionalTestHarness::runTestSetup(std::string testName)
@@ -114,10 +118,15 @@ void FunctionalTestHarness::setUp()
 
 void FunctionalTestHarness::tearDown(bool caught)
 {
+	halt_routine = nullptr;
+
 	kernel->DestroyAgent(agent);
 	kernel->Shutdown();
 	delete kernel;
 	kernel = nullptr;
+	agent = nullptr;
+	internal_agent = nullptr;
+	internal_kernel = nullptr;
 }
 
 Symbol* FunctionalTestHarness::haltHandler()
@@ -160,32 +169,24 @@ void FunctionalTestHarness::installRHS(sml::Agent* agent)
 	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
 	halt_routine = halt_function->f;
 	
-	struct user_data_struct
-	{
-		user_data_struct(std::function<::Symbol* ()> routine)
-		: function(routine)
-		{}
-		
-		std::function<::Symbol* ()> function;
-	};
-	
 	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
 		return static_cast<user_data_struct*>(user_data)->function();
 	};
 	
-	halt_function->user_data = new user_data_struct(std::bind(&FunctionalTestHarness::haltHandler, this));
+	
+	halt_function->user_data = &haltData;
 	halt_function->f = call_routine;
 	
 	add_rhs_function(internal_agent,
 					 make_str_constant(internal_agent, "failed"),
 					 call_routine,
 					 0, false, true,
-					 new user_data_struct(std::bind(&FunctionalTestHarness::failedHandler, this)));
+					 &failedData);
 	
 	add_rhs_function(internal_agent,
 					 make_str_constant(internal_agent, "succeeded"),
 					 call_routine,
 					 0, false, true,
-					 new user_data_struct(std::bind(&FunctionalTestHarness::succeededHandler, this)));
+					 &succeededData);
 }
 

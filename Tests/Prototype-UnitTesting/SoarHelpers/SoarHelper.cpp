@@ -229,14 +229,14 @@ std::string SoarHelper::GetResource(std::string resource)
 
 std::string SoarHelper::FindFile(std::string filename, std::string path)
 {
-	DIR* directory = opendir(path.c_str());
+	DIR* dir = opendir(path.c_str());
 	
-	if (!directory)
+	if (!dir)
 		return "";
 	
 	struct dirent* entry;
 	
-	while ((entry = readdir(directory)) != nullptr)
+	while ((entry = readdir(dir)) != nullptr)
 	{
 #ifndef _WIN32
 		if (entry->d_type == DT_UNKNOWN)
@@ -267,18 +267,26 @@ std::string SoarHelper::FindFile(std::string filename, std::string path)
 			std::string result = FindFile(filename, path + directory + "/");
 			
 			if (result.size() != 0)
+			{
+				closedir(dir);
+
 				return result;
+			}
 		}
 		else
 		{
 			std::string result = entry->d_name;
 						
 			if (filename == result)
+			{
+				closedir(dir);
+
 				return path + result;
+			}
 		}
 	}
 	
-	closedir(directory);
+	closedir(dir);
 	
 	return "";
 }

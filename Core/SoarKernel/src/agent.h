@@ -129,7 +129,7 @@ typedef char* test;
 class stats_statement_container;
 class svs_interface;
 
-typedef struct agent_struct
+typedef struct EXPORT agent_struct
 {
 
     /* -- Rete stuff: These are used for statistics in rete.cpp -- */

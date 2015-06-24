@@ -155,7 +155,11 @@ agent* create_soar_agent(char* agent_name)                                      
     
     //agent* newAgent = static_cast<agent *>(malloc(sizeof(agent)));
     agent* newAgent = new agent();
-    
+	
+	// debug module settings
+	newAgent->debug_params = new debug_param_container(newAgent);
+	newAgent->output_settings = new AgentOutput_Info();
+	
     newAgent->current_tc_number = 0;
     
     newAgent->name                               = savestring(agent_name);
@@ -284,7 +288,8 @@ agent* create_soar_agent(char* agent_name)                                      
     
     if (!getcwd(cur_path, MAXPATHLEN))
     {
-        print(newAgent, "Unable to set current directory while initializing agent.\n");
+		char* error = strerror(errno);
+        print(newAgent, "Unable to set current directory while initializing agent: %s\n", error);
     }
     newAgent->top_dir_stack = static_cast<dir_stack_struct*>(malloc(sizeof(dir_stack_struct)));    /* AGR 568 */
     newAgent->top_dir_stack->directory = static_cast<char*>(malloc(MAXPATHLEN * sizeof(char)));  /* AGR 568 */
@@ -393,11 +398,7 @@ agent* create_soar_agent(char* agent_name)                                      
     newAgent->epmem_id_repository = new epmem_parent_id_pool();
     newAgent->epmem_id_replacement = new epmem_return_id_pool();
     newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
-    
-    // debug module settings
-    newAgent->debug_params = new debug_param_container(newAgent);
-    newAgent->output_settings = new AgentOutput_Info();
-    
+	
 #ifdef USE_MEM_POOL_ALLOCATORS
     newAgent->epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(newAgent));
     newAgent->epmem_edge_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(newAgent));
