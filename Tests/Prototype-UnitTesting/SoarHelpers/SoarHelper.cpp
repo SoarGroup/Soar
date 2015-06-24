@@ -1,6 +1,6 @@
 //
 //  SoarHelper.cpp
-//  Soar-xcode
+//  Prototype-UnitTesting
 //
 //  Created by Alex Turner on 6/17/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
@@ -42,7 +42,6 @@ int SoarHelper::getINNER_E_CYCLE_COUNT(sml::Agent* agent)
 {
 	return SoarHelper::parseForCount("inner elaboration cycles", SoarHelper::getStats(agent));
 }
-
 
 int SoarHelper::getUserProductionCount(sml::Agent* agent)
 {

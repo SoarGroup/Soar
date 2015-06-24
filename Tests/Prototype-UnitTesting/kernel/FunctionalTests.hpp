@@ -1,6 +1,6 @@
 //
 //  FunctionalTests.hpp
-//  Soar-xcode
+//  Prototype-UnitTesting
 //
 //  Created by Alex Turner on 6/17/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.

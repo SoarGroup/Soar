@@ -1,6 +1,6 @@
 //
 //  portable-dirent.h
-//  Soar-xcode
+//  Prototype-UnitTesting
 //
 //  Created by Alex Turner on 6/23/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.

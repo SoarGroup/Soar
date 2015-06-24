@@ -432,9 +432,8 @@
 		4D510A7F1B2B47600009AABC /* smemtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A6F1B2B47600009AABC /* smemtest.cpp */; };
 		4D510A801B2B47600009AABC /* tokenizertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A701B2B47600009AABC /* tokenizertest.cpp */; };
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
-		4D659A621B39A7FD00638059 /* FunctionalTests_EpMem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* FunctionalTests_EpMem.cpp */; };
-		4D659A631B39A80000638059 /* FunctionalTests_SMemEpMemCombined.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* FunctionalTests_SMemEpMemCombined.cpp */; };
-		4D9867FE1B30894500B13711 /* TestCategory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867EC1B30842D00B13711 /* TestCategory.cpp */; };
+		4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
+		4D659A631B39A80000638059 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */; };
 		4D9868001B30894500B13711 /* testMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867F11B30891B00B13711 /* testMain.cpp */; };
 		4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
 		4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
@@ -443,6 +442,7 @@
 		4D9868141B30A8DC00B13711 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D999D2C1B2F3EE800C6700E /* main.cpp */; };
 		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
 		4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
@@ -505,6 +505,8 @@
 /* Begin PBXFileReference section */
 		4D4749C61B32121100FB48D7 /* BasicTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicTests.cpp; sourceTree = "<group>"; };
 		4D4749C71B32121100FB48D7 /* BasicTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BasicTests.hpp; sourceTree = "<group>"; };
+		4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemFunctionalTests.cpp; sourceTree = "<group>"; };
+		4D4A6FFC1B39FAAF00EE6177 /* SMemFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SMemFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D5105C11B2B41A80009AABC /* libSoar.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSoar.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D5105D81B2B429B0009AABC /* cli_addwme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_addwme.cpp; sourceTree = "<group>"; };
 		4D5105D91B2B429B0009AABC /* cli_alias.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_alias.cpp; sourceTree = "<group>"; };
@@ -972,12 +974,11 @@
 		4D510A6F1B2B47600009AABC /* smemtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = smemtest.cpp; path = ../../../Tests/UnitTests/src/smemtest.cpp; sourceTree = "<group>"; };
 		4D510A701B2B47600009AABC /* tokenizertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tokenizertest.cpp; path = ../../../Tests/UnitTests/src/tokenizertest.cpp; sourceTree = "<group>"; };
 		4D510A711B2B47600009AABC /* unittest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unittest.h; path = ../../../Tests/UnitTests/src/unittest.h; sourceTree = "<group>"; };
-		4D659A5C1B39A50100638059 /* FunctionalTests_EpMem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests_EpMem.cpp; sourceTree = "<group>"; };
-		4D659A5D1B39A50100638059 /* FunctionalTests_EpMem.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests_EpMem.hpp; sourceTree = "<group>"; };
-		4D659A5F1B39A51500638059 /* FunctionalTests_SMemEpMemCombined.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests_SMemEpMemCombined.cpp; sourceTree = "<group>"; };
-		4D659A601B39A51500638059 /* FunctionalTests_SMemEpMemCombined.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests_SMemEpMemCombined.hpp; sourceTree = "<group>"; };
+		4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EpMemFunctionalTests.cpp; sourceTree = "<group>"; };
+		4D659A5D1B39A50100638059 /* EpMemFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EpMemFunctionalTests.hpp; sourceTree = "<group>"; };
+		4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemEpMemCombinedFunctionalTests.cpp; sourceTree = "<group>"; };
+		4D659A601B39A51500638059 /* SMemEpMemCombinedFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SMemEpMemCombinedFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D659A661B39A91F00638059 /* portable-dirent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "portable-dirent.h"; sourceTree = "<group>"; };
-		4D9867EC1B30842D00B13711 /* TestCategory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestCategory.cpp; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1038,8 +1039,8 @@
 		4D4A6FF91B39E19A00EE6177 /* epmem */ = {
 			isa = PBXGroup;
 			children = (
-				4D659A5C1B39A50100638059 /* FunctionalTests_EpMem.cpp */,
-				4D659A5D1B39A50100638059 /* FunctionalTests_EpMem.hpp */,
+				4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */,
+				4D659A5D1B39A50100638059 /* EpMemFunctionalTests.hpp */,
 			);
 			name = epmem;
 			sourceTree = "<group>";
@@ -1047,6 +1048,8 @@
 		4D4A6FFA1B39E19E00EE6177 /* smem */ = {
 			isa = PBXGroup;
 			children = (
+				4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */,
+				4D4A6FFC1B39FAAF00EE6177 /* SMemFunctionalTests.hpp */,
 			);
 			name = smem;
 			sourceTree = "<group>";
@@ -1699,7 +1702,6 @@
 		4D9867EB1B30840600B13711 /* TestHarness */ = {
 			isa = PBXGroup;
 			children = (
-				4D9867EC1B30842D00B13711 /* TestCategory.cpp */,
 				4D9867ED1B30842D00B13711 /* TestCategory.hpp */,
 				4D98680C1B30A30000B13711 /* ExampleTests.hpp */,
 				4D98680A1B30A23D00B13711 /* ExampleTests.cpp */,
@@ -1721,8 +1723,8 @@
 				4D98680F1B30A7BC00B13711 /* FunctionalTestHarness.hpp */,
 				4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */,
 				4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */,
-				4D659A5F1B39A51500638059 /* FunctionalTests_SMemEpMemCombined.cpp */,
-				4D659A601B39A51500638059 /* FunctionalTests_SMemEpMemCombined.hpp */,
+				4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */,
+				4D659A601B39A51500638059 /* SMemEpMemCombinedFunctionalTests.hpp */,
 				4DFF15831B3204C5006CDD34 /* AgentTest.cpp */,
 				4DFF15841B3204C5006CDD34 /* AgentTest.hpp */,
 				4D4749C61B32121100FB48D7 /* BasicTests.cpp */,
@@ -2335,17 +2337,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */,
 				4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */,
 				4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */,
 				4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */,
 				4D9868111B30A89A00B13711 /* FunctionalTestHarness.cpp in Sources */,
 				4D98680B1B30A23D00B13711 /* ExampleTests.cpp in Sources */,
-				4D659A621B39A7FD00638059 /* FunctionalTests_EpMem.cpp in Sources */,
-				4D659A631B39A80000638059 /* FunctionalTests_SMemEpMemCombined.cpp in Sources */,
+				4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */,
+				4D659A631B39A80000638059 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */,
 				4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */,
 				4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */,
 				4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */,
-				4D9867FE1B30894500B13711 /* TestCategory.cpp in Sources */,
 				4D9868001B30894500B13711 /* testMain.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
