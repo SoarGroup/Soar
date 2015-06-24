@@ -32,18 +32,15 @@ size_t Output_Manager::wme_to_string(agent* thisAgent, wme* w, char** dest, size
 {
     assert(thisAgent && dest && w);
     if (!dest_size) return 0;
-    char* ch = *dest;
-    size_t buffer_left = dest_size;
+    char* ch = *dest; size_t buffer_left = dest_size;
 
     buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "(t%u: %y ^%y %y%s",
         w->timetag, w->id, w->attr, w->value,
         (w->acceptable ? " +) [" : ") ["));
 
-
-    *(ch++) = ']';
-    *ch = 0;
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    buffer_left = om_charcpy(&ch, ']', buffer_left);
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::WM_to_string(agent* thisAgent, char** dest, size_t dest_size)
@@ -61,8 +58,8 @@ size_t Output_Manager::WM_to_string(agent* thisAgent, char** dest, size_t dest_s
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "          %w\n", w);
     }
 
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 /* UITODO| Make this method of Test */
@@ -112,7 +109,7 @@ size_t Output_Manager::test_to_string(test t, char** dest, size_t dest_size, boo
 
     if (!dest)
     {
-        dest = get_printed_output_string();
+        *dest = get_printed_output_string();
         dest_size = output_string_size; /* from agent.h */
     }
     if (!dest_size) return 0;;
@@ -132,7 +129,6 @@ size_t Output_Manager::test_to_string(test t, char** dest, size_t dest_size, boo
             buffer_left = om_strcpy(&ch, test_type_to_string_brief(t->type), buffer_left);
         }
         buffer_left = om_sym_to_string(t->data.referent, true, &ch, buffer_left);
-        break;
     }
     else if (t->type == CONJUNCTIVE_TEST)
     {
@@ -170,6 +166,7 @@ size_t Output_Manager::test_to_string(test t, char** dest, size_t dest_size, boo
     } else {
         buffer_left = om_strcpy(&ch, "[INVALID TEST!!!]", buffer_left);
     }
+    *dest = ch;
     return buffer_left;
 }
 
@@ -184,67 +181,9 @@ size_t Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char*
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
         c = c->rest;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
-}
 
-size_t Output_Manager::identity_to_string(agent* thisAgent, test t, char** dest, size_t dest_size)
-{
-
-    if (!dest_size) return 0;;
-    cons* c;
-    char* ch = *dest; size_t buffer_left = dest_size;
-
-    if (!t)
-    {
-        strncpy(dest, "[BLANK TEST]", dest_size);
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
-    }
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-        case NOT_EQUAL_TEST:
-        case LESS_TEST:
-        case GREATER_TEST:
-        case LESS_OR_EQUAL_TEST:
-        case GREATER_OR_EQUAL_TEST:
-        case SAME_TYPE_TEST:
-            buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "o%u/%y",
-                t->identity,
-                t->identity ? thisAgent->variablizationManager->get_ovar_for_o_id(t->identity) : NULL);
-
-
-
-            break;
-        case CONJUNCTIVE_TEST:
-            *(ch++) = '{';
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                buffer_left = identity_to_string(thisAgent, static_cast<test>(c->first), ch, buffer_left);
-
-
-
-                if (c->rest)
-                    *(ch++) = ' ';
-            }
-            *(ch++) = '}';
-            *ch = 0;
-            break;
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case DISJUNCTION_TEST:
-            strncpy(ch, "o0/#", buffer_left);
-            ch += 2;
-            break;
-        default:
-            strncpy(ch, "INVALID TEST!", buffer_left);   /* this should never get executed */
-            assert(false);
-            break;
-    }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::condition_to_string(agent* thisAgent, condition* cond, char** dest, size_t dest_size)
@@ -260,9 +199,6 @@ size_t Output_Manager::condition_to_string(agent* thisAgent, condition* cond, ch
             cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
             cond->data.tests.attr_test, cond->data.tests.value_test);
-
-
-
         }
         if (m_print_identity_effective) {
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s(%g %s^%g %g)",
@@ -270,18 +206,15 @@ size_t Output_Manager::condition_to_string(agent* thisAgent, condition* cond, ch
                 cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
                 cond->data.tests.attr_test, cond->data.tests.value_test);
-
-
-
         }
-        *ch = 0;
     }
     else
     {
-        buffer_left = sprinta_sf_internal(thisAgent, dest, dest_size, "-{\n%c2}", cond->data.ncc.top);
+        buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "-{\n%c2}", cond->data.ncc.top);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_cond, char** dest, size_t dest_size)
@@ -295,12 +228,10 @@ size_t Output_Manager::condition_list_to_string(agent* thisAgent, condition* top
     {
         assert(cond != cond->next);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s%i: %l\n", m_pre_string, ++count, cond);
-
-
     }
 
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char** dest, size_t dest_size, struct token_struct* tok, wme* w)
@@ -317,14 +248,13 @@ size_t Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char*
     int i;
     if (!rv)
     {
-        *(ch++) = '#';
-        *ch = 0;
+        buffer_left = om_charcpy(&ch, '#', buffer_left);
     }
     else if (rhs_value_is_unboundvar(rv))
     {
         /* -- unbound variable -- */
-        strncpy(dest, "<unbound-var>", dest_size);
-        dest[dest_size - 1] = 0; /* ensure null termination */
+        buffer_left = om_strcpy(&ch, "<unbound-var>", buffer_left);
+
     }
     else if (rhs_value_is_symbol(rv))
     {
@@ -353,12 +283,12 @@ size_t Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char*
             sym = get_symbol_from_rete_loc(
                       rhs_value_to_reteloc_levels_up(rv),
                       rhs_value_to_reteloc_field_num(rv), tok, w);
-            buffer_left = sprinta_sf_internal(thisAgent, dest, dest_size, "%y (reteloc)", sym);
+            buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%y (reteloc)", sym);
         }
         else
         {
-            strncpy(dest, "(rete-loc no tok/w)", dest_size);
-            dest[dest_size - 1] = 0; /* ensure null termination */
+            buffer_left = om_strcpy(&ch, "(rete-loc no tok/w)", buffer_left);
+
         }
     }
     else
@@ -373,16 +303,13 @@ size_t Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char*
 
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            *(ch++) = ' ';
-            buffer_left = rhs_value_to_string(thisAgent, static_cast<char*>(c->first), ch, buffer_left, tok, w);
-
-
+            buffer_left = om_charcpy(&ch, ' ', buffer_left);
+            buffer_left = rhs_value_to_string(thisAgent, static_cast<char*>(c->first), &ch, buffer_left, tok, w);
         }
-        *(ch++) = ')';
-        *(ch++) = 0;
+        buffer_left = om_charcpy(&ch, ')', buffer_left);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::action_to_string(agent* thisAgent, action* a, char** dest, size_t dest_size)
@@ -394,25 +321,22 @@ size_t Output_Manager::action_to_string(agent* thisAgent, action* a, char** dest
     if (a->type == FUNCALL_ACTION)
     {
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s(funcall ", m_pre_string);
-        buffer_left = rhs_value_to_string(thisAgent, a->value, ch, buffer_left, NULL, NULL);
-        chcpy(ch, ')', buffer_left);
-    }
-    else
-    {
+        buffer_left = rhs_value_to_string(thisAgent, a->value, &ch, buffer_left, NULL, NULL);
+        buffer_left = om_charcpy(&ch, ')', buffer_left);
+    } else {
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s(", m_pre_string);
-        buffer_left = rhs_value_to_string(thisAgent, a->id, ch, buffer_left, NULL, NULL);
-        strncpy(ch, " ^", buffer_left);
-        ch += 2;
-        buffer_left = rhs_value_to_string(thisAgent, a->attr, ch, buffer_left, NULL, NULL);
-        chcpy(ch, ' ', buffer_left);
-        buffer_left = rhs_value_to_string(thisAgent, a->value, ch, buffer_left, NULL, NULL);
-        strncpy(ch, " ref: ", buffer_left);
-        ch += 6;
-        buffer_left = rhs_value_to_string(thisAgent, a->referent, ch, buffer_left, NULL, NULL);
-        chcpy(ch, ')', buffer_left);
+        buffer_left = rhs_value_to_string(thisAgent, a->id, &ch, buffer_left, NULL, NULL);
+        buffer_left = om_strcpy(&ch, " ^", buffer_left);
+        buffer_left = rhs_value_to_string(thisAgent, a->attr, &ch, buffer_left, NULL, NULL);
+        buffer_left = om_charcpy(&ch, ' ', buffer_left);
+        buffer_left = rhs_value_to_string(thisAgent, a->value, &ch, buffer_left, NULL, NULL);
+        buffer_left = om_strcpy(&ch, " ~ ", buffer_left);
+        buffer_left = rhs_value_to_string(thisAgent, a->referent, &ch, buffer_left, NULL, NULL);
+        buffer_left = om_charcpy(&ch, ')', buffer_left);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, char** dest, size_t dest_size)
@@ -425,12 +349,11 @@ size_t Output_Manager::action_list_to_string(agent* thisAgent, action* action_li
 
     for (a = action_list; a != NIL; a = a->next)
     {
-        buffer_left = action_to_string(thisAgent, a, ch, buffer_left);
-        *(ch++) = '\n';
+        buffer_left = action_to_string(thisAgent, a, &ch, buffer_left);
+        buffer_left = om_charcpy(&ch, '\n', buffer_left);
     }
-    *ch = 0;
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char** dest, size_t dest_size)
@@ -446,8 +369,6 @@ size_t Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char**
             preference_to_char(pref->type),
             (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-
-
     }
     if (m_print_identity_effective)
     {
@@ -458,12 +379,9 @@ size_t Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char**
             preference_to_char(pref->type),
             (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-
-
     }
-    *ch = 0;
-    return dest;
-    return NULL;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top_pref, char** dest, size_t dest_size)
@@ -476,8 +394,9 @@ size_t Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s%p\n", m_pre_string, pref);
         pref = pref->inst_next;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+
+    *dest = ch;
+    return buffer_left;
 
 }
 
@@ -491,14 +410,14 @@ size_t Output_Manager::preflist_result_to_string(agent* thisAgent, preference* t
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s%p\n", m_pre_string, pref);
         pref = pref->next_result;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+
+    *dest = ch;
+    return buffer_left;
 }
 
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     if (prod)
@@ -517,13 +436,11 @@ size_t Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_con
         if (m_print_identity)
         {
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "--------------------------- Match --------------------------\n");
-
-
         }
         set_print_test_format(true, false);
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = preflist_inst_to_string(thisAgent, top_pref, ch, buffer_left);
+        buffer_left = preflist_inst_to_string(thisAgent, top_pref, &ch, buffer_left);
         clear_print_test_format();
     }
     if (m_print_identity)
@@ -533,14 +450,14 @@ size_t Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_con
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "------------------------- Identity -------------------------\n");
         }
         set_print_test_format(false, true);
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = preflist_inst_to_string(thisAgent, top_pref, ch, buffer_left);
+        buffer_left = preflist_inst_to_string(thisAgent, top_pref, &ch, buffer_left);
         clear_print_test_format();
     }
 
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char** dest, size_t dest_size)
@@ -555,9 +472,9 @@ size_t Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_c
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "--------------------------- Match --------------------------\n");
         }
         set_print_test_format(true, false);
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = preflist_result_to_string(thisAgent, top_pref, ch, buffer_left);
+        buffer_left = preflist_result_to_string(thisAgent, top_pref, &ch, buffer_left);
         clear_print_test_format();
     }
     if (m_print_identity)
@@ -567,14 +484,14 @@ size_t Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_c
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "------------------------- Identity -------------------------\n");
         }
         set_print_test_format(false, true);
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = preflist_result_to_string(thisAgent, top_pref, ch, buffer_left);
+        buffer_left = preflist_result_to_string(thisAgent, top_pref, &ch, buffer_left);
         clear_print_test_format();
     }
 
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char** dest, size_t dest_size)
@@ -589,9 +506,9 @@ size_t Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_c
             buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "--------------------------- Match --------------------------\n");
         }
         set_print_test_format(true, false);
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = action_list_to_string(thisAgent, top_action, ch, buffer_left);
+        buffer_left = action_list_to_string(thisAgent, top_action, &ch, buffer_left);
         clear_print_test_format();
     }
     if (m_print_identity)
@@ -603,14 +520,14 @@ size_t Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_c
         }
 
 
-        buffer_left = condition_list_to_string(thisAgent, top_cond, ch, buffer_left);
+        buffer_left = condition_list_to_string(thisAgent, top_cond, &ch, buffer_left);
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%s-->\n", m_pre_string);
-        buffer_left = action_list_to_string(thisAgent, top_action, ch, buffer_left);
+        buffer_left = action_list_to_string(thisAgent, top_action, &ch, buffer_left);
         clear_print_test_format();
     }
 
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    *dest = ch;
+    return buffer_left;
 }
 
 size_t Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, char** dest, size_t dest_size)
@@ -627,9 +544,10 @@ size_t Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* 
         buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "%sInstantiation #%u matched nothing (dummy production?) ", m_pre_string, inst->i_id);
     }
     buffer_left = sprinta_sf_internal(thisAgent, ch, buffer_left, "in state %y (level %d)\n", inst->match_goal, inst->match_goal_level);
-    buffer_left = cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, ch, buffer_left);
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    buffer_left = cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, &ch, buffer_left);
+
+    *dest = ch;
+    return buffer_left;
 }
 
 void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector<instantiation*>& instantiation_list)
@@ -741,7 +659,6 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         std::stringstream convert(convertStr);
         int newInt;
         double newFloat;
-
 
         if (!m_defaultAgent)
         {

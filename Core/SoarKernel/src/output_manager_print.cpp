@@ -85,14 +85,16 @@ void Output_Manager::print_sf(const char* format, ...)
     if (m_defaultAgent)
     {
         va_list args;
-        char *buf = 0;
-        buf = new char[OM_BUFFER_SIZE+1];
+        //    char* buf = new char [OM_BUFFER_SIZE+1];
+        char* buf;
+        buf = (char *)malloc(sizeof(char)*(OM_BUFFER_SIZE+1));
 
         va_start(args, format);
         vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
         va_end(args);
         printa(m_defaultAgent, buf);
-        delete [] buf;
+        free(buf);
+        //delete [] buf;
     }
 }
 
@@ -114,10 +116,25 @@ size_t Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_siz
     {
         /* MToDo | Need safer way to copy this */
         /* --- copy anything up to the first "%" --- */
-        while ((*format != '%') && (*format != 0))
+        if ((*format != '%') && (*format != 0))
         {
-            *(ch++) = *(format++);
-
+            char* first_p = strchr(format, '%');
+            size_t first_len = 0;
+            if (first_p)
+            {
+                first_len = (first_p - format);
+            }
+            if (first_len > 0)
+            {
+                char* new_format = const_cast<char*>(format);
+                buffer_left = om_strncpy(&ch, &new_format, buffer_left, first_len);
+                format = new_format;
+            } else {
+                size_t buffer_left_old = buffer_left;
+                buffer_left = om_strcpy(&ch, format, buffer_left);
+                format += (buffer_left_old - buffer_left);
+                break;
+            }
         }
         if (*format == 0)
         {
@@ -343,15 +360,14 @@ size_t Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_siz
     return buffer_left;
 }
 
-size_t Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+void Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
 {
-    if (!dest_size) return 0;
-    size_t buffer_left;
+    if (!dest_size) return;
     va_list args;
     va_start(args, format);
-    buffer_left = vsnprint_sf(thisAgent, dest, dest_size, format, args);
+    vsnprint_sf(thisAgent, dest, dest_size, format, args);
     va_end(args);
-    return buffer_left;
+    return;
 }
 
 /* Same as above but changes the destination pointer to point to the next character to write to.  Used
@@ -365,7 +381,7 @@ size_t Output_Manager::sprinta_sf_internal(agent* thisAgent, char* &dest, size_t
     va_start(args, format);
     buffer_left = vsnprint_sf(thisAgent, dest, dest_size, format, args);
     va_end(args);
-    dest = *(dest + (dest - buffer_left));
+    dest = dest + (dest_size - buffer_left);
     return buffer_left;
 }
 
@@ -394,12 +410,19 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
         return;
     }
 
-    char buf[OM_BUFFER_SIZE+1];
+    char* buf;
+    //= new char [OM_BUFFER_SIZE+1];
+    buf = (char *)malloc(sizeof(char)*(OM_BUFFER_SIZE+1));
+    size_t buffer_left = OM_BUFFER_SIZE;
     buf[OM_BUFFER_SIZE] = 0;
-    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
-    int s = strlen(buf);
-    strncpy((buf + s), msg, OM_BUFFER_SIZE - s);
+    char* ch = buf;
+
+    buffer_left = om_strcpy(&ch, mode_info[mode].prefix, buffer_left);
+    buffer_left = om_strcpy(&ch, msg, buffer_left);
     printa(m_defaultAgent, buf);
+    free(buf);
+
+    //delete [] buf;
 }
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
@@ -412,14 +435,18 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE+1];
+    char* buf;
+    //= new char [OM_BUFFER_SIZE+1];
+    buf = (char *)malloc(sizeof(char)*(OM_BUFFER_SIZE+1));
+    size_t buffer_left = OM_BUFFER_SIZE;
     buf[OM_BUFFER_SIZE] = 0;
-    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
-    int s = strlen(buf);
+
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE - s, format, args);
+    vsnprint_sf(m_defaultAgent, buf, buffer_left, format, args);
     va_end(args);
     printa(m_defaultAgent, buf);
+    free(buf);
+    //delete [] buf;
 }
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
@@ -432,14 +459,19 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE+1];
+//    char* buf = new char [OM_BUFFER_SIZE+1];
+    char* buf;
+    buf = (char *)malloc(sizeof(char)*(OM_BUFFER_SIZE+1));
     buf[OM_BUFFER_SIZE] = 0;
+    size_t buffer_left = OM_BUFFER_SIZE;
 
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, buffer_left, format, args);
     va_end(args);
 
     printa(m_defaultAgent, buf);
+    free(buf);
+    //delete [] buf;
 
 }
 
@@ -455,18 +487,24 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
         debug_print(mode, "=========================================================\n");
     va_list args;
-    char buf[OM_BUFFER_SIZE+1];
-    buf[OM_BUFFER_SIZE] = 0;
 
-    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
-    int s = strlen(buf);
+    //    char* buf = new char [OM_BUFFER_SIZE+1];
+    char* buf;
+    buf = (char *)malloc(sizeof(char)*(OM_BUFFER_SIZE+1));
+
+    buf[OM_BUFFER_SIZE] = 0;
+    size_t buffer_left = OM_BUFFER_SIZE;
+    char* ch = buf;
+
+    buffer_left = om_strcpy(&ch, mode_info[mode].prefix, buffer_left);
+
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE - s, format, args);
+    vsnprint_sf(m_defaultAgent, ch, buffer_left, format, args);
     va_end(args);
-    if (strlen(buf) > s)
-    {
-        printa(m_defaultAgent, buf);
-    }
+    printa(m_defaultAgent, buf);
+    free(buf);
+    //delete [] buf;
+
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintAfter))
         debug_print(mode, "=========================================================\n");
 }

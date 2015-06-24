@@ -91,6 +91,21 @@ inline size_t om_strcpy(char** s1, const char* s2, size_t n) {
     return n-m-1;
 }
 
+inline size_t om_strncpy(char** s1, char** s2, size_t n, size_t num_chars) {
+    if ( n > 0) {
+        if (num_chars == 0) return n;
+        if (num_chars+1 > n) {
+            num_chars = n-1;
+        }
+        memmove(*s1, *s2, num_chars);
+        (*s1)[num_chars]=0;
+    } else {
+        return n;
+    }
+    *s1 = &((*s1)[num_chars]);
+    *s2 = &((*s2)[num_chars]);
+    return n-num_chars-1;
+}
 
 inline size_t om_charcpy(char** s1, const char c1, size_t n) {
     if ( (n > 0) && c1) {
@@ -193,7 +208,6 @@ class Output_Manager
         size_t cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char** dest, size_t dest_size);
         size_t cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char** dest, size_t dest_size);
         size_t cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char** dest, size_t dest_size);
-        size_t identity_to_string(agent* thisAgent, test t, char** dest, size_t dest_size);
         size_t instantiation_to_string(agent* thisAgent, instantiation* inst, char** dest, size_t dest_size);
         size_t pref_to_string(agent* thisAgent, preference* pref, char** dest, size_t dest_size);
         size_t preflist_inst_to_string(agent* thisAgent, preference* top_pref, char** dest, size_t dest_size);
@@ -220,7 +234,7 @@ class Output_Manager
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
-        size_t sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
+        void sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
         size_t sprinta_sf_internal(agent* thisAgent, char* &dest, size_t dest_size, const char* format, ...);
 
         void start_fresh_line(agent* pSoarAgent = NULL);
