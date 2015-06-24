@@ -50,6 +50,8 @@ namespace sml
                 ClearError() ;
                 return false ;
             }
+		
+			sml::KernelSML* GetKernelSML() { return m_pKernelSML; }
     };
     
 } // End of namespace
