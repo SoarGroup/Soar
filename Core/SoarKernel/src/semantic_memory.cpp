@@ -2677,7 +2677,8 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         
         // setup first query, which is sorted on activation already
         q = smem_setup_web_crawl(thisAgent, (*cand_set));
-        
+		thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
+		
         // this becomes the minimal set to walk (till match or fail)
         if (q->execute() == soar_module::row)
         {
@@ -4603,8 +4604,12 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     bool do_wm_phase = false;
     bool mirroring_on = (thisAgent->smem_params->mirroring->get_value() == on);
     
-    //
-    
+	//Free this up as soon as we start a phase that allows queries
+	if(!store_only){
+		delete thisAgent->lastCue;
+		thisAgent->lastCue = NULL;
+	}
+	
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////

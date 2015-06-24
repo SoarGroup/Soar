@@ -920,7 +920,18 @@ typedef struct agent_struct
     
     smem_pooled_symbol_set* smem_changed_ids;
     bool smem_ignore_changes;
-    
+	
+	// BasicWeightedCue from JSoar for unit testing
+	class BasicWeightedCue
+	{
+	public:
+		const wme_struct* cue;
+		const long weight;
+		
+		BasicWeightedCue(wme_struct* c, long w) : cue(c), weight(w) {}
+	};
+	BasicWeightedCue* lastCue;
+	
     // dynamic memory pools
     std::map< size_t, memory_pool* >* dyn_memory_pools;
     
