@@ -9,7 +9,7 @@
 #ifndef DEBUG_DEFINES_H_
 #define DEBUG_DEFINES_H_
 
-//#define DEBUG_OUTPUT_ON
+#define DEBUG_OUTPUT_ON
 
 /* ---------------------------------------------------------------------*/
 /* -- The schema version used by the output manager's debug database -- */

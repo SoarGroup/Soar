@@ -32,12 +32,13 @@
 
 /* This is far too large, but we're setting it to this until we fix a bug we previously had
  * with strncpy corrupting memory. */
-#define OM_BUFFER_SIZE 70000   /* --- size of output buffer for a calls to print routines --- */
+#define OM_BUFFER_SIZE 7000   /* --- size of output buffer for a calls to print routines --- */
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
-    char buf[OM_BUFFER_SIZE];
+    char buf[OM_BUFFER_SIZE+1];
+    buf[OM_BUFFER_SIZE] = 0;
 
     va_start(args, format);
     vsnprint_sf(pSoarAgent, buf, OM_BUFFER_SIZE, format, args);
@@ -84,19 +85,23 @@ void Output_Manager::print_sf(const char* format, ...)
     if (m_defaultAgent)
     {
         va_list args;
-        char buf[OM_BUFFER_SIZE];
+        char *buf = 0;
+        buf = new char[OM_BUFFER_SIZE+1];
 
         va_start(args, format);
         vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
         va_end(args);
         printa(m_defaultAgent, buf);
+        delete [] buf;
     }
 }
 
-void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list pargs)
+size_t Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list pargs)
 {
+    if (!dest_size) return 0;
     char* ch = dest;
     Symbol* sym;
+    size_t buffer_left = dest_size;
 
     /* Apparently nested variadic calls need to have their argument list copied here.
      * If windows has issues with va_copy, might be able to just comment out that line
@@ -107,10 +112,12 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
 
     while (true)
     {
+        /* MToDo | Need safer way to copy this */
         /* --- copy anything up to the first "%" --- */
         while ((*format != '%') && (*format != 0))
         {
             *(ch++) = *(format++);
+
         }
         if (*format == 0)
         {
@@ -119,10 +126,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
         if (*(format + 1) == 's')
         {
             char *ch2 = va_arg(args, char *);
-            if (ch2 && strlen(ch2))
+            if (ch2)
             {
-                strcpy(ch, ch2);
-                while (*ch) ch++;
+                buffer_left = om_strcpy(&ch, ch2, buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'y')
@@ -130,70 +136,27 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             sym = va_arg(args, Symbol*);
             if (sym)
             {
-                (sym)->to_string(true, ch, dest_size - (ch - dest));
-                while (*ch) ch++;
+                buffer_left = om_sym_to_string(sym, true, &ch, buffer_left);
             } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'o')
-        {
-            test t = va_arg(args, test);
-            test ct = NULL;
-            sym = NULL;
-            if (t)
-            {
-                if (t->type != CONJUNCTIVE_TEST)
-                {
-                    if (t->identity)
-                    {
-                        sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
-                        sym->to_string(true, ch, dest_size - (ch - dest));
-                        while (*ch) ch++;
-                    } else {
-                        *(ch++) = '#';
-                    }
-                } else {
-                    strcpy(ch, "{ ");
-                    ch += 2;
-                    for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
-                    {
-                        ct = static_cast<test>(c->first);
-                        if (ct && ct->identity)
-                        {
-                            sym = thisAgent->variablizationManager->get_ovar_for_o_id(ct->identity);
-                            sym->to_string(true, ch, dest_size - (ch - dest));
-                            while (*ch) ch++;
-                        } else {
-                            *(ch++) = '#';
-                        }
-                        *(ch++) = ' ';
-                    }
-                    *(ch++) = '}';;
-                }
-            } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'i')
         {
-            SNPRINTF(ch, dest_size - (ch - dest), "%lld", va_arg(args, int64_t));
-            while (*ch) ch++;
+            buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, buffer_left, "%lld", va_arg(args, int64_t)));
             format += 2;
         } else if (*(format + 1) == 'u')
         {
-            SNPRINTF(ch, dest_size - (ch - dest), "%llu", va_arg(args, uint64_t));
-            while (*ch) ch++;
+            buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, buffer_left, "%llu", va_arg(args, uint64_t)));
             format += 2;
         } else if (*(format + 1) == 't')
         {
             test t = va_arg(args, test);
             if (t)
             {
-                test_to_string(t, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = test_to_string(t, &ch, buffer_left);
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'g')
@@ -206,30 +169,40 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
                 {
                     if (t->identity)
                     {
-                        identity_to_string(thisAgent, t, ch, dest_size - (ch - dest) );
-                        while (*ch) ch++;
+                        buffer_left = test_to_string(t, &ch, buffer_left);
+                        buffer_left = om_strcpy(&ch, " [o", buffer_left);
+                        buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, buffer_left, "%llu", t->identity));
+                        sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
+                        buffer_left = om_sym_to_string(sym, true, &ch, buffer_left);
+                        buffer_left = om_charcpy(&ch, ']', buffer_left);
                     } else {
-                        *(ch++) = '#';
+                        buffer_left = test_to_string(t, &ch, buffer_left);
+                        buffer_left = om_strcpy(&ch, " [o0]", buffer_left);
                     }
                 } else {
-                    strcpy(ch, "{ ");
-                    ch += 2;
+                    buffer_left = om_strcpy(&ch, "{ ", buffer_left);
                     for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                     {
                         ct = static_cast<test>(c->first);
-                        if (ct && ct->identity)
+                        assert(ct);
+                        if (t->identity)
                         {
-                            identity_to_string(thisAgent, ct, ch, dest_size - (ch - dest) );
-                            while (*ch) ch++;
+                            buffer_left = test_to_string(t, &ch, buffer_left);
+                            buffer_left = om_strcpy(&ch, " [o", buffer_left);
+                            buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, buffer_left, "%llu", t->identity));
+                            sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
+                            buffer_left = om_sym_to_string(sym, true, &ch, buffer_left);
+                            buffer_left = om_charcpy(&ch, ']', buffer_left);
                         } else {
-                            *(ch++) = '#';
+                            buffer_left = test_to_string(t, &ch, buffer_left);
+                            buffer_left = om_strcpy(&ch, " [o0]", buffer_left);
                         }
-                        *(ch++) = ' ';
+                        buffer_left = om_charcpy(&ch, ' ', buffer_left);
                     }
-                    *(ch++) = '}';;
+                    buffer_left = om_charcpy(&ch, '}', buffer_left);
                 }
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'l')
@@ -237,10 +210,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             condition* lc = va_arg(args, condition*);
             if (lc)
             {
-                condition_to_string(thisAgent, lc, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = condition_to_string(thisAgent, lc, &ch, buffer_left);
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'a')
@@ -248,10 +220,10 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             action* la = va_arg(args, action *);
             if (la)
             {
-                this->action_to_string(thisAgent, la, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = this->action_to_string(thisAgent, la, &ch, buffer_left);
+
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'n')
@@ -259,10 +231,10 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             list* la = va_arg(args, list *);
             if (la)
             {
-                this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), &ch, buffer_left);
+
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'r')
@@ -270,10 +242,10 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             char* la = va_arg(args, char *);
             if (la)
             {
-                this->rhs_value_to_string(thisAgent, la, ch, dest_size - (ch - dest), NULL );
-                while (*ch) ch++;
+                buffer_left = this->rhs_value_to_string(thisAgent, la, &ch, buffer_left, NULL );
+
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'p')
@@ -281,10 +253,10 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             preference* lp = va_arg(args, preference *);
             if (lp)
             {
-                pref_to_string(thisAgent, lp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = pref_to_string(thisAgent, lp, &ch, buffer_left);
+
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'w')
@@ -292,22 +264,20 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             wme* lw = va_arg(args, wme *);
             if (lw)
             {
-            wme_to_string(thisAgent, lw, ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+                buffer_left = wme_to_string(thisAgent, lw, &ch, buffer_left);
             } else {
-                *(ch++) = '#';
+                buffer_left = om_charcpy(&ch, '#', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == 'd')
         {
-            SNPRINTF(ch, dest_size - (ch - dest), "%d", va_arg(args, int));
-            while (*ch) ch++;
+            buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, buffer_left, "%d", va_arg(args, int)));
             format += 2;
         } else if (*(format + 1) == 'f')
         {
             if (thisAgent->output_settings->printer_output_column != 1)
             {
-                *(ch++) = '\n';
+                buffer_left = om_charcpy(&ch, '\n', buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == '1')
@@ -315,8 +285,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             condition* temp = va_arg(args, condition *);
             if (temp)
             {
-                condition_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = condition_list_to_string(thisAgent, temp, &ch, buffer_left);
             }
                 format += 2;
         } else if (*(format + 1) == '2')
@@ -324,8 +293,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             action* temp = va_arg(args, action *);
             if (temp)
             {
-                action_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = action_list_to_string(thisAgent, temp, &ch, buffer_left);
             }
                 format += 2;
         } else if (*(format + 1) == '3')
@@ -333,71 +301,87 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size,
             cons* temp = va_arg(args, cons*);
             if (temp)
             {
-                condition_cons_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = condition_cons_to_string(thisAgent, temp, &ch, buffer_left);
             }
                 format += 2;
         } else if (*(format + 1) == '4')
         {
-            cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            buffer_left = cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), &ch, buffer_left);
             format += 2;
         } else if (*(format + 1) == '5')
         {
-            cond_prefs_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            buffer_left = cond_prefs_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), &ch, buffer_left);
             format += 2;
         } else if (*(format + 1) == '6')
         {
-            cond_results_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
+            buffer_left = cond_results_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), &ch, buffer_left);
             format += 2;
         } else if (*(format + 1) == '7')
         {
             instantiation* temp = va_arg(args, instantiation*);
             if (temp)
             {
-                instantiation_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
+                buffer_left = instantiation_to_string(thisAgent, temp, &ch, buffer_left);
             }
             format += 2;
         } else if (*(format + 1) == '8')
         {
-            WM_to_string(thisAgent, ch, dest_size - (ch - dest));
-            while (*ch) ch++;
+            buffer_left = WM_to_string(thisAgent, &ch, buffer_left);
             format += 2;
         } else if (*(format + 1) == 'c')
         {
             char c = static_cast<char>(va_arg(args, int));
-            SNPRINTF(ch, dest_size - (ch - dest), "%c", c);
-            while (*ch) ch++;
+            buffer_left = om_snprintf(&ch, buffer_left, SNPRINTF(ch, dest_size - (ch - dest), "%c", c));
             format += 2;
         } else
         {
-            *(ch++) = *(format++);
+            buffer_left = om_charcpy(&ch, '\n', buffer_left);
+            buffer_left = om_charcpy(&ch, *(format++), buffer_left);
         }
     }
-    *ch = 0;
     va_end(args);
+    return buffer_left;
 }
 
-void Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+size_t Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
 {
+    if (!dest_size) return 0;
+    size_t buffer_left;
     va_list args;
     va_start(args, format);
-    vsnprint_sf(thisAgent, dest, dest_size, format, args);
+    buffer_left = vsnprint_sf(thisAgent, dest, dest_size, format, args);
     va_end(args);
+    return buffer_left;
 }
 
-void Output_Manager::sprint_sf(char* dest, size_t dest_size, const char* format, ...)
+/* Same as above but changes the destination pointer to point to the next character to write to.  Used
+ * by other output manager functions to build up a string incrementally */
+
+size_t Output_Manager::sprinta_sf_internal(agent* thisAgent, char* &dest, size_t dest_size, const char* format, ...)
 {
+    if (!dest_size) return 0;
+    size_t buffer_left;
+    va_list args;
+    va_start(args, format);
+    buffer_left = vsnprint_sf(thisAgent, dest, dest_size, format, args);
+    va_end(args);
+    dest = *(dest + (dest - buffer_left));
+    return buffer_left;
+}
+
+size_t Output_Manager::sprint_sf(char* &dest, size_t dest_size, const char* format, ...)
+{
+    if (!dest_size) return 0;
+    size_t buffer_left = dest_size;
     if (m_defaultAgent)
     {
+        size_t buffer_left;
         va_list args;
         va_start(args, format);
-        vsnprint_sf(m_defaultAgent, dest, dest_size, format, args);
+        buffer_left = vsnprint_sf(m_defaultAgent, dest, dest_size, format, args);
         va_end(args);
     }
+    return buffer_left;
 }
 
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
@@ -410,10 +394,11 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
         return;
     }
 
-    char buf[OM_BUFFER_SIZE];
-    strcpy(buf, mode_info[mode].prefix);
+    char buf[OM_BUFFER_SIZE+1];
+    buf[OM_BUFFER_SIZE] = 0;
+    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
     int s = strlen(buf);
-    strcpy((buf + s), msg);
+    strncpy((buf + s), msg, OM_BUFFER_SIZE - s);
     printa(m_defaultAgent, buf);
 }
 
@@ -427,11 +412,12 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE];
-    strcpy(buf, mode_info[mode].prefix);
+    char buf[OM_BUFFER_SIZE+1];
+    buf[OM_BUFFER_SIZE] = 0;
+    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
     int s = strlen(buf);
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE - s, format, args);
     va_end(args);
     printa(m_defaultAgent, buf);
 }
@@ -446,7 +432,8 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE];
+    char buf[OM_BUFFER_SIZE+1];
+    buf[OM_BUFFER_SIZE] = 0;
 
     va_start(args, format);
     vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
@@ -468,12 +455,13 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
         debug_print(mode, "=========================================================\n");
     va_list args;
-    char buf[OM_BUFFER_SIZE];
+    char buf[OM_BUFFER_SIZE+1];
+    buf[OM_BUFFER_SIZE] = 0;
 
-    strcpy(buf, mode_info[mode].prefix);
+    strncpy(buf, mode_info[mode].prefix, OM_BUFFER_SIZE);
     int s = strlen(buf);
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE - s, format, args);
     va_end(args);
     if (strlen(buf) > s)
     {
