@@ -24,8 +24,9 @@
 #include "AgentTest.hpp"
 #include "BasicTests.hpp"
 #include "FunctionalTests.hpp"
-#include "FunctionalTests_EpMem.hpp"
-#include "FunctionalTests_SMemEpMemCombined.hpp"
+#include "EpMemFunctionalTests.hpp"
+#include "SMemEpMemCombinedFunctionalTests.hpp"
+#include "SMemFunctionalTests.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -44,6 +45,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(FunctionalTests);
 	TEST_DECLARATION(EpMemFunctionalTests);
 	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
+	TEST_DECLARATION(SMemFunctionalTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
