@@ -1,6 +1,6 @@
 //
 //  FunctionalTestHarness.cpp
-//  Soar-xcode
+//  Prototype-UnitTesting
 //
 //  Created by Alex Turner on 6/16/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
@@ -9,6 +9,8 @@
 #include "FunctionalTestHarness.hpp"
 
 #include "SoarHelper.hpp"
+
+#include "sml_EmbeddedConnectionSynch.h"
 
 FunctionalTestHarness::FunctionalTestHarness(std::string categoryName)
 : TestCategory(categoryName)
@@ -64,17 +66,15 @@ void FunctionalTestHarness::runTest(std::string testName, int expectedDecisions)
 
 static int count = 0;
 
-void FunctionalTestHarness::afterDecisionCycleHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
+void FunctionalTestHarness::afterDecisionCycleHandler()
 {
-	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
-	
 	++count;
 	
 	// Called during smlEVENT_AFTER_DECISION_CYCLE
-	if (_this->runner->kill == true)
+	if (runner->kill == true)
 	{
-		_this->halted = true;
-		pAgent->StopSelf();
+		halted = true;
+		halt_routine(internal_agent, nullptr, nullptr);
 	}
 }
 
@@ -86,7 +86,28 @@ void FunctionalTestHarness::setUp()
 	kernel = sml::Kernel::CreateKernelInCurrentThread(true);
 	agent = kernel->CreateAgent("soar1");
 	
-	agent->RegisterForRunEvent(sml::smlEVENT_AFTER_DECISION_CYCLE, &FunctionalTestHarness::afterDecisionCycleHandler, this);
+	// /BEGIN WARN WARN:
+	//
+	// This works because we're using 'CreateKernelInCurrentThread(true)'
+	// THIS WILL BREAK OTHERWISE.  WE DO NOT NEED FANCINESS HERE SO THIS IS GOOD
+	// BECAUSE WE CAN TEST INTERNAL AGENT WITH THIS.
+	//
+	// /END WARN WARN
+	
+	sml::EmbeddedConnectionSynch* connection = dynamic_cast<sml::EmbeddedConnectionSynch*>(kernel->GetConnection());
+	
+	internal_kernel = connection->GetKernelSML();
+	internal_agent = internal_kernel->GetAgentSML("soar1")->GetSoarAgent();
+	
+	soar_add_callback(internal_agent,
+					  AFTER_DECISION_CYCLE_CALLBACK,
+					  [](::agent*, soar_callback_event_id, soar_callback_data data, soar_call_data) {
+						  static_cast<FunctionalTestHarness*>(data)->afterDecisionCycleHandler();
+					  },
+					  AFTER_DECISION_CYCLE_CALLBACK,
+					  this,
+					  [](soar_callback_data){},
+					  "Prototype-UnitTesting AFTER_DECISION_CYCLE_CALLBACK");
 	
 	installRHS(agent);
 }
@@ -99,51 +120,35 @@ void FunctionalTestHarness::tearDown(bool caught)
 	kernel = nullptr;
 }
 
-std::string FunctionalTestHarness::haltHandler(sml::smlRhsEventId id,
-											   void* pUserData,
-											   sml::Agent* pAgent,
-											   char const* pFunctionName,
-											   char const* pArgument)
+Symbol* FunctionalTestHarness::haltHandler()
 {
-	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
+	halted = true;
+	failed = false;
 	
-	_this->halted = true;
-	_this->runner->failed = false;
+	runner->failed = false;
 	
-	return pAgent->StopSelf();
+	return halt_routine(internal_agent, nullptr, nullptr);
 }
 
-std::string FunctionalTestHarness::failedHandler(sml::smlRhsEventId id,
-												 void* pUserData,
-												 sml::Agent* pAgent,
-												 char const* pFunctionName,
-												 char const* pArgument)
+Symbol* FunctionalTestHarness::failedHandler()
 {
-	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
+	halted = true;
+	failed = true;
 	
-	_this->halted = true;
-	_this->failed = true;
+	runner->failed = true;
 	
-	_this->runner->failed = true;
-	
-	return pAgent->StopSelf();
+	return halt_routine(internal_agent, nullptr, nullptr);
 }
 
-std::string FunctionalTestHarness::succeededHandler(sml::smlRhsEventId id,
-													void* pUserData,
-													sml::Agent* pAgent,
-													char const* pFunctionName,
-													char const* pArgument)
+Symbol* FunctionalTestHarness::succeededHandler()
 {
-	FunctionalTestHarness* _this = (FunctionalTestHarness*)pUserData;
+	halted = true;
+	failed = false;
 	
-	_this->halted = true;
-	_this->failed = false;
-	_this->runner->failed = false;
+	runner->failed = false;
 	
-	return pAgent->StopSelf();
+	return halt_routine(internal_agent, nullptr, nullptr);
 }
-
 
 /**
  * Set up the agent with RHS functions common to these
@@ -152,13 +157,35 @@ std::string FunctionalTestHarness::succeededHandler(sml::smlRhsEventId id,
 void FunctionalTestHarness::installRHS(sml::Agent* agent)
 {
 	// set up the agent with common RHS functions
-	agent->GetKernel()->AddRhsFunction("halt", FunctionalTestHarness::haltHandler, this);
-	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
+	halt_routine = halt_function->f;
 	
-	agent->GetKernel()->AddRhsFunction("failed", FunctionalTestHarness::failedHandler, this);
-	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+	struct user_data_struct
+	{
+		user_data_struct(std::function<::Symbol* ()> routine)
+		: function(routine)
+		{}
+		
+		std::function<::Symbol* ()> function;
+	};
 	
-	agent->GetKernel()->AddRhsFunction("succeeded", FunctionalTestHarness::succeededHandler, this);
-	assertFalse(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
+		return static_cast<user_data_struct*>(user_data)->function();
+	};
+	
+	halt_function->user_data = new user_data_struct(std::bind(&FunctionalTestHarness::haltHandler, this));
+	halt_function->f = call_routine;
+	
+	add_rhs_function(internal_agent,
+					 make_str_constant(internal_agent, "failed"),
+					 call_routine,
+					 0, false, true,
+					 new user_data_struct(std::bind(&FunctionalTestHarness::failedHandler, this)));
+	
+	add_rhs_function(internal_agent,
+					 make_str_constant(internal_agent, "succeeded"),
+					 call_routine,
+					 0, false, true,
+					 new user_data_struct(std::bind(&FunctionalTestHarness::succeededHandler, this)));
 }
 

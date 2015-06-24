@@ -1,6 +1,6 @@
 //
 //  FunctionalTestHarness.hpp
-//  Soar-xcode
+//  Prototype-UnitTesting
 //
 //  Created by Alex Turner on 6/16/15.
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
@@ -12,8 +12,15 @@
 #include "TestCategory.hpp"
 #include "TestRunner.hpp"
 
+#include "portability.h"
+
 #include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
+#include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
+#include "sml_RhsFunction.h"
+#include "agent.h"
+#include "rhs_functions.h"
 
 #include <string>
 
@@ -22,14 +29,18 @@ class FunctionalTestHarness : public TestCategory
 public:
 	FunctionalTestHarness(std::string categoryName);
 	
+protected:
 	sml::Agent* agent;
 	sml::Kernel* kernel;
+	sml::KernelSML* internal_kernel;
+	::agent* internal_agent;
 	
-protected:
 	bool halted = false;
 	bool failed = false;
 	
-	static void afterDecisionCycleHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
+	::rhs_function_routine halt_routine;
+	
+	void afterDecisionCycleHandler();
 	
 public:
 	/**
@@ -52,23 +63,9 @@ public:
 	void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);
 	
-	static std::string haltHandler(sml::smlRhsEventId id,
-								   void* pUserData,
-								   sml::Agent* pAgent,
-								   char const* pFunctionName,
-								   char const* pArgument);
-	
-	static std::string failedHandler(sml::smlRhsEventId id,
-									 void* pUserData,
-									 sml::Agent* pAgent,
-									 char const* pFunctionName,
-									 char const* pArgument);
-	
-	static std::string succeededHandler(sml::smlRhsEventId id,
-										void* pUserData,
-										sml::Agent* pAgent,
-										char const* pFunctionName,
-										char const* pArgument);
+	::Symbol* haltHandler();
+	::Symbol* failedHandler();
+	::Symbol* succeededHandler();
 	
 	/**
 	 * Set up the agent with RHS functions common to these
