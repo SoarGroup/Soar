@@ -58,7 +58,7 @@
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
@@ -68,7 +68,7 @@
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
-#define TRACE_Init_DT_RL_VARIABLIZATION           true
+#define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false

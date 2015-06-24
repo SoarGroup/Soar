@@ -133,7 +133,6 @@ size_t Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_siz
                 size_t buffer_left_old = buffer_left;
                 buffer_left = om_strcpy(&ch, format, buffer_left);
                 format += (buffer_left_old - buffer_left);
-                break;
             }
         }
         if (*format == 0)
