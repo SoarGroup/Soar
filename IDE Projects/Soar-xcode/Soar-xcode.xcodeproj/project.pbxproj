@@ -434,6 +434,7 @@
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
 		4D659A631B39A80000638059 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */; };
+		4D7335871B3B48A000D2E085 /* WmaFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */; };
 		4D9868001B30894500B13711 /* testMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867F11B30891B00B13711 /* testMain.cpp */; };
 		4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
 		4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
@@ -979,6 +980,8 @@
 		4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemEpMemCombinedFunctionalTests.cpp; sourceTree = "<group>"; };
 		4D659A601B39A51500638059 /* SMemEpMemCombinedFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SMemEpMemCombinedFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D659A661B39A91F00638059 /* portable-dirent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "portable-dirent.h"; sourceTree = "<group>"; };
+		4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WmaFunctionalTests.cpp; sourceTree = "<group>"; };
+		4D7335851B3B3BEF00D2E085 /* WmaFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = WmaFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1686,6 +1689,15 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
+		4D7335831B3B3BD800D2E085 /* wma */ = {
+			isa = PBXGroup;
+			children = (
+				4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */,
+				4D7335851B3B3BEF00D2E085 /* WmaFunctionalTests.hpp */,
+			);
+			path = wma;
+			sourceTree = "<group>";
+		};
 		4D9867EA1B3083E200B13711 /* Prototype-UnitTesting */ = {
 			isa = PBXGroup;
 			children = (
@@ -1717,6 +1729,7 @@
 		4D98680D1B30A7A000B13711 /* kernel */ = {
 			isa = PBXGroup;
 			children = (
+				4D7335831B3B3BD800D2E085 /* wma */,
 				4D4A6FFA1B39E19E00EE6177 /* smem */,
 				4D4A6FF91B39E19A00EE6177 /* epmem */,
 				4D98680E1B30A7BC00B13711 /* FunctionalTestHarness.cpp */,
@@ -1942,7 +1955,7 @@
 				4D5105BD1B2B41A80009AABC /* Sources */,
 				4D5105BE1B2B41A80009AABC /* Frameworks */,
 				4D5105BF1B2B41A80009AABC /* Headers */,
-				4D999D251B2F312800C6700E /* ShellScript */,
+				4D999D251B2F312800C6700E /* Compile Java Debugger & Copy Tests */,
 			);
 			buildRules = (
 			);
@@ -2051,13 +2064,14 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		4D999D251B2F312800C6700E /* ShellScript */ = {
+		4D999D251B2F312800C6700E /* Compile Java Debugger & Copy Tests */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
+			name = "Compile Java Debugger & Copy Tests";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2341,6 +2355,7 @@
 				4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */,
 				4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */,
 				4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */,
+				4D7335871B3B48A000D2E085 /* WmaFunctionalTests.cpp in Sources */,
 				4D9868111B30A89A00B13711 /* FunctionalTestHarness.cpp in Sources */,
 				4D98680B1B30A23D00B13711 /* ExampleTests.cpp in Sources */,
 				4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */,
