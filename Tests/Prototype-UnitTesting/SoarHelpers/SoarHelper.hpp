@@ -36,6 +36,7 @@ public:
 	
 	// StopPhase, before=true/false
 	static std::tuple<StopPhase, bool> getStopPhase(sml::Agent* agent);
+	static void setStopPhase(sml::Agent* agent, StopPhase phase, bool before = true);
 	
 	static std::vector<std::string> getGoalStack(sml::Agent* agent);
 	

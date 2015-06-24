@@ -162,6 +162,28 @@ std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* age
 	return std::make_tuple(phase, before);
 }
 
+void SoarHelper::setStopPhase(sml::Agent* agent, StopPhase phase, bool before)
+{
+	std::string s_before = "--before";
+	std::string s_phase = "--input";
+	
+	if (before == false)
+		s_before = "--after";
+	
+	if (phase == StopPhase::INPUT)
+		s_phase = "--input";
+	else if (phase == StopPhase::PROPOSAL)
+		s_phase = "--proposal";
+	else if (phase == StopPhase::DECISION)
+		s_phase = "--decision";
+	else if (phase == StopPhase::APPLY)
+		s_phase = "--apply";
+	else if (phase == StopPhase::OUTPUT)
+		s_phase = "--output";
+	
+	agent->ExecuteCommandLine(std::string("set-stop-phase " + s_before + s_phase).c_str());
+}
+
 std::vector<std::string> SoarHelper::getGoalStack(sml::Agent* agent)
 {
 	std::string s_result = agent->ExecuteCommandLine("p --stack");
