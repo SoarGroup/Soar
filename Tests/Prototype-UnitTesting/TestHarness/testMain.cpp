@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 			
 			runner->ready.store(true);
 			
-			variable.notify_all();
+			variable.notify_one();
 			while (variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout || !runner->done)
 			{
 				std::cout << '.';
