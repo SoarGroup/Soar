@@ -1412,6 +1412,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
+	
+	if (!rf && (std::string(thisAgent->lexeme.string) == "succeeded" || std::string(thisAgent->lexeme.string) == "failed"))
+	{
+		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", thisAgent->lexeme.string);
+		rf = lookup_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
+	}
+	
     if (!rf)
     {
         print(thisAgent, "No RHS function named %s\n", thisAgent->lexeme.string);
