@@ -19,8 +19,7 @@
 #include <iostream>
 
 #include "TestHelpers.hpp"
-
-class TestRunner;
+#include "TestRunner.hpp"
 
 class TestCategory
 {

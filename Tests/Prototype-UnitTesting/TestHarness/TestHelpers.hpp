@@ -38,30 +38,8 @@ public:
             void (test_t::*m_fun)(); \
     };
 
-#define TEST(X, Y) Test t_##X = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
-
 #define TEST_DECLARATION(X) tests.push_back(new X ());
-
-void assertTrue(std::string errorMessage, bool boolean);
-void assertTrue(bool boolean);
-
-void assertFalse(std::string errorMessage, bool boolean);
-void assertFalse(bool boolean);
-
-void assertNotNull(std::string errorMessage, void* pointer);
-void assertNotNull(void* pointer);
-
-template<class T>
-void assertNotNull(std::string errorMessage, T& pointer)
-{
-	return assertNotNull(errorMessage, pointer.get());
-}
-
-template<class T>
-void assertNotNull(T& pointer)
-{
-	return assertNotNull(pointer.get());
-}
+#define TEST(X, Y) Test t_##X = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
 
 bool isfile(const char* path);
 
@@ -74,12 +52,12 @@ public:
 	 *                 Hence, responsibility for deleting the \c char* lies
 	 *                 with the caller.
 	 */
-	explicit AssertException(const char* message);
+	explicit AssertException(const char* message, const char* file, const int line);
 	
 	/** Constructor (C++ STL strings).
 	 *  @param message The error message.
 	 */
-	explicit AssertException(const std::string& message);
+	explicit AssertException(const std::string& message, const char* file, const int line);
 	
 	/** Destructor.
 	 * Virtual to allow for subclassing.
@@ -93,74 +71,94 @@ public:
 	 */
 	virtual const char* what() const throw ();
 	
+	const char* file() const throw ();
+	const int line() const throw ();
+	
 protected:
 	/** Error message.
 	 */
 	std::string msg_;
+	
+	const char* file_;
+	int line_;
 };
 
-template<class T>
-void assertEquals(T one, T two)
-{
-	if (one != two)
-	{
-		std::stringstream ss;
-		ss << "Assert: Expected equal values (";
-		ss << one;
-		ss << ", ";
-		ss << two;
-		ss << ") but was unequal.";
-		throw AssertException(ss.str());
+#define assertEquals(X, Y) if (X != Y) \
+{ \
+	std::stringstream ss; \
+	ss << "Assert: Expected equal values ("; \
+	ss << X; \
+	ss << ", "; \
+	ss << Y; \
+	ss << ") but was unequal."; \
+	throw AssertException(ss.str(), __FILE__, __LINE__); \
 	}
-}
 
-template<class T>
-void assertEquals(std::vector<T> one, std::vector<T> two)
-{
-	if (one != two)
-	{
-		std::stringstream ss;
-		ss << "Assert: Expected equal values ([";
-		
-		auto outputter = [](std::vector<T> one) {
-			std::stringstream result;
-			
-			for (int i = 0;i < one.size();++i)
-			{
-				result << one[i];
-				
-				if ((i+1) != one.size())
-					result << ", ";
-			}
-			
-			return result.str();
-		};
-		
-		ss << outputter(one);
-		
-		ss << "], [";
-		
-		ss << outputter(two);
-		
-		ss << "]) but was unequal.";
-		throw AssertException(ss.str());
+#define assertEquals_vector(X, Y) if (X != Y) \
+{ \
+	std::stringstream ss; \
+	ss << "Assert: Expected equal values (["; \
+	\
+	for (int i = 0;i < X.size();++i)\
+	{\
+		ss << X[i];\
+		\
+		if ((i+1) != X.size())\
+			ss << ", ";\
+	}\
+	\
+	ss << "], [";\
+	\
+	for (int i = 0;i < Y.size();++i)\
+	{\
+		ss << Y[i];\
+		\
+		if ((i+1) != Y.size())\
+			ss << ", ";\
+	}\
+	\
+	ss << "]) but was unequal.";\
+	throw AssertException(ss.str(), __FILE__, __LINE__);\
 	}
+
+#define assertNonZeroSize_msg(X, Y) if ((Y).size() == 0) \
+{ \
+throw AssertException(X, __FILE__, __LINE__); \
 }
 
-template<class T>
-void assertNonZeroSize(std::string errorMessage, T& container)
-{
-	if (container.size() == 0)
-	{
-		throw AssertException(errorMessage);
-	}
+#define assertNonZeroSize(Y) if ((Y).size() == 0) \
+{ \
+throw AssertException("Assert: Expected container to be non-zero in size.", __FILE__, __LINE__); \
 }
 
-template<class T>
-void assertNonZeroSize(T& container)
-{
-	return assertNotZeroSize("Assert: Expected container to be non-zero in size.", container);
+#define assertTrue(Y) if (!(Y)) \
+{ \
+throw AssertException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
 }
 
+#define assertTrue_msg(X, Y) if (!(Y)) \
+{ \
+throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
+
+#define assertFalse(Y) if (Y) \
+{ \
+throw AssertException("Assert: Boolean false check failed.", __FILE__, __LINE__); \
+}
+
+#define assertFalse_msg(X, Y) if (Y) \
+{ \
+throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
+
+#define assertNotNull(Y) if (Y == nullptr) \
+{ \
+throw AssertException("Assert: Null pointer check failed.", __FILE__, __LINE__); \
+}
+
+#define assertNotNull_msg(X, Y) if (Y == nullptr) \
+{ \
+throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
 
 #endif /* TestHelpers_cpp */

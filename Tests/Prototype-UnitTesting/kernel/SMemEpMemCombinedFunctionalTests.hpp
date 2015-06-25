@@ -17,8 +17,8 @@ public:
 	FUNCTIONAL_TEST_CATEGORY(SMemEpMemCombinedFunctionalTests);
 	
 	// TODO: Fix 'Assert: Unexpected output from SMem!'
-	TEST(smemEpMemFactorizationCombinationTest, -1)
-	void smemEpMemFactorizationCombinationTest();
+	TEST(testSmemEpMemFactorteizationCombinationTest, -1)
+	void testSmemEpMemFactorteizationCombinationTest();
 };
 
 #endif /* FunctionalTests_SMemEpMemCombined_cpp */

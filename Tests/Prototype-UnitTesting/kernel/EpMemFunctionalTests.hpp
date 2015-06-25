@@ -159,8 +159,8 @@ public:
 	void testEpMemSoarGroupTests();
 	
 	// TODO: Fix 'Assert: Unexpected output from CSoar database!'
-	TEST(readCSoarDB, -1)
-	void readCSoarDB();
+	TEST(testReadCSoarDB, -1)
+	void testReadCSoarDB();
 	
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();

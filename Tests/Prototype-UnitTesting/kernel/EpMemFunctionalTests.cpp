@@ -194,12 +194,12 @@ void EpMemFunctionalTests::testEpMemSoarGroupTests()
 }
 
 
-void EpMemFunctionalTests::readCSoarDB()
+void EpMemFunctionalTests::testReadCSoarDB()
 {
 	agent->InitSoar();
 	
 	std::string db = SoarHelper::GetResource("epmem-csoar-db.sqlite");
-	assertNonZeroSize("No CSoar db!", db);
+	assertNonZeroSize_msg("No CSoar db!", db);
 	agent->ExecuteCommandLine((std::string("epmem --set path ") + db).c_str());
 	agent->ExecuteCommandLine("epmem --set append-database on");
 	agent->ExecuteCommandLine("epmem --reinit");
@@ -211,7 +211,7 @@ void EpMemFunctionalTests::readCSoarDB()
 	                         "(<id2> ^name factor-number ^number-to-factor 2)\n";
 	
 	
-	assertTrue("Unexpected output from CSoar database!", actualResult == expectedResult);
+	assertTrue_msg("Unexpected output from CSoar database!", actualResult == expectedResult);
 }
 
 
@@ -227,7 +227,7 @@ void EpMemFunctionalTests::testMultiAgent()
 		sml::Agent* t = kernel->CreateAgent(ss.str().c_str());
 		std::string sourceName = getCategoryName() + "_testMultiAgent.soar";
 		std::string sourceUrl = SoarHelper::GetResource(sourceName);
-		assertNonZeroSize("Could not find test file " + sourceName, sourceUrl);
+		assertNonZeroSize_msg("Could not find test file " + sourceName, sourceUrl);
 		agent->ExecuteCommandLine(("source " + sourceUrl).c_str());
 
 		agents.push_back(t);
@@ -241,14 +241,14 @@ void EpMemFunctionalTests::testMultiAgent()
 		{
 			if (SoarHelper::getDecisionPhasesCount(a) != 3)
 			{
-				throw AssertException("Agent did not stop correctly! Ran too many cycles!");
+				throw AssertException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
 			}
 			
 			std::string result = a->ExecuteCommandLine("epmem");
 			
 			if (result.find("memory") == std::string::npos)
 			{
-				throw AssertException("Non Memory Driver!");
+				throw AssertException("Non Memory Driver!", __FILE__, __LINE__);
 			}
 		}
 		catch (AssertException& e)

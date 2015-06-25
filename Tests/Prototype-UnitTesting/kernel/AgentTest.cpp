@@ -40,5 +40,5 @@ void AgentTest::testGetGoalStack()
 	const std::vector<std::string> gs = SoarHelper::getGoalStack(agent);
 	assertEquals(size_t(4), gs.size());
 	
-	assertEquals(gs, std::vector<std::string>({"S1", "S5", "S9", "S13"}));
+	assertEquals_vector(gs, std::vector<std::string>({"S1", "S5", "S9", "S13"}));
 }

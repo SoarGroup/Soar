@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4D07E96B1B3C6B9B00037FFE /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
+		4D07E9701B3C926D00037FFE /* Tests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4D07E96F1B3C926D00037FFE /* Tests.mm */; };
 		4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4749C61B32121100FB48D7 /* BasicTests.cpp */; };
 		4D51062D1B2B429B0009AABC /* cli_addwme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5105D81B2B429B0009AABC /* cli_addwme.cpp */; };
 		4D51062E1B2B429B0009AABC /* cli_alias.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5105D91B2B429B0009AABC /* cli_alias.cpp */; };
@@ -444,12 +446,30 @@
 		4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D999D2C1B2F3EE800C6700E /* main.cpp */; };
 		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */; };
+		4DD8D9501B3C576D0055BD48 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4DD8D9571B3C57AE0055BD48 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
+		4DD8D9581B3C57AE0055BD48 /* WmaFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */; };
+		4DD8D9591B3C57AE0055BD48 /* SMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */; };
+		4DD8D95A1B3C57AE0055BD48 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
+		4DD8D95B1B3C57AE0055BD48 /* FunctionalTestHarness.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D98680E1B30A7BC00B13711 /* FunctionalTestHarness.cpp */; };
+		4DD8D95C1B3C57AE0055BD48 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
+		4DD8D95D1B3C57AE0055BD48 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */; };
+		4DD8D95E1B3C57AE0055BD48 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
+		4DD8D95F1B3C57AE0055BD48 /* BasicTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4749C61B32121100FB48D7 /* BasicTests.cpp */; };
+		4DD8D9761B3C5DA40055BD48 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
 		4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		4D07E9691B3C6A5E00037FFE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D9867F61B30893700B13711;
+			remoteInfo = "JSoar-UnitTests";
+		};
 		4D510A811B2B47DD0009AABC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
@@ -465,6 +485,13 @@
 			remoteInfo = Soar;
 		};
 		4D999D311B2F3EF100C6700E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D5105C01B2B41A80009AABC;
+			remoteInfo = Soar;
+		};
+		4DD8D9511B3C576D0055BD48 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
 			proxyType = 1;
@@ -504,6 +531,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4D07E96F1B3C926D00037FFE /* Tests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Tests.mm; sourceTree = "<group>"; };
+		4D07E9711B3C93AD00037FFE /* test_generator.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = test_generator.sh; sourceTree = "<group>"; };
+		4D07E9731B3C99BC00037FFE /* Tests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Tests; sourceTree = "<group>"; };
 		4D4749C61B32121100FB48D7 /* BasicTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicTests.cpp; sourceTree = "<group>"; };
 		4D4749C71B32121100FB48D7 /* BasicTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BasicTests.hpp; sourceTree = "<group>"; };
 		4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemFunctionalTests.cpp; sourceTree = "<group>"; };
@@ -995,6 +1025,9 @@
 		4D98680F1B30A7BC00B13711 /* FunctionalTestHarness.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTestHarness.hpp; sourceTree = "<group>"; };
 		4D999D2A1B2F3EE800C6700E /* LaunchDebugger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LaunchDebugger; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D999D2C1B2F3EE800C6700E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		4DD8D94B1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Prototype-UnitTesting-XCTest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4DD8D94F1B3C576D0055BD48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4DD8D96D1B3C5A350055BD48 /* XCTestDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XCTestDefines.h; sourceTree = "<group>"; };
 		4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests.cpp; sourceTree = "<group>"; };
 		4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests.hpp; sourceTree = "<group>"; };
 		4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoarHelper.cpp; sourceTree = "<group>"; };
@@ -1036,6 +1069,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4DD8D9481B3C576D0055BD48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4DD8D9501B3C576D0055BD48 /* libSoar.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1063,6 +1104,7 @@
 				4D5105CF1B2B41D70009AABC /* Soar */,
 				4D510A591B2B471B0009AABC /* UnitTests */,
 				4D999D2B1B2F3EE800C6700E /* LaunchDebugger */,
+				4DD8D94C1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest */,
 				4D5105C21B2B41A80009AABC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -1074,6 +1116,7 @@
 				4D510A581B2B471B0009AABC /* UnitTests */,
 				4D999D2A1B2F3EE800C6700E /* LaunchDebugger */,
 				4D9867F71B30893700B13711 /* JSoar-UnitTests */,
+				4DD8D94B1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1701,6 +1744,7 @@
 		4D9867EA1B3083E200B13711 /* Prototype-UnitTesting */ = {
 			isa = PBXGroup;
 			children = (
+				4D07E9731B3C99BC00037FFE /* Tests */,
 				4DFF15811B31F131006CDD34 /* TodoTests.md */,
 				4DFF15791B31D551006CDD34 /* Soar Helpers */,
 				4D98680D1B30A7A000B13711 /* kernel */,
@@ -1752,6 +1796,17 @@
 				4D999D2C1B2F3EE800C6700E /* main.cpp */,
 			);
 			path = LaunchDebugger;
+			sourceTree = "<group>";
+		};
+		4DD8D94C1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest */ = {
+			isa = PBXGroup;
+			children = (
+				4D07E9711B3C93AD00037FFE /* test_generator.sh */,
+				4D07E96F1B3C926D00037FFE /* Tests.mm */,
+				4DD8D96D1B3C5A350055BD48 /* XCTestDefines.h */,
+				4DD8D94F1B3C576D0055BD48 /* Info.plist */,
+			);
+			path = "Prototype-UnitTesting-XCTest";
 			sourceTree = "<group>";
 		};
 		4DFF15791B31D551006CDD34 /* Soar Helpers */ = {
@@ -1991,6 +2046,7 @@
 				4D9867F31B30893700B13711 /* Sources */,
 				4D9867F41B30893700B13711 /* Frameworks */,
 				4D9867F51B30893700B13711 /* CopyFiles */,
+				4DD8D9461B3C54AA0055BD48 /* Export Build Vars */,
 			);
 			buildRules = (
 			);
@@ -2020,6 +2076,26 @@
 			productReference = 4D999D2A1B2F3EE800C6700E /* LaunchDebugger */;
 			productType = "com.apple.product-type.tool";
 		};
+		4DD8D94A1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4DD8D9531B3C576D0055BD48 /* Build configuration list for PBXNativeTarget "Prototype-UnitTesting-XCTest" */;
+			buildPhases = (
+				4D07E96E1B3C90BC00037FFE /* Conversion C++ to Obj-C++ Tests */,
+				4DD8D9471B3C576D0055BD48 /* Sources */,
+				4DD8D9491B3C576D0055BD48 /* Resources */,
+				4DD8D9481B3C576D0055BD48 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4D07E96A1B3C6A5E00037FFE /* PBXTargetDependency */,
+				4DD8D9521B3C576D0055BD48 /* PBXTargetDependency */,
+			);
+			name = "Prototype-UnitTesting-XCTest";
+			productName = "Prototype-UnitTesting-XCTest";
+			productReference = 4DD8D94B1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2041,6 +2117,9 @@
 					4D999D291B2F3EE800C6700E = {
 						CreatedOnToolsVersion = 7.0;
 					};
+					4DD8D94A1B3C576D0055BD48 = {
+						CreatedOnToolsVersion = 7.0;
+					};
 				};
 			};
 			buildConfigurationList = 4D5105BC1B2B41A80009AABC /* Build configuration list for PBXProject "Soar-xcode" */;
@@ -2059,11 +2138,36 @@
 				4D510A571B2B471B0009AABC /* UnitTests */,
 				4D999D291B2F3EE800C6700E /* LaunchDebugger */,
 				4D9867F61B30893700B13711 /* JSoar-UnitTests */,
+				4DD8D94A1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		4DD8D9491B3C576D0055BD48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
+		4D07E96E1B3C90BC00037FFE /* Conversion C++ to Obj-C++ Tests */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Conversion C++ to Obj-C++ Tests";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "pushd \"${SRCROOT}/../../Tests/Prototype-UnitTesting/\"\n\"../../IDE Projects/Soar-xcode/Prototype-UnitTesting-XCTest/test_generator.sh\"\npopd";
+		};
 		4D999D251B2F312800C6700E /* Compile Java Debugger & Copy Tests */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2077,6 +2181,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/ sml_java debugger tests\npopd\n";
+		};
+		4DD8D9461B3C54AA0055BD48 /* Export Build Vars */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Export Build Vars";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "python \"${SRCROOT}/build_scripts/export_build_vars.py\" object_file_dir=${OBJECT_FILE_DIR}-normal/x86_64 build_dir=${OBJROOT}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2375,9 +2493,33 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4DD8D9471B3C576D0055BD48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4DD8D9591B3C57AE0055BD48 /* SMemFunctionalTests.cpp in Sources */,
+				4D07E96B1B3C6B9B00037FFE /* TestRunner.cpp in Sources */,
+				4DD8D95E1B3C57AE0055BD48 /* AgentTest.cpp in Sources */,
+				4DD8D95F1B3C57AE0055BD48 /* BasicTests.cpp in Sources */,
+				4DD8D95B1B3C57AE0055BD48 /* FunctionalTestHarness.cpp in Sources */,
+				4DD8D9761B3C5DA40055BD48 /* TestHelpers.cpp in Sources */,
+				4DD8D95D1B3C57AE0055BD48 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */,
+				4DD8D9581B3C57AE0055BD48 /* WmaFunctionalTests.cpp in Sources */,
+				4DD8D95A1B3C57AE0055BD48 /* EpMemFunctionalTests.cpp in Sources */,
+				4DD8D95C1B3C57AE0055BD48 /* FunctionalTests.cpp in Sources */,
+				4DD8D9571B3C57AE0055BD48 /* SoarHelper.cpp in Sources */,
+				4D07E9701B3C926D00037FFE /* Tests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		4D07E96A1B3C6A5E00037FFE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D9867F61B30893700B13711 /* JSoar-UnitTests */;
+			targetProxy = 4D07E9691B3C6A5E00037FFE /* PBXContainerItemProxy */;
+		};
 		4D510A821B2B47DD0009AABC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4D5105C01B2B41A80009AABC /* Soar */;
@@ -2392,6 +2534,11 @@
 			isa = PBXTargetDependency;
 			target = 4D5105C01B2B41A80009AABC /* Soar */;
 			targetProxy = 4D999D311B2F3EF100C6700E /* PBXContainerItemProxy */;
+		};
+		4DD8D9521B3C576D0055BD48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D5105C01B2B41A80009AABC /* Soar */;
+			targetProxy = 4DD8D9511B3C576D0055BD48 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2555,6 +2702,130 @@
 			};
 			name = Release;
 		};
+		4DD8D9411B3C534B0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
+				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = GCov;
+		};
+		4DD8D9421B3C534B0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				OTHER_CFLAGS = (
+					"-DEIGEN_DONT_ALIGN",
+					"-DDEBUG_SQL_ERRORS",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$PROJECT_DIR/../../Core/SVS/eigen/ $PROJECT_DIR/../../Core/SVS/src/ $PROJECT_DIR/../../Core/SVS/ccd/";
+			};
+			name = GCov;
+		};
+		4DD8D9431B3C534B0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = $PROJECT_DIR/../../Core/ElementXML/src/;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = GCov;
+		};
+		4DD8D9441B3C534B0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = GCov;
+		};
+		4DD8D9451B3C534B0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = GCov;
+		};
+		4DD8D9541B3C576D0055BD48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Prototype-UnitTesting-XCTest/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "edu.umich.Prototype-UnitTesting-XCTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
+			};
+			name = Debug;
+		};
+		4DD8D9551B3C576D0055BD48 /* GCov */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Prototype-UnitTesting-XCTest/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "edu.umich.Prototype-UnitTesting-XCTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
+			};
+			name = GCov;
+		};
+		4DD8D9561B3C576D0055BD48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Prototype-UnitTesting-XCTest/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "edu.umich.Prototype-UnitTesting-XCTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2562,6 +2833,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4D5105CA1B2B41A80009AABC /* Debug */,
+				4DD8D9411B3C534B0055BD48 /* GCov */,
 				4D5105CB1B2B41A80009AABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2571,6 +2843,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4D5105CD1B2B41A80009AABC /* Debug */,
+				4DD8D9421B3C534B0055BD48 /* GCov */,
 				4D5105CE1B2B41A80009AABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2580,6 +2853,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4D510A5D1B2B471B0009AABC /* Debug */,
+				4DD8D9431B3C534B0055BD48 /* GCov */,
 				4D510A5E1B2B471B0009AABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2589,6 +2863,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4D9867FC1B30893700B13711 /* Debug */,
+				4DD8D9451B3C534B0055BD48 /* GCov */,
 				4D9867FD1B30893700B13711 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2598,7 +2873,18 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4D999D2E1B2F3EE800C6700E /* Debug */,
+				4DD8D9441B3C534B0055BD48 /* GCov */,
 				4D999D2F1B2F3EE800C6700E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4DD8D9531B3C576D0055BD48 /* Build configuration list for PBXNativeTarget "Prototype-UnitTesting-XCTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4DD8D9541B3C576D0055BD48 /* Debug */,
+				4DD8D9551B3C576D0055BD48 /* GCov */,
+				4DD8D9561B3C576D0055BD48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

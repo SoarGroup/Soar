@@ -175,7 +175,7 @@ void SMemFunctionalTests::testCueSelection()
 	agent->RunSelf(2);
 	
 	agent::BasicWeightedCue* bwc = internal_agent->lastCue;
-	assertTrue("Incorrect cue selected",
+	assertTrue_msg("Incorrect cue selected",
 			   bwc &&
 			   (std::string(bwc->cue->attr->to_string()) == "name") &&
 			   (std::string(bwc->cue->value->to_string()) == "val") &&
@@ -188,7 +188,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 	
 	agent->RunSelf(3);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
 	
 	std::string expected = R"raw(
 ========================================
@@ -202,7 +202,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery()
@@ -211,7 +211,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 	
 	agent->RunSelf(3);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
 	
 	std::string expected = R"raw(
 ========================================
@@ -225,7 +225,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
@@ -234,7 +234,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 	
 	agent->RunSelf(3);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
 	
 	std::string expected = R"raw(
 ========================================
@@ -248,10 +248,10 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values", result == expected);
 }
 
-bool SMemFunctionalTests::checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations)
+bool SMemFunctionalTests::checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations, const char* file, const int line)
 {
 	std::vector<std::string> activationLevels;
 	std::string activation = "";
@@ -279,24 +279,24 @@ bool SMemFunctionalTests::checkActivationValues(std::string activationString, st
 			if (activation.length() != 0 &&
 				(c == '+' || c == '-'))
 			{
-				throw AssertException("Found a +/- where there shouldn't be in Activation Levels!");
+				throw AssertException("Found a +/- where there shouldn't be in Activation Levels!", file, line);
 			}
 			
 			activation += c;
 		}
 		else if (inActivationParse)
 		{
-			throw AssertException("Non-Digit Character in Activation Level");
+			throw AssertException("Non-Digit Character in Activation Level", file, line);
 		}
 	}
 	
 	if (activationLevels.size() != lowEndExpectations.size())
 	{
-		throw AssertException("Low End Expectations is not the same size as parsed Activation Levels!");
+		throw AssertException("Low End Expectations is not the same size as parsed Activation Levels!", file, line);
 	}
 	else if (activationLevels.size() != highEndExpectations.size())
 	{
-		throw AssertException("High End Expectations is not the same size as parsed Activation Levels!");
+		throw AssertException("High End Expectations is not the same size as parsed Activation Levels!", file, line);
 	}
 	
 	std::vector<double> activationLevelsAsDoubles;
@@ -317,7 +317,7 @@ bool SMemFunctionalTests::checkActivationValues(std::string activationString, st
 		{
 			std::stringstream ss;
 			ss << "Parsed Activation " << i+1 << " (" << a << ") is not within [" << lowEndExpectations[i] << ", " << highEndExpectations[i] << "]";
-			throw AssertException(ss.str());
+			throw AssertException(ss.str(), file, line);
 		}
 	}
 	
@@ -330,7 +330,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 	
 	agent->RunSelf(3);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
 	
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
@@ -362,7 +362,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations));
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive()
@@ -371,7 +371,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 
 	agent->RunSelf(3);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive functional test did not halt", halted);
 	
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
@@ -403,7 +403,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations));
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental()
@@ -412,7 +412,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	
 	agent->RunSelf(4);
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
 	
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
@@ -444,10 +444,10 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	
 	std::string result = agent->ExecuteCommandLine("smem --print");
 	
-	assertTrue("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations));
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
 
-void SMemFunctionalTests::dbBackupAndLoadTests()
+void SMemFunctionalTests::testDbBackupAndLoadTests()
 {
 	runTestSetup("testFactorization");
 	
@@ -457,7 +457,7 @@ void SMemFunctionalTests::dbBackupAndLoadTests()
 	
 	std::string expectedResultOfPS1 = "(S1 ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385 ^operator O1385 + ^reward-link R1 ^smem S2 ^superstate nil ^type state ^using-smem true)\n";
 	
-	assertTrue("Didn't stop where expected!", resultOfPS1 == expectedResultOfPS1);
+	assertTrue_msg("Didn't stop where expected!", resultOfPS1 == expectedResultOfPS1);
 	
 	agent->ExecuteCommandLine("smem --backup backup.sqlite");
 	agent->ExecuteCommandLine("smem --init");
@@ -466,13 +466,13 @@ void SMemFunctionalTests::dbBackupAndLoadTests()
 	
 	std::string resultOfP = agent->ExecuteCommandLine("p");
 	
-	assertTrue("smem --init didn't excise all productions!", resultOfP.length() == 0);
+	assertTrue_msg("smem --init didn't excise all productions!", resultOfP.length() == 0);
 	
 	resultOfPS1 = agent->ExecuteCommandLine("p s1");
 	
 	expectedResultOfPS1 = "(S1 ^epmem E1 ^io I1 ^reward-link R1 ^smem S2 ^superstate nil ^type state)\n";
 	
-	assertTrue("smem --init didn't reinit WM!", resultOfPS1 == expectedResultOfPS1);
+	assertTrue_msg("smem --init didn't reinit WM!", resultOfPS1 == expectedResultOfPS1);
 	
 	agent->ExecuteCommandLine("smem --set path backup.sqlite");
 	agent->ExecuteCommandLine("smem --set append-database on");
@@ -482,7 +482,7 @@ void SMemFunctionalTests::dbBackupAndLoadTests()
 	
 	agent->RunSelf(2811 + 1);
 	
-	assertTrue("testFactorization: Test did not halt.", halted);
+	assertTrue_msg("testFactorization: Test did not halt.", halted);
 	
 	std::string resultOfPD2F197 = agent->ExecuteCommandLine("p -d 2 @F197");
 	
@@ -493,18 +493,18 @@ void SMemFunctionalTests::dbBackupAndLoadTests()
   (@F198 ^multiplicity 2 ^value 2)
 )raw";
 	
-	assertTrue("testFactorization: Test did not get the correct result!", expectedResultOfPD2F197 == resultOfPD2F197);
+	assertTrue_msg("testFactorization: Test did not get the correct result!", expectedResultOfPD2F197 == resultOfPD2F197);
 	
 	std::string pwd = agent->ExecuteCommandLine("pwd");
 	remove(pwd.c_str());
 }
 
-void SMemFunctionalTests::readCSoarDB()
+void SMemFunctionalTests::testReadCSoarDB()
 {
 	agent->InitSoar();
 	
 	std::string db = SoarHelper::GetResource("smem-csoar-db.sqlite");
-	assertNonZeroSize("No CSoar db!", db);
+	assertNonZeroSize_msg("No CSoar db!", db);
 	agent->ExecuteCommandLine((std::string("smem --set path ") + db).c_str());
 	agent->ExecuteCommandLine("smem --set append-database on");
 	agent->ExecuteCommandLine("smem --init");
@@ -523,7 +523,7 @@ void SMemFunctionalTests::readCSoarDB()
 (@F6 ^value 2 ^multiplicity 2 [+8.0])
 )raw";
 	
-	assertTrue("Unexpected output from CSoar database!", actualResult == expectedResult);
+	assertTrue_msg("Unexpected output from CSoar database!", actualResult == expectedResult);
 }
 
 void SMemFunctionalTests::testMultiAgent()
@@ -538,7 +538,7 @@ void SMemFunctionalTests::testMultiAgent()
 		sml::Agent* t = kernel->CreateAgent(ss.str().c_str());
 		std::string sourceName = getCategoryName() + "_testMultiAgent.soar";
 		std::string sourceUrl = SoarHelper::GetResource(sourceName);
-		assertNonZeroSize("Could not find test file " + sourceName, sourceUrl);
+		assertNonZeroSize_msg("Could not find test file " + sourceName, sourceUrl);
 		agent->ExecuteCommandLine(("source " + sourceUrl).c_str());
 		
 		agents.push_back(t);
@@ -552,14 +552,14 @@ void SMemFunctionalTests::testMultiAgent()
 		{
 			if (SoarHelper::getDecisionPhasesCount(a) != 3)
 			{
-				throw AssertException("Agent did not stop correctly! Ran too many cycles!");
+				throw AssertException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
 			}
 			
 			std::string result = a->ExecuteCommandLine("epmem");
 			
 			if (result.find("memory") == std::string::npos)
 			{
-				throw AssertException("Non Memory Driver!");
+				throw AssertException("Non Memory Driver!", __FILE__, __LINE__);
 			}
 		}
 		catch (AssertException& e)

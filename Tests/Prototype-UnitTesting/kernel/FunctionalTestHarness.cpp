@@ -25,7 +25,7 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	std::string sourceName = this->getCategoryName() + "_" + testName + ".soar";
 	
 	std::string path = SoarHelper::GetResource(sourceName);
-	assertNonZeroSize("Could not find test file " + sourceName, path);
+	assertNonZeroSize_msg("Could not find test file " + sourceName, path);
 	
 	const char* result = agent->ExecuteCommandLine(("source " + path).c_str());
 	
@@ -52,8 +52,8 @@ void FunctionalTestHarness::runTestExecute(std::string testName, int expectedDec
 	
 	runner->output << result << std::endl;
 	
-	assertTrue(testName + " functional test did not halt", halted);
-	assertFalse(testName + " functional test failed", failed);
+	assertTrue_msg(testName + " functional test did not halt", halted);
+	assertFalse_msg(testName + " functional test failed", failed);
 	if(expectedDecisions >= 0)
 	{
 		assertEquals(expectedDecisions, SoarHelper::getDecisionPhasesCount(agent)); // deterministic!

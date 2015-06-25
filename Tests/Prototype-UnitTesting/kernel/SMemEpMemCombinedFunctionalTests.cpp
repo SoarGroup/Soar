@@ -10,7 +10,7 @@
 
 #include <string>
 
-void SMemEpMemCombinedFunctionalTests::smemEpMemFactorizationCombinationTest()
+void SMemEpMemCombinedFunctionalTests::testSmemEpMemFactorteizationCombinationTest()
 {
 	runTestSetup("testSMemEpMemFactorization");
 	
@@ -30,7 +30,7 @@ void SMemEpMemCombinedFunctionalTests::smemEpMemFactorizationCombinationTest()
 (@F18 ^value 7 ^multiplicity 1 [+8.0])
 )expected";
 	
-	assertTrue("Unexpected output from SMem!", actualResultSMem == expectedResultSMem);
+	assertTrue_msg("Unexpected output from SMem!", actualResultSMem == expectedResultSMem);
 	
 	std::string actualResultEpMem = agent->ExecuteCommandLine("epmem --print 97");
 	
@@ -43,5 +43,5 @@ void SMemEpMemCombinedFunctionalTests::smemEpMemFactorizationCombinationTest()
 (@F18 ^multiplicity 1 ^value 7)
 )expected";
 	
-	assertTrue("Unexpected output from EpMem!", actualResultEpMem == expectedResultEpMem);
+	assertTrue_msg("Unexpected output from EpMem!", actualResultEpMem == expectedResultEpMem);
 }

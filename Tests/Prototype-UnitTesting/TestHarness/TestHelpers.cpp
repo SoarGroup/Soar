@@ -15,16 +15,20 @@
 #include <exception>
 #include <sstream>
 
-AssertException::AssertException(const char* message):
-msg_(message)
+AssertException::AssertException(const char* message, const char* file, const int line):
+msg_(message),
+file_(file),
+line_(line)
 {
 }
 
 /** Constructor (C++ STL strings).
  *  @param message The error message.
  */
-AssertException::AssertException(const std::string& message):
-msg_(message)
+AssertException::AssertException(const std::string& message, const char* file, const int line):
+msg_(message),
+file_(file),
+line_(line)
 {}
 
 /** Destructor.
@@ -41,43 +45,12 @@ const char* AssertException::what() const throw (){
 	return msg_.c_str();
 }
 
-void assertTrue(bool boolean)
-{
-	return assertTrue("Boolean true check failed.", boolean);
+const char* AssertException::file() const throw (){
+	return file_;
 }
 
-void assertTrue(std::string errorMessage, bool boolean)
-{
-	if (!boolean)
-	{
-		throw AssertException("Assert: " + errorMessage);
-	}
-}
-
-void assertFalse(bool boolean)
-{
-	return assertFalse("Boolean false check failed.", boolean);
-}
-
-void assertFalse(std::string errorMessage, bool boolean)
-{
-	if (boolean)
-	{
-		throw AssertException("Assert: " + errorMessage);
-	}
-}
-
-void assertNotNull(std::string errorMessage, void* pointer)
-{
-	if (pointer == nullptr)
-	{
-		throw AssertException("Assert: " + errorMessage);
-	}
-}
-
-void assertNotNull(void* pointer)
-{
-	return assertNotNull("Null pointer check failed.", pointer);
+const int AssertException::line() const throw (){
+	return line_;
 }
 
 bool isfile(const char* path)

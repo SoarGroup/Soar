@@ -9,12 +9,13 @@
 #ifndef TestRunner_cpp
 #define TestRunner_cpp
 
-#include "TestCategory.hpp"
-
 #include <functional>
 #include <condition_variable>
 #include <atomic>
 #include <sstream>
+
+class TestCategory;
+class TestFunction;
 
 class TestRunner
 {

@@ -114,7 +114,7 @@ public:
 	void testSimpleNonCueBasedRetrieval_ActivationFrequency();
 	
 private:
-	bool checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations);
+	bool checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations, const char* file, const int line);
 	
 public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable, -1)
@@ -126,11 +126,11 @@ public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental();
 	
-	TEST(dbBackupAndLoadTests, -1)
-	void dbBackupAndLoadTests();
+	TEST(testDbBackupAndLoadTests, -1)
+	void testDbBackupAndLoadTests();
 	
-	TEST(readCSoarDB, -1)
-	void readCSoarDB();
+	TEST(testReadCSoarDB, -1)
+	void testReadCSoarDB();
 	
 	// CSoar doesn't use Garbage Collection
 //	TEST(testSimpleStoreGC, -1)
