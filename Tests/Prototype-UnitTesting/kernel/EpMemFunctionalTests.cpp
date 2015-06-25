@@ -198,16 +198,19 @@ void EpMemFunctionalTests::testReadCSoarDB()
 	
 	std::string db = SoarHelper::GetResource("epmem-csoar-db.sqlite");
 	assertNonZeroSize_msg("No CSoar db!", db);
-	agent->ExecuteCommandLine((std::string("epmem --set path ") + db).c_str());
-	agent->ExecuteCommandLine("epmem --set append-database on");
-	agent->ExecuteCommandLine("epmem --reinit");
+	std::string pathCommand = agent->ExecuteCommandLine((std::string("epmem --set path ") + db).c_str());
+	std::string memoryCommand = agent->ExecuteCommandLine("epmem --set database file");
+	std::string appendCommand = agent->ExecuteCommandLine("epmem --set append on");
+	std::string initCommand = agent->ExecuteCommandLine("epmem --init");
 	
 	std::string actualResult = agent->ExecuteCommandLine("epmem --print 4");
 	
-	std::string expectedResult = std::string("(<id0> ^counter 2 ^io <id1> ^name Factorization ^needs-factorization true ^number-to-factor 2 ^number-to-factor-int 2 ^operator <id2> ^operator* <id2> ^reward-link <id3> ^superstate nil ^type state ^using-epmem true)\n") +
-	                         "(<id1> ^input-link <id5> ^output-link <id4>)\n" +
-	                         "(<id2> ^name factor-number ^number-to-factor 2)\n";
-	
+	std::string expectedResult =	std::string("========================================\n") +
+									std::string("               Episode 4                \n") +
+									std::string("========================================\n") +
+									std::string("(<id0> ^counter 2 ^io <id1> ^name Factorization ^needs-factorization true ^number-to-factor 2 ^number-to-factor-int 2 ^operator <id2> ^operator* <id2> ^reward-link <id3> ^superstate nil ^type state ^using-epmem true)\n") +
+									std::string("(<id1> ^input-link <id5> ^output-link <id4>)\n") +
+									std::string("(<id2> ^name factor-number ^number-to-factor 2)\n\n");
 	
 	assertTrue_msg("Unexpected output from CSoar database!", actualResult == expectedResult);
 }

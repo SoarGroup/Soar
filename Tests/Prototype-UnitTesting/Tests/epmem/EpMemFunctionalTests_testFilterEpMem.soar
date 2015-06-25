@@ -1,5 +1,5 @@
 excise --all
-epmem --reinit
+epmem --init
 init-soar
 
 epmem --set learning on
@@ -14,7 +14,7 @@ sp {elaborate*state*name
    (state <s> ^superstate.operator.name <name>)
 -->
    (<s> ^name <name>)
-   (log info |Entering substate: {}| <name>)
+   (write |Entering substate: | <name>)
 }
 
 sp {elaborate*state*operator-args-base
@@ -76,7 +76,7 @@ sp {apply*increment-test
               ^next-test <test>)
 -->
    (<s> ^next-test <test> - (+ <test> 1))
-   (log info |Completed test {}. Moving on to the next test.| <test>)
+   (write |Completed test | <test> |. Moving on to the next test.|)
 }
 
 ##############################################################
@@ -863,7 +863,7 @@ sp {apply*failure
    (<o> ^name failure
        -^reason)
 -->
-   (log info |One of the tests failed.|)
+   (write |One of the tests failed.|)
    (failed)
 }
 
@@ -872,7 +872,7 @@ sp {apply*failure*with-reason
    (<o> ^name failure
         ^reason <reason>)
 -->
-   (log info |Test failed: {}| <reason>)
+   (write |Test failed: | <reason>)
    (failed)
 }
 
@@ -883,7 +883,7 @@ sp {apply*success
    (<o> ^name success
        -^reason)
 -->
-   (log info |All tests succeeded.|)
+   (write |All tests succeeded.|)
    (succeeded)
 }
 
@@ -892,6 +892,6 @@ sp {apply*success*with-reason
    (<o> ^name success
         ^reason <reason>)
 -->
-   (log info |Success: {}| <reason>)
+   (write |Success: | <reason>)
    (succeeded)
 }

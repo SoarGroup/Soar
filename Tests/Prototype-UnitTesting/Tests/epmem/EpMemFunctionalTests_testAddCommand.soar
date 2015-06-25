@@ -34,7 +34,7 @@ sp {apply*create-memory-1
    (state <s> ^operator.name create-memory-1)
 -->
    (cmd epmem --add |(<v> ^multivalued-attribute 4 5) (state <s> ^attr <v> ^test.anonymous.ids true ^symbol <sym>)|)
-   (log info |Creating memory #1 using epmem --add|)
+   (write |Creating memory #1 using epmem --add|)
 }
 
 ### Second memory
@@ -56,7 +56,7 @@ sp {apply*create-memory-2
    (<s> ^deliberate.storage true ^also-test <test>)
    (<test> ^this <this> ^and-that 2 birds)
    (<s> ^do-storage true)
-   (log info |Creating memory #2 using deliberate storage.|)
+   (write |Creating memory #2 using deliberate storage.|)
 }
 
 ### Third memory
@@ -77,7 +77,7 @@ sp {apply*create-memory-3
    (state <s> ^operator.name create-memory-3)
 -->
    (cmd epmem --add |(state <s> ^second-test <test> ^also-test <also-test>) (<test> ^simple memory) (<also-test> ^and-that 2)|)
-   (log info |Creating memory #3 using epmem --add|)
+   (write |Creating memory #3 using epmem --add|)
 }
 
 ### Fourth memory
@@ -102,7 +102,7 @@ sp {apply*create-memory-4
    (<s> ^also-test <also-test> -)
    (<s> ^testing-again true)
    (<s> ^do-storage true)
-   (log info |Creating memory #4 using deliberate storage.|)
+   (write |Creating memory #4 using deliberate storage.|)
 }
 
 ### Fifth and sixth memories
@@ -122,7 +122,7 @@ sp {apply*create-memory-56
    (state <s> ^operator.name create-memory-56)
 -->
    (cmd epmem --add |{(state <s> ^multi <multi>) (<multi> ^test 1)} {(state <s> ^multi <multi>) (<multi> ^test <c>) (<c> ^v 2)}|)
-   (log info |Creating memories #5 and #6 using epmem --add|)
+   (write |Creating memories #5 and #6 using epmem --add|)
 }
 
 ##############################################################
@@ -173,7 +173,7 @@ sp {apply*do-retrieval-1
         ^test.anonymous.ids true
         ^symbol <sym>)
    (<attr> ^multivalued-attribute 4 5)
-   (log info |Starting test #1|)
+   (write |Starting test #1|)
 }
 
 # Test the query
@@ -213,7 +213,7 @@ sp {apply*do-retrieval-2
    (<q> ^deliberate.storage true
         ^also-test <test>)
    (<test> ^this <this> ^and-that 2 birds)
-   (log info |Starting test #2|)
+   (write |Starting test #2|)
 }
 
 # Test the query
@@ -255,7 +255,7 @@ sp {apply*do-retrieval-3
         ^also-test <also-test>)
    (<test> ^simple memory)
    (<also-test> ^and-that 2)
-   (log info |Starting test #3|)
+   (write |Starting test #3|)
 }
 
 # Test the query
@@ -294,7 +294,7 @@ sp {apply*do-retrieval-4
 -->
    (<cmd> ^query <q>)
    (<q> ^testing-again true)
-   (log info |Starting test #4|)
+   (write |Starting test #4|)
 }
 
 # Test the query
@@ -340,7 +340,7 @@ sp {apply*do-retrieval-5
    (<cmd> ^query <q>)
    (<q> ^attr.multivalued-attribute 6
         ^symbol <sym>)
-   (log info |Starting test #5|)
+   (write |Starting test #5|)
 }
 
 # Test the query
@@ -383,7 +383,7 @@ sp {apply*do-retrieval-6
 -->
    (<cmd> ^query <q>)
    (<q> ^also-test.and-that 2)
-   (log info |Starting test #6|)
+   (write |Starting test #6|)
 }
 
 # Test the query
@@ -426,7 +426,7 @@ sp {apply*do-retrieval-7
 -->
    (<cmd> ^query <q>)
    (<q> ^multi.test 1)
-   (log info |Starting test #7|)
+   (write |Starting test #7|)
 }
 
 # Test the query
@@ -468,7 +468,7 @@ sp {apply*do-retrieval-8
 -->
    (<cmd> ^query <q>)
    (<q> ^multi.test.v 2)
-   (log info |Starting test #8|)
+   (write |Starting test #8|)
 }
 
 # Test the query
@@ -525,7 +525,7 @@ sp {apply*verify-retrieval
 -->
    (<cmd> ^query <q> -)
    (<s> ^ready <ready> - (+ <ready> 1))
-   (log info |Test #{} succeeded.| <ready>)
+   (write |Test #| <ready> | succeeded.|)
 }
 
 # Success of all retrieval tests
@@ -542,7 +542,7 @@ sp {propose*success
 sp {apply*success
    (state <s> ^operator.name epmem-success)
 -->
-   (log info |All tests succeeded.|)
+   (write |All tests succeeded.|)
    (succeeded)
 }
 
@@ -575,7 +575,7 @@ sp {apply*epmem-failure
    (<o> ^name epmem-failure
         ^reason <reason>)
 -->
-   (log error |Epmem retrieval failed. Reason: {}| <reason>)
+   (write |Epmem retrieval failed. Reason: | <reason>)
    (failed)
 }
 
@@ -602,7 +602,7 @@ sp {apply*store
               ^epmem.command <cmd>)
 -->
    (<cmd> ^store true)
-   (log info |Setting deliberate storage flag...|)
+   (write |Setting deliberate storage flag...|)
 }
 
 # Once we have completed epmem storage, propose clearing the storage command.
@@ -625,5 +625,5 @@ sp {apply*clear
 -->
    (<cmd> ^store <store> -)
    (<s> ^do-storage <d> -)
-   (log info |Epmem storage complete. Clearing deliberate storage flag...|)
+   (write |Epmem storage complete. Clearing deliberate storage flag...|)
 }
