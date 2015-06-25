@@ -38,7 +38,6 @@ void EpMemFunctionalTests::testAddCommand()
 	runTest("testAddCommand", 27);
 }
 
-
 void EpMemFunctionalTests::testInclusions()
 {
 	runTest("testInclusions", 5);
@@ -192,7 +191,6 @@ void EpMemFunctionalTests::testEpMemSoarGroupTests()
 {
 	runTest("testEpMemSoarGroupTests", 140);
 }
-
 
 void EpMemFunctionalTests::testReadCSoarDB()
 {
