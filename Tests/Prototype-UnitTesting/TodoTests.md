@@ -3,7 +3,7 @@
 ### JSoar Unit Tests to Port
 
 - [x] AgentTest
-- [ ] BasicTests
+- [x] BasicTests
 - [ ] ChunkingTests
 - [ ] DecisionCycleTest
 - [ ] ??? DefaultProductionManager
@@ -35,7 +35,7 @@
 - [ ] WatchCommandTest
 - [ ] ??? DefaultEpisodicMemoryTest (requires direct OR slightly different handling)
 - [ ] ??? EpisodicMemoryDatabaseTest (requires direct)
-- [ ] EpMemFunctionalTests
+- [x] EpMemFunctionalTests
 - [ ] ??? EpMemHamiltonRetrieveTest (requires direct)
 - [ ] ??? EpMemHamiltonStoreTests (requires direct)
 - [ ] ??? EpMemSaveToDbTests (requires direct)
@@ -83,7 +83,7 @@
 - [ ] ??? org.JSoar.kernel.rhs.functions (do we have these all?)
 - [ ] ??? DefaultSemanticMemoryTest (requires direct???)
 - [ ] ??? SemanticMemoryDatabaseTest (requires direct)
-- [ ] SMemFunctionalTests
+- [x] SMemFunctionalTests
 - [ ] IdentifierImplTest
 - [ ] StringSymbolImplTest
 - [ ] ??? SymbolFactoryImplTest (requires different method but we have this???)
@@ -92,7 +92,7 @@
 - [ ] ??? PrinterTest (do we have an equivalent?)
 - [ ] ??? PrintEventWriterTest (do we have an equivalent?)
 - [ ] ??? TraceTest (do we have an equivalent?)
-- [ ] WmaFunctionalTests
+- [x] WmaFunctionalTests
 - [ ] ??? ThreadedAgentTest (do we have an equivalent?)
 - [ ] ??? WaitRhsFunctionTest (do we have an equivalent?)
 - [ ] ??? ScriptCommandTest (we don’t have this? This is javascript in Soar?!?!?)
