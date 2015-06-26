@@ -17,7 +17,7 @@
 - [ ] ??? ProductionTest (Would this require direct access??)
 - [ ] ReteTests
 - [ ] RLTests
-- [ ] SMemEpMemCombinedFunctionalTests
+- [x] SMemEpMemCombinedFunctionalTests
 - [ ] WaterfallTests
 - [ ] ??? DebuggerCommand (Is this just a rename of `debug`?)
 - [ ] ExplainBacktracesCommand
@@ -44,19 +44,7 @@
 - [ ] StopEventTest
 - [ ] CycleCountInputTest
 - [ ] InputOutputImplTest
-- [ ] ??? SoarBeanOutputManagerTest (do we have this???)
-- [ ] ??? SoarBeanReaderTest (do we have this???)
 - [ ] OutputCommandManagerTest
-- [ ] ??? DefaultQMemoryTest (do we have this???)
-- [ ] ??? SoarQMemoryAdapterTest (do we have this???)
-- [ ] ??? AutoTypeXmlToWmeTest (do we have this???)
-- [ ] ??? DefaultWmeToXmlTest (do we have this???)
-- [ ] ??? DefaultXmlToWmeTest (do we have this???)
-- [ ] ??? ManualTypeXmlToWmeTest (do we have this???)
-- [ ] ??? SoarTechWmeToXmlTest (do we have this???)
-- [ ] ??? SoarTechXmlToWmeTest (do we have this???)
-- [ ] ??? XmlMessageQueueTest (do we have this???)
-- [ ] ??? XmlToWmeToolsTest (do we have this???)
 - [ ] ExplainTest
 - [ ] ReinforcementLearningTest
 - [ ] RLParamsTests
@@ -79,7 +67,7 @@
 - [ ] ??? ReteUnitTest (requires direct???)
 - [ ] SimplerMatcherTest
 - [ ] SoarReteListenerTest
-- [ ] RhsFunctionCallTest (requires exec <command> vs just <command> in JSoar)
+- [ ] RhsFunctionCallTest
 - [ ] ??? org.JSoar.kernel.rhs.functions (do we have these all?)
 - [ ] ??? DefaultSemanticMemoryTest (requires direct???)
 - [ ] ??? SemanticMemoryDatabaseTest (requires direct)
