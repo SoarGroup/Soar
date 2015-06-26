@@ -52,6 +52,8 @@ int main(int argc, char** argv)
 	size_t successCount = 0;
 	size_t testCount = 0;
 	
+	bool failed = false;
+	
 	for (TestCategory* category : tests)
 	{
 		std::cout << std::endl << "================================================" << std::endl << "Running " << category->getCategoryName() << std::endl << "================================================" << std::endl;
@@ -102,6 +104,8 @@ int main(int argc, char** argv)
 				std::cout << "Failed" << std::endl << "================================================" << std::endl << "Reason: ";
 				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
+				
+				failed = true;
 			}
 			
 			std::mutex mutex;
@@ -142,4 +146,9 @@ int main(int argc, char** argv)
 		std::cin.get();
 	}
 #endif
+	
+	if (failed)
+		return 1;
+	else
+		return 0;
 }
