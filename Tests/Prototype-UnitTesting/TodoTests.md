@@ -95,7 +95,7 @@
 ### Existing Soar Tests to Port
 
 - [x] Port `aliastest` to Prototype-UnitTesting
-- [ ] Port `cliparsertest` to Prototype-UnitTesting
+- [x] Port `cliparsertest` to Prototype-UnitTesting
 - [ ] Port `elementxmltest` to Prototype-UnitTesting
 - [ ] Port `epmemtest` to Prototype-UnitTesting
 - [ ] Port `fulltests` to Prototype-UnitTesting

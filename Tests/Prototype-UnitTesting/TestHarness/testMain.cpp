@@ -27,6 +27,7 @@
 #include "SMemFunctionalTests.hpp"
 #include "WmaFunctionalTests.hpp"
 #include "AliasTest.hpp"
+#include "CliParserTest.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -48,6 +49,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(WmaFunctionalTests);
 	TEST_DECLARATION(AliasTest);
+	TEST_DECLARATION(CliParserTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
