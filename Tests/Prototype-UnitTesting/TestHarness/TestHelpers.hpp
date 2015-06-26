@@ -16,6 +16,8 @@
 
 #include <cassert>
 
+#include "sml_ClientAgent.h"
+
 #ifndef _WIN32
 #include <sys/stat.h>
 #endif
@@ -83,6 +85,8 @@ protected:
 	int line_;
 };
 
+void printDebugInformation(std::stringstream& output, sml::Agent* agent);
+
 #define assertEquals(X, Y) if (X != Y) \
 { \
 	std::stringstream ss; \
@@ -91,6 +95,7 @@ protected:
 	ss << ", "; \
 	ss << Y; \
 	ss << ") but was unequal."; \
+	printDebugInformation(runner->output, agent); \
 	throw AssertException(ss.str(), __FILE__, __LINE__); \
 	}
 
@@ -118,46 +123,55 @@ protected:
 	}\
 	\
 	ss << "]) but was unequal.";\
+	printDebugInformation(runner->output, agent); \
 	throw AssertException(ss.str(), __FILE__, __LINE__);\
 	}
 
 #define assertNonZeroSize_msg(X, Y) if ((Y).size() == 0) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException(X, __FILE__, __LINE__); \
 }
 
 #define assertNonZeroSize(Y) if ((Y).size() == 0) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException("Assert: Expected container to be non-zero in size.", __FILE__, __LINE__); \
 }
 
 #define assertTrue(Y) if (!(Y)) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
 }
 
 #define assertTrue_msg(X, Y) if (!(Y)) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 
 #define assertFalse(Y) if (Y) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException("Assert: Boolean false check failed.", __FILE__, __LINE__); \
 }
 
 #define assertFalse_msg(X, Y) if (Y) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 
 #define assertNotNull(Y) if (Y == nullptr) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException("Assert: Null pointer check failed.", __FILE__, __LINE__); \
 }
 
 #define assertNotNull_msg(X, Y) if (Y == nullptr) \
 { \
+printDebugInformation(runner->output, agent); \
 throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 

@@ -63,3 +63,37 @@ bool isfile(const char* path)
 	return (stat(path, &st) == 0 && !S_ISDIR(st.st_mode));
 #endif
 }
+
+void printDebugInformation(std::stringstream& output, sml::Agent* agent)
+{
+	output << "============================================================" << std::endl << std::endl;
+	output << "Debug Information" << std::endl << std::endl;
+	output << "============================================================" << std::endl << std::endl;
+	
+	output << "============================================================" << std::endl << std::endl;
+	output << agent->ExecuteCommandLine("print -d 100 s1") << std::endl << std::endl;
+	output << "============================================================" << std::endl << std::endl;
+	
+	output << "============================================================" << std::endl << std::endl;
+	
+	std::string rules = agent->ExecuteCommandLine("p");
+	std::stringstream ss(rules);
+	std::string line;
+	
+	while (std::getline(ss, line, '\n'))
+	{
+		output << "=======================" << std::endl;
+		output << "matches " << line << ":" << std::endl << agent->ExecuteCommandLine(("matches " + line).c_str()) << std::endl << std::endl;
+		output << "fc " << line << ":" << std::endl << agent->ExecuteCommandLine(("fc " + line).c_str()) << std::endl << std::endl;
+	}
+	output << "=======================" << std::endl;
+	
+	output << std::endl;
+	
+	output << agent->ExecuteCommandLine("matches") << std::endl << std::endl;
+	output << "============================================================" << std::endl << std::endl;
+	
+	output << "============================================================" << std::endl << std::endl;
+	output << agent->ExecuteCommandLine("stats") << std::endl << std::endl;
+	output << "============================================================" << std::endl << std::endl;
+}
