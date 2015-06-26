@@ -27,7 +27,7 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	std::string path = SoarHelper::GetResource(sourceName);
 	assertNonZeroSize_msg("Could not find test file " + sourceName, path);
 	
-	const char* result = agent->ExecuteCommandLine(("source " + path).c_str());
+	const char* result = agent->ExecuteCommandLine(("source \"" + path + "\"").c_str());
 	
 	runner->output << "Loaded Productions for " << sourceName << ":" << std::endl;
 	runner->output << result << std::endl;

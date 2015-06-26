@@ -224,7 +224,14 @@ std::ostream& operator<<(std::ostream& os, SoarHelper::StopPhase phase)
 
 std::string SoarHelper::GetResource(std::string resource)
 {
-	return FindFile(resource, ResourceDirectory);
+	std::string path =  FindFile(resource, ResourceDirectory);
+	const char* workingDirectory = getenv("WORKING_DIRECTORY");
+	if (path.length() == 0 && workingDirectory)
+	{
+		path = FindFile(resource, workingDirectory);
+	}
+	
+	return path;
 }
 
 std::string SoarHelper::FindFile(std::string filename, std::string path)

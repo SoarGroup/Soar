@@ -477,7 +477,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	
 	std::string db = SoarHelper::GetResource("smem-csoar-db.sqlite");
 	assertNonZeroSize_msg("No CSoar db!", db);
-	agent->ExecuteCommandLine((std::string("smem --set path ") + db).c_str());
+	agent->ExecuteCommandLine(std::string("smem --set path \"" + db + "\"").c_str());
 	agent->ExecuteCommandLine("smem --set database file");
 	agent->ExecuteCommandLine("smem --set append-database on");
 	agent->ExecuteCommandLine("smem --init");

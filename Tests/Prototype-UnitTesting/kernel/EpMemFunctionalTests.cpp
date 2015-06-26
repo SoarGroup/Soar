@@ -198,7 +198,7 @@ void EpMemFunctionalTests::testReadCSoarDB()
 	
 	std::string db = SoarHelper::GetResource("epmem-csoar-db.sqlite");
 	assertNonZeroSize_msg("No CSoar db!", db);
-	std::string pathCommand = agent->ExecuteCommandLine((std::string("epmem --set path ") + db).c_str());
+	std::string pathCommand = agent->ExecuteCommandLine(std::string("epmem --set path \"" + db + "\"").c_str());
 	std::string memoryCommand = agent->ExecuteCommandLine("epmem --set database file");
 	std::string appendCommand = agent->ExecuteCommandLine("epmem --set append on");
 	std::string initCommand = agent->ExecuteCommandLine("epmem --init");
