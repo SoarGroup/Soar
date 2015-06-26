@@ -34,6 +34,7 @@
 		unittest.X(); \
 	} \
 	catch (AssertException& e) { \
+		NSLog(@"%s", unittest.runner->output.str().c_str()); \
 		const char* string = e.what();\
 		_XCTFailureHandler(self, YES, e.file(), e.line(), _XCTFailureFormat(_XCTAssertion_Fail, 0), @"%@", [NSString stringWithUTF8String:string]);\
 	}\
