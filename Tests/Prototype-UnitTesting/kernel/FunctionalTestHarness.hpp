@@ -53,6 +53,7 @@ protected:
 	::rhs_function_routine halt_routine;
 	
 	void afterDecisionCycleHandler();
+	void printHandler(const char* msg);
 	
 public:
 	/**

@@ -50,7 +50,7 @@ void FunctionalTestHarness::runTestExecute(std::string testName, int expectedDec
 		result = agent->RunSelfForever();
 	}
 	
-	runner->output << result << std::endl;
+	runner->output << std::endl << result << std::endl;
 	
 	assertTrue_msg(testName + " functional test did not halt", halted);
 	assertFalse_msg(testName + " functional test failed", failed);
@@ -80,6 +80,11 @@ void FunctionalTestHarness::afterDecisionCycleHandler()
 		halted = true;
 		halt_routine(internal_agent, nullptr, nullptr);
 	}
+}
+
+void FunctionalTestHarness::printHandler(const char* msg)
+{
+	runner->output << msg;
 }
 
 void FunctionalTestHarness::setUp()
@@ -112,6 +117,16 @@ void FunctionalTestHarness::setUp()
 					  this,
 					  [](soar_callback_data){},
 					  "Prototype-UnitTesting AFTER_DECISION_CYCLE_CALLBACK");
+	
+	soar_add_callback(internal_agent,
+					  PRINT_CALLBACK,
+					  [](::agent*, soar_callback_event_id, soar_callback_data data, soar_call_data msg) {
+						  static_cast<FunctionalTestHarness*>(data)->printHandler(static_cast<const char*>(msg));
+					  },
+					  PRINT_CALLBACK,
+					  this,
+					  [](soar_callback_data){},
+					  "Prototype-UnitTesting PRINT_CALLBACK");
 	
 	installRHS(agent);
 }
@@ -172,7 +187,6 @@ void FunctionalTestHarness::installRHS(sml::Agent* agent)
 	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
 		return static_cast<user_data_struct*>(user_data)->function();
 	};
-	
 	
 	halt_function->user_data = &haltData;
 	halt_function->f = call_routine;
