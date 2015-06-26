@@ -457,6 +457,8 @@
 		4DD8D95E1B3C57AE0055BD48 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
 		4DD8D95F1B3C57AE0055BD48 /* BasicTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4749C61B32121100FB48D7 /* BasicTests.cpp */; };
 		4DD8D9761B3C5DA40055BD48 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
+		4DDA9B431B3DECBF00AF2764 /* AliasTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B401B3DEBA000AF2764 /* AliasTest.cpp */; };
+		4DDA9B451B3DECCE00AF2764 /* AliasTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B401B3DEBA000AF2764 /* AliasTest.cpp */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
 		4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
@@ -1021,6 +1023,8 @@
 		4DD8D94B1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Prototype-UnitTesting-XCTest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD8D94F1B3C576D0055BD48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4DD8D96D1B3C5A350055BD48 /* XCTestDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XCTestDefines.h; sourceTree = "<group>"; };
+		4DDA9B401B3DEBA000AF2764 /* AliasTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AliasTest.cpp; sourceTree = "<group>"; };
+		4DDA9B411B3DEBA000AF2764 /* AliasTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AliasTest.hpp; sourceTree = "<group>"; };
 		4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests.cpp; sourceTree = "<group>"; };
 		4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests.hpp; sourceTree = "<group>"; };
 		4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoarHelper.cpp; sourceTree = "<group>"; };
@@ -1779,6 +1783,8 @@
 				4DFF15841B3204C5006CDD34 /* AgentTest.hpp */,
 				4D4749C61B32121100FB48D7 /* BasicTests.cpp */,
 				4D4749C71B32121100FB48D7 /* BasicTests.hpp */,
+				4DDA9B401B3DEBA000AF2764 /* AliasTest.cpp */,
+				4DDA9B411B3DEBA000AF2764 /* AliasTest.hpp */,
 			);
 			path = kernel;
 			sourceTree = "<group>";
@@ -2446,6 +2452,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DDA9B431B3DECBF00AF2764 /* AliasTest.cpp in Sources */,
 				4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */,
 				4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */,
 				4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */,
@@ -2485,6 +2492,7 @@
 				4DD8D95A1B3C57AE0055BD48 /* EpMemFunctionalTests.cpp in Sources */,
 				4DD8D95C1B3C57AE0055BD48 /* FunctionalTests.cpp in Sources */,
 				4DD8D9571B3C57AE0055BD48 /* SoarHelper.cpp in Sources */,
+				4DDA9B451B3DECCE00AF2764 /* AliasTest.cpp in Sources */,
 				4D07E9701B3C926D00037FFE /* Tests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,5 +1,6 @@
 
 #import "kernel/AgentTest.mm"
+#import "kernel/AliasTest.mm"
 #import "kernel/BasicTests.mm"
 #import "kernel/EpMemFunctionalTests.mm"
 #import "kernel/FunctionalTests.mm"

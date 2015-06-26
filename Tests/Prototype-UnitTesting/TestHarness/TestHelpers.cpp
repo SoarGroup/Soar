@@ -66,6 +66,9 @@ bool isfile(const char* path)
 
 void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 {
+	if (!agent)
+		return;
+	
 	output << "============================================================" << std::endl << std::endl;
 	output << "Debug Information" << std::endl << std::endl;
 	output << "============================================================" << std::endl << std::endl;

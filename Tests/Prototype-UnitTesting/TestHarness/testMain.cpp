@@ -26,6 +26,7 @@
 #include "SMemEpMemCombinedFunctionalTests.hpp"
 #include "SMemFunctionalTests.hpp"
 #include "WmaFunctionalTests.hpp"
+#include "AliasTest.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -46,6 +47,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(WmaFunctionalTests);
+	TEST_DECLARATION(AliasTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
