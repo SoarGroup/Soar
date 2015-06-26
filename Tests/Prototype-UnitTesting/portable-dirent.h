@@ -9,10 +9,10 @@
 #ifndef portable_dirent_c
 #define portable_dirent_c
 
-#ifdef _WIN32
-#include "msdirent.h"
-#else
+#ifndef _MSC_VER
 #include <dirent.h>
+#else
+#include "msdirent.h"
 #endif
 
 #endif /* portable_dirent_c */

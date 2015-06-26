@@ -22,6 +22,15 @@
     <Filter Include="Source Files\SoarHelpers">
       <UniqueIdentifier>{46cf023f-fd3b-4368-b50d-d6ed86a5775f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\kernel\epmem">
+      <UniqueIdentifier>{390d43df-fe4b-4be4-bc40-f0a002b08b9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel\smem">
+      <UniqueIdentifier>{ad86c5ea-da58-40d2-b73e-ef69715457c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel\wma">
+      <UniqueIdentifier>{e8151ebc-db4b-4d42-adab-17f15adc1525}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp">
@@ -54,14 +63,20 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\windows\msdirent.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_EpMem.hpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_SMemEpMemCombined.hpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\portable-dirent.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.hpp">
+      <Filter>Source Files\kernel\smem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.hpp">
+      <Filter>Source Files\kernel\epmem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.hpp">
+      <Filter>Source Files\kernel\wma</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -69,9 +84,6 @@
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp">
-      <Filter>Source Files\TestHarness</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.cpp">
       <Filter>Source Files\TestHarness</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.cpp">
@@ -95,11 +107,17 @@
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_EpMem.cpp">
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests_SMemEpMemCombined.cpp">
-      <Filter>Source Files\kernel</Filter>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.cpp">
+      <Filter>Source Files\kernel\smem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.cpp">
+      <Filter>Source Files\kernel\epmem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.cpp">
+      <Filter>Source Files\kernel\wma</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

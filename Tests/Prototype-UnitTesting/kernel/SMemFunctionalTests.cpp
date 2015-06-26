@@ -285,7 +285,7 @@ bool SMemFunctionalTests::checkActivationValues(std::string activationString, st
 		activationLevelsAsDoubles.push_back(result);
 	}
 	
-	for (int i = 0;i < activationLevelsAsDoubles.size();i++)
+	for (size_t i = 0;i < activationLevelsAsDoubles.size();i++)
 	{
 		double a = activationLevelsAsDoubles[i];
 		

@@ -15,9 +15,7 @@
 #include <atomic>
 #include <iostream>
 
-#ifdef _MSC_VER
-#include <Windows.h>
-#endif
+#include "portability.h"
 
 // INCLUDE TEST HEADERS HERE
 
@@ -41,13 +39,13 @@ int main(int argc, char** argv)
 	
 	// DEFINE ALL TESTS HERE
 	
-	TEST_DECLARATION(AgentTest);
-	TEST_DECLARATION(BasicTests);
-	TEST_DECLARATION(FunctionalTests);
-	TEST_DECLARATION(EpMemFunctionalTests);
-	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
+	//TEST_DECLARATION(AgentTest);
+	//TEST_DECLARATION(BasicTests);
+	//TEST_DECLARATION(FunctionalTests);
+	//TEST_DECLARATION(EpMemFunctionalTests);
+	//TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
-	TEST_DECLARATION(WmaFunctionalTests);
+	//TEST_DECLARATION(WmaFunctionalTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;

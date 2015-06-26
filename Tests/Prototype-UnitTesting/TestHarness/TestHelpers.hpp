@@ -104,7 +104,7 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 	std::stringstream ss; \
 	ss << "Assert: Expected equal values (["; \
 	\
-	for (int i = 0;i < X.size();++i)\
+	for (size_t i = 0;i < X.size();++i)\
 	{\
 		ss << X[i];\
 		\
@@ -114,7 +114,7 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 	\
 	ss << "], [";\
 	\
-	for (int i = 0;i < Y.size();++i)\
+	for (size_t i = 0;i < Y.size();++i)\
 	{\
 		ss << Y[i];\
 		\

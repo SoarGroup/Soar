@@ -9,10 +9,12 @@
 #include "wmem.h"
 #include "mat.h"
 
+#include "Export.h"
+
 tc_number get_new_tc_number(agent* thisAgent);
-extern Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* make_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
 
 typedef std::vector<wme*> wme_list;
 
