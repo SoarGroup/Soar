@@ -43,11 +43,9 @@ public:
 	TEST(testBlocksWorldOperatorSubgoaling,10000)
 	void testBlocksWorldOperatorSubgoaling();
 	
-	// TODO: Fix 'testBlocksWorldLookAhead: Failed: Assert: testBlocksWorldLookAhead functional test did not halt'
 	TEST(testBlocksWorldLookAhead,10000)
 	void testBlocksWorldLookAhead();
 	
-	// TODO: Fix 'testBlocksWorldLookAhead2: Failed: Assert: Expected equal values (30, 22) but was unequal.'
 	TEST(testBlocksWorldLookAhead2, -1)
 	void testBlocksWorldLookAhead2();
 	

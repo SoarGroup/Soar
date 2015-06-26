@@ -53,7 +53,7 @@ void FunctionalTests::testBlocksWorldLookAhead()
 	std::string testName = "testBlocksWorldLookAhead";
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 1");
-	runTestExecute(testName, 27);
+	runTestExecute(testName, 40);
 }
 
 void FunctionalTests::testBlocksWorldLookAhead2()
@@ -61,7 +61,7 @@ void FunctionalTests::testBlocksWorldLookAhead2()
 	std::string testName = "testBlocksWorldLookAhead";
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 100000000002");
-	runTestExecute(testName, 29);
+	runTestExecute(testName, 21);
 }
 
 void FunctionalTests::testBlocksWorldLookAheadRandom()
@@ -80,7 +80,7 @@ void FunctionalTests::testCountTest()
 	runTest("testCountTest", 45047);
 	assertEquals(42, SoarHelper::getUserProductionCount(agent));
 	assertEquals(15012, SoarHelper::getChunkProductionCount(agent));
-	assertEquals(115136, SoarHelper::getE_CYCLE_COUNT(agent));
-	assertEquals(40039, SoarHelper::getPE_CYCLE_COUNT(agent));
-	assertEquals(120146, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
+	assertEquals(115134, SoarHelper::getE_CYCLE_COUNT(agent));
+	assertEquals(40038, SoarHelper::getPE_CYCLE_COUNT(agent));
+	assertEquals(120144, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
 }

@@ -1,9 +1,9 @@
 smem --set learning on
-smem --add {(<x> ^name val ^value 1)}\n
-smem --add {(<x> ^othername val ^value 1)}\n
-smem --add {(<x> ^name val ^value 3 ^notrestrictive t)}\n
-smem --add {(<x> ^name val ^value 5 ^wrongattribute y)}\n
-smem --add {(<x> ^name val ^value 7 ^thirdthing x)}\n
+smem --add {(<x> ^name val ^value 1)}
+smem --add {(<x> ^othername val ^value 1)}
+smem --add {(<x> ^name val ^value 3 ^notrestrictive t)}
+smem --add {(<x> ^name val ^value 5 ^wrongattribute y)}
+smem --add {(<x> ^name val ^value 7 ^thirdthing x)}
 
 sp {propose*query 
 	(state <s> ^superstate nil 

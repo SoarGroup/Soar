@@ -15,6 +15,6 @@ void WmaFunctionalTests::testSimpleActivation()
 	
 	assertTrue(result.find("S1 ^o-from-a true [-1.5]") != std::string::npos);
 	assertTrue(result.find("S1 ^o-from-o true [-1.9]") != std::string::npos);
-	assertTrue(result.find("S1 ^i-from-i true [1.0]") != std::string::npos);
+	assertTrue(result.find("S1 ^i-from-i true [1]") != std::string::npos);
 	assertFalse(result.find("S1 ^o-from-i2") != std::string::npos);
 }

@@ -16,7 +16,6 @@ class SMemEpMemCombinedFunctionalTests : public FunctionalTestHarness
 public:
 	FUNCTIONAL_TEST_CATEGORY(SMemEpMemCombinedFunctionalTests);
 	
-	// TODO: Fix 'Assert: Unexpected output from SMem!'
 	TEST(testSmemEpMemFactorteizationCombinationTest, -1)
 	void testSmemEpMemFactorteizationCombinationTest();
 };

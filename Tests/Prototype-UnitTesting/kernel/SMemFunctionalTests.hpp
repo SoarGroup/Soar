@@ -100,9 +100,6 @@ public:
 	TEST(testCueSelection, -1)
 	void testCueSelection();
 	
-private:
-	bool halted = false;
-	
 public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationRecency, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationRecency();
