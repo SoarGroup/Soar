@@ -96,7 +96,7 @@
 
 - [x] Port `aliastest` to Prototype-UnitTesting
 - [x] Port `cliparsertest` to Prototype-UnitTesting
-- [ ] Port `elementxmltest` to Prototype-UnitTesting
+- [x] Port `elementxmltest` to Prototype-UnitTesting
 - [ ] Port `epmemtest` to Prototype-UnitTesting
 - [ ] Port `fulltests` to Prototype-UnitTesting
 - [ ] Port `iotest` to Prototype-UnitTesting

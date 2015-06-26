@@ -28,6 +28,7 @@
 #include "WmaFunctionalTests.hpp"
 #include "AliasTest.hpp"
 #include "CliParserTest.hpp"
+#include "ElementXMLTest.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -50,6 +51,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(WmaFunctionalTests);
 	TEST_DECLARATION(AliasTest);
 	TEST_DECLARATION(CliParserTest);
+	TEST_DECLARATION(ElementXMLTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
