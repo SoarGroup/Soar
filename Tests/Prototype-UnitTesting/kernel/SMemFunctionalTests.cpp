@@ -541,3 +541,15 @@ void SMemFunctionalTests::testMultiAgent()
 		kernel->DestroyAgent(a);
 	}
 }
+
+void SMemFunctionalTests::testISupport()
+{
+	runTest("smem-i-support", 6);
+}
+
+void SMemFunctionalTests::testISupportWithLearning()
+{
+	std::string result = agent->ExecuteCommandLine("learn -e") ;
+	
+	runTest("smem-i-support", 6);
+}

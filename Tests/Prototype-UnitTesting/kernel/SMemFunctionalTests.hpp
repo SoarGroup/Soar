@@ -100,6 +100,12 @@ public:
 	TEST(testCueSelection, -1)
 	void testCueSelection();
 	
+	TEST(testISupport, -1)
+	void testISupport();
+	
+	TEST(testISupportWithLearning, -1)
+	void testISupportWithLearning();
+
 public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationRecency, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationRecency();

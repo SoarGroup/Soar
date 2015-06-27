@@ -101,11 +101,9 @@
 - [x] Port `fulltests` to Prototype-UnitTesting
 - [x] Port `iotest` to Prototype-UnitTesting
 - [x] Port `misctests` to Prototype-UnitTesting
-- [ ] Port `multiagenttest` to Prototype-UnitTesting
-- [ ] Port `sanitytest` to Prototype-UnitTesting
-- [ ] Port `simplelistener` to Prototype-UnitTesting
-- [ ] Port `smemmathtest` to Prototype-UnitTesting
-- [ ] Port `smemtest` to Prototype-UnitTesting
+- [x] Port `multiagenttest` to Prototype-UnitTesting
+- [x] Port `smemmathtest` to Prototype-UnitTesting
+- [x] Port `smemtest` to Prototype-UnitTesting
 - [ ] Port `tokenizertest` to Prototype-UnitTesting
 - [x] Port `handlers` to Prototype-UnitTesting
 
