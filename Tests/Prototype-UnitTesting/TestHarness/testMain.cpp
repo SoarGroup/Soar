@@ -37,6 +37,7 @@
 #include "FullTestsRemote.hpp"
 #include "IOTests.hpp"
 #include "MiscTests.hpp"
+#include "MultiAgentTest.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -69,6 +70,7 @@ int main(int argc, char** argv)
 	
 	TEST_DECLARATION(IOTests);
 	TEST_DECLARATION(MiscTests);
+	TEST_DECLARATION(MultiAgentTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;

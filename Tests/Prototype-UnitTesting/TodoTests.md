@@ -99,8 +99,8 @@
 - [x] Port `elementxmltest` to Prototype-UnitTesting
 - [x] Port `epmemtest` to Prototype-UnitTesting
 - [x] Port `fulltests` to Prototype-UnitTesting
-- [ ] Port `iotest` to Prototype-UnitTesting
-- [ ] Port `misctests` to Prototype-UnitTesting
+- [x] Port `iotest` to Prototype-UnitTesting
+- [x] Port `misctests` to Prototype-UnitTesting
 - [ ] Port `multiagenttest` to Prototype-UnitTesting
 - [ ] Port `sanitytest` to Prototype-UnitTesting
 - [ ] Port `simplelistener` to Prototype-UnitTesting
