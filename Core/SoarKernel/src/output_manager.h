@@ -82,7 +82,7 @@ inline size_t om_strcpy(char** s1, const char* s2, size_t n) {
         if (m+1 > n) {
             m = n-1;
         }
-        memmove(*s1, s2, m);
+        memcpy(*s1, s2, m);
         (*s1)[m]=0;
     } else {
         return n;
@@ -97,7 +97,7 @@ inline size_t om_strncpy(char** s1, char** s2, size_t n, size_t num_chars) {
         if (num_chars+1 > n) {
             num_chars = n-1;
         }
-        memmove(*s1, *s2, num_chars);
+        memcpy(*s1, *s2, num_chars);
         (*s1)[num_chars]=0;
     } else {
         return n;

@@ -132,7 +132,7 @@ size_t Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_siz
             } else {
                 size_t buffer_left_old = buffer_left;
                 buffer_left = om_strcpy(&ch, format, buffer_left);
-                format += (buffer_left_old - buffer_left);
+                format += (buffer_left_old - buffer_left - 1);
             }
         }
         if (*format == 0)
@@ -380,7 +380,7 @@ size_t Output_Manager::sprinta_sf_internal(agent* thisAgent, char* &dest, size_t
     va_start(args, format);
     buffer_left = vsnprint_sf(thisAgent, dest, dest_size, format, args);
     va_end(args);
-    dest = dest + (dest_size - buffer_left);
+    dest = dest + (dest_size - buffer_left) - 1;
     return buffer_left;
 }
 
