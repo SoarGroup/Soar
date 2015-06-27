@@ -10,6 +10,7 @@
 #import "kernel/FullTestsClientThreadFullyOptimized.mm"
 #import "kernel/FullTestsRemote.mm"
 #import "kernel/FunctionalTests.mm"
+#import "kernel/IOTests.mm"
 #import "kernel/SMemEpMemCombinedFunctionalTests.mm"
 #import "kernel/SMemFunctionalTests.mm"
 #import "kernel/wma/WmaFunctionalTests.mm"

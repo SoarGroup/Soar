@@ -469,6 +469,8 @@
 		4DDA9B4F1B3DF06D00AF2764 /* ElementXMLTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B4B1B3DEFD600AF2764 /* ElementXMLTest.cpp */; };
 		4DDA9B531B3DF43D00AF2764 /* FullTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */; };
 		4DDA9B541B3DF43E00AF2764 /* FullTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */; };
+		4DEC11EA1B3F138B002E12DD /* IOTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DEC11E71B3F12BD002E12DD /* IOTests.cpp */; };
+		4DEC11EB1B3F138B002E12DD /* IOTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DEC11E71B3F12BD002E12DD /* IOTests.cpp */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
 		4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
@@ -1048,6 +1050,8 @@
 		4DDA9B551B3DF9CA00AF2764 /* FullTestsRemote.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsRemote.hpp; sourceTree = "<group>"; };
 		4DDA9B561B3DF9CA00AF2764 /* FullTestsClientThreadFullyOptimized.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsClientThreadFullyOptimized.hpp; sourceTree = "<group>"; };
 		4DDA9B571B3DF9CA00AF2764 /* FullTestsClientThread.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsClientThread.hpp; sourceTree = "<group>"; };
+		4DEC11E71B3F12BD002E12DD /* IOTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IOTests.cpp; sourceTree = "<group>"; };
+		4DEC11E81B3F12BD002E12DD /* IOTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IOTests.hpp; sourceTree = "<group>"; };
 		4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests.cpp; sourceTree = "<group>"; };
 		4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests.hpp; sourceTree = "<group>"; };
 		4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoarHelper.cpp; sourceTree = "<group>"; };
@@ -1821,6 +1825,8 @@
 				4DDA9B571B3DF9CA00AF2764 /* FullTestsClientThread.hpp */,
 				4D7734BA1B3EFC33006FC37C /* handlers.cpp */,
 				4D7734BB1B3EFC33006FC37C /* handlers.hpp */,
+				4DEC11E71B3F12BD002E12DD /* IOTests.cpp */,
+				4DEC11E81B3F12BD002E12DD /* IOTests.hpp */,
 			);
 			path = kernel;
 			sourceTree = "<group>";
@@ -2504,6 +2510,7 @@
 				4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */,
 				4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */,
 				4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */,
+				4DEC11EA1B3F138B002E12DD /* IOTests.cpp in Sources */,
 				4DDA9B4E1B3DF06C00AF2764 /* ElementXMLTest.cpp in Sources */,
 				4D9868001B30894500B13711 /* testMain.cpp in Sources */,
 				4D7734BC1B3EFC33006FC37C /* handlers.cpp in Sources */,
@@ -2530,6 +2537,7 @@
 				4DDA9B531B3DF43D00AF2764 /* FullTests.cpp in Sources */,
 				4D7734BD1B3EFC33006FC37C /* handlers.cpp in Sources */,
 				4DD8D95F1B3C57AE0055BD48 /* BasicTests.cpp in Sources */,
+				4DEC11EB1B3F138B002E12DD /* IOTests.cpp in Sources */,
 				4DD8D95B1B3C57AE0055BD48 /* FunctionalTestHarness.cpp in Sources */,
 				4DD8D9761B3C5DA40055BD48 /* TestHelpers.cpp in Sources */,
 				4DD8D95D1B3C57AE0055BD48 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */,

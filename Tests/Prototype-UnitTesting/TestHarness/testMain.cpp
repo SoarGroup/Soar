@@ -35,6 +35,7 @@
 #include "FullTestsClientThreadFullyOptimized.hpp"
 #include "FullTestsClientThread.hpp"
 #include "FullTestsRemote.hpp"
+#include "IOTests.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -64,6 +65,8 @@ int main(int argc, char** argv)
 	
 	// Remote tests haven't been updated for new unit testing yet so they're disabled for now.
 //	TEST_DECLARATION(FullTestsRemote);
+	
+	TEST_DECLARATION(IOTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
