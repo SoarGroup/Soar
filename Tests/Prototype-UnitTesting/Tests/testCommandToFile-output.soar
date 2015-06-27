@@ -1,0 +1,1442 @@
+sp {rl*water-jug*pour*48
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*47
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*46
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*45
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*44
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*43
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*42
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*41
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*40
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*39
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*38
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*37
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*36
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*35
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*34
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*33
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*32
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*31
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 3.)
+}
+
+sp {rl*water-jug*pour*30
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*29
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*28
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*27
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*26
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*pour*25
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*24
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*23
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*22
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*21
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*20
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*19
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*18
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*17
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*16
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*15
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*14
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*13
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*12
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*11
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*10
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*9
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*8
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*7
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*pour*6
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*5
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*4
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*3
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*2
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*pour*1
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name pour ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*48
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*47
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*46
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*45
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*44
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*43
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*42
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*41
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*fill*40
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*39
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*38
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*37
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*36
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*35
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*34
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*33
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*32
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*31
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*30
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*29
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*28
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*27
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*26
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*25
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*fill*24
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*23
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*22
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*21
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*20
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*19
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*18
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*17
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*16
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*15
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*14
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*13
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*12
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*11
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*10
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*9
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*8
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*fill*7
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*6
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*5
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*4
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*3
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*2
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*fill*1
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*empty*48
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*empty*47
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*empty*46
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*45
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*44
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*43
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*42
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*empty*41
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 5)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*40
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*39
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*38
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*37
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*36
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*35
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*34
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*33
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 4)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*32
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*31
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0.)
+}
+
+sp {rl*water-jug*empty*30
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*29
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*28
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*27
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*26
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*25
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 3)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*24
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*23
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*22
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*21
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*20
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*19
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*18
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*17
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 2)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*16
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*15
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*14
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*13
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*12
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*11
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*10
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*9
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 1)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*8
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*7
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 3)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*6
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*5
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 2)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*4
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*3
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 1)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*2
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 5)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+sp {rl*water-jug*empty*1
+    (state <s> ^name water-jug ^operator <op> + ^jug <j2> ^jug <j1>)
+    (<op> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume 3)
+    (<j2> ^volume 5 ^contents 0)
+    (<j1> ^volume 3 ^contents 0)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+
+

@@ -115,6 +115,18 @@ public:
 	
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();
+	
+	TEST(testEpMemUnit, -1)
+	void testEpMemUnit();
+	
+	TEST(testHamiltonian, -1);
+	void testHamiltonian();
+	
+	TEST(testSVS, -1);
+	void testSVS();
+	
+	TEST(testSVSHard, -1);
+	void testSVSHard();
 };
 
 #endif /* FunctionalTests_EpMem_cpp */

@@ -242,17 +242,17 @@ void EpMemFunctionalTests::testMultiAgent()
 		{
 			if (SoarHelper::getDecisionPhasesCount(a) != 3)
 			{
-				throw AssertException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
+				throw SoarAssertionException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
 			}
 			
 			std::string result = a->ExecuteCommandLine("epmem");
 			
 			if (result.find("memory") == std::string::npos)
 			{
-				throw AssertException("Non Memory Driver!", __FILE__, __LINE__);
+				throw SoarAssertionException("Non Memory Driver!", __FILE__, __LINE__);
 			}
 		}
-		catch (AssertException& e)
+		catch (SoarAssertionException& e)
 		{
 			kernel->DestroyAgent(a);
 			throw e;
@@ -260,4 +260,24 @@ void EpMemFunctionalTests::testMultiAgent()
 		
 		kernel->DestroyAgent(a);
 	}
+}
+
+void EpMemFunctionalTests::testEpMemUnit()
+{
+	runTest("epmem_unit", 140);
+}
+
+void EpMemFunctionalTests::testHamiltonian()
+{
+	runTest("hamiltonian", 2);
+}
+
+void EpMemFunctionalTests::testSVS()
+{
+	runTest("svs", 2);
+}
+
+void EpMemFunctionalTests::testSVSHard()
+{
+	runTest("svs_hard", 2);
 }

@@ -21,7 +21,6 @@ void TestRunner::run()
 
 	category->runner = this;
 	
-	
 	try {
 		category->before();
 		(*function)();

@@ -255,24 +255,24 @@ bool SMemFunctionalTests::checkActivationValues(std::string activationString, st
 			if (activation.length() != 0 &&
 				(c == '+' || c == '-'))
 			{
-				throw AssertException("Found a +/- where there shouldn't be in Activation Levels!", file, line);
+				throw SoarAssertionException("Found a +/- where there shouldn't be in Activation Levels!", file, line);
 			}
 			
 			activation += c;
 		}
 		else if (inActivationParse)
 		{
-			throw AssertException("Non-Digit Character in Activation Level", file, line);
+			throw SoarAssertionException("Non-Digit Character in Activation Level", file, line);
 		}
 	}
 	
 	if (activationLevels.size() != lowEndExpectations.size())
 	{
-		throw AssertException("Low End Expectations is not the same size as parsed Activation Levels!", file, line);
+		throw SoarAssertionException("Low End Expectations is not the same size as parsed Activation Levels!", file, line);
 	}
 	else if (activationLevels.size() != highEndExpectations.size())
 	{
-		throw AssertException("High End Expectations is not the same size as parsed Activation Levels!", file, line);
+		throw SoarAssertionException("High End Expectations is not the same size as parsed Activation Levels!", file, line);
 	}
 	
 	std::vector<double> activationLevelsAsDoubles;
@@ -293,7 +293,7 @@ bool SMemFunctionalTests::checkActivationValues(std::string activationString, st
 		{
 			std::stringstream ss;
 			ss << "Parsed Activation " << i+1 << " (" << a << ") is not within [" << lowEndExpectations[i] << ", " << highEndExpectations[i] << "]";
-			throw AssertException(ss.str(), file, line);
+			throw SoarAssertionException(ss.str(), file, line);
 		}
 	}
 	
@@ -522,17 +522,17 @@ void SMemFunctionalTests::testMultiAgent()
 		{
 			if (SoarHelper::getDecisionPhasesCount(a) != 3)
 			{
-				throw AssertException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
+				throw SoarAssertionException("Agent did not stop correctly! Ran too many cycles!", __FILE__, __LINE__);
 			}
 			
 			std::string result = a->ExecuteCommandLine("epmem");
 			
 			if (result.find("memory") == std::string::npos)
 			{
-				throw AssertException("Non Memory Driver!", __FILE__, __LINE__);
+				throw SoarAssertionException("Non Memory Driver!", __FILE__, __LINE__);
 			}
 		}
-		catch (AssertException& e)
+		catch (SoarAssertionException& e)
 		{
 			kernel->DestroyAgent(a);
 			throw e;

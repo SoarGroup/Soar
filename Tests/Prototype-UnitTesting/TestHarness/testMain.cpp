@@ -15,6 +15,8 @@
 #include <atomic>
 #include <iostream>
 
+#include <signal.h>
+
 #include "portability.h"
 
 // INCLUDE TEST HEADERS HERE
@@ -29,6 +31,10 @@
 #include "AliasTest.hpp"
 #include "CliParserTest.hpp"
 #include "ElementXMLTest.hpp"
+#include "FullTests.hpp"
+#include "FullTestsClientThreadFullyOptimized.hpp"
+#include "FullTestsClientThread.hpp"
+#include "FullTestsRemote.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -52,6 +58,12 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(AliasTest);
 	TEST_DECLARATION(CliParserTest);
 	TEST_DECLARATION(ElementXMLTest);
+	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
+	TEST_DECLARATION(FullTestsClientThread);
+	TEST_DECLARATION(FullTests);
+	
+	// Remote tests haven't been updated for new unit testing yet so they're disabled for now.
+//	TEST_DECLARATION(FullTestsRemote);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
@@ -81,7 +93,7 @@ int main(int argc, char** argv)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			
 			variable.notify_one();
-			while (variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout || !runner->done)
+			while (!runner->done && variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout)
 			{
 				std::cout << '.';
 				std::cout.flush();

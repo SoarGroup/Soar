@@ -97,8 +97,8 @@
 - [x] Port `aliastest` to Prototype-UnitTesting
 - [x] Port `cliparsertest` to Prototype-UnitTesting
 - [x] Port `elementxmltest` to Prototype-UnitTesting
-- [ ] Port `epmemtest` to Prototype-UnitTesting
-- [ ] Port `fulltests` to Prototype-UnitTesting
+- [x] Port `epmemtest` to Prototype-UnitTesting
+- [x] Port `fulltests` to Prototype-UnitTesting
 - [ ] Port `iotest` to Prototype-UnitTesting
 - [ ] Port `misctests` to Prototype-UnitTesting
 - [ ] Port `multiagenttest` to Prototype-UnitTesting
@@ -107,7 +107,7 @@
 - [ ] Port `smemmathtest` to Prototype-UnitTesting
 - [ ] Port `smemtest` to Prototype-UnitTesting
 - [ ] Port `tokenizertest` to Prototype-UnitTesting
-- [ ] Port `handlers` to Prototype-UnitTesting
+- [x] Port `handlers` to Prototype-UnitTesting
 
 - [ ] Port 9.5 Tests to Prototype-UnitTesting
 

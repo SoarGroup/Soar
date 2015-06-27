@@ -18,6 +18,8 @@
 
 #include "sml_ClientAgent.h"
 
+#include "assert.hpp"
+
 #ifndef _WIN32
 #include <sys/stat.h>
 #endif
@@ -45,46 +47,6 @@ public:
 
 bool isfile(const char* path);
 
-class AssertException : public std::exception
-{
-public:
-	/** Constructor (C strings).
-	 *  @param message C-style string error message.
-	 *                 The string contents are copied upon construction.
-	 *                 Hence, responsibility for deleting the \c char* lies
-	 *                 with the caller.
-	 */
-	explicit AssertException(const char* message, const char* file, const int line);
-	
-	/** Constructor (C++ STL strings).
-	 *  @param message The error message.
-	 */
-	explicit AssertException(const std::string& message, const char* file, const int line);
-	
-	/** Destructor.
-	 * Virtual to allow for subclassing.
-	 */
-	virtual ~AssertException() throw ();
-	
-	/** Returns a pointer to the (constant) error description.
-	 *  @return A pointer to a \c const \c char*. The underlying memory
-	 *          is in posession of the \c Exception object. Callers \a must
-	 *          not attempt to free the memory.
-	 */
-	virtual const char* what() const throw ();
-	
-	const char* file() const throw ();
-	const int line() const throw ();
-	
-protected:
-	/** Error message.
-	 */
-	std::string msg_;
-	
-	const char* file_;
-	int line_;
-};
-
 void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 
 #define assertEquals(X, Y) if (X != Y) \
@@ -96,7 +58,7 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 	ss << Y; \
 	ss << ") but was unequal."; \
 	printDebugInformation(runner->output, agent); \
-	throw AssertException(ss.str(), __FILE__, __LINE__); \
+	throw SoarAssertionException(ss.str(), __FILE__, __LINE__); \
 	}
 
 #define assertEquals_vector(X, Y) if (X != Y) \
@@ -124,55 +86,133 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 	\
 	ss << "]) but was unequal.";\
 	printDebugInformation(runner->output, agent); \
-	throw AssertException(ss.str(), __FILE__, __LINE__);\
+	throw SoarAssertionException(ss.str(), __FILE__, __LINE__);\
 	}
 
 #define assertNonZeroSize_msg(X, Y) if ((Y).size() == 0) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException(X, __FILE__, __LINE__); \
+throw SoarAssertionException(X, __FILE__, __LINE__); \
 }
 
 #define assertNonZeroSize(Y) if ((Y).size() == 0) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException("Assert: Expected container to be non-zero in size.", __FILE__, __LINE__); \
+throw SoarAssertionException("Assert: Expected container to be non-zero in size.", __FILE__, __LINE__); \
 }
 
 #define assertTrue(Y) if (!(Y)) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
+throw SoarAssertionException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
 }
 
 #define assertTrue_msg(X, Y) if (!(Y)) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 
 #define assertFalse(Y) if (Y) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException("Assert: Boolean false check failed.", __FILE__, __LINE__); \
+throw SoarAssertionException("Assert: Boolean false check failed.", __FILE__, __LINE__); \
 }
 
 #define assertFalse_msg(X, Y) if (Y) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 
 #define assertNotNull(Y) if (Y == nullptr) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException("Assert: Null pointer check failed.", __FILE__, __LINE__); \
+throw SoarAssertionException("Assert: Null pointer check failed.", __FILE__, __LINE__); \
 }
 
 #define assertNotNull_msg(X, Y) if (Y == nullptr) \
 { \
 printDebugInformation(runner->output, agent); \
-throw AssertException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
+
+#define no_agent_assertEquals(X, Y) if (X != Y) \
+{ \
+	std::stringstream ss; \
+	ss << "Assert: Expected equal values ("; \
+	ss << X; \
+	ss << ", "; \
+	ss << Y; \
+	ss << ") but was unequal."; \
+	throw SoarAssertionException(ss.str(), __FILE__, __LINE__); \
+	}
+
+#define no_agent_assertEquals_vector(X, Y) if (X != Y) \
+{ \
+	std::stringstream ss; \
+	ss << "Assert: Expected equal values (["; \
+	\
+	for (size_t i = 0;i < X.size();++i)\
+	{\
+		ss << X[i];\
+		\
+		if ((i+1) != X.size())\
+			ss << ", ";\
+	}\
+	\
+	ss << "], [";\
+	\
+	for (size_t i = 0;i < Y.size();++i)\
+	{\
+		ss << Y[i];\
+		\
+		if ((i+1) != Y.size())\
+			ss << ", ";\
+	}\
+	\
+	ss << "]) but was unequal.";\
+	throw SoarAssertionException(ss.str(), __FILE__, __LINE__);\
+	}
+
+#define no_agent_assertNonZeroSize_msg(X, Y) if ((Y).size() == 0) \
+{ \
+throw SoarAssertionException(X, __FILE__, __LINE__); \
+}
+
+#define no_agent_assertNonZeroSize(Y) if ((Y).size() == 0) \
+{ \
+throw SoarAssertionException("Assert: Expected container to be non-zero in size.", __FILE__, __LINE__); \
+}
+
+#define no_agent_assertTrue(Y) if (!(Y)) \
+{ \
+throw SoarAssertionException("Assert: Boolean true check failed.", __FILE__, __LINE__); \
+}
+
+#define no_agent_assertTrue_msg(X, Y) if (!(Y)) \
+{ \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
+
+#define no_agent_assertFalse(Y) if (Y) \
+{ \
+throw SoarAssertionException("Assert: Boolean false check failed.", __FILE__, __LINE__); \
+}
+
+#define no_agent_assertFalse_msg(X, Y) if (Y) \
+{ \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
+}
+
+#define no_agent_assertNotNull(Y) if (Y == nullptr) \
+{ \
+throw SoarAssertionException("Assert: Null pointer check failed.", __FILE__, __LINE__); \
+}
+
+#define no_agent_assertNotNull_msg(X, Y) if (Y == nullptr) \
+{ \
+throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
 
 #endif /* TestHelpers_cpp */

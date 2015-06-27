@@ -436,7 +436,11 @@
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
 		4D659A631B39A80000638059 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */; };
+		4D6756D41B3F02F500041365 /* assert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D6756D21B3F02F500041365 /* assert.cpp */; };
+		4D6756D51B3F02F500041365 /* assert.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D6756D31B3F02F500041365 /* assert.hpp */; };
 		4D7335871B3B48A000D2E085 /* WmaFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */; };
+		4D7734BC1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
+		4D7734BD1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
 		4D9868001B30894500B13711 /* testMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867F11B30891B00B13711 /* testMain.cpp */; };
 		4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
 		4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
@@ -463,6 +467,8 @@
 		4DDA9B4A1B3DEE5100AF2764 /* CliParserTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B461B3DED9B00AF2764 /* CliParserTest.cpp */; };
 		4DDA9B4E1B3DF06C00AF2764 /* ElementXMLTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B4B1B3DEFD600AF2764 /* ElementXMLTest.cpp */; };
 		4DDA9B4F1B3DF06D00AF2764 /* ElementXMLTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B4B1B3DEFD600AF2764 /* ElementXMLTest.cpp */; };
+		4DDA9B531B3DF43D00AF2764 /* FullTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */; };
+		4DDA9B541B3DF43E00AF2764 /* FullTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */; };
 		4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */; };
 		4DFF15801B31DB86006CDD34 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
 		4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF15831B3204C5006CDD34 /* AgentTest.cpp */; };
@@ -1009,8 +1015,12 @@
 		4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemEpMemCombinedFunctionalTests.cpp; sourceTree = "<group>"; };
 		4D659A601B39A51500638059 /* SMemEpMemCombinedFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SMemEpMemCombinedFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D659A661B39A91F00638059 /* portable-dirent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "portable-dirent.h"; sourceTree = "<group>"; };
+		4D6756D21B3F02F500041365 /* assert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = assert.cpp; sourceTree = "<group>"; };
+		4D6756D31B3F02F500041365 /* assert.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = assert.hpp; sourceTree = "<group>"; };
 		4D7335841B3B3BEF00D2E085 /* WmaFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WmaFunctionalTests.cpp; sourceTree = "<group>"; };
 		4D7335851B3B3BEF00D2E085 /* WmaFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = WmaFunctionalTests.hpp; sourceTree = "<group>"; };
+		4D7734BA1B3EFC33006FC37C /* handlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handlers.cpp; sourceTree = "<group>"; };
+		4D7734BB1B3EFC33006FC37C /* handlers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handlers.hpp; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1033,6 +1043,11 @@
 		4DDA9B471B3DED9B00AF2764 /* CliParserTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CliParserTest.hpp; sourceTree = "<group>"; };
 		4DDA9B4B1B3DEFD600AF2764 /* ElementXMLTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ElementXMLTest.cpp; sourceTree = "<group>"; };
 		4DDA9B4C1B3DEFD600AF2764 /* ElementXMLTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ElementXMLTest.hpp; sourceTree = "<group>"; };
+		4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FullTests.cpp; sourceTree = "<group>"; };
+		4DDA9B511B3DF22C00AF2764 /* FullTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTests.hpp; sourceTree = "<group>"; };
+		4DDA9B551B3DF9CA00AF2764 /* FullTestsRemote.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsRemote.hpp; sourceTree = "<group>"; };
+		4DDA9B561B3DF9CA00AF2764 /* FullTestsClientThreadFullyOptimized.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsClientThreadFullyOptimized.hpp; sourceTree = "<group>"; };
+		4DDA9B571B3DF9CA00AF2764 /* FullTestsClientThread.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FullTestsClientThread.hpp; sourceTree = "<group>"; };
 		4DFF15751B31D30B006CDD34 /* FunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FunctionalTests.cpp; sourceTree = "<group>"; };
 		4DFF15761B31D30B006CDD34 /* FunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTests.hpp; sourceTree = "<group>"; };
 		4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoarHelper.cpp; sourceTree = "<group>"; };
@@ -1590,6 +1605,8 @@
 				4D5107CD1B2B42D30009AABC /* soar_TraceNames.h */,
 				4D5107CE1B2B42D30009AABC /* soarversion.h */,
 				4D5107CF1B2B42D30009AABC /* tokenizer.h */,
+				4D6756D21B3F02F500041365 /* assert.cpp */,
+				4D6756D31B3F02F500041365 /* assert.hpp */,
 			);
 			name = shared;
 			path = ../../Core/shared;
@@ -1797,6 +1814,13 @@
 				4DDA9B471B3DED9B00AF2764 /* CliParserTest.hpp */,
 				4DDA9B4B1B3DEFD600AF2764 /* ElementXMLTest.cpp */,
 				4DDA9B4C1B3DEFD600AF2764 /* ElementXMLTest.hpp */,
+				4DDA9B501B3DF22C00AF2764 /* FullTests.cpp */,
+				4DDA9B511B3DF22C00AF2764 /* FullTests.hpp */,
+				4DDA9B551B3DF9CA00AF2764 /* FullTestsRemote.hpp */,
+				4DDA9B561B3DF9CA00AF2764 /* FullTestsClientThreadFullyOptimized.hpp */,
+				4DDA9B571B3DF9CA00AF2764 /* FullTestsClientThread.hpp */,
+				4D7734BA1B3EFC33006FC37C /* handlers.cpp */,
+				4D7734BB1B3EFC33006FC37C /* handlers.hpp */,
 			);
 			path = kernel;
 			sourceTree = "<group>";
@@ -1939,6 +1963,7 @@
 				4D5107621B2B42C10009AABC /* ElementXMLInterface.h in Headers */,
 				4D5107C31B2B42C80009AABC /* sml_SystemListener.h in Headers */,
 				4D51074F1B2B42B60009AABC /* thread_Thread.h in Headers */,
+				4D6756D51B3F02F500041365 /* assert.hpp in Headers */,
 				4D5107A81B2B42C80009AABC /* sml_KernelCallback.h in Headers */,
 				4D5107B91B2B42C80009AABC /* sml_RhsFunction.h in Headers */,
 				4D5106A91B2B42AB0009AABC /* sml_ClientDirect.h in Headers */,
@@ -2221,6 +2246,7 @@
 				4D5106781B2B429B0009AABC /* cli_time.cpp in Sources */,
 				4D5108D91B2B42F10009AABC /* cliproxy.cpp in Sources */,
 				4D51079F1B2B42C80009AABC /* sml_AgentSML.cpp in Sources */,
+				4D6756D41B3F02F500041365 /* assert.cpp in Sources */,
 				4D5108F21B2B42F10009AABC /* base_node_filters.cpp in Sources */,
 				4D5106361B2B429B0009AABC /* cli_clog.cpp in Sources */,
 				4D51066E1B2B429B0009AABC /* cli_select.cpp in Sources */,
@@ -2480,6 +2506,8 @@
 				4DFF15781B31D393006CDD34 /* FunctionalTests.cpp in Sources */,
 				4DDA9B4E1B3DF06C00AF2764 /* ElementXMLTest.cpp in Sources */,
 				4D9868001B30894500B13711 /* testMain.cpp in Sources */,
+				4D7734BC1B3EFC33006FC37C /* handlers.cpp in Sources */,
+				4DDA9B541B3DF43E00AF2764 /* FullTests.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2499,6 +2527,8 @@
 				4D07E96B1B3C6B9B00037FFE /* TestRunner.cpp in Sources */,
 				4DD8D95E1B3C57AE0055BD48 /* AgentTest.cpp in Sources */,
 				4DDA9B4A1B3DEE5100AF2764 /* CliParserTest.cpp in Sources */,
+				4DDA9B531B3DF43D00AF2764 /* FullTests.cpp in Sources */,
+				4D7734BD1B3EFC33006FC37C /* handlers.cpp in Sources */,
 				4DD8D95F1B3C57AE0055BD48 /* BasicTests.cpp in Sources */,
 				4DD8D95B1B3C57AE0055BD48 /* FunctionalTestHarness.cpp in Sources */,
 				4DD8D9761B3C5DA40055BD48 /* TestHelpers.cpp in Sources */,

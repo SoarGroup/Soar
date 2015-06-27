@@ -35,5 +35,9 @@ XC_TEST(testEpMemYRemoval)
 XC_TEST(testEpMemSoarGroupTests)
 XC_TEST(testReadCSoarDB)
 XC_TEST(testMultiAgent)
+XC_TEST(testEpMemUnit)
+XC_TEST(testHamiltonian)
+XC_TEST(testSVS)
+XC_TEST(testSVSHard)
 
 @end
