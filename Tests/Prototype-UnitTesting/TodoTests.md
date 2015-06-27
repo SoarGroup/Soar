@@ -104,7 +104,7 @@
 - [x] Port `multiagenttest` to Prototype-UnitTesting
 - [x] Port `smemmathtest` to Prototype-UnitTesting
 - [x] Port `smemtest` to Prototype-UnitTesting
-- [ ] Port `tokenizertest` to Prototype-UnitTesting
+- [x] Port `tokenizertest` to Prototype-UnitTesting
 - [x] Port `handlers` to Prototype-UnitTesting
 
 - [ ] Port 9.5 Tests to Prototype-UnitTesting

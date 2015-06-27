@@ -15,4 +15,5 @@
 #import "kernel/MultiAgentTest.mm"
 #import "kernel/SMemEpMemCombinedFunctionalTests.mm"
 #import "kernel/SMemFunctionalTests.mm"
+#import "kernel/TokenizerTest.mm"
 #import "kernel/wma/WmaFunctionalTests.mm"

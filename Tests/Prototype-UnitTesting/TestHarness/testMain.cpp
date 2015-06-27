@@ -38,6 +38,7 @@
 #include "IOTests.hpp"
 #include "MiscTests.hpp"
 #include "MultiAgentTest.hpp"
+#include "TokenizerTest.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -51,26 +52,27 @@ int main(int argc, char** argv)
 	
 	// DEFINE ALL TESTS HERE
 	
-//	TEST_DECLARATION(AgentTest);
-//	TEST_DECLARATION(BasicTests);
-//	TEST_DECLARATION(FunctionalTests);
-//	TEST_DECLARATION(EpMemFunctionalTests);
-//	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
+	TEST_DECLARATION(AgentTest);
+	TEST_DECLARATION(BasicTests);
+	TEST_DECLARATION(FunctionalTests);
+	TEST_DECLARATION(EpMemFunctionalTests);
+	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
-//	TEST_DECLARATION(WmaFunctionalTests);
-//	TEST_DECLARATION(AliasTest);
-//	TEST_DECLARATION(CliParserTest);
-//	TEST_DECLARATION(ElementXMLTest);
-//	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
-//	TEST_DECLARATION(FullTestsClientThread);
-//	TEST_DECLARATION(FullTests);
+	TEST_DECLARATION(WmaFunctionalTests);
+	TEST_DECLARATION(AliasTest);
+	TEST_DECLARATION(CliParserTest);
+	TEST_DECLARATION(ElementXMLTest);
+	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
+	TEST_DECLARATION(FullTestsClientThread);
+	TEST_DECLARATION(FullTests);
 	
 	// Remote tests haven't been updated for new unit testing yet so they're disabled for now.
 //	TEST_DECLARATION(FullTestsRemote);
-//	
-//	TEST_DECLARATION(IOTests);
-//	TEST_DECLARATION(MiscTests);
-//	TEST_DECLARATION(MultiAgentTest);
+	
+	TEST_DECLARATION(IOTests);
+	TEST_DECLARATION(MiscTests);
+	TEST_DECLARATION(MultiAgentTest);
+	TEST_DECLARATION(TokenizerTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
