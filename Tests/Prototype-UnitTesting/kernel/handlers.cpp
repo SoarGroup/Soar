@@ -12,7 +12,7 @@
 #include "sml_Utils.h"
 #include "thread_Event.h"
 
-#include "handlers.h"
+#include "handlers.hpp"
 #include "misc.h"
 
 void Handlers::MyBoolShutdownHandler(sml::smlSystemEventId, void* pUserData, sml::Kernel*)

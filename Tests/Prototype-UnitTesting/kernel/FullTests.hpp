@@ -28,7 +28,7 @@
 #include "kernel.h"
 #include "soarversion.h"
 
-#include "handlers.h"
+#include "handlers.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>

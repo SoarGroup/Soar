@@ -36,6 +36,7 @@
 #include "FullTestsClientThread.hpp"
 #include "FullTestsRemote.hpp"
 #include "IOTests.hpp"
+#include "MiscTests.hpp"
 
 int main(int argc, char** argv)
 {	
@@ -67,6 +68,7 @@ int main(int argc, char** argv)
 //	TEST_DECLARATION(FullTestsRemote);
 	
 	TEST_DECLARATION(IOTests);
+	TEST_DECLARATION(MiscTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;

@@ -1,0 +1,116 @@
+gp {gp*test1
+(state <s> ^operator <o> +
+           ^someflag [true false])   # some normal values
+(<o> ^name foo
+     ^att [val1 1.3 |another val|])  # a value with a space, in pipes
+-->
+(<s> ^operator <o> = 5)
+}
+
+# same as above but with spaces separating the values from the brackets
+gp {gp*test2
+(state <s> ^operator <o> +
+           ^someflag [ true false ])
+(<o> ^name foo
+     ^att [ val1 1.3 |another val| ])
+-->
+(<s> ^operator <o> = 10)
+}
+
+# some unusual values, each on its own line
+gp {gp*test3
+(state <s> ^operator <o> +
+           ^someflag [ true false ])
+(<o> ^name foo
+     ^att [ 
+	       val1 # a string value
+		   1.3  # a numeric value
+		   |another val[]][[[]]]][|  # a value with spaces and brackets in it
+		   |\|another val\||  # a value with escaped pipes in it
+		  ])       
+-->
+(<s> ^operator <o> = 15)
+}
+
+gp {gp*test4
+(state <s> ^|att 1||val1| [ |another val||another val2| ])  # these are treated as separate values even though not separated by whitespace
+-->
+(<s> ^foo bar)
+}
+
+gp {gp*test5
+(state <s> ^[att1 att2] val)  # works for attributes, too
+-->
+(<s> ^foo bar)
+}
+
+gp {gp*test6
+(state <s> ^[att1 att2 <foo>] val)  # can have variables in the bracket list
+-->
+(<s> ^[att1 att2 <foo>] <foo>)      # can have bracket lists on the RHS too
+}
+
+# can combine with :template rules (e.g., if know some but not all of the values)
+gp {gp*test7
+:template
+(state <s> ^operator <o> +
+           ^someflag [true false])   # some normal values
+(<o> ^name foo
+     ^att <val>)  # this variable will cause additional rules to be generated at runtime
+-->
+(<s> ^operator <o> = 5)
+}
+
+# can put attribute/value pairs in bracket lists if spaces are escaped
+gp {gp*test8
+(state <s> ^foo <f1> ^bar <b1>)
+(<f1> ^[att1\ value1 att2\ value2] <v>)
+-->
+(<s> ^value <v>)
+}
+
+# entire conditions can be used in bracket lists if spaces are escaped
+gp {gp*test9
+(state <s> ^foo <f1> ^bar <b1>)
+[(<f1>\ ^value\ <b1>) (<b1>\ ^value\ <f1>)]
+-->
+[(<f1>\ ^bar\ <b1>) (<b1>\ ^foo\ <f1>)]
+}
+
+# this command generates 540,000 rules
+#gp {gp*test10
+#(state <s> ^operator <o> +
+#           ^someflag [ <var> true false ]
+#           ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>)
+#(<o> ^name foo
+#     ^att [ val1 1.3 |another val| |\|another val\|| ]
+#     ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>])
+#-->
+#(<s> ^[<var> att] <var>)
+#}
+
+#can use with dots
+gp {gp*test11
+(state <s> ^[att1 att2 <foo>].[bar baz qux] val)
+-->
+(<s> ^foo.[att3 att4] foo ^[att5 att6].bar bar)
+}
+
+### Failure cases ###
+
+#gp {gp*fail1
+#(state <s> ^att []) # need at least one value in list
+#-->
+#(<s> ^operator <o> = 5)
+#}
+
+#gp {gp*fail2
+#(state <s> ^[att1 att2][val1 val2]) # need space between value lists
+#-->
+#(<s> ^operator <o> = 5)
+#}
+
+#gp {gp*fail3
+#(state <s> ^foo bar[) # unmatched [
+#-->
+#(<s> ^foo bar)}
