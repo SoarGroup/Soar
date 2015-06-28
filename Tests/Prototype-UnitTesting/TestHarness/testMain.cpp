@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	size_t successCount = 0;
 	size_t testCount = 0;
 	
-	bool failed = false;
+	std::vector<std::string> failedTests;
 	
 	for (TestCategory* category : tests)
 	{
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
 				
-				failed = true;
+				failedTests.push_back(category->getCategoryName() + ": " + std::get<2>(test));
 			}
 			
 			std::mutex mutex;
@@ -163,6 +163,16 @@ int main(int argc, char** argv)
 	
 	std::cout << "Completed " << successCount << "/" << testCount << " successfully. " << testCount - successCount << " failed." << std::endl;
 	std::cout.flush();
+	
+	if (failedTests.size() > 0)
+	{
+		std::cout << "Failed Tests: " << std::endl;
+		
+		for (std::string test : failedTests)
+		{
+			std::cout << test << std::endl;
+		}
+	}
 
 #ifdef _MSC_VER
 	if (IsDebuggerPresent())
@@ -172,7 +182,7 @@ int main(int argc, char** argv)
 	}
 #endif
 	
-	if (failed)
+	if (failedTests.size() > 0)
 		return 1;
 	else
 		return 0;
