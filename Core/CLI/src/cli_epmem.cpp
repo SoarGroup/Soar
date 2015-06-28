@@ -200,7 +200,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
         epmem_attach(thisAgent);
         if (!pAttr)
         {
-            // Print SMem Settings
+            // print episodic memory statistics
             PrintCLIMessage_Header("Episodic Memory Statistics", 40);
             PrintCLIMessage_Item("Time:", thisAgent->epmem_stats->time, 40);
             PrintCLIMessage_Item("SQLite Version:", thisAgent->epmem_stats->db_lib_version, 40);

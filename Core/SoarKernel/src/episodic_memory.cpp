@@ -33,6 +33,8 @@
 #include "xml.h"
 #include "instantiations.h"
 #include "decide.h"
+#include "variablization_manager.h"
+#include "debug.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -155,13 +157,13 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     
     // page_size
     page_size = new soar_module::constant_param<page_choices>("page-size", page_8k, new epmem_db_predicate<page_choices>(thisAgent));
-    page_size->add_mapping(page_1k, "1k");
-    page_size->add_mapping(page_2k, "2k");
-    page_size->add_mapping(page_4k, "4k");
-    page_size->add_mapping(page_8k, "8k");
-    page_size->add_mapping(page_16k, "16k");
-    page_size->add_mapping(page_32k, "32k");
-    page_size->add_mapping(page_64k, "64k");
+    page_size->add_mapping(epmem_param_container::page_1k, "1k");
+    page_size->add_mapping(epmem_param_container::page_2k, "2k");
+    page_size->add_mapping(epmem_param_container::page_4k, "4k");
+    page_size->add_mapping(epmem_param_container::page_8k, "8k");
+    page_size->add_mapping(epmem_param_container::page_16k, "16k");
+    page_size->add_mapping(epmem_param_container::page_32k, "32k");
+    page_size->add_mapping(epmem_param_container::page_64k, "64k");
     add(page_size);
     
     // cache_size
@@ -169,9 +171,9 @@ epmem_param_container::epmem_param_container(agent* new_agent): soar_module::par
     add(cache_size);
     
     // opt
-    opt = new soar_module::constant_param<opt_choices>("optimization", opt_speed, new epmem_db_predicate<opt_choices>(thisAgent));
-    opt->add_mapping(opt_safety, "safety");
-    opt->add_mapping(opt_speed, "performance");
+    opt = new soar_module::constant_param<opt_choices>("optimization", epmem_param_container::opt_speed, new epmem_db_predicate<opt_choices>(thisAgent));
+    opt->add_mapping(epmem_param_container::opt_safety, "safety");
+    opt->add_mapping(epmem_param_container::opt_speed, "performance");
     add(opt);
     
     
@@ -369,6 +371,11 @@ inline void epmem_reverse_hash_str(agent* thisAgent, epmem_hash_id s_id_lookup, 
     sql_hash_rev_str->bind_int(1, s_id_lookup);
     res = sql_hash_rev_str->execute();
     (void)res; // quells compiler warning
+    if (res != soar_module::row)
+    {
+        dprint(DT_DEBUG,  "epmem_reverse_hash_str crashing on s_id %i\n", s_id_lookup);
+        epmem_close(thisAgent);
+    }
     assert(res == soar_module::row);
     dest.assign(sql_hash_rev_str->column_text(0));
     sql_hash_rev_str->reinitialize();
@@ -495,7 +502,7 @@ inline void epmem_reverse_hash_print(agent* thisAgent, epmem_hash_id s_id_lookup
 
 ************************************************************************** */
 
-epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail = true)
+epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail)
 {
     epmem_hash_id return_val = NIL;
     
@@ -1348,7 +1355,9 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
         // such as to potentially produce justifications that can follow
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
-        chunk_instantiation(thisAgent, inst, false, &my_justification_list);
+        dprint(DT_MILESTONES, "Calling chunk instantiation from _epem_process_buffered_wme_list...\n");
+        thisAgent->variablizationManager->set_learning_for_instantiation(inst);
+        chunk_instantiation(thisAgent, inst, &my_justification_list);
         
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)
@@ -3966,7 +3975,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
     cue_wmes.insert(cue_wme);
     Symbol* value = cue_wme->value;
     epmem_literal* literal;
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_literal_pool), &literal);
+    thisAgent->memoryManager->allocate_with_pool(MP_epmem_literal, &literal);
     new(&(literal->parents)) epmem_literal_set();
     new(&(literal->children)) epmem_literal_set();
     
@@ -3995,7 +4004,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
             thisAgent->epmem_stmts_graph->find_lti->reinitialize();
             literal->parents.~epmem_literal_set();
             literal->children.~epmem_literal_set();
-            free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+            thisAgent->memoryManager->free_with_pool(MP_epmem_literal, literal);
             return NULL;
         }
     }
@@ -4042,7 +4051,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
             {
                 literal->parents.~epmem_literal_set();
                 literal->children.~epmem_literal_set();
-                free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+                thisAgent->memoryManager->free_with_pool(MP_epmem_literal, literal);
                 return NULL;
             }
             literal->is_leaf = false;
@@ -4121,7 +4130,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
         }
         if (pedge_sql->execute() == soar_module::row)
         {
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_pedge_pool), &child_pedge);
+            thisAgent->memoryManager->allocate_with_pool(MP_epmem_pedge, &child_pedge);
             child_pedge->triple = triple;
             child_pedge->value_is_id = literal->value_is_id;
             child_pedge->sql = pedge_sql;
@@ -4566,7 +4575,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
     
     // variables needed for building the DNF
     epmem_literal* root_literal;
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_literal_pool), &root_literal);
+    thisAgent->memoryManager->allocate_with_pool(MP_epmem_literal, &root_literal);
     epmem_literal_set leaf_literals;
     
     // priority queues for interval walk
@@ -4687,7 +4696,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             // we make an SQL statement just so we don't have to do anything special at cleanup
             epmem_triple triple = {EPMEM_NODEID_BAD, EPMEM_NODEID_BAD, EPMEM_NODEID_ROOT};
             epmem_pedge* root_pedge;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_pedge_pool), &root_pedge);
+            thisAgent->memoryManager->allocate_with_pool(MP_epmem_pedge, &root_pedge);
             root_pedge->triple = triple;
             root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
             new(&(root_pedge->literals)) epmem_literal_set();
@@ -4701,7 +4710,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
             
             epmem_uedge* root_uedge;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_uedge_pool), &root_uedge);
+            thisAgent->memoryManager->allocate_with_pool(MP_epmem_uedge, &root_uedge);
             root_uedge->triple = triple;
             root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
             root_uedge->activation_count = 0;
@@ -4711,7 +4720,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             uedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_uedge;
             
             epmem_interval* root_interval;
-            allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &root_interval);
+            thisAgent->memoryManager->allocate_with_pool(MP_epmem_interval, &root_interval);
             root_interval->uedge = root_uedge;
             root_interval->is_end_point = true;
             root_interval->sql = thisAgent->epmem_stmts_graph->pool_dummy->request();
@@ -4777,7 +4786,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                 {
                     // create a uedge for this
                     epmem_uedge* uedge;
-                    allocate_with_pool(thisAgent, &(thisAgent->epmem_uedge_pool), &uedge);
+                    thisAgent->memoryManager->allocate_with_pool(MP_epmem_uedge, &uedge);
                     uedge->triple = triple;
                     uedge->value_is_id = pedge->value_is_id;
                     uedge->activation_count = 0;
@@ -4855,13 +4864,14 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                             interval_sql->bind_int(bind_pos++, edge_id);
                             if (is_lti && interval_type == EPMEM_RANGE_EP)
                             {
+                                // find the promotion time of the LTI, and use that as an after constraint
                                 interval_sql->bind_int(bind_pos++, promo_time);
                             }
                             interval_sql->bind_int(bind_pos++, current_episode);
                             if (interval_sql->execute() == soar_module::row)
                             {
                                 epmem_interval* interval;
-                                allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &interval);
+                                thisAgent->memoryManager->allocate_with_pool(MP_epmem_interval, &interval);
                                 interval->is_end_point = point_type;
                                 interval->uedge = uedge;
                                 // If it's an start point of a range (ie. not a point) and it's before the promo time
@@ -4893,7 +4903,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                         {
                             // insert a dummy promo time start for LTIs
                             epmem_interval* start_interval;
-                            allocate_with_pool(thisAgent, &(thisAgent->epmem_interval_pool), &start_interval);
+                            thisAgent->memoryManager->allocate_with_pool(MP_epmem_interval, &start_interval);
                             start_interval->uedge = uedge;
                             start_interval->is_end_point = EPMEM_RANGE_START;
                             start_interval->time = promo_time - 1;
@@ -4907,7 +4917,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     else
                     {
                         uedge->pedges.~epmem_pedge_set();
-                        free_with_pool(&(thisAgent->epmem_uedge_pool), uedge);
+                        thisAgent->memoryManager->free_with_pool(MP_epmem_uedge, uedge);
                     }
                 }
                 else
@@ -5004,7 +5014,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                         if (uedge->intervals)
                         {
                             interval_cleanup.erase(interval);
-                            free_with_pool(&(thisAgent->epmem_interval_pool), interval);
+                            thisAgent->memoryManager->free_with_pool(MP_epmem_interval, interval);
                         }
                         else
                         {
@@ -5209,7 +5219,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
         {
             interval->sql->get_pool()->release(interval->sql);
         }
-        free_with_pool(&(thisAgent->epmem_interval_pool), interval);
+        thisAgent->memoryManager->free_with_pool(MP_epmem_interval, interval);
     }
     for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++)
     {
@@ -5221,13 +5231,13 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                 pedge->sql->get_pool()->release(pedge->sql);
             }
             pedge->literals.~epmem_literal_set();
-            free_with_pool(&(thisAgent->epmem_pedge_pool), pedge);
+            thisAgent->memoryManager->free_with_pool(MP_epmem_pedge, pedge);
         }
         for (epmem_triple_uedge_map::iterator iter = uedge_caches[type].begin(); iter != uedge_caches[type].end(); iter++)
         {
             epmem_uedge* uedge = (*iter).second;
             uedge->pedges.~epmem_pedge_set();
-            free_with_pool(&(thisAgent->epmem_uedge_pool), uedge);
+            thisAgent->memoryManager->free_with_pool(MP_epmem_uedge, uedge);
         }
     }
     for (epmem_wme_literal_map::iterator iter = literal_cache.begin(); iter != literal_cache.end(); iter++)
@@ -5237,7 +5247,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
         literal->children.~epmem_literal_set();
         literal->matches.~epmem_node_pair_set();
         literal->values.~epmem_node_int_map();
-        free_with_pool(&(thisAgent->epmem_literal_pool), literal);
+        thisAgent->memoryManager->free_with_pool(MP_epmem_literal, literal);
     }
     thisAgent->epmem_timers->query_cleanup->stop();
     
@@ -5898,14 +5908,16 @@ void epmem_respond_to_cmd(agent* thisAgent)
     bool new_cue;
     
     bool do_wm_phase = false;
+    dprint_header(DT_EPMEM_CMD, PrintBefore, "Starting epmem_respond_to_cmd\n");
     
     while (state != NULL)
     {
+        dprint(DT_EPMEM_CMD, "=== Processing state %y\n", state);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
-        
         // make sure this state has had some sort of change to the cmd
+        dprint(DT_EPMEM_CMD, "--- Checking for a change to a command...\n");
         new_cue = false;
         wme_count = 0;
         cmds = NULL;
@@ -5923,6 +5935,8 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 parent_sym = syms.front();
                 syms.pop();
                 
+                dprint(DT_EPMEM_CMD, "--- ...checking sym.%y\n", parent_sym);
+
                 // get children of the current identifier
                 wmes = epmem_get_augs_of_id(parent_sym, tc);
                 {
@@ -5974,6 +5988,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
         // and there is something on the cue
         if (new_cue && wme_count)
         {
+            dprint(DT_EPMEM_CMD, "--- Processing new epmem command...\n");
             _epmem_respond_to_cmd_parse(thisAgent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes);
             
             ////////////////////////////////////////////////////////////////////////////
@@ -5986,9 +6001,11 @@ void epmem_respond_to_cmd(agent* thisAgent)
             // process command
             if (good_cue)
             {
+                dprint(DT_EPMEM_CMD, "--- ...good cue.\n");
                 // retrieve
                 if (path == 1)
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...retrieve command.  Installing memory.\n");
                     epmem_install_memory(thisAgent, state, retrieve, meta_wmes, retrieval_wmes);
                     
                     // add one to the ncbr stat
@@ -5999,6 +6016,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 {
                     if (next)
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...next command.  Installing memory.\n");
                         epmem_install_memory(thisAgent, state, epmem_next_episode(thisAgent, state->id->epmem_info->last_memory), meta_wmes, retrieval_wmes);
                         
                         // add one to the next stat
@@ -6006,6 +6024,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                     }
                     else
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...previous command.  Installing memory.\n");
                         epmem_install_memory(thisAgent, state, epmem_previous_episode(thisAgent, state->id->epmem_info->last_memory), meta_wmes, retrieval_wmes);
                         
                         // add one to the prev stat
@@ -6014,16 +6033,19 @@ void epmem_respond_to_cmd(agent* thisAgent)
                     
                     if (state->id->epmem_info->last_memory == EPMEM_MEMID_NONE)
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...adding failure result wmes.\n");
                         epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_failure, ((next) ? (next) : (previous)));
                     }
                     else
                     {
+                        dprint(DT_EPMEM_CMD, "--- ...adding success result wmes.\n");
                         epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_success, ((next) ? (next) : (previous)));
                     }
                 }
                 // query
                 else if (path == 3)
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...query command.  Processing.\n");
                     epmem_process_query(thisAgent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes);
                     
                     // add one to the cbr stat
@@ -6032,19 +6054,23 @@ void epmem_respond_to_cmd(agent* thisAgent)
             }
             else
             {
+                dprint(DT_EPMEM_CMD, "--- ...adding bad command result wmes.\n");
                 epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_status, thisAgent->epmem_sym_bad_cmd);
             }
             
             // clear prohibit list
+            dprint(DT_EPMEM_CMD, "--- ...clearing prohibit list.\n");
             prohibit.clear();
             
             if (!retrieval_wmes.empty() || !meta_wmes.empty())
             {
+                dprint(DT_EPMEM_CMD, "--- ...adding retrieved and architectural wmes.\n");
                 // process preference assertion en masse
                 epmem_process_buffered_wmes(thisAgent, state, cue_wmes, meta_wmes, retrieval_wmes);
                 
                 // clear cache
                 {
+                    dprint(DT_EPMEM_CMD, "--- ...clearing buffer cache.\n");
                     soar_module::symbol_triple_list::iterator mw_it;
                     
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
@@ -6074,6 +6100,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             
             // clear cue wmes
             cue_wmes.clear();
+            dprint(DT_EPMEM_CMD, "--- ...done processing epmem command.\n");
         }
         else
         {
@@ -6088,21 +6115,27 @@ void epmem_respond_to_cmd(agent* thisAgent)
             delete cmds;
         }
         
+        dprint(DT_EPMEM_CMD, "=== Done processing state %y.  Proceeding to next goal up.\n", state);
+
         state = state->id->higher_goal;
     }
     
+    dprint(DT_EPMEM_CMD, "=== Checking if we need to do working memory phase...\n");
     if (do_wm_phase)
     {
+        dprint(DT_EPMEM_CMD, "=== ...doing working memory phase.\n");
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->wm_phase->start();
         ////////////////////////////////////////////////////////////////////////////
         
         do_working_memory_phase(thisAgent);
         
+        dprint(DT_EPMEM_CMD, "=== ...finished working memory phase.\n");
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->epmem_timers->wm_phase->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
+    dprint_header(DT_EPMEM_CMD, PrintAfter, "Done excuting epmem_respond_to_cmd\n");
 }
 
 /***************************************************************************

@@ -48,8 +48,12 @@
 
 #include "episodic_memory.h"
 #include "semantic_memory.h"
+#ifndef NO_SVS
 #include "svs_interface.h"
+#endif
 #include "test.h"
+#include "variablization_manager.h"
+#include "debug.h"
 
 #include "assert.h"
 
@@ -63,9 +67,6 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 #else
 typedef std::list< Symbol* > symbol_list;
 #endif
-
-
-/* REW: 2003-01-06 A temporary helper function */
 
 void print_candidates(agent* thisAgent, preference* candidates)
 {
@@ -159,7 +160,7 @@ void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* 
     {
         return;
     }
-    allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+    thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
     dc->item = s;
     s->acceptable_preference_changed = dc;
     insert_at_head_of_dll(thisAgent->context_slots_with_changed_acceptable_preferences, dc,
@@ -273,7 +274,7 @@ void do_buffered_acceptable_preference_wme_changes(agent* thisAgent)
         dc = thisAgent->context_slots_with_changed_acceptable_preferences;
         thisAgent->context_slots_with_changed_acceptable_preferences = dc->next;
         s = static_cast<slot_struct*>(dc->item);
-        free_with_pool(&thisAgent->dl_cons_pool, dc);
+        thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         do_acceptable_preference_wme_changes_for_slot(thisAgent, s);
         s->acceptable_preference_changed = NIL;
     }
@@ -531,7 +532,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
         else
         {
             symbol_add_ref(thisAgent, to);
-            allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+            thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = to;
             to->id->unknown_level = dc;
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
@@ -549,7 +550,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
     if (! to->id->unknown_level)
     {
         symbol_add_ref(thisAgent, to);
-        allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = to;
         to->id->unknown_level = dc;
         insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
@@ -683,7 +684,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         /* --- add id to the set of ids with unknown level --- */
         if (! id->id->unknown_level)
         {
-            allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+            thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = id;
             id->id->unknown_level = dc;
             insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
@@ -784,7 +785,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         {
             dc = id->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             symbol_remove_ref(thisAgent, id);
             id->id->unknown_level = NIL;
             id->id->level = thisAgent->walk_level;
@@ -866,7 +867,7 @@ void do_demotion(agent* thisAgent)
         dc = thisAgent->disconnected_ids;
         thisAgent->disconnected_ids = thisAgent->disconnected_ids->next;
         id = static_cast<symbol_struct*>(dc->item);
-        free_with_pool(&thisAgent->dl_cons_pool, dc);
+        thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
         symbol_remove_ref(thisAgent, id);
@@ -920,7 +921,7 @@ void do_demotion(agent* thisAgent)
         thisAgent->ids_with_unknown_level =
             thisAgent->ids_with_unknown_level->next;
         id = static_cast<symbol_struct*>(dc->item);
-        free_with_pool(&thisAgent->dl_cons_pool, dc);
+        thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */
         garbage_collect_id(thisAgent, id);
@@ -1082,8 +1083,8 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
                 {
                     if (cand->value == w->id)
                     {
-                        const std::string attr = symbol_to_string(thisAgent, w->attr, false, NIL, 0);
-                        const std::string value = symbol_to_string(thisAgent, w->value, false, NIL, 0);
+                        const std::string attr = w->attr->to_string();
+                        const std::string value = w->value->to_string();
 //             std::cerr << "rl-trace: ^" << attr << ' ' << value << std::endl;
 
                         if (attr == "name")
@@ -2109,10 +2110,27 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
+
+    /* --- make the fake instantiation --- */
+    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
+    inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
+
+    /* --- make the fake condition --- */
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
+    init_condition(cond);
+    cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
+    cond->data.tests.id_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
+    cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
+    cond->data.tests.value_test->identity = thisAgent->variablizationManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
+
     /* --- make the fake preference --- */
-    /* kjc:  here's where we changed REQUIRE to ACCEPTABLE */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
-                           cand->value, NIL);
+                           cand->value, NIL,
+                           soar_module::identity_triple(
+                               thisAgent->variablizationManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
+                               0,
+                               cond->data.tests.value_test->identity));
     symbol_add_ref(thisAgent, pref->id);
     symbol_add_ref(thisAgent, pref->attr);
     symbol_add_ref(thisAgent, pref->value);
@@ -2120,10 +2138,11 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
                           all_of_goal_next, all_of_goal_prev);
     pref->on_goal_list = true;
     preference_add_ref(pref);
-    /* --- make the fake instantiation --- */
-    allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &inst);
+
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NIL;
+
+    /* -- Fill in the fake instantiation info -- */
     inst->preferences_generated = pref;
     inst->prod = NIL;
     inst->next = inst->prev = NIL;
@@ -2134,16 +2153,12 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
-    /* --- make the fake condition --- */
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
+
+    /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
-    cond->next = cond->prev = NIL;
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
-    inst->nots = NIL;
-    cond->data.tests.id_test = make_equality_test(ap_wme->id);
-    cond->data.tests.attr_test = make_equality_test(ap_wme->attr);
-    cond->data.tests.value_test = make_equality_test(ap_wme->value);
+
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;
 #ifdef DO_TOP_LEVEL_REF_CTS
@@ -2155,8 +2170,6 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     }
 #endif
     cond->bt.level = ap_wme->id->id->level;
-    cond->bt.trace = NIL;
-    cond->bt.CDPS = NIL;
     
     /* --- return the fake preference --- */
     return pref;
@@ -2397,6 +2410,15 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
                     continue;
                 }
+                else
+                {
+                    dprint_noprefix(DT_GDS, "\n");
+                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
+                           cand, cand->id->id->level, cand->inst->match_goal_level);
+                    dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
+                }
+//                dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
+//                dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;
@@ -2413,7 +2435,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         if (s->wma_val_references->empty())
                         {
                             s->wma_val_references->~wma_sym_reference_map();
-                            free_with_pool(&(thisAgent->wma_slot_refs_pool), s->wma_val_references);
+                            thisAgent->memoryManager->free_with_pool(MP_wma_slot_refs, s->wma_val_references);
                             s->wma_val_references = NIL;
                         }
                     }
@@ -2446,10 +2468,17 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
+                    dprint(DT_GDS, "Checking GDS necessary for wme %w: %s (level = %d)\n", w,
+                           (w->preference->o_supported ? ":o-support" : ":i-support"),
+                           w->preference->id->id->level);
+                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
+                    dprint(DT_GDS, "%7", w->preference->inst);
+
                     if (w->preference->inst->match_goal->id->gds == NIL)
                     {
                         /* If there is no GDS yet for this goal,
                          * then we need to create one */
+                        dprint(DT_GDS, "Creating new GDS for match goal...\n");
                         if (w->preference->inst->match_goal_level == w->preference->id->id->level)
                         {
                             /*
@@ -2519,7 +2548,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         {
 #ifdef DEBUG_GDS_HIGH
                             print(thisAgent, "\n\n   ");
-                            print_preference(thisAgent, pref);
+                            print_preference(pref);
                             print(thisAgent, "   Goal level of preference: %d\n",
                                   pref->id->id->level);
 #endif
@@ -2624,15 +2653,19 @@ void decide_non_context_slots(agent* thisAgent)
     dl_cons* dc;
     slot* s;
     
+    dprint(DT_EPMEM_CMD, "Deciding non-context slots.\n");
     while (thisAgent->changed_slots)
     {
         dc = thisAgent->changed_slots;
         thisAgent->changed_slots = thisAgent->changed_slots->next;
         s = static_cast<slot_struct*>(dc->item);
+        dprint(DT_EPMEM_CMD, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         decide_non_context_slot(thisAgent, s);
         s->changed = NIL;
-        free_with_pool(&thisAgent->dl_cons_pool, dc);
+        dprint(DT_EPMEM_CMD, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
     }
+    dprint(DT_EPMEM_CMD, "Done deciding non-context slots.\n");
 }
 
 /* ------------------------------------------------------------------
@@ -2821,28 +2854,29 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     }
     
     goal->id->rl_info->eligibility_traces->~rl_et_map();
-    free_with_pool(&(thisAgent->rl_et_pool), goal->id->rl_info->eligibility_traces);
+    thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
     goal->id->rl_info->prev_op_rl_rules->~rl_rule_list();
-    free_with_pool(&(thisAgent->rl_rule_pool), goal->id->rl_info->prev_op_rl_rules);
+    thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
     symbol_remove_ref(thisAgent, goal->id->reward_header);
-    free_with_pool(&(thisAgent->rl_info_pool), goal->id->rl_info);
+    thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
     
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
-    free_with_pool(&(thisAgent->epmem_wmes_pool), goal->id->epmem_info->epmem_wmes);
+    thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
     symbol_remove_ref(thisAgent, goal->id->epmem_cmd_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_result_header);
     symbol_remove_ref(thisAgent, goal->id->epmem_header);
-    free_with_pool(&(thisAgent->epmem_info_pool), goal->id->epmem_info);
+    thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
     
     goal->id->smem_info->smem_wmes->~smem_wme_stack();
-    free_with_pool(&(thisAgent->smem_wmes_pool), goal->id->smem_info->smem_wmes);
+    thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
     symbol_remove_ref(thisAgent, goal->id->smem_cmd_header);
     symbol_remove_ref(thisAgent, goal->id->smem_result_header);
     symbol_remove_ref(thisAgent, goal->id->smem_header);
-    free_with_pool(&(thisAgent->smem_info_pool), goal->id->smem_info);
+    thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
     
+#ifndef NO_SVS
     thisAgent->svs->state_deletion_callback(goal);
-    
+#endif
     /* REW: BUG
      * Tentative assertions can exist for removed goals.  However, it looks
      * like the removal forces a tentative retraction, which then leads to
@@ -2926,42 +2960,43 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->operator_slot = make_slot(thisAgent, id, thisAgent->operator_symbol);
     id->id->allow_bottom_up_chunks = true;
     
-    allocate_with_pool(thisAgent, &(thisAgent->rl_info_pool), &(id->id->rl_info));
+    thisAgent->memoryManager->allocate_with_pool(MP_rl_info, &(id->id->rl_info));
     id->id->rl_info->previous_q = 0;
     id->id->rl_info->reward = 0;
+    id->id->rl_info->rho = 1.0;
     id->id->rl_info->gap_age = 0;
     id->id->rl_info->hrl_age = 0;
-    allocate_with_pool(thisAgent, &(thisAgent->rl_et_pool), &(id->id->rl_info->eligibility_traces));
+    thisAgent->memoryManager->allocate_with_pool(MP_rl_et, &(id->id->rl_info->eligibility_traces));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map(std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >(thisAgent));
 #else
     id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map();
 #endif
-    allocate_with_pool(thisAgent, &(thisAgent->rl_rule_pool), &(id->id->rl_info->prev_op_rl_rules));
+    thisAgent->memoryManager->allocate_with_pool(MP_rl_rule, &(id->id->rl_info->prev_op_rl_rules));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) rl_rule_list(soar_module::soar_memory_pool_allocator< production* >(thisAgent));
 #else
     id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) rl_rule_list();
 #endif
     
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_info_pool), &(id->id->epmem_info));
+    thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(id->id->epmem_info));
     id->id->epmem_info->last_ol_time = 0;
     id->id->epmem_info->last_cmd_time = 0;
     id->id->epmem_info->last_cmd_count = 0;
     id->id->epmem_info->last_memory = EPMEM_MEMID_NONE;
-    allocate_with_pool(thisAgent, &(thisAgent->epmem_wmes_pool), &(id->id->epmem_info->epmem_wmes));
+    thisAgent->memoryManager->allocate_with_pool(MP_epmem_wmes, &(id->id->epmem_info->epmem_wmes));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
 #else
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack();
 #endif
     
-    allocate_with_pool(thisAgent, &(thisAgent->smem_info_pool), &(id->id->smem_info));
+    thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(id->id->smem_info));
     id->id->smem_info->last_cmd_time[0] = 0;
     id->id->smem_info->last_cmd_time[1] = 0;
     id->id->smem_info->last_cmd_count[0] = 0;
     id->id->smem_info->last_cmd_count[1] = 0;
-    allocate_with_pool(thisAgent, &(thisAgent->smem_wmes_pool), &(id->id->smem_info->smem_wmes));
+    thisAgent->memoryManager->allocate_with_pool(MP_smem_wmes, &(id->id->smem_info->smem_wmes));
 #ifdef USE_MEM_POOL_ALLOCATORS
     id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) smem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
 #else
@@ -2973,7 +3008,9 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
                           CREATE_NEW_CONTEXT_CALLBACK,
                           static_cast<soar_call_data>(id));
                           
+#ifndef NO_SVS
     thisAgent->svs->state_creation_callback(id);
+#endif
 }
 
 /* ------------------------------------------------------------------
@@ -3352,10 +3389,9 @@ void decide_context_slots(agent* thisAgent, bool predict = false)
 
 void init_decider(agent* thisAgent)
 {
-    init_memory_pool(thisAgent, &thisAgent->slot_pool, sizeof(slot), "slot");
-    init_memory_pool(thisAgent, &thisAgent->wme_pool, sizeof(wme), "wme");
-    init_memory_pool(thisAgent, &thisAgent->preference_pool,
-                     sizeof(preference), "preference");
+    thisAgent->memoryManager->init_memory_pool(MP_slot, sizeof(slot), "slot");
+    thisAgent->memoryManager->init_memory_pool(MP_wme, sizeof(wme), "wme");
+    thisAgent->memoryManager->init_memory_pool(MP_preference, sizeof(preference), "preference");
 }
 
 void do_buffered_wm_and_ownership_changes(agent* thisAgent)
@@ -3441,25 +3477,11 @@ void clear_goal_stack(agent* thisAgent)
 void print_lowest_slot_in_context_stack(agent* thisAgent)
 {
 
-    /* REW: begin 10.24.97 */
-    /* This doesn't work yet so for now just print the last selection */
-    /*  if (thisAgent->waitsnc &&
-    *   thisAgent->waitsnc_detect) {
-    * thisAgent->waitsnc_detect = false;
-    * print_stack_trace (thisAgent->wait_symbol,
-    *                    thisAgent->bottom_goal, FOR_OPERATORS_TF, true);
-    * print(thisAgent, "\n waiting");
-    * return;
-    *  }
-    */
-    /* REW: end   10.24.97 */
-    
     if (thisAgent->bottom_goal->id->operator_slot->wmes)
+    {
         print_stack_trace(thisAgent, thisAgent->bottom_goal->id->operator_slot->wmes->value,
                           thisAgent->bottom_goal, FOR_OPERATORS_TF, true);
                           
-                          
-    /* RCHONG: begin 10.11 */
     /*
     this coded is needed just so that when an ONC is created in OPERAND
     (i.e. if the previous goal's operator slot is not empty), it's stack
@@ -3467,6 +3489,7 @@ void print_lowest_slot_in_context_stack(agent* thisAgent)
     ONCs are detected for "free".
     */
     
+    }
     else
     {
     
@@ -3490,15 +3513,7 @@ void print_lowest_slot_in_context_stack(agent* thisAgent)
             }
         }
     }
-    
-    /* RCHONG: end 10.11 */
-    
 }
-
-
-
-
-/* REW: begin 09.15.96 */
 
 void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 {
@@ -3544,24 +3559,24 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 /* JC ADDED:  Added this function to make one place for wme's being added to
  *   the GDS.  Callback for wme added to GDS is made here.
  */
-void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
+void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
 {
     /* Set the correct GDS for this wme (wme's point to their gds) */
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
     
-    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(agentPtr, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
-        print_string(agentPtr, msgbuf);
+        snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
+        print_string(thisAgent,  msgbuf);
         
-        xml_begin_tag(agentPtr, kTagVerbose);
-        xml_att_val(agentPtr, kTypeString, msgbuf);
-        print_wme(agentPtr, wme_to_add); // prints XML, too
-        xml_end_tag(agentPtr, kTagVerbose);
+        xml_begin_tag(thisAgent, kTagVerbose);
+        xml_att_val(thisAgent, kTypeString, msgbuf);
+        print_wme(thisAgent, wme_to_add); // prints XML, too
+        xml_end_tag(thisAgent, kTagVerbose);
     }
 }
 
@@ -3661,7 +3676,7 @@ void elaborate_gds(agent* thisAgent)
                             {
                                 wme_matching_this_cond->gds->goal->id->gds = NIL;
                             }
-                            free_with_pool(&(thisAgent->gds_pool), wme_matching_this_cond->gds);
+                            thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
                             
 #ifdef DEBUG_GDS
                             print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
@@ -3705,7 +3720,7 @@ void elaborate_gds(agent* thisAgent)
                             {
                                 wme_matching_this_cond->gds->goal->id->gds = NIL;
                             }
-                            free_with_pool(&(thisAgent->gds_pool), wme_matching_this_cond->gds);
+                            thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
                             
 #ifdef DEBUG_GDS
                             print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
@@ -3830,7 +3845,7 @@ void elaborate_gds(agent* thisAgent)
                                             {
                                                 fake_inst_wme_cond->gds->goal->id->gds = NIL;
                                             }
-                                            free_with_pool(&(thisAgent->gds_pool), fake_inst_wme_cond->gds);
+                                            thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
                                             
 #ifdef DEBUG_GDS
                                             print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
@@ -3871,7 +3886,7 @@ void elaborate_gds(agent* thisAgent)
                                             {
                                                 fake_inst_wme_cond->gds->goal->id->gds = NIL;
                                             }
-                                            free_with_pool(&(thisAgent->gds_pool), fake_inst_wme_cond->gds);
+                                            thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
                                             
 #ifdef DEBUG_GDS
                                             print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
@@ -4181,7 +4196,7 @@ void create_gds_for_goal(agent* thisAgent, Symbol* goal)
 {
     goal_dependency_set* gds;
     
-    allocate_with_pool(thisAgent, &(thisAgent->gds_pool), &gds);
+    thisAgent->memoryManager->allocate_with_pool(MP_gds, &gds);
     
     gds->goal = goal;
     gds->wmes_in_gds = NIL;

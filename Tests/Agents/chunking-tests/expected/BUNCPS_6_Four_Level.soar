@@ -1,0 +1,20 @@
+sp {answer*chunk-multi*make-chunk-apply-level3*snc*t4-2
+    (state <s1> ^superstate nil)
+    (<s1> ^attr2 <c3>)
+    (<s1> ^attr1 <c2>)
+    (<s1> ^attr1 <c1>)
+    -->
+    (<s1> ^top-resulta level3 +)
+    (<s1> ^top-resultb <c3> +)
+}
+
+sp {answer*chunk*make-chunk-apply-level3*snc*t4-1
+    (state <s1> ^superstate <s2>)
+    (<s2> ^superstate nil)
+    (<s2> ^attr2 <c1>)
+    (<s2> ^attr1 <c3>)
+    (<s2> ^attr1 <c2>)
+    -->
+    (<s2> ^top-resulta level3 +)
+    (<s2> ^top-resultb <c1> +)
+}

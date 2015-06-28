@@ -27,6 +27,8 @@
 #include "decide.h"
 #include "test.h"
 #include "tempmem.h"
+#include "variablization_manager.h"
+#include "debug.h"
 
 #include <list>
 #include <map>
@@ -167,11 +169,8 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 
 //
 
-/*This is a test of whether or not the SMEM database with no version number is the one
-that smem_update_schema_one_to_two can convert
-
-It tests for the existence of a table name to determine if this is the old version.
--scijones 2013*/
+/* This is a test of whether or not the SMEM database with no version number is the one
+that smem_update_schema_one_to_two can convert.  It tests for the existence of a table name to determine if this is the old version. */
 inline bool smem_version_one(agent* thisAgent)
 {
     double check_num_tables;
@@ -187,16 +186,9 @@ smem_path_param::smem_path_param(const char* new_name, const char* new_value, so
 
 void smem_path_param::set_value(const char* new_value)
 {
-    /* Removed automatic switching to disk database mode when first setting path.  Now
-       that switching databases and database modes on the fly seems to work, there's
-       no need to attach special significance to the first time the path is set.
-       MMA 2013 */
-    
-    /* So, as it turns out, the first time you set the path, it is nice to check that
-       the database is the right version, so you can warn someone before they try to
-       use it that conversion will take some time. That way, they can then switch to
-       another before dedicating that time.
-       scijones 2014*/
+    /* The first time path is set, we check that the the database is the right version,
+     * so you can warn someone before they try to use it that conversion will take some
+     * time. That way, they can then switch to another before dedicating that time. */
     value->assign(new_value);
     
     const char* db_path;
@@ -772,7 +764,6 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
     }
     
     instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
-    
     for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
     {
         // add the preference to temporary memory
@@ -797,7 +788,9 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
         // such as to potentially produce justifications that can follow
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
-        chunk_instantiation(thisAgent, inst, false, &my_justification_list);
+        dprint(DT_MILESTONES, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
+        thisAgent->variablizationManager->set_learning_for_instantiation(inst);
+        chunk_instantiation(thisAgent, inst, &my_justification_list);
         
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)
@@ -1327,31 +1320,27 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-// copied primarily from add_bound_variables_in_test
 void _smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
 {
-    if (test_is_blank_test(t))
+    if (!t)
     {
         return;
     }
     
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        Symbol* referent = referent_of_equality_test(t);
-        if ((referent->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (referent->id->smem_lti != NIL))
+        if ((t->data.referent->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (t->data.referent->id->smem_lti != NIL))
         {
-            valid_ltis->insert(referent);
+            valid_ltis->insert(t->data.referent);
         }
         
         return;
     }
     
     {
-        complex_test* ct = complex_test_from_test(t);
-        
-        if (ct->type == CONJUNCTIVE_TEST)
+        if (t->type == CONJUNCTIVE_TEST)
         {
-            for (cons* c = ct->data.conjunct_list; c != NIL; c = c->rest)
+            for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 _smem_lti_from_test(static_cast<test>(c->first), valid_ltis);
             }
@@ -1399,7 +1388,6 @@ bool smem_valid_production(condition* lhs_top, action* rhs_top)
     }
     
     // validate ltis in actions
-    // copied primarily from add_all_variables_in_action
     {
         Symbol* id;
         action* a;
@@ -2148,9 +2136,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // prematurely)
         symbol_remove_ref(thisAgent, lti);
     }
-    
+
     bool triggered = false;
-    
+
     // if no children, then retrieve children
     // merge may override this behavior
     if (((thisAgent->smem_params->merge->get_value() == smem_param_container::merge_add) ||
@@ -2158,14 +2146,14 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
              (lti->id->input_wmes == NIL) &&
              (lti->id->slots == NIL)))
             || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
-            
+
     {
         if (visited == NULL)
         {
             triggered = true;
             visited = new std::set<smem_lti_id>;
         }
-        
+
         soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
@@ -2216,7 +2204,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             }
         }
     }
-    
+
     if (triggered)
     {
         delete visited;
@@ -2678,7 +2666,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         // setup first query, which is sorted on activation already
         q = smem_setup_web_crawl(thisAgent, (*cand_set));
 		thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
-		
+        
         // this becomes the minimal set to walk (till match or fail)
         if (q->execute() == soar_module::row)
         {
@@ -2952,7 +2940,6 @@ void smem_switch_to_memory_db(agent* thisAgent, std::string& buf)
     smem_init_db(thisAgent);
 }
 
-//Supposing a database exists with the old version, this should update it. - Steven Jones
 inline void smem_update_schema_one_to_two(agent* thisAgent)
 {
     thisAgent->smem_db->sql_execute("BEGIN TRANSACTION");
@@ -3419,7 +3406,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
     }
 }
 
-inline std::string* smem_parse_lti_name(struct lexeme_info* lexeme, char* id_letter, uint64_t* id_number)
+inline std::string* smem_parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
 {
     std::string* return_val = new std::string;
     
@@ -3436,22 +3423,22 @@ inline std::string* smem_parse_lti_name(struct lexeme_info* lexeme, char* id_let
     }
     else
     {
-        return_val->assign((*lexeme).string);
+        return_val->assign((*lexeme).string());
         
-        (*id_letter) = static_cast<char>(toupper((*lexeme).string[1]));
+        (*id_letter) = static_cast<char>(toupper((*lexeme).string()[1]));
         (*id_number) = 0;
     }
     
     return return_val;
 }
 
-inline Symbol* smem_parse_constant_attr(agent* thisAgent, struct lexeme_info* lexeme)
+inline Symbol* smem_parse_constant_attr(agent* thisAgent, soar::Lexeme* lexeme)
 {
     Symbol* return_val = NIL;
     
-    if ((*lexeme).type == SYM_CONSTANT_LEXEME)
+    if ((*lexeme).type == STR_CONSTANT_LEXEME)
     {
-        return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string));
+        return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string()));
     }
     else if ((*lexeme).type == INT_CONSTANT_LEXEME)
     {
@@ -3465,7 +3452,7 @@ inline Symbol* smem_parse_constant_attr(agent* thisAgent, struct lexeme_info* le
     return return_val;
 }
 
-bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
+bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
 {
     bool return_val = false;
     
@@ -3479,26 +3466,24 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
     
     bool good_at;
     
-    //
-    
     // consume left paren
-    get_lexeme(thisAgent);
+    lexer->get_lexeme();
     
-    if ((thisAgent->lexeme.type == AT_LEXEME) || (thisAgent->lexeme.type == IDENTIFIER_LEXEME) || (thisAgent->lexeme.type == VARIABLE_LEXEME))
+    if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
     {
         good_at = true;
         
-        if (thisAgent->lexeme.type == AT_LEXEME)
+        if (lexer->current_lexeme.type == AT_LEXEME)
         {
-            get_lexeme(thisAgent);
+            lexer->get_lexeme();
             
-            good_at = (thisAgent->lexeme.type == IDENTIFIER_LEXEME);
+            good_at = (lexer->current_lexeme.type == IDENTIFIER_LEXEME);
         }
         
         if (good_at)
         {
             // save identifier
-            chunk_name = smem_parse_lti_name(&(thisAgent->lexeme), &(temp_letter), &(temp_number));
+            chunk_name = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
             new_chunk->lti_letter = temp_letter;
             new_chunk->lti_number = temp_number;
             new_chunk->lti_id = NIL;
@@ -3506,7 +3491,7 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
             new_chunk->slots = new smem_slot_map;
             
             // consume id
-            get_lexeme(thisAgent);
+            lexer->get_lexeme();
             
             //
             
@@ -3520,27 +3505,27 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
             smem_slot* s;
             
             // populate slots
-            while (thisAgent->lexeme.type == UP_ARROW_LEXEME)
+            while (lexer->current_lexeme.type == UP_ARROW_LEXEME)
             {
                 intermediate_parent = new_chunk;
                 
                 // go on to attribute
-                get_lexeme(thisAgent);
+                lexer->get_lexeme();
                 
                 // get the appropriate constant type
-                chunk_attr = smem_parse_constant_attr(thisAgent, &(thisAgent->lexeme));
+                chunk_attr = smem_parse_constant_attr(thisAgent, &(lexer->current_lexeme));
                 
                 // if constant attribute, proceed to value
                 if (chunk_attr != NIL)
                 {
                     // consume attribute
-                    get_lexeme(thisAgent);
+                    lexer->get_lexeme();
                     
                     // support for dot notation:
                     // when we encounter a dot, instantiate
                     // the previous attribute as a temporary
                     // identifier and use that as the parent
-                    while (thisAgent->lexeme.type == PERIOD_LEXEME)
+                    while (lexer->current_lexeme.type == PERIOD_LEXEME)
                     {
                         // create a new chunk
                         temp_chunk = new smem_chunk;
@@ -3577,11 +3562,11 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                         temp_chunk = NULL;
                         
                         // get the next attribute
-                        get_lexeme(thisAgent);
-                        chunk_attr = smem_parse_constant_attr(thisAgent, &(thisAgent->lexeme));
+                        lexer->get_lexeme();
+                        chunk_attr = smem_parse_constant_attr(thisAgent, &(lexer->current_lexeme));
                         
                         // consume attribute
-                        get_lexeme(thisAgent);
+                        lexer->get_lexeme();
                     }
                     
                     if (chunk_attr != NIL)
@@ -3592,33 +3577,33 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                         {
                             // value by type
                             chunk_value = NIL;
-                            if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                            if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
+                                chunk_value->val_const.val_value = make_str_constant(thisAgent, static_cast<const char*>(lexer->current_lexeme.string()));
                             }
-                            else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
+                            else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_int_constant(thisAgent, thisAgent->lexeme.int_val);
+                                chunk_value->val_const.val_value = make_int_constant(thisAgent, lexer->current_lexeme.int_val);
                             }
-                            else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
+                            else if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_float_constant(thisAgent, thisAgent->lexeme.float_val);
+                                chunk_value->val_const.val_value = make_float_constant(thisAgent, lexer->current_lexeme.float_val);
                             }
-                            else if ((thisAgent->lexeme.type == AT_LEXEME) || (thisAgent->lexeme.type == IDENTIFIER_LEXEME) || (thisAgent->lexeme.type == VARIABLE_LEXEME))
+                            else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
                             {
                                 good_at = true;
                                 
-                                if (thisAgent->lexeme.type == AT_LEXEME)
+                                if (lexer->current_lexeme.type == AT_LEXEME)
                                 {
-                                    get_lexeme(thisAgent);
+                                    lexer->get_lexeme();
                                     
-                                    good_at = (thisAgent->lexeme.type == IDENTIFIER_LEXEME);
+                                    good_at = (lexer->current_lexeme.type == IDENTIFIER_LEXEME);
                                 }
                                 
                                 if (good_at)
@@ -3628,7 +3613,7 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                                     chunk_value->val_lti.val_type = value_lti_t;
                                     
                                     // get key
-                                    temp_key2 = smem_parse_lti_name(&(thisAgent->lexeme), &(temp_letter), &(temp_number));
+                                    temp_key2 = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
                                     
                                     // search for an existing chunk
                                     smem_str_to_chunk_map::iterator p = chunks->find((*temp_key2));
@@ -3666,7 +3651,7 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                             if (chunk_value != NIL)
                             {
                                 // consume
-                                get_lexeme(thisAgent);
+                                lexer->get_lexeme();
                                 
                                 // add to appropriate slot
                                 s = smem_make_slot(intermediate_parent->slots, chunk_attr);
@@ -3678,10 +3663,10 @@ bool smem_parse_chunk(agent* thisAgent, smem_str_to_chunk_map* chunks, smem_chun
                                 s->push_back(chunk_value);
                                 
                                 // if this was the last attribute
-                                if (thisAgent->lexeme.type == R_PAREN_LEXEME)
+                                if (lexer->current_lexeme.type == R_PAREN_LEXEME)
                                 {
                                     return_val = true;
-                                    get_lexeme(thisAgent);
+                                    lexer->get_lexeme();
                                     chunk_value = NIL;
                                 }
                                 
@@ -3785,12 +3770,7 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
     // parsing chunks requires an open semantic database
     smem_attach(thisAgent);
     
-    // copied primarily from cli_sp
-    thisAgent->alternate_input_string = chunks_str;
-    thisAgent->alternate_input_suffix = const_cast<char*>(") ");
-    thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
-    set_lexer_allow_ids(thisAgent, true);
+    soar::Lexer lexer(thisAgent, chunks_str);
     
     bool good_chunk = true;
     
@@ -3801,17 +3781,17 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
     smem_chunk_set::iterator c_new;
     
     // consume next token
-    get_lexeme(thisAgent);
+    lexer.get_lexeme();
     
-    if (thisAgent->lexeme.type != L_PAREN_LEXEME)
+    if (lexer.current_lexeme.type != L_PAREN_LEXEME)
     {
         good_chunk = false;
     }
     
     // while there are chunks to consume
-    while ((thisAgent->lexeme.type == L_PAREN_LEXEME) && (good_chunk))
+    while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_chunk))
     {
-        good_chunk = smem_parse_chunk(thisAgent, &(chunks), &(newbies));
+        good_chunk = smem_parse_chunk(thisAgent, &lexer, &(chunks), &(newbies));
         
         if (good_chunk)
         {
@@ -3919,12 +3899,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     //Parsing requires an open semantic database.
     smem_attach(thisAgent);
     
-    //Next 5 lines copied as in smem_parse_chunks.
-    thisAgent->alternate_input_string = chunks_str;
-    thisAgent->alternate_input_suffix = const_cast<char*>(")");
-    thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
-    set_lexer_allow_ids(thisAgent, true);
+    soar::Lexer lexer(thisAgent, chunks_str);
     
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
     // and indicates whether or not we can call smem_process_query.
@@ -3932,9 +3907,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     std::map<std::string, Symbol*> cue_ids; //I want to keep track of previous references when adding a new element to the cue.
     
     //consume next token.
-    get_lexeme(thisAgent);
+    lexer.get_lexeme();
     
-    good_cue = thisAgent->lexeme.type == L_PAREN_LEXEME;
+    good_cue = lexer.current_lexeme.type == L_PAREN_LEXEME;
     
     Symbol* root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
     //It's main purpose is to contain augmentations
@@ -3945,20 +3920,20 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     bool first_attribute = true; //Want to make sure there is a positive attribute to begin with.
     
     // While there is parsing to be done:
-    while ((thisAgent->lexeme.type == L_PAREN_LEXEME) && good_cue)
+    while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && good_cue)
     {
         //First, consume the left paren.
-        get_lexeme(thisAgent);
+        lexer.get_lexeme();
         
         if (trigger_first)
         {
-            good_cue = thisAgent->lexeme.type == VARIABLE_LEXEME;
+            good_cue = lexer.current_lexeme.type == VARIABLE_LEXEME;
             
             if (good_cue)
             {
-                root_cue_id = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[1], 1);
-                cue_ids[thisAgent->lexeme.string] = root_cue_id;
-                negative_cues = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[1], 1);
+                root_cue_id = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
+                cue_ids[lexer.current_lexeme.string()] = root_cue_id;
+                negative_cues = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
             }
             else
             {
@@ -3971,7 +3946,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         else
         {
             //If this isn't the first time around, then this better be the same as the root_cue_id variable.
-            good_cue = cue_ids[thisAgent->lexeme.string] == root_cue_id;
+            good_cue = cue_ids[lexer.current_lexeme.string()] == root_cue_id;
             if (!good_cue)
             {
                 (*err_msg)->append("Error: Additional clauses must share same variable.\n");//Spit out that additional clauses must share the same variable as the original cue variable.
@@ -3982,7 +3957,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         if (good_cue)
         {
             //Consume the root_cue_id
-            get_lexeme(thisAgent);
+            lexer.get_lexeme();
             
             Symbol* attribute;
             slot* temp_slot;
@@ -3991,9 +3966,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             bool minus = false;
             
             //Loop as long as positive or negative cues keep popping up.
-            while (good_cue && (thisAgent->lexeme.type == UP_ARROW_LEXEME || thisAgent->lexeme.type == MINUS_LEXEME))
+            while (good_cue && (lexer.current_lexeme.type == UP_ARROW_LEXEME || lexer.current_lexeme.type == MINUS_LEXEME))
             {
-                if (thisAgent->lexeme.type == MINUS_LEXEME)
+                if (lexer.current_lexeme.type == MINUS_LEXEME)
                 {
                     minus_ever = true;
                     if (first_attribute)
@@ -4001,8 +3976,8 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                         good_cue = false;
                         break;
                     }
-                    get_lexeme(thisAgent);
-                    good_cue = thisAgent->lexeme.type == UP_ARROW_LEXEME;
+                    lexer.get_lexeme();
+                    good_cue = lexer.current_lexeme.type == UP_ARROW_LEXEME;
                     minus = true;
                 }
                 else
@@ -4010,9 +3985,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     minus = false;
                 }
                 
-                get_lexeme(thisAgent);//Consume the up arrow and move on to the attribute.
+                lexer.get_lexeme();//Consume the up arrow and move on to the attribute.
                 
-                if (thisAgent->lexeme.type == VARIABLE_LEXEME)
+                if (lexer.current_lexeme.type == VARIABLE_LEXEME)
                 {
                     //SMem doesn't suppose variable attributes ... YET.
                     good_cue = false;
@@ -4021,7 +3996,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 
                 // TODO: test to make sure this is good. Previously there was no test
                 // for the type of the lexeme so passing a "(" caused a segfault when making the slot.
-                attribute = smem_parse_constant_attr(thisAgent, &(thisAgent->lexeme));
+                attribute = smem_parse_constant_attr(thisAgent, &(lexer.current_lexeme));
                 if (attribute == NIL)
                 {
                     good_cue = false;
@@ -4041,32 +4016,32 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                 }
                 
                 //consume the attribute.
-                get_lexeme(thisAgent);
+                lexer.get_lexeme();
                 bool hasAddedValue = false;
                 
                 do //Add value by type
                 {
                     value = NIL;
-                    if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                    if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                     {
-                        value = make_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
-                        get_lexeme(thisAgent);
+                        value = make_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
+                        lexer.get_lexeme();
                     }
-                    else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
+                    else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                     {
-                        value = make_int_constant(thisAgent, thisAgent->lexeme.int_val);
-                        get_lexeme(thisAgent);
+                        value = make_int_constant(thisAgent, lexer.current_lexeme.int_val);
+                        lexer.get_lexeme();
                     }
-                    else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
+                    else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                     {
-                        value = make_float_constant(thisAgent, thisAgent->lexeme.float_val);
-                        get_lexeme(thisAgent);
+                        value = make_float_constant(thisAgent, lexer.current_lexeme.float_val);
+                        lexer.get_lexeme();
                     }
-                    else if (thisAgent->lexeme.type == AT_LEXEME)
+                    else if (lexer.current_lexeme.type == AT_LEXEME)
                     {
                         //If the LTI isn't recognized, then it cannot be a good cue.
-                        get_lexeme(thisAgent);
-                        smem_lti_id value_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                        lexer.get_lexeme();
+                        smem_lti_id value_id = smem_lti_get_id(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
                         if (value_id == NIL)
                         {
                             good_cue = false;
@@ -4075,25 +4050,25 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                         }
                         else
                         {
-                            value = smem_lti_soar_make(thisAgent, value_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+                            value = smem_lti_soar_make(thisAgent, value_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
                         }
-                        get_lexeme(thisAgent);
+                        lexer.get_lexeme();
                     }
-                    else if (thisAgent->lexeme.type == VARIABLE_LEXEME || thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+                    else if (lexer.current_lexeme.type == VARIABLE_LEXEME || lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                     {
                         std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
-                        value_iterator = cue_ids.find(thisAgent->lexeme.string);
+                        value_iterator = cue_ids.find(lexer.current_lexeme.string());
                         
                         if (value_iterator == cue_ids.end())
                         {
-                            value = make_new_identifier(thisAgent, (char) thisAgent->lexeme.string[0], 1);
-                            cue_ids[thisAgent->lexeme.string] = value; //Keep track of created symbols for deletion later.
+                            value = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[0], 1);
+                            cue_ids[lexer.current_lexeme.string()] = value; //Keep track of created symbols for deletion later.
                         }
-                        get_lexeme(thisAgent);
+                        lexer.get_lexeme();
                     }
                     else
                     {
-                        if (((thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME) || thisAgent->lexeme.type == MINUS_LEXEME) && hasAddedValue)
+                        if (((lexer.current_lexeme.type == R_PAREN_LEXEME || lexer.current_lexeme.type == UP_ARROW_LEXEME) || lexer.current_lexeme.type == MINUS_LEXEME) && hasAddedValue)
                         {
                             //good_cue = true;
                             break;
@@ -4131,9 +4106,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             break;
         }
         
-        while (thisAgent->lexeme.type == R_PAREN_LEXEME)
+        while (lexer.current_lexeme.type == R_PAREN_LEXEME)
         {
-            get_lexeme(thisAgent);
+            lexer.get_lexeme();
         }
         
         clause_count++;
@@ -4245,32 +4220,27 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
     //parsing chunks requires an open semantic database
     smem_attach(thisAgent);
     
-    //copied primarily from cli_sp
-    thisAgent->alternate_input_string = chunks_str;
-    thisAgent->alternate_input_suffix = const_cast<char*>(") ");
-    thisAgent->current_char = ' ';
-    thisAgent->alternate_input_exit = true;
-    set_lexer_allow_ids(thisAgent, true);//This is the end of the incantation.
+    soar::Lexer lexer(thisAgent, chunks_str);
     
-    get_lexeme(thisAgent);
+    lexer.get_lexeme();
     
-    if (thisAgent->lexeme.type == L_PAREN_LEXEME)
+    if (lexer.current_lexeme.type == L_PAREN_LEXEME)
     {
-        get_lexeme(thisAgent);//Consumes the left paren
+        lexer.get_lexeme();//Consumes the left paren
     }
     
-    if (thisAgent->lexeme.type == AT_LEXEME && good_command)
+    if (lexer.current_lexeme.type == AT_LEXEME && good_command)
     {
-        get_lexeme(thisAgent);
+        lexer.get_lexeme();
     }
     
-    good_command = thisAgent->lexeme.type == IDENTIFIER_LEXEME;
+    good_command = lexer.current_lexeme.type == IDENTIFIER_LEXEME;
     
     smem_lti_id lti_id = 0;
     
     if (good_command)
     {
-        lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+        lti_id = smem_lti_get_id(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
     }
     else
     {
@@ -4282,13 +4252,13 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
     
     if (good_command && lti_id != NIL)
     {
-        Symbol* lti = smem_lti_soar_make(thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+        Symbol* lti = smem_lti_soar_make(thisAgent, lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
         
-        get_lexeme(thisAgent);//Consume the identifier.
+        lexer.get_lexeme();//Consume the identifier.
         
         smem_slot_map children;
         
-        if (thisAgent->lexeme.type == UP_ARROW_LEXEME)
+        if (lexer.current_lexeme.type == UP_ARROW_LEXEME)
         {
             //Now that we know we have a good lti, we can do a NCBR so that we know what attributes and values we can delete.
             //"--force" will ignore attempts to delete that which isn't there, while the default will be to stop and report back.
@@ -4381,23 +4351,23 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
             }
             
             //Now we process attributes one at a time.
-            while (thisAgent->lexeme.type == UP_ARROW_LEXEME && (good_command || force))
+            while (lexer.current_lexeme.type == UP_ARROW_LEXEME && (good_command || force))
             {
-                get_lexeme(thisAgent);// Consume the up arrow.
+                lexer.get_lexeme();// Consume the up arrow.
                 
                 Symbol* attribute = NIL;
                 
-                if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                 {
-                    attribute = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
+                    attribute = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
                 }
-                else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
+                else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                 {
-                    attribute = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
+                    attribute = find_int_constant(thisAgent, lexer.current_lexeme.int_val);
                 }
-                else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
+                else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                 {
-                    attribute = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
+                    attribute = find_float_constant(thisAgent, lexer.current_lexeme.float_val);
                 }
                 
                 if (attribute == NIL)
@@ -4407,38 +4377,38 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                 }
                 else
                 {
-                    get_lexeme(thisAgent);//Consume the attribute.
+                    lexer.get_lexeme();//Consume the attribute.
                     good_command = true;
                 }
                 
-                if (good_command && (thisAgent->lexeme.type != UP_ARROW_LEXEME && thisAgent->lexeme.type != R_PAREN_LEXEME)) //If there are values.
+                if (good_command && (lexer.current_lexeme.type != UP_ARROW_LEXEME && lexer.current_lexeme.type != R_PAREN_LEXEME)) //If there are values.
                 {
                     Symbol* value;
                     do //Add value by type
                     {
                         value = NIL;
-                        if (thisAgent->lexeme.type == SYM_CONSTANT_LEXEME)
+                        if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                         {
-                            value = find_str_constant(thisAgent, static_cast<const char*>(thisAgent->lexeme.string));
-                            get_lexeme(thisAgent);
+                            value = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
+                            lexer.get_lexeme();
                         }
-                        else if (thisAgent->lexeme.type == INT_CONSTANT_LEXEME)
+                        else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                         {
-                            value = find_int_constant(thisAgent, thisAgent->lexeme.int_val);
-                            get_lexeme(thisAgent);
+                            value = find_int_constant(thisAgent, lexer.current_lexeme.int_val);
+                            lexer.get_lexeme();
                         }
-                        else if (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME)
+                        else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                         {
-                            value = find_float_constant(thisAgent, thisAgent->lexeme.float_val);
-                            get_lexeme(thisAgent);
+                            value = find_float_constant(thisAgent, lexer.current_lexeme.float_val);
+                            lexer.get_lexeme();
                         }
-                        else if (thisAgent->lexeme.type == AT_LEXEME)
+                        else if (lexer.current_lexeme.type == AT_LEXEME)
                         {
-                            get_lexeme(thisAgent);
-                            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+                            lexer.get_lexeme();
+                            if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                             {
-                                value = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
-                                get_lexeme(thisAgent);
+                                value = find_identifier(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+                                lexer.get_lexeme();
                             }
                             else
                             {
@@ -4449,7 +4419,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         }
                         else
                         {
-                            good_command = (thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME);
+                            good_command = (lexer.current_lexeme.type == R_PAREN_LEXEME || lexer.current_lexeme.type == UP_ARROW_LEXEME);
                             if (!good_command)
                             {
                                 (*err_msg)->append("Error: Expected ')' or '^'.\n... The value was likely not found.\n");
@@ -4489,14 +4459,14 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         }
                         else
                         {
-                            if ((good_command && !force) && (thisAgent->lexeme.type != R_PAREN_LEXEME && thisAgent->lexeme.type != UP_ARROW_LEXEME))
+                            if ((good_command && !force) && (lexer.current_lexeme.type != R_PAREN_LEXEME && lexer.current_lexeme.type != UP_ARROW_LEXEME))
                             {
                                 (*err_msg)->append("Error: Attribute contained a value that could not be found.\n");
                                 break;
                             }
                         }
                     }
-                    while (good_command && (value != NIL || !(thisAgent->lexeme.type == R_PAREN_LEXEME || thisAgent->lexeme.type == UP_ARROW_LEXEME)));
+                    while (good_command && (value != NIL || !(lexer.current_lexeme.type == R_PAREN_LEXEME || lexer.current_lexeme.type == UP_ARROW_LEXEME)));
                 }
                 else if (good_command && children.find(attribute) != children.end()) //If we didn't have any values, then we just get rid of everything on the attribute.
                 {
@@ -4510,14 +4480,14 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                 }
                 if (force)
                 {
-                    while ((thisAgent->lexeme.type != EOF_LEXEME && thisAgent->lexeme.type != UP_ARROW_LEXEME) && thisAgent->lexeme.type != R_PAREN_LEXEME) //Loop until the lexeme is EOF, another ^, or ")".
+                    while ((lexer.current_lexeme.type != EOF_LEXEME && lexer.current_lexeme.type != UP_ARROW_LEXEME) && lexer.current_lexeme.type != R_PAREN_LEXEME) //Loop until the lexeme is EOF, another ^, or ")".
                     {
-                        get_lexeme(thisAgent);
+                        lexer.get_lexeme();
                     }
                 }
             }
         }
-        if (good_command && thisAgent->lexeme.type == R_PAREN_LEXEME)
+        if (good_command && lexer.current_lexeme.type == R_PAREN_LEXEME)
         {
             smem_store_chunk(thisAgent, lti_id, &(children), true, NULL, false);
         }
@@ -4609,7 +4579,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 		delete thisAgent->lastCue;
 		thisAgent->lastCue = NULL;
 	}
-	
+    
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
@@ -5625,7 +5595,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
                     break;
                 }
                 
-                determine_possible_symbol_types_for_string(temp_str.c_str(),
+                soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
                         strlen(temp_str.c_str()),
                         &possible_id,
                         &possible_var,
@@ -5694,7 +5664,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
                         break;
                     }
                     
-                    determine_possible_symbol_types_for_string(temp_str2.c_str(),
+                    soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
                             temp_str2.length(),
                             &possible_id,
                             &possible_var,

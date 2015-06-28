@@ -703,23 +703,6 @@ namespace soar_module
         }
         return value_retrieved;
     }
-    
-    template <typename T>
-    class db_predicate: public soar_module::agent_predicate<T>
-    {
-        public:
-            db_predicate(agent* new_agent);
-            bool operator()(T val);
-    };
-    template <typename T>
-    db_predicate<T>::db_predicate(agent* new_agent): agent_predicate<T>(new_agent) {}
-    
-    template <typename T>
-    bool db_predicate<T>::operator()(T /*val*/)
-    {
-        return (this->thisAgent->epmem_db->get_status() == soar_module::connected);
-    }
-    
 }
 
 #endif

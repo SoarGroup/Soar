@@ -104,12 +104,16 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+#include "output_manager.h"
 
 #include "reinforcement_learning.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "test.h"
 #include "decide.h"
+#include "variablization_manager.h"
+#include "debug.h"
+#include "debug_defines.h"
 
 #include "assert.h"
 
@@ -131,13 +135,7 @@
 #endif
 #endif
 
-
-
 using namespace soar_TraceNames;
-
-
-
-
 
 /* **********************************************************************
 
@@ -147,102 +145,9 @@ using namespace soar_TraceNames;
 
 /* ----------------------------------------------------------------------
 
-       Structures and Declarations:  Alpha Portion of the Rete Net
-
----------------------------------------------------------------------- */
-
-/* --- dll of all wmes currently in the rete:  this is needed to
-       initialize newly created alpha memories --- */
-/* wme *all_wmes_in_rete; (moved to glob_vars.h) */
-
-/* --- structure of each alpha memory --- */
-typedef struct alpha_mem_struct
-{
-    struct alpha_mem_struct* next_in_hash_table;  /* next mem in hash bucket */
-    struct right_mem_struct* right_mems;  /* dll of right_mem structures */
-    struct rete_node_struct* beta_nodes;  /* list of attached beta nodes */
-    struct rete_node_struct* last_beta_node; /* tail of above dll */
-    Symbol* id;                  /* constants tested by this alpha mem */
-    Symbol* attr;                /* (NIL if this alpha mem ignores that field) */
-    Symbol* value;
-    bool acceptable;             /* does it test for acceptable pref? */
-    uint32_t am_id;            /* id for hashing */
-    uint64_t reference_count;  /* number of beta nodes using this mem */
-    uint64_t retesave_amindex;
-} alpha_mem;
-
-/* --- the entry for one WME in one alpha memory --- */
-typedef struct right_mem_struct
-{
-    wme* w;                      /* the wme */
-    alpha_mem* am;               /* the alpha memory */
-    struct right_mem_struct* next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
-    struct right_mem_struct* next_in_am, *prev_in_am;       /*rm's in this amem*/
-    struct right_mem_struct* next_from_wme, *prev_from_wme; /*tree-based remove*/
-} right_mem;
-
-/* Note: right_mem's are stored in hash table thisAgent->right_ht */
-
-/* ----------------------------------------------------------------------
-
        Structures and Declarations:  Beta Portion of the Rete Net
 
 ---------------------------------------------------------------------- */
-
-/* --- types of tests found at beta nodes --- */
-#define CONSTANT_RELATIONAL_RETE_TEST 0x00
-#define VARIABLE_RELATIONAL_RETE_TEST 0x10
-#define DISJUNCTION_RETE_TEST         0x20
-#define ID_IS_GOAL_RETE_TEST          0x30
-#define ID_IS_IMPASSE_RETE_TEST       0x31
-//#define test_is_constant_relational_test(x) (((x) & 0xF0)==0x00)
-//#define test_is_variable_relational_test(x) (((x) & 0xF0)==0x10)
-
-inline bool test_is_constant_relational_test(byte x)
-{
-    return (((x) & 0xF0) == CONSTANT_RELATIONAL_RETE_TEST);
-}
-
-inline bool test_is_variable_relational_test(byte x)
-{
-    return (((x) & 0xF0) == VARIABLE_RELATIONAL_RETE_TEST);
-}
-
-/* --- for the last two (i.e., the relational tests), we add in one of
-       the following, to specifiy the kind of relation --- */
-#define RELATIONAL_EQUAL_RETE_TEST            0x00
-#define RELATIONAL_NOT_EQUAL_RETE_TEST        0x01
-#define RELATIONAL_LESS_RETE_TEST             0x02
-#define RELATIONAL_GREATER_RETE_TEST          0x03
-#define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
-#define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
-#define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
-//#define kind_of_relational_test(x) ((x) & 0x0F)
-//#define test_is_not_equal_test(x) (((x)==0x01) || ((x)==0x11))
-
-inline byte kind_of_relational_test(byte x)
-{
-    return ((x) & 0x0F);
-}
-
-inline bool test_is_not_equal_test(byte x)
-{
-    return (((x) == (CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST))
-            || ((x) == (VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST)));
-}
-
-/* --- tells where to find a variable --- */
-typedef unsigned short rete_node_level;
-
-typedef struct var_location_struct
-{
-    rete_node_level levels_up; /* 0=current node's alphamem, 1=parent's, etc. */
-    byte field_num;            /* 0=id, 1=attr, 2=value */
-} var_location;
-
-/* define an equality predicate for var_location structures */
-/*#define var_locations_equal(v1,v2) \
-  ( ((v1).levels_up==(v2).levels_up) && ((v1).field_num==(v2).field_num) )*/
 inline bool var_locations_equal(var_location v1, var_location v2)
 {
     return (((v1).levels_up == (v2).levels_up) && ((v1).field_num == (v2).field_num));
@@ -270,44 +175,6 @@ inline Symbol* field_from_wme(wme* _wme, byte field_num)
 {
     return ((&((_wme)->id))[(field_num)]);
 }
-
-/* --- gives data for a test that must be applied at a node --- */
-typedef struct rete_test_struct
-{
-    byte right_field_num;          /* field (0, 1, or 2) from wme */
-    byte type;                     /* test type (ID_IS_GOAL_RETE_TEST, etc.) */
-    union rete_test_data_union
-    {
-        var_location variable_referent;   /* for relational tests to a variable */
-        Symbol* constant_referent;        /* for relational tests to a constant */
-        list* disjunction_list;           /* list of symbols in disjunction test */
-    } data;
-    struct rete_test_struct* next; /* next in list of tests at the node */
-} rete_test;
-
-/* --- types and structure of beta nodes --- */
-/*   key:  bit 0 --> hashed                  */
-/*         bit 1 --> memory                  */
-/*         bit 2 --> positive join           */
-/*         bit 3 --> negative join           */
-/*         bit 4 --> split from beta memory  */
-/*         bit 6 --> various special types   */
-
-/* Warning: If you change any of these or add ones, be sure to update the
-   bit-twiddling macros just below */
-#define UNHASHED_MEMORY_BNODE   0x02
-#define MEMORY_BNODE            0x03
-#define UNHASHED_MP_BNODE       0x06
-#define MP_BNODE                0x07
-#define UNHASHED_POSITIVE_BNODE 0x14
-#define POSITIVE_BNODE          0x15
-#define UNHASHED_NEGATIVE_BNODE 0x08
-#define NEGATIVE_BNODE          0x09
-#define DUMMY_TOP_BNODE         0x40
-#define DUMMY_MATCHES_BNODE     0x41
-#define CN_BNODE                0x42
-#define CN_PARTNER_BNODE        0x43
-#define P_BNODE                 0x44
 
 /*
 #define bnode_is_hashed(x)   ((x) & 0x01)
@@ -369,89 +236,6 @@ const char* bnode_type_names[256] =
     "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
     "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
 };
-
-/* --- data for positive nodes only --- */
-typedef struct pos_node_data_struct
-{
-    /* --- dll of left-linked pos nodes from the parent beta memory --- */
-    struct rete_node_struct* next_from_beta_mem, *prev_from_beta_mem;
-} pos_node_data;
-
-/* --- data for both positive and negative nodes --- */
-typedef struct posneg_node_data_struct
-{
-    rete_test* other_tests; /* tests other than the hashed test */
-    alpha_mem* alpha_mem_;  /* the alpha memory this node uses */
-    struct rete_node_struct* next_from_alpha_mem; /* dll of nodes using that */
-    struct rete_node_struct* prev_from_alpha_mem; /*   ... alpha memory */
-    struct rete_node_struct* nearest_ancestor_with_same_am;
-} posneg_node_data;
-
-/* --- data for beta memory nodes only --- */
-typedef struct beta_memory_node_data_struct
-{
-    /* --- first pos node child that is left-linked --- */
-    struct rete_node_struct* first_linked_child;
-} beta_memory_node_data;
-
-/* --- data for cn and cn_partner nodes only --- */
-typedef struct cn_node_data_struct
-{
-    struct rete_node_struct* partner;    /* cn, cn_partner point to each other */
-} cn_node_data;
-
-/* --- data for production nodes only --- */
-typedef struct p_node_data_struct
-{
-    struct production_struct* prod;                  /* the production */
-    struct node_varnames_struct* parents_nvn;        /* records variable names */
-    struct ms_change_struct* tentative_assertions;   /* pending MS changes */
-    struct ms_change_struct* tentative_retractions;
-} p_node_data;
-
-#define O_LIST 0     /* only used in rete.cpp */
-#define I_LIST 1     /* values for prod->OPERAND_which_assert_list */
-
-/* --- data for all except positive nodes --- */
-typedef struct non_pos_node_data_struct
-{
-    struct token_struct* tokens;           /* dll of tokens at this node */
-    unsigned is_left_unlinked: 1;          /* used on mp nodes only */
-} non_pos_node_data;
-
-/* --- structure of a rete beta node --- */
-typedef struct rete_node_struct
-{
-    byte node_type;                  /* tells what kind of node this is */
-    
-    /* -- used only on hashed nodes -- */
-    /* field_num: 0=id, 1=attr, 2=value */
-    byte left_hash_loc_field_num;
-    /* left_hash_loc_levels_up: 0=current node's alphamem, 1=parent's, etc. */
-    rete_node_level left_hash_loc_levels_up;
-    /* node_id: used for hash function */
-    uint32_t node_id;
-    
-#ifdef SHARING_FACTORS
-    uint64_t sharing_factor;
-#endif
-    
-    struct rete_node_struct* parent;       /* points to parent node */
-    struct rete_node_struct* first_child;  /* used for dll of all children, */
-    struct rete_node_struct* next_sibling; /*   regardless of unlinking status */
-    union rete_node_a_union
-    {
-        pos_node_data pos;                   /* for pos. nodes */
-        non_pos_node_data np;                /* for all other nodes */
-    } a;
-    union rete_node_b_union
-    {
-        posneg_node_data posneg;            /* for pos, neg, mp nodes */
-        beta_memory_node_data mem;          /* for beta memory nodes */
-        cn_node_data cn;                    /* for cn, cn_partner nodes */
-        p_node_data p;                      /* for p nodes */
-    } b;
-} rete_node;
 
 /* Now this function can safely be defined. */
 inline rete_node* real_parent_node(rete_node* x)
@@ -1046,7 +830,6 @@ inline void update_stats_for_destroying_node(agent* thisAgent, rete_node* node)
 
 
 
-/* REW: begin 08.20.97 */
 
 Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc)
 {
@@ -1108,7 +891,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
         char msg[BUFFER_MSG_SIZE];
         print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
-                 symbol_to_string(thisAgent, msc->p_node->b.p.prod->name, true, NIL, 0));
+                 msc->p_node->b.p.prod->name->to_string(true));
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
@@ -1168,7 +951,6 @@ void print_retraction(agent* thisAgent, ms_change* msc)
     }
 }
 
-/* REW: end   08.20.97 */
 
 
 bool any_assertions_or_retractions_ready(agent* thisAgent)
@@ -1176,7 +958,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
 
     Symbol* goal;
     
-    /* REW: begin 08.20.97 */
     /* Determining if assertions or retractions are ready require looping over
     all goals in Waterfall/Operand2 */
     
@@ -1204,7 +985,6 @@ bool any_assertions_or_retractions_ready(agent* thisAgent)
     ready to fire or retract */
     
     return false;
-    /* REW: end   08.20.97 */
 }
 
 
@@ -1233,8 +1013,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
 {
     ms_change* msc = NIL;
     
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
     
     /* In Waterfall, we return only assertions that match in the
     currently active goal */
@@ -1296,8 +1074,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
                       the procedure. */
 
     }
-    /* REW: end   08.20.97 */
-    /* REW: end   09.15.96 */
     
     remove_from_dll(msc->p_node->b.p.tentative_assertions, msc,
                     next_of_node, prev_of_node);
@@ -1321,7 +1097,7 @@ void consume_last_postponed_assertion(agent* thisAgent)
     remove_from_dll(thisAgent->postponed_assertions, msc, next, prev);
     
     // kill it
-    free_with_pool(&thisAgent->ms_change_pool, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 }
 
 void restore_postponed_assertions(agent* thisAgent)
@@ -1386,7 +1162,7 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
         remove_from_dll(msc->p_node->b.p.tentative_retractions, msc,
                         next_of_node, prev_of_node);
     *inst = msc->inst;
-    free_with_pool(&thisAgent->ms_change_pool, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
     return true;
 }
 
@@ -1394,7 +1170,6 @@ bool get_next_retraction(agent* thisAgent, instantiation** inst)
 
 
 
-/* REW: begin 08.20.97 */
 
 /* Retract an instantiation on the nil goal list.  If there are no
    retractions on the nil goal retraction list, return false.  This
@@ -1426,12 +1201,11 @@ bool get_next_nil_goal_retraction(agent* thisAgent, instantiation** inst)
                         next_of_node, prev_of_node);
     }
     *inst = msc->inst;
-    free_with_pool(&thisAgent->ms_change_pool, msc);
+    thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
     return true;
     
 }
 
-/* REW: end   08.20.97 */
 
 
 
@@ -1533,7 +1307,7 @@ void add_wme_to_alpha_mem(agent* thisAgent, wme* w, alpha_mem* am)
     uint32_t hv;
     
     /* --- allocate new right_mem, fill it fields --- */
-    allocate_with_pool(thisAgent, &thisAgent->right_mem_pool, &rm);
+    thisAgent->memoryManager->allocate_with_pool(MP_right_mem, &rm);
     rm->w = w;
     rm->am = am;
     
@@ -1565,7 +1339,7 @@ void remove_wme_from_alpha_mem(agent* thisAgent, right_mem* rm)
     remove_from_dll(w->right_mems, rm, next_from_wme, prev_from_wme);
     
     /* --- deallocate it --- */
-    free_with_pool(&thisAgent->right_mem_pool, rm);
+    thisAgent->memoryManager->free_with_pool(MP_right_mem, rm);
 }
 
 /* --- Looks for an existing alpha mem, returns it or NIL if not found --- */
@@ -1608,7 +1382,7 @@ alpha_mem* find_or_make_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
     }
     
     /* --- no existing alpha_mem found, so create a new one --- */
-    allocate_with_pool(thisAgent, &thisAgent->alpha_mem_pool, &am);
+    thisAgent->memoryManager->allocate_with_pool(MP_alpha_mem, &am);
     am->next_in_hash_table = NIL;
     am->right_mems = NIL;
     am->beta_nodes = NIL;
@@ -1742,7 +1516,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[6],  xor_op(0, ha, hv), w);
         add_wme_to_aht(thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi, ha, hv), w);
     }
-    
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
     {
@@ -1992,7 +1765,7 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
             remove_from_dll(w->tokens, tok, next_from_wme, prev_from_wme);
             remove_from_dll(left->negrm_tokens, tok,
                             a.neg.next_negrm, a.neg.prev_negrm);
-            free_with_pool(&thisAgent->token_pool, tok);
+            thisAgent->memoryManager->free_with_pool(MP_token, tok);
             if (! left->negrm_tokens)   /* just went to 0, so call children */
             {
                 for (child = node->first_child; child != NIL; child = child->next_sibling)
@@ -2037,7 +1810,7 @@ void remove_ref_to_alpha_mem(agent* thisAgent, alpha_mem* am)
     {
         remove_wme_from_alpha_mem(thisAgent, am->right_mems);
     }
-    free_with_pool(&thisAgent->alpha_mem_pool, am);
+    thisAgent->memoryManager->free_with_pool(MP_alpha_mem, am);
 }
 
 
@@ -2082,16 +1855,14 @@ inline uint32_t get_next_beta_node_id(agent* thisAgent)
 void init_dummy_top_node(agent* thisAgent)
 {
     /* --- create the dummy top node --- */
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool,
-                       &thisAgent->dummy_top_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &thisAgent->dummy_top_node);
     init_new_rete_node_with_type(thisAgent, thisAgent->dummy_top_node, DUMMY_TOP_BNODE);
     thisAgent->dummy_top_node->parent = NIL;
     thisAgent->dummy_top_node->first_child = NIL;
     thisAgent->dummy_top_node->next_sibling = NIL;
     
     /* --- create the dummy top token --- */
-    allocate_with_pool(thisAgent, &thisAgent->token_pool,
-                       &thisAgent->dummy_top_token);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &thisAgent->dummy_top_token);
     thisAgent->dummy_top_token->parent = NIL;
     thisAgent->dummy_top_token->node = thisAgent->dummy_top_node;
     thisAgent->dummy_top_token->w = NIL;
@@ -2240,7 +2011,7 @@ rete_node* make_new_mem_node(agent* thisAgent,
     rete_node* node;
     
     /* --- create the node data structure, fill in fields --- */
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent;
     node->next_sibling = parent->first_child;
@@ -2275,7 +2046,7 @@ rete_node* make_new_positive_node(agent* thisAgent,
     rete_node* node;
     
     /* --- create the node data structure, fill in fields --- */
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent_mem;
     node->next_sibling = parent_mem->first_child;
@@ -2346,7 +2117,7 @@ rete_node* split_mp_node(agent* thisAgent, rete_node* mp_node)
     pos_node = mp_node;
     
     /* --- create the new M node, transfer the MP node's tokens to it --- */
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &mem_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &mem_node);
     init_new_rete_node_with_type(thisAgent, mem_node, mem_node_type);
     set_sharing_factor(mem_node, mp_copy.sharing_factor);
     
@@ -2447,7 +2218,7 @@ rete_node* merge_into_mp_node(agent* thisAgent, rete_node* mem_node)
     
     remove_node_from_parents_list_of_children(mem_node);
     update_stats_for_destroying_node(thisAgent, mem_node);   /* clean up rete stats stuff */
-    free_with_pool(&thisAgent->rete_node_pool, mem_node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, mem_node);
     
     /* --- set MP node's unlinking status according to pos_copy's --- */
     make_mp_bnode_left_linked(mp_node);
@@ -2502,7 +2273,7 @@ rete_node* make_new_negative_node(agent* thisAgent,
 {
     rete_node* node;
     
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, node_type);
     node->parent = parent;
     node->next_sibling = parent->first_child;
@@ -2550,9 +2321,9 @@ rete_node* make_new_cn_node(agent* thisAgent,
         ncc_subconditions_top_node = node;
     }
     
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &node);
     init_new_rete_node_with_type(thisAgent, node, CN_BNODE);
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &partner);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &partner);
     init_new_rete_node_with_type(thisAgent, partner, CN_PARTNER_BNODE);
     
     /* NOTE: for improved efficiency, <node> should be on the parent's
@@ -2600,7 +2371,7 @@ rete_node* make_new_production_node(agent* thisAgent,
 {
     rete_node* p_node;
     
-    allocate_with_pool(thisAgent, &thisAgent->rete_node_pool, &p_node);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_node, &p_node);
     init_new_rete_node_with_type(thisAgent, p_node, P_BNODE);
     new_prod->p_node = p_node;
     p_node->parent = parent;
@@ -2652,7 +2423,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
             deallocate_symbol_list_removing_references(thisAgent, rt->data.disjunction_list);
         }
         
-        free_with_pool(&thisAgent->rete_test_pool, rt);
+        thisAgent->memoryManager->free_with_pool(MP_rete_test, rt);
         rt = next_rt;
     }
 }
@@ -2722,7 +2493,7 @@ void deallocate_rete_node(agent* thisAgent, rete_node* node)
     }
     
     update_stats_for_destroying_node(thisAgent, node);   /* clean up rete stats stuff */
-    free_with_pool(&thisAgent->rete_node_pool, node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, node);
     
     /* --- if parent has no other children, deallocate it, and recurse  --- */
     /* Added check to make sure that parent wasn't deallocated in previous merge */
@@ -2864,16 +2635,15 @@ void bind_variables_in_test(agent* thisAgent,
                             list** varlist)
 {
     Symbol* referent;
-    complex_test* ct;
     cons* c;
     
-    if (test_is_blank_test(t))
+    if (!t)
     {
         return;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        referent = referent_of_equality_test(t);
+        referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
         {
             return;
@@ -2886,11 +2656,9 @@ void bind_variables_in_test(agent* thisAgent,
         push(thisAgent, referent, *varlist);
         return;
     }
-    
-    ct = complex_test_from_test(t);
-    if (ct->type == CONJUNCTIVE_TEST)
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            bind_variables_in_test(thisAgent, static_cast<char*>(c->first),
+    else if (t->type == CONJUNCTIVE_TEST)
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            bind_variables_in_test(thisAgent, static_cast<test>(c->first),
                                    depth, field_num, dense, varlist);
 }
 
@@ -2959,59 +2727,6 @@ void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, list* vars)
    to symbols, etc.  Deallocate_node_varnames() deallocates a whole
    chain of node_varnames structures, scanning up the net, etc.
 ********************************************************************** */
-
-typedef char varnames;
-
-/*
-#define one_var_to_varnames(x) ((varnames *) (x))
-#define var_list_to_varnames(x) ((varnames *) (((char *)(x)) + 1))
-#define varnames_is_one_var(x) (! (varnames_is_var_list(x)))
-#define varnames_is_var_list(x) (((uint64_t)(x)) & 1)
-#define varnames_to_one_var(x) ((Symbol *) (x))
-#define varnames_to_var_list(x) ((list *) (((char *)(x)) - 1))
-*/
-
-inline varnames* one_var_to_varnames(Symbol* x)
-{
-    return reinterpret_cast<varnames*>(x);
-}
-inline varnames* var_list_to_varnames(cons* x)
-{
-    return reinterpret_cast<varnames*>(reinterpret_cast<char*>(x) + 1);
-}
-inline uint64_t varnames_is_var_list(varnames* x)
-{
-    return reinterpret_cast<uint64_t>(x) & 1;
-}
-inline bool varnames_is_one_var(varnames* x)
-{
-    return ! varnames_is_var_list(x);
-}
-inline Symbol* varnames_to_one_var(varnames* x)
-{
-    return reinterpret_cast<Symbol*>(x);
-}
-inline list* varnames_to_var_list(varnames* x)
-{
-    return reinterpret_cast<list*>(static_cast<char*>(x) - 1);
-}
-
-typedef struct three_field_varnames_struct
-{
-    varnames* id_varnames;
-    varnames* attr_varnames;
-    varnames* value_varnames;
-} three_field_varnames;
-
-typedef struct node_varnames_struct
-{
-    struct node_varnames_struct* parent;
-    union varname_data_union
-    {
-        three_field_varnames fields;
-        struct node_varnames_struct* bottom_of_subconditions;
-    } data;
-} node_varnames;
 
 varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
                               varnames* old_varnames)
@@ -3083,10 +2798,80 @@ void deallocate_node_varnames(agent* thisAgent,
         node = real_parent_node(node);
         temp = nvn;
         nvn = nvn->parent;
-        free_with_pool(&thisAgent->node_varnames_pool, temp);
+        thisAgent->memoryManager->free_with_pool(MP_node_varnames, temp);
     }
 }
 
+/* ----------------------------------------------------------------------
+                          Add Varnames to Test
+
+   This routine adds (an equality test for) each variable in "vn" to
+   the given test "t", destructively modifying t.  This is used for
+   restoring the original variables to test in a hand-coded production
+   when we reconstruct its conditions.
+---------------------------------------------------------------------- */
+
+void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
+{
+    test New;
+    cons* c;
+    Symbol* temp;
+
+    if (vn == NIL)
+    {
+        return;
+    }
+    if (varnames_is_one_var(vn))
+    {
+        temp = varnames_to_one_var(vn);
+        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
+        if (!strcmp(temp->var->name, "<x4>"))
+            assert(true);
+        New = make_test(thisAgent, temp, EQUALITY_TEST);
+        add_test(thisAgent, t, New);
+    }
+    else
+    {
+        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
+        {
+            temp = static_cast<Symbol*>(c->first);
+            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
+            New =  make_test(thisAgent, temp, EQUALITY_TEST);
+            add_test(thisAgent, t, New);
+        }
+    }
+}
+
+
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
+{
+    test New;
+    cons* c;
+    Symbol* temp;
+
+    if (vn == NIL)
+    {
+        return;
+    }
+    if (varnames_is_one_var(vn))
+    {
+        temp = varnames_to_one_var(vn);
+        t->identity = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity, temp->var->name);
+    }
+    else
+    {
+        /* Not sure if we can have a varlist when this is called from add_additionals.  Should only
+         * be called in cases where there is one equality test.  Remove.*/
+        assert(false);
+        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
+        {
+            temp = static_cast<Symbol*>(c->first);
+            t->identity = thisAgent->variablizationManager->get_or_create_o_id(temp, pI_id);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity, temp->var->name);
+        }
+    }
+}
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
 
@@ -3104,15 +2889,14 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
 {
     cons* c;
     Symbol* referent;
-    complex_test* ct;
     
-    if (test_is_blank_test(t))
+    if (!t)
     {
         return starting_vn;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        referent = referent_of_equality_test(t);
+        referent = t->data.referent;
         if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
             if (! var_is_bound(referent))
             {
@@ -3120,13 +2904,10 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
             }
         return starting_vn;
     }
-    
-    ct = complex_test_from_test(t);
-    
-    if (ct->type == CONJUNCTIVE_TEST)
+    else if (t->type == CONJUNCTIVE_TEST)
     {
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<char*>(c->first),
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<test>(c->first),
                           starting_vn);
     }
     return starting_vn;
@@ -3141,7 +2922,7 @@ node_varnames* make_nvn_for_posneg_cond(agent* thisAgent,
     
     vars_bound = NIL;
     
-    allocate_with_pool(thisAgent, &thisAgent->node_varnames_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &New);
     New->parent = parent_nvn;
     
     /* --- fill in varnames for id test --- */
@@ -3191,7 +2972,7 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
                 New = make_nvn_for_posneg_cond(thisAgent, cond, parent_nvn);
                 break;
             case CONJUNCTIVE_NEGATION_CONDITION:
-                allocate_with_pool(thisAgent, &thisAgent->node_varnames_pool, &New);
+                thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &New);
                 New->parent = parent_nvn;
                 New->data.bottom_of_subconditions =
                     get_nvn_for_condition_list(thisAgent, cond->data.ncc.top, parent_nvn);
@@ -3235,98 +3016,6 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
 
 
 /* ---------------------------------------------------------------------
-
-       Test Type <---> Relational (Rete) Test Type Conversion Tables
-
-   These tables convert from xxx_TEST's (defined in test.h for various
-   kinds of complex_test's) to xxx_RETE_TEST's (defined in rete.cpp for
-   the different kinds of Rete tests), and vice-versa.  We might just
-   use the same set of constants for both purposes, but we want to be
-   able to do bit-twiddling on the RETE_TEST types.
-
-   (This stuff probably doesn't belong under "Building the Rete Net",
-   but I wasn't sure where else to put it.)
---------------------------------------------------------------------- */
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte test_type_to_relational_test_type[256] =
-{
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
-byte relational_test_type_to_test_type[256] =
-{
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
-};
-
-/* Warning: the two items below must not be the same as any xxx_TEST's defined
-   in test.h for the types of complex_test's */
-#define EQUAL_TEST_TYPE 254
-#define ERROR_TEST_TYPE 255
-
-void init_test_type_conversion_tables(void)
-{
-    /* This is to avoid multiple initializations. (This may not yet thread-safe.) */
-    static bool bInit = false;
-    if (bInit)
-    {
-        return;
-    }
-    bInit = true;
-    
-    /* we don't need ...[equal test] */
-    test_type_to_relational_test_type[NOT_EQUAL_TEST] =   RELATIONAL_NOT_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[LESS_TEST] =    RELATIONAL_LESS_RETE_TEST;
-    test_type_to_relational_test_type[GREATER_TEST] =    RELATIONAL_GREATER_RETE_TEST;
-    test_type_to_relational_test_type[LESS_OR_EQUAL_TEST] =    RELATIONAL_LESS_OR_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[GREATER_OR_EQUAL_TEST] =    RELATIONAL_GREATER_OR_EQUAL_RETE_TEST;
-    test_type_to_relational_test_type[SAME_TYPE_TEST] =    RELATIONAL_SAME_TYPE_RETE_TEST;
-    
-    relational_test_type_to_test_type[RELATIONAL_EQUAL_RETE_TEST] =    EQUAL_TEST_TYPE;
-    relational_test_type_to_test_type[RELATIONAL_NOT_EQUAL_RETE_TEST] =    NOT_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_LESS_RETE_TEST] =    LESS_TEST;
-    relational_test_type_to_test_type[RELATIONAL_GREATER_RETE_TEST] =    GREATER_TEST;
-    relational_test_type_to_test_type[RELATIONAL_LESS_OR_EQUAL_RETE_TEST] =    LESS_OR_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_GREATER_OR_EQUAL_RETE_TEST] =    GREATER_OR_EQUAL_TEST;
-    relational_test_type_to_test_type[RELATIONAL_SAME_TYPE_RETE_TEST] =    SAME_TYPE_TEST;
-}
-
-/* ------------------------------------------------------------------------
                          Add Rete Tests for Test
 
    This is used for converting tests (from conditions) into the appropriate
@@ -3358,17 +3047,17 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
     where.var_location_struct::levels_up = 0;
     cons* c;
     rete_test* new_rt;
-    complex_test* ct;
     Symbol* referent;
     
-    if (test_is_blank_test(t))
+    if (!t)
     {
         return;
     }
     
-    if (test_is_blank_or_equality_test(t))
+    switch (t->type)
     {
-        referent = referent_of_equality_test(t);
+        case EQUALITY_TEST:
+            referent = t->data.referent;
         
         /* --- if constant test and alpha=NIL, install alpha test --- */
         if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
@@ -3381,7 +3070,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         /* --- if constant, make = constant test --- */
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
         {
-            allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
             new_rt->data.constant_referent = referent;
@@ -3398,7 +3087,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
                                referent);
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                     symbol_to_string(thisAgent, referent, true, NIL, 0));
+                         referent->to_string(true));
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
         }
@@ -3408,20 +3097,14 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         }
         
         /* --- else make variable equality test --- */
-        allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
         new_rt->right_field_num = field_num;
         new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
         new_rt->data.variable_referent = where;
         new_rt->next = *rt;
         *rt = new_rt;
         return;
-    }
-    
-    ct = complex_test_from_test(t);
-    
-    switch (ct->type)
-    {
-    
+            break;
         case NOT_EQUAL_TEST:
         case LESS_TEST:
         case GREATER_TEST:
@@ -3429,58 +3112,58 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
             /* --- if constant, make constant test --- */
-            if (ct->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+            if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {
-                allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                               test_type_to_relational_test_type[ct->type];
-                new_rt->data.constant_referent = ct->data.referent;
-                symbol_add_ref(thisAgent, ct->data.referent);
+                               test_type_to_relational_test_type(t->type);
+                new_rt->data.constant_referent = t->data.referent;
+                symbol_add_ref(thisAgent, t->data.referent);
                 new_rt->next = *rt;
                 *rt = new_rt;
                 return;
             }
             /* --- else make variable test --- */
-            if (! find_var_location(ct->data.referent, current_depth, &where))
+            if (! find_var_location(t->data.referent, current_depth, &where))
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                                   ct->data.referent);
+                                   t->data.referent);
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                         symbol_to_string(thisAgent, ct->data.referent, true, NIL, 0));
+                         t->data.referent->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
-            allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                           test_type_to_relational_test_type[ct->type];
+                           test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
             
         case DISJUNCTION_TEST:
-            allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = DISJUNCTION_RETE_TEST;
             new_rt->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, ct->data.disjunction_list);
+                copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
             
         case CONJUNCTIVE_TEST:
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                add_rete_tests_for_test(thisAgent, static_cast<char*>(c->first),
+                add_rete_tests_for_test(thisAgent, static_cast<test>(c->first),
                                         current_depth, field_num, rt, alpha_constant);
             }
             return;
             
         case GOAL_ID_TEST:
-            allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_GOAL_RETE_TEST;
             new_rt->right_field_num = 0;
             new_rt->next = *rt;
@@ -3488,7 +3171,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             return;
             
         case IMPASSE_ID_TEST:
-            allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &new_rt);
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_IMPASSE_RETE_TEST;
             new_rt->right_field_num = 0;
             new_rt->next = *rt;
@@ -3499,9 +3182,10 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         {
             char msg[BUFFER_MSG_SIZE];
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: found bad test type %d while building rete\n",
-                     ct->type);
+                     t->type);
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
+            break;
         }
     } /* end of switch statement */
 } /* end of function add_rete_tests_for_test() */
@@ -4036,20 +3720,24 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
         {
             return false;
         }
-        if (a1->id != a2->id)
+        if (!rhs_values_equal(a1->id, a2->id))
         {
             return false;
         }
-        if (a1->attr != a2->attr)
+        if (!rhs_values_equal(a1->attr, a2->attr))
         {
             return false;
         }
-        if (a1->value != a2->value)
+        if (!rhs_values_equal(a1->value, a2->value))
         {
             return false;
         }
+//    if (a1->id != a2->id) return false;
+//    if (a1->attr != a2->attr) return false;
+//    if (a1->value != a2->value) return false;
         if (preference_is_binary(a1->preference_type))
-            if (a1->referent != a2->referent)
+//      if (a1->referent != a2->referent)
+            if (!rhs_values_equal(a1->referent, a2->referent))
             {
                 bool stop = true;
                 if (rl_chunk_stop)
@@ -4179,11 +3867,11 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
 {
     if (num_for_new_production > thisAgent->max_rhs_unbound_variables)
     {
-        free_memory(thisAgent, thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
         thisAgent->max_rhs_unbound_variables = num_for_new_production;
         thisAgent->rhs_variable_bindings = (Symbol**)
-                                           allocate_memory_and_zerofill(thisAgent, static_cast<size_t>(thisAgent->max_rhs_unbound_variables *
-                                                   sizeof(Symbol*)), MISCELLANEOUS_MEM_USAGE);
+                                           thisAgent->memoryManager->allocate_memory_and_zerofill(thisAgent->max_rhs_unbound_variables *
+                                                   sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
     }
 }
 
@@ -4268,13 +3956,13 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             std::stringstream output;
             output << "\nIgnoring "
-                   << symbol_to_string(thisAgent, p->name, true, 0, 0)
+                   << p->name->to_string(true)
                    << " because it is a duplicate of "
-                   << symbol_to_string(thisAgent, p_node->b.p.prod->name, true, 0, 0)
+                   << p_node->b.p.prod->name->to_string(true)
                    << " ";
             xml_generate_warning(thisAgent, output.str().c_str());
             
-            print_with_symbols(thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
+            print_with_symbols(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
                                p->name, p_node->b.p.prod->name);
         }
         deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
@@ -4288,7 +3976,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     
     /* KJC 1/28/98  left these comments in to support REW comments below
     but commented out the operand_mode code  */
-    /* RCHONG: begin 10.11 */
     /*
     
     in operand, we don't want to refract the instantiation.  consider
@@ -4311,15 +3998,11 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     refracted_inst = NIL;
     }
     */
-    /* RCHONG: end 10.11 */
-    
-    /* REW: begin 09.15.96 */
     /* In Operand2, for now, we want both chunks and justifications to be
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
     a different instantiation and a different type of support than the
     original, chunk-creating instantion. */
-    /* REW: end   09.15.96 */
     
     
     /* --- handle initial refraction by adding it to tentative_retractions --- */
@@ -4328,10 +4011,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         insert_at_head_of_dll(p->instantiations, refracted_inst, next, prev);
         refracted_inst->rete_token = NIL;
         refracted_inst->rete_wme = NIL;
-        allocate_with_pool(thisAgent, &thisAgent->ms_change_pool, &msc);
+        thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = refracted_inst;
         msc->p_node = p_node;
-        /* REW: begin 08.20.97 */
         /* Because the RETE 'artificially' refracts this instantiation (ie, it is
         not actually firing -- the original instantiation fires but not the
         chunk), we make the refracted instantiation of the chunk a nil_goal
@@ -4353,7 +4035,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                            
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
         
 #ifdef BUG_139_WORKAROUND
         msc->p_node->b.p.prod->already_fired = 0;       /* RPM workaround for bug #139; mark prod as not fired yet */
@@ -4381,7 +4062,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             msc = p_node->b.p.tentative_retractions;
             p_node->b.p.tentative_retractions = NIL;
             remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-            /* REW: begin 10.03.97 */ /* BUGFIX 2.125 */
             if (msc->goal)
             {
                 remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -4392,10 +4072,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                 remove_from_dll(thisAgent->nil_goal_retractions,
                                 msc, next_in_level, prev_in_level);
             }
-            /* REW: end   10.03.97 */
             
             
-            free_with_pool(&thisAgent->ms_change_pool, msc);
+            thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
             
         }
         else
@@ -4403,16 +4082,12 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             production_addition_result = REFRACTED_INST_MATCHED;
         }
     }
-    
     /* --- if not a chunk, store variable name information --- */
-    if ((p->type == CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES)
-    {
+  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
         p->p_node->b.p.parents_nvn = NIL;
         p->rhs_unbound_variables = NIL;
-        deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
-    }
-    else
-    {
+      deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
+  } else {
         p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
         p->rhs_unbound_variables =
             destructively_reverse_list(rhs_unbound_vars_for_new_prod);
@@ -4420,10 +4095,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
-    
-    //#ifdef _WINDOWS
-    //        add_production_to_stat_lists(new_prod);
-    //#endif
     
     return production_addition_result;
 }
@@ -4442,10 +4113,6 @@ void excise_production_from_rete(agent* thisAgent, production* p)
     
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
     
-//#ifdef _WINDOWS
-//        remove_production_from_stat_lists(prod_to_be_excised);
-//#endif
-
     p_node = p->p_node;
     p->p_node = NIL;      /* mark production as not being in the rete anymore */
     parent = p_node->parent;
@@ -4473,7 +4140,7 @@ void excise_production_from_rete(agent* thisAgent, production* p)
     /* --- finally, excise the p_node --- */
     remove_node_from_parents_list_of_children(p_node);
     update_stats_for_destroying_node(thisAgent, p_node);    /* clean up rete stats stuff */
-    free_with_pool(&thisAgent->rete_node_pool, p_node);
+    thisAgent->memoryManager->free_with_pool(MP_rete_node, p_node);
     
     /* --- update sharing factors on the path from here to the top node --- */
     adjust_sharing_factors_from_here_to_top(parent, -1);
@@ -4529,27 +4196,6 @@ void excise_production_from_rete(agent* thisAgent, production* p)
 ********************************************************************** */
 
 /* ----------------------------------------------------------------------
-                      Add Gensymmed Equality Test
-
-   This routine destructively modifies a given test, adding to it a test
-   for equality with a new gensym variable.
----------------------------------------------------------------------- */
-
-void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
-{
-    Symbol* New;
-    test eq_test;
-    char prefix[2];
-    
-    prefix[0] = first_letter;
-    prefix[1] = 0;
-    New = generate_new_variable(thisAgent, prefix);
-    eq_test = make_equality_test(New);
-    symbol_remove_ref(thisAgent, New);
-    add_new_test_to_test(thisAgent, t, eq_test);
-}
-
-/* ----------------------------------------------------------------------
                      Var Bound in Reconstructed Conds
 
    We're reconstructing the conditions for a production in top-down
@@ -4566,7 +4212,6 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         rete_node_level where_levels_up)
 {
     test t;
-    complex_test* ct;
     cons* c;
     
     while (where_levels_up)
@@ -4588,23 +4233,21 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         t = cond->data.tests.value_test;
     }
     
-    if (test_is_blank_test(t))
+    if (!t)
     {
         goto abort_var_bound_in_reconstructed_conds;
     }
-    if (test_is_blank_or_equality_test(t))
+    if (t->type == EQUALITY_TEST)
     {
-        return referent_of_equality_test(t);
+        return t->data.referent;
     }
-    
-    ct = complex_test_from_test(t);
-    if (ct->type == CONJUNCTIVE_TEST)
+    else if (t->type == CONJUNCTIVE_TEST)
     {
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            if ((! test_is_blank_test(static_cast<test>(c->first))) &&
-                    (test_is_blank_or_equality_test(static_cast<test>(c->first))))
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            if (static_cast<test>(c->first) &&
+                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
             {
-                return referent_of_equality_test(static_cast<test>(c->first));
+                return static_cast<test>(c->first)->data.referent;
             }
     }
     
@@ -4618,272 +4261,61 @@ abort_var_bound_in_reconstructed_conds:
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-/* ----------------------------------------------------------------------
-                      Add Rete Test List to Tests
 
-   Given the additional Rete tests (besides the hashed equality test) at
-   a certain node, we need to convert them into the equivalent tests in
-   the conditions being reconstructed.  This procedure does this -- it
-   destructively modifies the given currently-being-reconstructed-cond
-   by adding any necessary extra tests to its three field tests.
----------------------------------------------------------------------- */
-
-void add_rete_test_list_to_tests(agent* thisAgent,
-                                 condition* cond, /* current cond */
-                                 rete_test* rt)
+test var_test_bound_in_reconstructed_conds(
+    agent* thisAgent,
+    condition* cond,
+    byte where_field_num,
+    rete_node_level where_levels_up)
 {
-    Symbol* referent;
-    test New;
-    complex_test* new_ct;
-    byte test_type;
-    
-    for (; rt != NIL; rt = rt->next)
-    {
-    
-        if (rt->type == ID_IS_GOAL_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = GOAL_ID_TEST;
-        }
-        else if (rt->type == ID_IS_IMPASSE_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = IMPASSE_ID_TEST;
-        }
-        else if (rt->type == DISJUNCTION_RETE_TEST)
-        {
-            allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-            New = make_test_from_complex_test(new_ct);
-            new_ct->type = DISJUNCTION_TEST;
-            new_ct->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
-        }
-        else if (test_is_constant_relational_test(rt->type))
-        {
-            test_type =
-                relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-            referent = rt->data.constant_referent;
-            symbol_add_ref(thisAgent, referent);
-            if (test_type == EQUAL_TEST_TYPE)
-            {
-                New = make_equality_test_without_adding_reference(referent);
-            }
-            else
-            {
-                allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-                New = make_test_from_complex_test(new_ct);
-                new_ct->type = test_type;
-                new_ct->data.referent = referent;
-            }
-        }
-        else if (test_is_variable_relational_test(rt->type))
-        {
-            test_type =
-                relational_test_type_to_test_type[kind_of_relational_test(rt->type)];
-            if (! rt->data.variable_referent.levels_up)
-            {
-                /* --- before calling var_bound_in_reconstructed_conds, make sure
-                   there's an equality test in the referent location (add one if
-                   there isn't one already there), otherwise there'd be no variable
-                   there to test against --- */
-                if (rt->data.variable_referent.field_num == 0)
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.id_test, NIL))
-                    {
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
-                    }
-                }
-                else if (rt->data.variable_referent.field_num == 1)
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.attr_test, NIL))
-                    {
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
-                    }
-                }
-                else
-                {
-                    if (! test_includes_equality_test_for_symbol
-                            (cond->data.tests.value_test, NIL))
-                        add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
-                                                    first_letter_from_test(cond->data.tests.attr_test));
-                }
-            }
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
-            symbol_add_ref(thisAgent, referent);
-            if (test_type == EQUAL_TEST_TYPE)
-            {
-                New = make_equality_test_without_adding_reference(referent);
-            }
-            else
-            {
-                allocate_with_pool(thisAgent, &thisAgent->complex_test_pool, &new_ct);
-                New = make_test_from_complex_test(new_ct);
-                new_ct->type = test_type;
-                new_ct->data.referent = referent;
-            }
-        }
-        else
-        {
-            char msg[BUFFER_MSG_SIZE];
-            strncpy(msg, "Error: bad test_type in add_rete_test_to_test\n", BUFFER_MSG_SIZE);
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
-            New = NIL; /* unreachable, but without it gcc -Wall warns here */
-        }
-        
-        if (rt->right_field_num == 0)
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.id_test), New);
-        }
-        else if (rt->right_field_num == 2)
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.value_test), New);
-        }
-        else
-        {
-            add_new_test_to_test(thisAgent, &(cond->data.tests.attr_test), New);
-        }
-    }
-}
-
-/* ----------------------------------------------------------------------
-                               Collect Nots
-
-   When we build the instantiated conditions for a production being
-   fired, we also record all the "<>" tests between pairs of identifiers.
-   (This information is used during chunking.)  This procedure looks for
-   any such <> tests in the given Rete test list (from the "other tests"
-   at a Rete node), and adds records of them to the global variable
-   nots_found_in_production.  "Right_wme" is the wme that matched
-   the current condition; "cond" is the currently-being-reconstructed
-   condition.
----------------------------------------------------------------------- */
-
-//not_struct *nots_found_in_production; /* collected <> tests */
-
-void collect_nots(agent* thisAgent,
-                  rete_test* rt,
-                  wme* right_wme,
-                  condition* cond,
-                  not_struct*& nots_found_in_production)
-{
-    not_struct* new_not;
-    Symbol* right_sym;
-    Symbol* referent;
-    
-    for (; rt != NIL; rt = rt->next)
-    {
-    
-        if (! test_is_not_equal_test(rt->type))
-        {
-            continue;
-        }
-        
-        right_sym = field_from_wme(right_wme, rt->right_field_num);
-        
-        if (right_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-        {
-            continue;
-        }
-        
-        if (rt->type == CONSTANT_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = rt->data.constant_referent;
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-        
-        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST +
-                RELATIONAL_NOT_EQUAL_RETE_TEST)
-        {
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
-            if (referent->symbol_type != IDENTIFIER_SYMBOL_TYPE)
-            {
-                continue;
-            }
-            allocate_with_pool(thisAgent, &thisAgent->not_pool, &new_not);
-            new_not->next = nots_found_in_production;
-            nots_found_in_production = new_not;
-            new_not->s1 = right_sym;
-            symbol_add_ref(thisAgent, right_sym);
-            new_not->s2 = referent;
-            symbol_add_ref(thisAgent, referent);
-            continue;
-        }
-    }
-}
-
-/* ----------------------------------------------------------------------
-                          Add Varnames to Test
-
-   This routine adds (an equality test for) each variable in "vn" to
-   the given test "t", destructively modifying t.  This is used for
-   restoring the original variables to test in a hand-coded production
-   when we reconstruct its conditions.
----------------------------------------------------------------------- */
-
-void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
-{
-    test New;
+    test t;
     cons* c;
     
-    if (vn == NIL)
+    while (where_levels_up)
     {
-        return;
+        where_levels_up--;
+        cond = cond->prev;
     }
-    if (varnames_is_one_var(vn))
-    {
-        New = make_equality_test(varnames_to_one_var(vn));
-        add_new_test_to_test(thisAgent, t, New);
-    }
-    else
-    {
-        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
-        {
-            New = make_equality_test(static_cast<Symbol*>(c->first));
-            add_new_test_to_test(thisAgent, t, New);
-        }
-    }
-}
-
-/* ----------------------------------------------------------------------
-                      Add Hash Info to ID Test
-
-   This routine adds an equality test to the id field test in a given
-   condition, destructively modifying that id test.  The equality test
-   is the one appropriate for the given hash location (field_num/levels_up).
----------------------------------------------------------------------- */
-
-void add_hash_info_to_id_test(agent* thisAgent,
-                              condition* cond,
-                              byte field_num,
-                              rete_node_level levels_up)
-{
-    Symbol* temp;
-    test New;
     
-    temp = var_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
-    New = make_equality_test(temp);
-    add_new_test_to_test(thisAgent, &(cond->data.tests.id_test), New);
+    if (where_field_num == 0)
+        {
+        t = cond->data.tests.id_test;
+        }
+    else if (where_field_num == 1)
+        {
+        t = cond->data.tests.attr_test;
+        }
+            else
+            {
+        t = cond->data.tests.value_test;
+            }
+
+    if (!t)
+        {
+        goto abort_var_test_bound_in_reconstructed_conds;
+                    }
+    if (t->type == EQUALITY_TEST)
+                {
+        return t;
+                    }
+    else if (t->type == CONJUNCTIVE_TEST)
+                {
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            if (static_cast<test>(c->first) &&
+                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
+            {
+                return static_cast<test>(c->first);
+            }
+        }
+
+abort_var_test_bound_in_reconstructed_conds:
+        {
+            char msg[BUFFER_MSG_SIZE];
+        strncpy(msg, "Internal error in var_test_bound_in_reconstructed_conds\n", BUFFER_MSG_SIZE);
+            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+            abort_with_fatal_error(thisAgent, msg);
+        }
+    return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ----------------------------------------------------------------------
@@ -4901,9 +4333,12 @@ void add_hash_info_to_id_test(agent* thisAgent,
    for the "cutoff" node and higher.  "Dest_top_cond" and "dest_bottom_cond"
    get filled in with the highest and lowest conditions built by this
    procedure.
----------------------------------------------------------------------- */
 
-/* NOTE: clean this procedure up somehow? */
+   additional_tests indicates whether we want to add original variables
+   and tests to the condition generated (for chunk creation) and false if
+   we just want the bound equality tests.
+
+---------------------------------------------------------------------- */
 
 void rete_node_to_conditions(agent* thisAgent,
                              rete_node* node,
@@ -4914,12 +4349,14 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
-                             not_struct*& nots_found_in_production)
+                             uint64_t pI_id,
+                             AddAdditionalTestsMode additional_tests)
 {
     condition* cond;
     alpha_mem* am;
     
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &cond);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
+    init_condition(cond);
     if (real_parent_node(node) == cutoff)
     {
         cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this
@@ -4935,7 +4372,8 @@ void rete_node_to_conditions(agent* thisAgent,
                                 tok ? tok->w : NIL,
                                 conds_for_cutoff_and_up,
                                 dest_top_cond, &(cond->prev),
-                                nots_found_in_production);
+                                pI_id,
+                                additional_tests);
         cond->prev->next = cond;
     }
     cond->next = NIL;
@@ -4944,6 +4382,7 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
+        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent,
                                 nvn ? nvn->data.bottom_of_subconditions : NIL,
                                 node->parent,
@@ -4952,40 +4391,69 @@ void rete_node_to_conditions(agent* thisAgent,
                                 cond->prev,
                                 &(cond->data.ncc.top),
                                 &(cond->data.ncc.bottom),
-                                nots_found_in_production);
+                                pI_id,
+                                additional_tests);
         cond->data.ncc.top->prev = NIL;
     }
     else
     {
+        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
+            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
+            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
         
         if (w && (cond->type == POSITIVE_CONDITION))
         {
-            /* --- make simple tests and collect nots --- */
-            cond->data.tests.id_test = make_equality_test(w->id);
-            cond->data.tests.attr_test = make_equality_test(w->attr);
-            cond->data.tests.value_test = make_equality_test(w->value);
+            /* --- make equality test for bound symbols.  then add additional tests  --- */
+
+            cond->data.tests.id_test = make_test(thisAgent, w->id, EQUALITY_TEST);
+            cond->data.tests.attr_test = make_test(thisAgent, w->attr, EQUALITY_TEST);
+            cond->data.tests.value_test = make_test(thisAgent, w->value, EQUALITY_TEST);
+
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
-            if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
-                collect_nots(thisAgent, node->b.posneg.other_tests, w, cond,
-                             nots_found_in_production);
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
+            if (additional_tests != DONT_EXPLAIN)
+            {
+                thisAgent->variablizationManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
+            }
+#endif
+            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
+            /* -- Note: This portion normally used for printing productions but if this is a simple
+             *    negative condition (but not NCC) and w exists, the same code is used to print
+             *    out those conditions (since they don't require bindings and use original variables
+             *    just like when printing a production). */
+
+            dprint_noprefix(DT_NCC_VARIABLIZATION, "\n");
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 0 Starting condition: %l\n", cond);
+
             am = node->b.posneg.alpha_mem_;
-            cond->data.tests.id_test = make_blank_or_equality_test(am->id);
-            cond->data.tests.attr_test = make_blank_or_equality_test(am->attr);
-            cond->data.tests.value_test = make_blank_or_equality_test(am->value);
+            if (am->id)
+            {
+                cond->data.tests.id_test = make_test(thisAgent, am->id, EQUALITY_TEST);
+            }
+            if (am->attr)
+            {
+                cond->data.tests.attr_test = make_test(thisAgent, am->attr, EQUALITY_TEST);
+            }
+            if (am->value)
+            {
+                cond->data.tests.value_test = make_test(thisAgent, am->value, EQUALITY_TEST);
+            }
             cond->test_for_acceptable_preference = am->acceptable;
             
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 1 After add_varnames_to_test: %l\n", cond);
+
             if (nvn)
             {
                 add_varnames_to_test(thisAgent, nvn->data.fields.id_varnames,
@@ -4994,6 +4462,7 @@ void rete_node_to_conditions(agent* thisAgent,
                                      &(cond->data.tests.attr_test));
                 add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
                                      &(cond->data.tests.value_test));
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 1b NVN true.After add_varnames_to_test: %l\n", cond);
             }
             
             /* --- on hashed nodes, add equality test for the hash function --- */
@@ -5010,173 +4479,47 @@ void rete_node_to_conditions(agent* thisAgent,
                                          node->parent->left_hash_loc_levels_up);
             }
             
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 2 After add_hash_info_to_id_test: %l\n", cond);
+
+#ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
+            if (additional_tests != DONT_EXPLAIN)
+            {
+                thisAgent->variablizationManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
+            }
+            else
+#endif
+            {
             /* --- if there are other tests, add them too --- */
             if (node->b.posneg.other_tests)
             {
                 add_rete_test_list_to_tests(thisAgent, cond, node->b.posneg.other_tests);
             }
-            
+                dprint(DT_NCC_VARIABLIZATION, "-> RETE 3b No Need to add originals. After add_rete_test_list_to_tests: %l\n", cond);
+            }
             /* --- if we threw away the variable names, make sure there's some
                equality test in each of the three fields --- */
             if (! nvn)
             {
-                if (! test_includes_equality_test_for_symbol
-                        (cond->data.tests.id_test, NIL))
+                if (!cond->data.tests.id_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                 }
-                if (! test_includes_equality_test_for_symbol
-                        (cond->data.tests.attr_test, NIL))
+                if (!cond->data.tests.attr_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                 }
-                if (! test_includes_equality_test_for_symbol
-                        (cond->data.tests.value_test, NIL))
+                if (!cond->data.tests.value_test->eq_test)
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
+            dprint(DT_NCC_VARIABLIZATION, "-> RETE 4 After gensymmed equality test: %l\n", cond);
         }
     }
-}
-
-/* -------------------------------------------------------------------
-             Reconstructing the RHS Actions of a Production
-
-   When we print a production (but not when we fire one), we have to
-   reconstruct the RHS actions.  This is because many of the variables
-   in the RHS have been replaced by references to Rete locations (i.e.,
-   rather than specifying <v>, we specify "value field 3 levels up"
-   or "the 7th RHS unbound variable".  The routines below copy rhs_value's
-   and actions, and substitute variable names for such references.
-   For RHS unbound variables, we gensym new variable names.
-------------------------------------------------------------------- */
-
-rhs_value copy_rhs_value_and_substitute_varnames(agent* thisAgent,
-        rhs_value rv,
-        condition* cond,
-        char first_letter)
-{
-    cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
-    Symbol* sym;
-    int64_t index;
-    char prefix[2];
-    
-    if (rhs_value_is_reteloc(rv))
-    {
-        sym = var_bound_in_reconstructed_conds(thisAgent, cond,
-                                               rhs_value_to_reteloc_field_num(rv),
-                                               rhs_value_to_reteloc_levels_up(rv));
-        symbol_add_ref(thisAgent, sym);
-        return symbol_to_rhs_value(sym);
-    }
-    
-    if (rhs_value_is_unboundvar(rv))
-    {
-        index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
-        if (! *(thisAgent->rhs_variable_bindings + index))
-        {
-            prefix[0] = first_letter;
-            prefix[1] = 0;
-            
-            sym = generate_new_variable(thisAgent, prefix);
-            *(thisAgent->rhs_variable_bindings + index) = sym;
-            
-            if (thisAgent->highest_rhs_unboundvar_index < index)
-            {
-                thisAgent->highest_rhs_unboundvar_index = index;
-            }
-        }
-        else
-        {
-            sym = *(thisAgent->rhs_variable_bindings + index);
-            symbol_add_ref(thisAgent, sym);
-        }
-        return symbol_to_rhs_value(sym);
-    }
-    
-    if (rhs_value_is_funcall(rv))
-    {
-        fl = rhs_value_to_funcall_list(rv);
-        allocate_cons(thisAgent, &new_fl);
-        new_fl->first = fl->first;
-        prev_new_c = new_fl;
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value_and_substitute_varnames(thisAgent,
-                           static_cast<char*>(c->first),
-                           cond, first_letter);
-            prev_new_c->rest = new_c;
-            prev_new_c = new_c;
-        }
-        prev_new_c->rest = NIL;
-        return funcall_list_to_rhs_value(new_fl);
-    }
-    else
-    {
-        symbol_add_ref(thisAgent, rhs_value_to_symbol(rv));
-        return rv;
-    }
-}
-
-action* copy_action_list_and_substitute_varnames(agent* thisAgent,
-        action* actions,
-        condition* cond)
-{
-    action* old, *New, *prev, *first;
-    char first_letter;
-    
-    prev = NIL;
-    first = NIL;  /* unneeded, but without it gcc -Wall warns here */
-    old = actions;
-    while (old)
-    {
-        allocate_with_pool(thisAgent, &thisAgent->action_pool, &New);
-        if (prev)
-        {
-            prev->next = New;
-        }
-        else
-        {
-            first = New;
-        }
-        prev = New;
-        New->type = old->type;
-        New->preference_type = old->preference_type;
-        New->support = old->support;
-        if (old->type == FUNCALL_ACTION)
-        {
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent,
-                         old->value, cond,
-                         'v');
-        }
-        else
-        {
-            New->id = copy_rhs_value_and_substitute_varnames(thisAgent, old->id, cond, 's');
-            New->attr = copy_rhs_value_and_substitute_varnames(thisAgent, old->attr, cond, 'a');
-            first_letter = first_letter_from_rhs_value(New->attr);
-            New->value = copy_rhs_value_and_substitute_varnames(thisAgent, old->value, cond,
-                         first_letter);
-            if (preference_is_binary(old->preference_type))
-                New->referent = copy_rhs_value_and_substitute_varnames(thisAgent, old->referent,
-                                cond, first_letter);
-        }
-        old = old->next;
-    }
-    if (prev)
-    {
-        prev->next = NIL;
-    }
-    else
-    {
-        first = NIL;
-    }
-    return first;
 }
 
 /* -----------------------------------------------------------------------
-                     P Node to Conditions and Nots
+                          P Node to Conditions
                        Get Symbol From Rete Loc
 
    P_node_to_conditions_and_nots() takes a p_node and (optionally) a
@@ -5192,23 +4535,25 @@ action* copy_action_list_and_substitute_varnames(agent* thisAgent,
    resolving references in RHS actions to variables bound on the LHS.
 ----------------------------------------------------------------------- */
 
-void p_node_to_conditions_and_nots(agent* thisAgent,
+void p_node_to_conditions_and_rhs(agent* thisAgent,
                                    rete_node* p_node,
                                    token* tok,
                                    wme* w,
                                    condition** dest_top_cond,
                                    condition** dest_bottom_cond,
-                                   not_struct** dest_nots,
-                                   action** dest_rhs)
+                                  action** dest_rhs,
+                                  uint64_t pI_id,
+                                  AddAdditionalTestsMode additional_tests)
 {
     cons* c;
     Symbol** cell;
     int64_t index;
     production* prod;
+    goal_stack_level lowest_level_so_far, match_level;
+    condition* cond;
     
     prod = p_node->b.p.prod;
     
-    not_struct* nots_found_in_production = NIL;
     if (tok == NIL)
     {
         w = NIL;    /* just for safety */
@@ -5219,13 +4564,12 @@ void p_node_to_conditions_and_nots(agent* thisAgent,
                             p_node->b.p.parents_nvn,
                             thisAgent->dummy_top_node,
                             tok, w, NIL,
-                            dest_top_cond, dest_bottom_cond,
-                            nots_found_in_production);
-    if (tok)
-    {
-        *dest_nots = nots_found_in_production;
-    }
-    nots_found_in_production = NIL; /* just for safety */
+                            dest_top_cond,
+                            dest_bottom_cond,
+                            pI_id,
+                            additional_tests);
+
+
     if (dest_rhs)
     {
         thisAgent->highest_rhs_unboundvar_index = -1;
@@ -5238,9 +4582,7 @@ void p_node_to_conditions_and_nots(agent* thisAgent,
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
-        *dest_rhs = copy_action_list_and_substitute_varnames(thisAgent,
-                    prod->action_list,
-                    *dest_bottom_cond);
+        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, pI_id, additional_tests);
         index = 0;
         cell = thisAgent->rhs_variable_bindings;
         while (index++ <= thisAgent->highest_rhs_unboundvar_index)
@@ -5305,35 +4647,12 @@ bool((*(rete_test_routines[256]))
     ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr, ertr
 };
 
-/*#define match_left_and_right(rete_test,left,w) \
-  ( (*(rete_test_routines[(rete_test)->type])) \
-    ((rete_test),(left),(w)) )*/
 inline bool match_left_and_right(agent* thisAgent, rete_test* _rete_test,
                                  token* left, wme* w)
 {
     return ((*(rete_test_routines[(_rete_test)->type])) \
             (thisAgent, (_rete_test), (left), (w)));
 }
-
-/* This macro cannot be easily converted to an inline function.
-   Some additional changes are required.
-*/
-/*
-#define numeric_comparison_between_symbols(s1,s2,comparator_op) ( \
-  ( ((s1)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->ic->value) comparator_op ((s2)->ic->value)) : \
-  ( ((s1)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->ic->value) comparator_op ((s2)->fc->value)) : \
-  ( ((s1)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->fc->value) comparator_op ((s2)->ic->value)) : \
-  ( ((s1)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) && \
-    ((s2)->symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
-    (((s1)->fc->value) comparator_op ((s2)->fc->value)) : \
-  false )
-*/
 
 /* Note:  "=" and "<>" tests always return false when one argument is
    an integer and the other is a floating point number */
@@ -5723,7 +5042,7 @@ void beta_memory_node_left_addition(agent* thisAgent, rete_node* node,
     
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -5752,7 +5071,7 @@ void unhashed_beta_memory_node_left_addition(agent* thisAgent,
     
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -5910,7 +5229,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -5949,11 +5268,13 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         }
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
+        {
             if (! match_left_and_right(thisAgent, rt, New, rm->w))
             {
                 failed_a_test = true;
                 break;
             }
+        }
         if (failed_a_test)
         {
             continue;
@@ -5985,7 +5306,7 @@ void unhashed_mp_node_left_addition(agent* thisAgent, rete_node* node,
     
     /* --- build new left token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -6178,11 +5499,13 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         }
         failed_a_test = false;
         for (rt = node->b.posneg.other_tests; rt != NIL; rt = rt->next)
+        {
             if (! match_left_and_right(thisAgent, rt, tok, w))
             {
                 failed_a_test = true;
                 break;
             }
+        }
         if (failed_a_test)
         {
             continue;
@@ -6296,7 +5619,7 @@ void negative_node_left_addition(agent* thisAgent, rete_node* node,
     
     /* --- build new token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = referent;
@@ -6329,7 +5652,7 @@ void negative_node_left_addition(agent* thisAgent, rete_node* node,
         }
         {
             token* t;
-            allocate_with_pool(thisAgent, &thisAgent->token_pool, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = rm->w;
@@ -6374,7 +5697,7 @@ void unhashed_negative_node_left_addition(agent* thisAgent, rete_node* node,
     
     /* --- build new token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->a.ht.referent = NIL;
@@ -6397,7 +5720,7 @@ void unhashed_negative_node_left_addition(agent* thisAgent, rete_node* node,
         }
         {
             token* t;
-            allocate_with_pool(thisAgent, &thisAgent->token_pool, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = rm->w;
@@ -6459,7 +5782,7 @@ void negative_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         /* --- match found: build new negrm token, remove descendent tokens --- */
         {
             token* t;
-            allocate_with_pool(thisAgent, &thisAgent->token_pool, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = w;
@@ -6510,7 +5833,7 @@ void unhashed_negative_node_right_addition(agent* thisAgent, rete_node* node, wm
         /* --- match found: build new negrm token, remove descendent tokens --- */
         {
             token* t;
-            allocate_with_pool(thisAgent, &thisAgent->token_pool, &t);
+            thisAgent->memoryManager->allocate_with_pool(MP_token, &t);
             t->node = node;
             t->parent = NIL;
             t->w = w;
@@ -6559,7 +5882,7 @@ void cn_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
         
     /* --- build left token, add it to the hash table --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     insert_token_into_left_ht(thisAgent, New, hv);
     New->negrm_tokens = NIL;
@@ -6587,7 +5910,7 @@ void cn_partner_node_left_addition(agent* thisAgent, rete_node* node,
     
     /* --- build new negrm token --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &negrm_tok);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &negrm_tok);
     new_left_token(negrm_tok, node, tok, w);
     
     /* --- advance (tok,w) up to the token from the top of the branch --- */
@@ -6611,7 +5934,7 @@ void cn_partner_node_left_addition(agent* thisAgent, rete_node* node,
     if (!left)
     {
         token_added(partner);
-        allocate_with_pool(thisAgent, &thisAgent->token_pool, &left);
+        thisAgent->memoryManager->allocate_with_pool(MP_token, &left);
         new_left_token(left, partner, tok, w);
         insert_token_into_left_ht(thisAgent, left, hv);
         left->negrm_tokens = NIL;
@@ -6691,7 +6014,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     
     /* --- build new left token (used only for tree-based remove) --- */
     token_added(node);
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     new_left_token(New, node, tok, w);
     
     /* --- check for match in tentative_retractions --- */
@@ -6747,7 +6070,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         remove_from_dll(node->b.p.tentative_retractions, msc,
                         next_of_node, prev_of_node);
         remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
-        /* REW: begin 08.20.97 */
         if (msc->goal)
         {
             remove_from_dll(msc->goal->id->ms_retractions, msc,
@@ -6768,9 +6090,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 msc, next_in_level, prev_in_level);
             }
         }
-        /* REW: end   08.20.97 */
         
-        free_with_pool(&thisAgent->ms_change_pool, msc);
+        thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
         print_with_symbols(thisAgent, "\nRemoving tentative retraction: %y",
                            node->b.p.prod->name);
@@ -6785,18 +6106,14 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                        node->b.p.prod->name);
 #endif
                        
-    allocate_with_pool(thisAgent, &thisAgent->ms_change_pool, &msc);
+    thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
     msc->tok = tok;
     msc->w = w;
     msc->p_node = node;
     msc->inst = NIL;  /* just for safety */
-    /* REW: begin 08.20.97 */
     /* initialize goal regardless of run mode */
     msc->level = 0;
     msc->goal = NIL;
-    /* REW: end   08.20.97 */
-    
-    /* RCHONG: begin 10.11 */
     
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
     
@@ -6817,15 +6134,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     
     /* operand code removed 1/22/99 - kjc */
     
-    /* REW: begin 09.15.96 */
-    /* REW: begin 08.20.97 */
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
     print("\n    Level of goal is  %d", msc->level);
 #endif
-    /* REW: end 08.20.97 */
     
     prod_type = IE_PRODS;
     
@@ -7022,7 +6336,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
                                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
                                 
@@ -7037,7 +6351,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
                                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
                                 
@@ -7068,10 +6382,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
         
-        /* REW: begin 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_o_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end   08.20.97 */
         
         
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
@@ -7081,7 +6393,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
             char buf[256];
-            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
     }
@@ -7091,10 +6403,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         insert_at_head_of_dll(thisAgent->ms_i_assertions,
                               msc, next, prev);
                               
-        /* REW: end 08.20.97 */
         insert_at_head_of_dll(msc->goal->id->ms_i_assertions,
                               msc, next_in_level, prev_in_level);
-        /* REW: end 08.20.97 */
         
         node->b.p.prod->OPERAND_which_assert_list = I_LIST;
         
@@ -7103,11 +6413,10 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
             char buf[256];
-            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+            SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
     }
-    /* REW: end   09.15.96 */
     
     // :interrupt
     if (node->b.p.prod->interrupt)
@@ -7175,28 +6484,22 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 }
             }
             
-            /* REW: begin 09.15.96 */
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
                 remove_from_dll(msc->goal->id->ms_o_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
-                /* REW: begin 08.20.97 */
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
-                /* REW: end   08.20.97 */
             }
-            /* REW: end   09.15.96 */
             
-            free_with_pool(&thisAgent->ms_change_pool, msc);
+            thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
             print_with_symbols(thisAgent, "\nRemoving tentative assertion: %y",
                                node->b.p.prod->name);
@@ -7223,19 +6526,16 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                            
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
-        allocate_with_pool(thisAgent, &thisAgent->ms_change_pool, &msc);
+        thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = inst;
         msc->p_node = node;
         msc->tok = NIL;     /* just for safety */
         msc->w = NIL;       /* just for safety */
-        /* REW: begin 08.20.97 */
         msc->level = 0;     /* just for safety */
         msc->goal = NIL;    /* just for safety */
-        /* REW: end   08.20.97 */
         insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
                               next_of_node, prev_of_node);
                               
-        /* REW: begin 08.20.97 */
         /* Determine what the goal of the msc is and add it to that
         goal's list of retractions */
         msc->goal = find_goal_for_match_set_change_retraction(msc);
@@ -7254,7 +6554,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             valid, even though, for retractions caused by goal removals, the
             goal will be removed at the next WM phase. (You can see this by
             printing the identifier for the goal in the elaboration cycle
-            after goal removal.  It's still there, although nothing is attacjed
+            after goal removal.  It's still there, although nothing is attached
             to it.  One elab later, the identifier itself is removed.)  Because
             Waterfall needs to know if the goal is valid or not, I look at the
             link_count on the symbol.  A link_count of 0 is the trigger for the
@@ -7317,23 +6617,20 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
         }
 #endif
-        /* REW: end   08.20.97 */
         
         activation_exit_sanity_check();
         return;
     }
     
-    /* REW: begin 09.15.96 */
     
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent, "\n%y: ", node->b.p.prod->name);
         char buf[256];
-        SNPRINTF(buf, 254, "%s: ", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+        SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
     
-    /* REW: end   09.15.96 */
 #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
@@ -7427,7 +6724,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
             {
                 next_t = t->a.neg.next_negrm;
                 fast_remove_from_dll(t->w->tokens, t, token, next_from_wme, prev_from_wme);
-                free_with_pool(&thisAgent->token_pool, t);
+                thisAgent->memoryManager->free_with_pool(MP_token, t);
             }
             
             /* --- for Memory nodes --- */
@@ -7472,7 +6769,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
                                      next_of_node, prev_of_node);
                 fast_remove_from_dll(t->parent->first_child, t, token,
                                      next_sibling, prev_sibling);
-                free_with_pool(&thisAgent->token_pool, t);
+                thisAgent->memoryManager->free_with_pool(MP_token, t);
             }
             
             /* --- for CN Partner nodes --- */
@@ -7502,7 +6799,7 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
             abort_with_fatal_error(thisAgent, msg);
         }
         
-        free_with_pool(&thisAgent->token_pool, tok);
+        thisAgent->memoryManager->free_with_pool(MP_token, tok);
         if (tok == root)
         {
             break;    /* if leftmost leaf was the root, we're done */
@@ -7545,11 +6842,11 @@ void remove_token_and_subtree(agent* thisAgent, token* root)
      1 byte: 0 (null termination for the above string)
      1 byte: format version number (current version is version 3)
 
-     4 bytes: number of sym_constants
+     4 bytes: number of str_constants
      4 bytes: number of variables
      4 bytes: number of int_constants
      4 bytes: number of float_constants
-       names of all sym_constants (each a null-terminated string)
+       names of all str_constants (each a null-terminated string)
        names of all variables (each a null-terminated string)
        values of all int_constants (each as a null-terminated ASCII string)
        values of all float_constants (each as a null-terminated ASCII string)
@@ -7736,11 +7033,11 @@ void reteload_string(FILE* f)
    has index number 1, the second has number 2, etc.  Retesave_symbol_table()
    saves the whole symbol table, using the following format:
 
-       4 bytes: number of sym_constants
+       4 bytes: number of str_constants
        4 bytes: number of variables
        4 bytes: number of int_constants
        4 bytes: number of float_constants
-         names of all sym_constants (each a null-terminated string)
+         names of all str_constants (each a null-terminated string)
          names of all variables (each a null-terminated string)
          values of all int_constants (each as a null-term. ASCII string)
          values of all float_constants (each as a null-term. ASCII string)
@@ -7761,7 +7058,7 @@ bool retesave_symbol_and_assign_index(agent* thisAgent, void* item, void* userda
     sym = static_cast<symbol_struct*>(item);
     thisAgent->current_retesave_symindex++;
     sym->retesave_symindex = thisAgent->current_retesave_symindex;
-    retesave_string(symbol_to_string(thisAgent, sym, false, NIL, 0), f);
+    retesave_string(sym->to_string(), f);
     return false;
 }
 
@@ -7786,26 +7083,26 @@ void retesave_symbol_table(agent* thisAgent, FILE* f)
 
 void reteload_all_symbols(agent* thisAgent, FILE* f)
 {
-    uint64_t num_sym_constants, num_variables;
+    uint64_t num_str_constants, num_variables;
     uint64_t num_int_constants, num_float_constants;
     Symbol** current_place_in_symtab;
     uint64_t i;
     
-    num_sym_constants = reteload_eight_bytes(f);
+    num_str_constants = reteload_eight_bytes(f);
     num_variables = reteload_eight_bytes(f);
     num_int_constants = reteload_eight_bytes(f);
     num_float_constants = reteload_eight_bytes(f);
     
-    thisAgent->reteload_num_syms = num_sym_constants + num_variables + num_int_constants
+    thisAgent->reteload_num_syms = num_str_constants + num_variables + num_int_constants
                                    + num_float_constants;
                                    
     /* --- allocate memory for the symbol table --- */
     thisAgent->reteload_symbol_table = (Symbol**)
-                                       allocate_memory(thisAgent, static_cast<size_t>(thisAgent->reteload_num_syms * sizeof(char*)), MISCELLANEOUS_MEM_USAGE);
+                                       thisAgent->memoryManager->allocate_memory(thisAgent->reteload_num_syms * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
                                        
     /* --- read in all the symbols from the file --- */
     current_place_in_symtab = thisAgent->reteload_symbol_table;
-    for (i = 0; i < num_sym_constants; i++)
+    for (i = 0; i < num_str_constants; i++)
     {
         reteload_string(f);
         *(current_place_in_symtab++) = make_str_constant(thisAgent, reteload_string_buf);
@@ -7855,9 +7152,9 @@ void reteload_free_symbol_table(agent* thisAgent)
     
     for (i = 0; i < thisAgent->reteload_num_syms; i++)
     {
-        symbol_remove_ref(thisAgent, *(thisAgent->reteload_symbol_table + i));
+        symbol_remove_ref(thisAgent, (*(thisAgent->reteload_symbol_table + i)));
     }
-    free_memory(thisAgent, thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ----------------------------------------------------------------------
@@ -7924,7 +7221,7 @@ void reteload_alpha_memories(agent* thisAgent, FILE* f)
     
     thisAgent->reteload_num_ams = reteload_eight_bytes(f);
     thisAgent->reteload_am_table = (alpha_mem**)
-                                   allocate_memory(thisAgent, static_cast<size_t>(thisAgent->reteload_num_ams * sizeof(char*)), MISCELLANEOUS_MEM_USAGE);
+                                   thisAgent->memoryManager->allocate_memory(thisAgent->reteload_num_ams * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
     for (i = 0; i < thisAgent->reteload_num_ams; i++)
     {
         id = reteload_symbol_from_index(thisAgent, f);
@@ -7959,7 +7256,7 @@ void reteload_free_am_table(agent* thisAgent)
     {
         remove_ref_to_alpha_mem(thisAgent, *(thisAgent->reteload_am_table + i));
     }
-    free_memory(thisAgent, thisAgent->reteload_am_table, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(thisAgent->reteload_am_table, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ----------------------------------------------------------------------
@@ -8068,7 +7365,7 @@ node_varnames* reteload_node_varnames(agent* thisAgent, rete_node* node, FILE* f
     {
         return NIL;
     }
-    allocate_with_pool(thisAgent, &thisAgent->node_varnames_pool, &nvn);
+    thisAgent->memoryManager->allocate_with_pool(MP_node_varnames, &nvn);
     if (node->node_type == CN_BNODE)
     {
         temp = node->b.cn.partner->parent;
@@ -8157,32 +7454,30 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
     {
         case 0:
             sym = reteload_symbol_from_index(thisAgent, f);
-            symbol_add_ref(thisAgent, sym);
-            rv = symbol_to_rhs_value(sym);
+            rv = allocate_rhs_value_for_symbol(thisAgent, sym, 0);
             break;
         case 1:
             funcall_list = NIL;
             sym = reteload_symbol_from_index(thisAgent, f);
             
-            /* NLD: 4/30/2011
-             * I'm fairly certain function calls do not need an added ref.
-             *
-             * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol
+            /* I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol
              * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a
              * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed
              * later via remove_built_in_rhs_functions (-1 ref).
              *
              * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed
              * in reteload_free_symbol_table (-1 ref).
+                 *
+                 * - NLD: 4/30/2011
              */
-            // symbol_add_ref (thisAgent, sym);
+            // symbol_add_ref(thisAgent, sym);
             
             rf = lookup_rhs_function(thisAgent, sym);
             if (!rf)
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
-                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(thisAgent, sym, true, NIL, 0));
+                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", sym->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
@@ -8259,15 +7554,12 @@ action* reteload_rhs_action(agent* thisAgent, FILE* f)
 {
     action* a;
     
-    allocate_with_pool(thisAgent, &thisAgent->action_pool, &a);
+    a = make_action(thisAgent);
     a->type = reteload_one_byte(f);
     a->preference_type = reteload_one_byte(f);
     a->support = reteload_one_byte(f);
     if (a->type == FUNCALL_ACTION)
     {
-        a->id = NIL;
-        a->attr = NIL;
-        a->referent = NIL;
         a->value = reteload_rhs_value(thisAgent, f);
     }
     else     /* MAKE_ACTION's */
@@ -8382,7 +7674,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     uint64_t count;
     list* temp;
     
-    allocate_with_pool(thisAgent, &thisAgent->rete_test_pool, &rt);
+    thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &rt);
     rt->type = reteload_one_byte(f);
     rt->right_field_num = reteload_one_byte(f);
     
@@ -8714,7 +8006,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             break;
             
         case P_BNODE:
-            allocate_with_pool(thisAgent, &thisAgent->production_pool, &prod);
+            thisAgent->memoryManager->allocate_with_pool(MP_production, &prod);
             prod->reference_count = 1;
             prod->firing_count = 0;
             prod->trace_firings = false;
@@ -8770,6 +8062,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->rl_rule = false;
             prod->rl_ecr = 0.0;
             prod->rl_efr = 0.0;
+            prod->rl_gql = 0.0;
             if ((prod->type != JUSTIFICATION_PRODUCTION_TYPE) && (prod->type != TEMPLATE_PRODUCTION_TYPE))
             {
                 prod->rl_rule = rl_valid_rule(prod);
@@ -8783,7 +8076,6 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
                     }
                 }
             }
-            prod->rl_template_conds = NIL;
             prod->rl_template_instantiations = NIL;
             
             New = make_new_production_node(thisAgent, parent, prod);
@@ -9047,7 +8339,7 @@ void get_all_node_count_stats(agent* thisAgent)
     //for (i=0; i<256; i++)
     //  if (thisAgent->rete_node_counts[i] &&
     //      (*bnode_type_names[i] == 0)) {
-    //    print (thisAgent, "Internal eror: unknown node type [%d] has nonzero count.\n",i);
+    //    thisAgent->OutputManager->print( "Internal eror: unknown node type [%d] has nonzero count.\n",i);
     //  }
     init_bnode_type_names(thisAgent);
     
@@ -9181,7 +8473,7 @@ void dummy_matches_node_left_addition(agent* thisAgent, rete_node* /*node*/, tok
     token* New;
     
     /* --- just add a token record to dummy_matches_node_tokens --- */
-    allocate_with_pool(thisAgent, &thisAgent->token_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_token, &New);
     New->node = NIL;
     New->parent = tok;
     New->w = w;
@@ -9211,7 +8503,7 @@ void deallocate_token_list(agent* thisAgent, token* t)
     while (t)
     {
         next = t->next_of_node;
-        free_with_pool(&thisAgent->token_pool, t);
+        thisAgent->memoryManager->free_with_pool(MP_token, t);
         t = next;
     }
 }
@@ -9382,9 +8674,8 @@ void print_partial_match_information(agent* thisAgent, rete_node* p_node,
     condition* top_cond, *bottom_cond;
     int64_t n;
     token* tokens, *t;
-    
-    p_node_to_conditions_and_nots(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                  NIL, NIL);
+    p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL);
     n = ppmi_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                  wtt, 0);
     print(thisAgent, "\n%d complete matches.\n", n);
@@ -9412,10 +8703,7 @@ typedef struct match_set_trace
     Symbol* sym;
     int        count;
     struct match_set_trace* next;
-    /* REW: begin 08.20.97 */
-    /* Add match goal to the print of the matching production */
     Symbol* goal;
-    /* REW: end   08.20.97 */
 } MS_trace;
 
 MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
@@ -9431,7 +8719,6 @@ MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
     return 0;
 }
 
-/* REW: begin 10.22.97 */
 MS_trace* in_ms_trace_same_goal(Symbol* sym, MS_trace* trace, Symbol* goal)
 {
     MS_trace* tmp;
@@ -9444,7 +8731,6 @@ MS_trace* in_ms_trace_same_goal(Symbol* sym, MS_trace* trace, Symbol* goal)
     }
     return 0;
 }
-/* REW: end   10.22.97 */
 
 void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 {
@@ -9455,7 +8741,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
     /* --- Print assertions --- */
     
     
-    /* REW: begin 09.15.96 */
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
         print(thisAgent, "O Assertions:\n");
@@ -9465,10 +8750,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 print_with_symbols(thisAgent, " [%y] ", msc->goal);
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
@@ -9476,23 +8759,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9505,13 +8784,11 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9520,7 +8797,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
@@ -9534,10 +8811,8 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 print_with_symbols(thisAgent, " [%y] ", msc->goal);
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
@@ -9545,24 +8820,20 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace),
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                         MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -9575,13 +8846,11 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9590,11 +8859,10 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
-    /* REW: end   09.15.96 */
     
     /* --- Print retractions --- */
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
@@ -9612,24 +8880,20 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
                     {
-                        tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace),
+                        tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -9642,7 +8906,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 tmp = ms_trace;
                 ms_trace = tmp->next;
                 print_with_symbols(thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
                 
@@ -9656,7 +8919,6 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, " [NIL] ");
                 }
-                /* REW: end  08.20.97 */
                 if (tmp->count > 1)
                 {
                     print(thisAgent, "(%d)\n", tmp->count);
@@ -9665,7 +8927,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 {
                     print(thisAgent, "\n");
                 }
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
         }
     }
@@ -9723,6 +8985,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
+    char c_id_test[PRINT_BUFSIZE];
     
     if (!conds)
     {
@@ -9735,7 +8998,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     
     for (c = conds; c != NIL; c = c->next)
     {
-        allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = c;
         if (conds_not_yet_printed)
         {
@@ -9769,7 +9032,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
         c = static_cast<condition_struct*>(dc->item);
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             //print_string (thisAgent, "-{");
             xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition);
             xml_condition_list(thisAgent, c->data.ncc.top, indent + 2, internal);
@@ -9819,9 +9082,10 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
             
-            //print_string (thisAgent, test_to_string(id_test, NULL, 0));
+            Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
+            //print_string(thisAgent, c_id_test);
             //xml_test(thisAgent, kConditionId, id_test) ;
-            xml_att_val(thisAgent, kConditionId, test_to_string(id_test, NULL, 0)) ;
+            xml_att_val(thisAgent, kConditionId, c_id_test);
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
             deallocate_test(thisAgent, id_test);
             
@@ -9829,7 +9093,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
             dc = conds_for_this_id;
             conds_for_this_id = conds_for_this_id->next;
             c = static_cast<condition_struct*>(dc->item);
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             
             {
                 /* --- build and print attr/value test for condition c --- */
@@ -9848,7 +9112,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 {
                     ch++;
                 }
-                test_to_string(c->data.tests.attr_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
                 while (*ch)
                 {
                     ch++;
@@ -9859,10 +9123,10 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 
                 // Reset the ch pointer
                 ch = temp ;
-                if (! test_is_blank_test(c->data.tests.value_test))
+                if (c->data.tests.value_test)
                 {
                     *(ch++) = ' ';
-                    test_to_string(c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp));
+                    Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
                     while (*ch)
                     {
                         ch++;
@@ -10034,7 +9298,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
     
     /* --- Print assertions --- */
     
-    /* REW: begin 09.15.96 */
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
         //print (thisAgent, "O Assertions:\n");
@@ -10049,11 +9312,9 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
                 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
@@ -10062,23 +9323,19 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace), MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -10098,18 +9355,16 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
                 //  print(thisAgent, "\n");
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
@@ -10126,14 +9381,12 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             if (wtt != NONE_WME_TRACE)
             {
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
-                /* REW: begin 08.20.97 */
                 /* Add match goal to the print of the matching production */
                 //print_with_symbols(thisAgent, " [%y] ", msc->goal);
                 xml_begin_tag(thisAgent, kTagProduction) ;
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
                 
-                /* REW: end   08.20.97 */
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 xml_whole_token(thisAgent, &temp_token, wtt);
@@ -10142,24 +9395,20 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             }
             else
             {
-                /* REW: begin 10.22.97 */
                 if ((tmp = in_ms_trace_same_goal(msc->p_node->b.p.prod->name,
                                                  ms_trace, msc->goal)) != NIL)
                 {
-                    /* REW: end   10.22.97 */
                     tmp->count++;
                 }
                 else
                 {
-                    tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace),
+                    tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                         MISCELLANEOUS_MEM_USAGE));
                     tmp->sym = msc->p_node->b.p.prod->name;
                     tmp->count = 1;
                     tmp->next = ms_trace;
-                    /* REW: begin 08.20.97 */
                     /* Add match goal to the print of the matching production */
                     tmp->goal = msc->goal;
-                    /* REW: end   08.20.97 */
                     ms_trace = tmp;
                 }
             }
@@ -10179,25 +9428,22 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
-                /* REW: end  08.20.97 */
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
                 //  print(thisAgent, "\n");
                 
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
     }
     xml_end_tag(thisAgent, kIAssertions) ;
-    /* REW: end   09.15.96 */
     
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
     {
@@ -10215,24 +9461,20 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    /* REW: begin 10.22.97 */
                     if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
-                        /* REW: end   10.22.97 */
                         tmp->count++;
                     }
                     else
                     {
-                        tmp = static_cast<match_set_trace*>(allocate_memory(thisAgent, sizeof(MS_trace),
+                        tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
                         tmp->sym = msc->inst->prod->name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
-                        /* REW: begin 08.20.97 */
                         /* Add match goal to the print of the matching production */
                         tmp->goal = msc->goal;
-                        /* REW: end   08.20.97 */
                         ms_trace = tmp;
                     }
                 }
@@ -10259,7 +9501,6 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     xml_att_val(thisAgent, kCount, tmp->count) ;    // DJP -- No idea what this count is
                 }
                 //print_with_symbols (thisAgent, "  %y ", tmp->sym);
-                /* REW: begin 08.20.97 */
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
                 
@@ -10269,12 +9510,11 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 //  print_with_symbols(thisAgent, " [%y] ", tmp->goal);
                 //else
                 //  print(thisAgent, " [NIL] ");
-                /* REW: end  08.20.97 */
                 //if(tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
                 //  print(thisAgent, "\n");
-                free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
+                thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
                 xml_end_tag(thisAgent, kTagProduction) ;
             }
         }
@@ -10431,8 +9671,8 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
     token* tokens, *t;
     
     xml_begin_tag(thisAgent, kTagProduction) ;
-    p_node_to_conditions_and_nots(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
-                                  NIL, NIL);
+    p_node_to_conditions_and_rhs(thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
+                                 NIL);
     n = xml_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                 wtt, 0);
     xml_att_val(thisAgent, kMatches, n) ;
@@ -10516,18 +9756,18 @@ void init_rete(agent* thisAgent)
     
     int i;
     
-    init_memory_pool(thisAgent, &thisAgent->alpha_mem_pool, sizeof(alpha_mem),
+    thisAgent->memoryManager->init_memory_pool(MP_alpha_mem, sizeof(alpha_mem),
                      "alpha mem");
-    init_memory_pool(thisAgent, &thisAgent->rete_test_pool, sizeof(rete_test),
+    thisAgent->memoryManager->init_memory_pool(MP_rete_test, sizeof(rete_test),
                      "rete test");
-    init_memory_pool(thisAgent, &thisAgent->rete_node_pool, sizeof(rete_node),
+    thisAgent->memoryManager->init_memory_pool(MP_rete_node, sizeof(rete_node),
                      "rete node");
-    init_memory_pool(thisAgent, &thisAgent->node_varnames_pool, sizeof(node_varnames),
+    thisAgent->memoryManager->init_memory_pool(MP_node_varnames, sizeof(node_varnames),
                      "node varnames");
-    init_memory_pool(thisAgent, &thisAgent->token_pool, sizeof(token), "token");
-    init_memory_pool(thisAgent, &thisAgent->right_mem_pool, sizeof(right_mem),
+    thisAgent->memoryManager->init_memory_pool(MP_token, sizeof(token), "token");
+    thisAgent->memoryManager->init_memory_pool(MP_right_mem, sizeof(right_mem),
                      "right mem");
-    init_memory_pool(thisAgent, &thisAgent->ms_change_pool, sizeof(ms_change),
+    thisAgent->memoryManager->init_memory_pool(MP_ms_change, sizeof(ms_change),
                      "ms change");
                      
     for (i = 0; i < 16; i++)
@@ -10535,16 +9775,14 @@ void init_rete(agent* thisAgent)
         thisAgent->alpha_hash_tables[i] = make_hash_table(thisAgent, 0, hash_alpha_mem);
     }
     
-    thisAgent->left_ht = allocate_memory_and_zerofill
-                         (thisAgent, sizeof(char*) * LEFT_HT_SIZE, HASH_TABLE_MEM_USAGE);
-    thisAgent->right_ht = allocate_memory_and_zerofill
-                          (thisAgent, sizeof(char*) * RIGHT_HT_SIZE, HASH_TABLE_MEM_USAGE);
+    thisAgent->left_ht = thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(char*) * LEFT_HT_SIZE, HASH_TABLE_MEM_USAGE);
+    thisAgent->right_ht = thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(char*) * RIGHT_HT_SIZE, HASH_TABLE_MEM_USAGE);
                           
     init_dummy_top_node(thisAgent);
     
     thisAgent->max_rhs_unbound_variables = 1;
     thisAgent->rhs_variable_bindings = (Symbol**)
-                                       allocate_memory_and_zerofill(thisAgent, sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
+                                       thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
                                        
     /* This is still not thread-safe. -AJC (8/9/02) */
     static bool bInit = false;
@@ -10554,8 +9792,6 @@ void init_rete(agent* thisAgent)
     }
     
     bInit = true;
-    
-    init_test_type_conversion_tables();
     
     init_bnode_type_names(thisAgent);
     

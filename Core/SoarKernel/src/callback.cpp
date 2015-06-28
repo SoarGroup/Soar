@@ -36,7 +36,6 @@
 #include "init_soar.h"
 #include "print.h"
 
-
 const char* soar_callback_names[] =
 {
     stringify(NO_CALLBACK),
@@ -522,9 +521,9 @@ void soar_list_all_callbacks(agent* thisAgent,
     
     for (ct = 1; ct < limit; ct++)
     {
-        print(thisAgent, "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), false));
+        print(thisAgent,  "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), false));
         soar_list_all_callbacks_for_event(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(ct));
-        print(thisAgent, "\n");
+        print(thisAgent,  "\n");
     }
 }
 
@@ -541,7 +540,7 @@ void soar_list_all_callbacks_for_event(agent* thisAgent,
         
         cb = static_cast< soar_callback* >(c->first);
         
-        print(thisAgent, "%s ", cb->id.c_str());
+        print(thisAgent,  "%s ", cb->id.c_str());
     }
 }
 

@@ -148,7 +148,7 @@ extern preference* exploration_choose_according_to_policy(agent* thisAgent, slot
 extern double exploration_probability_according_to_policy(agent* thisAgent, slot* s, preference* candidates, preference* selection);
 
 // selects a candidate in a random fashion
-extern preference* exploration_randomly_select(preference* candidates);
+extern preference* exploration_randomly_select(preference* candidates, const bool &update_rho = true);
 
 // selects a candidate in a softmax fashion
 extern preference* exploration_probabilistically_select(preference* candidates);

@@ -98,7 +98,7 @@ namespace soar_module
             int res = 0;
             const char* val;
 //                  std::string val;
-
+            
             fprintf(stderr, "----------------------------\n%s\n----------------------------\n", table_name);
             while (1)
             {

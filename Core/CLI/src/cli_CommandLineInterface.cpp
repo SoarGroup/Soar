@@ -23,6 +23,7 @@
 
 #include "agent.h"
 #include "xml.h"
+#include "lexer.h"
 
 using namespace cli;
 using namespace sml;
@@ -114,7 +115,9 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::WatchCommand(*this));
     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
     m_Parser.AddCommand(new cli::WMACommand(*this));
+#ifndef NO_SVS
     m_Parser.AddCommand(new cli::SVSCommand(*this));
+#endif
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface()
@@ -526,9 +529,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                         // Potential match
                         // Check next character
                         size_t next = i + 1;
-                        
+                
                         if (next < message.size() && isdigit(message[next]))
-                        {
+                {
                             // Match
                             message.insert(i, "<");
                             
@@ -684,7 +687,8 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
     PrintCLIMessage(&tempString);
 }
 
-void get_context_var_info(agent* thisAgent, Symbol** dest_goal,
+void get_context_var_info(agent* thisAgent, const char* var_name,
+                          Symbol** dest_goal,
                           Symbol** dest_attr_of_slot,
                           Symbol** dest_current_value)
 {
@@ -692,7 +696,7 @@ void get_context_var_info(agent* thisAgent, Symbol** dest_goal,
     int levels_up;
     wme* w;
     
-    v = find_variable(thisAgent, thisAgent->lexeme.string);
+    v = find_variable(thisAgent, var_name);
     if (v == thisAgent->s_context_variable)
     {
         levels_up = 0;
@@ -766,17 +770,17 @@ void get_context_var_info(agent* thisAgent, Symbol** dest_goal,
     }
 }
 
-bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme,
+bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string,
                                         Symbol** result_id)
 {
     Symbol* id;
     Symbol* g, *attr, *value;
     
-    get_lexeme_from_string(thisAgent, the_lexeme);
+    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, lex_string);
     
-    if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+    if (lexeme.type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+        id = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number);
         if (!id)
         {
             return false;
@@ -788,9 +792,9 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme
         }
     }
     
-    if (thisAgent->lexeme.type == VARIABLE_LEXEME)
+    if (lexeme.type == VARIABLE_LEXEME)
     {
-        get_context_var_info(thisAgent, &g, &attr, &value);
+        get_context_var_info(thisAgent, lexeme.string(), &g, &attr, &value);
         
         if ((!attr) || (!value))
         {
@@ -809,91 +813,56 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme
     return false;
 }
 
-void get_lexeme_from_string(agent* thisAgent, const char* the_lexeme)
+soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* lex_string)
 {
-    int i;
-    const char* c;
-    bool sym_constant_start_found = false;
-    bool sym_constant_end_found = false;
-    
-    for (c = the_lexeme, i = 0; *c; c++, i++)
-    {
-        if (*c == '|')
-        {
-            if (!sym_constant_start_found)
-            {
-                i--;
-                sym_constant_start_found = true;
-            }
-            else
-            {
-                i--;
-                sym_constant_end_found = true;
-            }
-        }
-        else
-        {
-            thisAgent->lexeme.string[i] = *c;
-        }
-    }
-    
-    thisAgent->lexeme.string[i] = '\0'; /* Null terminate lexeme string */
-    
-    thisAgent->lexeme.length = i;
-    
-    if (sym_constant_end_found)
-    {
-        thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
-    }
-    else
-    {
-        determine_type_of_constituent_string(thisAgent);
-    }
+    soar::Lexer lexer(thisAgent, lex_string);
+    lexer.get_lexeme();
+    return lexer.current_lexeme;
 }
 
-Symbol* read_identifier_or_context_variable(agent* thisAgent)
+Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme)
 {
     Symbol* id;
     Symbol* g, *attr, *value;
     
-    if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+    if (lexeme->type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+        id = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
         if (!id)
         {
-            print(thisAgent, "There is no identifier %c%lu.\n", thisAgent->lexeme.id_letter,
-                  thisAgent->lexeme.id_number);
-            print_location_of_most_recent_lexeme(thisAgent);
+            print(thisAgent,  "There is no identifier %c%lu.\n", lexeme->id_letter,
+                  lexeme->id_number);
+            // TODO: store location in lexeme and then rewrite comment print statements
+            // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         return id;
     }
-    if (thisAgent->lexeme.type == VARIABLE_LEXEME)
+    if (lexeme->type == VARIABLE_LEXEME)
     {
-        get_context_var_info(thisAgent, &g, &attr, &value);
+        get_context_var_info(thisAgent, lexeme->string(), &g, &attr, &value);
         if (!attr)
         {
             print(thisAgent, "Expected identifier (or context variable)\n");
-            print_location_of_most_recent_lexeme(thisAgent);
+            // print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (!value)
         {
-            print(thisAgent, "There is no current %s.\n", thisAgent->lexeme.string);
-            print_location_of_most_recent_lexeme(thisAgent);
+            print(thisAgent,  "There is no current %s.\n", lexeme->string());
+            // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
-            print(thisAgent, "The current %s ", thisAgent->lexeme.string);
+            print(thisAgent,  "The current %s ", lexeme->string());
             print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
-            print_location_of_most_recent_lexeme(thisAgent);
+            // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         return value;
     }
     print(thisAgent, "Expected identifier (or context variable)\n");
-    print_location_of_most_recent_lexeme(thisAgent);
+    // lexer->print_location_of_most_recent_lexeme();
     return NIL;
 }
-

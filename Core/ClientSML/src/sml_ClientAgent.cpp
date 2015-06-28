@@ -1483,17 +1483,17 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
             h = soarHome;
             
             if (h.find_last_of("/\\") != h.size() - 1)
-            {
+    {
                 h += '/';
             }
             h += DEBUGGER_NAME;
             
             if (isfile(h.c_str()))
-            {
+        {
                 p = h;
             }
         }
-    }
+        }
     
     // Check the location where the library is
     if (p.length() == 0)
@@ -1538,9 +1538,9 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     }
     
     if (p.length() == 0)
-    {
-        return false;
-    }
+        {
+            return false;
+        }
     
     if (port == -1)
     {
@@ -1810,6 +1810,7 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
     return pClientIdentifier;
 }
 
+#ifndef NO_SVS
 void Agent::SendSVSInput(const std::string& txt)
 {
     GetKernel()->SendSVSInput(GetAgentName(), txt);
@@ -1824,3 +1825,4 @@ std::string Agent::GetSVSOutput()
 {
     return GetKernel()->GetSVSOutput(GetAgentName());
 }
+#endif

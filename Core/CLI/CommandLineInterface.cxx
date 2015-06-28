@@ -64,6 +64,9 @@
 #include "src/cli_srand.cpp"
 #include "src/cli_stats.cpp"
 #include "src/cli_stopsoar.cpp"
+#ifndef NO_SVS
+#include "src/cli_svs.cpp"
+#endif
 #include "src/cli_time.cpp"
 #include "src/cli_timers.cpp"
 #include "src/cli_unalias.cpp"
@@ -75,4 +78,3 @@
 #include "src/cli_watchwmes.cpp"
 #include "src/cli_wma.cpp"
 #include "src/cli_CommandLineInterface.cpp"
-#include "src/cli_svs.cpp"

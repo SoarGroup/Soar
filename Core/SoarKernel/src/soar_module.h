@@ -26,9 +26,12 @@
 #include "kernel.h"
 #include "misc.h"
 #include "symtab.h"
+//#include "mem.h"
+#include "memory_manager.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
+typedef char* rhs_value;
 
 // separates this functionality
 // just for Soar modules
@@ -46,10 +49,28 @@ namespace soar_module
         Symbol* attr;
         Symbol* value;
         
-        symbol_triple_struct(Symbol* new_id, Symbol* new_attr, Symbol* new_value): id(new_id), attr(new_attr), value(new_value) {}
+        symbol_triple_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
     } symbol_triple;
     typedef std::list< symbol_triple* > symbol_triple_list;
     
+    typedef struct identity_triple_struct
+    {
+        uint64_t id;
+        uint64_t attr;
+        uint64_t value;
+
+        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0): id(new_id), attr(new_attr), value(new_value) {}
+    } identity_triple;
+
+    typedef struct rhs_triple_struct
+    {
+            rhs_value id;
+            rhs_value attr;
+            rhs_value value;
+
+            rhs_triple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
+    } rhs_triple;
+
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
@@ -777,6 +798,8 @@ namespace soar_module
     // all statistics have a name and
     // can be retrieved generically
     // via strings
+    // Refactored from stat to statistic to avoid a conflict with a Tcl structure
+    // of the same name.
     class statistic: public named_object
     {
         public:
@@ -963,8 +986,6 @@ namespace soar_module
     
 #ifdef USE_MEM_POOL_ALLOCATORS
     
-    memory_pool* get_memory_pool(agent* thisAgent, size_t size);
-    
     template <class T>
     class soar_memory_pool_allocator
     {
@@ -984,27 +1005,37 @@ namespace soar_module
             {
                 return thisAgent;
             }
-            
-            soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL) {}
-            
-            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL)
+
+            soar_memory_pool_allocator() : thisAgent(NULL), mem_pool(NULL), memory_manager(NULL)
             {
-                // useful for debugging
-                // std::string temp_this( typeid( value_type ).name() );
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
             
-            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL)
+            soar_memory_pool_allocator(agent* new_agent): thisAgent(new_agent), mem_pool(NULL), memory_manager(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( value_type ).name() );
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
+            }
+            
+            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): thisAgent(obj.get_agent()), mem_pool(NULL), memory_manager(NULL)
+            {
+                // useful for debugging
+                // std::string temp_this( typeid( value_type ).name() );
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
             
             template <class _other>
-            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL)
+            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): thisAgent(other.get_agent()), mem_pool(NULL), memory_manager(NULL)
             {
                 // useful for debugging
                 // std::string temp_this( typeid( T ).name() );
                 // std::string temp_other( typeid( _other ).name() );
+                    memory_manager = &(Memory_Manager::Get_MPM());
+                    mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
             
             pointer allocate(size_type
@@ -1014,16 +1045,10 @@ namespace soar_module
                              , const void* = 0)
             {
                 assert(n == 1);
-                
-                if (!mem_pool)
-                {
-                    assert(thisAgent);
-                    mem_pool = get_memory_pool(thisAgent, sizeof(value_type));
-                }
-                
+                assert(mem_pool && memory_manager);
                 pointer t;
-                allocate_with_pool(thisAgent, mem_pool, &t);
-                
+                memory_manager->allocate_with_pool_ptr(mem_pool, &t);
+                assert(t);
                 return t;
             }
             
@@ -1034,20 +1059,10 @@ namespace soar_module
                            )
             {
                 assert(n == 1);
-                
-                // not sure if this is correct...
-                // it only comes up if an object uses another object's
-                // allocator to deallocate memory that it allocated.
-                // it's quite possible, then, that the sizes would be off
-                if (!mem_pool)
-                {
-                    assert(thisAgent);
-                    mem_pool = get_memory_pool(thisAgent, sizeof(value_type));
-                }
-                
+                assert(memory_manager && mem_pool);
                 if (p)
                 {
-                    free_with_pool(mem_pool, p);
+                    memory_manager->free_with_pool_ptr(mem_pool, p);
                 }
             }
             
@@ -1085,6 +1100,7 @@ namespace soar_module
             
         private:
             agent* thisAgent;
+            Memory_Manager* memory_manager;
             memory_pool* mem_pool;
             
     };

@@ -328,6 +328,7 @@ typedef const char* soar_callback_id;
 typedef void* soar_callback_data;
 typedef void* soar_call_data;
 typedef int    soar_callback_event_id;
+
 typedef struct agent_struct agent;
 
 typedef void (*soar_callback_fn)(agent*,

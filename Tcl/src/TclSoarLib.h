@@ -19,7 +19,6 @@
 
 #include "enums.h"
 #include "soar_instance.h"
-#include "debug.h"
 
 #ifndef _TCL
 #  ifndef MAC_OS_X
@@ -52,25 +51,25 @@ extern "C"
 extern "C" class EXPORT TclSoarLib
 {
     public:
-    
+
         TclSoarLib(sml::Kernel* pKernel);
         void init_TclSoarLib();
         ~TclSoarLib();
-        
+
         bool turnOn();
         bool turnOff();
-        
+
         sml::Kernel* m_kernel;
-        
+
     private:
-    
+
         Tcl_Interp* m_interp;
-        
+
         bool initialize_Master();
         bool initialize_Tcl_Interpreter();
-        
+
         bool evaluateDirCommand(const std::string command);
-        
+
         std::string& EscapeTclString(const char* in, std::string& out);
         int GlobalEval(const std::string& command, std::string& result);
         int GlobalDirEval(const std::string& command, std::string& result);

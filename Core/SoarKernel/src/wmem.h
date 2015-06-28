@@ -36,10 +36,16 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+#include "enums.h"
+#include "soar_module.h"
+#include "production.h"
+
 typedef uint64_t tc_number;
+typedef signed short goal_stack_level;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
+typedef unsigned short rete_node_level;
 
 typedef struct wma_decay_element_struct wma_decay_element;
 
@@ -113,9 +119,6 @@ extern Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
      dependent for more than one goal, then it will point to the GDS
      of the highest goal.
 
-
-
-
    Reference counts on wmes:
       +1 if the wme is currently in WM
       +1 for each instantiation condition that points to it (bt.wme)
@@ -141,19 +144,17 @@ typedef struct wme_struct
     tc_number grounds_tc;                     /* for chunker use only */
     tc_number potentials_tc, locals_tc;
     struct preference_struct* chunker_bt_pref;
-    
-    /* REW: begin 09.15.96 */
+    struct condition_struct* chunker_bt_last_ground_cond;
+
     struct gds_struct* gds;
-    struct wme_struct* gds_next, *gds_prev; /* used for dll of wmes in gds */
-    /* REW: end   09.15.96 */
-    
-    
+    struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
-    
+
     wma_decay_element* wma_decay_el;
     tc_number wma_tc_value;
-    
+
 } wme;
 
 inline void wme_add_ref(wme* w)
@@ -173,6 +174,23 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
     {
         deallocate_wme(thisAgent, w);
     }
+}
+
+inline const char* field_to_string(WME_Field f)
+{
+    if (f == ID_ELEMENT) return "ID";
+    if (f == ATTR_ELEMENT) return "attribute";
+    if (f == VALUE_ELEMENT) return "value";
+    return "NO-ELEMENT";
+}
+
+inline Symbol* get_wme_element(wme* w, WME_Field f)
+{
+    if (!w)  return NULL;
+    if (f == ID_ELEMENT) return w->id;
+    if (f == ATTR_ELEMENT) return w->attr;
+    if (f == VALUE_ELEMENT) return w->value;
+    return NULL;
 }
 
 #endif

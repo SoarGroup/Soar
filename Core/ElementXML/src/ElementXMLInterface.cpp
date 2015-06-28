@@ -96,7 +96,7 @@ int soarxml_AddRef(ElementXML_Handle hXML)
 /*************************************************************
 * @brief Set the tag name for this element.
 *
-* @param  tagName   Tag name can only contain letters, numbers, �.� �-� and �_�.
+* @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @param  copyName  If true, tagName will be copied.  If false, we take ownership of tagName.
 * @returns  true if the tag name is valid.
 *************************************************************/
@@ -226,7 +226,7 @@ ElementXML_Handle const soarxml_MakeCopy(ElementXML_Handle const hXML)
 /*************************************************************
 * @brief Adds an attribute name-value pair.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @param  copyName      If true, atttributeName will be copied.  If false, we take ownership of attributeName
 * @param  copyValue     If true, atttributeName will be copied.  If false, we take ownership of attributeValue
@@ -289,7 +289,7 @@ const char* soarxml_GetAttribute(ElementXML_Handle hXML, const char* attName)
 * NOTE: The characterData will be deleted by this object when it is deleted.
 * It should be allocated with either allocateString() or copyString().
 *
-* @param characterData  The character data passed in should *not* replace special characters such as �<� and �&�
+* @param characterData  The character data passed in should *not* replace special characters such as < and &
 *                       with the XML escape sequences &lt; etc.
 *                       These values will be converted when the XML stream is created.
 * @param  copyData      If true, characterData will be copied.  If false, we take ownership of characterData
@@ -300,7 +300,7 @@ void soarxml_SetCharacterData(ElementXML_Handle hXML, char* characterData, bool 
 }
 
 /*************************************************************
-* @brief Setting the chracter data in this way indicates that this element�s character data should be treated as a binary buffer
+* @brief Setting the chracter data in this way indicates that this elements character data should be treated as a binary buffer
 *        (so it may contain chars from 0-255, not just ASCII characters).
 *
 * NOTE: The characterData will be deleted by this object when it is deleted.
@@ -373,12 +373,12 @@ int  soarxml_GetCharacterDataLength(ElementXML_Handle hXML)
 }
 
 /*************************************************************
-* @brief Setting this value to true indicates that this element�s character data should be stored in a CDATA section.
+* @brief Setting this value to true indicates that this elements character data should be stored in a CDATA section.
 *        By default this value will be false.
 *
 *        This value is ignored if the character data is marked as binary data.
 *
-* @param useCData   true if this element�s character data should be stored in a CDATA section.
+* @param useCData   true if this elements character data should be stored in a CDATA section.
 *************************************************************/
 void soarxml_SetUseCData(ElementXML_Handle hXML, bool useCData)
 {
@@ -484,7 +484,7 @@ char* soarxml_CopyBuffer(char const* original, int length)
 * NOTE: The attribute name must remain in scope for the life of this object.
 *       In practice, this generally means it must be a static constant.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @param  copyValue     If true, atttributeName will be copied.  If false, we take ownership of attributeValue
 * @returns true if attribute name is valid (debug mode only)
@@ -500,7 +500,7 @@ bool soarxml_AddAttributeFast(ElementXML_Handle hXML, char const* attributeName,
 * NOTE: The attribute name and value must remain in scope for the life of this object.
 *       In practice, this generally means it must be a static constant.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
@@ -516,7 +516,7 @@ bool soarxml_AddAttributeFastFast(ElementXML_Handle hXML, char const* attributeN
 * before this object is destroyed.  This requirement means the tag name
 * should generally be declared as a static constant.
 *
-* @param  tagName   Tag name can only contain letters, numbers, �.� �-� and �_�.
+* @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @returns  true if the tag name is valid.
 *************************************************************/
 bool soarxml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName)

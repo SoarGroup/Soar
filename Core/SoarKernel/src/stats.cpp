@@ -150,7 +150,7 @@ void stats_init_db(agent* thisAgent)
         char buf[256];
         SNPRINTF(buf, 254, "DB ERROR: %s", thisAgent->stats_db->get_errmsg());
         
-        print(thisAgent, buf);
+        print(thisAgent,  buf);
         xml_generate_warning(thisAgent, buf);
     }
     else

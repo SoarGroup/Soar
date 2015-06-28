@@ -1,0 +1,9 @@
+sp {answer*apply19*onc*t3-1
+    (state <s1> ^superstate nil -^test-item 20 ^test-item2 <c2>
+          ^test-item { > <c2> <c1> })
+    -->
+    (<s1> ^small <c2> + ^big <c1> + ^test-done 1 +)
+}
+
+
+

@@ -275,8 +275,6 @@
 		4D51083F1B2B42DA0009AABC /* consistency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107E01B2B42DA0009AABC /* consistency.cpp */; };
 		4D5108401B2B42DA0009AABC /* consistency.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107E11B2B42DA0009AABC /* consistency.h */; };
 		4D5108411B2B42DA0009AABC /* debug_defines.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107E21B2B42DA0009AABC /* debug_defines.h */; };
-		4D5108421B2B42DA0009AABC /* debug_disabled.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107E31B2B42DA0009AABC /* debug_disabled.cpp */; };
-		4D5108431B2B42DA0009AABC /* debug_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107E41B2B42DA0009AABC /* debug_print.cpp */; };
 		4D5108441B2B42DA0009AABC /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107E51B2B42DA0009AABC /* debug.cpp */; };
 		4D5108451B2B42DA0009AABC /* debug.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107E61B2B42DA0009AABC /* debug.h */; };
 		4D5108461B2B42DA0009AABC /* decide.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107E71B2B42DA0009AABC /* decide.cpp */; };
@@ -449,6 +447,24 @@
 		4D9868141B30A8DC00B13711 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D999D2D1B2F3EE800C6700E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D999D2C1B2F3EE800C6700E /* main.cpp */; };
 		4D999D331B2F3FF600C6700E /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4DB5C1C71B407F6C00D5CFD9 /* variablization_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1BF1B407F6C00D5CFD9 /* variablization_manager.cpp */; };
+		4DB5C1C81B407F6C00D5CFD9 /* variablization_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DB5C1C01B407F6C00D5CFD9 /* variablization_manager.h */; };
+		4DB5C1C91B407F6C00D5CFD9 /* vm_constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C11B407F6C00D5CFD9 /* vm_constraints.cpp */; };
+		4DB5C1CA1B407F6C00D5CFD9 /* vm_explanation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C21B407F6C00D5CFD9 /* vm_explanation.cpp */; };
+		4DB5C1CB1B407F6C00D5CFD9 /* vm_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C31B407F6C00D5CFD9 /* vm_map.cpp */; };
+		4DB5C1CC1B407F6C00D5CFD9 /* vm_merge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C41B407F6C00D5CFD9 /* vm_merge.cpp */; };
+		4DB5C1CD1B407F6C00D5CFD9 /* vm_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C51B407F6C00D5CFD9 /* vm_print.cpp */; };
+		4DB5C1CE1B407F6C00D5CFD9 /* vm_unify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1C61B407F6C00D5CFD9 /* vm_unify.cpp */; };
+		4DB5C1D11B407F8200D5CFD9 /* output_manager_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1CF1B407F8200D5CFD9 /* output_manager_print.cpp */; };
+		4DB5C1D21B407F8200D5CFD9 /* output_manager_to_string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1D01B407F8200D5CFD9 /* output_manager_to_string.cpp */; };
+		4DB5C1D51B407F9100D5CFD9 /* memory_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1D31B407F9100D5CFD9 /* memory_manager.cpp */; };
+		4DB5C1D61B407F9100D5CFD9 /* memory_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DB5C1D41B407F9100D5CFD9 /* memory_manager.h */; };
+		4DB5C1DD1B407FBE00D5CFD9 /* debug_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1D71B407FBE00D5CFD9 /* debug_misc.cpp */; };
+		4DB5C1DE1B407FBE00D5CFD9 /* debug_print_speed_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1D81B407FBE00D5CFD9 /* debug_print_speed_test.cpp */; };
+		4DB5C1DF1B407FBE00D5CFD9 /* debug_thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1D91B407FBE00D5CFD9 /* debug_thread.cpp */; };
+		4DB5C1E01B407FBE00D5CFD9 /* debug_thread.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DB5C1DA1B407FBE00D5CFD9 /* debug_thread.h */; };
+		4DB5C1E11B407FBE00D5CFD9 /* debug_trace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DB5C1DB1B407FBE00D5CFD9 /* debug_trace.cpp */; };
+		4DB5C1E21B407FBE00D5CFD9 /* debug_trace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DB5C1DC1B407FBE00D5CFD9 /* debug_trace.h */; };
 		4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */; };
 		4DD8D9501B3C576D0055BD48 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4DD8D9571B3C57AE0055BD48 /* SoarHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DFF157A1B31D56E006CDD34 /* SoarHelper.cpp */; };
@@ -817,8 +833,6 @@
 		4D5107E01B2B42DA0009AABC /* consistency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = consistency.cpp; sourceTree = "<group>"; };
 		4D5107E11B2B42DA0009AABC /* consistency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = consistency.h; sourceTree = "<group>"; };
 		4D5107E21B2B42DA0009AABC /* debug_defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug_defines.h; sourceTree = "<group>"; };
-		4D5107E31B2B42DA0009AABC /* debug_disabled.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_disabled.cpp; sourceTree = "<group>"; };
-		4D5107E41B2B42DA0009AABC /* debug_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_print.cpp; sourceTree = "<group>"; };
 		4D5107E51B2B42DA0009AABC /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug.cpp; sourceTree = "<group>"; };
 		4D5107E61B2B42DA0009AABC /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
 		4D5107E71B2B42DA0009AABC /* decide.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = decide.cpp; sourceTree = "<group>"; };
@@ -1042,6 +1056,24 @@
 		4D98680F1B30A7BC00B13711 /* FunctionalTestHarness.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FunctionalTestHarness.hpp; sourceTree = "<group>"; };
 		4D999D2A1B2F3EE800C6700E /* LaunchDebugger */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LaunchDebugger; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D999D2C1B2F3EE800C6700E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		4DB5C1BF1B407F6C00D5CFD9 /* variablization_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = variablization_manager.cpp; sourceTree = "<group>"; };
+		4DB5C1C01B407F6C00D5CFD9 /* variablization_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = variablization_manager.h; sourceTree = "<group>"; };
+		4DB5C1C11B407F6C00D5CFD9 /* vm_constraints.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_constraints.cpp; sourceTree = "<group>"; };
+		4DB5C1C21B407F6C00D5CFD9 /* vm_explanation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_explanation.cpp; sourceTree = "<group>"; };
+		4DB5C1C31B407F6C00D5CFD9 /* vm_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_map.cpp; sourceTree = "<group>"; };
+		4DB5C1C41B407F6C00D5CFD9 /* vm_merge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_merge.cpp; sourceTree = "<group>"; };
+		4DB5C1C51B407F6C00D5CFD9 /* vm_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_print.cpp; sourceTree = "<group>"; };
+		4DB5C1C61B407F6C00D5CFD9 /* vm_unify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vm_unify.cpp; sourceTree = "<group>"; };
+		4DB5C1CF1B407F8200D5CFD9 /* output_manager_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = output_manager_print.cpp; sourceTree = "<group>"; };
+		4DB5C1D01B407F8200D5CFD9 /* output_manager_to_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = output_manager_to_string.cpp; sourceTree = "<group>"; };
+		4DB5C1D31B407F9100D5CFD9 /* memory_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = memory_manager.cpp; sourceTree = "<group>"; };
+		4DB5C1D41B407F9100D5CFD9 /* memory_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memory_manager.h; sourceTree = "<group>"; };
+		4DB5C1D71B407FBE00D5CFD9 /* debug_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_misc.cpp; sourceTree = "<group>"; };
+		4DB5C1D81B407FBE00D5CFD9 /* debug_print_speed_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_print_speed_test.cpp; sourceTree = "<group>"; };
+		4DB5C1D91B407FBE00D5CFD9 /* debug_thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_thread.cpp; sourceTree = "<group>"; };
+		4DB5C1DA1B407FBE00D5CFD9 /* debug_thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug_thread.h; sourceTree = "<group>"; };
+		4DB5C1DB1B407FBE00D5CFD9 /* debug_trace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_trace.cpp; sourceTree = "<group>"; };
+		4DB5C1DC1B407FBE00D5CFD9 /* debug_trace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug_trace.h; sourceTree = "<group>"; };
 		4DD8D94B1B3C576D0055BD48 /* Prototype-UnitTesting-XCTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Prototype-UnitTesting-XCTest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4DD8D94F1B3C576D0055BD48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4DD8D96D1B3C5A350055BD48 /* XCTestDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XCTestDefines.h; sourceTree = "<group>"; };
@@ -1522,10 +1554,14 @@
 				4D5107E01B2B42DA0009AABC /* consistency.cpp */,
 				4D5107E11B2B42DA0009AABC /* consistency.h */,
 				4D5107E21B2B42DA0009AABC /* debug_defines.h */,
-				4D5107E31B2B42DA0009AABC /* debug_disabled.cpp */,
-				4D5107E41B2B42DA0009AABC /* debug_print.cpp */,
 				4D5107E51B2B42DA0009AABC /* debug.cpp */,
 				4D5107E61B2B42DA0009AABC /* debug.h */,
+				4DB5C1D71B407FBE00D5CFD9 /* debug_misc.cpp */,
+				4DB5C1D81B407FBE00D5CFD9 /* debug_print_speed_test.cpp */,
+				4DB5C1D91B407FBE00D5CFD9 /* debug_thread.cpp */,
+				4DB5C1DA1B407FBE00D5CFD9 /* debug_thread.h */,
+				4DB5C1DB1B407FBE00D5CFD9 /* debug_trace.cpp */,
+				4DB5C1DC1B407FBE00D5CFD9 /* debug_trace.h */,
 				4D5107E71B2B42DA0009AABC /* decide.cpp */,
 				4D5107E81B2B42DA0009AABC /* decide.h */,
 				4D5107E91B2B42DA0009AABC /* decision_manipulation.cpp */,
@@ -1548,6 +1584,8 @@
 				4D5107FA1B2B42DA0009AABC /* lexer.h */,
 				4D5107FB1B2B42DA0009AABC /* mem.cpp */,
 				4D5107FC1B2B42DA0009AABC /* mem.h */,
+				4DB5C1D31B407F9100D5CFD9 /* memory_manager.cpp */,
+				4DB5C1D41B407F9100D5CFD9 /* memory_manager.h */,
 				4D5107FD1B2B42DA0009AABC /* osupport.cpp */,
 				4D5107FE1B2B42DA0009AABC /* osupport.h */,
 				4D5107FF1B2B42DA0009AABC /* output_manager_db.cpp */,
@@ -1556,6 +1594,8 @@
 				4D5108021B2B42DA0009AABC /* output_manager_params.h */,
 				4D5108031B2B42DA0009AABC /* output_manager.cpp */,
 				4D5108041B2B42DA0009AABC /* output_manager.h */,
+				4DB5C1CF1B407F8200D5CFD9 /* output_manager_print.cpp */,
+				4DB5C1D01B407F8200D5CFD9 /* output_manager_to_string.cpp */,
 				4D5108051B2B42DA0009AABC /* parser.cpp */,
 				4D5108061B2B42DA0009AABC /* parser.h */,
 				4D5108071B2B42DA0009AABC /* prefmem.cpp */,
@@ -1600,6 +1640,14 @@
 				4D51082E1B2B42DA0009AABC /* test.h */,
 				4D51082F1B2B42DA0009AABC /* trace.cpp */,
 				4D5108301B2B42DA0009AABC /* trace.h */,
+				4DB5C1BF1B407F6C00D5CFD9 /* variablization_manager.cpp */,
+				4DB5C1C01B407F6C00D5CFD9 /* variablization_manager.h */,
+				4DB5C1C11B407F6C00D5CFD9 /* vm_constraints.cpp */,
+				4DB5C1C21B407F6C00D5CFD9 /* vm_explanation.cpp */,
+				4DB5C1C31B407F6C00D5CFD9 /* vm_map.cpp */,
+				4DB5C1C41B407F6C00D5CFD9 /* vm_merge.cpp */,
+				4DB5C1C51B407F6C00D5CFD9 /* vm_print.cpp */,
+				4DB5C1C61B407F6C00D5CFD9 /* vm_unify.cpp */,
 				4D5108311B2B42DA0009AABC /* wma.cpp */,
 				4D5108321B2B42DA0009AABC /* wma.h */,
 				4D5108331B2B42DA0009AABC /* wmem.cpp */,
@@ -1903,11 +1951,13 @@
 				4D5108FD1B2B42F10009AABC /* platform_specific.h in Headers */,
 				4D5106C11B2B42AB0009AABC /* sml_ListMap.h in Headers */,
 				4D51090A1B2B42F10009AABC /* sgnode.h in Headers */,
+				4DB5C1C81B407F6C00D5CFD9 /* variablization_manager.h in Headers */,
 				4D5109081B2B42F10009AABC /* sgnode_algs.h in Headers */,
 				4D5107B31B2B42C80009AABC /* sml_PrintListener.h in Headers */,
 				4D5107BD1B2B42C80009AABC /* sml_RunListener.h in Headers */,
 				4D5107A21B2B42C80009AABC /* sml_ConnectionManager.h in Headers */,
 				4D51088B1B2B42DA0009AABC /* tempmem.h in Headers */,
+				4DB5C1E21B407FBE00D5CFD9 /* debug_trace.h in Headers */,
 				4D5107D11B2B42D30009AABC /* misc.h in Headers */,
 				4D5107AA1B2B42C80009AABC /* sml_KernelSML.h in Headers */,
 				4D5107271B2B42B60009AABC /* sml_TagArg.h in Headers */,
@@ -1959,6 +2009,7 @@
 				4D5107D31B2B42D30009AABC /* portability_posix.h in Headers */,
 				4D51090F1B2B42F10009AABC /* svs.h in Headers */,
 				4D5108F01B2B42F10009AABC /* filter.h in Headers */,
+				4DB5C1E01B407FBE00D5CFD9 /* debug_thread.h in Headers */,
 				4D5108E71B2B42F10009AABC /* common.h in Headers */,
 				4D5108871B2B42DA0009AABC /* stats.h in Headers */,
 				4D51072F1B2B42B60009AABC /* sml_TagName.h in Headers */,
@@ -2011,6 +2062,7 @@
 				4D51084E1B2B42DA0009AABC /* explain.h in Headers */,
 				4D5107D41B2B42D30009AABC /* portability.h in Headers */,
 				4D51084A1B2B42DA0009AABC /* enums.h in Headers */,
+				4DB5C1D61B407F9100D5CFD9 /* memory_manager.h in Headers */,
 				4D5108EB1B2B42F10009AABC /* filter_input.h in Headers */,
 				4D5108911B2B42DA0009AABC /* wma.h in Headers */,
 				4D51065A1B2B429B0009AABC /* cli_Options.h in Headers */,
@@ -2265,7 +2317,6 @@
 				4D5106311B2B429B0009AABC /* cli_captureinput.cpp in Sources */,
 				4D51064D1B2B429B0009AABC /* cli_loadLibrary.cpp in Sources */,
 				4D51083B1B2B42DA0009AABC /* callback.cpp in Sources */,
-				4D5108431B2B42DA0009AABC /* debug_print.cpp in Sources */,
 				4D5107261B2B42B60009AABC /* sml_TagArg.cpp in Sources */,
 				4D5108F71B2B42F10009AABC /* node.cpp in Sources */,
 				4D51084F1B2B42DA0009AABC /* exploration.cpp in Sources */,
@@ -2285,11 +2336,13 @@
 				4D5106781B2B429B0009AABC /* cli_time.cpp in Sources */,
 				4D5108D91B2B42F10009AABC /* cliproxy.cpp in Sources */,
 				4D51079F1B2B42C80009AABC /* sml_AgentSML.cpp in Sources */,
+				4DB5C1DE1B407FBE00D5CFD9 /* debug_print_speed_test.cpp in Sources */,
 				4D6756D41B3F02F500041365 /* assert.cpp in Sources */,
 				4D5108F21B2B42F10009AABC /* base_node_filters.cpp in Sources */,
 				4D5106361B2B429B0009AABC /* cli_clog.cpp in Sources */,
 				4D51066E1B2B429B0009AABC /* cli_select.cpp in Sources */,
 				4D5107C21B2B42C80009AABC /* sml_SystemListener.cpp in Sources */,
+				4DB5C1CC1B407F6C00D5CFD9 /* vm_merge.cpp in Sources */,
 				4D5106761B2B429B0009AABC /* cli_stopsoar.cpp in Sources */,
 				4D5107321B2B42B60009AABC /* sml_TagWme.cpp in Sources */,
 				4D5106481B2B429B0009AABC /* cli_help.cpp in Sources */,
@@ -2316,6 +2369,7 @@
 				4D5106AA1B2B42AB0009AABC /* sml_ClientErrors.cpp in Sources */,
 				4D51067B1B2B429B0009AABC /* cli_verbose.cpp in Sources */,
 				4D5106711B2B429B0009AABC /* cli_soarnews.cpp in Sources */,
+				4DB5C1CE1B407F6C00D5CFD9 /* vm_unify.cpp in Sources */,
 				4D5108DD1B2B42F10009AABC /* command.cpp in Sources */,
 				4D5106441B2B429B0009AABC /* cli_firingcounts.cpp in Sources */,
 				4D5107341B2B42B60009AABC /* sml_Utils.cpp in Sources */,
@@ -2323,7 +2377,6 @@
 				4D51086E1B2B42DA0009AABC /* reinforcement_learning.cpp in Sources */,
 				4D5107BA1B2B42C80009AABC /* sml_RhsListener.cpp in Sources */,
 				4D51085A1B2B42DA0009AABC /* mem.cpp in Sources */,
-				4D5108421B2B42DA0009AABC /* debug_disabled.cpp in Sources */,
 				4D5108941B2B42DA0009AABC /* xml.cpp in Sources */,
 				4D5107C41B2B42C80009AABC /* sml_UpdateListener.cpp in Sources */,
 				4D5106591B2B429B0009AABC /* cli_numericindifferentmode.cpp in Sources */,
@@ -2361,6 +2414,7 @@
 				4D5106731B2B429B0009AABC /* cli_sp.cpp in Sources */,
 				4D5107481B2B42B60009AABC /* thread_Event.cpp in Sources */,
 				4D5106A51B2B42AB0009AABC /* sml_ClientAgent.cpp in Sources */,
+				4DB5C1CD1B407F6C00D5CFD9 /* vm_print.cpp in Sources */,
 				4D51074A1B2B42B60009AABC /* thread_Lock.cpp in Sources */,
 				4D5106331B2B429B0009AABC /* cli_chunknameformat.cpp in Sources */,
 				4D5108EC1B2B42F10009AABC /* filter_table.cpp in Sources */,
@@ -2371,17 +2425,20 @@
 				4D5106BB1B2B42AB0009AABC /* sml_ClientWorkingMemory.cpp in Sources */,
 				4D5106471B2B429B0009AABC /* cli_gpmax.cpp in Sources */,
 				4D51090E1B2B42F10009AABC /* svs.cpp in Sources */,
+				4DB5C1E11B407FBE00D5CFD9 /* debug_trace.cpp in Sources */,
 				4D5106581B2B429B0009AABC /* cli_multiattributes.cpp in Sources */,
 				4D51067A1B2B429B0009AABC /* cli_unalias.cpp in Sources */,
 				4D5107201B2B42B60009AABC /* sml_Names.cpp in Sources */,
 				4D51065B1B2B429B0009AABC /* cli_osupportmode.cpp in Sources */,
 				4D5107A11B2B42C80009AABC /* sml_ConnectionManager.cpp in Sources */,
 				4D5107241B2B42B60009AABC /* sml_StringOps.cpp in Sources */,
+				4DB5C1D51B407F9100D5CFD9 /* memory_manager.cpp in Sources */,
 				4D51067F1B2B429B0009AABC /* cli_watch.cpp in Sources */,
 				4D51070C1B2B42B60009AABC /* sml_AnalyzeXML.cpp in Sources */,
 				4D51085E1B2B42DA0009AABC /* output_manager_db.cpp in Sources */,
 				4D5106741B2B429B0009AABC /* cli_srand.cpp in Sources */,
 				4D5107381B2B42B60009AABC /* sock_ClientSocket.cpp in Sources */,
+				4DB5C1D21B407F8200D5CFD9 /* output_manager_to_string.cpp in Sources */,
 				4D51083F1B2B42DA0009AABC /* consistency.cpp in Sources */,
 				4D5107A71B2B42C80009AABC /* sml_KernelCallback.cpp in Sources */,
 				4D5106771B2B429B0009AABC /* cli_svs.cpp in Sources */,
@@ -2426,6 +2483,7 @@
 				4D5106401B2B429B0009AABC /* cli_editproduction.cpp in Sources */,
 				4D51086A1B2B42DA0009AABC /* production.cpp in Sources */,
 				4D5106801B2B429B0009AABC /* cli_watchwmes.cpp in Sources */,
+				4DB5C1CA1B407F6C00D5CFD9 /* vm_explanation.cpp in Sources */,
 				4D51067E1B2B429B0009AABC /* cli_warnings.cpp in Sources */,
 				4D51090B1B2B42F10009AABC /* soar_interface.cpp in Sources */,
 				4D51087D1B2B42DA0009AABC /* soar_db.cpp in Sources */,
@@ -2434,6 +2492,7 @@
 				4D5106651B2B429B0009AABC /* cli_pwatch.cpp in Sources */,
 				4D51067D1B2B429B0009AABC /* cli_waitsnc.cpp in Sources */,
 				4D5106791B2B429B0009AABC /* cli_timers.cpp in Sources */,
+				4DB5C1CB1B407F6C00D5CFD9 /* vm_map.cpp in Sources */,
 				4D5106AD1B2B42AB0009AABC /* sml_ClientFloatElement.cpp in Sources */,
 				4D51073E1B2B42B60009AABC /* sock_ListenerSocket.cpp in Sources */,
 				4D510A4F1B2B45F10009AABC /* ccd.c in Sources */,
@@ -2454,8 +2513,10 @@
 				4D5106671B2B429B0009AABC /* cli_rand.cpp in Sources */,
 				4D51066C1B2B429B0009AABC /* cli_run.cpp in Sources */,
 				4D5108581B2B42DA0009AABC /* lexer.cpp in Sources */,
+				4DB5C1DF1B407FBE00D5CFD9 /* debug_thread.cpp in Sources */,
 				4D5106301B2B429B0009AABC /* cli_allocate.cpp in Sources */,
 				4D5106BD1B2B42AB0009AABC /* sml_ClientXML.cpp in Sources */,
+				4DB5C1DD1B407FBE00D5CFD9 /* debug_misc.cpp in Sources */,
 				4D5108521B2B42DA0009AABC /* init_soar.cpp in Sources */,
 				4D5108681B2B42DA0009AABC /* print.cpp in Sources */,
 				4D5107A91B2B42C80009AABC /* sml_KernelSML.cpp in Sources */,
@@ -2477,12 +2538,14 @@
 				4D5108E01B2B42F10009AABC /* copy_node.cpp in Sources */,
 				4D51088A1B2B42DA0009AABC /* tempmem.cpp in Sources */,
 				4D5109021B2B42F10009AABC /* scene.cpp in Sources */,
+				4DB5C1D11B407F8200D5CFD9 /* output_manager_print.cpp in Sources */,
 				4D5108E11B2B42F10009AABC /* delete_node.cpp in Sources */,
 				4D5106631B2B429B0009AABC /* cli_productionfind.cpp in Sources */,
 				4D51075F1B2B42C10009AABC /* ElementXMLImpl.cpp in Sources */,
 				4D5106B91B2B42AB0009AABC /* sml_ClientWMElement.cpp in Sources */,
 				4D5106681B2B429B0009AABC /* cli_removewme.cpp in Sources */,
 				4D5107BC1B2B42C80009AABC /* sml_RunListener.cpp in Sources */,
+				4DB5C1C91B407F6C00D5CFD9 /* vm_constraints.cpp in Sources */,
 				4D5108901B2B42DA0009AABC /* wma.cpp in Sources */,
 				4D5106701B2B429B0009AABC /* cli_smem.cpp in Sources */,
 				4D5108E51B2B42F10009AABC /* set_transform.cpp in Sources */,
@@ -2494,6 +2557,7 @@
 				4D5108761B2B42DA0009AABC /* rhs_functions.cpp in Sources */,
 				4D51065D1B2B429B0009AABC /* cli_pbreak.cpp in Sources */,
 				4D5107651B2B42C10009AABC /* ParseXMLFile.cpp in Sources */,
+				4DB5C1C71B407F6C00D5CFD9 /* variablization_manager.cpp in Sources */,
 				4D5106321B2B429B0009AABC /* cli_cd.cpp in Sources */,
 				4D5106561B2B429B0009AABC /* cli_maxniloutputcycles.cpp in Sources */,
 				4D51079A1B2B42C80009AABC /* KernelSMLInterface.cpp in Sources */,
