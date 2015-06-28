@@ -26,6 +26,8 @@ public:
 	void test_echo();
 	TEST(test_ls, -1)
 	void test_ls();
+	
+	// TODO: Update for linux & Windows (32 + 64)
 	TEST(test_stats, -1)
 	void test_stats();
 	
