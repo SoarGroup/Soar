@@ -771,6 +771,9 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Core\shared\assert.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h">
@@ -1327,6 +1330,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Core\SVS\src\windows\platform_specific.h">
       <Filter>Source Files\SVS\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\assert.hpp">
+      <Filter>Source Files\shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

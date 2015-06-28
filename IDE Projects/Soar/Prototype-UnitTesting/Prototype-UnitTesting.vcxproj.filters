@@ -78,6 +78,42 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.hpp">
       <Filter>Source Files\kernel\wma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\ElementXMLTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsClientThread.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsClientThreadFullyOptimized.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsRemote.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
@@ -118,6 +154,33 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.cpp">
       <Filter>Source Files\kernel\wma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\ElementXMLTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp">
+      <Filter>Source Files\kernel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
