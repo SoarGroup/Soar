@@ -12,7 +12,9 @@
 #include <exception>
 #include <string>
 
-class SoarAssertionException : public std::exception
+#include "Export.h"
+
+class EXPORT SoarAssertionException : public std::exception
 {
 public:
 	/** Constructor (C strings).
