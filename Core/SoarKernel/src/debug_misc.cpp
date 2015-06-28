@@ -22,6 +22,43 @@ extern void test_print_speed_y();
 using namespace sml;
 
 
+inline size_t strnmove2(char** s1, const char* s2, size_t n) {
+    size_t m = 0;
+    if ( n > 0) {
+        m = strlen(s2);
+        if (m+1 > n) {
+            m = n-1;
+        }
+        memmove(*s1, s2, m);
+        (*s1)[m]=0;
+    } else {
+        return n;
+    }
+    *s1 = &((*s1)[m]);
+    return n-m-1;
+}
+
+void test_strnmove(char* buf1)
+{
+    size_t buffer_left = 0;
+
+    buffer_left = 15;
+    char* start = &(buf1[0]);
+
+    strcpy(buf1, "");
+    std::cout << "Before move |" << buf1 << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&(buf1), "Hellosfasdfsfsfdfsfsfdsfdsfd", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&buf1, " Mazin Assanie the first", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&buf1, " Mazin Assanie the first", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+
+}
+
 void debug_test(int type)
 {
     agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
@@ -100,8 +137,13 @@ void debug_test(int type)
             debug_agent->variablizationManager->print_tables(DT_DEBUG);
             break;
         case 8:
-            test_print_speed();
+        {
+            char buf1[15];
+            char buf2[5];
+
+            test_strnmove(buf1);
             break;
+        }
         case 9:
             test_print_speed_y();
             break;

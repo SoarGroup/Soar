@@ -156,6 +156,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     //agent* thisAgent = static_cast<agent *>(malloc(sizeof(agent)));
     agent* thisAgent = new agent();
+    thisAgent->output_settings = new AgentOutput_Info();
 
     thisAgent->current_tc_number = 0;
 
@@ -268,7 +269,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     if (!getcwd(cur_path, MAXPATHLEN))
     {
-        print(thisAgent,  "Unable to set current directory while initializing agent.\n");
+        print(thisAgent,  "Unable to set current directory while initializing agent: %s\n", strerror(errno));
     }
 
     for (int productionTypeCounter = 0; productionTypeCounter < NUM_PRODUCTION_TYPES; productionTypeCounter++)
@@ -373,7 +374,6 @@ agent* create_soar_agent(char* agent_name)                                      
 
     // debug module parameters
     thisAgent->debug_params = new debug_param_container(thisAgent);
-    thisAgent->output_settings = new AgentOutput_Info();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     thisAgent->epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));

@@ -37,6 +37,8 @@ typedef struct identity_struct identity_info;
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 
+/* These determine whether we print identity information when printing tests in debug statements */
+
 #ifndef SOAR_RELEASE_VERSION
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity true;
@@ -65,6 +67,20 @@ namespace cli
 class Soar_Instance;
 class OM_DB;
 class OM_Parameters;
+
+inline size_t om_strncpy(char* s1, const char* s2, size_t n, size_t num_chars) {
+    if ( n > 0) {
+        if (num_chars == 0) return n;
+        if (num_chars+1 > n) {
+            num_chars = n-1;
+        }
+        memcpy(s1, s2, num_chars);
+        s1[num_chars]=0;
+        return n-num_chars-1;
+    } else {
+        return n;
+    }
+}
 
 class AgentOutput_Info
 {
@@ -131,26 +147,25 @@ class Output_Manager
 
         void fill_mode_info();
 
-        char* action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size);
-        char* action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size);
-        char* condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size);
-        char* condition_cons_to_string(agent* thisAgent, cons* c, char* dest, size_t dest_size);
-        char* condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest, size_t dest_size);
-        char* cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
-        char* cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size);
-        char* cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
-        char* identity_to_string(agent* thisAgent, test t, char* dest, size_t dest_size);
-        char* instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size);
-        char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
-        char* preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
-        char* preflist_result_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
-        char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok = NIL, wme* w = NIL);
-        char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality = false);
-        const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
-        char* wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size);
-        char* WM_to_string(agent* thisAgent, char* dest, size_t dest_size);
+        void action_to_string(agent* thisAgent, action* a, std::string &destString);
+        void action_list_to_string(agent* thisAgent, action* action_list, std::string &destString);
+        void condition_to_string(agent* thisAgent, condition* cond, std::string &destString);
+        void condition_cons_to_string(agent* thisAgent, cons* c, std::string &destString);
+        void condition_list_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
+        void cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
+        void cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, std::string &destString);
+        void cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
+        void instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString);
+        void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
+        void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
+        void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
+        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NIL, wme* w = NIL);
+        void test_to_string(test t, std::string &destString, bool show_equality = false);
+        const char* test_type_to_string_brief(byte test_type);
+        void wme_to_string(agent* thisAgent, wme* w, std::string &destString);
+        void WM_to_string(agent* thisAgent, std::string &destString);
 
-        void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
+        void vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list args);
 
     public:
 
@@ -166,14 +181,15 @@ class Output_Manager
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
-        void sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
+        void sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...);
+        size_t sprinta_sf_cstr(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
+
         void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
-        void sprint_sf(char* dest, size_t dest_size, const char* format, ...);
-
+        void sprint_sf(std::string &destString, const char* format, ...);
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
         void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }

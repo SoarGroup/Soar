@@ -9082,7 +9082,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
 
-            Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
+            Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
             //print_string(thisAgent, c_id_test);
             //xml_test(thisAgent, kConditionId, id_test) ;
             xml_att_val(thisAgent, kConditionId, c_id_test);
@@ -9112,7 +9112,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 {
                     ch++;
                 }
-                Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
+                Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
                 while (*ch)
                 {
                     ch++;
@@ -9126,7 +9126,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 if (c->data.tests.value_test)
                 {
                     *(ch++) = ' ';
-                    Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
+                    Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
                     while (*ch)
                     {
                         ch++;

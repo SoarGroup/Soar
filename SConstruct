@@ -237,7 +237,7 @@ if compiler == 'g++':
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
 elif compiler == 'msvc':
-    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
+    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
@@ -269,7 +269,6 @@ env.Replace(
     LIBS=libs,
     LIBPATH=[os.path.realpath(GetOption('outdir'))],
 )
-env.Append(CXXFLAGS='-std=c++14')
 
 if sys.platform == 'win32':
     sys_lib_path = filter(None, os.environ.get('PATH', '').split(';'))
@@ -280,6 +279,9 @@ elif sys.platform == 'darwin':
 else:
     sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
     sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+
+if sys.platform != 'win32':
+	env.Append(CXXFLAGS='-std=c++11')
 
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 

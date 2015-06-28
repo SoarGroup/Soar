@@ -28,39 +28,28 @@
 #include "variablization_manager.h"
 #include "test.h"
 
-char* Output_Manager::wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size)
+void Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
-    assert(thisAgent && dest && w);
-    char* ch = dest;
-
-    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(t%u: %y ^%y %y%s",
+    assert(thisAgent && w);
+    sprinta_sf(thisAgent, destString, "(t%u: %y ^%y %y%s",
         w->timetag, w->id, w->attr, w->value,
-        (w->acceptable ? " +) [" : ") ["));
-    while (*ch) ch++;
-    *(ch++) = ']';
-    *ch = 0;
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+        (w->acceptable ? " +)" : ")"));
+    return;
 }
 
-char* Output_Manager::WM_to_string(agent* thisAgent, char* dest, size_t dest_size)
+void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
 {
-    assert(thisAgent && dest);
-    char* ch = dest;
-
-    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- WMEs --------------------------\n");
-    while (*ch) ch++;
+    assert(thisAgent);
+    destString += "--------------------------- WMEs --------------------------\n";
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "          %w\n", w);
-        while (*ch) ch++;
+        destString += m_pre_string;
+        wme_to_string(thisAgent, w, destString);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    return;
 }
 
-/* UITODO| Make this method of Test */
-const char* Output_Manager::test_type_to_string_brief(byte test_type, const char* equality_str)
+const char* Output_Manager::test_type_to_string_brief(byte test_type)
 {
     switch (test_type)
     {
@@ -92,246 +81,122 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type, const char
             return "IS_IMPASSE ";
             break;
         case EQUALITY_TEST:
-            return equality_str;
+            return "= ";
             break;
     }
     return "UNDEFINED TEST TYPE";
 }
 
-/* UITODO| Make this method of Test */
-char* Output_Manager::test_to_string(test t, char* dest, size_t dest_size, bool show_equality)
+void Output_Manager::test_to_string(test t, std::string &destString, bool show_equality)
 {
     cons* c;
-    char* ch;
-
-    if (!dest)
-    {
-        dest = get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-
     if (!t)
     {
-        strcpy(dest, "[BLANK TEST]");   /* this should never get executed */
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
+        destString += "[BLANK TEST]";
+
+        return;
     }
 
-    switch (t->type)
+    if (t->type == EQUALITY_TEST)
     {
-        case EQUALITY_TEST:
-            if (show_equality)
-            {
-                strcpy(ch, "= ");
-                ch += 2;
-                t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            }
-            else
-            {
-                t->data.referent->to_string(true, dest, dest_size);
-            }
-            break;
-        case NOT_EQUAL_TEST:
-            strcpy(ch, "<> ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_TEST:
-            strcpy(ch, "< ");
-            ch += 2;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_TEST:
-            strcpy(ch, "> ");
-            ch += 2;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case LESS_OR_EQUAL_TEST:
-            strcpy(ch, "<= ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case GREATER_OR_EQUAL_TEST:
-            strcpy(ch, ">= ");
-            ch += 3;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case SAME_TYPE_TEST:
-            strcpy(ch, "<=> ");
-            ch += 4;
-            t->data.referent->to_string(true, ch, dest_size - (ch - dest));
-            break;
-        case DISJUNCTION_TEST:
-            strcpy(ch, "<< ");
-            ch += 3;
-            for (c = t->data.disjunction_list; c != NIL; c = c->rest)
-            {
-                static_cast<symbol_struct*>(c->first)->to_string(true, ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-                *ch = 0;
-            }
-            strcpy(ch, ">>");
-            ch += 2;
-            break;
-        case CONJUNCTIVE_TEST:
-            strcpy(ch, "{ ");
-            ch += 2;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                test_to_string(static_cast<test>(c->first), ch, dest_size - (ch - dest));
-                while (*ch)
-                {
-                    ch++;
-                }
-                *(ch++) = ' ';
-            }
-            *(ch++) = '}';
-            *ch = 0;
-            break;
-        case GOAL_ID_TEST:
-            strcpy(dest, "[GOAL ID TEST]");  /* this should never get executed */
-            break;
-        case IMPASSE_ID_TEST:
-            strcpy(dest, "[IMPASSE ID TEST]");  /* this should never get executed */
-            break;
-        default:
-            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
-            break;
+        if (show_equality)
+        {
+            destString += test_type_to_string_brief(t->type);
+        }
+        destString += t->data.referent->to_string(true);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    else if (t->type == CONJUNCTIVE_TEST)
+    {
+        destString += "{ ";
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        {
+
+            this->test_to_string(static_cast<test>(c->first), destString, show_equality);
+            destString += ' ';
+        }
+        destString += '}';
+    }
+    else if (test_has_referent(t))
+    {
+        destString += test_type_to_string_brief(t->type);
+        destString += t->data.referent->to_string(true);
+    }
+    else if (t->type == DISJUNCTION_TEST)
+    {
+        destString += "<< ";
+        for (c = t->data.disjunction_list; c != NIL; c = c->rest)
+        {
+            destString += static_cast<symbol_struct*>(c->first)->to_string(true);
+            destString += ' ';
+        }
+        destString += ">>";
+    }
+    else if (t->type == GOAL_ID_TEST)
+    {
+        destString += "[ISA GOAL]";
+    }
+    else if (t->type == IMPASSE_ID_TEST)
+    {
+        destString += "[ISA IMPASSE]";
+    } else {
+        destString += "[INVALID TEST!!!]";
+    }
+    return;
 }
 
 
-char* Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, char* dest, size_t dest_size)
+void Output_Manager::condition_cons_to_string(agent* thisAgent, cons* c, std::string &destString)
 {
-    char* ch=dest;
-
     while (c)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%s: %l\n", m_pre_string, static_cast<condition_struct*>(c->first));
         c = c->rest;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    return;
 }
 
-char* Output_Manager::identity_to_string(agent* thisAgent, test t, char* dest, size_t dest_size)
+void Output_Manager::condition_to_string(agent* thisAgent, condition* cond, std::string &destString)
 {
-
-    cons* c;
-    char* ch;
-
-    ch = dest;
-
-    if (!t)
-    {
-        strcpy(dest, "[BLANK TEST]");
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
-    }
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-        case NOT_EQUAL_TEST:
-        case LESS_TEST:
-        case GREATER_TEST:
-        case LESS_OR_EQUAL_TEST:
-        case GREATER_OR_EQUAL_TEST:
-        case SAME_TYPE_TEST:
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "o%u/%y",
-                t->identity,
-                t->identity ? thisAgent->variablizationManager->get_ovar_for_o_id(t->identity) : NULL);
-            while (*ch) ch++;
-            break;
-        case CONJUNCTIVE_TEST:
-            *(ch++) = '{';
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                identity_to_string(thisAgent, static_cast<test>(c->first), ch, dest_size - (ch - dest));
-                while (*ch) ch++;
-                if (c->rest)
-                    *(ch++) = ' ';
-            }
-            *(ch++) = '}';
-            *ch = 0;
-            break;
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case DISJUNCTION_TEST:
-            strcpy(ch, "o0/#");
-            ch += 2;
-            break;
-        default:
-            strcpy(ch, "INVALID TEST!");   /* this should never get executed */
-            assert(false);
-            break;
-    }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
-}
-
-char* Output_Manager::condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size)
-{
-    char* ch=dest;
-
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         if (m_print_actual_effective)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%t %s^%t %t)",
+            sprinta_sf(thisAgent, destString, "(%t %s^%t %t)",
             cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
             cond->data.tests.attr_test, cond->data.tests.value_test);
-            while (*ch) ch++;
         }
         if (m_print_identity_effective) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%g %s^%g %g)",
+            sprinta_sf(thisAgent, destString, "%s(%g %s^%g %g)",
                 m_print_actual_effective ? ", " : NULL,
                 cond->data.tests.id_test,
                 (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
                 cond->data.tests.attr_test, cond->data.tests.value_test);
-            while (*ch) ch++;
         }
-        *ch = 0;
     }
     else
     {
-        sprinta_sf(thisAgent, dest, dest_size, "-{\n%c2}", cond->data.ncc.top);
+        sprinta_sf(thisAgent, destString, "-{\n%c2}", cond->data.ncc.top);
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    return;
 }
 
-char* Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest, size_t dest_size)
+void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_cond, std::string &destString)
 {
+
     condition* cond;
-    char* ch=dest;
     int64_t count = 0;
 
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%i: %l\n", m_pre_string, ++count, cond);
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%s%i: %l\n", m_pre_string, ++count, cond);
     }
-
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    return;
 }
 
-char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok, wme* w)
+void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w)
 {
-    assert(thisAgent && dest);
-    char* ch = dest;
-
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
     cons* c;
@@ -340,30 +205,26 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
     int i;
     if (!rv)
     {
-        *(ch++) = '#';
-        *ch = 0;
+        destString += '#';
     }
     else if (rhs_value_is_unboundvar(rv))
     {
         /* -- unbound variable -- */
-        strcpy(dest, "<unbound-var>");
-        dest[dest_size - 1] = 0; /* ensure null termination */
+        destString += "<unbound-var>";
+
     }
     else if (rhs_value_is_symbol(rv))
     {
-
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
         if (this->m_print_actual_effective)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%y", rsym->referent);
-            while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "%y", rsym->referent);
         }
         if (m_print_identity_effective) {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), " [%y/o%u]",
+            sprinta_sf(thisAgent, destString, " [%y/o%u]",
                 thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id),
                 rsym->o_id);
-            while (*ch) ch++;
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -374,12 +235,11 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
             sym = get_symbol_from_rete_loc(
                       rhs_value_to_reteloc_levels_up(rv),
                       rhs_value_to_reteloc_field_num(rv), tok, w);
-            sprinta_sf(thisAgent, dest, dest_size, "%y (reteloc)", sym);
+            sprinta_sf(thisAgent, destString, "%y (reteloc)", sym);
         }
         else
         {
-            strcpy(dest, "(rete-loc no tok/w)");
-            dest[dest_size - 1] = 0; /* ensure null termination */
+            destString += "(rete-loc no tok/w)";
         }
     }
     else
@@ -388,148 +248,92 @@ char* Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, char* 
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);
 
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y", rf->name);
-        while (*ch) ch++;
-
+        sprinta_sf(thisAgent, destString, "(%y", rf->name);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            *(ch++) = ' ';
-            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), ch, dest_size - (ch - dest), tok, w);
-            while (*ch) ch++;
+            destString += ' ';
+            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w);
         }
-        *(ch++) = ')';
-        *(ch++) = 0;
+        destString += ')';
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size)
+void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &destString)
 {
-    assert(thisAgent && dest && a);
-    char* ch = dest;
-
+    assert(thisAgent && a);
     if (a->type == FUNCALL_ACTION)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(funcall ", m_pre_string);
-        while (*ch) ch++;
-        rhs_value_to_string(thisAgent, a->value, ch, dest_size - (ch - dest), NULL, NULL);
-        while (*ch) ch++;
-        strcpy(ch, ")");
+        sprinta_sf(thisAgent, destString, "%s(funcall ", m_pre_string);
+        rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
+        destString += ')';
+    } else {
+        sprinta_sf(thisAgent, destString, "%s(", m_pre_string);
+        rhs_value_to_string(thisAgent, a->id, destString, NULL, NULL);
+        destString += " ^";
+        rhs_value_to_string(thisAgent, a->attr, destString, NULL, NULL);
+        destString += ' ';
+        rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
+        destString += " ~ ";
+        rhs_value_to_string(thisAgent, a->referent, destString, NULL, NULL);
+        destString += ')';
     }
-    else
-    {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(", m_pre_string);
-        while (*ch) ch++;
-        rhs_value_to_string(thisAgent, a->id, ch, dest_size - (ch - dest), NULL, NULL);
-        while (*ch) ch++;
-        strcpy(ch, " ^");
-        ch += 2;
-        rhs_value_to_string(thisAgent, a->attr, ch, dest_size - (ch - dest), NULL, NULL);
-        while (*ch) ch++;
-        strcpy(ch++, " ");
-        rhs_value_to_string(thisAgent, a->value, ch, dest_size - (ch - dest), NULL, NULL);
-        while (*ch) ch++;
-        strcpy(ch, " ref: ");
-        ch += 6;
-        rhs_value_to_string(thisAgent, a->referent, ch, dest_size - (ch - dest), NULL, NULL);
-        while (*ch) ch++;
-        strcpy(ch, ")");
-    }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size)
+void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, std::string &destString)
 {
-    assert(thisAgent && dest && action_list);
-    char* ch = dest;
-
+    assert(thisAgent && action_list);
     action* a = NIL;
 
     for (a = action_list; a != NIL; a = a->next)
     {
-        action_to_string(thisAgent, a, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        *(ch++) = '\n';
+        action_to_string(thisAgent, a, destString);
+        destString += '\n';
     }
-    *ch = 0;
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size)
+void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::string &destString)
 {
-    assert(thisAgent && dest && pref);
-
-    char* ch = dest;
-
+    assert(thisAgent && pref);
     if (m_print_actual_effective)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "(%y ^%y %y) %c %y%s", pref->id, pref->attr, pref->value,
+        sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c %y%s", pref->id, pref->attr, pref->value,
             preference_to_char(pref->type),
             (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-        while (*ch) ch++;
     }
-//    if (m_print_original_effective)
-//    {
-//        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y ^%y %y) %c %y%s", (m_print_actual_effective) ? ", " : "",
-//            pref->original_symbols.id, pref->original_symbols.attr, pref->original_symbols.value,
-//            preference_to_char(pref->type),
-//            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
-//            (pref->o_supported) ? " :O " : NULL);
-//        while (*ch) ch++;
-//    }
     if (m_print_identity_effective)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual_effective) ? ", " : "",
+        sprinta_sf(thisAgent, destString, "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual_effective) ? ", " : "",
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
             thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);
-        while (*ch) ch++;
     }
-    *ch = 0;
-    return dest;
-    return NULL;
 }
 
-char* Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size)
+void Output_Manager::preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString)
 {
-    char* ch = dest;
-
     for (preference* pref = top_pref; pref != NIL;)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%p\n", m_pre_string, pref);
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%s%p\n", m_pre_string, pref);
         pref = pref->inst_next;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
-
 }
 
-char* Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size)
+void Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString)
 {
-    char* ch = dest;
-
     for (preference* pref = top_pref; pref != NIL;)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s%p\n", m_pre_string, pref);
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%s%p\n", m_pre_string, pref);
         pref = pref->next_result;
     }
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
 {
     if (!debug_mode_enabled(mode)) return;
-
     if (!m_defaultAgent) return;
 
     if (prod)
@@ -538,148 +342,102 @@ void Output_Manager::debug_print_production(TraceMode mode, production* prod)
     }
 }
 
-char* Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size)
+void Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString)
 {
-    char* ch=dest;
-
     if (m_print_actual)
     {
         if (m_print_identity)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
-            while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "--------------------------- Match --------------------------\n");
         }
         set_print_test_format(true, false);
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        preflist_inst_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
     if (m_print_identity)
     {
         if (m_print_actual)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
-            while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "------------------------- Identity -------------------------\n");
         }
         set_print_test_format(false, true);
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        preflist_inst_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        preflist_inst_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
-
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size)
+void Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString)
 {
-    char* ch=dest;
-
     if (m_print_actual)
     {
         if (m_print_identity)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
-            while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "--------------------------- Match --------------------------\n");
         }
         set_print_test_format(true, false);
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        preflist_result_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
     if (m_print_identity)
     {
         if (m_print_actual)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
-            while (*ch) ch++;
-        }        set_print_test_format(false, true);
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        preflist_result_to_string(thisAgent, top_pref, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "------------------------- Identity -------------------------\n");
+        }
+        set_print_test_format(false, true);
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        preflist_result_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
-
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size)
+void Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, std::string &destString)
 {
-    char* ch=dest;
-
     if (m_print_actual)
     {
         if (m_print_identity)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "--------------------------- Match --------------------------\n");
-            while (*ch) ch++;
+            sprinta_sf(thisAgent, destString, "--------------------------- Match --------------------------\n");
         }
         set_print_test_format(true, false);
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        action_list_to_string(thisAgent, top_action, destString);
         clear_print_test_format();
     }
     if (m_print_identity)
     {
         if (m_print_actual)
         {
-            sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "------------------------- Identity -------------------------\n");
+            sprinta_sf(thisAgent, destString, "------------------------- Identity -------------------------\n");
             set_print_test_format(false, true);
         }
-        while (*ch) ch++;
-        condition_list_to_string(thisAgent, top_cond, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%s-->\n", m_pre_string);
-        while (*ch) ch++;
-        action_list_to_string(thisAgent, top_action, ch, dest_size - (ch - dest));
-        while (*ch) ch++;
+        condition_list_to_string(thisAgent, top_cond, destString);
+        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        action_list_to_string(thisAgent, top_action, destString);
         clear_print_test_format();
     }
-
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
 }
 
-char* Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size)
+void Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString)
 {
-    char* ch=dest;
-
     if (inst->prod)
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sInstantiation (i%u) matched %y ", m_pre_string, inst->i_id, inst->prod->name);
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%sInstantiation (i%u) matched %y ", m_pre_string, inst->i_id, inst->prod->name);
     }
     else
     {
-        sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "%sInstantiation #%u matched nothing (dummy production?) ", m_pre_string, inst->i_id);
-        while (*ch) ch++;
+        sprinta_sf(thisAgent, destString, "%sInstantiation #%u matched nothing (dummy production?) ", m_pre_string, inst->i_id);
     }
-    sprinta_sf(thisAgent, ch, dest_size - (ch - dest), "in state %y (level %d)\n", inst->match_goal, inst->match_goal_level);
-    while (*ch) ch++;
-    cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, ch, dest_size - (ch - dest));
-
-    dest[dest_size - 1] = 0; /* ensure null termination */
-    return dest;
+    sprinta_sf(thisAgent, destString, "in state %y (level %d)\n", inst->match_goal, inst->match_goal_level);
+    cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, destString);
 }
 
 void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector<instantiation*>& instantiation_list)
@@ -711,7 +469,6 @@ void Output_Manager::print_all_inst(TraceMode mode)
     {
         print_sf("- Instantiation %d:\n", y);
         print_sf("%7", instantiation_list[y]);
-//        instantiation_to_string(mode, instantiation_list[y]);
     }
 }
 
@@ -791,7 +548,6 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         std::stringstream convert(convertStr);
         int newInt;
         double newFloat;
-
 
         if (!m_defaultAgent)
         {

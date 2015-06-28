@@ -30,19 +30,15 @@
 
 #include <iostream>
 
-/* This is far too large, but we're setting it to this until we fix a bug we previously had
- * with strncpy corrupting memory. */
-#define OM_BUFFER_SIZE 70000   /* --- size of output buffer for a calls to print routines --- */
-
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
-    char buf[OM_BUFFER_SIZE];
+    std::string buf;
 
     va_start(args, format);
-    vsnprint_sf(pSoarAgent, buf, OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(pSoarAgent, buf, format, args);
     va_end(args);
-    printa(pSoarAgent, buf);
+    printa(pSoarAgent, buf.c_str());
 }
 
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
@@ -84,318 +80,47 @@ void Output_Manager::print_sf(const char* format, ...)
     if (m_defaultAgent)
     {
         va_list args;
-        char buf[OM_BUFFER_SIZE];
+        std::string buf;
 
         va_start(args, format);
-        vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
+        vsnprint_sf(m_defaultAgent, buf, format, args);
         va_end(args);
-        printa(m_defaultAgent, buf);
+        printa(m_defaultAgent, buf.c_str());
     }
 }
 
-void Output_Manager::vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list pargs)
-{
-    char* ch = dest;
-    Symbol* sym;
-
-    /* Apparently nested variadic calls need to have their argument list copied here.
-     * If windows has issues with va_copy, might be able to just comment out that line
-     * or use args = pargs.  Supposedly, way VC++ handles va_list doesn't need for it
-     * to be copied. */
-    va_list args;
-    va_copy(args, pargs);
-
-    while (true)
-    {
-        /* --- copy anything up to the first "%" --- */
-        while ((*format != '%') && (*format != 0))
-        {
-            *(ch++) = *(format++);
-        }
-        if (*format == 0)
-        {
-            break;
-        }
-        if (*(format + 1) == 's')
-        {
-            char *ch2 = va_arg(args, char *);
-            if (ch2 && strlen(ch2))
-            {
-                strcpy(ch, ch2);
-                while (*ch) ch++;
-            }
-            format += 2;
-        } else if (*(format + 1) == 'y')
-        {
-            sym = va_arg(args, Symbol*);
-            if (sym)
-            {
-                (sym)->to_string(true, ch, dest_size - (ch - dest));
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'o')
-        {
-            test t = va_arg(args, test);
-            test ct = NULL;
-            sym = NULL;
-            if (t)
-            {
-                if (t->type != CONJUNCTIVE_TEST)
-                {
-                    if (t->identity)
-                    {
-                        sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
-                        sym->to_string(true, ch, dest_size - (ch - dest));
-                        while (*ch) ch++;
-                    } else {
-                        *(ch++) = '#';
-                    }
-                } else {
-                    strcpy(ch, "{ ");
-                    ch += 2;
-                    for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
-                    {
-                        ct = static_cast<test>(c->first);
-                        if (ct && ct->identity)
-                        {
-                            sym = thisAgent->variablizationManager->get_ovar_for_o_id(ct->identity);
-                            sym->to_string(true, ch, dest_size - (ch - dest));
-                            while (*ch) ch++;
-                        } else {
-                            *(ch++) = '#';
-                        }
-                        *(ch++) = ' ';
-                    }
-                    *(ch++) = '}';;
-                }
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'i')
-        {
-            SNPRINTF(ch, dest_size - (ch - dest), "%lld", va_arg(args, int64_t));
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == 'u')
-        {
-            SNPRINTF(ch, dest_size - (ch - dest), "%llu", va_arg(args, uint64_t));
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == 't')
-        {
-            test t = va_arg(args, test);
-            if (t)
-            {
-                test_to_string(t, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'g')
-        {
-            test t = va_arg(args, test);
-            test ct = NULL;
-            if (t)
-            {
-                if (t->type != CONJUNCTIVE_TEST)
-                {
-                    if (t->identity)
-                    {
-                        identity_to_string(thisAgent, t, ch, dest_size - (ch - dest) );
-                        while (*ch) ch++;
-                    } else {
-                        *(ch++) = '#';
-                    }
-                } else {
-                    strcpy(ch, "{ ");
-                    ch += 2;
-                    for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
-                    {
-                        ct = static_cast<test>(c->first);
-                        if (ct && ct->identity)
-                        {
-                            identity_to_string(thisAgent, ct, ch, dest_size - (ch - dest) );
-                            while (*ch) ch++;
-                        } else {
-                            *(ch++) = '#';
-                        }
-                        *(ch++) = ' ';
-                    }
-                    *(ch++) = '}';;
-                }
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'l')
-        {
-            condition* lc = va_arg(args, condition*);
-            if (lc)
-            {
-                condition_to_string(thisAgent, lc, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'a')
-        {
-            action* la = va_arg(args, action *);
-            if (la)
-            {
-                this->action_to_string(thisAgent, la, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'n')
-        {
-            list* la = va_arg(args, list *);
-            if (la)
-            {
-                this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'r')
-        {
-            char* la = va_arg(args, char *);
-            if (la)
-            {
-                this->rhs_value_to_string(thisAgent, la, ch, dest_size - (ch - dest), NULL );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'p')
-        {
-            preference* lp = va_arg(args, preference *);
-            if (lp)
-            {
-                pref_to_string(thisAgent, lp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'w')
-        {
-            wme* lw = va_arg(args, wme *);
-            if (lw)
-            {
-            wme_to_string(thisAgent, lw, ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            } else {
-                *(ch++) = '#';
-            }
-            format += 2;
-        } else if (*(format + 1) == 'd')
-        {
-            SNPRINTF(ch, dest_size - (ch - dest), "%d", va_arg(args, int));
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == 'f')
-        {
-            if (thisAgent->output_settings->printer_output_column != 1)
-            {
-                *(ch++) = '\n';
-            }
-            format += 2;
-        } else if (*(format + 1) == '1')
-        {
-            condition* temp = va_arg(args, condition *);
-            if (temp)
-            {
-                condition_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            }
-                format += 2;
-        } else if (*(format + 1) == '2')
-        {
-            action* temp = va_arg(args, action *);
-            if (temp)
-            {
-                action_list_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            }
-                format += 2;
-        } else if (*(format + 1) == '3')
-        {
-            cons* temp = va_arg(args, cons*);
-            if (temp)
-            {
-                condition_cons_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            }
-                format += 2;
-        } else if (*(format + 1) == '4')
-        {
-            cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == '5')
-        {
-            cond_prefs_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == '6')
-        {
-            cond_results_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), ch, dest_size - (ch - dest) );
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == '7')
-        {
-            instantiation* temp = va_arg(args, instantiation*);
-            if (temp)
-            {
-                instantiation_to_string(thisAgent, temp, ch, dest_size - (ch - dest) );
-                while (*ch) ch++;
-            }
-            format += 2;
-        } else if (*(format + 1) == '8')
-        {
-            WM_to_string(thisAgent, ch, dest_size - (ch - dest));
-            while (*ch) ch++;
-            format += 2;
-        } else if (*(format + 1) == 'c')
-        {
-            char c = static_cast<char>(va_arg(args, int));
-            SNPRINTF(ch, dest_size - (ch - dest), "%c", c);
-            while (*ch) ch++;
-            format += 2;
-        } else
-        {
-            *(ch++) = *(format++);
-        }
-    }
-    *ch = 0;
-    va_end(args);
-}
-
-void Output_Manager::sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+void Output_Manager::sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    vsnprint_sf(thisAgent, dest, dest_size, format, args);
+    vsnprint_sf(thisAgent, destString, format, args);
     va_end(args);
+    return;
 }
 
-void Output_Manager::sprint_sf(char* dest, size_t dest_size, const char* format, ...)
+/* Same as above but changes the destination pointer to point to the next character to write to.  Used
+ * by other output manager functions to build up a string incrementally */
+
+size_t Output_Manager::sprinta_sf_cstr(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...)
+{
+    if (!dest_size) return 0;
+    va_list args;
+    std::string buf;
+
+    va_start(args, format);
+    vsnprint_sf(m_defaultAgent, buf, format, args);
+    va_end(args);
+
+    return om_strncpy(dest, buf.c_str(), dest_size, buf.length());
+}
+
+void Output_Manager::sprint_sf(std::string &destString, const char* format, ...)
 {
     if (m_defaultAgent)
     {
         va_list args;
         va_start(args, format);
-        vsnprint_sf(m_defaultAgent, dest, dest_size, format, args);
+        vsnprint_sf(m_defaultAgent, destString, format, args);
         va_end(args);
     }
 }
@@ -410,11 +135,10 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
         return;
     }
 
-    char buf[OM_BUFFER_SIZE];
-    strcpy(buf, mode_info[mode].prefix);
-    int s = strlen(buf);
-    strcpy((buf + s), msg);
-    printa(m_defaultAgent, buf);
+    std::string buf;
+    buf.append(mode_info[mode].prefix);
+    buf.append(msg);
+    printa(m_defaultAgent, buf.c_str());
 }
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
@@ -427,13 +151,13 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE];
-    strcpy(buf, mode_info[mode].prefix);
-    int s = strlen(buf);
+    std::string buf;
+    buf.append(mode_info[mode].prefix);
+
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, format, args);
     va_end(args);
-    printa(m_defaultAgent, buf);
+    printa(m_defaultAgent, buf.c_str());
 }
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
@@ -446,14 +170,13 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
     }
 
     va_list args;
-    char buf[OM_BUFFER_SIZE];
+    std::string buf;
 
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, buf, OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, format, args);
     va_end(args);
 
-    printa(m_defaultAgent, buf);
-
+    printa(m_defaultAgent, buf.c_str());
 }
 
 void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
@@ -465,22 +188,22 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
         return;
     }
 
-    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
-        debug_print(mode, "=========================================================\n");
-    va_list args;
-    char buf[OM_BUFFER_SIZE];
+    std::string buf;
 
-    strcpy(buf, mode_info[mode].prefix);
-    int s = strlen(buf);
+    if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
+        buf.append("=========================================================\n");
+    buf.append(mode_info[mode].prefix);
+
+    va_list args;
+
     va_start(args, format);
-    vsnprint_sf(m_defaultAgent, (buf+s), OM_BUFFER_SIZE, format, args);
+    vsnprint_sf(m_defaultAgent, buf, format, args);
     va_end(args);
-    if (strlen(buf) > s)
-    {
-        printa(m_defaultAgent, buf);
-    }
+
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintAfter))
-        debug_print(mode, "=========================================================\n");
+        buf.append("=========================================================\n");
+
+    printa(m_defaultAgent, buf.c_str());
 }
 
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
@@ -499,3 +222,334 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
     }
 
 }
+
+void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list pargs)
+{
+    Symbol* sym;
+    char *s, ch=0;
+    int n, i=0, m;
+    long l;
+    double d;
+    std::string sf = format;
+
+    /* Apparently nested variadic calls need to have their argument list copied here.
+     * If windows has issues with va_copy, might be able to just comment out that line
+     * or use args = pargs.  Supposedly, way VC++ handles va_list doesn't need for it
+     * to be copied. */
+    va_list args;
+    va_copy(args, pargs);
+
+    m = sf.length();
+    while (i<m)
+    {
+        ch = sf.at(i);
+        //    /* --- copy anything up to the first "%" --- */
+        //    if ((*format != '%') && (*format != 0))
+        //    {
+        //        char* first_p = strchr(format, '%');
+        //        size_t first_len = 0;
+        //        if (first_p)
+        //        {
+        //            first_len = (first_p - format);
+        //        }
+        //        if (first_len > 0)
+        //        {
+        //            char* new_format = const_cast<char*>(format);
+        //            om_strncpy(&ch, &new_format, buffer_left, first_len);
+        //            format = new_format;
+        //        } else {
+        //            size_t buffer_left_old = buffer_left;
+        //            om_strcpy(&ch, format, buffer_left);
+        //            format += (buffer_left_old - buffer_left - 1);
+        //        }
+        //    }
+        //    if (*format == 0)
+        //    {
+        //        break;
+        //    }
+        if (ch == '%')
+        {
+            i++;
+            if (i<m)
+            {
+                ch = sf.at(i);
+                switch(ch)
+                {
+                    case 's':
+                    {
+                        char *ch2 = va_arg(args, char *);
+                        if (ch2)
+                        {
+                            destString += ch2;
+                        }
+                    }
+                    break;
+
+                    case 'y':
+                    {
+                        sym = va_arg(args, Symbol*);
+                        if (sym)
+                        {
+                            destString += sym->to_string(true);
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'i':
+                    {
+                        destString += std::to_string(va_arg(args, int64_t));
+                    }
+                    break;
+
+                    case 'u':
+                    {
+                        destString += std::to_string(va_arg(args, uint64_t));
+                    }
+                    break;
+
+                    case 't':
+                    {
+                        test t = va_arg(args, test);
+                        if (t)
+                        {
+                            test_to_string(t, destString);
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'g':
+                    {
+                        test t = va_arg(args, test);
+                        test ct = NULL;
+                        if (t)
+                        {
+                            if (t->type != CONJUNCTIVE_TEST)
+                            {
+                                if (t->identity)
+                                {
+                                    test_to_string(t, destString);
+                                    destString += " [o";
+                                    destString += std::to_string(t->identity);
+                                    destString += ' ';
+                                    destString += thisAgent->variablizationManager->get_ovar_for_o_id(t->identity)->to_string(true);
+                                    destString += ']';
+                                } else {
+                                    test_to_string(t, destString);
+                                    destString += " [o0]";
+                                }
+                            } else {
+                                destString += "{ ";
+                                for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
+                                {
+                                    ct = static_cast<test>(c->first);
+                                    assert(ct);
+                                    if (t->identity)
+                                    {
+                                        test_to_string(t, destString);
+                                        destString += " [o";
+                                        destString += std::to_string(t->identity);
+                                        destString += ' ';
+                                        destString += thisAgent->variablizationManager->get_ovar_for_o_id(t->identity)->to_string(true);
+                                        destString += ']';
+                                    } else {
+                                        test_to_string(t, destString);
+                                        destString += " [o0]";
+                                    }
+                                    destString += ' ';
+                                }
+                                destString += '}';
+                            }
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'l':
+                    {
+                        condition* lc = va_arg(args, condition*);
+                        if (lc)
+                        {
+                            condition_to_string(thisAgent, lc, destString);
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'a':
+                    {
+                        action* la = va_arg(args, action *);
+                        if (la)
+                        {
+                            this->action_to_string(thisAgent, la, destString);
+
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'n':
+                    {
+                        list* la = va_arg(args, list *);
+                        if (la)
+                        {
+                            this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), destString);
+
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'r':
+                    {
+                        char* la = va_arg(args, char *);
+                        if (la)
+                        {
+                            this->rhs_value_to_string(thisAgent, la, destString, NULL );
+
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'p':
+                    {
+                        preference* lp = va_arg(args, preference *);
+                        if (lp)
+                        {
+                            pref_to_string(thisAgent, lp, destString);
+
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'w':
+                    {
+                        wme* lw = va_arg(args, wme *);
+                        if (lw)
+                        {
+                            wme_to_string(thisAgent, lw, destString);
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
+
+                    case 'd':
+                    {
+                        destString += std::to_string(va_arg(args, int));
+                    }
+                    break;
+
+                    case 'f':
+                    {
+                        if (thisAgent->output_settings->printer_output_column != 1)
+                        {
+                            destString += '\n';
+                        }
+                    }
+                    break;
+
+                    case '1':
+                    {
+                        condition* temp = va_arg(args, condition *);
+                        if (temp)
+                        {
+                            condition_list_to_string(thisAgent, temp, destString);
+                        }
+                    }
+                    break;
+
+                    case '2':
+                    {
+                        action* temp = va_arg(args, action *);
+                        if (temp)
+                        {
+                            action_list_to_string(thisAgent, temp, destString);
+                        }
+                    }
+                    break;
+
+                    case '3':
+                    {
+                        cons* temp = va_arg(args, cons*);
+                        if (temp)
+                        {
+                            condition_cons_to_string(thisAgent, temp, destString);
+                        }
+                    }
+                    break;
+
+                    case '4':
+                    {
+                        cond_actions_to_string(thisAgent, va_arg(args, condition*), va_arg(args, action*), destString);
+                    }
+                    break;
+
+                    case '5':
+                    {
+                        cond_prefs_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), destString);
+                    }
+                    break;
+
+                    case '6':
+                    {
+                        cond_results_to_string(thisAgent, va_arg(args, condition*), va_arg(args, preference*), destString);
+                    }
+                    break;
+
+                    case '7':
+                    {
+                        instantiation* temp = va_arg(args, instantiation*);
+                        if (temp)
+                        {
+                            instantiation_to_string(thisAgent, temp, destString);
+                        }
+                    }
+                    break;
+
+                    case '8':
+                    {
+                        WM_to_string(thisAgent, destString);
+                    }
+                    break;
+
+                    case 'c':
+                    {
+                        destString += static_cast<char>(va_arg(args, int));
+                    }
+                    break;
+
+                    case '%': {
+                        destString += '%';
+                    }
+                    break;
+
+                    default:
+                    {
+                        destString += '%';
+                        destString += ch;
+                        //i = m; //get out of loop
+                    }
+                }
+            }
+        }
+        else
+        {
+            destString += ch;
+        }
+        i++;
+    }
+    va_end(args);
+}
+
