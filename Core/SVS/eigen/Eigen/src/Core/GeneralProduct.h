@@ -4,27 +4,14 @@
 // Copyright (C) 2006-2008 Benoit Jacob <jacob.benoit.1@gmail.com>
 // Copyright (C) 2008-2011 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_GENERAL_PRODUCT_H
 #define EIGEN_GENERAL_PRODUCT_H
+
+namespace Eigen { 
 
 /** \class GeneralProduct
   * \ingroup Core_Module
@@ -235,7 +222,29 @@ class GeneralProduct<Lhs, Rhs, InnerProduct>
 ***********************************************************************/
 
 namespace internal {
-template<int StorageOrder> struct outer_product_selector;
+
+// Column major
+template<typename ProductType, typename Dest, typename Func>
+EIGEN_DONT_INLINE void outer_product_selector_run(const ProductType& prod, Dest& dest, const Func& func, const false_type&)
+{
+  typedef typename Dest::Index Index;
+  // FIXME make sure lhs is sequentially stored
+  // FIXME not very good if rhs is real and lhs complex while alpha is real too
+  const Index cols = dest.cols();
+  for (Index j=0; j<cols; ++j)
+    func(dest.col(j), prod.rhs().coeff(0,j) * prod.lhs());
+}
+
+// Row major
+template<typename ProductType, typename Dest, typename Func>
+EIGEN_DONT_INLINE void outer_product_selector_run(const ProductType& prod, Dest& dest, const Func& func, const true_type&) {
+  typedef typename Dest::Index Index;
+  // FIXME make sure rhs is sequentially stored
+  // FIXME not very good if lhs is real and rhs complex while alpha is real too
+  const Index rows = dest.rows();
+  for (Index i=0; i<rows; ++i)
+    func(dest.row(i), prod.lhs().coeff(i,0) * prod.rhs());
+}
 
 template<typename Lhs, typename Rhs>
 struct traits<GeneralProduct<Lhs,Rhs,OuterProduct> >
@@ -248,6 +257,8 @@ template<typename Lhs, typename Rhs>
 class GeneralProduct<Lhs, Rhs, OuterProduct>
   : public ProductBase<GeneralProduct<Lhs,Rhs,OuterProduct>, Lhs, Rhs>
 {
+    template<typename T> struct IsRowMajor : internal::conditional<(int(T::Flags)&RowMajorBit), internal::true_type, internal::false_type>::type {};
+    
   public:
     EIGEN_PRODUCT_PUBLIC_INTERFACE(GeneralProduct)
 
@@ -256,40 +267,38 @@ class GeneralProduct<Lhs, Rhs, OuterProduct>
       EIGEN_STATIC_ASSERT((internal::is_same<typename Lhs::RealScalar, typename Rhs::RealScalar>::value),
         YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY)
     }
+    
+    struct set  { template<typename Dst, typename Src> void operator()(const Dst& dst, const Src& src) const { dst.const_cast_derived()  = src; } };
+    struct add  { template<typename Dst, typename Src> void operator()(const Dst& dst, const Src& src) const { dst.const_cast_derived() += src; } };
+    struct sub  { template<typename Dst, typename Src> void operator()(const Dst& dst, const Src& src) const { dst.const_cast_derived() -= src; } };
+    struct adds {
+      Scalar m_scale;
+      adds(const Scalar& s) : m_scale(s) {}
+      template<typename Dst, typename Src> void operator()(const Dst& dst, const Src& src) const {
+        dst.const_cast_derived() += m_scale * src;
+      }
+    };
+    
+    template<typename Dest>
+    inline void evalTo(Dest& dest) const {
+      internal::outer_product_selector_run(*this, dest, set(), IsRowMajor<Dest>());
+    }
+    
+    template<typename Dest>
+    inline void addTo(Dest& dest) const {
+      internal::outer_product_selector_run(*this, dest, add(), IsRowMajor<Dest>());
+    }
 
-    template<typename Dest> void scaleAndAddTo(Dest& dest, Scalar alpha) const
+    template<typename Dest>
+    inline void subTo(Dest& dest) const {
+      internal::outer_product_selector_run(*this, dest, sub(), IsRowMajor<Dest>());
+    }
+
+    template<typename Dest> void scaleAndAddTo(Dest& dest, const Scalar& alpha) const
     {
-      internal::outer_product_selector<(int(Dest::Flags)&RowMajorBit) ? RowMajor : ColMajor>::run(*this, dest, alpha);
+      internal::outer_product_selector_run(*this, dest, adds(alpha), IsRowMajor<Dest>());
     }
 };
-
-namespace internal {
-
-template<> struct outer_product_selector<ColMajor> {
-  template<typename ProductType, typename Dest>
-  static EIGEN_DONT_INLINE void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha) {
-    typedef typename Dest::Index Index;
-    // FIXME make sure lhs is sequentially stored
-    // FIXME not very good if rhs is real and lhs complex while alpha is real too
-    const Index cols = dest.cols();
-    for (Index j=0; j<cols; ++j)
-      dest.col(j) += (alpha * prod.rhs().coeff(j)) * prod.lhs();
-  }
-};
-
-template<> struct outer_product_selector<RowMajor> {
-  template<typename ProductType, typename Dest>
-  static EIGEN_DONT_INLINE void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha) {
-    typedef typename Dest::Index Index;
-    // FIXME make sure rhs is sequentially stored
-    // FIXME not very good if lhs is real and rhs complex while alpha is real too
-    const Index rows = dest.rows();
-    for (Index i=0; i<rows; ++i)
-      dest.row(i) += (alpha * prod.lhs().coeff(i)) * prod.rhs();
-  }
-};
-
-} // end namespace internal
 
 /***********************************************************************
 *  Implementation of General Matrix Vector Product
@@ -324,7 +333,7 @@ class GeneralProduct<Lhs, Rhs, GemvProduct>
     typedef typename Lhs::Scalar LhsScalar;
     typedef typename Rhs::Scalar RhsScalar;
 
-    GeneralProduct(const Lhs& lhs, const Rhs& rhs) : Base(lhs,rhs)
+    GeneralProduct(const Lhs& a_lhs, const Rhs& a_rhs) : Base(a_lhs,a_rhs)
     {
 //       EIGEN_STATIC_ASSERT((internal::is_same<typename Lhs::Scalar, typename Rhs::Scalar>::value),
 //         YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY)
@@ -333,7 +342,7 @@ class GeneralProduct<Lhs, Rhs, GemvProduct>
     enum { Side = Lhs::IsVectorAtCompileTime ? OnTheLeft : OnTheRight };
     typedef typename internal::conditional<int(Side)==OnTheRight,_LhsNested,_RhsNested>::type MatrixType;
 
-    template<typename Dest> void scaleAndAddTo(Dest& dst, Scalar alpha) const
+    template<typename Dest> void scaleAndAddTo(Dest& dst, const Scalar& alpha) const
     {
       eigen_assert(m_lhs.rows() == dst.rows() && m_rhs.cols() == dst.cols());
       internal::gemv_selector<Side,(int(MatrixType::Flags)&RowMajorBit) ? RowMajor : ColMajor,
@@ -348,7 +357,7 @@ template<int StorageOrder, bool BlasCompatible>
 struct gemv_selector<OnTheLeft,StorageOrder,BlasCompatible>
 {
   template<typename ProductType, typename Dest>
-  static void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha)
+  static void run(const ProductType& prod, Dest& dest, const typename ProductType::Scalar& alpha)
   {
     Transpose<Dest> destT(dest);
     enum { OtherStorageOrder = StorageOrder == RowMajor ? ColMajor : RowMajor };
@@ -397,7 +406,7 @@ struct gemv_static_vector_if<Scalar,Size,MaxSize,true>
 template<> struct gemv_selector<OnTheRight,ColMajor,true>
 {
   template<typename ProductType, typename Dest>
-  static inline void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha)
+  static inline void run(const ProductType& prod, Dest& dest, const typename ProductType::Scalar& alpha)
   {
     typedef typename ProductType::Index Index;
     typedef typename ProductType::LhsScalar   LhsScalar;
@@ -410,8 +419,8 @@ template<> struct gemv_selector<OnTheRight,ColMajor,true>
     typedef typename ProductType::RhsBlasTraits RhsBlasTraits;
     typedef Map<Matrix<ResScalar,Dynamic,1>, Aligned> MappedDest;
 
-    const ActualLhsType actualLhs = LhsBlasTraits::extract(prod.lhs());
-    const ActualRhsType actualRhs = RhsBlasTraits::extract(prod.rhs());
+    ActualLhsType actualLhs = LhsBlasTraits::extract(prod.lhs());
+    ActualRhsType actualRhs = RhsBlasTraits::extract(prod.rhs());
 
     ResScalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(prod.lhs())
                                   * RhsBlasTraits::extractScalarFactor(prod.rhs());
@@ -426,7 +435,7 @@ template<> struct gemv_selector<OnTheRight,ColMajor,true>
 
     gemv_static_vector_if<ResScalar,Dest::SizeAtCompileTime,Dest::MaxSizeAtCompileTime,MightCannotUseDest> static_dest;
 
-    bool alphaIsCompatible = (!ComplexByReal) || (imag(actualAlpha)==RealScalar(0));
+    bool alphaIsCompatible = (!ComplexByReal) || (numext::imag(actualAlpha)==RealScalar(0));
     bool evalToDest = EvalToDestAtCompileTime && alphaIsCompatible;
     
     RhsScalar compatibleAlpha = get_factor<ResScalar,RhsScalar>::run(actualAlpha);
@@ -452,7 +461,7 @@ template<> struct gemv_selector<OnTheRight,ColMajor,true>
     general_matrix_vector_product
       <Index,LhsScalar,ColMajor,LhsBlasTraits::NeedToConjugate,RhsScalar,RhsBlasTraits::NeedToConjugate>::run(
         actualLhs.rows(), actualLhs.cols(),
-        &actualLhs.coeffRef(0,0), actualLhs.outerStride(),
+        actualLhs.data(), actualLhs.outerStride(),
         actualRhs.data(), actualRhs.innerStride(),
         actualDestPtr, 1,
         compatibleAlpha);
@@ -470,7 +479,7 @@ template<> struct gemv_selector<OnTheRight,ColMajor,true>
 template<> struct gemv_selector<OnTheRight,RowMajor,true>
 {
   template<typename ProductType, typename Dest>
-  static void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha)
+  static void run(const ProductType& prod, Dest& dest, const typename ProductType::Scalar& alpha)
   {
     typedef typename ProductType::LhsScalar LhsScalar;
     typedef typename ProductType::RhsScalar RhsScalar;
@@ -511,9 +520,9 @@ template<> struct gemv_selector<OnTheRight,RowMajor,true>
     general_matrix_vector_product
       <Index,LhsScalar,RowMajor,LhsBlasTraits::NeedToConjugate,RhsScalar,RhsBlasTraits::NeedToConjugate>::run(
         actualLhs.rows(), actualLhs.cols(),
-        &actualLhs.coeffRef(0,0), actualLhs.outerStride(),
+        actualLhs.data(), actualLhs.outerStride(),
         actualRhsPtr, 1,
-        &dest.coeffRef(0,0), dest.innerStride(),
+        dest.data(), dest.innerStride(),
         actualAlpha);
   }
 };
@@ -521,7 +530,7 @@ template<> struct gemv_selector<OnTheRight,RowMajor,true>
 template<> struct gemv_selector<OnTheRight,ColMajor,false>
 {
   template<typename ProductType, typename Dest>
-  static void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha)
+  static void run(const ProductType& prod, Dest& dest, const typename ProductType::Scalar& alpha)
   {
     typedef typename Dest::Index Index;
     // TODO makes sure dest is sequentially stored in memory, otherwise use a temp
@@ -534,7 +543,7 @@ template<> struct gemv_selector<OnTheRight,ColMajor,false>
 template<> struct gemv_selector<OnTheRight,RowMajor,false>
 {
   template<typename ProductType, typename Dest>
-  static void run(const ProductType& prod, Dest& dest, typename ProductType::Scalar alpha)
+  static void run(const ProductType& prod, Dest& dest, const typename ProductType::Scalar& alpha)
   {
     typedef typename Dest::Index Index;
     // TODO makes sure rhs is sequentially stored in memory, otherwise use a temp
@@ -558,7 +567,7 @@ template<> struct gemv_selector<OnTheRight,RowMajor,false>
   */
 template<typename Derived>
 template<typename OtherDerived>
-inline const typename ProductReturnType<Derived,OtherDerived>::Type
+inline const typename ProductReturnType<Derived, OtherDerived>::Type
 MatrixBase<Derived>::operator*(const MatrixBase<OtherDerived> &other) const
 {
   // A note regarding the function declaration: In MSVC, this function will sometimes
@@ -620,5 +629,7 @@ MatrixBase<Derived>::lazyProduct(const MatrixBase<OtherDerived> &other) const
 
   return typename LazyProductReturnType<Derived,OtherDerived>::Type(derived(), other.derived());
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_PRODUCT_H

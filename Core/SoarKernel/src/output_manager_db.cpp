@@ -199,7 +199,7 @@ void OM_DB::compile_refcount_summary()
         /* -- Count total add_refs -- */
         count_refs->bind_text(1, "%add_ref%");
         count_refs->bind_text(2, symString);
-        bool result = count_refs->execute();
+        count_refs->execute();
         add_count = count_refs->column_int(0);
         count_refs->reinitialize();
 
@@ -325,7 +325,7 @@ void OM_DB::init_db()
 
         if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
         {
-            bool switch_to_memory, versions_exists, sql_is_new;
+            bool switch_to_memory, sql_is_new;
             std::string schema_version, version_error_message;
 
             switch_to_memory = true;

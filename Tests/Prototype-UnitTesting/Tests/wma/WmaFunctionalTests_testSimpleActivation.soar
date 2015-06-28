@@ -1,0 +1,88 @@
+# this test runs until one of the wmes decays enough to get removed from wm
+
+waitsnc --on
+wma --set activation off
+wma --set petrov-approx on
+wma --set forgetting on
+wma --set activation on
+w --wma
+
+
+sp "propose*o-from-a
+(state <s> ^superstate nil
+-^o-from-a true)
+-->
+(<s> ^operator <o> +)
+(<o> ^name o-from-a)
+"
+
+sp "appy*o-from-a
+(state <s> ^operator.name o-from-a)
+-->
+(<s> ^o-from-a true)
+"
+
+sp "propose*o-from-o
+(state <s> ^o-from-a true
+-^o-from-o true)
+-->
+(<s> ^operator <o> +)
+(<o> ^name o-from-o)
+"
+
+sp "apply*o-from-o
+(state <s> ^operator.name o-from-o)
+-->
+(<s> ^o-from-o true)
+"
+
+sp "elab*i-from-o
+(state <s> ^o-from-a true)
+-->
+(<s> ^i-from-o true)
+"
+
+sp "propose*o-from-i
+(state <s> ^i-from-o true
+-^i-from-o true)
+-->
+(<s> ^operator <o> + <)
+(<o> ^name o-from-i)
+"
+
+sp "apply*o-from-i
+(state <s> ^operator.name o-from-i)
+-->
+(<s> ^o-from-i true)
+"
+
+sp "elab*i-from-i
+(state <s> ^i-from-o true)
+-->
+(<s> ^i-from-i true)
+"
+
+sp "propose*o-from-i2
+(state <s> ^i-from-i true
+-^o-from-i2)
+-->
+(<s> ^operator <o> + <)
+(<o> ^name o-from-i2)
+"
+
+sp "apply*o-from-i2
+(state <s> ^operator.name o-from-i2)
+-->
+(<s> ^o-from-i2 true)
+"
+
+sp "success
+(state <s> ^o-from-a true
+           ^o-from-o true
+          -^o-from-i2 true)
+-{(<s> ^operator <o> +)
+  (<o> ^name o-from-i2)}
+-->
+(halt)
+(write (crlf) |success|)
+"

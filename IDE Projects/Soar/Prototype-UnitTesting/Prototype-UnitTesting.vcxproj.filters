@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\TestHarness">
+      <UniqueIdentifier>{0c55b676-b70a-4a0f-86c3-fd89aa8d566d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel">
+      <UniqueIdentifier>{33125eb5-21d6-4afc-bf65-fbe4eb48d35d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SoarHelpers">
+      <UniqueIdentifier>{46cf023f-fd3b-4368-b50d-d6ed86a5775f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel\epmem">
+      <UniqueIdentifier>{390d43df-fe4b-4be4-bc40-f0a002b08b9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel\smem">
+      <UniqueIdentifier>{ad86c5ea-da58-40d2-b73e-ef69715457c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\kernel\wma">
+      <UniqueIdentifier>{e8151ebc-db4b-4d42-adab-17f15adc1525}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestCategory.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp">
+      <Filter>Source Files\SoarHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\windows\msdirent.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\portable-dirent.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.hpp">
+      <Filter>Source Files\kernel\smem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.hpp">
+      <Filter>Source Files\kernel\epmem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.hpp">
+      <Filter>Source Files\kernel\wma</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestHelpers.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\testMain.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.cpp">
+      <Filter>Source Files\TestHarness</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp">
+      <Filter>Source Files\SoarHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.cpp">
+      <Filter>Source Files\kernel\smem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.cpp">
+      <Filter>Source Files\kernel\epmem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.cpp">
+      <Filter>Source Files\kernel\wma</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Tests\Prototype-UnitTesting\TodoTests.md">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

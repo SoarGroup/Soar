@@ -26,6 +26,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testMultipleKernels);
         CPPUNIT_TEST(testSoarRand);
         CPPUNIT_TEST(testPreferenceDeallocation);
+        CPPUNIT_TEST(testSoarDebugger);
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstantiationDeallocationStackOverflow);
         CPPUNIT_TEST(testSmemArithmetic);
@@ -35,11 +36,11 @@ class MiscTest : public CPPUNIT_NS::TestCase
          * CPPUNIT_TEST( test_stats ); -- */
 #endif
         CPPUNIT_TEST_SUITE_END();
-
+        
     public:
         void setUp();
         void tearDown();
-
+        
     protected:
         void testInstantiationDeallocationStackOverflow();
         void test_clog();
@@ -47,19 +48,21 @@ class MiscTest : public CPPUNIT_NS::TestCase
         void test_echo();
         void test_ls();
         void test_stats();
-
+        
         void testWrongAgentWmeFunctions();
         void testRHSRand();
         void testMultipleKernels();
         void testSmemArithmetic();
-
+        
         void testSource();
-
+        
         void testSoarRand();
         void testPreferenceDeallocation();
-
+        
+        void testSoarDebugger();
+        
         void source(const std::string& path);
-
+        
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
 };
@@ -87,7 +90,7 @@ void MiscTest::setUp()
     pKernel = sml::Kernel::CreateKernelInNewThread() ;
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
-
+    
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
 }
@@ -133,16 +136,16 @@ void MiscTest::test_clog()
 void MiscTest::test_gp()
 {
     source("testgp.soar");
-
+    
     pAgent->ExecuteCommandLine("gp {gp*test10 (state <s> ^operator <o> + ^someflag [ <var> true false ] ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>) (<o> ^name foo ^att [ val1 1.3 |another val| |\\|another val\\|| ] ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>]) --> (<s> ^[<var> att] <var>) }");
     CPPUNIT_ASSERT_MESSAGE("valid but too large (540000) gp production didn't fail", pAgent->GetLastCommandLineResult() == false);
-
+    
     pAgent->ExecuteCommandLine("gp {gp*fail1 (state <s> ^att []) --> (<s> ^operator <o> = 5) }");
     CPPUNIT_ASSERT_MESSAGE("'need at least one value in list' didn't fail", pAgent->GetLastCommandLineResult() == false);
-
+    
     pAgent->ExecuteCommandLine("gp {gp*fail2 (state <s> ^[att1 att2][val1 val2]) --> (<s> ^operator <o> = 5) }");
     CPPUNIT_ASSERT_MESSAGE("'need space between value lists' didn't fail", pAgent->GetLastCommandLineResult() == false);
-
+    
     pAgent->ExecuteCommandLine("gp {gp*fail3 (state <s> ^foo bar[) --> (<s> ^foo bar) }");
     CPPUNIT_ASSERT_MESSAGE("'unmatched [' didn't fail", pAgent->GetLastCommandLineResult() == false);
 }
@@ -151,40 +154,40 @@ void MiscTest::test_echo()
 {
     pAgent->ExecuteCommandLine("echo sp \\{my*prod"); // bug 987
     CPPUNIT_ASSERT_MESSAGE("bug 987", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo \"#########################################################\""); // bug 1013
     CPPUNIT_ASSERT_MESSAGE("bug 1013", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo \\\"");
     CPPUNIT_ASSERT_MESSAGE("quote", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo [");
     CPPUNIT_ASSERT_MESSAGE("left brace", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo ]");
     CPPUNIT_ASSERT_MESSAGE("right brace", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo \\{");
     CPPUNIT_ASSERT_MESSAGE("left bracket", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo }");
     CPPUNIT_ASSERT_MESSAGE("right bracket", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo <");
     CPPUNIT_ASSERT_MESSAGE("less than", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo >");
     CPPUNIT_ASSERT_MESSAGE("greater than", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo |");
     CPPUNIT_ASSERT_MESSAGE("pipe", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo |#");
     CPPUNIT_ASSERT_MESSAGE("pipe and pound", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo |#|");
     CPPUNIT_ASSERT_MESSAGE("pound in pipes", pAgent->GetLastCommandLineResult());
-
+    
     pAgent->ExecuteCommandLine("echo ~!@#$%^&*()_+`1234567890-=\\:,.?/");
     CPPUNIT_ASSERT_MESSAGE("misc chars", pAgent->GetLastCommandLineResult());
 }
@@ -200,7 +203,7 @@ void MiscTest::test_stats()
     sml::ClientAnalyzedXML stats;
     pAgent->ExecuteCommandLineXML("stats", &stats);
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
-
+    
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountDefault, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountUser, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountChunk, -1) == 0);
@@ -293,31 +296,31 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 1068);
 #endif
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1) == 900);
-
+    
     pAgent->ExecuteCommandLine("stats -t");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(10);
     std::string res = pAgent->ExecuteCommandLine("stats -c");
     CPPUNIT_ASSERT(!res.empty());
-
+    
     pAgent->ExecuteCommandLine("stats -t");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(10);
     res = pAgent->ExecuteCommandLine("stats -c");
     CPPUNIT_ASSERT(!res.empty());
-
+    
     pAgent->ExecuteCommandLine("stats -T");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(10);
     res = pAgent->ExecuteCommandLine("stats -c");
     CPPUNIT_ASSERT(res.empty());
-
+    
     pAgent->ExecuteCommandLine("stats -t");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(10);
     res = pAgent->ExecuteCommandLine("stats -c");
     CPPUNIT_ASSERT(!res.empty());
-
+    
     pAgent->ExecuteCommandLine("stats -T");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
 }
@@ -327,20 +330,20 @@ void MiscTest::testWrongAgentWmeFunctions()
     sml::Agent* pAgent2 = 0;
     pAgent2 = pKernel->CreateAgent("soar2");
     CPPUNIT_ASSERT(pAgent2 != NULL);
-
+    
     sml::Identifier* il1 = pAgent->GetInputLink();
     sml::Identifier* il2 = pAgent2->GetInputLink();
-
+    
     sml::Identifier* foo1 = il1->CreateIdWME("foo");
     sml::Identifier* foo2 = il2->CreateIdWME("foo");
-
+    
     CPPUNIT_ASSERT(pAgent->CreateStringWME(foo2, "fail", "fail") == 0);
     CPPUNIT_ASSERT(pAgent->CreateIntWME(foo2, "fail", 1) == 0);
     CPPUNIT_ASSERT(pAgent->CreateFloatWME(foo2, "fail", 1.0f) == 0);
     CPPUNIT_ASSERT(pAgent->CreateIdWME(foo2, "fail") == 0);
     CPPUNIT_ASSERT(pAgent->CreateSharedIdWME(foo2, "fail", il1) == 0);
     CPPUNIT_ASSERT(pAgent->DestroyWME(foo2) == 0);
-
+    
     CPPUNIT_ASSERT(pAgent2->CreateStringWME(foo1, "fail", "fail") == 0);
     CPPUNIT_ASSERT(pAgent2->CreateIntWME(foo1, "fail", 1) == 0);
     CPPUNIT_ASSERT(pAgent2->CreateFloatWME(foo1, "fail", 1.0f) == 0);
@@ -361,13 +364,13 @@ void MiscTest::testMultipleKernels()
     sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultSMLPort - 1);
     CPPUNIT_ASSERT(pKernel2 != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel2->GetLastErrorDescription(), !pKernel2->HadError());
-
+    
     sml::Agent* pAgent2 = pKernel2->CreateAgent("soar2");
     CPPUNIT_ASSERT(pAgent2 != NULL);
-
+    
     pKernel2->Shutdown();
     delete pKernel2;
-
+    
     pAgent->ExecuteCommandLine("p s1");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
 }
@@ -377,9 +380,9 @@ void MiscTest::testSmemArithmetic()
     source("arithmetic/arithmetic.soar") ;
     pAgent->ExecuteCommandLine("watch 0");
     pAgent->ExecuteCommandLine("srand 1080");
-
+    
     pAgent->RunSelfForever();
-
+    
     sml::ClientAnalyzedXML stats;
     pAgent->ExecuteCommandLineXML("stats", &stats);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
@@ -407,9 +410,27 @@ void MiscTest::testPreferenceDeallocation()
 {
     source("testPreferenceDeallocation.soar");
     pAgent->ExecuteCommandLine("run 10");
-
+    
     sml::ClientAnalyzedXML response;
     pAgent->ExecuteCommandLineXML("stats", &response);
     CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
 }
 
+void MiscTest::testSoarDebugger()
+{
+    bool result = pAgent->SpawnDebugger();
+    
+    CPPUNIT_ASSERT(result);
+    
+#ifdef _MSC_VER
+    Sleep(10000);
+#else
+    sleep(10);
+#endif
+    
+    pAgent->ExecuteCommandLine("run 10");
+    
+    result = pAgent->KillDebugger();
+    
+    CPPUNIT_ASSERT(result);
+}

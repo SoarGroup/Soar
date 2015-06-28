@@ -2,28 +2,16 @@
 // for linear algebra.
 //
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
+// Copyright (C) 2012 Désiré Nuentsa-Wakam <desire.nuentsa_wakam@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_TRIANGULARVIEW_H
 #define EIGEN_SPARSE_TRIANGULARVIEW_H
+
+namespace Eigen { 
 
 namespace internal {
   
@@ -40,6 +28,7 @@ template<typename MatrixType, int Mode> class SparseTriangularView
     enum { SkipFirst = ((Mode&Lower) && !(MatrixType::Flags&RowMajorBit))
                     || ((Mode&Upper) &&  (MatrixType::Flags&RowMajorBit)),
            SkipLast = !SkipFirst,
+           SkipDiag = (Mode&ZeroDiag) ? 1 : 0,
            HasUnitDiag = (Mode&UnitDiag) ? 1 : 0
     };
 
@@ -53,9 +42,7 @@ template<typename MatrixType, int Mode> class SparseTriangularView
     inline Index rows() const { return m_matrix.rows(); }
     inline Index cols() const { return m_matrix.cols(); }
 
-    //typedef typename internal::conditional<internal::must_nest_by_value<MatrixType>::ret,
-    //    MatrixType, const MatrixType&>::type MatrixTypeNested;
-    typedef typename internal::nested<MatrixType>::type MatrixTypeNested;
+    typedef typename MatrixType::Nested MatrixTypeNested;
     typedef typename internal::remove_reference<MatrixTypeNested>::type MatrixTypeNestedNonRef;
     typedef typename internal::remove_all<MatrixTypeNested>::type MatrixTypeNestedCleaned;
 
@@ -76,9 +63,10 @@ template<typename MatrixType, int Mode> class SparseTriangularView
 };
 
 template<typename MatrixType, int Mode>
-class SparseTriangularView<MatrixType,Mode>::InnerIterator : public MatrixType::InnerIterator
+class SparseTriangularView<MatrixType,Mode>::InnerIterator : public MatrixTypeNestedCleaned::InnerIterator
 {
-    typedef typename MatrixType::InnerIterator Base;
+    typedef typename MatrixTypeNestedCleaned::InnerIterator Base;
+    typedef typename SparseTriangularView::Index Index;
   public:
 
     EIGEN_STRONG_INLINE InnerIterator(const SparseTriangularView& view, Index outer)
@@ -86,7 +74,7 @@ class SparseTriangularView<MatrixType,Mode>::InnerIterator : public MatrixType::
     {
       if(SkipFirst)
       {
-        while((*this) && (HasUnitDiag ? this->index()<=outer : this->index()<outer))
+        while((*this) && ((HasUnitDiag||SkipDiag)  ? this->index()<=outer : this->index()<outer))
           Base::operator++();
         if(HasUnitDiag)
           m_returnOne = true;
@@ -116,8 +104,8 @@ class SparseTriangularView<MatrixType,Mode>::InnerIterator : public MatrixType::
       return *this;
     }
 
-    inline Index row() const { return Base::row(); }
-    inline Index col() const { return Base::col(); }
+    inline Index row() const { return (MatrixType::Flags&RowMajorBit ? Base::outer() : this->index()); }
+    inline Index col() const { return (MatrixType::Flags&RowMajorBit ? this->index() : Base::outer()); }
     inline Index index() const
     {
       if(HasUnitDiag && m_returnOne)  return Base::outer();
@@ -133,28 +121,35 @@ class SparseTriangularView<MatrixType,Mode>::InnerIterator : public MatrixType::
     {
       if(HasUnitDiag && m_returnOne)
         return true;
-      return (SkipFirst ? Base::operator bool() : (Base::operator bool() && this->index() <= this->outer()));
+      if(SkipFirst) return  Base::operator bool();
+      else
+      {
+        if (SkipDiag) return (Base::operator bool() && this->index() < this->outer());
+        else return (Base::operator bool() && this->index() <= this->outer());
+      }
     }
   protected:
     bool m_returnOne;
 };
 
 template<typename MatrixType, int Mode>
-class SparseTriangularView<MatrixType,Mode>::ReverseInnerIterator : public MatrixType::ReverseInnerIterator
+class SparseTriangularView<MatrixType,Mode>::ReverseInnerIterator : public MatrixTypeNestedCleaned::ReverseInnerIterator
 {
-    typedef typename MatrixType::ReverseInnerIterator Base;
+    typedef typename MatrixTypeNestedCleaned::ReverseInnerIterator Base;
+    typedef typename SparseTriangularView::Index Index;
   public:
 
     EIGEN_STRONG_INLINE ReverseInnerIterator(const SparseTriangularView& view, Index outer)
       : Base(view.nestedExpression(), outer)
     {
       eigen_assert((!HasUnitDiag) && "ReverseInnerIterator does not support yet triangular views with a unit diagonal");
-      if(SkipLast)
-        while((*this) && this->index()>outer)
+      if(SkipLast) {
+        while((*this) && (SkipDiag ? this->index()>=outer : this->index()>outer))
           --(*this);
+      }
     }
 
-    EIGEN_STRONG_INLINE InnerIterator& operator--()
+    EIGEN_STRONG_INLINE ReverseInnerIterator& operator--()
     { Base::operator--(); return *this; }
 
     inline Index row() const { return Base::row(); }
@@ -162,7 +157,12 @@ class SparseTriangularView<MatrixType,Mode>::ReverseInnerIterator : public Matri
 
     EIGEN_STRONG_INLINE operator bool() const
     {
-      return SkipLast ? Base::operator bool() : (Base::operator bool() && this->index() >= this->outer());
+      if (SkipLast) return Base::operator bool() ;
+      else
+      {
+        if(SkipDiag) return (Base::operator bool() && this->index() > this->outer());
+        else return (Base::operator bool() && this->index() >= this->outer());
+      }
     }
 };
 
@@ -173,5 +173,7 @@ SparseMatrixBase<Derived>::triangularView() const
 {
   return derived();
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_TRIANGULARVIEW_H

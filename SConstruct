@@ -69,7 +69,7 @@ def vc_version():
         Exit(1)
     line = p.stdout.readline()
     # for line in iter(p.stdout.readline, b''):
-    #   print line,
+    #     print line,
     p.communicate()
     m = re.search(r'Version ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', line)
     if m:
@@ -281,7 +281,7 @@ else:
     sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
 
 if sys.platform != 'win32':
-	env.Append(CXXFLAGS='-std=c++11')
+    env.Append(CXXFLAGS='-std=c++11')
 
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 

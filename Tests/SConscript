@@ -5,7 +5,7 @@
 import os
 Import('env', 'InstallDir')
 
-subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests', 'Prototype-UnitTesting']
 
 tests = []
 for d in subdirs:
@@ -13,4 +13,6 @@ for d in subdirs:
 	tests.extend(SConscript(script))
 
 agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
-env.Alias('tests', tests + agents)
+prototype_unittesting_tests = InstallDir(env, '$OUT_DIR/Tests/', 'Prototype-UnitTesting/Tests')
+
+env.Alias('tests', tests + agents + prototype_unittesting_tests)

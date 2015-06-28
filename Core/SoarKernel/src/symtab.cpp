@@ -1134,14 +1134,6 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
     bool is_rereadable;
     bool has_angle_bracket;
 
-#ifndef SOAR_RELEASE_VERSION
-    /* -- Not sure if this is legit, but works and smooths debugging -- */
-    if (!this)
-    {
-        //assert(false);
-        return Output_Manager::Get_OM().NULL_SYM_STR;
-    }
-#endif
     switch (symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:

@@ -46,7 +46,8 @@ command::~command() {}
 
 bool command::changed()
 {
-    int size, max_time;
+    size_t size;
+    uint64_t max_time;
     parse_substructure(size, max_time);
     if (first || size != subtree_size || max_time > prev_max_time)
     {
@@ -58,14 +59,14 @@ bool command::changed()
     return false;
 }
 
-void command::parse_substructure(int& size, int& max_time)
+void command::parse_substructure(size_t& size, uint64_t& max_time)
 {
     tc_number tc;
     stack< Symbol*> to_process;
     wme_list childs;
     wme_list::iterator i;
     Symbol* parent, *v;
-    int tt;
+    uint64_t tt;
     string attr;
     
     tc = si->new_tc_num();

@@ -15,6 +15,13 @@
  *  See the License for more information.
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#elif _MSC_VER
+#pragma warning(push, 0)
+#endif
+
 #include <stdlib.h>
 #include <ccd/ccd.h>
 #include <ccd/simplex.h>
@@ -532,3 +539,9 @@ _ccd_inline int portalCanEncapsuleOrigin(const ccd_simplex_t *portal,
     dot = ccdVec3Dot(&v4->v, dir);
     return ccdIsZero(dot) || dot > CCD_ZERO;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif _MSC_VER
+#pragma warning(pop)
+#endif

@@ -13,3 +13,7 @@ For binary builds of Soar you can get them in two places:
 * [Latest Successful Development Build](http://soar-jenkins.eecs.umich.edu)
 
 Note: For the developmental builds, the non-scu and scu versions are equivalent.
+
+# License
+
+[LICENSE.md](https://github.com/SoarGroup/Soar/blob/development/LICENSE.md) which is [BSD](http://opensource.org/licenses/BSD-2-Clause)

@@ -1,0 +1,570 @@
+#smem --set database memory
+#smem --set timers off
+smem --set learning on
+
+#epmem --set database memory
+epmem --set trigger output
+epmem --set phase output
+epmem --set graph-match on
+#epmem --set timers off
+epmem --set learning on
+
+#
+# What are these productions doing?
+#
+
+#watch 0
+
+# Not implemented yet
+watch --epmem
+
+timers --off
+
+#
+# Infrastructure productions that mark states with operator names
+# and a link to the top-state
+#
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+
+sp {elaborations*elaborate*state*digit-cue
+   (state <s> ^digit <d>)
+   (<d> ^word <word>
+        ^number <number>)
+-->
+   (<d> ^cue <c>)
+   (<c> ^word <word>
+        ^number <number>)
+}
+
+sp {elaborations*elaborate*state*bad-retrieval*gm
+   (state <s> ^epmem.result.graph-match 0)
+-->
+   (write |BAD RETRIEVAL!!!|)
+   (halt)
+
+}
+
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {convert*elaborate*substate
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type convert
+         ^number <n>
+         ^places <p>)
+-->
+   (<s> ^name convert
+        ^number <n>
+        ^places <p>)
+}
+
+sp {convert*propose*convert-digit
+   (state <s> ^name convert
+              ^current <c>
+              ^places {<> <c>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name convert-digit)
+}
+
+sp {apply*convert-digit*intermediate
+   (state <s> ^operator <op>
+              ^pow-ten <pow-ten>
+              ^number <n>)
+   (<op> ^name convert-digit)
+-->
+   (<s> ^intermediate (int (mod (int (* (/ <n> <pow-ten>) 10)) 10)))
+}
+
+sp {apply*convert-digit
+   (state <s> ^operator <op>
+              ^current <c>
+              ^intermediate <i>
+              ^pow-ten <pow-ten>
+              ^result <r>
+              ^top-state.digit <digit-c> <digit-i>)
+   (<op> ^name convert-digit)
+   (<digit-c> ^previous.number <c>
+              ^word <word-current>)
+   (<digit-i> ^number <i>)
+-->
+   (<s> ^current <c> - (+ <c> 1)
+        ^pow-ten <pow-ten> - (* <pow-ten> 10)
+        ^intermediate <i> -)
+   (<r> ^<word-current> <digit-i>)
+}
+
+sp {convert*propose*convert-done
+   (state <s> ^name convert
+              ^current <p>
+              ^places <p>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name convert-done)
+}
+
+sp {apply*convert-done
+   (state <s> ^operator <op>
+              ^superstate <ss>
+              ^result <r>)
+   (<op> ^name convert-done)
+-->
+   (<ss> ^convert-result <r>)
+}
+
+sp {convert*propose*convert-init
+   (state <s> ^name convert
+             -^current)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name convert-init)
+}
+
+sp {apply*convert-init
+   (state <s> ^operator <op>)
+   (<op> ^name convert-init)
+-->
+   (<s> ^result <r>
+        ^current 0
+        ^pow-ten 10)
+}
+
+sp {count-epmem*propose*done
+   (state <s> ^name count-epmem
+              ^mode testing
+              ^counter <ct>
+              ^max <ct>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name done)
+}
+
+sp {apply*done
+   (state <s> ^operator <op>)
+   (<op> ^name done)
+-->
+   (write |COUNTING TEST SUCCEEDED!|)
+   (halt)
+
+}
+
+sp {propose*initialize-count-epmem
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-count-epmem)
+}
+
+sp {apply*initialize-count-epmem
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-count-epmem)
+-->
+   (<s> ^name count-epmem
+        ^digit <d0> <d1> <d2> <d3> <d4> <d5> <d6> <d7> <d8> <d9>        
+        ^episode 1
+        ^mode storing           # << storing recording >> set to storing to convert all digits to long-term identifiers before recording episodes
+        ^size <d2>              # set to a digit identifier to determine number of stored episodes/test queries (max = 10^(size.number)-1)
+        ^test-mode increment    # << increment single >>
+        ^test-ep 2)             # if single, the episode to test
+   (<d0> ^word zero
+         ^number 0
+         ^next <d1>
+         ^previous nil)
+   (<d1> ^word one
+         ^number 1
+         ^next <d2>
+         ^previous <d0>)
+   (<d2> ^word two
+         ^number 2
+         ^next <d3>
+         ^previous <d1>)
+   (<d3> ^word three
+         ^number 3
+         ^next <d4>
+         ^previous <d2>)
+   (<d4> ^word four
+         ^number 4
+         ^next <d5>
+         ^previous <d3>)
+   (<d5> ^word five
+         ^number 5
+         ^next <d6>
+         ^previous <d4>)
+   (<d6> ^word six
+         ^number 6
+         ^next <d7>
+         ^previous <d5>)
+   (<d7> ^word seven
+         ^number 7
+         ^next <d8>
+         ^previous <d6>)
+   (<d8> ^word eight
+         ^number 8
+         ^next <d9>
+         ^previous <d7>)
+   (<d9> ^word nine
+         ^number 9
+         ^next nil
+         ^previous <d8>)
+}
+
+sp {count-epmem*propose*max
+   (state <s> ^name count-epmem
+              ^size.number <size>
+             -^max)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name max
+         ^type power
+         ^x 10
+         ^y <size>)
+}
+
+sp {apply*max
+   (state <s> ^operator <op>)
+   (<op> ^name max
+         ^result <r>)
+-->
+   (<s> ^max <r>)
+}
+
+sp {power*elaborate*substate
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type power
+         ^x <x>
+         ^y <y>)
+-->
+   (<s> ^name power
+        ^x <x>
+        ^y <y>)
+}
+
+sp {power*propose*power-done
+   (state <s> ^name power
+              ^current <y>
+              ^y <y>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name power-done)
+}
+
+sp {apply*power-done
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>
+              ^result <r>)
+   (<op> ^name power-done)
+-->
+   (<ss-op> ^result <r>)
+}
+
+sp {power*propose*power-init
+   (state <s> ^name power
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name power-init)
+}
+
+sp {apply*power-init
+   (state <s> ^operator <op>)
+   (<op> ^name power-init)
+-->
+   (<s> ^result 1
+        ^current 0)
+}
+
+sp {power*propose*power-next
+   (state <s> ^name power
+              ^current <c>
+              ^y {<> <c>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name power-next)
+}
+
+sp {apply*power-next
+   (state <s> ^operator <op>
+              ^current <c>
+              ^x <x>
+              ^result <r>)
+   (<op> ^name power-next)
+-->
+   (<s> ^result <r> -
+        ^result (* <r> <x>)
+        ^current <c> -
+        ^current (+ <c> 1))
+}
+
+sp {count-epmem*propose*recording
+   (state <s> ^name count-epmem
+              ^mode recording
+              ^episode <ep>
+              ^max {<> <ep>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name recording)
+}
+
+sp {apply*recording*clean-old
+   (state <s> ^operator <op>
+              ^io.output-link <out>
+              ^episode <ep>
+              ^symbolic <sym>)
+   (<op> ^name recording)
+   (<out> ^record <rec>)
+   (<rec> ^episode {<> <ep> <ep-old>})
+   (<sym> ^episode <ep-old>)
+-->
+   (<out> ^record <rec> -)
+   (<s> ^symbolic <sym> -)
+}
+
+sp {apply*recording*copy-symbolic
+   (state <s> ^operator <op>
+              ^episode <ep>
+              ^convert-result <r>)
+   (<op> ^name recording)
+-->
+   (<s> ^symbolic.converted <c>)
+}
+
+sp {apply*recording*copy-result
+   (state <s> ^operator <op>
+              ^convert-result.<digit-name> <digit>
+              ^symbolic.converted <c>)
+   (<op> ^name recording)
+-->
+   (<c> ^<digit-name> <digit>)
+}
+
+sp {apply*recording*sym-episode
+   (state <s> ^operator <op>
+              ^symbolic <sym>
+              ^episode <ep>
+              ^convert-result <r>)
+   (<op> ^name recording)
+   (<sym> ^converted <c>)
+  -{(<r> ^<attr> <val>)
+   -(<c> ^<attr> <val>)}
+-->
+   (<sym> ^episode <ep>)
+}
+
+sp {apply*recording*done
+   (state <s> ^operator <op>
+              ^episode <ep>
+              ^symbolic.episode <ep>
+              ^io.output-link <out>
+              ^convert-result <r>)
+   (<op> ^name recording)
+-->
+   (<s> ^episode <ep> - (+ <ep> 1)
+        ^convert-result <r> -)
+   (<out> ^record.episode <ep>)
+   #(interrupt)
+}
+
+sp {recording*propose*recording-convert
+   (state <s> ^name recording
+              ^superstate <ss>)
+   (<ss> ^episode <ep>
+         ^size.number <size>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name recording-convert
+         ^type convert
+         ^number <ep>
+         ^places <size>)
+}
+
+sp {apply*recording-convert
+   (state <s> ^operator <op>
+              ^convert-result <r>
+              ^superstate <ss>)
+   (<op> ^name recording-convert)
+-->
+   (<ss> ^convert-result <r>)
+}
+
+sp {count-epmem*propose*storing
+   (state <s> ^name count-epmem
+              ^mode storing)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name storing)
+}
+
+sp {count-epmem*elaborate*storing
+   (state <s> ^name count-epmem
+              ^mode storing
+              ^digit <d>
+              ^smem.command <cmd>)
+-->
+   (<cmd> ^store <d>)
+}
+
+sp {apply*storing*done
+   (state <s> ^operator <op>
+              ^mode storing)
+   (<op> ^name storing)
+-->
+   (<s> ^mode storing - recording
+        ^lti t)
+}
+
+sp {count-epmem*propose*switch
+   (state <s> ^name count-epmem
+              ^mode recording
+              ^episode <max>
+              ^max <max>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name switch)
+}
+
+sp {apply*switch*ep*increment
+   (state <s> ^operator <op>
+              ^mode recording
+              ^episode <max>
+              ^test-mode increment)
+   (<op> ^name switch)
+-->
+   (<s> ^episode <max> - 1)
+}
+
+sp {apply*switch*ep*single
+   (state <s> ^operator <op>
+              ^mode recording
+              ^episode <max>
+              ^test-mode single
+              ^test-ep <test-ep>)
+   (<op> ^name switch)
+-->
+   (<s> ^episode <max> - <test-ep>)
+}
+
+sp {apply*switch*ready
+   (state <s> ^operator <op>
+              ^symbolic <sym>
+              ^io.output-link <out>
+              ^mode recording
+              ^episode <max>)
+   (<op> ^name switch)
+   (<out> ^record <rec>)
+   (<rec> ^episode <old>)
+   (<sym> ^episode <old>)
+-->
+   (<s> ^symbolic <sym> -
+        ^mode recording - testing
+        ^counter 1)
+   (<out> ^record <rec> -)
+   (write |STORAGE DONE (| <max> | episodes) - READY TO BEGIN QUERY|)
+   #(interrupt)
+}
+
+sp {count-epmem*propose*testing
+   (state <s> ^name count-epmem
+              ^mode testing
+              ^counter <ct>
+              ^max {<> <ct>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name testing)
+}
+
+sp {apply*testing*copy-symbolic
+   (state <s> ^operator <op>
+              ^episode <ep>
+              ^convert-result <r>
+              ^epmem.command <cmd>)
+   (<op> ^name testing)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^symbolic <sym>)
+   (<sym> ^episode <ep>
+          ^converted <c>)
+}
+
+sp {apply*testing*copy-result*cue
+   (state <s> ^operator <op>
+              ^convert-result.<digit-name> <digit>
+              ^epmem.command.query.symbolic.converted <c>
+             -^lti t)
+   (<op> ^name testing)
+   (<digit> ^cue <digit-cue>)
+-->
+   (<c> ^<digit-name> <digit-cue>)
+}
+
+sp {apply*testing*copy-result*lti
+   (state <s> ^operator <op>
+              ^convert-result.<digit-name> <digit>
+              ^epmem.command.query.symbolic.converted <c>
+              ^lti t)
+   (<op> ^name testing)
+-->
+   (<c> ^<digit-name> <digit>)
+}
+
+sp {apply*testing*next
+   (state <s> ^operator <op>
+              ^epmem <epmem>
+              ^convert-result <r>
+              ^counter <ct>)
+   (<op> ^name testing)
+   (<epmem> ^command <cmd>
+            ^result.graph-match 1)   
+   (<cmd> ^query <q>)
+-->
+   (<s> ^convert-result <r> -
+        ^counter <ct> - (+ <ct> 1))
+   (<cmd> ^query <q> -)
+}
+
+sp {apply*testing*next*increment
+   (state <s> ^operator <op>
+              ^epmem.result.graph-match 1
+              ^test-mode increment
+              ^episode <ep>)
+   (<op> ^name testing)
+-->
+   (<s> ^episode <ep> - (+ <ep> 1))
+}
+
+sp {testing*propose*testing-convert
+   (state <s> ^name testing
+              ^superstate <ss>)
+   (<ss> ^episode <ep>
+         ^size.number <size>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name testing-convert
+         ^type convert
+         ^number <ep>
+         ^places <size>)
+}
+
+sp {apply*testing-convert
+   (state <s> ^operator <op>
+              ^convert-result <r>
+              ^superstate <ss>)
+   (<op> ^name testing-convert)
+-->
+   (<ss> ^convert-result <r>)
+}
+

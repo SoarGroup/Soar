@@ -1,0 +1,28 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Alex Turner <alexlt@umich.edu>
+
+import os, sys, platform
+
+Import('env', 'g_msvs_variant')
+Import('env', 'InstallDir')
+
+clone = env.Clone()
+
+clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('kernel/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
+
+src = [Glob('kernel/*/*.cpp'), Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]
+t = env.Install('$OUT_DIR', clone.Program('Prototype-UnitTesting', src))
+
+if 'MSVSProject' in env['BUILDERS']:
+	proj = env.MSVSProject(
+		target = '#prototype-unittesting' + env['MSVSPROJECTSUFFIX'],
+		srcs = [ str(s) for s in src ],
+		buildtarget = t,
+		variant = g_msvs_variant,
+		auto_build_solution = 0,
+	)
+	Import('msvs_projs')
+	msvs_projs.append(proj)
+
+Return('t')

@@ -1407,6 +1407,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string());
     }
+	
+	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+	{
+		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		fun_name = find_str_constant(thisAgent, "halt");
+	}
+	
     if (!fun_name)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
@@ -1414,6 +1421,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
+	
+	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+	{
+		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		rf = lookup_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
+	}
+	
     if (!rf)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());

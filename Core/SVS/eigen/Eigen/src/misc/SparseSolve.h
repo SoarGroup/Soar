@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2010 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_SOLVE_H
 #define EIGEN_SPARSE_SOLVE_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -60,8 +47,25 @@ template<typename _DecompositionType, typename Rhs> struct sparse_solve_retval_b
   }
 
   protected:
+    template<typename DestScalar, int DestOptions, typename DestIndex>
+    inline void defaultEvalTo(SparseMatrix<DestScalar,DestOptions,DestIndex>& dst) const
+    {
+      // we process the sparse rhs per block of NbColsAtOnce columns temporarily stored into a dense matrix.
+      static const int NbColsAtOnce = 4;
+      int rhsCols = m_rhs.cols();
+      int size = m_rhs.rows();
+      Eigen::Matrix<DestScalar,Dynamic,Dynamic> tmp(size,rhsCols);
+      Eigen::Matrix<DestScalar,Dynamic,Dynamic> tmpX(size,rhsCols);
+      for(int k=0; k<rhsCols; k+=NbColsAtOnce)
+      {
+        int actualCols = std::min<int>(rhsCols-k, NbColsAtOnce);
+        tmp.leftCols(actualCols) = m_rhs.middleCols(k,actualCols);
+        tmpX.leftCols(actualCols) = m_dec.solve(tmp.leftCols(actualCols));
+        dst.middleCols(k,actualCols) = tmpX.leftCols(actualCols).sparseView();
+      }
+    }
     const DecompositionType& m_dec;
-    const typename Rhs::Nested m_rhs;
+    typename Rhs::Nested m_rhs;
 };
 
 #define EIGEN_MAKE_SPARSE_SOLVE_HELPERS(DecompositionType,Rhs) \
@@ -118,5 +122,7 @@ template<typename DecompositionType, typename Rhs, typename Guess> struct solve_
 };
 
 } // namepsace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_SOLVE_H

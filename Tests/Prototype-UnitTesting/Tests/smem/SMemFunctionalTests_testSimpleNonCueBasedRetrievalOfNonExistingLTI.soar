@@ -1,0 +1,28 @@
+smem --set learning on
+
+## This test will test whether you can retrieve a non-existing LTI.sp {
+## However, if you just do @X1 it will fail with an assertion because you
+## Cannot have non-existing ltis in productions.  So this test is testing
+## whether you can retrieve a non-existing LTI via a string which should fail.
+
+sp {propose*query
+  (state <s> ^superstate nil)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+  (state <s> ^operator.name query
+             ^smem.command <sc>)
+-->
+  (<sc> ^retrieve |@X1|)
+}
+
+sp {success
+  (state <s> ^smem.result.bad-cmd)
+-->
+  (write |Success!|)
+  (halt)
+}
+
+

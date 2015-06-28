@@ -74,7 +74,7 @@ bool sock::InitializeOperatingSystemSocketLibrary()
     struct sigaction action;
     bzero(&action, sizeof(struct sigaction));
     action.sa_handler = SIG_IGN;
-
+    
     if (sigaction(SIGPIPE, &action, 0) < 0)
     {
         assert(false);
@@ -92,7 +92,7 @@ bool sock::TerminateOperatingSystemSocketLibrary()
 bool sock::MakeSocketNonBlocking(SOCKET hSock)
 {
     int res = fcntl(hSock, F_SETFL, O_NONBLOCK) ;
-
+    
     return (res == 0) ;
 }
 

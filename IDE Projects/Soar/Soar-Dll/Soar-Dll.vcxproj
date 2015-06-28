@@ -1,0 +1,555 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientErrors.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientFloatElement.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientIdentifier.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientIntElement.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientKernel.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientStringElement.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientTraceXML.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientWMElement.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientWorkingMemory.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ClientXML.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_DeltaList.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_ObjectMap.cpp" />
+    <ClCompile Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_addwme.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_alias.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_allocate.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_captureinput.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_cd.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_chunknameformat.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_cli_extension.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_clog.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_commandtofile.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_debug.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_defaultwmedepth.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_dirs.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_echo.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_echocommands.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_editproduction.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_epmem.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_excise.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_explainbacktraces.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_firingcounts.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_gdsprint.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_gp.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_gpmax.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_help.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_indifferentselection.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_initsoar.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_internalsymbols.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_learn.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_loadLibrary.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_ls.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_matches.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxchunks.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxdctime.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxelaborations.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxgoaldepth.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxmemoryusage.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_maxniloutputcycles.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_memories.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_multiattributes.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_numericindifferentmode.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_osupportmode.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_pbreak.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_popd.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_port.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_predict.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_preferences.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_print.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_productionfind.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_pushd.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwatch.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_pwd.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_rand.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_removewme.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_replayinput.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_retenet.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_rl.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_run.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_savebacktraces.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_select.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_setstopphase.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_smem.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_soarnews.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_source.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_sp.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_srand.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_stats.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_stopsoar.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_svs.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_time.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_timers.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_unalias.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_verbose.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_version.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_waitsnc.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_warnings.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_watch.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_watchwmes.cpp" />
+    <ClCompile Include="..\..\..\Core\CLI\src\cli_wma.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Connection.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnection.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnectionAsynch.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnectionSynch.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Events.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_EventThread.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_MessageSML.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Names.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_RemoteConnection.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_StringOps.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagArg.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagCommand.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagError.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagFilter.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagName.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagResult.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_TagWme.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sml_Utils.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_ClientNamedPipe.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_ClientSocket.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_DataSender.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_ListenerNamedPipe.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_ListenerSocket.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_NamedPipe.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_OSspecific.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_Socket.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\sock_SocketLib.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\thread_Event.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\thread_Lock.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\thread_OSspecific.cpp" />
+    <ClCompile Include="..\..\..\Core\ConnectionSML\src\thread_Thread.cpp" />
+    <ClCompile Include="..\..\..\Core\ElementXML\src\ElementXMLImpl.cpp" />
+    <ClCompile Include="..\..\..\Core\ElementXML\src\ElementXMLInterface.cpp" />
+    <ClCompile Include="..\..\..\Core\ElementXML\src\ParseXML.cpp" />
+    <ClCompile Include="..\..\..\Core\ElementXML\src\ParseXMLFile.cpp" />
+    <ClCompile Include="..\..\..\Core\ElementXML\src\ParseXMLString.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\KernelSMLInterface.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_AgentSML.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_ConnectionManager.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_EventManager.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_InputListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_KernelCallback.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_KernelSML.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_KernelSMLHandlers.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_ListenerThread.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_OldRunScheduler.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_OutputListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_PrintListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_ProductionListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_ReceiverThread.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_RhsFunction.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_RhsListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_RunListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_RunScheduler.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_StringListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_SystemListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.cpp" />
+    <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\callback.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\chunk.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\consistency.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_disabled.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decide.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_manipulation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\explain.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\exploration.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\init_soar.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\io_soar.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\lexer.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\mem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\osupport.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_db.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_params.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\parser.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\prefmem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\production.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\recmem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\reorder.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\rete.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\semantic_memory.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_db.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_instance.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_module.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\soar_rand.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\stats.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\symtab.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\tempmem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\test.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\trace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\wma.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\wmem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\xml.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\ccd\ccd.c" />
+    <ClCompile Include="..\..\..\Core\SVS\ccd\mpr.c" />
+    <ClCompile Include="..\..\..\Core\SVS\ccd\polytope.c" />
+    <ClCompile Include="..\..\..\Core\SVS\ccd\support.c" />
+    <ClCompile Include="..\..\..\Core\SVS\ccd\vec3.c" />
+    <ClCompile Include="..\..\..\Core\SVS\src\cliproxy.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\command.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\add_node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\copy_node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\delete_tag.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\extract.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\set_tag.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\commands\set_transform.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\command_table.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\common.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\drawer.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filter.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\axis_distance.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\base_node_filters.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\contain.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\distance.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\intersect.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\node.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\tag_select.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filters\volume.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filter_input.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\filter_table.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\mat.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\scene.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\serialize.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\sgnode.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\sgnode_algs.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\soar_interface.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\svs.cpp" />
+    <ClCompile Include="..\..\..\Core\SVS\src\windows\platform_specific.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_Client.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAgent.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientAnalyzedXML.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientDirect.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientErrors.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientEvents.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientFloatElement.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientIdentifier.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientIntElement.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientKernel.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientStringElement.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientTraceXML.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientWMElement.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientWorkingMemory.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ClientXML.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_DeltaList.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ListMap.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_ObjectMap.h" />
+    <ClInclude Include="..\..\..\Core\ClientSML\src\sml_OutputDeltaList.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Aliases.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Cli.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_CommandLineInterface.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Commands.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Options.h" />
+    <ClInclude Include="..\..\..\Core\CLI\src\cli_Parser.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\EmbeddedSMLInterface.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_AnalyzeXML.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_ArgMap.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Connection.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnection.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnectionAsynch.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_EmbeddedConnectionSynch.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Errors.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Events.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_EventThread.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Handles.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_MessageSML.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Names.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_RemoteConnection.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_StringOps.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagArg.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagCommand.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagError.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagFilter.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagName.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagResult.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_TagWme.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sml_Utils.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_ClientNamedPipe.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_ClientSocket.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_DataSender.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_ListenerNamedPipe.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_ListenerSocket.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_NamedPipe.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_OSspecific.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_Socket.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\sock_SocketLib.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\thread_Event.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\thread_Lock.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\thread_OSspecific.h" />
+    <ClInclude Include="..\..\..\Core\ConnectionSML\src\thread_Thread.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXML.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLHandle.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLImpl.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ElementXMLInterface.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ParseXML.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ParseXMLFile.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\ParseXMLString.h" />
+    <ClInclude Include="..\..\..\Core\ElementXML\src\XMLTrace.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\KernelHeaders.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentOutputFlusher.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_AgentSML.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_ConnectionManager.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_EventManager.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_InputListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_KernelCallback.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_KernelSML.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_ListenerThread.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_OldRunScheduler.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_OutputListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_PrintListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_ProductionListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_ReceiverThread.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_RhsFunction.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_RhsListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_RunListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_RunScheduler.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_StringListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_SystemListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.h" />
+    <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h" />
+    <ClInclude Include="..\..\..\Core\shared\Export.h" />
+    <ClInclude Include="..\..\..\Core\shared\misc.h" />
+    <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h" />
+    <ClInclude Include="..\..\..\Core\shared\msvc\stdint.h" />
+    <ClInclude Include="..\..\..\Core\shared\pcreposix.h" />
+    <ClInclude Include="..\..\..\Core\shared\portability.h" />
+    <ClInclude Include="..\..\..\Core\shared\portability_windows.h" />
+    <ClInclude Include="..\..\..\Core\shared\soarversion.h" />
+    <ClInclude Include="..\..\..\Core\shared\soar_TraceNames.h" />
+    <ClInclude Include="..\..\..\Core\shared\tokenizer.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\agent.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\backtrace.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\callback.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\chunk.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\consistency.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_defines.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decide.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_manipulation.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\enums.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explain.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\exploration.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\gsysparam.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\init_soar.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\instantiations.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\io_soar.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\kernel.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\lexer.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\mem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\osupport.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_db.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_params.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\parser.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\prefmem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\print.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\production.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\recmem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reinforcement_learning.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\reorder.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\rete.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\rhs_functions_math.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\semantic_memory_math_queries.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_db.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_instance.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_module.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\soar_rand.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\sqlite3.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\stats.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\symtab.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\tempmem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\test.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\trace.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\wma.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\wmem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\xml.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\alloc.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\ccd.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\compiler.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\config.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\dbg.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\list.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\polytope.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\quat.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\simplex.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\support.h" />
+    <ClInclude Include="..\..\..\Core\SVS\ccd\ccd\vec3.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\change_tracking_list.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\cliproxy.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\command.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\command_table.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\common.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\drawer.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\filter.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\filters\base_node_filters.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\filter_input.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\filter_table.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\filter_val.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\mat.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\params.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\scene.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\serializable.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\serialize.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\sgnode.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\sgnode_algs.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\soar_interface.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\svs.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\svs_interface.h" />
+    <ClInclude Include="..\..\..\Core\SVS\src\windows\platform_specific.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\Core\shared\msvc\changelog.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Array" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Cholesky" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\CholmodSupport" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Core" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Dense" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Eigen" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Eigen2Support" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Eigenvalues" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Geometry" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Householder" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\IterativeLinearSolvers" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Jacobi" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\LeastSquares" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\LU" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\OrderingMethods" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\QR" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\QtAlignedMalloc" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\Sparse" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\SparseCholesky" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\SparseCore" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\StdDeque" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\StdList" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\StdVector" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\SuperLUSupport" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\SVD" />
+    <None Include="..\..\..\Core\SVS\eigen\Eigen\UmfPackSupport" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E41EA276-486B-4ED1-96A9-377C9CEEEAB9}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SoarDll</RootNamespace>
+    <ProjectName>Soar</ProjectName>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <EnablePREfast>false</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDLL;_USRDLL;_CRT_SECURE_NO_WARNINGS;EIGEN_DONT_ALIGN</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\Core\CLI\src\;$(ProjectDir)\..\..\..\Core\ClientSML\src\;$(ProjectDir)\..\..\..\Core\ConnectionSML\src\;$(ProjectDir)\..\..\..\Core\ElementXML\src\;$(ProjectDir)\..\..\..\Core\KernelSML\src\;$(ProjectDir)\..\..\..\Core\shared\;$(ProjectDir)\..\..\..\Core\SoarKernel\src\;$(ProjectDir)\..\..\..\Core\SVS\ccd\;$(ProjectDir)\..\..\..\Core\SVS\eigen\;$(ProjectDir)\..\..\..\Core\SVS\src\;$(ProjectDir)\..\..\..\Core\SVS\src\windows\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4503</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnablePREfast>false</EnablePREfast>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

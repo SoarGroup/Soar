@@ -37,6 +37,8 @@
 #ifndef CALLBACK_H_INCLUDED         /* Avoid duplicate includes  */
 #define CALLBACK_H_INCLUDED
 
+#include "Export.h"
+
 /* First we define the possible callbacks in an enum.  Then we  */
 /* describe how each one will be called in user code.           */
 
@@ -339,7 +341,7 @@ typedef cons list;
 
 #include <string>
 
-typedef struct callback_struct
+typedef struct EXPORT callback_struct
 {
     std::string           id;
     soar_callback_fn      function;
@@ -348,19 +350,19 @@ typedef struct callback_struct
     soar_callback_free_fn free_function;
 } soar_callback;
 
-extern void soar_add_callback(agent* thisAgent,
+extern EXPORT void soar_add_callback(agent* thisAgent,
                               SOAR_CALLBACK_TYPE,
                               soar_callback_fn,
                               soar_callback_event_id,
                               soar_callback_data,
                               soar_callback_free_fn,
                               soar_callback_id);
-extern void soar_callback_data_free_string(soar_callback_data);
-extern const char* soar_callback_enum_to_name(SOAR_CALLBACK_TYPE, bool);
-extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum(char*, bool);
-extern void soar_destroy_callback(soar_callback*);
-extern bool soar_exists_callback(agent*, SOAR_CALLBACK_TYPE);
-extern soar_callback* soar_exists_callback_id(agent* the_agent,
+extern EXPORT void soar_callback_data_free_string(soar_callback_data);
+extern EXPORT const char* soar_callback_enum_to_name(SOAR_CALLBACK_TYPE, bool);
+extern EXPORT SOAR_CALLBACK_TYPE soar_callback_name_to_enum(char*, bool);
+extern EXPORT void soar_destroy_callback(soar_callback*);
+extern EXPORT bool soar_exists_callback(agent*, SOAR_CALLBACK_TYPE);
+extern EXPORT soar_callback* soar_exists_callback_id(agent* the_agent,
         SOAR_CALLBACK_TYPE callback_type,
         soar_callback_id id);
 extern void soar_init_callbacks(agent*);
@@ -383,7 +385,7 @@ extern void soar_push_callback(agent* the_agent,
                                soar_callback_free_fn free_fn);
 extern void soar_remove_all_monitorable_callbacks(agent* thisAgent);
 extern void soar_remove_all_callbacks_for_event(agent* thisAgent, SOAR_CALLBACK_TYPE);
-extern void soar_remove_callback(agent* thisAgent,
+extern EXPORT void soar_remove_callback(agent* thisAgent,
                                  SOAR_CALLBACK_TYPE,
                                  soar_callback_id);
 extern void soar_test_all_monitorable_callbacks(agent*);

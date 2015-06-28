@@ -1,4 +1,6 @@
-# Created by http://www.gitignore.io
+# Created by https://www.gitignore.io via https://www.gitignore.io/api/c++,c,python,java,windows,archives,xcode,visualstudio,osx,linux
+# Or via: git config --global alias.ignore '!gi() { curl -L -s https://www.gitignore.io/api/$@ ;}; gi'
+# then git ignore c++,c,python,java,windows,archives,xcode,visualstudio,osx,linux
 
 ### C++ ###
 # Compiled Object files
@@ -7,10 +9,17 @@
 *.o
 *.obj
 
+# Precompiled Headers
+*.gch
+*.pch
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
 *.dll
+
+# Fortran module files
+*.mod
 
 # Compiled Static libraries
 *.lai
@@ -31,9 +40,15 @@
 *.obj
 *.elf
 
+# Precompiled Headers
+*.gch
+*.pch
+
 # Libraries
 *.lib
 *.a
+*.la
+*.lo
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -48,6 +63,9 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Debug files
+*.dSYM/
 
 
 ### Python ###
@@ -64,8 +82,10 @@ env/
 build/
 develop-eggs/
 dist/
+downloads/
 eggs/
-#lib/
+.eggs/
+lib/
 lib64/
 parts/
 sdist/
@@ -73,6 +93,12 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
 
 # Installer logs
 pip-log.txt
@@ -82,9 +108,11 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .coverage
+.coverage.*
 .cache
 nosetests.xml
 coverage.xml
+*,cover
 
 # Translations
 *.mo
@@ -95,6 +123,9 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# PyBuilder
+target/
 
 
 ### Java ###
@@ -128,6 +159,10 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+
+# Windows shortcuts
+*.lnk
+
 
 ### Archives ###
 # It's better to unpack these files and commit the raw source because
@@ -182,28 +217,33 @@ DerivedData
 
 # User-specific files
 *.suo
-*.vcxproj
-*.vcxproj.filters
-*.sln
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
 x64/
+x86/
 build/
 bld/
 [Bb]in/
 [Oo]bj/
 
-# Roslyn cache directories
-*.ide/
+# Visual Studo 2015 cache/options directory
+.vs/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
-#NUNIT
+# NUNIT
 *.VisualState.xml
 TestResult.xml
 
@@ -303,23 +343,19 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-## TODO: Comment the next line if you want to checkin your
-## web deploy settings but do note that will include unencrypted
-## passwords
+# TODO: Comment the next line if you want to checkin your web deploy settings 
+# but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+*.publishproj
 
 # NuGet Packages
-packages/*
 *.nupkg
-## TODO: If the tool you use requires repositories.config
-## uncomment the next line
-#!packages/repositories.config
-
-# Enable "build/" folder in the NuGet Packages folder since
-# NuGet packages use it for MSBuild targets.
-# This line needs to be after the ignore of the build folder
-# (and the packages folder if the line above has been uncommented)
-!packages/build/
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config
 
 # Windows Azure Build Output
 csx/
@@ -329,8 +365,7 @@ csx/
 AppPackages/
 
 # Others
-sql/
-*.Cache
+*.[Cc]ache
 ClientBin/
 [Ss]tyle[Cc]op.*
 ~$*
@@ -340,6 +375,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+bower_components/
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -364,6 +400,15 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 
+# Node.js Tools for Visual Studio
+.ntvs_analysis.dat
+
+# Visual Studio 6 build log
+*.plg
+
+# Visual Studio 6 workspace options file
+*.opt
+
 
 ### OSX ###
 .DS_Store
@@ -377,9 +422,13 @@ Icon
 # Thumbnails
 ._*
 
-# Files that might appear on external disk
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
 .Spotlight-V100
+.TemporaryItems
 .Trashes
+.VolumeIcon.icns
 
 # Directories potentially created on remote AFP share
 .AppleDB
@@ -395,8 +444,56 @@ Temporary Items
 # KDE directory preferences
 .directory
 
-### Soar ###
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
 
+### SCons ###
+# for projects that use SCons for building: http://http://www.scons.org/
+.sconsign.dblite
+.sconf_temp/
+
+### Eclipse ###
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse Core
+.project
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# PDT-specific
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# TeXlipse plugin
+.texlipse
+
+### Soar ###
+out*/
+build*/
+user-env.bat
 /.sconf_temp/
 /.externalToolBuilders/
 /.settings/
