@@ -173,6 +173,9 @@ void IOTests::testInputLeak4()
 			assertTrue(pFooBar != 0);
 			
 			pSharedIdentifier = pInputLink->CreateSharedIdWME("alpha", pIdentifier);
+			assertTrue(pSharedIdentifier == 0);
+			
+			pSharedIdentifier = pInputLink->CreateSharedIdWME("alpha-2", pIdentifier);
 			assertTrue(pSharedIdentifier != 0);
 			
 			kernel->RunAllAgents(1);
