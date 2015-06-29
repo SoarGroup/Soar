@@ -16,7 +16,7 @@
 #define DEBUG_SCHEMA_VERSION "0.1"
 
 /* These are just for experimental purposes.  Should not be commented out */
-/* MToDo | Supermerge mode has small issue.  Look at Opaque chunking unit test.
+/*         Supermerge mode has small issue.  Look at Opaque chunking unit test.
  *         There's an identity mapping not getting created.  I'm not sure if
  *         we're going to use this mode, so will fix later.   There's a version
  *         in the history that does a complete merge correctly from 6/10. */

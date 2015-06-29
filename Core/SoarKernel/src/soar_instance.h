@@ -31,24 +31,6 @@ typedef struct Soar_Loaded_Library_struct
     bool isOn;
 } Soar_Loaded_Library;
 
-/* -- This stores a mapping from an agent name to pointers for
- *    to the AgentSML structure. (Does this mean we require
- *    that CLI modules are only used within embedded kernels?)
- *     -- */
-
-//typedef struct Agent_Info_Struct
-//{
-//    sml::AgentSML* soarAgentSML;
-//} Agent_Info;
-
-//struct cmp_str
-//{
-//    bool operator()(char const* a, char const* b) const
-//    {
-//        return strcmp(a, b) < 0;
-//    }
-//};
-//
 class EXPORT Soar_Instance
 {
     public:
@@ -102,7 +84,6 @@ class EXPORT Soar_Instance
         Output_Manager*          m_Output_Manager;
         Memory_Manager*         m_Memory_Manager;
 
-//        std::unordered_map< char*, Agent_Info*, cmp_str>* m_agent_table;
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
 

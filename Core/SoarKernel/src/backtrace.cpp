@@ -110,7 +110,7 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
          * that match that wme */
         cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     } else {
-        /* MToDo | Should skip if we don't need to learn */
+        /* Should skip if we don't need to learn */
         dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
         condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
 #ifdef EBC_SUPERMERGE
@@ -327,7 +327,6 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    chunk, whether the original condition the constraint came from made it into
          *    the chunk or not.  Since the constraint was necessary for the problem-solving
          *    -- */
-        /* MToDo | Should skip if we don't need to build chunk */
         thisAgent->variablizationManager->cache_constraints_in_cond(c);
 
         thisID = c->data.tests.id_test->eq_test->data.referent;

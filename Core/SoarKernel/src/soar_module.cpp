@@ -33,9 +33,6 @@
 #include "variablization_manager.h"
 #include "debug.h"
 
-//wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
-//typedef struct agent_struct agent;
-
 namespace soar_module
 {
     timer::timer(const char* new_name, agent* new_agent, timer_level new_level, predicate<timer_level>* new_pred, bool soar_control): named_object(new_name), thisAgent(new_agent), level(new_level), pred(new_pred)
