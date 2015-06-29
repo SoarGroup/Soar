@@ -15,6 +15,8 @@
 #include <atomic>
 #include <iostream>
 
+#include <signal.h>
+
 #include "portability.h"
 
 // INCLUDE TEST HEADERS HERE
@@ -26,9 +28,36 @@
 #include "SMemEpMemCombinedFunctionalTests.hpp"
 #include "SMemFunctionalTests.hpp"
 #include "WmaFunctionalTests.hpp"
+#include "AliasTest.hpp"
+#include "CliParserTest.hpp"
+#include "ElementXMLTest.hpp"
+#include "FullTests.hpp"
+#include "FullTestsClientThreadFullyOptimized.hpp"
+#include "FullTestsClientThread.hpp"
+#include "FullTestsRemote.hpp"
+#include "IOTests.hpp"
+#include "MiscTests.hpp"
+#include "MultiAgentTest.hpp"
+#include "TokenizerTest.hpp"
+
+#include "SimpleListener.hpp"
 
 int main(int argc, char** argv)
-{	
+{
+	for (int index = 1; index < argc; ++index)
+	{
+		std::string argument(argv[index]);
+		if (argument == "--listener")
+		{
+			SimpleListener simpleListener(600);
+			return simpleListener.run();
+		}
+		else
+		{
+			std::cerr << "Unknown argument '" << argument << "' ignored." << std::endl;
+		}
+	}
+
 	const bool ShowTestOutput = false;
 	
 	std::condition_variable_any variable;
@@ -46,11 +75,22 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(WmaFunctionalTests);
+	TEST_DECLARATION(AliasTest);
+	TEST_DECLARATION(CliParserTest);
+	TEST_DECLARATION(ElementXMLTest);
+	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
+	TEST_DECLARATION(FullTestsClientThread);
+	TEST_DECLARATION(FullTests);
+	TEST_DECLARATION(FullTestsRemote);
+	TEST_DECLARATION(IOTests);
+	TEST_DECLARATION(MiscTests);
+	TEST_DECLARATION(MultiAgentTest);
+	TEST_DECLARATION(TokenizerTest);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;
 	
-	bool failed = false;
+	std::vector<std::string> failedTests;
 	
 	for (TestCategory* category : tests)
 	{
@@ -75,7 +115,7 @@ int main(int argc, char** argv)
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			
 			variable.notify_one();
-			while (variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout || !runner->done)
+			while (!runner->done && variable.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout)
 			{
 				std::cout << '.';
 				std::cout.flush();
@@ -103,7 +143,7 @@ int main(int argc, char** argv)
 				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
 				
-				failed = true;
+				failedTests.push_back(category->getCategoryName() + ": " + std::get<2>(test));
 			}
 			
 			std::mutex mutex;
@@ -136,6 +176,16 @@ int main(int argc, char** argv)
 	
 	std::cout << "Completed " << successCount << "/" << testCount << " successfully. " << testCount - successCount << " failed." << std::endl;
 	std::cout.flush();
+	
+	if (failedTests.size() > 0)
+	{
+		std::cout << "Failed Tests: " << std::endl;
+		
+		for (std::string test : failedTests)
+		{
+			std::cout << test << std::endl;
+		}
+	}
 
 #ifdef _MSC_VER
 	if (IsDebuggerPresent())
@@ -145,7 +195,7 @@ int main(int argc, char** argv)
 	}
 #endif
 	
-	if (failed)
+	if (failedTests.size() > 0)
 		return 1;
 	else
 		return 0;

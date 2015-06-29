@@ -66,7 +66,7 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 
 void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
 {
-    soar_module::sqlite_statement*   target_statement = NIL;
+//    soar_module::sqlite_statement*   target_statement = NIL;
 
     if (((msgType == trace_msg) && mode_info[mode].enabled) ||
             ((msgType == debug_msg) && mode_info[mode].enabled))
@@ -226,10 +226,9 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
 void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list pargs)
 {
     Symbol* sym;
-    char *s, ch=0;
-    int n, i=0, m;
-    long l;
-    double d;
+    char ch=0;
+	int i=0;
+	size_t m;
     std::string sf = format;
 
     /* Apparently nested variadic calls need to have their argument list copied here.

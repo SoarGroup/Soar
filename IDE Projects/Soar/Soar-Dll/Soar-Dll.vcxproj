@@ -166,6 +166,7 @@
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_SystemListener.cpp" />
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.cpp" />
     <ClCompile Include="..\..\..\Core\KernelSML\src\sml_XMLListener.cpp" />
+    <ClCompile Include="..\..\..\Core\shared\assert.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\agent.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\backtrace.cpp" />
@@ -173,8 +174,10 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\src\chunk.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\consistency.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\debug.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_disabled.cpp" />
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_misc.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print_speed_test.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_thread.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_trace.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\decide.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\decision_manipulation.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\episodic_memory.cpp" />
@@ -184,10 +187,13 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\src\io_soar.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\lexer.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\mem.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\memory_manager.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\osupport.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_db.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_params.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_to_string.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\parser.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\prefmem.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\print.cpp" />
@@ -209,6 +215,13 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\src\tempmem.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\test.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\trace.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\variablization_manager.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_constraints.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_explanation.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_map.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_merge.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_print.cpp" />
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_unify.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\wma.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\wmem.cpp" />
     <ClCompile Include="..\..\..\Core\SoarKernel\src\xml.cpp" />
@@ -342,6 +355,7 @@
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_SystemListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_UpdateListener.h" />
     <ClInclude Include="..\..\..\Core\KernelSML\src\sml_XMLListener.h" />
+    <ClInclude Include="..\..\..\Core\shared\assert.hpp" />
     <ClInclude Include="..\..\..\Core\shared\Export.h" />
     <ClInclude Include="..\..\..\Core\shared\misc.h" />
     <ClInclude Include="..\..\..\Core\shared\msvc\inttypes.h" />
@@ -359,6 +373,8 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\consistency.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\debug.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_defines.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_thread.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_trace.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\decide.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_manipulation.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\enums.h" />
@@ -372,6 +388,7 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\kernel.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\lexer.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\mem.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\memory_manager.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\osupport.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\output_manager_db.h" />
@@ -399,6 +416,7 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\tempmem.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\test.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\trace.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\variablization_manager.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\wma.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\wmem.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\xml.h" />

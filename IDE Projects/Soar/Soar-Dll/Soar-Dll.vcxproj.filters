@@ -543,12 +543,6 @@
     <ClCompile Include="..\..\..\Core\SoarKernel\src\debug.cpp">
       <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_disabled.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print.cpp">
-      <Filter>Source Files\SoarKernel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Core\SoarKernel\src\decide.cpp">
       <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
@@ -770,6 +764,51 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Core\SoarKernel\sqlite\sqlite3.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\shared\assert.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_misc.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_print_speed_test.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_thread.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\debug_trace.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\memory_manager.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_print.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\output_manager_to_string.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\variablization_manager.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_constraints.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_explanation.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_map.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_merge.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_print.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Core\SoarKernel\src\vm_unify.cpp">
+      <Filter>Source Files\SoarKernel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1327,6 +1366,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Core\SVS\src\windows\platform_specific.h">
       <Filter>Source Files\SVS\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\shared\assert.hpp">
+      <Filter>Source Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_thread.h">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\debug_trace.h">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\memory_manager.h">
+      <Filter>Source Files\SoarKernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\variablization_manager.h">
+      <Filter>Source Files\SoarKernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

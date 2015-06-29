@@ -20,7 +20,7 @@
 \
 - (void)setUp {\
 	[super setUp];\
-	unittest.runner = new TestRunner(nullptr, nullptr, nullptr); \
+	unittest.TestCategory::runner = new TestRunner(nullptr, nullptr, nullptr); \
 	unittest.setUp();\
 }\
 \
@@ -33,8 +33,8 @@
 	try { \
 		unittest.X(); \
 	} \
-	catch (AssertException& e) { \
-		NSLog(@"%s", unittest.runner->output.str().c_str()); \
+	catch (SoarAssertionException& e) { \
+		NSLog(@"%s", unittest.TestCategory::runner->output.str().c_str()); \
 		const char* string = e.what();\
 		_XCTFailureHandler(self, YES, e.file(), e.line(), _XCTFailureFormat(_XCTAssertion_Fail, 0), @"%@", [NSString stringWithUTF8String:string]);\
 	}\

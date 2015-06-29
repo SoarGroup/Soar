@@ -15,44 +15,6 @@
 #include <exception>
 #include <sstream>
 
-AssertException::AssertException(const char* message, const char* file, const int line):
-msg_(message),
-file_(file),
-line_(line)
-{
-}
-
-/** Constructor (C++ STL strings).
- *  @param message The error message.
- */
-AssertException::AssertException(const std::string& message, const char* file, const int line):
-msg_(message),
-file_(file),
-line_(line)
-{}
-
-/** Destructor.
- * Virtual to allow for subclassing.
- */
-AssertException::~AssertException() throw (){}
-
-/** Returns a pointer to the (constant) error description.
- *  @return A pointer to a \c const \c char*. The underlying memory
- *          is in posession of the \c Exception object. Callers \a must
- *          not attempt to free the memory.
- */
-const char* AssertException::what() const throw (){
-	return msg_.c_str();
-}
-
-const char* AssertException::file() const throw (){
-	return file_;
-}
-
-const int AssertException::line() const throw (){
-	return line_;
-}
-
 bool isfile(const char* path)
 {
 #ifdef _WIN32
@@ -66,6 +28,9 @@ bool isfile(const char* path)
 
 void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 {
+	if (!agent)
+		return;
+	
 	output << "============================================================" << std::endl << std::endl;
 	output << "Debug Information" << std::endl << std::endl;
 	output << "============================================================" << std::endl << std::endl;

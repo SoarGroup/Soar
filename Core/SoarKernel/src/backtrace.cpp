@@ -89,7 +89,7 @@ using namespace soar_TraceNames;
 // Add everything
 inline void add_to_grounds(agent* thisAgent, condition* cond)
 {
-    cons* c;
+//    cons* c;
 
     if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
     {

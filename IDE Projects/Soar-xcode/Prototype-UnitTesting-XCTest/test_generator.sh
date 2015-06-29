@@ -20,7 +20,7 @@ find kernel -mindepth 1 -type f -name '*.hpp' | while read -r FILE; do
 		echo "#import <XCTest/XCTest.h>
 
 #include \"TestHelpers.hpp\"
-#include \"$CategoryName.hpp\"
+#include \"${CategoryName}.hpp\"
 
 #import \"XCTestDefines.h\"
 

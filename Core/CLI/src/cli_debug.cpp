@@ -31,7 +31,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     bool result = false;
-    int numArgs = 0;
+    size_t numArgs = 0;
     std::ostringstream tempString;
     std::string err, sub_command;
     
@@ -217,20 +217,20 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
     tempString << "MemCon| Running for " << run_count << " decision cycles.\n";
     PrintCLIMessage(&tempString);
     cli::Options opt;
-    cli::OptionsData optionsData[] =
-    {
-        {'d', "decision",        cli::OPTARG_NONE},
-        {'e', "elaboration",    cli::OPTARG_NONE},
-        {'g', "goal",            cli::OPTARG_NONE},
-        {'i', "interleave",        cli::OPTARG_REQUIRED},
-        {'n', "noupdate",        cli::OPTARG_NONE},
-        {'o', "output",            cli::OPTARG_NONE},
-        {'p', "phase",            cli::OPTARG_NONE},
-        {'s', "self",            cli::OPTARG_NONE},
-        {'u', "update",            cli::OPTARG_NONE},
-        {0, 0, cli::OPTARG_NONE}
-    };
-    
+//    cli::OptionsData optionsData[] =
+//    {
+//        {'d', "decision",        cli::OPTARG_NONE},
+//        {'e', "elaboration",    cli::OPTARG_NONE},
+//        {'g', "goal",            cli::OPTARG_NONE},
+//        {'i', "interleave",        cli::OPTARG_REQUIRED},
+//        {'n', "noupdate",        cli::OPTARG_NONE},
+//        {'o', "output",            cli::OPTARG_NONE},
+//        {'p', "phase",            cli::OPTARG_NONE},
+//        {'s', "self",            cli::OPTARG_NONE},
+//        {'u', "update",            cli::OPTARG_NONE},
+//        {0, 0, cli::OPTARG_NONE}
+//    };
+		
     cli::Cli::RunBitset options(0);
     DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
     

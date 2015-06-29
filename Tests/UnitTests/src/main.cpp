@@ -24,7 +24,7 @@ BOOL WINAPI handle_ctrlc(DWORD dwCtrlType)
 bool g_NoRemote = true;
 
 #ifdef __APPLE__
-#include <assert.h>
+#include "assert.hpp"
 #include <stdbool.h>
 #include <sys/types.h>
 #include <unistd.h>

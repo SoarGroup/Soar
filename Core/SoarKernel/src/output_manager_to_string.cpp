@@ -202,7 +202,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     cons* c;
     list* fl;
     rhs_function* rf;
-    int i;
+//    int i;
     if (!rv)
     {
         destString += '#';

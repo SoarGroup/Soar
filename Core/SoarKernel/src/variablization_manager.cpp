@@ -385,7 +385,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLev
 
     cons* c;
     test tt;
-    bool isGrounded;
+//    bool isGrounded;
 //    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", t);
 
     assert(t);

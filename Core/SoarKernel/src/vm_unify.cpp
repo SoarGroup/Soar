@@ -206,7 +206,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     if (new_cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-        return false;
+//        return false;
         new_cond_id = new_cond->data.tests.id_test->eq_test;
     } else {
         new_cond_id = new_cond->data.tests.id_test;
@@ -215,7 +215,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     if (new_cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-        return false;
+//        return false;
         new_cond_attr = new_cond->data.tests.attr_test->eq_test;
     } else {
         new_cond_attr = new_cond->data.tests.attr_test;
@@ -224,7 +224,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     if (new_cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-        return false;
+//        return false;
         new_cond_value = new_cond->data.tests.value_test->eq_test;
     } else {
         new_cond_value = new_cond->data.tests.value_test;

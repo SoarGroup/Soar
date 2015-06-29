@@ -83,12 +83,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\ElementXMLTest.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsClientThread.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsClientThreadFullyOptimized.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsRemote.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\portable-dirent.h" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp" />
@@ -100,12 +113,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\ElementXMLTest.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp" />

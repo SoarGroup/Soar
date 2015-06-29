@@ -17,7 +17,7 @@
 - [ ] ??? ProductionTest (Would this require direct access??)
 - [ ] ReteTests
 - [ ] RLTests
-- [ ] SMemEpMemCombinedFunctionalTests
+- [x] SMemEpMemCombinedFunctionalTests
 - [ ] WaterfallTests
 - [ ] ??? DebuggerCommand (Is this just a rename of `debug`?)
 - [ ] ExplainBacktracesCommand
@@ -44,19 +44,7 @@
 - [ ] StopEventTest
 - [ ] CycleCountInputTest
 - [ ] InputOutputImplTest
-- [ ] ??? SoarBeanOutputManagerTest (do we have this???)
-- [ ] ??? SoarBeanReaderTest (do we have this???)
 - [ ] OutputCommandManagerTest
-- [ ] ??? DefaultQMemoryTest (do we have this???)
-- [ ] ??? SoarQMemoryAdapterTest (do we have this???)
-- [ ] ??? AutoTypeXmlToWmeTest (do we have this???)
-- [ ] ??? DefaultWmeToXmlTest (do we have this???)
-- [ ] ??? DefaultXmlToWmeTest (do we have this???)
-- [ ] ??? ManualTypeXmlToWmeTest (do we have this???)
-- [ ] ??? SoarTechWmeToXmlTest (do we have this???)
-- [ ] ??? SoarTechXmlToWmeTest (do we have this???)
-- [ ] ??? XmlMessageQueueTest (do we have this???)
-- [ ] ??? XmlToWmeToolsTest (do we have this???)
 - [ ] ExplainTest
 - [ ] ReinforcementLearningTest
 - [ ] RLParamsTests
@@ -79,7 +67,7 @@
 - [ ] ??? ReteUnitTest (requires direct???)
 - [ ] SimplerMatcherTest
 - [ ] SoarReteListenerTest
-- [ ] RhsFunctionCallTest (requires exec <command> vs just <command> in JSoar)
+- [ ] RhsFunctionCallTest
 - [ ] ??? org.JSoar.kernel.rhs.functions (do we have these all?)
 - [ ] ??? DefaultSemanticMemoryTest (requires direct???)
 - [ ] ??? SemanticMemoryDatabaseTest (requires direct)
@@ -106,20 +94,18 @@
 
 ### Existing Soar Tests to Port
 
-- [ ] Port `aliastest` to Prototype-UnitTesting
-- [ ] Port `cliparsertest` to Prototype-UnitTesting
-- [ ] Port `elementxmltest` to Prototype-UnitTesting
-- [ ] Port `epmemtest` to Prototype-UnitTesting
-- [ ] Port `fulltests` to Prototype-UnitTesting
-- [ ] Port `iotest` to Prototype-UnitTesting
-- [ ] Port `misctests` to Prototype-UnitTesting
-- [ ] Port `multiagenttest` to Prototype-UnitTesting
-- [ ] Port `sanitytest` to Prototype-UnitTesting
-- [ ] Port `simplelistener` to Prototype-UnitTesting
-- [ ] Port `smemmathtest` to Prototype-UnitTesting
-- [ ] Port `smemtest` to Prototype-UnitTesting
-- [ ] Port `tokenizertest` to Prototype-UnitTesting
-- [ ] Port `handlers` to Prototype-UnitTesting
+- [x] Port `aliastest` to Prototype-UnitTesting
+- [x] Port `cliparsertest` to Prototype-UnitTesting
+- [x] Port `elementxmltest` to Prototype-UnitTesting
+- [x] Port `epmemtest` to Prototype-UnitTesting
+- [x] Port `fulltests` to Prototype-UnitTesting
+- [x] Port `iotest` to Prototype-UnitTesting
+- [x] Port `misctests` to Prototype-UnitTesting
+- [x] Port `multiagenttest` to Prototype-UnitTesting
+- [x] Port `smemmathtest` to Prototype-UnitTesting
+- [x] Port `smemtest` to Prototype-UnitTesting
+- [x] Port `tokenizertest` to Prototype-UnitTesting
+- [x] Port `handlers` to Prototype-UnitTesting
 
 - [ ] Port 9.5 Tests to Prototype-UnitTesting
 

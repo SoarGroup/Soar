@@ -84,7 +84,7 @@ namespace soar
         /**
          * @return the length of the lexeme string
          */
-        int length(){return lex_string.length();}
+        size_t length() { return lex_string.length(); }
     private:
         /** text of the lexeme */
         std::string lex_string;
