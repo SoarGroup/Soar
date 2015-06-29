@@ -502,4 +502,4 @@ build*/
 /.pydevproject
 user-env*.*
 build_*.*
-*/testCommandToFile-output.soar
+testCommandToFile-output.soar
