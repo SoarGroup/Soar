@@ -198,30 +198,6 @@ void MiscTests::test_stats()
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesValue, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountCycle, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountValue, -1), 0);
-#if defined(_WIN64) || !defined(_WIN32)
-	if (sizeof(intptr_t) > 4)
-	{
-		// 64-bit any
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1), 4576);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1), 264032);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1), 588600);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1), 2320);
-	}
-	else
-	{
-		// 32-bit linux
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1), 3612);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1), 132232);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1), 327248);
-		assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1), 1036);
-	}
-#else // 32-bit windows
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1), 3508);
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1), 132232);
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1), 687240);
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1), 1068);
-#endif
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1), 1087);
 	
 	agent->ExecuteCommandLine("stats -t");
 	assertTrue(agent->GetLastCommandLineResult());
