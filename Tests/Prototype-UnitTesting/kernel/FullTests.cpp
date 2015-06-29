@@ -242,8 +242,9 @@ int FullTests_Parent::spawnListener()
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 	
-	const char* executable = SoarHelper::GetResource("Prototype-UnitTesting.exe").c_str();
-	
+	char executable[1024];
+	GetModuleFileName(NULL, executable, 1024);
+
 	// Start the child process.
 	BOOL success = CreateProcess(executable,
 								 "Prototype-UnitTesting.exe --listener", // Command line
