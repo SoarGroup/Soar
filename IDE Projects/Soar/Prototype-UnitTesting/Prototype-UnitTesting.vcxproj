@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.hpp" />
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.hpp" />
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp" />
@@ -124,6 +125,7 @@
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\IOTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MiscTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.cpp" />
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.cpp" />
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp" />

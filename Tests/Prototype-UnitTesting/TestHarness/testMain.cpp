@@ -40,8 +40,24 @@
 #include "MultiAgentTest.hpp"
 #include "TokenizerTest.hpp"
 
+#include "SimpleListener.hpp"
+
 int main(int argc, char** argv)
-{	
+{
+	for (int index = 1; index < argc; ++index)
+	{
+		std::string argument(argv[index]);
+		if (argument == "--listener")
+		{
+			SimpleListener simpleListener(600);
+			return simpleListener.run();
+		}
+		else
+		{
+			std::cerr << "Unknown argument '" << argument << "' ignored." << std::endl;
+		}
+	}
+
 	const bool ShowTestOutput = false;
 	
 	std::condition_variable_any variable;
@@ -65,10 +81,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
 	TEST_DECLARATION(FullTestsClientThread);
 	TEST_DECLARATION(FullTests);
-	
-	// Remote tests haven't been updated for new unit testing yet so they're disabled for now.
-//	TEST_DECLARATION(FullTestsRemote);
-	
+	TEST_DECLARATION(FullTestsRemote);
 	TEST_DECLARATION(IOTests);
 	TEST_DECLARATION(MiscTests);
 	TEST_DECLARATION(MultiAgentTest);

@@ -14,6 +14,21 @@
 
 #include "SoarHelper.hpp"
 
+bool g_Cancel = false;
+
+#ifdef _WIN32
+BOOL WINAPI handle_ctrlc(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_C_EVENT)
+	{
+		g_Cancel = true;
+		return TRUE;
+	}
+	
+	return FALSE;
+}
+#endif // _WIN32
+
 const std::string FullTests_Parent::kAgentName("full-tests-agent");
 
 void FullTests_Parent::setUp()
@@ -27,8 +42,6 @@ void FullTests_Parent::setUp()
 	m_pKernel = 0;
 	agent = 0;
 	
-	m_Options.reset();
-	
 	createSoar();
 }
 
@@ -40,41 +53,41 @@ void FullTests_Parent::tearDown(bool caught)
 void FullTestsClientThreadFullyOptimized::setUp()
 {
 	FullTests_Parent::runner = TestCategory::runner;
-
-	FullTests_Parent::setUp();
 	
 	m_Options.reset();
 	m_Options.useClientThread = true;
 	m_Options.fullyOptimized = true;
+	
+	FullTests_Parent::setUp();
 }
 
 void FullTestsClientThread::setUp()
 {
 	FullTests_Parent::runner = TestCategory::runner;
 
-	FullTests_Parent::setUp();
-
 	m_Options.reset();
 	m_Options.useClientThread = true;
+	
+	FullTests_Parent::setUp();
 }
 
 void FullTests::setUp()
 {
 	FullTests_Parent::runner = TestCategory::runner;
 
-	FullTests_Parent::setUp();
-
 	m_Options.reset();
+	
+	FullTests_Parent::setUp();
 }
 
 void FullTestsRemote::setUp()
 {
 	FullTests_Parent::runner = TestCategory::runner;
-
-	FullTests_Parent::setUp();
 	
 	m_Options.reset();
 	m_Options.remote = true;
+	
+	FullTests_Parent::setUp();
 }
 
 void FullTests_Parent::createSoar()
@@ -138,6 +151,9 @@ void FullTests_Parent::createSoar()
 
 void FullTests_Parent::destroySoar()
 {
+	if (!m_pKernel)
+		return;
+	
 	// Agent deletion
 	if (m_Options.verbose)
 	{
@@ -226,10 +242,11 @@ int FullTests_Parent::spawnListener()
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 	
+	const char* executable = SoarHelper::GetResource("Prototype-UnitTesting.exe").c_str();
+	
 	// Start the child process.
-	BOOL success = CreateProcess(
-								 "UnitTests.exe",
-								 "UnitTests.exe --listener", // Command line
+	BOOL success = CreateProcess(executable,
+								 "Prototype-UnitTesting.exe --listener", // Command line
 								 NULL,           // Process handle not inheritable
 								 NULL,           // Thread handle not inheritable
 								 FALSE,          // Set handle inheritance to FALSE
@@ -246,13 +263,14 @@ int FullTests_Parent::spawnListener()
 	targetPid = pi.dwProcessId;
 	
 #else // _WIN32
-	pid = fork();
+	const char* executable = SoarHelper::GetResource("Prototype-UnitTesting").c_str();
+	
+	pid = vfork();
 	no_agent_assertTrue_msg("fork error", pid >= 0);
 	if (pid == 0)
 	{
 		// child
-		std::stringstream cmdString;
-		execlp("UnitTests", "UnitTests", "--listener", static_cast< char* >(0));
+		execlp(executable, "Prototype-UnitTesting", "--listener", nullptr);
 		// does not return on success
 		no_agent_assertTrue_msg("execlp failed", false);
 	}
@@ -1524,26 +1542,23 @@ void FullTests_Parent::testNegatedConjunctiveTestUnbound()
 
 void FullTests_Parent::testCommandToFile()
 {
-	throw SoarAssertionException("Command To File has a hard crash within Soar.  Fix it and then disable this exception.", __FILE__, __LINE__);
-	return; // TODO: Fix the hard crash for this test
+	loadProductions(SoarHelper::GetResource("water-jug-rl.soar"));
+	m_pKernel->RunAllAgentsForever();
 	
-//	loadProductions(SoarHelper::GetResource("water-jug-rl.soar"));
-//	m_pKernel->RunAllAgentsForever();
-//	
-//	const char* workingDirectory = getenv("WORKING_DIRECTORY");
-//	
-//	std::string resourceDirectory = SoarHelper::ResourceDirectory;
-//	
-//	if (workingDirectory)
-//		resourceDirectory = workingDirectory;
-//	
-//	agent->ExecuteCommandLine(("command-to-file \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\" print --rl --full").c_str());
-//	no_agent_assertTrue(agent->GetLastCommandLineResult());
-//	const char* result = agent->ExecuteCommandLine(("source \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
-//	no_agent_assertTrue(result);
-//	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
-//	no_agent_assertTrue(result == resultString);
-//	remove(("\"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
+	const char* workingDirectory = getenv("WORKING_DIRECTORY");
+	
+	std::string resourceDirectory = SoarHelper::ResourceDirectory;
+	
+	if (workingDirectory)
+		resourceDirectory = workingDirectory;
+	
+	agent->ExecuteCommandLine(("command-to-file \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\" print --rl --full").c_str());
+	no_agent_assertTrue(agent->GetLastCommandLineResult());
+	const char* result = agent->ExecuteCommandLine(("source \"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
+	no_agent_assertTrue(result);
+	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
+	no_agent_assertTrue(result == resultString);
+	remove(("\"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
 }
 
 void FullTests_Parent::testConvertIdentifier()

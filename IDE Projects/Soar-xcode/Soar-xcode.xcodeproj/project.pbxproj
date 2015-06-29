@@ -432,6 +432,8 @@
 		4D510A7F1B2B47600009AABC /* smemtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A6F1B2B47600009AABC /* smemtest.cpp */; };
 		4D510A801B2B47600009AABC /* tokenizertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D510A701B2B47600009AABC /* tokenizertest.cpp */; };
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4D5B5CC01B41A31000990756 /* SimpleListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */; };
+		4D5B5CC11B41A31000990756 /* SimpleListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */; };
 		4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
 		4D659A631B39A80000638059 /* SMemEpMemCombinedFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */; };
 		4D6756D41B3F02F500041365 /* assert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D6756D21B3F02F500041365 /* assert.cpp */; };
@@ -505,6 +507,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4D5105C01B2B41A80009AABC;
 			remoteInfo = Soar;
+		};
+		4D5B5CC21B41A39F00990756 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4D5105B91B2B41A80009AABC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D9867F61B30893700B13711;
+			remoteInfo = "JSoar-UnitTests";
 		};
 		4D9868121B30A8D600B13711 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1032,6 +1041,8 @@
 		4D510A6F1B2B47600009AABC /* smemtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = smemtest.cpp; path = ../../../Tests/UnitTests/src/smemtest.cpp; sourceTree = "<group>"; };
 		4D510A701B2B47600009AABC /* tokenizertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tokenizertest.cpp; path = ../../../Tests/UnitTests/src/tokenizertest.cpp; sourceTree = "<group>"; };
 		4D510A711B2B47600009AABC /* unittest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unittest.h; path = ../../../Tests/UnitTests/src/unittest.h; sourceTree = "<group>"; };
+		4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SimpleListener.cpp; sourceTree = "<group>"; };
+		4D5B5CBF1B41A30F00990756 /* SimpleListener.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SimpleListener.hpp; sourceTree = "<group>"; };
 		4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EpMemFunctionalTests.cpp; sourceTree = "<group>"; };
 		4D659A5D1B39A50100638059 /* EpMemFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EpMemFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D659A5F1B39A51500638059 /* SMemEpMemCombinedFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemEpMemCombinedFunctionalTests.cpp; sourceTree = "<group>"; };
@@ -1893,6 +1904,8 @@
 				4DEC11F41B3F2317002E12DD /* MultiAgentTest.hpp */,
 				4DEC11F81B3F2A7F002E12DD /* TokenizerTest.cpp */,
 				4DEC11F91B3F2A7F002E12DD /* TokenizerTest.hpp */,
+				4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */,
+				4D5B5CBF1B41A30F00990756 /* SimpleListener.hpp */,
 			);
 			path = kernel;
 			sourceTree = "<group>";
@@ -2200,6 +2213,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4D5B5CC31B41A39F00990756 /* PBXTargetDependency */,
 				4DD8D9521B3C576D0055BD48 /* PBXTargetDependency */,
 			);
 			name = "Prototype-UnitTesting-XCTest";
@@ -2305,7 +2319,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx/ --out=out-osx/ sml_java debugger tests\npopd";
+			shellScript = "pushd \"$PROJECT_DIR/../../\"\nPATH=$PATH:/usr/local/Cellar/swig/3.0.5/bin /usr/local/bin/scons --build=build-osx --out=out-osx sml_java debugger tests\nexit $?\npopd";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2595,6 +2609,7 @@
 			files = (
 				4DDA9B431B3DECBF00AF2764 /* AliasTest.cpp in Sources */,
 				4DD551DF1B3B13CD001AC167 /* SMemFunctionalTests.cpp in Sources */,
+				4D5B5CC01B41A31000990756 /* SimpleListener.cpp in Sources */,
 				4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */,
 				4DFF15861B3204E8006CDD34 /* AgentTest.cpp in Sources */,
 				4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */,
@@ -2633,6 +2648,7 @@
 				4DD8D9591B3C57AE0055BD48 /* SMemFunctionalTests.cpp in Sources */,
 				4D07E96B1B3C6B9B00037FFE /* TestRunner.cpp in Sources */,
 				4DD8D95E1B3C57AE0055BD48 /* AgentTest.cpp in Sources */,
+				4D5B5CC11B41A31000990756 /* SimpleListener.cpp in Sources */,
 				4DDA9B4A1B3DEE5100AF2764 /* CliParserTest.cpp in Sources */,
 				4DDA9B531B3DF43D00AF2764 /* FullTests.cpp in Sources */,
 				4DEC11FC1B3F2BD0002E12DD /* TokenizerTest.cpp in Sources */,
@@ -2661,6 +2677,11 @@
 			isa = PBXTargetDependency;
 			target = 4D5105C01B2B41A80009AABC /* Soar */;
 			targetProxy = 4D510A811B2B47DD0009AABC /* PBXContainerItemProxy */;
+		};
+		4D5B5CC31B41A39F00990756 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D9867F61B30893700B13711 /* JSoar-UnitTests */;
+			targetProxy = 4D5B5CC21B41A39F00990756 /* PBXContainerItemProxy */;
 		};
 		4D9868131B30A8D600B13711 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

@@ -29,6 +29,9 @@
 #include <cstdlib>
 #include <assert.h>
 
+#include <signal.h>
+#include <iostream>
+
 #ifdef NON_BLOCKING
 #include "sml_Utils.h"  // For sml::Sleep
 #endif
@@ -45,10 +48,28 @@ Socket::Socket()
     m_bTraceCommunications = false ;
 }
 
+#ifndef _MSC_VER
+void ignore_sigpipe(void)
+{
+	struct sigaction act;
+	int r;
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_IGN;
+	act.sa_flags = SA_RESTART;
+	r = sigaction(SIGPIPE, &act, NULL);
+	if (r)
+		std::cerr << "Sig Action Failed: " << strerror(r) << std::endl;
+}
+#endif
+
 Socket::Socket(SOCKET hSocket)
 {
     m_hSocket = hSocket ;
     m_bTraceCommunications = false ;
+	
+#ifndef _MSC_VER
+	ignore_sigpipe();
+#endif
 }
 
 Socket::~Socket()

@@ -305,7 +305,7 @@ sp {rl*water-jug*pour*18
     (<j2> ^volume 5 ^contents 2)
     (<j1> ^volume 3 ^contents 0)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*pour*17
@@ -645,7 +645,7 @@ sp {rl*water-jug*fill*32
     (<j2> ^volume 5 ^contents 3)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*31
@@ -705,7 +705,7 @@ sp {rl*water-jug*fill*26
     (<j2> ^volume 5 ^contents 3)
     (<j1> ^volume 3 ^contents 0)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*25
@@ -725,7 +725,7 @@ sp {rl*water-jug*fill*24
     (<j2> ^volume 5 ^contents 2)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*23
@@ -785,7 +785,7 @@ sp {rl*water-jug*fill*18
     (<j2> ^volume 5 ^contents 2)
     (<j1> ^volume 3 ^contents 0)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*17
@@ -885,7 +885,7 @@ sp {rl*water-jug*fill*8
     (<j2> ^volume 5 ^contents 0)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*7
@@ -915,7 +915,7 @@ sp {rl*water-jug*fill*5
     (<j2> ^volume 5 ^contents 0)
     (<j1> ^volume 3 ^contents 2)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*fill*4
@@ -955,7 +955,7 @@ sp {rl*water-jug*fill*1
     (<j2> ^volume 5 ^contents 0)
     (<j1> ^volume 3 ^contents 0)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*empty*48
@@ -1125,7 +1125,7 @@ sp {rl*water-jug*empty*32
     (<j2> ^volume 5 ^contents 3)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*empty*31
@@ -1135,7 +1135,7 @@ sp {rl*water-jug*empty*31
     (<j2> ^volume 5 ^contents 3)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*empty*30
@@ -1265,7 +1265,7 @@ sp {rl*water-jug*empty*18
     (<j2> ^volume 5 ^contents 2)
     (<j1> ^volume 3 ^contents 0)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*empty*17
@@ -1375,7 +1375,7 @@ sp {rl*water-jug*empty*7
     (<j2> ^volume 5 ^contents 0)
     (<j1> ^volume 3 ^contents 3)
     -->
-    (<s> ^operator <op> = 0.)
+    (<s> ^operator <op> = 0)
 }
 
 sp {rl*water-jug*empty*6

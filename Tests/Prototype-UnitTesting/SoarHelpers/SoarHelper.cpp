@@ -226,9 +226,21 @@ std::string SoarHelper::GetResource(std::string resource)
 {
 	std::string path =  FindFile(resource, ResourceDirectory);
 	const char* workingDirectory = getenv("WORKING_DIRECTORY");
+	const char* soarHome = getenv("SOAR_HOME");
+	
 	if (path.length() == 0 && workingDirectory)
 	{
 		path = FindFile(resource, workingDirectory);
+	}
+	
+	if (path.length() == 0 && soarHome)
+	{
+		path = FindFile(resource, soarHome);
+	}
+	
+	if (path.length() == 0)
+	{
+		path = FindFile(resource, "./");
 	}
 	
 	return path;

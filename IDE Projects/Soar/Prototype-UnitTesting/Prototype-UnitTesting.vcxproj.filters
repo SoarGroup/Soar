@@ -114,6 +114,9 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
@@ -180,6 +183,9 @@
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
   </ItemGroup>
