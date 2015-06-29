@@ -84,7 +84,12 @@ public:
 	 * Set up the agent with RHS functions common to these
 	 * FunctionalTests.
 	 */
-	void installRHS(sml::Agent* agent);
+	void installRHS();
+	
+	/**
+	 * Remove the RHS functions we added to prevent memory leaks
+	 */
+	void removeRHS();
 };
 
 #define FUNCTIONAL_TEST_CATEGORY(X) X() : FunctionalTestHarness(#X) {} \

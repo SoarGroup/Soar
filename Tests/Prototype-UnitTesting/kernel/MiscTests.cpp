@@ -45,8 +45,10 @@ void MiscTests::test_clog()
 	agent->RunSelf(5);
 	agent->InitSoar();
 	agent->RunSelf(5);
-	kernel->DestroyAgent(agent);
-	agent = kernel->CreateAgent("soar1");
+	
+	tearDown(false);
+	setUp();
+	
 	assertTrue(agent != NULL);
 	agent->ExecuteCommandLine("clog clog-test.txt");
 	assertTrue_msg("clog clog-test.txt", agent->GetLastCommandLineResult());
@@ -252,6 +254,8 @@ void MiscTests::testWrongAgentWmeFunctions()
 	assertTrue(agent2->CreateIdWME(foo1, "fail") == 0);
 	assertTrue(agent2->CreateSharedIdWME(foo1, "fail", il2) == 0);
 	assertTrue(agent2->DestroyWME(foo1) == 0);
+	
+	kernel->DestroyAgent(agent2);
 }
 
 void MiscTests::testRHSRand()

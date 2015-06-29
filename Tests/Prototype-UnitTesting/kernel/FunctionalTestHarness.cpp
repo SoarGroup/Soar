@@ -128,11 +128,13 @@ void FunctionalTestHarness::setUp()
 					  [](soar_callback_data){},
 					  "Prototype-UnitTesting PRINT_CALLBACK");
 	
-	installRHS(agent);
+	installRHS();
 }
 
 void FunctionalTestHarness::tearDown(bool caught)
 {
+	removeRHS();
+	
 	halt_routine = nullptr;
 
 	kernel->DestroyAgent(agent);
@@ -178,7 +180,7 @@ Symbol* FunctionalTestHarness::succeededHandler()
  * Set up the agent with RHS functions common to these
  * FunctionalTests.
  */
-void FunctionalTestHarness::installRHS(sml::Agent* agent)
+void FunctionalTestHarness::installRHS()
 {
 	// set up the agent with common RHS functions
 	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
@@ -202,5 +204,16 @@ void FunctionalTestHarness::installRHS(sml::Agent* agent)
 					 call_routine,
 					 0, false, true,
 					 &succeededData);
+}
+
+void FunctionalTestHarness::removeRHS()
+{
+	remove_rhs_function(internal_agent, find_str_constant(internal_agent, "failed"));
+	remove_rhs_function(internal_agent, find_str_constant(internal_agent, "succeeded"));
+	
+	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
+	
+	halt_function->user_data = NULL;
+	halt_function->f = halt_routine;
 }
 
