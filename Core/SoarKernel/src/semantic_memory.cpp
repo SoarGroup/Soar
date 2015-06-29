@@ -3317,6 +3317,7 @@ void smem_close(agent* thisAgent)
         
         // de-allocate common statements
         delete thisAgent->smem_stmts;
+		delete thisAgent->lastCue;
         
         // close the database
         thisAgent->smem_db->disconnect();
