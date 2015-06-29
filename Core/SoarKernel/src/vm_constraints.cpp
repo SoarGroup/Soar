@@ -36,7 +36,7 @@ void Variablization_Manager::cache_constraints_in_test(test t)
         return;
     }
 
-    test equality_test = NULL, referent_test, ctest;
+    test equality_test = NULL, ctest;
     cons* c;
     for (c = t->data.conjunct_list; c != NIL; c = c->rest)
     {

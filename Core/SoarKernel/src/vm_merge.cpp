@@ -89,7 +89,7 @@ inline int64_t count_conditions(condition* top_cond)
 
 inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 {
-    condition* del_cond = c->counterpart;
+//    condition* del_cond = c->counterpart;
     if (c->counterpart->prev)
     {
         c->counterpart->prev->next = c->counterpart->next;

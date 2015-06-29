@@ -56,7 +56,7 @@ list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 
 test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
 {
-    Symbol* referent;
+//    Symbol* referent;
     test new_ct;
 
     if (!t)
@@ -256,8 +256,8 @@ void deallocate_test(agent* thisAgent, test t)
 void add_test(agent* thisAgent, test* dest_test_address, test new_test)
 {
 
-    test destination = 0, original = 0;
-    cons* c, *c_orig;
+	test destination = 0;//, original = 0;
+	cons* c;//, *c_orig;
 
     if (!new_test)
     {
@@ -452,7 +452,7 @@ bool tests_are_equal(test t1, test t2, bool neg)
 bool tests_identical(test t1, test t2, bool considerIdentity)
 {
     cons* c1, *c2;
-    test test1, test2;
+//    test test1, test2;
 
     if (t1->type != t2->type)
     {

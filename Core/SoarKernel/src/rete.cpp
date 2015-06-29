@@ -2845,7 +2845,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 
 void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
 {
-    test New;
+//    test New;
     cons* c;
     Symbol* temp;
 
@@ -4549,9 +4549,9 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     Symbol** cell;
     int64_t index;
     production* prod;
-    goal_stack_level lowest_level_so_far, match_level;
-    condition* cond;
-    
+//	goal_stack_level lowest_level_so_far, match_level;
+//    condition* cond;
+	
     prod = p_node->b.p.prod;
     
     if (tok == NIL)

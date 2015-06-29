@@ -464,7 +464,6 @@ inline TestType relational_test_type_to_test_type(byte test_type)
         default:
             break;
     }
-    char msg[BUFFER_MSG_SIZE];
     abort_with_fatal_error_noagent("Bad test_type in add_rete_test_to_test!!!\n");
     return EQUALITY_TEST;
 }

@@ -951,9 +951,9 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
 
             // For each prod with a trace, perform update
             {
-                double old_ecr, old_efr, old_gql;
-                double delta_ecr, delta_efr;
-                double new_combined, new_ecr, new_efr, new_gql;
+                double old_ecr = 0.0, old_efr = 0.0, old_gql = 0.0;
+                double delta_ecr = 0.0, delta_efr = 0.0;
+                double new_combined = 0.0, new_ecr = 0.0, new_efr = 0.0, new_gql = 0.0;
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
 
                 double dot_w_e = 0.0;

@@ -417,7 +417,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         bool* reliable)
 {
     cons* c;
-    condition* ground, *c_vrblz, *c_inst, *first_vrblz, *first_inst, *prev_vrblz, *prev_inst;
+    condition* ground, *c_vrblz, *c_inst, *first_vrblz = nullptr, *first_inst = nullptr, *prev_vrblz, *prev_inst;
     
     c_vrblz = c_inst = NIL; /* unnecessary, but gcc -Wall warns without it */
     

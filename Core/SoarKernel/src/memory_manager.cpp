@@ -179,9 +179,9 @@ void Memory_Manager::free_memory_pool(MemoryPoolType mempool_index)
 /* This is only called by the CLI DoAllocate command */
 bool Memory_Manager::add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks)
 {
-    char* new_block;
-    size_t size, i, item_num, interleave_factor;
-    char* item, *prev_item;
+//    char* new_block;
+//    size_t size, i, item_num, interleave_factor;
+//    char* item, *prev_item;
 
     memory_pool* lThisPool;
 

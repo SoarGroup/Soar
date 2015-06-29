@@ -100,9 +100,9 @@ void debug_test(int type)
             Symbol* sym1  = generate_new_variable(debug_agent, "m");
             Symbol* sym2  = generate_new_variable(debug_agent, "m");
             Symbol* sym3  = generate_new_variable(debug_agent, "m");
-            Symbol* newSym1  = find_identifier(debug_agent, 'S', 1);
-            Symbol* newSym2  = find_identifier(debug_agent, 'I', 2);
-            Symbol* newSym3  = find_identifier(debug_agent, 'I', 3);
+//            Symbol* newSym1  = find_identifier(debug_agent, 'S', 1);
+//            Symbol* newSym2  = find_identifier(debug_agent, 'I', 2);
+//            Symbol* newSym3  = find_identifier(debug_agent, 'I', 3);
             test t1 = make_test(debug_agent, sym1, EQUALITY_TEST);
             test t2 = make_test(debug_agent, sym2, EQUALITY_TEST);
             test t3 = make_test(debug_agent, sym3, EQUALITY_TEST);
@@ -120,7 +120,7 @@ void debug_test(int type)
         }
         case 6:
         {
-            agent* thisAgent = debug_agent;
+//            agent* thisAgent = debug_agent;
             dprint_variablization_tables(DT_DEBUG);
             dprint_variablization_tables(DT_DEBUG, 1);
             dprint_o_id_tables(DT_DEBUG);
@@ -139,7 +139,7 @@ void debug_test(int type)
         case 8:
         {
             char buf1[15];
-            char buf2[5];
+//            char buf2[5];
 
             test_strnmove(buf1);
             break;
@@ -222,7 +222,7 @@ void debug_test_structs()
     test intEqTest06 = make_test(debug_agent, newInt06, EQUALITY_TEST);
     test intEqTest07 = make_test(debug_agent, newInt07, EQUALITY_TEST);
     test intEqTest08 = make_test(debug_agent, newInt08, EQUALITY_TEST);
-    test blankTest = NULL;
+//    test blankTest = NULL;
 
 
     test dest, add_me;

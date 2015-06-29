@@ -27,8 +27,8 @@ void Variablization_Manager::add_identity_to_original_id_test(condition* cond,
                                        byte field_num,
                                        rete_node_level levels_up)
 {
-    Symbol* temp;
-    test t = 0, New = 0;
+//    Symbol* temp;
+	test t = 0;//, New = 0;
 
     t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
