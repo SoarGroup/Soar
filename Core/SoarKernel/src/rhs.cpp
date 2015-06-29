@@ -347,7 +347,7 @@ rhs_value create_RHS_value(agent* thisAgent,
     Symbol* sym;
     int64_t index;
     char prefix[2];
-    test t, original_t;
+	test t;//, original_t;
     uint64_t lO_id = 0;
 
 
