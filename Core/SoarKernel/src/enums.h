@@ -57,7 +57,7 @@ enum TraceMode
     DT_UNIFICATION,
     DT_VM_MAPS,
     DT_BUILD_CHUNK_CONDS,
-    DT_NONE_1,
+    DT_RHS_VALUE,
     DT_NONE_2,
     DT_NONE_3,
     DT_NONE_4,

@@ -613,24 +613,21 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
         a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
     } else {
         dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.id);
-        a->id = result->rhs_funcs.id;
-        result->rhs_funcs.id = NULL;
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
     }
     if (!result->rhs_funcs.attr)
     {
         a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
     } else {
         dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.attr);
-        a->attr = result->rhs_funcs.attr;
-        result->rhs_funcs.attr = NULL;
+        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
     }
     if (!result->rhs_funcs.value)
     {
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
     } else {
         dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.value);
-        a->value = result->rhs_funcs.value;
-        result->rhs_funcs.value = NULL;
+        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
     }
     if (preference_is_binary(result->type))
     {

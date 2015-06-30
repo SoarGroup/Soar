@@ -9,22 +9,22 @@
 #ifndef DEBUG_DEFINES_H_
 #define DEBUG_DEFINES_H_
 
-//#define DEBUG_OUTPUT_ON
-
 /* ---------------------------------------------------------------------*/
+
+/* These are just for experimental purposes.  Should not be commented out */
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-/* These are just for experimental purposes.  Should not be commented out */
-/*         Supermerge mode has small issue.  Look at Opaque chunking unit test.
- *         There's an identity mapping not getting created.  I'm not sure if
- *         we're going to use this mode, so will fix later.   There's a version
- *         in the history that does a complete merge correctly from 6/10. */
-#define EBC_MERGE_CONDITIONS
-#define EBC_ADD_CONSTRAINTS_IDENTITIES
-//#define EBC_MAP_MERGE_DUPE_GROUNDS
-#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
-//#define EBC_SUPERMERGE
+
+#ifndef SOAR_RELEASE_VERSION
+//    #define DEBUG_OUTPUT_ON
+    //#define EBC_MAP_MERGE_DUPE_GROUNDS
+    #ifdef EBC_MAP_MERGE_DUPE_GROUNDS
+    //#define EBC_SUPERMERGE
+    #endif
 #endif
 
 #ifdef DEBUG_OUTPUT_ON
@@ -60,21 +60,21 @@
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
 #define TRACE_Init_DT_VM_MAPS                     false
-#define TRACE_Init_DT_BACKTRACE                   false
-#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
+#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           true
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
-#define TRACE_Init_DT_RHS_VARIABLIZATION          false
+#define TRACE_Init_DT_RHS_VARIABLIZATION          true
+#define TRACE_Init_DT_RHS_VALUE                   false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
-#define TRACE_Init_DT_RL_VARIABLIZATION           true
+#define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_1                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
@@ -138,7 +138,7 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_1                      false
+#define TRACE_Init_DT_RHS_VALUE                      false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
