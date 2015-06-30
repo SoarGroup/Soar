@@ -61,23 +61,16 @@ void test_strnmove(char* buf1)
 
 void debug_test(int type)
 {
-    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
-    if (!debug_agent)
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (!thisAgent)
     {
         return;
     }
 
-//    Symbol* sym  = make_new_identifier(debug_agent, 'M', 1, 1);
-//    test t = make_test(debug_agent, sym, GREATER_TEST);
-//    int64_t i1=-23;
-//    uint64_t ui1=33;
-//    Symbol* newSym  = find_identifier(debug_agent, 'S', 3);
-//    dprint(DT_DEBUG, "S1 refcount %d\n", newSym->reference_count);
-
     switch (type)
     {
         case 1:
-            print_internal_symbols(debug_agent);
+            print_internal_symbols(thisAgent);
             dprint_identifiers(DT_DEBUG);
             break;
         case 2:
@@ -91,36 +84,15 @@ void debug_test(int type)
             break;
         }
         case 4:
-            debug_agent->memoryManager->debug_print_memory_stats(debug_agent);
             break;
 
         case 5:
         {
-            reset_variable_generator(debug_agent, NULL, NULL);
-            Symbol* sym1  = generate_new_variable(debug_agent, "m");
-            Symbol* sym2  = generate_new_variable(debug_agent, "m");
-            Symbol* sym3  = generate_new_variable(debug_agent, "m");
-//            Symbol* newSym1  = find_identifier(debug_agent, 'S', 1);
-//            Symbol* newSym2  = find_identifier(debug_agent, 'I', 2);
-//            Symbol* newSym3  = find_identifier(debug_agent, 'I', 3);
-            test t1 = make_test(debug_agent, sym1, EQUALITY_TEST);
-            test t2 = make_test(debug_agent, sym2, EQUALITY_TEST);
-            test t3 = make_test(debug_agent, sym3, EQUALITY_TEST);
-            t1->identity = 23;
-            t2->identity = 33;
-            t3->identity = 91;
-            dprint(DT_DEBUG, "%y %y %u\n", sym1, sym2, t1->identity);
-            dprint(DT_DEBUG, "%y %y %u %u\n", sym1, sym2, t2->identity, t1->identity);
-            dprint(DT_DEBUG, "%y %y %y %u\n", newSym1, newSym2, newSym3, t1->identity);
-            dprint(DT_DEBUG, "%y %t %y %y %u\n", sym1, t1, sym2, sym3, t1->identity);
-            dprint(DT_DEBUG, "%y %g %y %y %u\n", sym1, t1, sym2, sym3, t1->identity);
-            dprint(DT_DEBUG, "%y(o%u) %y(o%u)\n", t1->data.referent, t1->identity, t2->data.referent, t2->identity);
-            dprint(DT_DEBUG, "%t[%g] %t[%g]\n", t1, t1, t2, t2);
+
             break;
         }
         case 6:
         {
-//            agent* thisAgent = debug_agent;
             dprint_variablization_tables(DT_DEBUG);
             dprint_variablization_tables(DT_DEBUG, 1);
             dprint_o_id_tables(DT_DEBUG);
@@ -134,14 +106,9 @@ void debug_test(int type)
             break;
         }
         case 7:
-            debug_agent->variablizationManager->print_tables(DT_DEBUG);
             break;
         case 8:
         {
-            char buf1[15];
-//            char buf2[5];
-
-            test_strnmove(buf1);
             break;
         }
         case 9:

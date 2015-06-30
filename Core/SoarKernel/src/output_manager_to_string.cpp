@@ -43,7 +43,7 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
     destString += "--------------------------- WMEs --------------------------\n";
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        destString += m_pre_string;
+        if (m_pre_string) destString += m_pre_string;
         wme_to_string(thisAgent, w, destString);
     }
     return;
@@ -202,7 +202,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     cons* c;
     list* fl;
     rhs_function* rf;
-//    int i;
+
     if (!rv)
     {
         destString += '#';
@@ -219,8 +219,12 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         rsym = rhs_value_to_rhs_symbol(rv);
         if (this->m_print_actual_effective)
         {
-            sprinta_sf(thisAgent, destString, "%y", rsym->referent);
-        }
+            if (rsym->referent)
+            {
+                destString += rsym->referent->to_string(true);
+            } else {
+                destString += '#';
+            }        }
         if (m_print_identity_effective) {
             sprinta_sf(thisAgent, destString, " [%y/o%u]",
                 thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id),
@@ -235,7 +239,13 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             sym = get_symbol_from_rete_loc(
                       rhs_value_to_reteloc_levels_up(rv),
                       rhs_value_to_reteloc_field_num(rv), tok, w);
-            sprinta_sf(thisAgent, destString, "%y (reteloc)", sym);
+            if (sym)
+            {
+                destString += sym->to_string(true);
+            } else {
+                destString += '#';
+            }
+            destString += " (reteloc)";
         }
         else
         {
@@ -248,7 +258,13 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);
 
-        sprinta_sf(thisAgent, destString, "(%y", rf->name);
+        destString += '(';
+        if (rf->name)
+        {
+            destString += rf->name->to_string(true);
+        } else {
+            destString += '#';
+        }
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
@@ -263,11 +279,13 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     assert(thisAgent && a);
     if (a->type == FUNCALL_ACTION)
     {
-        sprinta_sf(thisAgent, destString, "%s(funcall ", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += "(funcall ";
         rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
         destString += ')';
     } else {
-        sprinta_sf(thisAgent, destString, "%s(", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += '(';
         rhs_value_to_string(thisAgent, a->id, destString, NULL, NULL);
         destString += " ^";
         rhs_value_to_string(thisAgent, a->attr, destString, NULL, NULL);
@@ -348,11 +366,12 @@ void Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond,
     {
         if (m_print_identity)
         {
-            sprinta_sf(thisAgent, destString, "--------------------------- Match --------------------------\n");
+            destString += "--------------------------- Match --------------------------\n";
         }
         set_print_test_format(true, false);
         condition_list_to_string(thisAgent, top_cond, destString);
-        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += "-->\n";
         preflist_inst_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
@@ -360,11 +379,12 @@ void Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond,
     {
         if (m_print_actual)
         {
-            sprinta_sf(thisAgent, destString, "------------------------- Identity -------------------------\n");
+            destString += "------------------------- Identity -------------------------\n";
         }
         set_print_test_format(false, true);
         condition_list_to_string(thisAgent, top_cond, destString);
-        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += "-->\n";
         preflist_inst_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
@@ -376,11 +396,12 @@ void Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_con
     {
         if (m_print_identity)
         {
-            sprinta_sf(thisAgent, destString, "--------------------------- Match --------------------------\n");
+            destString += "--------------------------- Match --------------------------\n";
         }
         set_print_test_format(true, false);
         condition_list_to_string(thisAgent, top_cond, destString);
-        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += "-->\n";
         preflist_result_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
@@ -388,11 +409,12 @@ void Output_Manager::cond_results_to_string(agent* thisAgent, condition* top_con
     {
         if (m_print_actual)
         {
-            sprinta_sf(thisAgent, destString, "------------------------- Identity -------------------------\n");
+            destString += "------------------------- Identity -------------------------\n";
         }
         set_print_test_format(false, true);
         condition_list_to_string(thisAgent, top_cond, destString);
-        sprinta_sf(thisAgent, destString, "%s-->\n", m_pre_string);
+        if (m_pre_string) destString += m_pre_string;
+        destString += "-->\n";
         preflist_result_to_string(thisAgent, top_pref, destString);
         clear_print_test_format();
     }
@@ -528,11 +550,11 @@ void Output_Manager::print_varnames_node(TraceMode mode, node_varnames* var_name
         print("varnames for node = ID: ");
 
         print_varnames(mode, var_names_node->data.fields.id_varnames);
-        print_sf(" | Attr: ");
+        print(" | Attr: ");
         print_varnames(mode, var_names_node->data.fields.attr_varnames);
-        print_sf(" | Value: ");
+        print(" | Value: ");
         print_varnames(mode, var_names_node->data.fields.value_varnames);
-        print_sf("\n");
+        print("\n");
     }
 }
 

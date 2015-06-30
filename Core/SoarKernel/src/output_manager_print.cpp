@@ -334,7 +334,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     destString += " [o";
                                     destString += std::to_string(t->identity);
                                     destString += ' ';
-                                    destString += thisAgent->variablizationManager->get_ovar_for_o_id(t->identity)->to_string(true);
+                                    sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
+                                    if (sym) destString += sym->to_string(true); else destString += '#';
                                     destString += ']';
                                 } else {
                                     test_to_string(t, destString);
@@ -352,7 +353,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         destString += " [o";
                                         destString += std::to_string(t->identity);
                                         destString += ' ';
-                                        destString += thisAgent->variablizationManager->get_ovar_for_o_id(t->identity)->to_string(true);
+                                        sym = thisAgent->variablizationManager->get_ovar_for_o_id(t->identity);
+                                        if (sym) destString += sym->to_string(true); else destString += '#';
                                         destString += ']';
                                     } else {
                                         test_to_string(t, destString);
