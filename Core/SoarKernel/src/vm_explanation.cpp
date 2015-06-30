@@ -75,60 +75,66 @@ void Variablization_Manager::explain_RL_condition(rete_node* node,
     {
         dprint(DT_ADD_ADDITIONALS, "Processing additional test...\n");
         chunk_test = NULL;
-        if (test_is_variable_relational_test(rt->type))
+        if (test_is_constant_relational_test(rt->type))
+        {
+            dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
+            test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+            chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+        }
+        else if (test_is_variable_relational_test(rt->type))
+        {
+            test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+            /* We may need to add equality tests if we start variablizing STIs like
+             * constants, because we'd need the identity from the equality test processed
+             * as a relational here because of weird rete case. Then again, we would need to
+             * generate identities in this function if we had to do that.  Right now, identities
+             * are not needed for RL because we only use them to variablize constants and RL
+             * only variablizes STis.*/
+            //if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
+            if (test_type == NOT_EQUAL_TEST)
             {
-                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                /* We may need to add equality tests if we start variablizing STIs like
-                 * constants, because we'd need the identity from the equality test processed
-                 * as a relational here because of weird rete case. Then again, we would need to
-                 * generate identities in this function if we had to do that.  Right now, identities
-                 * are not needed for RL because we only use them to variablize constants and RL
-                 * only variablizes STis.*/
-//                if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
-                    if (test_type == NOT_EQUAL_TEST)
-                {
-                    dprint(DT_ADD_ADDITIONALS, "Creating variable relational rl test.\n");
+                dprint(DT_ADD_ADDITIONALS, "Creating variable relational rl test.\n");
 
-                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                        rt->data.variable_referent.field_num,
-                        rt->data.variable_referent.levels_up);
-                    referent = ref_test->data.referent;
-                    if(referent->is_identifier())
-                    {
-                        chunk_test = make_test(thisAgent, referent, test_type);
-                        dprint(DT_RL_VARIABLIZATION, "Creating valid relational test for template %t [%g].\n", chunk_test, chunk_test);
-                    }
-                    else
-                    {
-                        dprint(DT_RL_VARIABLIZATION, "Relational test referent is not an STI.  Ignoring.\n");
-                    }
+                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+                    rt->data.variable_referent.field_num,
+                    rt->data.variable_referent.levels_up);
+                referent = ref_test->data.referent;
+                if(referent->is_identifier())
+                {
+                    chunk_test = make_test(thisAgent, referent, test_type);
+                    dprint(DT_RL_VARIABLIZATION, "Creating valid relational test for template %t [%g].\n", chunk_test, chunk_test);
                 }
                 else
                 {
-                    dprint(DT_RL_VARIABLIZATION, "Relational test type is not a valid template relational test.  Ignoring.\n");
+                    dprint(DT_RL_VARIABLIZATION, "Relational test referent is not an STI.  Ignoring.\n");
                 }
             }
-            if (chunk_test)
+            else
             {
-                if (rt->right_field_num == 0)
-                {
-                    explain_constraint(&(cond->data.tests.id_test), chunk_test, pI_id);
-
-                    dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
-                }
-                else if (rt->right_field_num == 1)
-                {
-                    explain_constraint(&(cond->data.tests.attr_test), chunk_test, pI_id);
-
-                    dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
-                }
-                else
-                {
-                    explain_constraint(&(cond->data.tests.value_test), chunk_test, pI_id);
-
-                    dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
-                }
+                dprint(DT_RL_VARIABLIZATION, "Relational test type is not a valid template relational test.  Ignoring.\n");
             }
+        }
+        if (chunk_test)
+        {
+            if (rt->right_field_num == 0)
+            {
+                explain_constraint(&(cond->data.tests.id_test), chunk_test, pI_id);
+
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
+            }
+            else if (rt->right_field_num == 1)
+            {
+                explain_constraint(&(cond->data.tests.attr_test), chunk_test, pI_id);
+
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
+            }
+            else
+            {
+                explain_constraint(&(cond->data.tests.value_test), chunk_test, pI_id);
+
+                dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
+            }
+        }
 
     }
 

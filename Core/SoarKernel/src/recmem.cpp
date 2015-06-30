@@ -957,6 +957,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
+            dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
             if (a2)
             {
 //                dprint(DT_RHS_VARIABLIZATION, "Executing action:\n%a\n[%a]\n", a, a2);
@@ -968,8 +969,10 @@ void create_instantiation(agent* thisAgent, production* prod,
         }
         else
         {
+            dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
             pref = NIL;
-            rl_build_template_instantiation(thisAgent, inst, tok, w);
+            /*Symbol *result = */rl_build_template_instantiation(thisAgent, inst, tok, w);
+
         }
 
         /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */

@@ -523,36 +523,21 @@ void rl_revert_template_id(agent* thisAgent)
 
 inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
 {
-    if ((p_sym->symbol_type == VARIABLE_SYMBOL_TYPE) && ((i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (i_sym->id->smem_lti != NIL)))
+    if (p_sym->is_variable() && (i_sym->is_constant() || i_sym->is_lti()))
     {
         constants->insert(std::make_pair(p_sym, i_sym));
     }
 }
 
-void rl_get_test_constant(test* p_test, test* i_test, rl_symbol_map* constants)
+void rl_get_test_constant(test p_test, test i_test, rl_symbol_map* constants)
 {
-    if (!(*p_test))
+    if (!p_test) return;
+
+    if (p_test->type == EQUALITY_TEST)
     {
-        return;
-    }
-
-    if ((*p_test)->type == EQUALITY_TEST)
-    {
-        rl_get_symbol_constant(*(reinterpret_cast<Symbol**>(p_test)), *(reinterpret_cast<Symbol**>(i_test)), constants);
-
-        return;
-    } else if ((*p_test)->type == CONJUNCTIVE_TEST) {
-        cons* p_c=(*p_test)->data.conjunct_list;
-        cons* i_c=(*i_test)->data.conjunct_list;
-
-        while ( p_c )
-        {
-            rl_get_test_constant( reinterpret_cast<test*>( &( p_c->first ) ), reinterpret_cast<test*>( &( i_c->first ) ), constants );
-
-            p_c = p_c->rest;
-            i_c = i_c->rest;
-        }
-
+        rl_get_symbol_constant(p_test->data.referent, i_test->data.referent, constants);
+    } else if (p_test->type == CONJUNCTIVE_TEST) {
+        rl_get_symbol_constant(p_test->eq_test->data.referent, i_test->eq_test->data.referent, constants);
         return;
     }
 }
@@ -566,9 +551,9 @@ void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol
     {
         if ((p_cond->type == POSITIVE_CONDITION) || (p_cond->type == NEGATIVE_CONDITION))
         {
-            rl_get_test_constant(&(p_cond->data.tests.id_test), &(i_cond->data.tests.id_test), constants);
-            rl_get_test_constant(&(p_cond->data.tests.attr_test), &(i_cond->data.tests.attr_test), constants);
-            rl_get_test_constant(&(p_cond->data.tests.value_test), &(i_cond->data.tests.value_test), constants);
+            rl_get_test_constant(p_cond->data.tests.id_test, i_cond->data.tests.id_test, constants);
+            rl_get_test_constant(p_cond->data.tests.attr_test, i_cond->data.tests.attr_test, constants);
+            rl_get_test_constant(p_cond->data.tests.value_test, i_cond->data.tests.value_test, constants);
         }
         else if (p_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -585,24 +570,42 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 {
     Symbol* return_val = NULL;
 
+    // initialize production conditions
+    if (my_template_instance->prod->rl_template_conds == NIL)
+    {
+        condition* c_top;
+        condition* c_bottom;
+
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+        my_template_instance->prod->rl_template_conds = c_top;
+        dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
+
+    }
     // initialize production instantiation set
     if (my_template_instance->prod->rl_template_instantiations == NIL)
     {
+        dprint(DT_RL_VARIABLIZATION, "Creating rl_symbol_map_set because rL-template_instantiations nil.\n");
         my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
     }
+
 
     // get constants
     rl_symbol_map constant_map;
     {
-        rl_get_template_constants(my_template_instance->top_of_instantiated_conditions, my_template_instance->top_of_instantiated_conditions, &(constant_map));
+        dprint(DT_RL_VARIABLIZATION, "Getting template constants.\n");
+        dprint(DT_RL_VARIABLIZATION, "my_template_instance->prod->rl_template_conds: \n%1", my_template_instance->prod->rl_template_conds);
+        dprint(DT_RL_VARIABLIZATION, "my_template_instance->top_of_instantiated_conditions: \n%1", my_template_instance->top_of_instantiated_conditions);
+        rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
     }
 
     // try to insert into instantiation set
-    //if ( !constant_map.empty() )
+//    if ( !constant_map.empty() )
     {
+        dprint(DT_RL_VARIABLIZATION, "Inserting into instantiation set.  (constant map empty: %s\n", constant_map.empty() ? "True" : "False");
         std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert(constant_map);
         if (ins_result.second)
         {
+            dprint(DT_RL_VARIABLIZATION, "Insertion succeeded.\n");
             Symbol* id, *attr, *value, *referent;
             production* my_template = my_template_instance->prod;
             action* my_action = my_template->action_list;
@@ -684,6 +687,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             deallocate_condition_list(thisAgent, cond_top);
 
             return_val = new_name_symbol;
+        } else {
+            dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
         }
     }
 
@@ -693,7 +698,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds)
 {
     // mark each id as we add a test for it, so we don't add a test for the same id in two different places
-    Symbol* id;
+    Symbol* id_sym;
     test t;
     tc_number tc = get_new_tc_number(thisAgent);
 
@@ -704,12 +709,12 @@ void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_cond
             continue;
         }
 
-        id = cond->data.tests.id_test->eq_test->data.referent;
-        if ((id->id->isa_goal || id->id->isa_impasse) && (id->tc_num != tc))
+        id_sym = cond->data.tests.id_test->eq_test->data.referent;
+        if ((id_sym->id->isa_goal || id_sym->id->isa_impasse) && (id_sym->tc_num != tc))
         {
-            t = make_test(thisAgent, NIL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            t = make_test(thisAgent, NIL, ((id_sym->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cond->data.tests.id_test), t);
-            id->tc_num = tc;
+            id_sym->tc_num = tc;
         }
     }
 }
