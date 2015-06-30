@@ -30,6 +30,8 @@
 
 #include <iostream>
 
+#include <cstdarg>
+
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
 {
     va_list args;
