@@ -117,8 +117,8 @@ def InstallDLLs(env):
     outdir = os.path.realpath(GetOption('outdir')) + '\\'
     if os.path.isfile(outdir):
         os.remove(outdir)
-    
-    os.mkdir(outdir)
+    if ! os.path.exists(outdir):
+        os.mkdir(outdir)
     for dll in indlls:
       #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
       shutil.copy(dll.rstr(), outdir)
