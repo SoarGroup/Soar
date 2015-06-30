@@ -68,14 +68,19 @@ else:
 		kernel_env.Append(CPPFLAGS = ['/D', '_USRDLL'])
 
 Export('soarlib');
-lib_install = env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 
-settings_install = env.Alias('settings', env.Install('$OUT_DIR', 'settings.soar'))
+if sys.platform == 'win32':
+	outdir = os.path.realpath(GetOption('outdir')) + '\\'
+else:
+	outdir = os.path.realpath(GetOption('outdir')) + '/'
+
+lib_install = env.Alias('kernel', env.Install(outdir, soarlib))
+settings_install = env.Alias('settings', env.Install(outdir, 'settings.soar'))
 
 # headers
 headers = []
 for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
-	headers.extend(InstallDir(env, '$OUT_DIR/include', env.Dir(d).srcnode().abspath, '*.h*'))
+	headers.extend(InstallDir(env, outdir + '/include', env.Dir(d).srcnode().abspath, '*.h*'))
 env.Alias('headers', headers)
 
 if not CheckSWIG(env):
