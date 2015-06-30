@@ -335,7 +335,7 @@ void add_preference_to_tm(agent* thisAgent, preference* pref)
             {
                 thisAgent->memoryManager->allocate_with_pool(MP_wma_slot_refs, &(s->wma_val_references));
 #ifdef USE_MEM_POOL_ALLOCATORS
-                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >(thisAgent));
+                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >());
 #else
                 s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map();
 #endif

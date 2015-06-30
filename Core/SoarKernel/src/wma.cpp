@@ -598,7 +598,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         {
             thisAgent->memoryManager->allocate_with_pool(MP_wma_wme_oset, &my_o_set);
 #ifdef USE_MEM_POOL_ALLOCATORS
-            my_o_set = new(my_o_set) wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
+            my_o_set = new(my_o_set) wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >());
 #else
             my_o_set = new(my_o_set) wma_pooled_wme_set();
 #endif

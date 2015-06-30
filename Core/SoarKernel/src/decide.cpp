@@ -640,7 +640,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
     Symbol* id;
 #ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
 #else
     symbol_list ids_to_walk;
 #endif
@@ -760,7 +760,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
     Symbol* id;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
 #else
     symbol_list ids_to_walk;
 #endif
@@ -2968,7 +2968,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->rl_info->hrl_age = 0;
     thisAgent->memoryManager->allocate_with_pool(MP_rl_et, &(id->id->rl_info->eligibility_traces));
 #ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map(std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >(thisAgent));
+    id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map(std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >());
 #else
     id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map();
 #endif
