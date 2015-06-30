@@ -40,6 +40,7 @@
 #ifndef strdup
 #define strdup _strdup
 #endif // strdup
+#define va_copy(dest, src) (dest = src)
 
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
@@ -85,12 +86,12 @@
 
 #pragma intrinsic (_InterlockedIncrement)
 
-static inline long atomic_inc( volatile long  *v ) 
+static inline long atomic_inc( volatile long  *v )
 {
        return _InterlockedIncrement(v);
 }
 
-static inline long atomic_dec( volatile long *v ) 
+static inline long atomic_dec( volatile long *v )
 {
        return _InterlockedDecrement(v);
 }
