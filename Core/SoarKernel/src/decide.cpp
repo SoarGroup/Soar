@@ -54,6 +54,7 @@
 #include "test.h"
 #include "variablization_manager.h"
 #include "debug.h"
+#include <cmath>
 
 #include "assert.h"
 
