@@ -24,26 +24,10 @@
 #include <sys/stat.h>
 #endif
 
-class TestFunction
-{
-public:
-	virtual ~TestFunction() {}
-	virtual void operator()() = 0;
-};
-
-#define TEST_CATEGORY(X) X() : TestCategory(#X) {} \
-	typedef X test_t; \
-	class Member_Function : public TestFunction { \
-        public: \
-            Member_Function(test_t * const this_, void (test_t::*fun_)()) : m_this(this_), m_fun(fun_) {} \
-            void operator()() {(m_this->*m_fun)();} \
-        private: \
-            test_t * m_this; \
-            void (test_t::*m_fun)(); \
-    };
+#define TEST_CATEGORY(X) typedef X test_type;
 
 #define TEST_DECLARATION(X) tests.push_back(new X ());
-#define TEST(X, Y) Test t_##X = Test(#X, new Member_Function(this, &test_t::X), Y, m_TestCategory_tests);
+#define TEST(X, Y) Test test_##X = Test(#X, std::bind(&test_type::X, this), Y, m_TestCategory_tests);
 
 bool isfile(const char* path);
 
@@ -214,5 +198,10 @@ throw SoarAssertionException("Assert: Null pointer check failed.", __FILE__, __L
 { \
 throw SoarAssertionException(std::string("Assert: ") + std::string(X), __FILE__, __LINE__); \
 }
+
+namespace TestHelpers
+{
+	std::string demangle(const char* name);
+};
 
 #endif /* TestHelpers_cpp */

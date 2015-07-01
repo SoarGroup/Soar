@@ -14,7 +14,7 @@
 class WmaFunctionalTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(WmaFunctionalTests);
+	TEST_CATEGORY(WmaFunctionalTests);
 	
 	TEST(testSimpleActivation, -1);
 	void testSimpleActivation();

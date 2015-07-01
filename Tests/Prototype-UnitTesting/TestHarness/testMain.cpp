@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 			std::cout << std::get<2>(test) << ": ";
 			std::cout.flush();
 			
-			TestFunction* function = std::get<0>(test);
+			std::function<void ()> function = std::get<0>(test);
 			uint64_t timeout = std::get<1>(test) - 1000;
 
 			TestRunner* runner = new TestRunner(category, function, &variable);
@@ -131,6 +131,8 @@ int main(int argc, char** argv)
 				std::cout.flush();
 				
 				runner->kill.store(true);
+				
+				failedTests.push_back(category->getCategoryName() + ": " + std::get<2>(test));
 			}
 			else if (!runner->failed)
 			{

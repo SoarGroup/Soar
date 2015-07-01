@@ -14,7 +14,7 @@
 class BasicTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(BasicTests);
+	TEST_CATEGORY(BasicTests);
 	
 	TEST(testBasicElaborationAndMatch, -1)
 	void testBasicElaborationAndMatch();

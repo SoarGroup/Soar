@@ -26,7 +26,7 @@
 class IOTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(IOTests);
+	TEST_CATEGORY(IOTests);
 
 	TEST(testInputLeak, -1);
 	void testInputLeak();  // only string
