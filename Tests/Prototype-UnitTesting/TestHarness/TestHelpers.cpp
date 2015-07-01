@@ -63,15 +63,17 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 	output << "============================================================" << std::endl << std::endl;
 }
 
-namespace TestHelpers
-{
-	
-	// Clang++ & G++
 #ifdef __GNUG__
 #include <cstdlib>
 #include <memory>
 #include <cxxabi.h>
-	
+#endif
+
+namespace TestHelpers
+{
+	// Clang++ & G++
+#ifdef __GNUG__
+
 	::std::string demangle(const char* name) {
 		
 		int status = -1;
