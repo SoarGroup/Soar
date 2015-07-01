@@ -20,6 +20,5 @@ XC_TEST(testSmemArithmetic)
 XC_TEST(testSource)
 XC_TEST(testSoarRand)
 XC_TEST(testPreferenceDeallocation)
-XC_TEST(testSoarDebugger)
 
 @end
