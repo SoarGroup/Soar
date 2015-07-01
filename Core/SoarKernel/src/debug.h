@@ -25,6 +25,7 @@
 #include "soar_module.h"
 #include "Export.h"
 #include "output_manager.h"
+#include "debug_defines.h"
 
 #include <string>
 
@@ -38,7 +39,7 @@
     fprintf(stderr, "Query: %s\n", query);
     }
 #endif
-#ifdef SOAR_DEBUG_PRINTING
+#ifdef DEBUG_OUTPUT_ON
 
     /* Sometimes it's useful to break when a single, hardcoded ID is encountered
      * in a piece of code being debugged.  You can set this variable to the name

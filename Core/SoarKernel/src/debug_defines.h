@@ -18,7 +18,6 @@
 /* -- The schema version used by the output manager's debug database -- */
 #define DEBUG_SCHEMA_VERSION "0.1"
 
-
 #ifndef SOAR_RELEASE_VERSION
 //    #define DEBUG_OUTPUT_ON
     //#define EBC_MAP_MERGE_DUPE_GROUNDS
@@ -138,7 +137,7 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_RHS_VALUE                      false
+#define TRACE_Init_DT_RHS_VALUE                   false
 #define TRACE_Init_DT_NONE_2                      false
 #define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
@@ -156,11 +155,11 @@
 #endif
 
 #ifdef SOAR_RELEASE_VERSION
-#undef DEBUG_OUTPUT_ON
-#undef EBC_MAP_MERGE_DUPE_GROUNDS
-#undef EBC_SUPERMERGE
-#define EBC_MERGE_CONDITIONS
-#define EBC_ADD_CONSTRAINTS_IDENTITIES
+    #undef DEBUG_OUTPUT_ON
+    #undef EBC_MAP_MERGE_DUPE_GROUNDS
+    #undef EBC_SUPERMERGE
+    #define EBC_MERGE_CONDITIONS
+    #define EBC_ADD_CONSTRAINTS_IDENTITIES
 #endif
 
 
