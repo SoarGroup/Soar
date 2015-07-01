@@ -36,7 +36,7 @@ void TestRunner::run()
 		try
 		{
 			category->after(true);
-		} catch (std::exception& e) {}
+		} catch (std::exception&) {}
 	}
 	
 	done.store(true);

@@ -8,7 +8,6 @@ Import('env', 'g_msvs_variant')
 Import('env', 'InstallDir')
 
 clone = env.Clone()
-
 clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('kernel/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
 
 src = [Glob('kernel/*/*.cpp'), Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]

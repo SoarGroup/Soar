@@ -33,9 +33,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.hpp">
       <Filter>Source Files\TestHarness</Filter>
     </ClInclude>
@@ -48,16 +45,10 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.hpp">
       <Filter>Source Files\TestHarness</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.hpp">
       <Filter>Source Files\SoarHelpers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.hpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\windows\msdirent.h">
@@ -66,19 +57,19 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\portable-dirent.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp">
-      <Filter>Source Files\kernel</Filter>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.hpp">
+      <Filter>Source Files\kernel\epmem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.hpp">
       <Filter>Source Files\kernel\smem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.hpp">
-      <Filter>Source Files\kernel\epmem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.hpp">
       <Filter>Source Files\kernel\wma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.hpp">
@@ -99,6 +90,12 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTestsRemote.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
@@ -111,17 +108,17 @@
     <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp">
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.hpp">
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.hpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.hpp">
       <Filter>Source Files\kernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\ExampleTests.cpp">
       <Filter>Source Files\TestHarness</Filter>
     </ClCompile>
@@ -134,31 +131,25 @@
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\TestHarness\TestRunner.cpp">
       <Filter>Source Files\TestHarness</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\SoarHelpers\SoarHelper.cpp">
       <Filter>Source Files\SoarHelpers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AgentTest.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp">
-      <Filter>Source Files\kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp">
-      <Filter>Source Files\kernel</Filter>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.cpp">
+      <Filter>Source Files\kernel\epmem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemFunctionalTests.cpp">
       <Filter>Source Files\kernel\smem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\EpMemFunctionalTests.cpp">
-      <Filter>Source Files\kernel\epmem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\wma\WmaFunctionalTests.cpp">
       <Filter>Source Files\kernel\wma</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\AliasTest.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\BasicTests.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\CliParserTest.cpp">
@@ -168,6 +159,12 @@
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FullTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTestHarness.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\FunctionalTests.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\handlers.cpp">
@@ -182,10 +179,13 @@
     <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\MultiAgentTest.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp">
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SimpleListener.cpp">
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\SMemEpMemCombinedFunctionalTests.cpp">
+      <Filter>Source Files\kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tests\Prototype-UnitTesting\kernel\TokenizerTest.cpp">
       <Filter>Source Files\kernel</Filter>
     </ClCompile>
   </ItemGroup>

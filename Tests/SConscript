@@ -5,7 +5,10 @@
 import os
 Import('env', 'InstallDir')
 
-subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests', 'Prototype-UnitTesting']
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
+
+if env["MSVC_VERSION"] == "14.0":
+	subdirs.append('Prototype-UnitTesting')
 
 tests = []
 for d in subdirs:
