@@ -13,7 +13,7 @@
 
 class EpMemFunctionalTests : public FunctionalTestHarness {
 public:
-	FUNCTIONAL_TEST_CATEGORY(EpMemFunctionalTests);
+	TEST_CATEGORY(EpMemFunctionalTests);
 	
 	TEST(testCountEpMem, -1)
 	void testCountEpMem();

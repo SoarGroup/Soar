@@ -14,7 +14,7 @@
 class SMemEpMemCombinedFunctionalTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(SMemEpMemCombinedFunctionalTests);
+	TEST_CATEGORY(SMemEpMemCombinedFunctionalTests);
 	
 	TEST(testSmemEpMemFactorteizationCombinationTest, -1)
 	void testSmemEpMemFactorteizationCombinationTest();

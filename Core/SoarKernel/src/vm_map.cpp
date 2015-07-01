@@ -163,7 +163,7 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
 {
 #ifndef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
     return NULL;
-#endif
+#else
     if (o_id == 0) return NULL;
     if (!m_learning_on) return NULL;
 
@@ -176,5 +176,5 @@ Symbol * Variablization_Manager::get_ovar_for_o_id(uint64_t o_id)
     }
 //    dprint_noprefix(DT_IDENTITY_PROP, "not found.  Returning NULL.\n");
     return NULL;
-
+#endif
 }

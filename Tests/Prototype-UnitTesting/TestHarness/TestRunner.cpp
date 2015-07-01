@@ -9,7 +9,7 @@
 #include "TestRunner.hpp"
 #include "TestCategory.hpp"
 
-TestRunner::TestRunner(TestCategory* c, TestFunction* f, std::condition_variable_any* v)
+TestRunner::TestRunner(TestCategory* c, std::function<void ()> f, std::condition_variable_any* v)
 : category(c), function(f), variable(v), kill(false), ready(false), done(false), failed(false)
 {}
 
@@ -21,14 +21,22 @@ void TestRunner::run()
 
 	category->runner = this;
 	
-	try {
+	
+	try
+	{
 		category->before();
-		(*function)();
+		function();
 		category->after(false);
-	} catch (std::exception& e) {
+	}
+	catch (std::exception& e)
+	{
 		failed = true;
 		failureMessage = e.what();
-		category->after(true);
+		
+		try
+		{
+			category->after(true);
+		} catch (std::exception&) {}
 	}
 	
 	done.store(true);

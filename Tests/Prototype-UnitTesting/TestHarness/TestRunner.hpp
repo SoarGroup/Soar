@@ -15,17 +15,16 @@
 #include <sstream>
 
 class TestCategory;
-class TestFunction;
 
 class TestRunner
 {
 	TestCategory* category;
-	TestFunction* function;
+	std::function<void ()> function;
 	
 	std::condition_variable_any* variable;
 	
 public:
-	TestRunner(TestCategory* category, TestFunction* function, std::condition_variable_any* variable);
+	TestRunner(TestCategory* category, std::function<void ()> function, std::condition_variable_any* variable);
 	
 	void run();
 		

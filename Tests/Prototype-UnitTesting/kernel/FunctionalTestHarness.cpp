@@ -13,9 +13,8 @@
 #include "sml_EmbeddedConnectionSynch.h"
 #include "sml_AgentSML.h"
 
-FunctionalTestHarness::FunctionalTestHarness(std::string categoryName)
-: TestCategory(categoryName),
-haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),
+FunctionalTestHarness::FunctionalTestHarness()
+: haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),
 failedData(std::bind(&FunctionalTestHarness::failedHandler, this)),
 succeededData(std::bind(&FunctionalTestHarness::succeededHandler, this))
 {}

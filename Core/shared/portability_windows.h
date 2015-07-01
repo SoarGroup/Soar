@@ -40,7 +40,10 @@
 #ifndef strdup
 #define strdup _strdup
 #endif // strdup
+
+#ifndef va_copy
 #define va_copy(dest, src) (dest = src)
+#endif
 
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES

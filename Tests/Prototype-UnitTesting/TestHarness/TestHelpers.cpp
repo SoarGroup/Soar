@@ -62,3 +62,49 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 	output << agent->ExecuteCommandLine("stats") << std::endl << std::endl;
 	output << "============================================================" << std::endl << std::endl;
 }
+
+#ifdef __GNUG__
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+#endif
+
+namespace TestHelpers
+{
+	// Clang++ & G++
+#ifdef __GNUG__
+
+	::std::string demangle(const char* name) {
+		
+		int status = -1;
+		
+		::std::unique_ptr<char, void(*)(void*)> res {
+			abi::__cxa_demangle(name, NULL, NULL, &status),
+			::std::free
+		};
+		
+		return (status==0) ? res.get() : name ;
+	}
+
+	// VS2013 +
+#elif _MSC_VER
+	
+	::std::string demangle(const char* name)
+	{
+		std::string result = name;
+		
+		return result.substr(result.find(" "), ::std::string::npos);
+	}
+
+	// Unknown
+#else
+	
+	// does nothing if not g++
+	::std::string demangle(const char* name)
+	{
+		return name;
+	}
+	
+#endif
+	
+};

@@ -17,7 +17,7 @@
 class FunctionalTests : public FunctionalTestHarness
 {
 public:
-	FUNCTIONAL_TEST_CATEGORY(FunctionalTests);
+	TEST_CATEGORY(FunctionalTests);
 	
 	TEST(testWaterJug,5000)
 	void testWaterJug();
