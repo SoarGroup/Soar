@@ -39,9 +39,9 @@ public:
 	class Test
 	{
 	public:
-		Test(std::string testName, std::function<std::function<void ()> ()> testFunction, uint64_t timeoutMs, std::vector<TestCategory_test>& tests)
+		Test(std::string testName, std::function<void ()> testFunction, uint64_t timeoutMs, std::vector<TestCategory_test>& tests)
 		{
-			tests.push_back(std::make_tuple(testFunction(), timeoutMs, testName));
+			tests.push_back(std::make_tuple(testFunction, timeoutMs, testName));
 		}
 	};
 
