@@ -287,6 +287,23 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     return true;
 }
 
+void Variablization_Manager::literalize_RHS_function_args(const rhs_value rv)
+{
+    /* Assign identities of all arguments in rhs fun call to null identity set*/
+    list* fl = rhs_value_to_funcall_list(rv);
+    cons* c;
+
+    for (c = fl->rest; c != NIL; c = c->rest)
+    {
+        dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
+        rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+        if (rs->o_id && !rs->referent->is_sti())
+        {
+            add_identity_unification(rs->o_id, 0);
+        }
+    }
+}
+
 void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
                                                          const soar_module::identity_triple o_ids_to_replace,
                                                          const soar_module::rhs_triple rhs_funcs)
@@ -309,11 +326,13 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
         add_identity_unification(o_ids_to_replace.id, lId->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
     }
+    else if (rhs_value_is_funcall(rhs_funcs.id))
+    {
+        literalize_RHS_function_args(rhs_funcs.id);
+    }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
-                lId->data.referent->is_sti() ? "is STI " : "",
-                !o_ids_to_replace.id ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
     }
     if (!lAttr->data.referent->is_sti() && o_ids_to_replace.attr)
     {
@@ -326,10 +345,14 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
         }
         add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
         dprint_o_id_substitution_map(DT_IDENTITY_PROP);
-    } else {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
-                lAttr->data.referent->is_sti() ? "is STI " : "",
-                !o_ids_to_replace.attr ? "RHS pref is literal " : "");
+    }
+    else if (rhs_value_is_funcall(rhs_funcs.attr))
+    {
+        literalize_RHS_function_args(rhs_funcs.attr);
+    }
+    else
+    {
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lAttr->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
     }
     if (!lValue->data.referent->is_sti() && o_ids_to_replace.value)
     {
@@ -345,24 +368,10 @@ void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
     }
     else if (rhs_value_is_funcall(rhs_funcs.value))
     {
-        /* Assign identities of all arguments in rhs fun call to null identity set*/
-        list* fl = rhs_value_to_funcall_list(rhs_funcs.value);
-        cons* c;
-
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-            rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-            if (rs->o_id && !rs->referent->is_sti())
-            {
-                add_identity_unification(rs->o_id, 0);
-            }
-        }
+        literalize_RHS_function_args(rhs_funcs.value);
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n",
-                lValue->data.referent->is_sti() ? "is STI " : "",
-                !o_ids_to_replace.value ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
     }
 }
