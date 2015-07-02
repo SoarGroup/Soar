@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_SELFADJOINTVIEW_H
 #define EIGEN_SPARSE_SELFADJOINTVIEW_H
+
+namespace Eigen { 
 
 /** \ingroup SparseCore_Module
   * \class SparseSelfAdjointView
@@ -44,9 +31,6 @@ class SparseSelfAdjointTimeDenseProduct;
 
 template<typename Lhs, typename Rhs, int UpLo>
 class DenseTimeSparseSelfAdjointProduct;
-
-template<typename MatrixType,int UpLo>
-class SparseSymmetricPermutationProduct;
 
 namespace internal {
   
@@ -85,6 +69,30 @@ template<typename MatrixType, unsigned int UpLo> class SparseSelfAdjointView
     const _MatrixTypeNested& matrix() const { return m_matrix; }
     _MatrixTypeNested& matrix() { return m_matrix.const_cast_derived(); }
 
+    /** \returns an expression of the matrix product between a sparse self-adjoint matrix \c *this and a sparse matrix \a rhs.
+      *
+      * Note that there is no algorithmic advantage of performing such a product compared to a general sparse-sparse matrix product.
+      * Indeed, the SparseSelfadjointView operand is first copied into a temporary SparseMatrix before computing the product.
+      */
+    template<typename OtherDerived>
+    SparseSparseProduct<typename OtherDerived::PlainObject, OtherDerived>
+    operator*(const SparseMatrixBase<OtherDerived>& rhs) const
+    {
+      return SparseSparseProduct<typename OtherDerived::PlainObject, OtherDerived>(*this, rhs.derived());
+    }
+
+    /** \returns an expression of the matrix product between a sparse matrix \a lhs and a sparse self-adjoint matrix \a rhs.
+      *
+      * Note that there is no algorithmic advantage of performing such a product compared to a general sparse-sparse matrix product.
+      * Indeed, the SparseSelfadjointView operand is first copied into a temporary SparseMatrix before computing the product.
+      */
+    template<typename OtherDerived> friend
+    SparseSparseProduct<OtherDerived, typename OtherDerived::PlainObject >
+    operator*(const SparseMatrixBase<OtherDerived>& lhs, const SparseSelfAdjointView& rhs)
+    {
+      return SparseSparseProduct<OtherDerived, typename OtherDerived::PlainObject>(lhs.derived(), rhs);
+    }
+    
     /** Efficient sparse self-adjoint matrix times dense vector/matrix product */
     template<typename OtherDerived>
     SparseSelfAdjointTimeDenseProduct<MatrixType,OtherDerived,UpLo>
@@ -110,7 +118,7 @@ template<typename MatrixType, unsigned int UpLo> class SparseSelfAdjointView
       * call this function with u.adjoint().
       */
     template<typename DerivedU>
-    SparseSelfAdjointView& rankUpdate(const SparseMatrixBase<DerivedU>& u, Scalar alpha = Scalar(1));
+    SparseSelfAdjointView& rankUpdate(const SparseMatrixBase<DerivedU>& u, const Scalar& alpha = Scalar(1));
     
     /** \internal triggered by sparse_matrix = SparseSelfadjointView; */
     template<typename DestScalar,int StorageOrder> void evalTo(SparseMatrix<DestScalar,StorageOrder,Index>& _dest) const
@@ -126,7 +134,7 @@ template<typename MatrixType, unsigned int UpLo> class SparseSelfAdjointView
       _dest = tmp;
     }
     
-    /** \returns an expression of P^-1 H P */
+    /** \returns an expression of P H P^-1 */
     SparseSymmetricPermutationProduct<_MatrixTypeNested,UpLo> twistedBy(const PermutationMatrix<Dynamic,Dynamic,Index>& perm) const
     {
       return SparseSymmetricPermutationProduct<_MatrixTypeNested,UpLo>(m_matrix, perm);
@@ -138,6 +146,20 @@ template<typename MatrixType, unsigned int UpLo> class SparseSelfAdjointView
       permutedMatrix.evalTo(*this);
       return *this;
     }
+
+
+    SparseSelfAdjointView& operator=(const SparseSelfAdjointView& src)
+    {
+      PermutationMatrix<Dynamic> pnull;
+      return *this = src.twistedBy(pnull);
+    }
+
+    template<typename SrcMatrixType,unsigned int SrcUpLo>
+    SparseSelfAdjointView& operator=(const SparseSelfAdjointView<SrcMatrixType,SrcUpLo>& src)
+    {
+      PermutationMatrix<Dynamic> pnull;
+      return *this = src.twistedBy(pnull);
+    }
     
 
     // const SparseLLT<PlainObject, UpLo> llt() const;
@@ -145,7 +167,7 @@ template<typename MatrixType, unsigned int UpLo> class SparseSelfAdjointView
 
   protected:
 
-    const typename MatrixType::Nested m_matrix;
+    typename MatrixType::Nested m_matrix;
     mutable VectorI m_countPerRow;
     mutable VectorI m_countPerCol;
 };
@@ -175,7 +197,7 @@ SparseSelfAdjointView<Derived, UpLo> SparseMatrixBase<Derived>::selfadjointView(
 template<typename MatrixType, unsigned int UpLo>
 template<typename DerivedU>
 SparseSelfAdjointView<MatrixType,UpLo>&
-SparseSelfAdjointView<MatrixType,UpLo>::rankUpdate(const SparseMatrixBase<DerivedU>& u, Scalar alpha)
+SparseSelfAdjointView<MatrixType,UpLo>::rankUpdate(const SparseMatrixBase<DerivedU>& u, const Scalar& alpha)
 {
   SparseMatrix<Scalar,MatrixType::Flags&RowMajorBit?RowMajor:ColMajor> tmp = u * u.adjoint();
   if(alpha==Scalar(0))
@@ -209,12 +231,12 @@ class SparseSelfAdjointTimeDenseProduct
     SparseSelfAdjointTimeDenseProduct(const Lhs& lhs, const Rhs& rhs) : Base(lhs,rhs)
     {}
 
-    template<typename Dest> void scaleAndAddTo(Dest& dest, Scalar alpha) const
+    template<typename Dest> void scaleAndAddTo(Dest& dest, const Scalar& alpha) const
     {
+      EIGEN_ONLY_USED_FOR_DEBUG(alpha);
       // TODO use alpha
       eigen_assert(alpha==Scalar(1) && "alpha != 1 is not implemented yet, sorry");
       typedef typename internal::remove_all<Lhs>::type _Lhs;
-      typedef typename internal::remove_all<Rhs>::type _Rhs;
       typedef typename _Lhs::InnerIterator LhsInnerIterator;
       enum {
         LhsIsRowMajor = (_Lhs::Flags&RowMajorBit)==RowMajorBit,
@@ -242,7 +264,7 @@ class SparseSelfAdjointTimeDenseProduct
           Index b = LhsIsRowMajor ? i.index() : j;
           typename Lhs::Scalar v = i.value();
           dest.row(a) += (v) * m_rhs.row(b);
-          dest.row(b) += internal::conj(v) * m_rhs.row(a);
+          dest.row(b) += numext::conj(v) * m_rhs.row(a);
         }
         if (ProcessFirstHalf && i && (i.index()==j))
           dest.row(j) += i.value() * m_rhs.row(j);
@@ -270,7 +292,7 @@ class DenseTimeSparseSelfAdjointProduct
     DenseTimeSparseSelfAdjointProduct(const Lhs& lhs, const Rhs& rhs) : Base(lhs,rhs)
     {}
 
-    template<typename Dest> void scaleAndAddTo(Dest& /*dest*/, Scalar /*alpha*/) const
+    template<typename Dest> void scaleAndAddTo(Dest& /*dest*/, const Scalar& /*alpha*/) const
     {
       // TODO
     }
@@ -312,10 +334,14 @@ void permute_symm_to_fullsymm(const MatrixType& mat, SparseMatrix<typename Matri
     for(typename MatrixType::InnerIterator it(mat,j); it; ++it)
     {
       Index i = it.index();
+      Index r = it.row();
+      Index c = it.col();
       Index ip = perm ? perm[i] : i;
-      if(i==j)
+      if(UpLo==(Upper|Lower))
+        count[StorageOrderMatch ? jp : ip]++;
+      else if(r==c)
         count[ip]++;
-      else if((UpLo==Lower && i>j) || (UpLo==Upper && i<j))
+      else if(( UpLo==Lower && r>c) || ( UpLo==Upper && r<c))
       {
         count[ip]++;
         count[jp]++;
@@ -325,7 +351,7 @@ void permute_symm_to_fullsymm(const MatrixType& mat, SparseMatrix<typename Matri
   Index nnz = count.sum();
   
   // reserve space
-  dest.reserve(nnz);
+  dest.resizeNonZeros(nnz);
   dest.outerIndexPtr()[0] = 0;
   for(Index j=0; j<size; ++j)
     dest.outerIndexPtr()[j+1] = dest.outerIndexPtr()[j] + count[j];
@@ -335,39 +361,55 @@ void permute_symm_to_fullsymm(const MatrixType& mat, SparseMatrix<typename Matri
   // copy data
   for(Index j = 0; j<size; ++j)
   {
-    Index jp = perm ? perm[j] : j;
     for(typename MatrixType::InnerIterator it(mat,j); it; ++it)
     {
       Index i = it.index();
+      Index r = it.row();
+      Index c = it.col();
+      
+      Index jp = perm ? perm[j] : j;
       Index ip = perm ? perm[i] : i;
-      if(i==j)
+      
+      if(UpLo==(Upper|Lower))
       {
-        int k = count[ip]++;
+        Index k = count[StorageOrderMatch ? jp : ip]++;
+        dest.innerIndexPtr()[k] = StorageOrderMatch ? ip : jp;
+        dest.valuePtr()[k] = it.value();
+      }
+      else if(r==c)
+      {
+        Index k = count[ip]++;
         dest.innerIndexPtr()[k] = ip;
         dest.valuePtr()[k] = it.value();
       }
-      else if((UpLo==Lower && i>j) || (UpLo==Upper && i<j))
+      else if(( (UpLo&Lower)==Lower && r>c) || ( (UpLo&Upper)==Upper && r<c))
       {
-        int k = count[jp]++;
+        if(!StorageOrderMatch)
+          std::swap(ip,jp);
+        Index k = count[jp]++;
         dest.innerIndexPtr()[k] = ip;
         dest.valuePtr()[k] = it.value();
         k = count[ip]++;
         dest.innerIndexPtr()[k] = jp;
-        dest.valuePtr()[k] = internal::conj(it.value());
+        dest.valuePtr()[k] = numext::conj(it.value());
       }
     }
   }
 }
 
-template<int SrcUpLo,int DstUpLo,typename MatrixType,int DestOrder>
-void permute_symm_to_symm(const MatrixType& mat, SparseMatrix<typename MatrixType::Scalar,DestOrder,typename MatrixType::Index>& _dest, const typename MatrixType::Index* perm)
+template<int _SrcUpLo,int _DstUpLo,typename MatrixType,int DstOrder>
+void permute_symm_to_symm(const MatrixType& mat, SparseMatrix<typename MatrixType::Scalar,DstOrder,typename MatrixType::Index>& _dest, const typename MatrixType::Index* perm)
 {
   typedef typename MatrixType::Index Index;
   typedef typename MatrixType::Scalar Scalar;
-  typedef SparseMatrix<Scalar,DestOrder,Index> Dest;
-  Dest& dest(_dest.derived());
+  SparseMatrix<Scalar,DstOrder,Index>& dest(_dest.derived());
   typedef Matrix<Index,Dynamic,1> VectorI;
-  //internal::conj_if<SrcUpLo!=DstUpLo> cj;
+  enum {
+    SrcOrder = MatrixType::IsRowMajor ? RowMajor : ColMajor,
+    StorageOrderMatch = int(SrcOrder) == int(DstOrder),
+    DstUpLo = DstOrder==RowMajor ? (_DstUpLo==Upper ? Lower : Upper) : _DstUpLo,
+    SrcUpLo = SrcOrder==RowMajor ? (_SrcUpLo==Upper ? Lower : Upper) : _SrcUpLo
+  };
   
   Index size = mat.rows();
   VectorI count(size);
@@ -379,11 +421,11 @@ void permute_symm_to_symm(const MatrixType& mat, SparseMatrix<typename MatrixTyp
     for(typename MatrixType::InnerIterator it(mat,j); it; ++it)
     {
       Index i = it.index();
-      if((SrcUpLo==Lower && i<j) || (SrcUpLo==Upper && i>j))
+      if((int(SrcUpLo)==int(Lower) && i<j) || (int(SrcUpLo)==int(Upper) && i>j))
         continue;
                   
       Index ip = perm ? perm[i] : i;
-      count[DstUpLo==Lower ? (std::min)(ip,jp) : (std::max)(ip,jp)]++;
+      count[int(DstUpLo)==int(Lower) ? (std::min)(ip,jp) : (std::max)(ip,jp)]++;
     }
   }
   dest.outerIndexPtr()[0] = 0;
@@ -395,19 +437,22 @@ void permute_symm_to_symm(const MatrixType& mat, SparseMatrix<typename MatrixTyp
   
   for(Index j = 0; j<size; ++j)
   {
-    Index jp = perm ? perm[j] : j;
+    
     for(typename MatrixType::InnerIterator it(mat,j); it; ++it)
     {
       Index i = it.index();
-      if((SrcUpLo==Lower && i<j) || (SrcUpLo==Upper && i>j))
+      if((int(SrcUpLo)==int(Lower) && i<j) || (int(SrcUpLo)==int(Upper) && i>j))
         continue;
                   
+      Index jp = perm ? perm[j] : j;
       Index ip = perm? perm[i] : i;
-      Index k = count[DstUpLo==Lower ? (std::min)(ip,jp) : (std::max)(ip,jp)]++;
-      dest.innerIndexPtr()[k] = DstUpLo==Lower ? (std::max)(ip,jp) : (std::min)(ip,jp);
       
-      if((DstUpLo==Lower && ip<jp) || (DstUpLo==Upper && ip>jp))
-        dest.valuePtr()[k] = conj(it.value());
+      Index k = count[int(DstUpLo)==int(Lower) ? (std::min)(ip,jp) : (std::max)(ip,jp)]++;
+      dest.innerIndexPtr()[k] = int(DstUpLo)==int(Lower) ? (std::max)(ip,jp) : (std::min)(ip,jp);
+      
+      if(!StorageOrderMatch) std::swap(ip,jp);
+      if( ((int(DstUpLo)==int(Lower) && ip<jp) || (int(DstUpLo)==int(Upper) && ip>jp)))
+        dest.valuePtr()[k] = numext::conj(it.value());
       else
         dest.valuePtr()[k] = it.value();
     }
@@ -437,9 +482,13 @@ class SparseSymmetricPermutationProduct
     inline Index rows() const { return m_matrix.rows(); }
     inline Index cols() const { return m_matrix.cols(); }
     
-    template<typename DestScalar> void evalTo(SparseMatrix<DestScalar>& _dest) const
+    template<typename DestScalar, int Options, typename DstIndex>
+    void evalTo(SparseMatrix<DestScalar,Options,DstIndex>& _dest) const
     {
-      internal::permute_symm_to_fullsymm<UpLo>(m_matrix,_dest,m_perm.indices().data());
+//       internal::permute_symm_to_fullsymm<UpLo>(m_matrix,_dest,m_perm.indices().data());
+      SparseMatrix<DestScalar,(Options&RowMajor)==RowMajor ? ColMajor : RowMajor, DstIndex> tmp;
+      internal::permute_symm_to_fullsymm<UpLo>(m_matrix,tmp,m_perm.indices().data());
+      _dest = tmp;
     }
     
     template<typename DestType,unsigned int DestUpLo> void evalTo(SparseSelfAdjointView<DestType,DestUpLo>& dest) const
@@ -448,9 +497,11 @@ class SparseSymmetricPermutationProduct
     }
     
   protected:
-    const MatrixTypeNested m_matrix;
+    MatrixTypeNested m_matrix;
     const Perm& m_perm;
 
 };
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_SELFADJOINTVIEW_H

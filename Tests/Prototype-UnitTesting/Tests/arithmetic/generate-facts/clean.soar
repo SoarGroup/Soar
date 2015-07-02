@@ -1,0 +1,16 @@
+sp {generate-facts*propose*clean
+   (state <s> ^name generate-facts
+              ^phase clean)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name clean)
+}
+
+sp {apply*clean
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name clean)
+   (<ss> ^operator <ss-op>)
+-->
+   (<ss> ^arithmetic.facts new)
+}

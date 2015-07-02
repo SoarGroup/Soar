@@ -14,12 +14,10 @@ typedef signed short goal_stack_level;
 typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
 
-/* added this prototype -ajc (5/3/02) */
 extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
 
 extern void reset_statistics(agent* thisAgent);
 extern void setup_signal_handling(void);
-//extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
 
 
 /* ---------------------------------------------------------------------
@@ -120,10 +118,6 @@ extern void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
 
 extern void do_one_top_level_phase(agent* thisAgent);
 
-/* removed DETERMINE_LEVEL_PHASE for Soar 8.6
- *  added PROPOSE and APPLY.   KJC May 2005
- */
-
 enum top_level_phase { INPUT_PHASE = 0,
                        PROPOSE_PHASE,
                        DECISION_PHASE,
@@ -133,8 +127,6 @@ enum top_level_phase { INPUT_PHASE = 0,
                        WM_PHASE,
                        NUM_PHASE_TYPES
                      };
-
-/* REW: end   05.05.97 */
 
 #endif
 

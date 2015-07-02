@@ -10,7 +10,7 @@
 #include <crtdbg.h> // Check for memory leaks
 #endif
 
-#include <windows.h>
+#include <Windows.h>
 #include <process.h>
 #include <winsock2.h>
 #include <direct.h>
@@ -19,12 +19,10 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <stdio.h>
+#include <direct.h>
 
 // ISO C9x  compliant stdint.h for Microsoft Visual Studio
 #include <stdint.h> // this is in shared/msvc for older Visual Studios systems
-
-// A copy of this file exists in shared. The project exists in Core/pcre
-#include <pcreposix.h>
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
@@ -42,6 +40,10 @@
 #ifndef strdup
 #define strdup _strdup
 #endif // strdup
+
+#ifndef va_copy
+#define va_copy(dest, src) (dest = src)
+#endif
 
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
@@ -87,12 +89,12 @@
 
 #pragma intrinsic (_InterlockedIncrement)
 
-static inline long atomic_inc( volatile long  *v ) 
+static inline long atomic_inc( volatile long  *v )
 {
        return _InterlockedIncrement(v);
 }
 
-static inline long atomic_dec( volatile long *v ) 
+static inline long atomic_dec( volatile long *v )
 {
        return _InterlockedDecrement(v);
 }

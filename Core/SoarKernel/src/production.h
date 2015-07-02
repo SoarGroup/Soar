@@ -58,9 +58,9 @@
 #ifndef PRODUCTION_H
 #define PRODUCTION_H
 
-struct not_struct;
+#include "portability.h"
+#include "kernel.h"
 
-typedef char* test;
 typedef char* rhs_value;
 typedef unsigned char byte;
 typedef uint64_t tc_number;
@@ -73,10 +73,11 @@ typedef struct symbol_struct Symbol;
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
 typedef signed short goal_stack_level;
+typedef struct test_struct test_info;
+typedef test_info* test;
 
 #include <map>
 #include <set>
-#include "enums.h"
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
@@ -107,7 +108,7 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
         this is true iff the condition tests for acceptable preference wmes.
 
       data.ncc.top, data.ncc.bottom:  for NCC's, these point to the top and
-        bottom of the subconditions likned list.
+        bottom of the subconditions linked list.
 
       bt:  for top-level positive conditions in production instantiations,
         this structure gives information for that will be used in backtracing.
@@ -115,18 +116,16 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
       reorder:  (reserved for use by the reorderer)
 ------------------------------------------------------------------- */
 
-
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct
 {
     wme* wme_;                /* the actual wme that was matched */
     goal_stack_level level;   /* level (at firing time) of the id of the wme */
     preference* trace;        /* preference for BT, or NIL */
-    
-    /* mvp 5-17-94 */
+
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-
+    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -135,14 +134,6 @@ typedef struct reorder_info_struct
     ::list* vars_requiring_bindings;         /* used only during reordering */
     struct condition_struct* next_min_cost;  /* used only during reordering */
 } reorder_info;
-
-/* --- info on positive and negative conditions only --- */
-typedef struct three_field_tests_struct
-{
-    test id_test;
-    test attr_test;
-    test value_test;
-} three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
 typedef struct ncc_info_struct
@@ -156,15 +147,22 @@ typedef struct condition_struct
 {
     byte type;
     bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-    bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+    bool test_for_acceptable_preference;   /* for positive, negative cond's only */
     struct condition_struct* next, *prev;
+
     union condition_main_data_union
     {
-        three_field_tests tests;             /* for pos, neg cond's only */
+        struct
+        {
+            test id_test;
+            test attr_test;
+            test value_test;
+        } tests;                           /* for positive, negative cond's only */
         ncc_info ncc;                        /* for ncc's only */
     } data;
     bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
     reorder_info reorder;  /* used only during reordering */
+    struct condition_struct* counterpart;
 } condition;
 
 typedef struct production_struct
@@ -185,24 +183,25 @@ typedef struct production_struct
     struct instantiation_struct* instantiations; /* dll of inst's in MS */
     int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
     byte interrupt;                         /* SW: 7.31.03 */
-    
+
     struct
     {
         bool interrupt_break : 1;
         bool already_fired : 1;         /* RPM test workaround for bug #139 */
         bool rl_rule : 1;                   /* if true, is a Soar-RL rule */
     };
-    
+
     double rl_update_count;       /* number of (potentially fractional) updates to this rule */
     unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
-    
+
     // Per-input memory parameters for delta bar delta algorithm
     double rl_delta_bar_delta_beta;
     double rl_delta_bar_delta_h;
-    
+
     double rl_ecr;                // expected current reward (discounted reward)
     double rl_efr;                // expected future reward (discounted next state)
-    
+    double rl_gql;                // second value for implementation of GQ(\lambda)
+
     condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;
 } production;
@@ -229,16 +228,29 @@ extern void init_production_utilities(agent* thisAgent);
 /* Utilities for conditions */
 /* ------------------------ */
 
+/* --- Deallocates a condition (including any NCC's and tests in it). */
+void deallocate_condition(agent* thisAgent, condition* cond);
+
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
 extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
 
+/* --- Initializes substructures of the given condition to default values. --- */
+extern void init_condition(condition* cond);
+
 /* --- Returns a new copy of the given condition. --- */
-extern condition* copy_condition(agent* thisAgent, condition* cond);
+extern condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false);
+
+/* --- Returns a new copy of the given condition without any relational tests --- */
+condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
 
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
 extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
-                                condition** dest_bottom);
+                         condition** dest_bottom, bool pUnify_variablization_identity = false);
+
+void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
+                                      ::list** var_list);
+void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 /* --- Returns true iff the two conditions are identical. --- */
 extern bool conditions_are_equal(condition* c1, condition* c2);
@@ -246,12 +258,8 @@ extern bool conditions_are_equal(condition* c1, condition* c2);
 /* --- Returns a hash value for the given condition. --- */
 extern uint32_t hash_condition(agent* thisAgent, condition* cond);
 
-/* ------------------ */
-/* Utilities for nots */
-/* ------------------ */
 
-/* --- Deallocates the given (singly-linked) list of Nots. --- */
-extern void deallocate_list_of_nots(agent* thisAgent, not_struct* nots);
+bool canonical_cond_greater(condition* c1, condition* c2);
 
 /* --------------------------------------------------------------------
                       Transitive Closure Utilities
@@ -295,11 +303,11 @@ extern void deallocate_list_of_nots(agent* thisAgent, not_struct* nots);
 tc_number get_new_tc_number(agent* thisAgent);
 
 extern void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
-                             ::list** id_list, ::list** var_list);
+                      ::list** id_list, ::list** var_list);
 extern void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                           ::list** id_list, ::list** var_list);
+                    ::list** id_list, ::list** var_list);
 extern void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                             ::list** id_list, ::list** var_list);
+                      ::list** id_list, ::list** var_list);
 extern bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
 extern bool action_is_in_tc(action* a, tc_number tc);
 
@@ -321,8 +329,8 @@ extern bool action_is_in_tc(action* a, tc_number tc);
 -------------------------------------------------------------------- */
 
 extern void reset_variable_generator(agent* thisAgent,
-                                     condition* conds_with_vars_to_avoid,
-                                     action* actions_with_vars_to_avoid);
+                              condition* conds_with_vars_to_avoid,
+                              action* actions_with_vars_to_avoid);
 extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
@@ -355,22 +363,21 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 ------------------------------------------------------------------- */
 
 extern production* make_production(agent* thisAgent,
-                                   byte type,
-                                   Symbol* name,
-                                   char* original_rule_name,
-                                   condition** lhs_top,
-                                   condition** lhs_bottom,
-                                   action** rhs_top,
-                                   bool reorder_nccs);
+                            byte type,
+                            Symbol* name,
+                            char* original_rule_name,
+                            condition** lhs_top,
+                            action** rhs_top,
+                            bool reorder_nccs,
+                            preference* results = NULL);
+
 extern void deallocate_production(agent* thisAgent, production* prod);
 extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
 extern void excise_all_productions_of_type(agent* thisAgent,
-        byte type,
-        bool print_sharp_sign);
+                                    byte type,
+                                    bool print_sharp_sign);
 extern void excise_all_productions(agent* thisAgent,
-                                   bool print_sharp_sign);
-
-extern bool canonical_cond_greater(condition* c1, condition* c2);
+                            bool print_sharp_sign);
 
 inline void production_add_ref(production* p)
 {

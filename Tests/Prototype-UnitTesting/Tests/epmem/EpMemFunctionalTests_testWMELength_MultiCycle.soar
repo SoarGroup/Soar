@@ -1,0 +1,153 @@
+epmem --set trigger dc
+epmem --set learning on
+watch --epmem
+
+### initialize
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^cycle-count 2
+        ^wmes <wme>
+        ^name test-wme-length)
+   (<wme> ^one-cycle |One Cycle|
+          ^five-cycle |Five Cycle|
+          ^infinite-cycle |Infinite Cycle|)
+}
+
+### Count Operators
+
+sp {propose*count
+   (state <s> ^name test-wme-length
+              ^cycle-count <c>)
+-->
+   (<s> ^operator <count> + <)
+   (<count> ^name count-cycles
+            ^cycle-count <c>)
+}
+
+sp {apply*count*remove-cycle-count
+   (state <s> ^name test-wme-length
+              ^operator.name count-cycles
+              ^cycle-count <c>)
+-->
+   (<s> ^cycle-count <c> -)
+}
+
+sp {apply*count*increment-count
+   (state <s> ^name test-wme-length
+              ^operator <count>)
+   (<count> ^name count-cycles
+            ^cycle-count <c>)
+-->
+   (<s> ^cycle-count (+ <c> 1))
+}
+
+### remove wme after one cycle in memory
+
+sp {apply*remove-one-cycle
+   (state <s> ^operator <count>
+              ^wmes <wmes>)
+   (<count> ^name count-cycles
+            ^cycle-count 2)
+   (<wmes> ^one-cycle <one-cycle>)
+-->
+   (<wmes> ^one-cycle <one-cycle> -)
+}
+
+### remove wme after five cycles in memory
+
+sp {apply*remove-five-cycle
+   (state <s> ^operator <count>
+              ^wmes <wmes>)
+   (<count> ^name count-cycles
+            ^cycle-count 6)
+   (<wmes> ^five-cycle <five-cycle>)
+-->
+   (<wmes> ^five-cycle <five-cycle> -)
+}
+
+### query when sufficient counting
+sp {propose*query*all
+   (state <s> ^name test-wme-length
+             -^epmem.command.query <q>
+              ^cycle-count 11)
+-->
+   (<s> ^operator <query-operator> + >)
+   (<query-operator> ^name query-all)
+}
+
+sp {apply*query*all
+   (state <s> ^operator.name query-all
+              ^epmem.command <cmd>)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^wmes <wmes>)
+   (<wmes> ^one-cycle |One Cycle|
+           ^five-cycle |Five Cycle|
+           ^infinite-cycle |Infinite Cycle|)
+}
+
+### halt when query returns
+sp {propose*check-epmem*success
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.success <q>
+            ^result.retrieved <result>)
+   (<result> ^wmes <wmes>)
+   (<wmes> ^one-cycle |One Cycle|
+           ^five-cycle |Five Cycle|
+           ^infinite-cycle |Infinite Cycle|)
+-->
+   (<s> ^operator <check-epmem> + >)
+   (<check-epmem> ^name check-epmem
+                  ^status success)
+}
+
+sp {propose*check-epmem*failure*query-fail
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.failure)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-epmem
+                 ^status failure
+                 ^condition |result.failure|)
+}
+
+sp {propose*check-epmem*failure*query-result-fail
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.success <q>)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-epmem
+                 ^status failure
+                 ^condition |result.success - unexpected result|)
+}
+
+sp {apply*check-epmem*success
+   (state <s> ^operator <check-epmem>)
+   (<check-epmem> ^name check-epmem
+                  ^status success)
+-->
+   (write |Success!| (crlf))
+   (succeeded)
+}
+
+sp {apply*check-epmem*failure
+   (state <s> ^operator <check-epmem>)
+   (<check-epmem> ^name check-epmem
+                  ^status failure
+                  ^condition <condition>)
+-->
+   (write |Failed because '| <condition> |'!| (crlf))
+   (failed)
+}

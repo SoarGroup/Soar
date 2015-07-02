@@ -18,7 +18,6 @@
 #define TEST_H_
 
 #include "kernel.h"
-#include "symtab.h"
 
 /* -- Forward declarations --- */
 typedef struct node_varnames_struct node_varnames;
@@ -30,176 +29,93 @@ typedef char varnames;
 typedef unsigned short rete_node_level;
 typedef struct cons_struct cons;
 typedef cons list;
+typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
 typedef signed short goal_stack_level;
-typedef struct action_struct action;
+typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
-/* -------------------------------------------------------------------
-                              Tests
+/* -- test_info stores information about a test.  If nil, the test is
+ *    considered blank.
+ *
+ *    The original_test pointer stores the test that was defined when the
+ *    production was read in by the parser.  The values are filled in by the
+ *    rete when reconstructing a production.  It is used to fill out the
+ *    identity structure then removed.
+ *
+ *    The eq_test pointer is used to cache the main equality test for an
+ *    element in a condition so that we do not have to continually re-scan
+ *
+ *    Note that conjunctive tests always have a NULL original_test.  Each
+ *    constituent test of the conjunctive test contains links to its original
+ *    test already --*/
 
-   Tests in conditions can be blank (null) tests, tests for equality
-   with a variable or constant, or more complicated tests (such as
-   not-equal tests, conjunctive tests, etc.).  We use some bit twiddling
-   here to minimize space.  We use just a pointer to represent any kind
-   of test.  For blank tests, this is the NIL pointer.  For equality tests,
-   it points to the symbol referent of the test.  For other kinds of tests,
-   bit 0 of the pointer is set to 1, and the pointer (minus 1) points to
-   a complex_test structure.  (A field in the complex_test structure
-   further indicates the type of the test.)
-------------------------------------------------------------------- */
-
-typedef char* test;
-typedef struct complex_test_struct
+typedef struct test_struct
 {
-    byte type;                  /* see definitions below */
+    TestType        type;                  /* see definitions in enums.h */
     union test_info_union
     {
-        Symbol* referent;         /* for relational tests */
-        ::list* disjunction_list;   /* for disjunction tests */
-        ::list* conjunct_list;      /* for conjunctive tests */
+        Symbol*        referent;         /* for relational tests */
+        ::list*        disjunction_list;   /* for disjunction tests */
+        ::list*        conjunct_list;      /* for conjunctive tests */
     } data;
-} complex_test;
-
-/* ------------------- */
-/* Utilities for tests */
-/* ------------------- */
-
-extern void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc,
-                                        ::list** var_list);
-extern void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc,
-                                        ::list** var_list);
-extern void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-        ::list** var_list);
-extern void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
-
-/* --- Takes a test and returns a new copy of it. --- */
-extern test copy_test(agent* thisAgent, test t);
-
-/* --- Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to false
-   before calling this routine; it sets them to true if it finds a goal
-   or impasse test. --- */
-extern test copy_test_removing_goal_impasse_tests
-(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
-
-/* --- Deallocates a test. --- */
-extern void deallocate_test(agent* thisAgent, test t);
-
-/* --- Destructively modifies the first test (t) by adding the second
-   one (add_me) to it (usually as a new conjunct).  The first test
-   need not be a conjunctive test. --- */
-extern void add_new_test_to_test(agent* thisAgent, test* t, test add_me);
-
-/* --- Same as above, only has no effect if the second test is already
-   included in the first one. --- */
-extern void add_new_test_to_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg);
-
-/* --- Returns true iff the two tests are identical.
-   If neg is true, ignores order of members in conjunctive tests
-   and assumes variables are all equal. --- */
-extern bool tests_are_equal(test t1, test t2, bool neg);
-
-/* --- Returns a hash value for the given test. --- */
-extern uint32_t hash_test(agent* thisAgent, test t);
-
-/* --- Returns true iff the test contains an equality test for the given
-   symbol.  If sym==NIL, returns true iff the test contains any equality
-   test. --- */
-extern bool test_includes_equality_test_for_symbol(test t, Symbol* sym);
-
-/* --- Looks for goal or impasse tests (as directed by the two flag
-   parameters) in the given test, and returns true if one is found. --- */
-extern bool test_includes_goal_or_impasse_id_test(test t,
-        bool look_for_goal,
-        bool look_for_impasse);
-
-/* --- Looks through a test, and returns a new copy of the first equality
-   test it finds.  Signals an error if there is no equality test in the
-   given test. --- */
-extern test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
-
-/* --- Looks through a test, returns appropriate first letter for a dummy
-   variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_test(test t);
-
-inline bool test_is_blank_test(test t)
-{
-    return (t == NIL);
-}
-
-inline bool test_is_complex_test(test t)
-{
-    return (char)(
-               reinterpret_cast<uint64_t>(t)
-               & 1);
-}
-
-#ifdef _MSC_VER
-#pragma warning (default : 4311)
-#endif
-
-inline bool test_is_blank_or_equality_test(test t)
-{
-    return (!test_is_complex_test(t));
-}
-
-inline test make_blank_test()
-{
-    return static_cast<test>(NIL);
-}
-
-inline test make_equality_test(Symbol* sym)
-{
-    (sym)->reference_count++;
-#ifdef DEBUG_SYMBOL_REFCOUNTS
-    char buf[64];
-    OutputDebugString(symbol_to_string(0, (sym), false, buf, 64));
-    OutputDebugString(":+ ");
-    OutputDebugString(_itoa((sym)->reference_count, buf, 10));
-    OutputDebugString("\n");
-#endif // DEBUG_SYMBOL_REFCOUNTS
-    return reinterpret_cast<test>(sym);
-}
-
-inline test make_equality_test_without_adding_reference(Symbol* sym)
-{
-    return reinterpret_cast<test>(sym);
-}
-
-inline test make_blank_or_equality_test(Symbol* sym_or_nil)
-{
-    return ((sym_or_nil) ? (make_equality_test(sym_or_nil)) : make_blank_test());
-}
-
-inline char* make_test_from_complex_test(complex_test* ct)
-{
-    return reinterpret_cast<test>(ct) + 1;
-}
-
-inline Symbol* referent_of_equality_test(test t)
-{
-    return reinterpret_cast<Symbol*>(t);
-}
-
-inline complex_test* complex_test_from_test(test t)
-{
-    return reinterpret_cast<complex_test*>(t - 1);
-}
-
-inline void quickly_deallocate_test(agent* thisAgent, test t)
-{
-    if (! test_is_blank_test(t))
+    test_struct*     eq_test;
+    tc_number        tc_num;
+    uint64_t         identity;
+    test_struct() : type(NUM_TEST_TYPES), eq_test(NULL), tc_num(0), identity(0)
     {
-        if (test_is_blank_or_equality_test(t))
-        {
-            symbol_remove_ref(thisAgent, referent_of_equality_test(t));
-        }
-        else
-        {
-            deallocate_test(thisAgent, t);
-        }
+        data.referent = NULL;
     }
-}
+} test_info;
 
-#endif
+/* --- Note that the test typedef is a *pointer* to a test struct. A test is
+ *     considered blank when that pointer is nil. --- */
+typedef test_info* test;
+
+/* ----------------------------------------------------------------
+   Returns true iff the test contains a test for a variable
+   symbol.  Assumes test is not a conjunctive one and does not
+   try to search them.
+---------------------------------------------------------------- */
+inline bool test_has_referent(test t)
+{
+    return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
+};
+
+
+/* --- Descriptions of these functions can be found in the test.cpp --- */
+char first_letter_from_test(test t);
+bool tests_are_equal(test t1, test t2, bool neg);
+bool tests_identical(test t1, test t2, bool considerIdentity = false);
+bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
+bool test_is_variable(agent* thisAgent, test t);
+test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
+test equality_test_found_in_test(test t);
+
+test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
+uint32_t hash_test(agent* thisAgent, test t);
+void deallocate_test(agent* thisAgent, test t);
+
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false);
+test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
+test copy_test_without_relationals(agent* thisAgent, test t);
+
+void add_test(agent* thisAgent, test* dest_address, test new_test);
+void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
+
+::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem);
+
+/* --- Some functions related to tests that used to be in rete.cpp */
+
+void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
+void add_identity_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
+void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
+void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
+void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
+void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
+/* UITODO| Make this method of Test */
+const char* test_type_to_string(byte test_type);
+
+#endif /* TEST_H_ */

@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSETRIANGULARSOLVER_H
 #define EIGEN_SPARSETRIANGULARSOLVER_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -48,7 +35,7 @@ struct sparse_solve_triangular_selector<Lhs,Rhs,Mode,Lower,RowMajor>
       for(int i=0; i<lhs.rows(); ++i)
       {
         Scalar tmp = other.coeff(i,col);
-        Scalar lastVal = 0;
+        Scalar lastVal(0);
         int lastIndex = 0;
         for(typename Lhs::InnerIterator it(lhs, i); it; ++it)
         {
@@ -156,6 +143,7 @@ struct sparse_solve_triangular_selector<Lhs,Rhs,Mode,Upper,ColMajor>
         {
           if(!(Mode & UnitDiag))
           {
+            // TODO replace this by a binary search. make sure the binary search is safe for partially sorted elements
             typename Lhs::ReverseInnerIterator it(lhs, i);
             while(it && it.index()!=i)
               --it;
@@ -177,10 +165,8 @@ template<typename ExpressionType,int Mode>
 template<typename OtherDerived>
 void SparseTriangularView<ExpressionType,Mode>::solveInPlace(MatrixBase<OtherDerived>& other) const
 {
-  eigen_assert(m_matrix.cols() == m_matrix.rows());
-  eigen_assert(m_matrix.cols() == other.rows());
-  eigen_assert(!(Mode & ZeroDiag));
-  eigen_assert(Mode & (Upper|Lower));
+  eigen_assert(m_matrix.cols() == m_matrix.rows() && m_matrix.cols() == other.rows());
+  eigen_assert((!(Mode & ZeroDiag)) && bool(Mode & (Upper|Lower)));
 
   enum { copy = internal::traits<OtherDerived>::Flags & RowMajorBit };
 
@@ -304,10 +290,8 @@ template<typename ExpressionType,int Mode>
 template<typename OtherDerived>
 void SparseTriangularView<ExpressionType,Mode>::solveInPlace(SparseMatrixBase<OtherDerived>& other) const
 {
-  eigen_assert(m_matrix.cols() == m_matrix.rows());
-  eigen_assert(m_matrix.cols() == other.rows());
-  eigen_assert(!(Mode & ZeroDiag));
-  eigen_assert(Mode & (Upper|Lower));
+  eigen_assert(m_matrix.cols() == m_matrix.rows() && m_matrix.cols() == other.rows());
+  eigen_assert( (!(Mode & ZeroDiag)) && bool(Mode & (Upper|Lower)));
 
 //   enum { copy = internal::traits<OtherDerived>::Flags & RowMajorBit };
 
@@ -344,5 +328,7 @@ SparseMatrixBase<Derived>::solveTriangular(const MatrixBase<OtherDerived>& other
   return res;
 }
 #endif // EIGEN2_SUPPORT
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSETRIANGULARSOLVER_H

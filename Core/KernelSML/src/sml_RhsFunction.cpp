@@ -112,7 +112,7 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         }
         else
         {
-            std::string nextString = symbol_to_string(m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0);
+            std::string nextString = pSymbol->to_string();
             ostr << nextString;
         }
     }
@@ -161,7 +161,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         }
         else
         {
-            ostr << symbol_to_string(m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0);
+            ostr << pSymbol->to_string();
         }
     }
     
@@ -186,7 +186,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         return NULL ;
     }
     
-    std::string function = symbol_to_string(m_pAgentSML->GetSoarAgent(), pArguments->front(), false, 0, 0);
+    std::string function = pArguments->front()->to_string();
     
     // Get the command line string.
     // We've decided for "exec" to just concatenate all arguments together without inserting
@@ -203,7 +203,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         }
         else
         {
-            ostr << symbol_to_string(m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0);
+            ostr << pSymbol->to_string();
         }
     }
     

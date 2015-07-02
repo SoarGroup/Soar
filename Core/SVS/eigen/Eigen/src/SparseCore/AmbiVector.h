@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_AMBIVECTOR_H
 #define EIGEN_AMBIVECTOR_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -82,7 +69,7 @@ class AmbiVector
       delete[] m_buffer;
       if (size<1000)
       {
-        Index allocSize = (size * sizeof(ListEl))/sizeof(Scalar);
+        Index allocSize = (size * sizeof(ListEl) + sizeof(Scalar) - 1)/sizeof(Scalar);
         m_allocatedElements = (allocSize*sizeof(Scalar))/sizeof(ListEl);
         m_buffer = new Scalar[allocSize];
       }
@@ -101,7 +88,7 @@ class AmbiVector
       Index copyElements = m_allocatedElements;
       m_allocatedElements = (std::min)(Index(m_allocatedElements*1.5),m_size);
       Index allocSize = m_allocatedElements * sizeof(ListEl);
-      allocSize = allocSize/sizeof(Scalar) + (allocSize%sizeof(Scalar)>0?1:0);
+      allocSize = (allocSize + sizeof(Scalar) - 1)/sizeof(Scalar);
       Scalar* newBuffer = new Scalar[allocSize];
       memcpy(newBuffer,  m_buffer,  copyElements * sizeof(ListEl));
       delete[] m_buffer;
@@ -301,9 +288,10 @@ class AmbiVector<_Scalar,_Index>::Iterator
       * In practice, all coefficients having a magnitude smaller than \a epsilon
       * are skipped.
       */
-    Iterator(const AmbiVector& vec, RealScalar epsilon = 0)
+    Iterator(const AmbiVector& vec, const RealScalar& epsilon = 0)
       : m_vector(vec)
     {
+      using std::abs;
       m_epsilon = epsilon;
       m_isDense = m_vector.m_mode==IsDense;
       if (m_isDense)
@@ -317,7 +305,7 @@ class AmbiVector<_Scalar,_Index>::Iterator
       {
         ListEl* EIGEN_RESTRICT llElements = reinterpret_cast<ListEl*>(m_vector.m_buffer);
         m_currentEl = m_vector.m_llStart;
-        while (m_currentEl>=0 && internal::abs(llElements[m_currentEl].value)<=m_epsilon)
+        while (m_currentEl>=0 && abs(llElements[m_currentEl].value)<=m_epsilon)
           m_currentEl = llElements[m_currentEl].next;
         if (m_currentEl<0)
         {
@@ -339,11 +327,12 @@ class AmbiVector<_Scalar,_Index>::Iterator
 
     Iterator& operator++()
     {
+      using std::abs;
       if (m_isDense)
       {
         do {
           ++m_cachedIndex;
-        } while (m_cachedIndex<m_vector.m_end && internal::abs(m_vector.m_buffer[m_cachedIndex])<m_epsilon);
+        } while (m_cachedIndex<m_vector.m_end && abs(m_vector.m_buffer[m_cachedIndex])<m_epsilon);
         if (m_cachedIndex<m_vector.m_end)
           m_cachedValue = m_vector.m_buffer[m_cachedIndex];
         else
@@ -354,7 +343,7 @@ class AmbiVector<_Scalar,_Index>::Iterator
         ListEl* EIGEN_RESTRICT llElements = reinterpret_cast<ListEl*>(m_vector.m_buffer);
         do {
           m_currentEl = llElements[m_currentEl].next;
-        } while (m_currentEl>=0 && internal::abs(llElements[m_currentEl].value)<m_epsilon);
+        } while (m_currentEl>=0 && abs(llElements[m_currentEl].value)<m_epsilon);
         if (m_currentEl<0)
         {
           m_cachedIndex = -1;
@@ -377,6 +366,8 @@ class AmbiVector<_Scalar,_Index>::Iterator
     bool m_isDense;             // mode of the vector
 };
 
-} // namespace internal
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_AMBIVECTOR_H

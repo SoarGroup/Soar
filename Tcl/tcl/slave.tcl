@@ -53,14 +53,14 @@ proc buildExecuteCommandArgumentString { name argList } {
 # @param commands List of Soar command names
 proc defineSoarCommands { commands } {
   global printCommandResults
-
+  
   foreach name $commands {
     proc $name {args} "
-         global output_buffer
-         set r \[executeCommandLine \[buildExecuteCommandArgumentString $name \$args\]\]
-         appendOutputBuffer \$r
-         return \"\"
-      "
+    global output_buffer
+    set r \[executeCommandLine \[buildExecuteCommandArgumentString $name \$args\]\]
+    appendOutputBuffer \$r
+    return \"\"
+    "
   }
 }
 
@@ -139,7 +139,7 @@ defineSoarCommands [set allSoarCommands {
    watch
    watch-wmes
    wma
-}]
+ }]
 
 global outputStringsStack currentOutputStringsProc
 
@@ -157,12 +157,12 @@ proc discardOutputStringsProc {message} {}
 proc output-strings-destination {args} {
   global outputStringsStack currentOutputStringsProc
   global _agentName
-
+  
   set n [llength $args]
   if { $n == 0 } {
     error "Not enough arguments to output-strings-destination"
   }
-
+  
   set arg0 [lindex $args 0]
   if { $arg0 == "-push" } {
     set arg1 [lindex $args 1]
@@ -187,18 +187,18 @@ proc output-strings-destination {args} {
     } else {
       error "output-strings-destination stack is empty"
     }
-
+    
   } else {
     error "Unrecognized argument '$arg0'"
   }
-
+  
   #puts "stack is $outputStringsStack"
   #puts "proc is $outputStringsStack"
 }
 
 proc printCallback { message } {
   global currentOutputStringsProc
-
+  
   # Since currentOutputStringsProc may be a list, we have to append
   # message to the end of it. We can't use concat because, if message
   # has spaces, then it will be treated as a list rather than a single
@@ -217,7 +217,7 @@ proc printCallback { message } {
 proc reconfigureOutput {} {
   if {[info proc puts] != "puts"} {
     rename puts builtInPuts
-
+    
     proc puts {args} {
       # We need to see if there are any parameters to puts and handle
       # according.  We'll ignore any channel arguments.  Following logic
@@ -236,7 +236,7 @@ proc reconfigureOutput {} {
       #   - Param 1: -no-newline
       #   - Param 2: channel
       #   - Param 3: string to output
-
+      
       set n [llength $args]
       set addNewLine 1
       set strIndex 0
@@ -255,7 +255,7 @@ proc reconfigureOutput {} {
           set strIndex 1
         }
       }
-
+      
       set putOutput [join [lindex $args $strIndex]]
       if ($addNewLine) {
         append putOutput "\n"
@@ -275,88 +275,18 @@ proc source {arg} {
   set dir [file dir $arg]
   set file [file tail $arg]
   global _agentName
-
+  
   pushd $dir
-
+  
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
     popd
     error $errorMessage
   }
-
+  
   popd
   return ""
-}
-
-#
-# When an alias is defined, a new procedure is created at the
-# top level whose name matches the alias.  The string defining
-# the alias is used as the prefix of the actual command issued.
-# If the alias command is invoked with additional arguments
-# these are post-pended onto the command prefix.  Note the
-# argument "args" is treated like Common Lisp's &rest argument.
-#
-
-global defined_aliases
-set defined_aliases {}
-
-global print_alias_switch
-set print_alias_switch "on"
-
-proc alias {{name ""} args} {
-  global defined_aliases print_alias_switch
-
-  if {[string compare $name ""] == 0} {
-    puts [lsort [set defined_aliases]]
-  } elseif {[string compare $args ""] == 0} {
-    set position [lsearch -exact $defined_aliases $name]
-    if {$position >= 0} {
-      puts "$name: [info body $name]"
-    } else {
-      puts "Error: There is no alias named \"$name\". "
-    }
-  } elseif {[string compare $args "-off"] == 0} {a
-    set position [lsearch -exact $defined_aliases $name]
-    if {$position >= 0} {
-      set defined_aliases [lreplace $defined_aliases $position $position]
-      rename $name {}
-      if {[string compare $print_alias_switch "on"] == 0} {
-        puts "Removing alias \"$name\"."
-      }
-    } else {
-      puts "Error: There is no alias named \"$name\"."
-    }
-  } else {
-    if {[lsearch -exact [info commands] $name] >= 0 | \
-      [lsearch -exact $defined_aliases $name] >= 0 } {
-      puts "Alias Error: \"$name\" already exists as a previously defined alias or command.\nNew alias not created.\n"
-    } else {
-      set defined_aliases [linsert $defined_aliases 0 $name]
-
-      uplevel #0 "proc $name {args} {
-        if {\$args == \"\"} {
-          $args
-        } else {
-          eval $args \$args
-        }
-      }"
-    }
-  }
-}
-
-proc unalias {name} {
-  global defined_aliases print_alias_switch
-  set position [lsearch -exact $defined_aliases $name]
-  if {$position >= 0} {
-    set defined_aliases [lreplace $defined_aliases $position $position]
-    rename $name {}
-    if {[string compare $print_alias_switch "on"] == 0} {
-      puts "Removing alias \"$name\"."
-    }
-  } else {
-    puts "Error: There is no alias named \"$name\"."
-  }
 }
 
 proc initializeSlave {} {

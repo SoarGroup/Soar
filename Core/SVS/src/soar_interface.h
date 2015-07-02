@@ -9,10 +9,12 @@
 #include "wmem.h"
 #include "mat.h"
 
+#include "Export.h"
+
 tc_number get_new_tc_number(agent* thisAgent);
-extern Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* make_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
 
 typedef std::vector<wme*> wme_list;
 
@@ -68,7 +70,7 @@ class soar_interface
         
         tc_number    new_tc_num();
         
-        int          get_timetag(wme* w);
+        uint64_t          get_timetag(wme* w);
         common_syms& get_common_syms()
         {
             return cs;
@@ -130,7 +132,7 @@ inline Symbol* soar_interface::get_wme_val(wme* w)
     return w->value;
 }
 
-inline int soar_interface::get_timetag(wme* w)
+inline uint64_t soar_interface::get_timetag(wme* w)
 {
     return w->timetag;
 }

@@ -1,0 +1,23 @@
+smem --set learning on
+smem --add {(<x> ^name val ^value 1)}
+smem --add {(<x> ^othername val ^value 1)}
+smem --add {(<x> ^name val ^value 3 ^notrestrictive t)}
+smem --add {(<x> ^name val ^value 5 ^wrongattribute y)}
+smem --add {(<x> ^name val ^value 7 ^thirdthing x)}
+
+sp {propose*query 
+	(state <s> ^superstate nil 
+				^smem <smem>) 
+	(<smem> -^result.retrieved) 
+--> 
+	(<s> ^operator.name query) 
+}
+
+sp {apply*query 
+	(state <s> ^operator.name query 
+				^smem.command <sc>)
+--> 
+	(<sc> ^query <q>)
+	(<q> ^name val
+			^value <x>)
+}

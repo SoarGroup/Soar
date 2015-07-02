@@ -1,0 +1,104 @@
+sp {halt
+    (state <s> ^superstate nil ^count 2)
+    -->
+    (halt)
+}
+
+sp {apply*one-bar*2
+    (state <s> ^operator <op> ^superstate <s*1>)
+    (<op> ^name one-bar)
+    (<s*1> ^foo <f*1>)
+    (<f*1> ^bar bar)
+    -->
+    (<s> ^hello world +)
+}
+
+
+sp {apply*one-bar
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name one-bar)
+    (<ss> ^foo <foo>)
+    -->
+    (<foo> ^bar bar +)
+}
+
+sp {apply*one-bar*count1
+    (state <s> ^operator <op> ^top-state <ts>)
+    (<op> ^name one-bar)
+    (<ts> -^count)
+    -->
+    (<ts> ^count 1 +)
+}
+
+sp {apply*one-bar*count2
+    (state <s> ^operator <op> ^top-state <ts>) 
+    (<op> ^name one-bar)
+    (<ts> ^count <one>)
+    -->
+    (<ts> ^count <one> - ^count 2 +)
+}
+
+sp {one*propose*one-bar
+    (state <s> ^name one)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name one-bar +)
+}
+
+sp {apply*one
+    (state <s> ^operator <op> ^foo <foo>)
+    (<op> ^name one)
+    (<foo> ^bar <bar>)
+    -->
+    (<foo> ^bar <bar> -)
+}
+
+
+sp {testcase*propose*one
+    (state <s> ^name testcase ^foo <foo>)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name one +)
+}
+
+
+sp {apply*initialize-testcase
+    (state <s> ^operator <op>)
+    (<op> ^name initialize-testcase)
+    -->
+    (<s> ^name testcase + ^foo <foo> +)
+}
+
+
+sp {propose*initialize-testcase
+    (state <s> ^superstate nil -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-testcase +)
+}
+
+
+sp {elaborate*top-state*top-state
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+
+sp {elaborate*state*top-state
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^top-state <ts>)
+    -->
+    (<s> ^top-state <ts> +)
+}
+
+
+sp {elaborate*state*name
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^name <name> +)
+}
+
+

@@ -56,7 +56,7 @@ bool tcp_send(int fd, const string& s)
         return false;
     }
     
-    int n;
+    size_t n;
     const char* p = s.c_str();
     
     while (*p)

@@ -1,7 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "platform_specific.h"
-#include <windows.h>
+#include <Windows.h>
 #include <iostream>
 #include <ws2tcpip.h>
 
@@ -58,7 +58,7 @@ bool tcp_send(SOCK sock, const string &s) {
 	const char *p = s.c_str();
 	
 	while (*p) {
-		if ((n = send(sock, p, strlen(p), 0)) == SOCKET_ERROR) {
+		if ((n = send(sock, p, static_cast<int>(strlen(p)), 0)) == SOCKET_ERROR) {
 			if (errno != EINTR) {
 				cerr << "tcp_send failed: " << WSAGetLastError() << endl;
 				closesocket(sock);

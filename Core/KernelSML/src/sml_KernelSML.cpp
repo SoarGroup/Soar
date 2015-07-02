@@ -758,7 +758,7 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts)
 // due to the extra events and control logic surrounding the SML RunScheduler.
 // So we compromise with a call directly to that scheduler, boosting performance over the standard "run" path
 // which goes through the command line processor.
-void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
+void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count)
 {
     smlRunStepSize interleaveSize = static_cast<smlRunStepSize>(interleaveSizeIn);
     

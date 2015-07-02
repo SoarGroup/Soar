@@ -274,7 +274,7 @@ void reset_explain(agent* thisAgent)
  *                searching for its name.
  **************************************************************************/
 
-explain_chunk_str* find_chunk(agent* thisAgent, explain_chunk_str* chunk, char* name)
+explain_chunk_str* find_chunk(agent* thisAgent, explain_chunk_str* chunk, const char* name)
 {
 
     while (chunk != NULL)
@@ -362,7 +362,7 @@ void explain_trace_chunk(agent* thisAgent, explain_chunk_str* chunk)
  * Function     : explain_trace_named_chunk
  **************************************************************************/
 
-void explain_trace_named_chunk(agent* thisAgent, char* chunk_name)
+void explain_trace_named_chunk(agent* thisAgent, const char* chunk_name)
 {
 
     explain_chunk_str* chunk;
@@ -403,7 +403,7 @@ condition* explain_find_cond(condition* target, condition* cond_list)
  *                condition appeared in the chunk.
  **************************************************************************/
 
-void explain_trace(agent* thisAgent, char* chunk_name, backtrace_str* prod_list, condition* ground)
+void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod_list, condition* ground)
 {
 
     int count;
@@ -503,7 +503,7 @@ void explain_trace(agent* thisAgent, char* chunk_name, backtrace_str* prod_list,
         }
     }
     
-    if (prod->result == true)
+    if (prod->result == 1/*true*/)
     {
         print(thisAgent, "A result to be generated.\n");
     }
@@ -518,7 +518,7 @@ void explain_trace(agent* thisAgent, char* chunk_name, backtrace_str* prod_list,
  * Description  : Explain why the numbered condition appears in the given chunk.
  **************************************************************************/
 
-void explain_chunk(agent* thisAgent, char* chunk_name, int cond_number)
+void explain_chunk(agent* thisAgent, const char* chunk_name, int cond_number)
 {
 
     explain_chunk_str* chunk;
@@ -546,7 +546,7 @@ void explain_chunk(agent* thisAgent, char* chunk_name, int cond_number)
  * Description  : List all of the conditions and number them for a named chunk.
  **************************************************************************/
 
-void explain_cond_list(agent* thisAgent, char* chunk_name)
+void explain_cond_list(agent* thisAgent, const char* chunk_name)
 {
 
     explain_chunk_str* chunk;

@@ -1,0 +1,7 @@
+sp {last-better*propose*b
+   (state <s> ^name last-better)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name b)
+}
+

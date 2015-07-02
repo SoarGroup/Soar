@@ -3,28 +3,14 @@
 //
 // Copyright (C) 2011 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_ITERATIVE_SOLVER_BASE_H
 #define EIGEN_ITERATIVE_SOLVER_BASE_H
 
+namespace Eigen { 
 
 /** \ingroup IterativeLinearSolvers_Module
   * \brief Base class for linear iterative solvers
@@ -32,7 +18,7 @@
   * \sa class SimplicialCholesky, DiagonalPreconditioner, IdentityPreconditioner
   */
 template< typename Derived>
-class IterativeSolverBase
+class IterativeSolverBase : internal::noncopyable
 {
 public:
   typedef typename internal::traits<Derived>::MatrixType MatrixType;
@@ -70,6 +56,39 @@ public:
   }
 
   ~IterativeSolverBase() {}
+  
+  /** Initializes the iterative solver for the sparcity pattern of the matrix \a A for further solving \c Ax=b problems.
+    *
+    * Currently, this function mostly call analyzePattern on the preconditioner. In the future
+    * we might, for instance, implement column reodering for faster matrix vector products.
+    */
+  Derived& analyzePattern(const MatrixType& A)
+  {
+    m_preconditioner.analyzePattern(A);
+    m_isInitialized = true;
+    m_analysisIsOk = true;
+    m_info = Success;
+    return derived();
+  }
+  
+  /** Initializes the iterative solver with the numerical values of the matrix \a A for further solving \c Ax=b problems.
+    *
+    * Currently, this function mostly call factorize on the preconditioner.
+    *
+    * \warning this class stores a reference to the matrix A as well as some
+    * precomputed values that depend on it. Therefore, if \a A is changed
+    * this class becomes invalid. Call compute() to update it with the new
+    * matrix A, or modify a copy of A.
+    */
+  Derived& factorize(const MatrixType& A)
+  {
+    eigen_assert(m_analysisIsOk && "You must first call analyzePattern()"); 
+    mp_matrix = &A;
+    m_preconditioner.factorize(A);
+    m_factorizationIsOk = true;
+    m_info = Success;
+    return derived();
+  }
 
   /** Initializes the iterative solver with the matrix \a A for further solving \c Ax=b problems.
     *
@@ -86,20 +105,22 @@ public:
     mp_matrix = &A;
     m_preconditioner.compute(A);
     m_isInitialized = true;
+    m_analysisIsOk = true;
+    m_factorizationIsOk = true;
     m_info = Success;
     return derived();
   }
 
   /** \internal */
-  Index rows() const { return mp_matrix->rows(); }
+  Index rows() const { return mp_matrix ? mp_matrix->rows() : 0; }
   /** \internal */
-  Index cols() const { return mp_matrix->cols(); }
+  Index cols() const { return mp_matrix ? mp_matrix->cols() : 0; }
 
   /** \returns the tolerance threshold used by the stopping criteria */
   RealScalar tolerance() const { return m_tolerance; }
   
   /** Sets the tolerance threshold used by the stopping criteria */
-  Derived& setTolerance(RealScalar tolerance)
+  Derived& setTolerance(const RealScalar& tolerance)
   {
     m_tolerance = tolerance;
     return derived();
@@ -112,7 +133,10 @@ public:
   const Preconditioner& preconditioner() const { return m_preconditioner; }
 
   /** \returns the max number of iterations */
-  int maxIterations() const { return m_maxIterations; }
+  int maxIterations() const
+  {
+    return (mp_matrix && m_maxIterations<0) ? mp_matrix->cols() : m_maxIterations;
+  }
   
   /** Sets the max number of iterations */
   Derived& setMaxIterations(int maxIters)
@@ -191,7 +215,9 @@ protected:
   void init()
   {
     m_isInitialized = false;
-    m_maxIterations = 1000;
+    m_analysisIsOk = false;
+    m_factorizationIsOk = false;
+    m_maxIterations = -1;
     m_tolerance = NumTraits<Scalar>::epsilon();
   }
   const MatrixType* mp_matrix;
@@ -203,7 +229,7 @@ protected:
   mutable RealScalar m_error;
   mutable int m_iterations;
   mutable ComputationInfo m_info;
-  mutable bool m_isInitialized;
+  mutable bool m_isInitialized, m_analysisIsOk, m_factorizationIsOk;
 };
 
 namespace internal {
@@ -221,6 +247,8 @@ struct sparse_solve_retval<IterativeSolverBase<Derived>, Rhs>
   }
 };
 
-}
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_ITERATIVE_SOLVER_BASE_H

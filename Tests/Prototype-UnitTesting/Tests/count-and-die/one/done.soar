@@ -1,0 +1,18 @@
+sp {one*propose*done
+   (state <s> ^name one
+              ^count <max>
+              ^max <max>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name done)
+}
+
+sp {apply*done
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name done)
+   (<ss> ^operator <ss-op>)
+-->
+   (<ss> ^phase one -
+         ^phase two)
+}

@@ -14,7 +14,7 @@ const double INF = std::numeric_limits<double>::infinity();
 
 void split(const string& s, const string& delim, vector<string>& fields)
 {
-    int start = 0, end = 0, sz = s.size();
+    size_t start = 0, end = 0, sz = s.size();
     while (end < sz)
     {
         if (delim.empty())
@@ -63,7 +63,7 @@ istream& get_nonblank_line(istream& is, string& line)
 {
     while (getline(is, line))
     {
-        for (int i = 0, iend = line.size(); i < iend; ++i)
+        for (size_t i = 0, iend = line.size(); i < iend; ++i)
         {
             if (!isspace(line[i]))
             {
@@ -79,7 +79,9 @@ istream& get_nonblank_line(istream& is, string& line)
 */
 void sample(int k, int low, int high, std::vector<int>& output)
 {
-    int range = high - low, start = output.size();
+    int range = high - low;
+    size_t start = output.size();
+    
     assert(k <= range);
     output.resize(start + k);
     for (int i = 0; i < range; ++i)
@@ -99,11 +101,12 @@ void sample(int k, int low, int high, std::vector<int>& output)
     }
 }
 
-ostream& histogram(const vector<double>& vals, int nbins, ostream& os)
+ostream& histogram(const vector<double>& vals, size_t nbins, ostream& os)
 {
     assert(nbins > 0);
     double min, max, binsize, hashes_per;
-    int i, b, maxcount = 0;
+    size_t i;
+    int b, maxcount = 0;
     vector<int> counts(nbins, 0);
     min = *min_element(vals.begin(), vals.end());
     max = *max_element(vals.begin(), vals.end());
@@ -116,7 +119,7 @@ ostream& histogram(const vector<double>& vals, int nbins, ostream& os)
     for (i = 0; i < vals.size(); ++i)
     {
         b = static_cast<int>((vals[i] - min) / binsize);
-        assert(b < counts.size());
+        assert(b < static_cast<int>(counts.size()));
         counts[b]++;
     }
     maxcount = *max_element(counts.begin(), counts.end());
@@ -159,7 +162,7 @@ bool parse_int(const string& s, int& v)
     }
     
     char* end;
-    v = strtol(s.c_str(), &end, 10);
+    v = static_cast<int>(strtol(s.c_str(), &end, 10));
     if (*end != '\0')
     {
         return false;
@@ -228,37 +231,37 @@ void table_printer::set_spacer_width(int w)
 void table_printer::print(ostream& os) const
 {
     std::vector<int> widths;
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
         const vector<string>& row = rows[i];
         if (row.size() > widths.size())
         {
             widths.resize(row.size());
         }
-        for (int j = 0; j < row.size(); ++j)
+        for (size_t j = 0; j < row.size(); ++j)
         {
-            if (row[j].size() > widths[j])
+            if (static_cast<int>(row[j].size()) > widths[j])
             {
-                widths[j] = row[j].size();
+                widths[j] = static_cast<int>(row[j].size());
             }
         }
     }
     
-    for (int i = 0; i < rows.size(); ++i)
+    for (size_t i = 0; i < rows.size(); ++i)
     {
         const vector<string>& row = rows[i];
-        for (int j = 0; j < row.size(); ++j)
+        for (size_t j = 0; j < row.size(); ++j)
         {
             int a = -1, pad;
             
-            map_get(alignments, j, a);
+            map_get(alignments, static_cast<int>(j), a);
             switch (a)
             {
                 case -1:
                     os << left << setw(widths[j]) << row[j];
                     break;
                 case 0:
-                    pad = (widths[j] - row[j].size()) / 2;
+                    pad = (widths[j] - static_cast<int>(row[j].size())) / 2;
                     os << setw(pad) << " ";
                     os << left << setw(widths[j] - pad) << row[j];
                     break;

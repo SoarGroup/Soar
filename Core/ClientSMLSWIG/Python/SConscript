@@ -12,16 +12,18 @@ Import('env')
 clone = env.Clone()
 clone['SWIGPATH'] = clone['CPPPATH']
 clone['SWIGFLAGS'] = ['-c++', '-python']
+if GetOption('nosvs'):
+    clone['SWIGFLAGS'].append('-DNO_SVS')
 
 python_exe = GetOption('python')
 if os.name == 'nt':
-	commands = ("distutils.sysconfig.get_python_inc()",
-	            "os.path.join(distutils.sysconfig.get_config_vars('BINDIR')[0], 'libs')",
-	            "'python' + distutils.sysconfig.get_config_vars('VERSION')[0]")
+    commands = ("distutils.sysconfig.get_python_inc()",
+                "os.path.join(distutils.sysconfig.get_config_vars('BINDIR')[0], 'libs')",
+                "'python' + distutils.sysconfig.get_config_vars('VERSION')[0]")
 else:
-	commands = ("distutils.sysconfig.get_python_inc()",
-	            "distutils.sysconfig.get_config_vars('LIBDIR')",
-	            "distutils.sysconfig.get_config_vars('LIBRARY')[0]")
+    commands = ("distutils.sysconfig.get_python_inc()",
+                "distutils.sysconfig.get_config_vars('LIBDIR')",
+                "distutils.sysconfig.get_config_vars('LIBRARY')[0]")
 command = """
 import distutils.sysconfig;
 import os.path;
@@ -37,21 +39,21 @@ if isinstance(lib_path, list):
 clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
 
 if os.name == 'posix':
-	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+    clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
 if sys.platform == 'darwin':
-	clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
-	clone.Replace(SHLIBSUFFIX = ['.so'])
+    clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+    clone.Replace(SHLIBSUFFIX = ['.so'])
 
 name = 'Python_sml_ClientInterface'
 interface = env.File(name + '.i')
 source = env.File(name + '.py')
 
 if os.name == 'nt':
-	# the [:1] at the end throws away the .exp and .lib files that are generated
-	shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]
+    # the [:1] at the end throws away the .exp and .lib files that are generated
+    shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]
 else:
-	shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_')
+    shlib = clone.SharedLibrary(name, interface, SHLIBPREFIX = '_')
 install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 

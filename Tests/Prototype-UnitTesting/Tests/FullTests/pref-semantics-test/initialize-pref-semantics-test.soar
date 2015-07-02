@@ -1,0 +1,15 @@
+sp {propose*initialize-pref-semantics-test
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-pref-semantics-test)
+}
+
+sp {apply*initialize-pref-semantics-test
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-pref-semantics-test)
+-->
+   (<s> ^name pref-semantics-test)
+}
+
