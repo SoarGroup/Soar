@@ -93,7 +93,7 @@ namespace TestHelpers
 	{
 		std::string result = name;
 		
-		return result.substr(result.find(" "), ::std::string::npos);
+		return result.substr(result.find(" ")+1, ::std::string::npos);
 	}
 
 	// Unknown
