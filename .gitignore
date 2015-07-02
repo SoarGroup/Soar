@@ -503,3 +503,4 @@ build*/
 user-env*.*
 build_*.*
 testCommandToFile-output.soar
+soarversion

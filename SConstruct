@@ -17,6 +17,11 @@ import shutil
 join = os.path.join
 
 SOAR_VERSION = "9.5.0"
+
+soarversionFile = open('soarversion', 'w')
+print >> soarversionFile, SOAR_VERSION
+soarversionFile.close()
+
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 #DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
