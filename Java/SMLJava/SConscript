@@ -8,15 +8,12 @@ deps = [clone['SML']]
 clone['JAVACLASSPATH'] = clone['SML'].abspath
 jar_name = 'soar-smljava.jar'
 
-classes = clone.Java(target = 'classes', source = 'src/main/java')
+classes = clone.Java(target = 'classes', source = 'src/main/java'])
 clone.Depends(classes, clone['SML'])
-lJAVACFLAGS=['']
-lJAVACFLAGS.extend('-target 1.7')
 temp = clone.Jar(
 	target   = 'temp.jar',
 	source   = ['classes', 'MANIFEST.MF'],
-	JARCHDIR = clone.Dir('classes'),
-	JAVACFLAGS = lJAVACFLAGS
+	JARCHDIR = clone.Dir('classes')
 )
 
 jar = clone.Command(

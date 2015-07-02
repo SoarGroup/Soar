@@ -42,15 +42,12 @@ cp = clone['SEP'].join([l.srcnode().abspath for l in libs1] + \
 clone['JAVACLASSPATH'] = cp
 
 classes = clone.Java(target = 'classes', source='src')
-clone.Depends(classes, libs1 + libs2)
-lJAVACFLAGS=['']
-lJAVACFLAGS.extend('-target 1.7')
 
+clone.Depends(classes, libs1 + libs2)
 temp = clone.Jar(
 	target   = 'temp.jar',
 	source   = ['classes', 'manifest1'],
-	JARCHDIR = clone.Dir('classes'),
-	JAVACFLAGS = lJAVACFLAGS
+	JARCHDIR = clone.Dir('classes')
 )
 
 jar = clone.Command(
