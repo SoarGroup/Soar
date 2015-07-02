@@ -24,7 +24,7 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	std::string sourceName = this->getCategoryName() + "_" + testName + ".soar";
 	
 	std::string path = SoarHelper::GetResource(sourceName);
-	assertNonZeroSize_msg("Could not find test file " + sourceName, path);
+	assertNonZeroSize_msg("Could not find test file '" + sourceName + "'", path);
 	
 	const char* result = agent->ExecuteCommandLine(("source \"" + path + "\"").c_str());
 	

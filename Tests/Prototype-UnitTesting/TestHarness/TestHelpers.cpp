@@ -9,7 +9,17 @@
 #include "TestHelpers.hpp"
 
 #ifdef _MSC_VER
+
 #include <Windows.h>
+
+#endif
+
+#ifdef __GNUG__
+
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+
 #endif
 
 #include <exception>
@@ -63,24 +73,18 @@ void printDebugInformation(std::stringstream& output, sml::Agent* agent)
 	output << "============================================================" << std::endl << std::endl;
 }
 
-#ifdef __GNUG__
-#include <cstdlib>
-#include <memory>
-#include <cxxabi.h>
-#endif
-
 namespace TestHelpers
 {
 	// Clang++ & G++
 #ifdef __GNUG__
 
-	::std::string demangle(const char* name) {
+	std::string demangle(const char* name) {
 		
 		int status = -1;
 		
-		::std::unique_ptr<char, void(*)(void*)> res {
+		std::unique_ptr<char, void(*)(void*)> res {
 			abi::__cxa_demangle(name, NULL, NULL, &status),
-			::std::free
+			std::free
 		};
 		
 		return (status==0) ? res.get() : name ;
@@ -89,18 +93,19 @@ namespace TestHelpers
 	// VS2013 +
 #elif _MSC_VER
 	
-	::std::string demangle(const char* name)
+	std::string demangle(const char* name)
 	{
 		std::string result = name;
+		result = result.substr(result.find_last_of(" ")+1, std::string::npos);
 		
-		return result.substr(result.find(" ")+1, ::std::string::npos);
+		return result;
 	}
 
 	// Unknown
 #else
 	
 	// does nothing if not g++
-	::std::string demangle(const char* name)
+	std::string demangle(const char* name)
 	{
 		return name;
 	}
