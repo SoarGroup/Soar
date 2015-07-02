@@ -35,7 +35,7 @@ ver = '.'.join(ver_str.split('.')[:2])
 if ver == '1.7' or ver == '1.8':
     # scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
     # thinking it's 1.6 seems to work fine
-    ver = '1.6'
+    ver = '1.7'
 java_env['JAVAVERSION'] = ver
 
 java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
