@@ -210,7 +210,7 @@ if compiler == 'g++':
         cflags.append('-Wreturn-type')
 
         if GetOption('opt'):
-            cflags.extend(['-O2', '-DNDEBUG'])
+            cflags.extend(['-O3', '-DNDEBUG'])
         else:
             cflags.extend(['-g'])
 
