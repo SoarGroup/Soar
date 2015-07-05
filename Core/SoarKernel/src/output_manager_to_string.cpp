@@ -54,7 +54,7 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type)
     switch (test_type)
     {
         case NOT_EQUAL_TEST:
-            return "!= ";
+            return "<> ";
             break;
         case LESS_TEST:
             return "< ";
