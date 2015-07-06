@@ -199,6 +199,7 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
     {
         list* fl1 = rhs_value_to_funcall_list(rv1);
         list* fl2 = rhs_value_to_funcall_list(rv2);
+        if (fl1->first != fl2->first) return false;
         cons* c, *c2;
 
         for (c = fl1->rest, c2 = fl2->rest; c != NIL && c2 != NIL; c = c->rest, c2 = c2->rest)
