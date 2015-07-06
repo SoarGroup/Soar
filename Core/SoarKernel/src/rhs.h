@@ -28,6 +28,7 @@
 #define RHS_H
 
 #include "kernel.h"
+#include "debug.h"
 
 /* -- Forward declarations -- */
 typedef struct condition_struct condition;
@@ -193,13 +194,20 @@ inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2)
 inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 {
     if (rhs_value_is_symbol(rv1) && rhs_value_is_symbol(rv2))
-    {
         return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
+    else if (rhs_value_is_funcall(rv1) && rhs_value_is_funcall(rv2))
+    {
+        list* fl1 = rhs_value_to_funcall_list(rv1);
+        list* fl2 = rhs_value_to_funcall_list(rv2);
+        cons* c, *c2;
+
+        for (c = fl1->rest, c2 = fl2->rest; c != NIL && c2 != NIL; c = c->rest, c2 = c2->rest)
+            if (!rhs_values_equal(static_cast<char*>(c->first), static_cast<char*>(c2->first)))
+                return false;
+        return true;
     }
     else
-    {
         return (rv1 == rv2);
-    }
 }
 
 /* -- Functions to create RHS -- */
