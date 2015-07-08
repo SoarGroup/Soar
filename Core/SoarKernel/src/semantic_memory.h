@@ -350,7 +350,7 @@ typedef std::map<smem_lti_id, uint64_t> smem_lti_map;
 typedef std::list<Symbol*> smem_sym_list;
 
 // ways to store an identifier
-enum smem_storage_type { store_level, store_recursive };
+enum smem_storage_type { store_level, store_recursive, store_mirrored };
 
 // represents a list of wmes
 typedef std::list<wme*> smem_wme_list;

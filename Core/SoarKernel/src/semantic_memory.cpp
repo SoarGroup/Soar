@@ -814,9 +814,25 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_add = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihood_trajectories (lti_id, lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10, valid_bit) VALUES (?,?,?,?,?,?,?,?,?,?,?,1)");
     add(trajectory_add);
 
+    //Removing trajectories for a particular lti. Assume we do not remove valid trajectories.
+    trajectory_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
+    add(trajectory_remove);
+
+/*    //Removing all invalid trajectories.
+    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
+    add(trajectory_remove_all);*/
+
     //getting trajectory from fingerprint. Only retrieves ones with valid bit of 1.
     trajectory_get = new soar_module::sqlite_statement(new_db, "SELECT lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10 FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=1");
     add(trajectory_get);
+
+    //invalidating trajectories containing some lti and don't have null afterwards
+    trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
+    add(trajectory_invalidate_from_lti);
+
+    //invalidating trajectories containing some lti followed by a particular different lti
+    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
+    add(trajectory_invalidate_edge);
 
     //
 
@@ -2024,6 +2040,45 @@ inline void smem_calc_spread(agent* thisAgent)
     thisAgent->smem_context_additions->clear();
 }
 
+void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, std::map<smem_lti_id, int64_t> delta_children)
+{
+    std::map<smem_lti_id, int64_t>::iterator delta_child;
+    std::forward_list<smem_lti_id> negative_children = new std::list<smem_lti_id>;
+    for (delta_child = delta_children->begin(); delta_child != delta_children->end(); ++delta_child)
+    {
+        if (delta_child->second > 0)
+        {
+            //sqlite command that invalidates trajectories from the parent.
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
+            }
+            thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+            delete negative_children;
+            return;
+        }
+        else if (delta_child->second < 0)
+        {
+            negative_children.push_front(delta_child->first);
+        }
+    }
+    // If we even get here, it means that we only had negative children (removals) and we invalidate according to them.
+    // (Additions make you invalidate a lot more than removals.)
+    while (!negative_children->empty())
+    {
+        //sqlite command to delete trajectories involving parent to delta_children->front();
+        for (int i = 1; i < 11; i++)
+        {
+            thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, lti_parent_id);
+            thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, negative_children->front());
+        }
+        thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+        negative_children->pop_front();
+    }
+    delete negative_children;
+}
+
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Long-Term Identifier Functions (smem::lti)
@@ -2339,8 +2394,36 @@ inline smem_slot* smem_make_slot(smem_slot_map* slots, Symbol* attr)
     return (*s);
 }
 
-void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
+inline void smem_count_child_connection(std::map<smem_lti_id, int64_t>* children, smem_lti_id child_lti_id)
 {
+    std::map<smem_lti_id, int64_t>::iterator child_location = children->find(child_lti_id);
+    if (child_location != children->end())
+    {// We've already seen the child once and increment the number of links from the parent to this child by 1.
+        (*children)[child_lti_id] = it->second + 1;
+    }
+    else
+    {// We've not seen this child before and initialize to 1.
+        (*children)[child_lti_id] = 1;
+    }
+}
+
+inline void smem_count_child_connection(std::map<smem_lti_id, uint64_t>* children, smem_lti_id child_lti_id)
+{
+    std::map<smem_lti_id, uint64_t>::iterator child_location = children->find(child_lti_id);
+    if (child_location != children->end())
+    {// We've already seen the child once and increment the number of links from the parent to this child by 1.
+        (*children)[child_lti_id] = it->second + 1;
+    }
+    else
+    {// We've not seen this child before and initialize to 1.
+        (*children)[child_lti_id] = 1;
+    }
+}
+
+void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id, uint64_t>* old_children = NULL)
+{   // The change for spreading is that this function needs to provide a map if spreading is on.
+    // The map contains child ltis from lti_id and the number of links.
+
     // adjust attr, attr/value counts
     {
         uint64_t pair_count = 0;
@@ -2368,6 +2451,10 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
             }
             else
             {
+                if (old_children != NULL)
+                {
+                    smem_count_child_connection(old_children,thisAgent->smem_stmts->web_all->column_int(2))
+                }
                 // adjust in opposite direction ( adjust, attribute, lti )
                 thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(1, -1);
                 thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(2, child_attr);
@@ -2397,14 +2484,29 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
     }
 }
 
-void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true)
+void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true, smem_storage_type store_type = store_level)
 {
+    // Since smem_disconnect_chunk looks up the old info anyway,
+    // we can just use it to calculate what needs to be recalculated for spreading.
+    // Thanks, smem_disconnect_chunk!
+
+    std::map<smem_lti_id, uint64_t>* old_children = NULL;
+    std::map<smem_lti_id, int64_t>* new_children = NULL;
+    if (thisAgent->smem_params->spreading->get_value() == on)
+    {
+        new_children = new std::map<smem_lti_id, int64_t>;
+    }
+
     // if remove children, disconnect chunk -> no existing edges
     // else, need to query number of existing edges
     uint64_t existing_edges = 0;
     if (remove_old_children)
     {
-        smem_disconnect_chunk(thisAgent, lti_id);
+        if (thisAgent->smem_params->spreading->get_value() == on)
+        {
+            old_children = new std::map<smem_lti_id, uint64_t>;
+        }
+        smem_disconnect_chunk(thisAgent, lti_id, old_children);
         
         // provide trace output
         if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ] && (print_id))
@@ -2494,6 +2596,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                 else
                 {
                     value_lti = (*v)->val_lti.val_value->lti_id;
+
                     if (value_lti == NIL)
                     {
                         value_lti = smem_lti_add_id(thisAgent, (*v)->val_lti.val_value->lti_letter, (*v)->val_lti.val_value->lti_number);
@@ -2508,10 +2611,15 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                             epmem_schedule_promotion(thisAgent, (*v)->val_lti.val_value->soar_id);
                         }
                     }
-                    
+
                     if (remove_old_children)
                     {
                         lti_new.insert(std::make_pair(attr_hash, value_lti));
+                        //For spreading, I need to keep track of the changes to memory. That happens here.
+                        if (new_children != NULL)
+                        {
+                            smem_count_child_connection(new_children, value_lti);
+                        }
                     }
                     else
                     {
@@ -2522,6 +2630,11 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                         if (thisAgent->smem_stmts->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
+                            //For spreading, I need to keep track of the changes to memory. That happens here.
+                            if (new_children != NULL)
+                            {
+                                smem_count_child_connection(new_children, value_lti);
+                            }
                         }
                     }
                     
@@ -2540,6 +2653,45 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
         }
     }
     
+    /*
+     * Here, the delta between what the children of the lti used to be and
+     * what they are now is calculated and used to determine what spreading
+     * likelihoods need to be recalculated (since the network structure
+     * behind them are not longer valid).
+     */
+    if (new_children != NULL)
+    {
+        if (remove_old_children)
+        {//This is where the delta has to be calculated.
+            /* Delta: Loop over the new children.
+             * Check if they are also old children.
+             * If so, calculate the delta and store that into new children as the new value.
+             * At the same time, erase the old children if it showed up (after calculating the delta)
+             * Then, loop through the remaining old children and just add those values as negative.
+             */
+
+            assert(old_children != NULL);
+            //for sanity^
+
+            std::map<smem_lti_id, uint64_t>::iterator child;
+            for (child = new_children->begin(); child != new_children->end(); ++child)
+            {
+                if (old_children->find(child->first)!=old_children->end())
+                {
+                    (*new_children)[child->first] = (*new_children)[child->first] - (*old_children)[child->first];
+                    old_children->erase(child->first);
+                }
+            }
+            for (child = old_children->begin(); child != old_children->end(); ++child)
+            {
+                (*new_children)[child->first] = child->second;
+            }
+        }
+        //At this point, new_children contains the set of changes to memory that are relevant to spreading.
+        //We use those changes to invalidate the appropriate spreading values.
+        smem_invalidate_trajectories(thisAgent, lti_id, new_children);
+    }
+
     // activation function assumes proper thresholding state
     // thus, consider four cases of augmentation counts (w.r.t. thresh)
     // 1. before=below, after=below: good (activation will update smem_augmentations)
@@ -2577,7 +2729,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     
     // Put the initialization of the entry in the prohibit table here.
     //(The initialization to the activation history is in the below function call "smem_lti_activate".)
-    // Also, it seemed appropriate for such an initialization to be in store_chunk.Z
+    // Also, it seemed appropriate for such an initialization to be in store_chunk.
     {
         thisAgent->smem_stmts->prohibit_add->bind_int(1,lti_id);
         thisAgent->smem_stmts->prohibit_add->execute(soar_module::op_reinit);
@@ -2699,6 +2851,15 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
         {
             thisAgent->smem_stats->slots->set_value(thisAgent->smem_stats->slots->get_value() + (const_new.size() + lti_new.size()));
         }
+    }
+    //This is kinda late for cleaning up, but I went ahead and did it so that I wouldn't forget.
+    if (old_children != NULL)
+    {
+        delete old_children;
+    }
+    if (new_children != NULL)
+    {
+        delete new_children;
     }
 }
 
