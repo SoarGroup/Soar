@@ -840,6 +840,47 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //
 
+    //take away spread precalculated values for some lti
+    likelihood_cond_count_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihoods WHERE lti_j=?");
+    add(likelihood_cond_count_remove);
+
+    //take away other spread precalculated values for some lti
+    lti_count_num_appearances_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_trajectory_num WHERE lti_id=?");
+    add(lti_count_num_appearances_remove);
+
+    //add spread precalculated values for some lti
+    likelihood_cond_count_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti, parent) GROUP BY parent, lti");
+    add(likelihood_cond_count_insert);
+
+    //add other spread precalculated values for some lti
+    lti_count_num_appearances_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods WHERE lti_j=? GROUP BY lti_j");
+    add(lti_count_num_appearances_insert);
+
+    //gets the relevant info from currently relevant ltis
+    calc_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");
+    add(calc_spread);
+
+    //delete lti from context table
+    delete_old_context = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_context WHERE lti_id=?");
+    add(delete_old_context);
+
+    //delete lti's info from current spread table
+    delete_old_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_spread WHERE lti_source=?");
+    add(delete_old_spread);
+
+    //add lti to the context table
+    add_new_context = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_context (lti_id) VALUES (?)");
+    add(add_new_context);
+
+    //add a fingerprint's information to the current spread table.
+    add_fingerprint = new soar_module::sqlite_statement(new_db,
+            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
+            "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
+            "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
+            "smem_trajectory_num ON lti_id=lti_j");
+    add(add_fingerprint);
+    //
+
     //Modified to include spread value.
     vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_value, activation_spread FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
     add(vis_lti);
@@ -1873,19 +1914,24 @@ void smem_fix_spread(agent* thisAgent)
     {
         delete to_delete->second;
     }
-
-    // Need to modify the below to only update and only do so for the ltis that had any of their trajectory's invalidated.
-    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
-    likelihood_cond_count->prepare();
-    likelihood_cond_count->execute(soar_module::op_reinit);
-    delete likelihood_cond_count;
-
-    soar_module::sqlite_statement* lti_count_num_appearances = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j");
-    lti_count_num_appearances->prepare();
-    lti_count_num_appearances->execute(soar_module::op_reinit);
-    delete lti_count_num_appearances;
+    std::set<smem_lti_id>::iterator invalid_parent;
+    for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
+    {
+        thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*invalid_parent));
+        thisAgent->smem_stmts->likelihood_cond_count_remove->execute(soar_module::op_reinit);
+        for (int i = 1; i < 11; i++)
+        {
+            thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*invalid_parent));
+        }
+        thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+    }
+    for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
+    {
+        thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*invalid_parent));
+        thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
+        thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*invalid_parent));
+        thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+    }
 }
 
 // Given the current elements in thisAgent->smem_in_wmem, this function will update
@@ -1906,8 +1952,11 @@ void smem_fix_spread(agent* thisAgent)
 void smem_calc_spread(agent* thisAgent)
 {
 
-    soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
-                        "SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");
+/*    soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+                        "SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");*/
+
+    soar_module::sqlite_statement* calc_spread = thisAgent->smem_stmts->calc_spread;
+
 
     double spread;
     uint64_t lti_id;
@@ -1922,7 +1971,6 @@ void smem_calc_spread(agent* thisAgent)
 
         //("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
 
-        calc_spread->prepare();
         calc_spread->bind_int(1,(*it));
         //double additional_num = 0;
         //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
@@ -1974,57 +2022,62 @@ void smem_calc_spread(agent* thisAgent)
 
 
     //Now, delete old entries.
-    soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
-        "DELETE FROM smem_current_context WHERE lti_id=?");
-    delete_old_context->prepare();
+    /*soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+        "DELETE FROM smem_current_context WHERE lti_id=?");*/
+    soar_module::sqlite_statement* delete_old_context = thisAgent->smem_stmts->delete_old_context;
+
     for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
         delete_old_context->bind_int(1,(*it));
         delete_old_context->execute(soar_module::op_reinit);
     }
-    delete_old_context->execute(soar_module::op_reinit);
-    delete delete_old_context;
+   // delete_old_context->execute(soar_module::op_reinit);
+   // delete delete_old_context;
     //This deletes from the table that calculates spread, not just the one that contains current context elements.
-    soar_module::sqlite_statement* delete_old_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "DELETE FROM smem_current_spread WHERE lti_source=?");
-    delete_old_spread->prepare();
+    /*soar_module::sqlite_statement* delete_old_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DELETE FROM smem_current_spread WHERE lti_source=?");*/
+    soar_module::sqlite_statement* delete_old_spread = thisAgent->smem_stmts->delete_old_spread;
+    //delete_old_spread->prepare();
     for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
         delete_old_spread->bind_int(1,(*it));
         delete_old_spread->execute(soar_module::op_reinit);
     }
-    delete_old_spread->execute(soar_module::op_reinit);
-    delete delete_old_spread;
+    //delete_old_spread->execute(soar_module::op_reinit);
+    //delete delete_old_spread;
     thisAgent->smem_context_removals->clear();
 
     //Insert values that will be used later.
-    soar_module::sqlite_statement* add_new_context = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_current_context (lti_id) VALUES (?)");
-    add_new_context->prepare();
+    /*soar_module::sqlite_statement* add_new_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_current_context (lti_id) VALUES (?)");*/
+    soar_module::sqlite_statement* add_new_context = thisAgent->smem_stmts->add_new_context;
+
+    //add_new_context->prepare();
 
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {
         add_new_context->bind_int(1,(*it));
         add_new_context->execute(soar_module::op_reinit);
     }
-    delete add_new_context;
+    //delete add_new_context;
 
     //num_appearances is number of things inside the fingerprint of lti_j.
     //num_appearances_i_j is number of times i occurs in fingerprint of lti_j.
-    soar_module::sqlite_statement* add_fingerprint = new soar_module::sqlite_statement(thisAgent->smem_db,
+    /*soar_module::sqlite_statement* add_fingerprint = new soar_module::sqlite_statement(thisAgent->smem_db,
             //INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM (SELECT * FROM smem_likelihoods WHERE lti_j<200) INNER JOIN smem_trajectory_num ON lti_id=lti_j;
             "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
             "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
             "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
-            "smem_trajectory_num ON lti_id=lti_j");
-    add_fingerprint->prepare();
+            "smem_trajectory_num ON lti_id=lti_j");*/
+    soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
+    //add_fingerprint->prepare();
 
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {
         add_fingerprint->bind_int(1,(*it));
         add_fingerprint->execute(soar_module::op_reinit);
     }
-    delete add_fingerprint;
+    //delete add_fingerprint;
 
 
 
@@ -2086,7 +2139,6 @@ void smem_calc_spread(agent* thisAgent)
 
 
     }
-    delete calc_spread;
 
     thisAgent->smem_context_additions->clear();
 }

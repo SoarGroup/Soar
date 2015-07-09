@@ -298,7 +298,23 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* web_val_both;
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;
+        soar_module::sqlite_statement* trajectory_remove;
+        soar_module::sqlite_statement* trajectory_remove_all;
+        soar_module::sqlite_statement* trajectory_find_invalid;
         soar_module::sqlite_statement* trajectory_get;
+        soar_module::sqlite_statement* trajectory_invalidate_from_lti;
+        soar_module::sqlite_statement* trajectory_invalidate_edge;
+
+        soar_module::sqlite_statement* likelihood_cond_count_remove;
+        soar_module::sqlite_statement* lti_count_num_appearances_remove;
+        soar_module::sqlite_statement* likelihood_cond_count_insert;
+        soar_module::sqlite_statement* lti_count_num_appearances_insert;
+        soar_module::sqlite_statement* calc_spread;
+        soar_module::sqlite_statement* delete_old_context;
+        soar_module::sqlite_statement* delete_old_spread;
+        soar_module::sqlite_statement* add_new_context;
+        soar_module::sqlite_statement* add_fingerprint;
+
 
         smem_statement_container(agent* new_agent);
         
