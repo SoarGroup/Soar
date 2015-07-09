@@ -831,11 +831,11 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(trajectory_get);
 
     //invalidating trajectories containing some lti and don't have null afterwards
-    trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
+    trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
     add(trajectory_invalidate_from_lti);
 
     //invalidating trajectories containing some lti followed by a particular different lti
-    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
+    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
     add(trajectory_invalidate_edge);
 
     //
@@ -873,12 +873,9 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(add_new_context);
 
     //add a fingerprint's information to the current spread table.
-    add_fingerprint = new soar_module::sqlite_statement(new_db,
-            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
-            "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
-            "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
-            "smem_trajectory_num ON lti_id=lti_j");
+    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j");
     add(add_fingerprint);
+
     //
 
     //Modified to include spread value.
