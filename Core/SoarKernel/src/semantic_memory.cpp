@@ -1894,9 +1894,9 @@ void smem_fix_spread(agent* thisAgent)
     smem_lti_id lti_id;
     uint64_t count;
     std::set<smem_lti_id> invalidated_parents;
+    std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
     while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
     {
-        std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
         lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
         invalidated_parents.insert(lti_id);
         count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
@@ -2143,10 +2143,10 @@ void smem_calc_spread(agent* thisAgent)
     thisAgent->smem_context_additions->clear();
 }
 
-void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, std::map<smem_lti_id, int64_t> delta_children)
+void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, std::map<smem_lti_id, int64_t>* delta_children)
 {
     std::map<smem_lti_id, int64_t>::iterator delta_child;
-    std::forward_list<smem_lti_id> negative_children = new std::list<smem_lti_id>;
+    std::list<smem_lti_id>* negative_children = new std::list<smem_lti_id>;
     for (delta_child = delta_children->begin(); delta_child != delta_children->end(); ++delta_child)
     {
         if (delta_child->second > 0)
@@ -2162,7 +2162,7 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
         }
         else if (delta_child->second < 0)
         {
-            negative_children.push_front(delta_child->first);
+            negative_children->push_front(delta_child->first);
         }
     }
     // If we even get here, it means that we only had negative children (removals) and we invalidate according to them.
@@ -2502,7 +2502,7 @@ inline void smem_count_child_connection(std::map<smem_lti_id, int64_t>* children
     std::map<smem_lti_id, int64_t>::iterator child_location = children->find(child_lti_id);
     if (child_location != children->end())
     {// We've already seen the child once and increment the number of links from the parent to this child by 1.
-        (*children)[child_lti_id] = it->second + 1;
+        (*children)[child_lti_id] = child_location->second + 1;
     }
     else
     {// We've not seen this child before and initialize to 1.
@@ -2515,7 +2515,7 @@ inline void smem_count_child_connection(std::map<smem_lti_id, uint64_t>* childre
     std::map<smem_lti_id, uint64_t>::iterator child_location = children->find(child_lti_id);
     if (child_location != children->end())
     {// We've already seen the child once and increment the number of links from the parent to this child by 1.
-        (*children)[child_lti_id] = it->second + 1;
+        (*children)[child_lti_id] = child_location->second + 1;
     }
     else
     {// We've not seen this child before and initialize to 1.
@@ -2556,7 +2556,7 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id, std::map<smem_l
             {
                 if (old_children != NULL)
                 {
-                    smem_count_child_connection(old_children,thisAgent->smem_stmts->web_all->column_int(2))
+                    smem_count_child_connection(old_children,thisAgent->smem_stmts->web_all->column_int(2));
                 }
                 // adjust in opposite direction ( adjust, attribute, lti )
                 thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(1, -1);
@@ -2776,18 +2776,19 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
             assert(old_children != NULL);
             //for sanity^
 
-            std::map<smem_lti_id, uint64_t>::iterator child;
-            for (child = new_children->begin(); child != new_children->end(); ++child)
+            std::map<smem_lti_id, int64_t>::iterator new_child;
+            for (new_child = new_children->begin(); new_child != new_children->end(); ++new_child)
             {
-                if (old_children->find(child->first)!=old_children->end())
+                if (old_children->find(new_child->first)!=old_children->end())
                 {
-                    (*new_children)[child->first] = (*new_children)[child->first] - (*old_children)[child->first];
-                    old_children->erase(child->first);
+                    (*new_children)[new_child->first] = (*new_children)[new_child->first] - (*old_children)[new_child->first];
+                    old_children->erase(new_child->first);
                 }
             }
-            for (child = old_children->begin(); child != old_children->end(); ++child)
+            std::map<smem_lti_id, uint64_t>::iterator old_child;
+            for (old_child = old_children->begin(); old_child != old_children->end(); ++old_child)
             {
-                (*new_children)[child->first] = child->second;
+                (*new_children)[old_child->first] = old_child->second;
             }
         }
         //At this point, new_children contains the set of changes to memory that are relevant to spreading.
