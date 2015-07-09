@@ -112,6 +112,8 @@ elif compiler == 'msvc':
 	srcdirs.append('src/windows')
 	incdirs.append('src/windows')
 	scu_src.append('src/windows/platform_specific.cpp')
+else:
+	flags = []
 
 src = []
 if env['SCU']:

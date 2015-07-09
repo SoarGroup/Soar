@@ -46,7 +46,7 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
-        enum spreading_types { ppr, ppr_noloop, actr };
+        enum spreading_types { ppr, ppr_noloop, actr, ppr_backwards, ppr_both };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };

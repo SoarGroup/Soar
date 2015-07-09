@@ -93,42 +93,40 @@ fi
 
 if [ $COMPILE_FOR_LSB -ne 0 ] && [ ${VERCC[0]} -gt 4 -o ${VERCXX[0]} -gt 4 -o ${VERCC[1]} -gt 4 -o ${VERCXX[1]} -gt 4 ]
 then
-  echo "gcc/g++ 4.5 through 4.8 require ld.gold for LSB compilation."
+  echo "GCC 4.5 and up require ld.gold for LSB compilation."
 
   GOLD_LD=$(echo $(whereis -b gold-ld) | sed 's/.* //')
   if [ -x "$GOLD_LD/ld" ]; then
-    MAX_MINOR=8
     echo "ld.gold found: $GOLD_LD"
   else
-    MAX_MINOR=4
-    echo "gold-ld could not be found, but is required for LSB build with GCC 4.5 and 4.6."
+    echo "gold-ld could not be found."
     echo "Notes: gold-ld is merely a directory on the path (e.g. /usr/lib/gold-ld)"
     echo "       gold-ld must contain 'ld', a symlink to ld.gold or gold"
   fi
 fi
 
-if [ $COMPILE_FOR_LSB -ne 0 ] && [ ${VERCC[0]} -gt 4 -o ${VERCXX[0]} -gt 4 -o ${VERCC[1]} -gt $MAX_MINOR -o ${VERCXX[1]} -gt $MAX_MINOR ]
-then
-  COMPILE_FOR_LSB=0
-  for minor in $(seq $MAX_MINOR -1 0); do
-    TESTCC=$(which "gcc-4.$minor")
-    TESTCXX=$(which "g++-4.$minor")
-    if [ -x $TESTCC -a -x $TESTCXX ]; then
-      COMPILE_FOR_LSB=1
-      CC=$TESTCC
-      CXX=$TESTCXX
-      VERCC[0]=4
-      VERCXX[0]=4
-      VERCC[1]=$MAX_MINOR
-      VERCXX[1]=$MAX_MINOR
-      break
-    fi
-  done
-
-  if [ $COMPILE_FOR_LSB -eq 0 ]; then
-    echo "No version of gcc/g++ usable for LSB compilation found."
-  fi
-fi
+#if [ $COMPILE_FOR_LSB -ne 0 ] && [ ${VERCC[0]} -gt 4 -o ${VERCXX[0]} -gt 4 -o ${VERCC[1]} -gt $MAX_MINOR -o ${VERCXX[1]} -gt $MAX_MINOR ]
+#then
+#  COMPILE_FOR_LSB=0
+#  for minor in $(seq $MAX_MINOR -1 0); do
+#    TESTCC=$(which "gcc-4.$minor")
+#    TESTCXX=$(which "g++-4.$minor")
+#    if [ "$TESTCC" != "" ] && [ "$TESTCXX" != "" ] && [ -x $TESTCC -a -x $TESTCXX ]; then
+#      COMPILE_FOR_LSB=1
+#      CC=$TESTCC
+#      CXX=$TESTCXX
+#      VERCC[0]=4
+#      VERCXX[0]=4
+#      VERCC[1]=$MAX_MINOR
+#      VERCXX[1]=$MAX_MINOR
+#      break
+#    fi
+#  done
+#
+#  if [ $COMPILE_FOR_LSB -eq 0 ]; then
+#    echo "No version of gcc/g++ usable for LSB compilation found."
+#  fi
+#fi
 
 if [ $COMPILE_FOR_LSB -eq 0 ]; then
   exit 1

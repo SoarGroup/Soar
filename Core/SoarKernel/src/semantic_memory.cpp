@@ -85,6 +85,8 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // spreading type
     spreading_type = new soar_module::constant_param<spreading_types>("spreading-type", ppr, new soar_module::f_predicate<spreading_types>());
     spreading_type->add_mapping(ppr, "ppr");//personalized pagerank log(prob)
+    spreading_type->add_mapping(ppr_backwards, "ppr-backwards");
+    spreading_type->add_mapping(ppr_both, "ppr-both");
     spreading_type->add_mapping(actr, "actr");//Using act-r's depth 1 log-odds.
     spreading_type->add_mapping(ppr_noloop, "ppr-noloop");//Same as ppr, but with a restriction that trajectories don't loop.
     //Need to code up and add the one with variable depth ACT-R...
@@ -152,7 +154,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(activate_on_query);
     
     // activation_mode
-    activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_recency, new soar_module::f_predicate<act_choices>());
+    activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_base, new soar_module::f_predicate<act_choices>());
     activation_mode->add_mapping(act_recency, "recency");
     activation_mode->add_mapping(act_frequency, "frequency");
     activation_mode->add_mapping(act_base, "base-level");
@@ -180,10 +182,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // spreading_baseline - This determines how far 1 occurence in a fingerprint is from zero occurances in a fingerprint
     // Think of it as a measure of the confidence we have that our spreading model is capturing all relevant nodes
     // It's somewhat related to epsilon greedy.
-    spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.5, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.1, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_baseline);
 
-    number_trajectories = new soar_module::decimal_param("number-trajectories", 10, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    number_trajectories = new soar_module::decimal_param("number-trajectories", 16, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(number_trajectories);
 
     restart_probability = new soar_module::decimal_param("restart-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
@@ -1348,8 +1350,19 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
 {
     if (lti_trajectories.find(lti_id)==lti_trajectories.end())
     {
-        soar_module::sqlite_statement* children_q = thisAgent->smem_stmts->web_val_child;//web_val_child;//web_val_parent_2;
-
+        soar_module::sqlite_statement* children_q;
+        if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
+        {
+            children_q = thisAgent->smem_stmts->web_val_parent_2;
+        }
+        else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
+        {
+            children_q = thisAgent->smem_stmts->web_val_both;
+        }
+        else
+        {
+            children_q = thisAgent->smem_stmts->web_val_child;//web_val_child;//web_val_parent_2;
+        }
         std::list<smem_lti_id> children;
 
         //TODO - Figure out why I need this if. The statement should already be prepared by an init call before or during calc_spread.
@@ -1527,7 +1540,7 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
         //TODO - This isn't the only place, but I've HARD-CODED the number of trajectories here.
         for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value(); ++i)
         {
-        assert(thisAgent->smem_params->number_trajectories->get_value()!=10);
+        //assert(thisAgent->smem_params->number_trajectories->get_value()!=10);
         //assert(i!=8);
             std::list<smem_lti_id> trajectory;
             trajectory.push_back(lti_id);
