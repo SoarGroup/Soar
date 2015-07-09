@@ -818,9 +818,13 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
     add(trajectory_remove);
 
-/*    //Removing all invalid trajectories.
+    //Removing all invalid trajectories.
     trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
-    add(trajectory_remove_all);*/
+    add(trajectory_remove_all);
+
+    //Find all of the ltis with invalid trajectories and find how many new ones they need.
+    trajectory_find_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id, COUNT(*) FROM smem_likelihood_trajectories WHERE valid_bit=0 GROUP BY lti_id");
+    add(trajectory_find_invalid);
 
     //getting trajectory from fingerprint. Only retrieves ones with valid bit of 1.
     trajectory_get = new soar_module::sqlite_statement(new_db, "SELECT lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10 FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=1");
@@ -1837,6 +1841,53 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     return new_activation+spread;
 }
 
+/*
+ * When the semantic store changes between queries, that makes the previous spreading values
+ * invalid. This function is called to find all of the invalid trajectories and recalculate
+ * so that for the next query, we again have valid spreading values.
+ *
+ * It's pretty simple in concept. Find the invalid trajectories, then just redo them.
+ */
+void smem_fix_spread(agent* thisAgent)
+{
+    smem_lti_id lti_id;
+    uint64_t count;
+    std::set<smem_lti_id> invalidated_parents;
+    while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
+    {
+        std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
+        lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
+        invalidated_parents.insert(lti_id);
+        count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
+        for (int i = 0; i < count; ++i)
+        {
+            std::list<smem_lti_id> trajectory;
+            trajectory.push_back(lti_id);
+            trajectory_construction(thisAgent,trajectory,lti_trajectories);
+        }
+    }
+    thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
+    thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
+
+    for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
+    {
+        delete to_delete->second;
+    }
+
+    // Need to modify the below to only update and only do so for the ltis that had any of their trajectory's invalidated.
+    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
+    likelihood_cond_count->prepare();
+    likelihood_cond_count->execute(soar_module::op_reinit);
+    delete likelihood_cond_count;
+
+    soar_module::sqlite_statement* lti_count_num_appearances = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j");
+    lti_count_num_appearances->prepare();
+    lti_count_num_appearances->execute(soar_module::op_reinit);
+    delete lti_count_num_appearances;
+}
+
 // Given the current elements in thisAgent->smem_in_wmem, this function will update
 // the component of activation from spread.
 /*
@@ -1852,7 +1903,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 *
 * */
 
-inline void smem_calc_spread(agent* thisAgent)
+void smem_calc_spread(agent* thisAgent)
 {
 
     soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
@@ -3441,6 +3492,13 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     ////////////////////////////////////////////////////////////////////////////
     
     //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
+    //First, we fix bad trajectories. (Asynchronous would be nice.)
+    if (thisAgent->smem_params->spreading->get_value() == on)
+    {
+        smem_fix_spread(thisAgent);
+    }
+
+    //Contribution from context
     if (thisAgent->smem_params->spreading->get_value() == on)
     {
         smem_calc_spread(thisAgent);
