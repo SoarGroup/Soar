@@ -32,7 +32,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity)
+list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
     cons* new_c;
 
@@ -41,12 +41,12 @@ list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts);
     if (static_cast<test>(new_c->first)->type == EQUALITY_TEST)
     {
         *pEq_test = static_cast<test>(new_c->first);
     }
-    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts);
     return new_c;
 }
 
@@ -54,7 +54,7 @@ list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
 //    Symbol* referent;
     test new_ct;
@@ -75,14 +75,17 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity)
             new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            if (pUnify_variablization_identity && thisAgent->variablizationManager->in_null_identity_set(t->eq_test))
+            if (pStripLiteralConjuncts && thisAgent->variablizationManager->in_null_identity_set(t->eq_test))
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
                 new_ct->identity = t->eq_test->identity;
-                thisAgent->variablizationManager->unify_identity(new_ct);
+                if (pUnify_variablization_identity)
+                {
+                    thisAgent->variablizationManager->unify_identity(new_ct);
+                }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
             }
             break;
         default:
