@@ -17,25 +17,33 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
 {
     std::string oldResult(m_Result.str());
     m_Result.str("");
-
+    
     // Fire off command
     bool ret = m_Parser.handle_command(argv);
-
+    
     if (!m_Result.str().empty())
+    {
         m_Result << std::endl;
-
-	std::string res = m_Result.str();
+    }
+    
+    std::string res = m_Result.str();
     m_Result.str("");
-	m_Result << oldResult;
-
+    m_Result << oldResult;
+    
     if (!DoCLog(mode, &filename, 0, true))
+    {
         return false;
-
+    }
+    
     if (!DoCLog(LOG_ADD, 0, &res, true))
+    {
         return false;
-
+    }
+    
     if (!DoCLog(LOG_CLOSE, 0, 0, true))
+    {
         return false;
-
-	return ret;
+    }
+    
+    return ret;
 }

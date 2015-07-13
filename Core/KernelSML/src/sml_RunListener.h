@@ -31,39 +31,40 @@
 #include <string>
 #include <map>
 
-namespace sml {
-
-class KernelSML ;
-class Connection ;
-
-class RunListener : public EventManager<smlRunEventId>
+namespace sml
 {
-protected:
-	KernelSML*		m_pKernelSML ;
 
-public:
-	RunListener()
-	{
-		m_pKernelSML = 0 ;
-	}
-
-	virtual ~RunListener()
-	{
-		Clear() ;
-	}
-
-	void Init(KernelSML* pKernelSML, AgentSML* pAgentSML) ;
-
-	// Called when an event occurs in the kernel
-	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
-
-	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(smlRunEventId eventID, Connection* pConnection) ;
-
-	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(smlRunEventId eventID, Connection* pConnection) ;
-} ;
-
+    class KernelSML ;
+    class Connection ;
+    
+    class RunListener : public EventManager<smlRunEventId>
+    {
+        protected:
+            KernelSML*      m_pKernelSML ;
+            
+        public:
+            RunListener()
+            {
+                m_pKernelSML = 0 ;
+            }
+            
+            virtual ~RunListener()
+            {
+                Clear() ;
+            }
+            
+            void Init(KernelSML* pKernelSML, AgentSML* pAgentSML) ;
+            
+            // Called when an event occurs in the kernel
+            virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
+            
+            // Returns true if this is the first connection listening for this event
+            virtual bool AddListener(smlRunEventId eventID, Connection* pConnection) ;
+            
+            // Returns true if at least one connection remains listening for this event
+            virtual bool RemoveListener(smlRunEventId eventID, Connection* pConnection) ;
+    } ;
+    
 }
 
 #endif

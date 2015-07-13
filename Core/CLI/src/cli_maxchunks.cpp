@@ -19,20 +19,25 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoMaxChunks(const int n) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    if (!n) {
+bool CommandLineInterface::DoMaxChunks(const int n)
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    if (!n)
+    {
         // query
-        if (m_RawOutput) {
-            m_Result << agnt->sysparams[MAX_CHUNKS_SYSPARAM];
-        } else {
+        if (m_RawOutput)
+        {
+            m_Result << thisAgent->sysparams[MAX_CHUNKS_SYSPARAM];
+        }
+        else
+        {
             std::string temp;
-            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[MAX_CHUNKS_SYSPARAM], temp));
+            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM], temp));
         }
         return true;
     }
-
-    agnt->sysparams[MAX_CHUNKS_SYSPARAM] = n;
+    
+    thisAgent->sysparams[MAX_CHUNKS_SYSPARAM] = n;
     return true;
 }
 

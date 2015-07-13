@@ -16,36 +16,37 @@
 #include "thread_OSspecific.h"
 #include "Export.h"
 
-namespace soar_thread {
-
-class EXPORT Event
+namespace soar_thread
 {
-protected:
-	// OS specific implementation
-	OSSpecificEvent*	m_Imp ;
 
-public:
-	Event() ;
-	~Event() ;
-
-	void WaitForEventForever()
-	{
-		m_Imp->WaitForEventForever() ;
-	}
-
-	// Returns true if event was triggered.  False if we just timed out.
-	//The timeout is seconds + milliseconds, where milliseconds < 1000
-	bool WaitForEvent(int seconds, int milliseconds)
-	{
-		return m_Imp->WaitForEvent(seconds, milliseconds) ;
-	}
-
-	void TriggerEvent()
-	{
-		m_Imp->TriggerEvent() ;
-	}
-} ;
-
+    class EXPORT Event
+    {
+        protected:
+            // OS specific implementation
+            OSSpecificEvent*    m_Imp ;
+            
+        public:
+            Event() ;
+            ~Event() ;
+            
+            void WaitForEventForever()
+            {
+                m_Imp->WaitForEventForever() ;
+            }
+            
+            // Returns true if event was triggered.  False if we just timed out.
+            //The timeout is seconds + milliseconds, where milliseconds < 1000
+            bool WaitForEvent(int seconds, int milliseconds)
+            {
+                return m_Imp->WaitForEvent(seconds, milliseconds) ;
+            }
+            
+            void TriggerEvent()
+            {
+                m_Imp->TriggerEvent() ;
+            }
+    } ;
+    
 } // Namespace
 
 #endif // THREAD_EVENT_H

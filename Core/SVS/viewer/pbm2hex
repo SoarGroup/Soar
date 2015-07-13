@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# A little script to translate a text-only pbm file into C source code
+# for the font bitmap array initializer. Used to hard-code the font data
+# into the program.
+
+awk '
+function print_char(r, c,    byte, bit, sep, i, j) {
+	sep = ""
+	
+	printf("{");
+	for (i = charh - 1; i >= 0; --i) {
+		byte = 0x00
+		bit =  0x80
+		for (j = 0; j < charw; ++j) {
+			if (b[r + i, c + j] == 1)
+				byte += bit
+			
+			if (bit == 1) {
+				printf("%s0x%.2x", sep, byte);
+				sep = ","
+				byte = 0x00
+				bit = 0x80
+			} else {
+				bit /= 2
+			}
+		}
+		if (bit != 0x80) {
+			printf("%s0x%.2x", sep, byte);
+			sep = ","
+		}
+	}
+	printf("}\n");
+}
+
+BEGIN { r = 0; c = 0 }
+NR == 2 {
+	w = $1
+	h = $2
+	charw = w / 15    # 15 = num character cols in bitmap
+	charh = h / 7     # 7 = num character rows in bitmap
+}
+NR > 2 {
+	for (i = 1; i <= NF; ++i) {
+		b[r, c++] = $i
+		if (c >= w) {
+			r++;
+			c = 0;
+		}
+	}
+}
+END {
+	for (i = 0; i < h; i += charh) {
+		for (j = 0; j < w; j += charw) {
+			print_char(i, j)
+		}
+	}
+}
+' $1

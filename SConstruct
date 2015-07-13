@@ -12,10 +12,11 @@ import re
 import fnmatch
 from SCons.Node.Alias import default_ans
 import SCons.Script
+import shutil
 
 join = os.path.join
 
-SOAR_VERSION = "9.3.3"
+SOAR_VERSION = "9.4.0"
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
@@ -97,6 +98,15 @@ def InstallDir(env, tgt, src, globstring="*"):
 
 	return targets
 
+def InstallDLLs(env):
+  if sys.platform == 'win32' and GetOption('opt'):
+    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
+    outdir = os.path.realpath(GetOption('outdir')) + '\\'
+    os.mkdir(outdir)
+    for dll in indlls:
+      #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
+      shutil.copy(dll.rstr(), outdir)
+
 Export('InstallDir')
 
 AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
@@ -168,7 +178,8 @@ elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('c
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
-Export('compiler')
+lsb_build = ('lsbc++' in env['CXX'])
+Export('compiler', 'lsb_build')
 
 cflags = []
 lnflags = []
@@ -307,3 +318,5 @@ if COMMAND_LINE_TARGETS == ['list']:
 for a in DEF_TARGETS:
 	if a in all_aliases:
 		Default(a)
+
+InstallDLLs(env)

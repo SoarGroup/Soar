@@ -15,10 +15,10 @@
 
 class TagFilter : public soarxml::ElementXML
 {
-public:
-	TagFilter(void) ;
-
-	void SetCommand(char const* pCommandLine) ;
+    public:
+        TagFilter(void) ;
+        
+        void SetCommand(char const* pCommandLine) ;
 };
 
-#endif	// SML_TAG_FILTER_H
+#endif  // SML_TAG_FILTER_H

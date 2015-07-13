@@ -19,23 +19,32 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoMaxDCTime(const int n) {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    if (!n) {
+bool CommandLineInterface::DoMaxDCTime(const int n)
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    if (!n)
+    {
         // query
-        if (m_RawOutput) {
-            if (agnt->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0)
-                m_Result << agnt->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] << " microseconds";
+        if (m_RawOutput)
+        {
+            if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0)
+            {
+                m_Result << thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] << " microseconds";
+            }
             else
+            {
                 m_Result << "Decision cycle time interrupt disabled.";
-        } else {
+            }
+        }
+        else
+        {
             std::string temp;
-            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT], temp));
+            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT], temp));
         }
         return true;
     }
-
-    agnt->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = n < 0 ? -1 : n;
+    
+    thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = n < 0 ? -1 : n;
     return true;
 }
 

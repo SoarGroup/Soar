@@ -1,0 +1,47 @@
+###############################################################################
+# settings.soar                                                               #
+#                                                                             #
+# This file is silently loaded once upon agent creation.  It can be used to   #
+# add custom aliases and default Soar settings for an agent.                  #
+#                                                                             #
+# Warning: This file is not reloaded when an agent is re-initialized.         #
+#                                                                             #
+# Warning:  You can turn on tcl mode in this file, but you cannot use tcl     #
+#           commands here.                                                    #
+###############################################################################
+
+################
+# User aliases #
+################
+alias cnf               chunk-name-format
+alias ea                excise --all
+alias ec                excise --chunks
+alias m                 matches
+alias pf                production-find
+alias ps                print --stack
+alias quit              exit
+alias r                 run
+alias s                 run 1
+alias wmes              print -depth 0 -internal
+alias ebc explain-backtraces -c
+alias ep epmem
+alias eps epmem -S
+alias sm smem
+alias sms smem -S
+
+#################
+# Soar Settings #
+#################
+
+max-goal-depth 233
+default-wme-depth 2
+
+###################
+# Module Settings #
+###################
+# cli tcl on
+# epmem -e
+# smem -e
+# learn -e
+
+echo "\nSettings loaded from settings/settings.soar..."

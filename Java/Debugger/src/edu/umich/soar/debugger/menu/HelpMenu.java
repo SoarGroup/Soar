@@ -40,7 +40,7 @@ public class HelpMenu
     {
         public void actionPerformed(ActionEvent e)
         {
-            open("http://sitemaker.umich.edu/soar");
+            open("http://soar.eecs.umich.edu/");
         }
     };
 
@@ -49,7 +49,7 @@ public class HelpMenu
     {
         public void actionPerformed(ActionEvent e)
         {
-            open("http://code.google.com/p/soar/wiki/Home?tm=6");
+            open("https://github.com/SoarGroup");
         }
     };
 
@@ -57,7 +57,7 @@ public class HelpMenu
     {
         public void actionPerformed(ActionEvent e)
         {
-            open("http://code.google.com/p/soar/wiki/CommandIndex");
+            open("http://soar.eecs.umich.edu/articles/articles/general/73-command-line-help");
         }
     };
 

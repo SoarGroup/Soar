@@ -19,11 +19,15 @@
 
 using namespace cli;
 
-bool CommandLineInterface::DoStopSoar(bool self, const std::string* /*reasonForStopping*/) {
+bool CommandLineInterface::DoStopSoar(bool self, const std::string* /*reasonForStopping*/)
+{
 
-    if (self) {
+    if (self)
+    {
         m_pAgentSML->Interrupt(sml::sml_STOP_AFTER_DECISION_CYCLE);
-    } else {
+    }
+    else
+    {
         // Make sure the system stop event will be fired at the end of the run.
         // We used to call FireSystemStop() in this function, but that's no good because
         // it comes before the agent has stopped because interrupt only stops at the next

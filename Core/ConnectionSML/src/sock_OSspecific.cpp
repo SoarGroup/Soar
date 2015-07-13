@@ -7,7 +7,7 @@
 // Date  : ~2001
 //
 // The parts of the socket code that are specific to the operating system.
-// 
+//
 /////////////////////////////////////////////////////////////////
 
 #include <assert.h>
@@ -21,44 +21,46 @@
 
 bool sock::InitializeOperatingSystemSocketLibrary()
 {
-	WSADATA wsaData ;
-
-	// Start the windows socket library.
-	int result = WSAStartup(MAKEWORD(1,1), &wsaData) ;
-
-	// Result should be 0 if we found the windows socket DLL
-	if (result != 0)
-		return false ;
-
-	// Check that we got the version we asked for.
-	if ( LOBYTE( wsaData.wVersion ) != 1 ||
-		 HIBYTE( wsaData.wVersion ) != 1 )
-	{
-		WSACleanup();
-		return false ;
-    } 
-
-	return true ;
+    WSADATA wsaData ;
+    
+    // Start the windows socket library.
+    int result = WSAStartup(MAKEWORD(1, 1), &wsaData) ;
+    
+    // Result should be 0 if we found the windows socket DLL
+    if (result != 0)
+    {
+        return false ;
+    }
+    
+    // Check that we got the version we asked for.
+    if (LOBYTE(wsaData.wVersion) != 1 ||
+            HIBYTE(wsaData.wVersion) != 1)
+    {
+        WSACleanup();
+        return false ;
+    }
+    
+    return true ;
 }
 
 bool sock::TerminateOperatingSystemSocketLibrary()
 {
-	// Clean up the windows socket library
-	WSACleanup() ;
-
-	return true ;
+    // Clean up the windows socket library
+    WSACleanup() ;
+    
+    return true ;
 }
 
 bool sock::MakeSocketNonBlocking(SOCKET hSock)
 {
-	// Now set the socket to be non-blocking
-	u_long num = 1 ;	// Set non-blocking to 1 (true)
-	int res = ioctlsocket(hSock, FIONBIO, &num) ;
-
-	return (res == 0) ;
+    // Now set the socket to be non-blocking
+    u_long num = 1 ;    // Set non-blocking to 1 (true)
+    int res = ioctlsocket(hSock, FIONBIO, &num) ;
+    
+    return (res == 0) ;
 }
 
-#else	// _WIN32
+#else   // _WIN32
 //////////////////////////////////////////////////////////////////////
 // Linux Versions
 //////////////////////////////////////////////////////////////////////
@@ -68,30 +70,30 @@ bool sock::MakeSocketNonBlocking(SOCKET hSock)
 // Nothing needs to be initialized on Linux
 bool sock::InitializeOperatingSystemSocketLibrary()
 {
-	// Ignore broken pipe signal
-	struct sigaction action;
-	bzero( &action, sizeof( struct sigaction ) );
-	action.sa_handler = SIG_IGN;
+    // Ignore broken pipe signal
+    struct sigaction action;
+    bzero(&action, sizeof(struct sigaction));
+    action.sa_handler = SIG_IGN;
 
-	if ( sigaction( SIGPIPE, &action, 0 ) < 0 )
-	{
-		assert( false );
-		return false;
-	}
-	return true;
+    if (sigaction(SIGPIPE, &action, 0) < 0)
+    {
+        assert(false);
+        return false;
+    }
+    return true;
 }
 
 // Nothing needs to be initialized on Linux
 bool sock::TerminateOperatingSystemSocketLibrary()
 {
-	return true ;
+    return true ;
 }
 
 bool sock::MakeSocketNonBlocking(SOCKET hSock)
 {
-	int res = fcntl(hSock, F_SETFL, O_NONBLOCK) ;
+    int res = fcntl(hSock, F_SETFL, O_NONBLOCK) ;
 
-	return (res == 0) ;
+    return (res == 0) ;
 }
 
-#endif	// _WIN32
+#endif  // _WIN32

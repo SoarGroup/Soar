@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -21,135 +21,148 @@
 
 #include "decide.h"
 #include "misc.h"
+#include "prefmem.h"
 
 /***************************************************************************
  * Function     : select_init
  **************************************************************************/
-void select_init( agent *my_agent )
+void select_init(agent* thisAgent)
 {
-	my_agent->select->select_enabled = false;
-	my_agent->select->select_operator.clear();
+    thisAgent->select->select_enabled = false;
+    thisAgent->select->select_operator.clear();
 }
 
 /***************************************************************************
  * Function     : select_next_operator
  **************************************************************************/
-void select_next_operator( agent *my_agent, const char *operator_id )
+void select_next_operator(agent* thisAgent, const char* operator_id)
 {
-	select_init( my_agent );
-	std::string& op = my_agent->select->select_operator;
-	
-	my_agent->select->select_enabled = true;
-	op.assign(operator_id);
-	
-	assert( !op.empty() );
-
-	// lazy users may use a lower-case letter
-	std::string::iterator iter = op.begin();
-	*iter = static_cast< char >( toupper( *iter ) );
+    select_init(thisAgent);
+    std::string& op = thisAgent->select->select_operator;
+    
+    thisAgent->select->select_enabled = true;
+    op.assign(operator_id);
+    
+    assert(!op.empty());
+    
+    // lazy users may use a lower-case letter
+    std::string::iterator iter = op.begin();
+    *iter = static_cast< char >(toupper(*iter));
 }
 
 /***************************************************************************
  * Function     : select_get_operator
  **************************************************************************/
-const char *select_get_operator( agent *my_agent )
+const char* select_get_operator(agent* thisAgent)
 {
-	if ( !my_agent->select->select_enabled )
-		return NULL;
-
-	return my_agent->select->select_operator.c_str();
+    if (!thisAgent->select->select_enabled)
+    {
+        return NULL;
+    }
+    
+    return thisAgent->select->select_operator.c_str();
 }
 
 /***************************************************************************
  * Function     : select_force
  **************************************************************************/
-preference *select_force( agent *my_agent, preference *candidates, bool reinit )
+preference* select_force(agent* thisAgent, preference* candidates, bool reinit)
 {
-	preference *return_val = NULL;
-	preference *cand = candidates;
-	std::string temp;
-
-	if ( my_agent->select->select_enabled )
-	{
-		// go through the list till we find a match or done
-		while ( cand && !return_val )
-		{
-			if ( cand->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-			{
-				// clear comparison string
-				temp = "";
-
-				// get first letter of comparison string
-				temp += cand->value->id.name_letter;
-
-				// get number of comparison string
-				std::string temp2;
-				to_string( cand->value->id.name_number, temp2 );
-				temp += temp2;
-
-				if ( !my_agent->select->select_operator.compare( temp ) )
-					return_val = cand;
-			}
-			
-			cand = cand->next;
-		}
-
-		if ( return_val && reinit )
-			select_init( my_agent );
-	}
-
-	return return_val;
+    preference* return_val = NULL;
+    preference* cand = candidates;
+    std::string temp;
+    
+    if (thisAgent->select->select_enabled)
+    {
+        // go through the list till we find a match or done
+        while (cand && !return_val)
+        {
+            if (cand->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+            {
+                // clear comparison string
+                temp = "";
+                
+                // get first letter of comparison string
+                temp += cand->value->id->name_letter;
+                
+                // get number of comparison string
+                std::string temp2;
+                to_string(cand->value->id->name_number, temp2);
+                temp += temp2;
+                
+                if (!thisAgent->select->select_operator.compare(temp))
+                {
+                    return_val = cand;
+                }
+            }
+            
+            cand = cand->next;
+        }
+        
+        if (return_val && reinit)
+        {
+            select_init(thisAgent);
+        }
+    }
+    
+    return return_val;
 }
 
 /***************************************************************************
  * Function     : predict_init
  **************************************************************************/
-void predict_init( agent *my_agent )
+void predict_init(agent* thisAgent)
 {
-	my_agent->predict_seed = 0;
-	(*my_agent->prediction) = "";
+    thisAgent->predict_seed = 0;
+    (*thisAgent->prediction) = "";
 }
 
 /***************************************************************************
  * Function     : predict_srand_store_snapshot
  **************************************************************************/
-void predict_srand_store_snapshot( agent *my_agent )
+void predict_srand_store_snapshot(agent* thisAgent)
 {
-	uint32_t storage_val = 0;
-
-	while ( !storage_val )
-		storage_val = SoarRandInt();
-
-	my_agent->predict_seed = storage_val;
+    uint32_t storage_val = 0;
+    
+    while (!storage_val)
+    {
+        storage_val = SoarRandInt();
+    }
+    
+    thisAgent->predict_seed = storage_val;
 }
 
 /***************************************************************************
  * Function     : predict_srand_restore_snapshot
  **************************************************************************/
-void predict_srand_restore_snapshot( agent *my_agent, bool clear_snapshot )
+void predict_srand_restore_snapshot(agent* thisAgent, bool clear_snapshot)
 {
-	if ( my_agent->predict_seed )
-		SoarSeedRNG( my_agent->predict_seed );
-
-	if ( clear_snapshot )
-		predict_init( my_agent );
+    if (thisAgent->predict_seed)
+    {
+        SoarSeedRNG(thisAgent->predict_seed);
+    }
+    
+    if (clear_snapshot)
+    {
+        predict_init(thisAgent);
+    }
 }
 
 /***************************************************************************
  * Function     : predict_set
  **************************************************************************/
-void predict_set( agent *my_agent, const char *prediction)
+void predict_set(agent* thisAgent, const char* prediction)
 {
-	(*my_agent->prediction) = prediction;
+    (*thisAgent->prediction) = prediction;
 }
 
 /***************************************************************************
  * Function     : predict_get
  **************************************************************************/
-const char *predict_get( agent *my_agent )
+const char* predict_get(agent* thisAgent)
 {
-	predict_srand_store_snapshot( my_agent );
-	do_decision_phase( my_agent, true );
-
-	return my_agent->prediction->c_str();
+    predict_srand_store_snapshot(thisAgent);
+    do_decision_phase(thisAgent, true);
+    
+    return thisAgent->prediction->c_str();
 }

@@ -13,7 +13,7 @@
 #include "sml_ClientIntElement.h"
 #include "sml_Connection.h"
 
-#include "sml_EmbeddedConnection.h"	// For direct methods
+#include "sml_EmbeddedConnection.h" // For direct methods
 #include "sml_ClientAgent.h"
 #include "sml_ClientIdentifier.h"
 
@@ -21,16 +21,16 @@
 
 using namespace sml ;
 
-IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long long value, long long timeTag) 
-: WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
+IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long long value, long long timeTag)
+    : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
-	m_Value = value ;
+    m_Value = value ;
 }
 
-IntElement::IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long value, long long timeTag) 
-: WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
+IntElement::IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long value, long long timeTag)
+    : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
-	m_Value = value ;
+    m_Value = value ;
 }
 
 IntElement::~IntElement(void)
@@ -40,34 +40,34 @@ IntElement::~IntElement(void)
 // Returns the type of the value stored here (e.g. "string" or "int" etc.)
 char const* IntElement::GetValueType() const
 {
-	return sml_Names::kTypeInt;
+    return sml_Names::kTypeInt;
 }
 
 // Returns a string form of the value stored here.
 char const* IntElement::GetValueAsString() const
 {
-	// note: this is a bit of a hack but the previous 
-	// hack casted around the member function's const keyword
-	static std::string temp; // c_str() needs to remain valid
-	to_string( m_Value, temp );
-	return temp.c_str() ;
+    // note: this is a bit of a hack but the previous
+    // hack casted around the member function's const keyword
+    static std::string temp; // c_str() needs to remain valid
+    to_string(m_Value, temp);
+    return temp.c_str() ;
 }
 
 char const* IntElement::GetValueAsString(std::string& buf) const
 {
-	to_string( m_Value, buf );
-	return buf.c_str() ;
+    to_string(m_Value, buf);
+    return buf.c_str() ;
 }
 
 #ifdef SML_DIRECT
 void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {
-	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
-	pConnection->DirectAddWME_Int( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
+    EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
+    pConnection->DirectAddWME_Int(pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
 
-void IntElement::Update(long long value) 
-{ 
-	this->m_Agent->GetWM()->UpdateInt(this, value); 
+void IntElement::Update(long long value)
+{
+    this->m_Agent->GetWM()->UpdateInt(this, value);
 }

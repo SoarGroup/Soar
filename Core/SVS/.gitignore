@@ -1,0 +1,8 @@
+*.o
+*.pyc
+*.jar
+*.class
+*.gch
+a.out
+tags
+demos/targets/data

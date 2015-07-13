@@ -19,15 +19,17 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoNumericIndifferentMode( bool query, const ni_mode mode ) 
+bool CommandLineInterface::DoNumericIndifferentMode(bool query, const ni_mode mode)
 {
-    agent* agnt = m_pAgentSML->GetSoarAgent();
-    if ( query )
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    if (query)
     {
-        if (m_RawOutput) {
+        if (m_RawOutput)
+        {
             m_Result << "Current numeric indifferent mode: ";
-
-            switch (agnt->numeric_indifferent_mode) {
+            
+            switch (thisAgent->numeric_indifferent_mode)
+            {
                 default:
                 case NUMERIC_INDIFFERENT_MODE_AVG:
                     m_Result << "average";
@@ -40,14 +42,14 @@ bool CommandLineInterface::DoNumericIndifferentMode( bool query, const ni_mode m
         else
         {
             std::stringstream modeString;
-            modeString << static_cast< int >( agnt->numeric_indifferent_mode );
-            AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, modeString.str() );
+            modeString << static_cast< int >(thisAgent->numeric_indifferent_mode);
+            AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, modeString.str());
         }
     }
     else // !query
     {
-        agnt->numeric_indifferent_mode = mode;
+        thisAgent->numeric_indifferent_mode = mode;
     }
-
+    
     return true;
 }

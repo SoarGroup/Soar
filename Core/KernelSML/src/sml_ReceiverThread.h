@@ -17,23 +17,27 @@
 
 #include <list>
 
-namespace sml {
+namespace sml
+{
 
 // Forward declarations
-class ConnectionManager ;
-
-class ReceiverThread : public soar_thread::Thread
-{
-protected:
-	ConnectionManager*		m_ConnectionManager ;
-
-	// This method is executed in the different thread
-	void Run() ;
-
-public:
-	ReceiverThread(ConnectionManager* pManager) { m_ConnectionManager = pManager ; }
-} ;
-
+    class ConnectionManager ;
+    
+    class ReceiverThread : public soar_thread::Thread
+    {
+        protected:
+            ConnectionManager*      m_ConnectionManager ;
+            
+            // This method is executed in the different thread
+            void Run() ;
+            
+        public:
+            ReceiverThread(ConnectionManager* pManager)
+            {
+                m_ConnectionManager = pManager ;
+            }
+    } ;
+    
 } // Namespace
 
-#endif	// RECEIVER_THREAD_H
+#endif  // RECEIVER_THREAD_H

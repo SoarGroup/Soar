@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /* ======================================================================
@@ -26,7 +26,7 @@
      a memory block just large enough to hold the string, and copies the
      string into the block.   Free_memory_block_for_string() frees the
      block.
-     
+
      "Growable strings" provide a convenient way of building up a string
      piece by piece without having to pre-allocate the right amount of
      memory.  To initialize one, say "gs = make_blank_growable_string()"
@@ -37,12 +37,12 @@
      implemented by allocating a block of memory large enough to hold
      (1) the memory block's size, (2) the current string length, and (3)
      the current text of the string.  Add_to_growable_string() may result
-     in a new (larger) memory block being allocated and the text of the 
+     in a new (larger) memory block being allocated and the text of the
      string being copied.  Three macros provide access to a growable string's
      parts:  memsize_of_growable_string(), length_of_growable_string(),
      and (most importantly) text_of_growable_string(), which is of type
      (char *).
-     
+
    Memory pools:
 
      To allocate and free memory items efficiently at run time, we use
@@ -87,7 +87,7 @@
      list.  Extract_list_elements() and extract_dl_list_elements() do this.
      They use a callback function that indicates which elements to extract:
      the callback function is called on each element of the list, and should
-     return TRUE for the elements to be extracted.  The two extraction
+     return true for the elements to be extracted.  The two extraction
      functions return a list (or dl_list) of the extracted elements.
 
    Hash table routines:
@@ -108,71 +108,53 @@
      in this, we provide masks_for_n_low_order_bits[] that select out the
      low-order bits of a value:  (x & masks_for_n_low_order_bits[23]) picks
      out the 23 low-order bits of x.
-     
+
      Items are added/removed from a hash table via add_to_hash_table() and
      remove_from_hash_table().  These calls resize the hash table if
      necessary.
-     
+
      The contents of a hash table (or one bucket in the table) can be
      retrieved via do_for_all_items_in_hash_table() and
      do_for_all_items_in_hash_bucket().  Each uses a callback function,
      invoking it with each successive item.  The callback function should
-     normally return FALSE.  If the callback function ever returns TRUE,
+     normally return false.  If the callback function ever returns true,
      iteration over the hash table items stops and the do_for_xxx()
-     routine returns immediately.  
+     routine returns immediately.
 ====================================================================== */
 
 #ifndef MEM_H
 #define MEM_H
 
-#include "chunk.h"
 #include "kernel.h"
 
-#include <stdio.h>	// Needed for FILE token below
-#include <string.h> 	// Needed for strlen, etc. below
+#include <stdio.h>  // Needed for FILE token below
+#include <string.h>     // Needed for strlen, etc. below
 
 #ifndef _WIN32
 #include <strings.h>
 #include <stdlib.h> // malloc
 #endif // !_WIN32
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-extern void init_memory_utilities (agent* thisAgent);
+extern void init_memory_utilities(agent* thisAgent);
 
 /* ----------------------- */
 /* basic memory allocation */
 /* ----------------------- */
 
 #ifdef DEBUG_MEMORY
-
-#ifdef USE_MACROS
-#define fill_with_garbage(block,size) memset((void *)(block), 0xBB, (size))
-#else // !USE_MACROS
-#ifdef __cplusplus
-//}
-#endif // __cplusplus
-
 template <typename T>
-inline void fill_with_garbage(T * block, size_t size)
+inline void fill_with_garbage(T* block, size_t size)
 {
-  memset(static_cast<void *>(block), 0xBB, (size));
+    memset(static_cast<void*>(block), 0xBB, (size));
 }
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif // __cplusplus
-
-#endif // !USE_MACROS
-
+template <typename T>
+inline void fill_with_zeroes(T* block, size_t size)
+{
+    memset(static_cast<void*>(block), 0, (size));
+}
 #else
-
 #define fill_with_garbage(block,size) { }
-
+#define fill_with_zeroes(block,size) { }
 #endif
 
 #define MISCELLANEOUS_MEM_USAGE  0
@@ -183,57 +165,46 @@ inline void fill_with_garbage(T * block, size_t size)
 
 #define NUM_MEM_USAGE_CODES 5
 
-extern void *allocate_memory (agent* thisAgent, size_t size, int usage_code);
-extern void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code);
-extern void free_memory (agent* thisAgent, void *mem, int usage_code);
-extern void print_memory_statistics (agent* thisAgent);
+extern void* allocate_memory(agent* thisAgent, size_t size, int usage_code);
+extern void* allocate_memory_and_zerofill(agent* thisAgent, size_t size, int usage_code);
+extern void free_memory(agent* thisAgent, void* mem, int usage_code);
+extern void print_memory_statistics(agent* thisAgent);
 
 /* ---------------- */
 /* string utilities */
 /* ---------------- */
 
-extern char *make_memory_block_for_string (agent* thisAgent, char const*s);
-extern void free_memory_block_for_string (agent* thisAgent, char *p);
+extern char* make_memory_block_for_string(agent* thisAgent, char const* s);
+extern void free_memory_block_for_string(agent* thisAgent, char* p);
 
-typedef char Bool;
-typedef void * growable_string;
 
-#ifdef USE_MACROS
-
-#define savestring(x) (char *) strcpy ((char *)(malloc (strlen (x) + 1)), (x))
-#define memsize_of_growable_string(gs) (*((int *)(gs)))
-#define length_of_growable_string(gs) (*(((int *)(gs))+1))
-#define text_of_growable_string(gs) (((char *)(gs)) + 2*sizeof(int *))
-
-#else
+typedef void* growable_string;
 
 // voigtjr 11/2005: platform specific code (strlen/malloc/etc) should be in .cpp files!
 // except it can't be (?) because of the inline restriction
-inline char * savestring(char * x)
+inline char* savestring(char* x)
 {
-  return strcpy(static_cast<char *>(malloc (strlen (x) + 1)), (x));
+    return strcpy(static_cast<char*>(malloc(strlen(x) + 1)), (x));
 }
 
-inline int & memsize_of_growable_string(growable_string gs)
+inline int& memsize_of_growable_string(growable_string gs)
 {
-  return (*((int *)(gs)));
+    return (*((int*)(gs)));
 }
 
-inline int & length_of_growable_string(growable_string gs)
+inline int& length_of_growable_string(growable_string gs)
 {
-  return (*(((int *)(gs))+1));
+    return (*(((int*)(gs)) + 1));
 }
 
-inline char * text_of_growable_string(growable_string gs)
+inline char* text_of_growable_string(growable_string gs)
 {
-  return (((char *)(gs)) + 2*sizeof(int *));
+    return (((char*)(gs)) + 2 * sizeof(int*));
 }
 
-#endif /* USE_MACROS */
-
-extern growable_string make_blank_growable_string (agent* thisAgent);
-extern void add_to_growable_string (agent* thisAgent, growable_string *gs, const char *string_to_add);
-extern void free_growable_string (agent* thisAgent, growable_string gs);
+extern growable_string make_blank_growable_string(agent* thisAgent);
+extern void add_to_growable_string(agent* thisAgent, growable_string* gs, const char* string_to_add);
+extern void free_growable_string(agent* thisAgent, growable_string gs);
 
 /* ------------ */
 /* memory pools */
@@ -241,52 +212,35 @@ extern void free_growable_string (agent* thisAgent, growable_string gs);
 
 #define MAX_POOL_NAME_LENGTH 15
 
-typedef struct memory_pool_struct {
-  void *free_list;             /* header of chain of free items */
-  size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
-  size_t item_size;               /* bytes per item */
-  size_t items_per_block;        /* number of items in each big block */
-  size_t num_blocks;             /* number of big blocks in use by this pool */
-  void *first_block;           /* header of chain of blocks */
-  char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
-  struct memory_pool_struct *next;  /* next in list of all memory pools */
+typedef struct memory_pool_struct
+{
+    void* free_list;             /* header of chain of free items */
+    size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
+    size_t item_size;               /* bytes per item */
+    size_t items_per_block;        /* number of items in each big block */
+    size_t num_blocks;             /* number of big blocks in use by this pool */
+    void* first_block;           /* header of chain of blocks */
+    char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
+    struct memory_pool_struct* next;  /* next in list of all memory pools */
 } memory_pool;
 
-extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
-extern void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const char *name);
-extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
+extern void add_block_to_memory_pool(agent* thisAgent, memory_pool* p);
+extern void init_memory_pool(agent* thisAgent, memory_pool* p, size_t item_size, const char* name);
+extern void free_memory_pool(agent*, memory_pool* p);  /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS
-
-#ifdef USE_MACROS
-
-#define increment_used_count(p) {(p)->used_count++;}
-#define decrement_used_count(p) {(p)->used_count--;}
-
-#else
-
-#ifdef __cplusplus
-//}
-#endif
 
 template <typename P>
 inline void increment_used_count(P p)
 {
-  (p)->used_count++;
+    (p)->used_count++;
 }
 
 template <typename P>
 inline void decrement_used_count(P p)
 {
-  (p)->used_count--;
+    (p)->used_count--;
 }
-
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif
-
-#endif /* USE_MACROS */
 
 #else
 
@@ -295,74 +249,67 @@ inline void decrement_used_count(P p)
 
 #endif /* MEMORY_POOL_STATS */
 
-#ifdef __cplusplus
-//}
-
-#define MEM_POOLS_ENABLED 1
-
 template <typename T>
 inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_pointer)
 {
 
 #if MEM_POOLS_ENABLED
-  // if there's no memory blocks left in the pool, then allocate a new one
-  if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p);
-  // take the beginning of the next free block and give it to the T pointer
-  *(dest_item_pointer) = static_cast< T* > ((p)->free_list);
-  // we think this line increments free_list to the next available memory block
-  // we thought it took advantage of the fact that free_list is the first
-  //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
-  // if it helps, we think this line is equivalent to the following
-  //  (at least, everything appears to work properly if you swap these lines):
-  // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
-  (p)->free_list =  *(void * *)(*(dest_item_pointer));
-
-  fill_with_garbage (*(dest_item_pointer), (p)->item_size);
-  increment_used_count(p);
-
+    // if there's no memory blocks left in the pool, then allocate a new one
+    if (!(p)->free_list)
+    {
+        add_block_to_memory_pool(thisAgent, p);
+    }
+    // take the beginning of the next free block and give it to the T pointer
+    *(dest_item_pointer) = static_cast< T* >((p)->free_list);
+    // we think this line increments free_list to the next available memory block
+    // we thought it took advantage of the fact that free_list is the first
+    //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
+    // if it helps, we think this line is equivalent to the following
+    //  (at least, everything appears to work properly if you swap these lines):
+    // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
+    (p)->free_list =  *(void**)(*(dest_item_pointer));
+    
+    fill_with_zeroes(*(dest_item_pointer), (p)->item_size);
+    increment_used_count(p);
+    
 #else // !MEM_POOLS_ENABLED
-   // this is for debugging -- it disables the memory pool usage and just allocates
-   //  new memory every time.  If you want to use it, be sure to make the corresponding
-   //  change to free_with_pool below
-   *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
-
-   // simply prevents compiler warnings when memory pools disabled
-   thisAgent=thisAgent;
-   p=p;
-
+    // this is for debugging -- it disables the memory pool usage and just allocates
+    //  new memory every time.  If you want to use it, be sure to make the corresponding
+    //  change to free_with_pool below
+    *dest_item_pointer = static_cast< T* >(malloc(sizeof(T)));
+    
+    // simply prevents compiler warnings when memory pools disabled
+//   thisAgent=thisAgent;
+//   p=p;
+    
 #endif // !MEM_POOLS_ENABLED
 }
 
 template <typename T>
-inline void free_with_pool(memory_pool* p, T * item)
+inline void free_with_pool(memory_pool* p, T* item)
 {
 #if MEM_POOLS_ENABLED
-  fill_with_garbage ((item), (p)->item_size);
-  *(void * *)(item) = (p)->free_list;
-  (p)->free_list = (void *)(item);
-  decrement_used_count(p); 
-
+    fill_with_garbage((item), (p)->item_size);
+    *(void**)(item) = (p)->free_list;
+    (p)->free_list = (void*)(item);
+    decrement_used_count(p);
+    
 #else // !MEM_POOLS_ENABLED
-   // this is for debugging -- it disables the memory pool usage and just deallocates
-   //  the memory every time.  If you want to use it, be sure to make the corresponding
-   //  change to allocate_with_pool above
-   free(item);
-   
-   // simply prevents compiler warnings when memory pools disabled
-   p=p;
+    // this is for debugging -- it disables the memory pool usage and just deallocates
+    //  the memory every time.  If you want to use it, be sure to make the corresponding
+    //  change to allocate_with_pool above
+    free(item);
+    
+    // simply prevents compiler warnings when memory pools disabled
+//   p=p;
 #endif // !MEM_POOLS_ENABLED
 }
 
-//extern "C"
-//{
-
-#endif
-
 /* ---------------------------------------------------------------------
-     Macros for Inserting and Removing Stuff from Doubly-Linked Lists 
+     Macros for Inserting and Removing Stuff from Doubly-Linked Lists
 
    Note: fast_remove_from_dll() is the same as remove_from_dll() except
-   slightly faster.  I (RBD) only realized this after writing all the 
+   slightly faster.  I (RBD) only realized this after writing all the
    original code.  With fast_remove_from_dll(), you have to tell it
    the type (i.e., structure name) of the item being spliced out of
    the list.  At some point we might want to go through all the code
@@ -370,17 +317,17 @@ inline void free_with_pool(memory_pool* p, T * item)
    the effort right now.
 -------------------------------------------------------------------- */
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define insert_at_head_of_dll(header,item,next_field_name,prev_field_name) { \
-  ((item)->next_field_name) = (header) ; \
-  ((item)->prev_field_name) = NIL ; \
-  if (header) ((header)->prev_field_name) = (item) ; \
-  (header) = (item) ; }
+        ((item)->next_field_name) = (header) ; \
+        ((item)->prev_field_name) = NIL ; \
+        if (header) ((header)->prev_field_name) = (item) ; \
+        (header) = (item) ; }
 /*template <typename T>
-inline void insert_at_head_of_dll(T header, T item, T next_field_name, 
-                                  T prev_field_name) 
+inline void insert_at_head_of_dll(T header, T item, T next_field_name,
+                                  T prev_field_name)
 {
   ((item)->next_field_name) = (header);
   ((item)->prev_field_name) = NIL;
@@ -388,21 +335,21 @@ inline void insert_at_head_of_dll(T header, T item, T next_field_name,
   (header) = (item);
 }*/
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define remove_from_dll(header,item,next_field_name,prev_field_name) { \
-  if ((item)->next_field_name) \
-    ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name); \
-  if ((item)->prev_field_name) { \
-    ((item)->prev_field_name->next_field_name) = ((item)->next_field_name); \
-  } else { \
-    (header) = ((item)->next_field_name); \
-  } }
+        if ((item)->next_field_name) \
+            ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name); \
+        if ((item)->prev_field_name) { \
+            ((item)->prev_field_name->next_field_name) = ((item)->next_field_name); \
+        } else { \
+            (header) = ((item)->next_field_name); \
+        } }
 /*template <typename T>
-inline void remove_from_dll(T header, T item, T next_field_name, 
+inline void remove_from_dll(T header, T item, T next_field_name,
                             T prev_field_name)
-{  
+{
   if ((item)->next_field_name)
     ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name);
   if ((item)->prev_field_name) {
@@ -412,63 +359,65 @@ inline void remove_from_dll(T header, T item, T next_field_name,
   }
 }*/
 
-/* This macro cannot be easily converted to an inline function. 
+/* This macro cannot be easily converted to an inline function.
    Some additional changes are required.
 */
 #define fast_remove_from_dll(header,item,typename,next_field_name,prev_field_name) { \
-  typename *tempnext, *tempprev; \
-  tempnext = (item)->next_field_name; \
-  tempprev = (item)->prev_field_name; \
-  if (tempnext) tempnext->prev_field_name = tempprev; \
-  if (tempprev) { \
-    tempprev->next_field_name = tempnext; \
-  } else { \
-    (header) = tempnext; } }
+        typename *tempnext, *tempprev; \
+        tempnext = (item)->next_field_name; \
+        tempprev = (item)->prev_field_name; \
+        if (tempnext) tempnext->prev_field_name = tempprev; \
+        if (tempprev) { \
+            tempprev->next_field_name = tempnext; \
+        } else { \
+            (header) = tempnext; } }
 
 /* ------------------------- */
 /* Cons cell, list utilities */
 /* ------------------------- */
 
-typedef struct cons_struct {
-  void *first;
-  struct cons_struct *rest;
+typedef struct cons_struct
+{
+    void* first;
+    struct cons_struct* rest;
 } cons;
 
 typedef cons list;
 
-typedef struct dl_cons_struct {
-  void *item;
-  struct dl_cons_struct *next;
-  struct dl_cons_struct *prev;
+typedef struct dl_cons_struct
+{
+    void* item;
+    struct dl_cons_struct* next;
+    struct dl_cons_struct* prev;
 } dl_cons;
 
 typedef dl_cons dl_list;
 
-extern ::list *destructively_reverse_list (::list *c);
-extern Bool member_of_list (void *item, ::list *the_list);
-extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
-extern void free_list (agent* thisAgent, ::list *the_list);
+extern ::list* destructively_reverse_list(::list* c);
+extern bool member_of_list(void* item, ::list* the_list);
+extern ::list* add_if_not_member(agent* thisAgent, void* item, ::list* old_list);
+extern void free_list(agent* thisAgent, ::list* the_list);
 
-/* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(), 
+/* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-/* Added thisAgent to cons_test_fn type, because we are eliminating the 
+/* Added thisAgent to cons_test_fn type, because we are eliminating the
    global soar_agent. -AJC (8/7/02) */
-//typedef Bool (*cons_test_fn)(cons *c);
-typedef Bool (*cons_test_fn)(agent* thisAgent, cons *c, void* data);
+//typedef bool (*cons_test_fn)(cons *c);
+typedef bool (*cons_test_fn)(agent* thisAgent, cons* c, void* data);
 
-typedef Bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
+typedef bool (*dl_cons_test_fn)(dl_cons* dc, agent* thisAgent);
 
-/* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(), 
+/* Added a void* parameter to extract_list_elements, because remove_pwatch_test_fn(),
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_test_fn f, void* data = 0);
+extern ::list* extract_list_elements(agent* thisAgent, ::list** header, cons_test_fn f, void* data = 0);
 
-extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
+extern dl_list* extract_dl_list_elements(agent* thisAgent, dl_list** header, dl_cons_test_fn f);
 
-extern Bool cons_equality_fn (agent*, cons *c, void *data);
+extern bool cons_equality_fn(agent*, cons* c, void* data);
 
 /* ----------------------------- */
 /* Resizable hash table routines */
@@ -476,42 +425,40 @@ extern Bool cons_equality_fn (agent*, cons *c, void *data);
 
 extern uint32_t masks_for_n_low_order_bits[33];
 
-typedef uint32_t ((*hash_function)(void *item, short num_bits));
+typedef uint32_t ((*hash_function)(void* item, short num_bits));
 
-typedef struct item_in_hash_table_struct {
-  struct item_in_hash_table_struct *next;
-  char data;
+typedef struct item_in_hash_table_struct
+{
+    struct item_in_hash_table_struct* next;
+    char data;
 } item_in_hash_table;
 
-typedef item_in_hash_table *bucket_array;
+typedef item_in_hash_table* bucket_array;
 
-typedef struct hash_table_struct {
-  int64_t count;            /* number of items in the table */
-  uint32_t size;            /* number of buckets */
-  short log2size;           /* log (base 2) of size */
-  short minimum_log2size;   /* table never shrinks below this size */
-  bucket_array *buckets;
-  hash_function h;          /* call this to hash or rehash an item */
-} hash_table;  
+typedef struct hash_table_struct
+{
+    int64_t count;            /* number of items in the table */
+    uint32_t size;            /* number of buckets */
+    short log2size;           /* log (base 2) of size */
+    short minimum_log2size;   /* table never shrinks below this size */
+    bucket_array* buckets;
+    hash_function h;          /* call this to hash or rehash an item */
+} hash_table;
 
-extern struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
-                                                  hash_function h);
-extern void free_hash_table(agent* thisAgent, struct hash_table_struct *ht); /* RPM 6/09 */
-extern void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
-extern void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, void *item);
+extern struct hash_table_struct* make_hash_table(agent* thisAgent, short minimum_log2size,
+        hash_function h);
+extern void free_hash_table(agent* thisAgent, struct hash_table_struct* ht); /* RPM 6/09 */
+extern void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht, void* item);
+extern void add_to_hash_table(agent* thisAgent, struct hash_table_struct* ht, void* item);
 
-typedef Bool (*hash_table_callback_fn)(void *item);
-typedef Bool (*hash_table_callback_fn2)(agent* thisAgent, void *item, void* f);
+typedef bool (*hash_table_callback_fn)(void* item);
+typedef bool (*hash_table_callback_fn2)(agent* thisAgent, void* item, void* f);
 
-extern void do_for_all_items_in_hash_table (agent* thisAgent, struct hash_table_struct *ht,
-                                            hash_table_callback_fn2 f, void* userdata);
-extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
-                                             hash_table_callback_fn f,
-                                             uint32_t hash_value);
-
-#ifdef __cplusplus
-//}
-#endif
+extern void do_for_all_items_in_hash_table(agent* thisAgent, struct hash_table_struct* ht,
+        hash_table_callback_fn2 f, void* userdata);
+extern void do_for_all_items_in_hash_bucket(struct hash_table_struct* ht,
+        hash_table_callback_fn f,
+        uint32_t hash_value);
 
 #endif
 

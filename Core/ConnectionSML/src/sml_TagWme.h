@@ -24,50 +24,52 @@
 namespace sml
 {
 
-class TagWme : public soarxml::ElementXML
-{
-public:
-	TagWme() ;
-
-	void SetIdentifier(char const* pIdentifier)
-	{
-		this->AddAttributeFast(sml_Names::kWME_Id, CopyString(pIdentifier), false) ;
-	}
-
-	void SetAttribute(char const* pAttribute)
-	{
-		this->AddAttributeFast(sml_Names::kWME_Attribute, CopyString(pAttribute), false) ;
-	}
-
-	void SetValue(char const* pValue, char const* pType)
-	{
-		this->AddAttributeFast(sml_Names::kWME_Value, CopyString(pValue), false) ;
-
-		// The string type is the default, so we don't need to add it to the object
-		// We do a direct pointer comparison here for speed, so if the user passes in "string" without using
-		// sml_Names, we'll add it to the list of attributes (which does no harm).  This all just saves a little time.
-		if (pType && pType != sml_Names::kTypeString)
-			this->AddAttributeFast(sml_Names::kWME_ValueType, CopyString(pType), false) ;
-	}
-
-	void SetTimeTag(int64_t timeTag)
-	{
-		char buf[TO_C_STRING_BUFSIZE];
-		this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(to_c_string(timeTag, buf)), false) ;
-	}
-
-	void SetActionAdd()
-	{
-		this->AddAttributeFastFast(sml_Names::kWME_Action, sml_Names::kValueAdd) ;
-	}
-
-	void SetActionRemove()
-	{
-		this->AddAttributeFastFast(sml_Names::kWME_Action, sml_Names::kValueRemove) ;
-	}
-
-} ;
-
+    class TagWme : public soarxml::ElementXML
+    {
+        public:
+            TagWme() ;
+            
+            void SetIdentifier(char const* pIdentifier)
+            {
+                this->AddAttributeFast(sml_Names::kWME_Id, CopyString(pIdentifier), false) ;
+            }
+            
+            void SetAttribute(char const* pAttribute)
+            {
+                this->AddAttributeFast(sml_Names::kWME_Attribute, CopyString(pAttribute), false) ;
+            }
+            
+            void SetValue(char const* pValue, char const* pType)
+            {
+                this->AddAttributeFast(sml_Names::kWME_Value, CopyString(pValue), false) ;
+                
+                // The string type is the default, so we don't need to add it to the object
+                // We do a direct pointer comparison here for speed, so if the user passes in "string" without using
+                // sml_Names, we'll add it to the list of attributes (which does no harm).  This all just saves a little time.
+                if (pType && pType != sml_Names::kTypeString)
+                {
+                    this->AddAttributeFast(sml_Names::kWME_ValueType, CopyString(pType), false) ;
+                }
+            }
+            
+            void SetTimeTag(int64_t timeTag)
+            {
+                char buf[TO_C_STRING_BUFSIZE];
+                this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(to_c_string(timeTag, buf)), false) ;
+            }
+            
+            void SetActionAdd()
+            {
+                this->AddAttributeFastFast(sml_Names::kWME_Action, sml_Names::kValueAdd) ;
+            }
+            
+            void SetActionRemove()
+            {
+                this->AddAttributeFastFast(sml_Names::kWME_Action, sml_Names::kValueRemove) ;
+            }
+            
+    } ;
+    
 }
 
-#endif	// SML_TAG_WME
+#endif  // SML_TAG_WME

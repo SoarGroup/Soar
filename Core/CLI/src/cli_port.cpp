@@ -18,13 +18,17 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoPort() {
+bool CommandLineInterface::DoPort()
+{
 
     int port = m_pKernelSML->GetListenerPort();
-
-    if (m_RawOutput) {
+    
+    if (m_RawOutput)
+    {
         m_Result << port;
-    } else {
+    }
+    else
+    {
         std::string temp;
         AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
     }
