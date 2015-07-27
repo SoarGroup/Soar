@@ -498,7 +498,7 @@ enum smem_install_type { wm_install, fake_install };
 extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
 
-extern bool smem_calc_spread_trajectory(agent* thisAgent);
+extern bool smem_calc_spread_trajectory_actr(agent* thisAgent);
 extern bool smem_calc_spread_trajectories(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
