@@ -228,7 +228,7 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
    hence temporary memory).
 ------------------------------------------------------------------------ */
 
-void add_preference_to_tm(agent* thisAgent, preference* pref)
+bool add_preference_to_tm(agent* thisAgent, preference* pref)
 {
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAdd preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
@@ -238,6 +238,22 @@ void add_preference_to_tm(agent* thisAgent, preference* pref)
     slot* s = make_slot(thisAgent, pref->id, pref->attr);
     preference* p2;
     
+    if (!s->isa_context_slot && pref->o_supported && (pref->type == ACCEPTABLE_PREFERENCE_TYPE) && (pref->inst->match_goal == thisAgent->top_state))
+    {
+        bool already_top_o_supported = false;
+        for (p2 = s->all_preferences; (p2 && !already_top_o_supported); p2 = p2->all_of_slot_next)
+        {
+            if ((p2->value == pref->value) && p2 ->o_supported && (p2->inst->match_goal == thisAgent->top_state))
+            {
+                already_top_o_supported = true;
+            }
+        }
+        if (already_top_o_supported)
+        {
+            return false;
+        }
+    }
+
     pref->slot = s;
     
     insert_at_head_of_dll(s->all_preferences, pref,
@@ -353,6 +369,7 @@ void add_preference_to_tm(agent* thisAgent, preference* pref)
     {
         mark_context_slot_as_acceptable_preference_changed(thisAgent, s);
     }
+    return true;
 }
 
 /* ------------------------------------------------------------------------
