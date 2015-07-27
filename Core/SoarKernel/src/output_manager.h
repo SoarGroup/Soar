@@ -37,13 +37,13 @@ typedef struct identity_struct identity_info;
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 
+/* These determine whether we print identity information when printing tests in debug statements */
+
 #ifndef SOAR_RELEASE_VERSION
     #define OM_Default_print_actual true;
-    #define OM_Default_print_original true;
     #define OM_Default_print_identity true;
 #else
     #define OM_Default_print_actual true;
-    #define OM_Default_print_original false;
     #define OM_Default_print_identity false;
 #endif
 
@@ -67,6 +67,20 @@ namespace cli
 class Soar_Instance;
 class OM_DB;
 class OM_Parameters;
+
+inline size_t om_strncpy(char* s1, const char* s2, size_t n, size_t num_chars) {
+    if ( n > 0) {
+        if (num_chars == 0) return n;
+        if (num_chars+1 > n) {
+            num_chars = n-1;
+        }
+        memcpy(s1, s2, num_chars);
+        s1[num_chars]=0;
+        return n-num_chars-1;
+    } else {
+        return n;
+    }
+}
 
 class AgentOutput_Info
 {
@@ -115,7 +129,8 @@ class Output_Manager
         bool db_mode, stdout_mode;
 
         /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
-        bool m_print_actual, m_print_original, m_print_identity;
+        bool m_print_actual, m_print_identity;
+        bool m_print_actual_effective, m_print_identity_effective;
         char* m_pre_string, *m_post_string;
 
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
@@ -132,26 +147,25 @@ class Output_Manager
 
         void fill_mode_info();
 
-        char* action_to_string(agent* thisAgent, action* a, char* dest, size_t dest_size);
-        char* action_list_to_string(agent* thisAgent, action* action_list, char* dest, size_t dest_size);
-        char* condition_to_string(agent* thisAgent, condition* cond, char* dest, size_t dest_size);
-        char* condition_cons_to_string(agent* thisAgent, cons* c, char* dest, size_t dest_size);
-        char* condition_list_to_string(agent* thisAgent, condition* top_cond, char* dest, size_t dest_size);
-        char* cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
-        char* cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, char* dest, size_t dest_size);
-        char* cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, char* dest, size_t dest_size);
-        char* identity_to_string(agent* thisAgent, test t, char* dest, size_t dest_size);
-        char* instantiation_to_string(agent* thisAgent, instantiation* inst, char* dest, size_t dest_size);
-        char* pref_to_string(agent* thisAgent, preference* pref, char* dest, size_t dest_size);
-        char* preflist_inst_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
-        char* preflist_result_to_string(agent* thisAgent, preference* top_pref, char* dest, size_t dest_size);
-        char* rhs_value_to_string(agent* thisAgent, rhs_value rv, char* dest, size_t dest_size, struct token_struct* tok = NIL, wme* w = NIL);
-        char* test_to_string(test t, char* dest, size_t dest_size, bool show_equality = false);
-        const char* test_type_to_string_brief(byte test_type, const char* equality_str = "");
-        char* wme_to_string(agent* thisAgent, wme* w, char* dest, size_t dest_size, bool pOnlyWithIdentity = false);
-        char* WM_to_string(agent* thisAgent, char* dest, size_t dest_size, bool pOnlyWithIdentity = true);
+        void action_to_string(agent* thisAgent, action* a, std::string &destString);
+        void action_list_to_string(agent* thisAgent, action* action_list, std::string &destString);
+        void condition_to_string(agent* thisAgent, condition* cond, std::string &destString);
+        void condition_cons_to_string(agent* thisAgent, cons* c, std::string &destString);
+        void condition_list_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
+        void cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
+        void cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, std::string &destString);
+        void cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
+        void instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString);
+        void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
+        void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
+        void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
+        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NIL, wme* w = NIL);
+        void test_to_string(test t, std::string &destString, bool show_equality = false);
+        const char* test_type_to_string_brief(byte test_type);
+        void wme_to_string(agent* thisAgent, wme* w, std::string &destString);
+        void WM_to_string(agent* thisAgent, std::string &destString);
 
-        void vsnprint_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, va_list args);
+        void vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list args);
 
     public:
 
@@ -167,14 +181,15 @@ class Output_Manager
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
-        void sprinta_sf(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
+        void sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...);
+        size_t sprinta_sf_cstr(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
+
         void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
-        void sprint_sf(char* dest, size_t dest_size, const char* format, ...);
-
+        void sprint_sf(std::string &destString, const char* format, ...);
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
         void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }
@@ -225,18 +240,28 @@ class Output_Manager
                 }
             }
         }
-        void set_print_test_format(bool pActual, bool pOriginal, bool p_Identity)
+        void set_default_print_test_format(bool pActual, bool p_Identity)
         {
             m_print_actual = pActual;
-            m_print_original = pOriginal;
             m_print_identity = p_Identity;
+        }
+
+        void set_print_test_format(bool pActual, bool p_Identity)
+        {
+            m_print_actual_effective = pActual;
+            m_print_identity_effective = p_Identity;
+        }
+        void reset_print_test_format()
+        {
+            m_print_actual = OM_Default_print_actual;
+            m_print_identity = OM_Default_print_identity;
+            clear_print_test_format();
         }
 
         void clear_print_test_format()
         {
-            m_print_actual = OM_Default_print_actual;
-            m_print_original = OM_Default_print_original;
-            m_print_identity = OM_Default_print_identity;
+            m_print_actual_effective = m_print_actual;
+            m_print_identity_effective = m_print_identity;
         }
         void clear_print_indents() { set_print_indents(); }
 
@@ -244,14 +269,18 @@ class Output_Manager
         {
             if (debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
         }
-        void set_dprint_test_format(TraceMode mode, bool pActual = true, bool pOriginal = false, bool p_Identity = true)
+        void set_dprint_test_format(TraceMode mode, bool pActual, bool p_Identity)
         {
-            if (debug_mode_enabled(mode)) set_print_test_format(pActual, pOriginal, p_Identity);
+            if (debug_mode_enabled(mode)) set_print_test_format(pActual, p_Identity);
         }
         void clear_dprint_indents(TraceMode mode)
         {
             if (debug_mode_enabled(mode)) clear_print_indents();
         }
+        void reset_dprint_test_format(TraceMode mode) {
+            if (debug_mode_enabled(mode)) reset_print_test_format();
+        }
+
         void clear_dprint_test_format(TraceMode mode) {
             if (debug_mode_enabled(mode)) clear_print_test_format();
         }
@@ -286,8 +315,10 @@ class Output_Manager
  *
  *       %a   action
  *       %l   condition
+ *       %n   funcall list
  *       %7   instantiation
  *       %p   preference
+ *       %r   rhs value
  *       %y   symbol
  *       %o   symbol's original variable(s)
  *       %t   test
@@ -297,6 +328,12 @@ class Output_Manager
  *       %1   condition list
  *       %2   action list
  *       %3   cons list of conditions
+ *
+ *       %1   condition list
+ *       %2   cons list of conditions
+ *       %3   action lists
+ *       %4   preference lists
+ *       %5   results lists
  *
  *       %4   condition action lists (2 args: cond, action)
  *       %5   condition preference lists (2 args: cond, preference)

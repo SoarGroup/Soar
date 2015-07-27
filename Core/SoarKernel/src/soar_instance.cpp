@@ -5,6 +5,7 @@
  *      Author: mazzin
  */
 
+#include "memory_manager.h"
 #include <iostream>
 
 #include "soar_instance.h"
@@ -19,8 +20,8 @@ Soar_Instance::Soar_Instance() :
     m_Kernel(NULL),
     chunkNameFormat(ruleFormat)
 {
-    m_loadedLibraries = new std::map<std::string, Soar_Loaded_Library* >();
-    m_agent_table = new std::map< char*, Agent_Info*, cmp_str >();
+    m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
+    m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
     dprint_header(DT_SOAR_INSTANCE, PrintBoth, "= Soar instance created =\n");
 }
 
@@ -31,6 +32,8 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
     /* -- Sets up the Output Manager -- */
     m_Output_Manager = &Output_Manager::Get_OM();
     m_Output_Manager->init_Output_Manager(pKernel, this);
+    m_Memory_Manager = &Memory_Manager::Get_MPM();
+    m_Memory_Manager->init_MemPool_Manager(pKernel, this);
 
 }
 
@@ -39,22 +42,18 @@ Soar_Instance::~Soar_Instance()
     dprint_header(DT_SOAR_INSTANCE, PrintBefore, "= Destroying Soar instance =\n");
     m_Kernel = NULL;
 
-    for (std::map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
     {
         dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
         it->second->libMessageFunction("delete", NULL);
     }
-    for (std::map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
     {
         delete it->second;
     }
     m_loadedLibraries->clear();
     delete m_loadedLibraries;
 
-    for (std::map< char*, Agent_Info*, cmp_str >::iterator it = (*m_agent_table).begin(); it != (*m_agent_table).end(); ++it)
-    {
-        delete it->second;
-    }
     m_agent_table->clear();
     delete m_agent_table;
 
@@ -68,7 +67,7 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
     std::transform(lLibName.begin(), lLibName.end(), lLibName.begin(), ::tolower);
 
     /* -- Store library information -- */
-    std::map< std::string, Soar_Loaded_Library* >::iterator iter = (*m_loadedLibraries).find(lLibName);
+    std::unordered_map< std::string, Soar_Loaded_Library* >::iterator iter = (*m_loadedLibraries).find(lLibName);
     if (iter == (*m_loadedLibraries).end())
     {
         if (!pMessageFunction)
@@ -103,7 +102,7 @@ std::string Soar_Instance::Message_Library(const char* pMessage)
     std::string lMessage = lFullCommand.substr(lCLIExtensionName.size() + 1, lFullCommand.size() - 1);
     lCLIExtensionName += "soarlib";
 
-    std::map< std::string, Soar_Loaded_Library* >::iterator iter = (*m_loadedLibraries).find(lCLIExtensionName.c_str());
+    std::unordered_map< std::string, Soar_Loaded_Library* >::iterator iter = (*m_loadedLibraries).find(lCLIExtensionName.c_str());
     if (iter == (*m_loadedLibraries).end())
     {
         // load library
@@ -160,14 +159,13 @@ std::string Soar_Instance::Message_Library(const char* pMessage)
 
 void Soar_Instance::Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML)
 {
-    Agent_Info* lAgent_Info;
-    lAgent_Info = Get_Agent_Info(pAgentName);
-    if (!lAgent_Info)
+    std::unordered_map< std::string, sml::AgentSML* >::iterator iter = (*m_agent_table).find(pAgentName);
+    if (iter == (*m_agent_table).end())
     {
-        lAgent_Info = new Agent_Info;
-        (*m_agent_table)[strdup(pAgentName)] = lAgent_Info;
+        (*m_agent_table)[std::string(pAgentName)] = pSoarAgentSML;
+    } else {
+        iter->second = pSoarAgentSML;
     }
-    lAgent_Info->soarAgentSML = pSoarAgentSML;
 
     /* -- If only agent, make sure it's the default agent for soar debug printing. -- */
     if (m_agent_table->size() == 1)
@@ -178,8 +176,6 @@ void Soar_Instance::Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoa
 
 void Soar_Instance::Delete_Agent(char* pAgentName)
 {
-    Agent_Info* lAgent_Info;
-    char* lAgent_Name;
     bool update_OM = false;
 
     /* -- Update the Output Manager with the agent we're deleting -- */
@@ -189,20 +185,16 @@ void Soar_Instance::Delete_Agent(char* pAgentName)
     }
 
     /* -- Delete agent from agent table -- */
-    std::map< char*, Agent_Info*, cmp_str >::iterator iter = (*m_agent_table).find(pAgentName);
+    std::unordered_map< std::string, sml::AgentSML* >::iterator iter = (*m_agent_table).find(pAgentName);
     if (iter != (*m_agent_table).end())
     {
-        lAgent_Name = iter->first;
-        lAgent_Info = iter->second;
-        (*m_agent_table).erase(pAgentName);
-        free(lAgent_Name);
-        delete lAgent_Info;
+        (*m_agent_table).erase(iter);
 
         if (update_OM)
         {
             if (m_agent_table->size() > 0)
             {
-                m_Output_Manager->set_default_agent((*m_agent_table).begin()->second->soarAgentSML->GetSoarAgent());
+                m_Output_Manager->set_default_agent((*m_agent_table).begin()->second->GetSoarAgent());
             }
             else
             {
@@ -218,30 +210,18 @@ void Soar_Instance::Print_Agent_Table()
     m_Output_Manager->print("------------------------------------\n");
     m_Output_Manager->print("------------ Agent Table -----------\n");
     m_Output_Manager->print("------------------------------------\n");
-    for (std::map< char*, Agent_Info*, cmp_str >::iterator it = (*m_agent_table).begin(); it != (*m_agent_table).end(); ++it)
+    for (std::unordered_map< std::string, sml::AgentSML* >::iterator it = (*m_agent_table).begin(); it != (*m_agent_table).end(); ++it)
     {
-        m_Output_Manager->print_sf("%s -> %s\n", it->first, it->second->soarAgentSML->GetSoarAgent()->name);
+        m_Output_Manager->print_sf("%s -> %s\n", it->first.c_str(), it->second->GetSoarAgent()->name);
     }
 }
 
-Agent_Info* Soar_Instance::Get_Agent_Info(char* pAgentName)
+sml::AgentSML* Soar_Instance::Get_Agent_Info(char* pAgentName)
 {
-    std::map< char*, Agent_Info*, cmp_str >::iterator iter = (*m_agent_table).find(pAgentName);
+    std::unordered_map< std::string, sml::AgentSML* >::iterator iter = (*m_agent_table).find(pAgentName);
     if (iter != (*m_agent_table).end())
     {
         return iter->second;
-    }
-    return NULL;
-}
-
-sml::AgentSML* Soar_Instance::Get_Soar_AgentSML(char* pAgentName)
-{
-    Agent_Info* lAgent_Info;
-    lAgent_Info = Get_Agent_Info(pAgentName);
-
-    if (lAgent_Info)
-    {
-        return lAgent_Info->soarAgentSML;
     }
     return NULL;
 }

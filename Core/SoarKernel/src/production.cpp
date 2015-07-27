@@ -34,15 +34,16 @@
 #include "test.h"
 #include "chunk.h"
 #include "debug.h"
+#include "variablization_manager.h"
 #include <ctype.h>
 
 void init_production_utilities(agent* thisAgent)
 {
-    init_memory_pool(thisAgent, &thisAgent->test_pool, sizeof(test_info), "test");
-    init_memory_pool(thisAgent, &thisAgent->condition_pool, sizeof(condition), "condition");
-    init_memory_pool(thisAgent, &thisAgent->production_pool, sizeof(production), "production");
-    init_memory_pool(thisAgent, &thisAgent->action_pool, sizeof(action), "action");
-    init_memory_pool(thisAgent, &thisAgent->rhs_symbol_pool, sizeof(rhs_info), "rhs symbol");
+    thisAgent->memoryManager->init_memory_pool(MP_test, sizeof(test_info), "test");
+    thisAgent->memoryManager->init_memory_pool(MP_condition, sizeof(condition), "condition");
+    thisAgent->memoryManager->init_memory_pool(MP_production, sizeof(production), "production");
+    thisAgent->memoryManager->init_memory_pool(MP_action, sizeof(action), "action");
+    thisAgent->memoryManager->init_memory_pool(MP_rhs_symbol, sizeof(rhs_info), "rhs symbol");
     init_reorderer(thisAgent);
 }
 
@@ -63,7 +64,7 @@ void deallocate_condition(agent* thisAgent, condition* cond)
         deallocate_test(thisAgent, cond->data.tests.attr_test);
         deallocate_test(thisAgent, cond->data.tests.value_test);
     }
-    free_with_pool(&thisAgent->condition_pool, cond);
+    thisAgent->memoryManager->free_with_pool(MP_condition, cond);
 }
 
 void deallocate_condition_list(agent* thisAgent,
@@ -86,7 +87,7 @@ void deallocate_condition_list(agent* thisAgent,
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);
         }
-        free_with_pool(&thisAgent->condition_pool, c);
+        thisAgent->memoryManager->free_with_pool(MP_condition, c);
     }
 }
 
@@ -110,7 +111,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
     {
         return NIL;
     }
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
     init_condition(New);
     New->type = cond->type;
 
@@ -141,8 +142,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent,
-                          condition* cond)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
     condition* New;
 
@@ -150,7 +150,7 @@ condition* copy_condition(agent* thisAgent,
     {
         return NIL;
     }
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
     init_condition(New);
     New->type = cond->type;
     New->counterpart = cond->counterpart;
@@ -161,14 +161,14 @@ condition* copy_condition(agent* thisAgent,
             New->bt = cond->bt;
         /* ... and fall through to next case */
         case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom));
+                                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts);
             break;
     }
     return New;
@@ -182,14 +182,16 @@ condition* copy_condition(agent* thisAgent,
 void copy_condition_list(agent* thisAgent,
                          condition* top_cond,
                          condition** dest_top,
-                         condition** dest_bottom)
+                         condition** dest_bottom,
+                         bool pUnify_variablization_identity,
+                         bool pStripLiteralConjuncts)
 {
     condition* New, *prev;
 
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts);
         if (prev)
         {
             prev->next = New;
@@ -502,7 +504,6 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-/* MToDo | This can also be moved to a symbol method -- */
 void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
                       list** id_list, list** var_list)
 {
@@ -517,7 +518,7 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return;
     }
@@ -569,7 +570,7 @@ bool test_is_in_tc(test t, tc_number tc)
 {
     cons* c;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return false;
     }
@@ -792,12 +793,14 @@ production* make_production(agent* thisAgent,
             return NIL;
         }
 
-        /* MToDo | Do we need to check smem_valid_production any more? */
-        if (!smem_valid_production(*lhs_top, *rhs_top))
-        {
-            print(thisAgent,  "ungrounded LTI in production\n");
-            return NIL;
-        }
+        /* Don't think we need this any more.  We should never get ungrounded
+         * LTIs from the 9.5 chunker.  We may need a call like this in the
+         * parser perhaps, so moved there. */
+//        if (!smem_valid_production(*lhs_top, *rhs_top))
+//        {
+//            print(thisAgent,  "ungrounded LTI in production\n");
+//            return NIL;
+//        }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);
@@ -829,7 +832,7 @@ production* make_production(agent* thisAgent,
         }
     }
 
-    allocate_with_pool(thisAgent, &thisAgent->production_pool, &p);
+    thisAgent->memoryManager->allocate_with_pool(MP_production, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
 
@@ -864,6 +867,7 @@ production* make_production(agent* thisAgent,
     p->rl_ref_count = 0;
     p->rl_ecr = 0.0;
     p->rl_efr = 0.0;
+    p->rl_gql = 0.0;
     if ((type != JUSTIFICATION_PRODUCTION_TYPE) && (type != TEMPLATE_PRODUCTION_TYPE))
     {
         p->rl_rule = rl_valid_rule(p);
@@ -913,7 +917,7 @@ void deallocate_production(agent* thisAgent, production* prod)
         delete prod->rl_template_instantiations;
     }
 
-    free_with_pool(&thisAgent->production_pool, prod);
+    thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
@@ -992,7 +996,7 @@ uint32_t canonical_test(test t)
 {
     Symbol* sym;
 
-    if (test_is_blank(t))
+    if (!t)
     {
         return NON_EQUAL_TEST_RETURN_VAL;
     }

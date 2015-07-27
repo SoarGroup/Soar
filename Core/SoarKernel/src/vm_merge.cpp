@@ -28,9 +28,9 @@ void Variablization_Manager::merge_values_in_conds(condition* pDestCond, conditi
 
 condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
 {
-    std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >::iterator iter_id;
-    std::map< Symbol*, std::map< Symbol*, condition*> >::iterator iter_attr;
-    std::map< Symbol*, condition*>::iterator iter_value;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >::iterator iter_id;
+    std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> >::iterator iter_attr;
+    std::unordered_map< Symbol*, condition*>::iterator iter_value;
 
     dprint(DT_MERGE, "...looking for id equality test %y\n", pCond->data.tests.id_test->eq_test->data.referent);
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
@@ -75,12 +75,9 @@ condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
  *              to other conditions)
  *    Effects:  This function merges redundant conditions in a condition list
  *              by combining constraints of conditions that share identical
- *              equality tests for all three elements of the condition.
- *    Notes:    Since we are working with the variablized list, we do not
- *              need to worry about grounding id's.  The variablization
- *              logic should have already utilized that information when
- *              variablizing.  If we have the same equality symbol, we can
- *              assume they have the same grounding (or one that is unified.)
+ *              equality tests for all three elements of the condition.  At this
+ *              point the conditions are variablized, so it is merging based
+ *              on the unified variables, not the wmes matched.
  * -- */
 
 inline int64_t count_conditions(condition* top_cond)
@@ -92,7 +89,7 @@ inline int64_t count_conditions(condition* top_cond)
 
 inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 {
-    condition* del_cond = c->counterpart;
+//    condition* del_cond = c->counterpart;
     if (c->counterpart->prev)
     {
         c->counterpart->prev->next = c->counterpart->next;
@@ -110,10 +107,9 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 
 void Variablization_Manager::merge_conditions(condition* top_cond)
 {
-    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n");
-    dprint_set_indents(DT_MERGE, "          ");
-    dprint_noprefix(DT_MERGE, "%1", top_cond);
-    dprint_clear_indents(DT_MERGE);
+    if (!m_learning_on) return;
+
+    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
     dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
 
@@ -170,7 +166,6 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
                 /* -- First condition with these equality tests.  Add to merge map. -- */
                 dprint(DT_MERGE, "...did not find condition that matched.  Creating entry in merge map.\n");
                 (*cond_merge_map)[cond->data.tests.id_test->eq_test->data.referent][cond->data.tests.attr_test->eq_test->data.referent][cond->data.tests.value_test->eq_test->data.referent] = cond;
-//                set_cond_for_id_attr_tests(cond);
             }
         }
         else
@@ -182,9 +177,7 @@ void Variablization_Manager::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint_header(DT_MERGE, PrintBefore, "");
-    dprint_set_indents(DT_MERGE, "          ");
     dprint_noprefix(DT_MERGE, "%1", top_cond);
-    dprint_clear_indents(DT_MERGE);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);

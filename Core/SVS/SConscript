@@ -69,10 +69,6 @@ if not missing_libs:
 else:
 	print 'Cannot find %s, not building svs_viewer' % ', '.join(missing_libs)
 
-# svs_test
-test_prog = env.Program('test_svs', 'src/progs/test_svs.cpp')
-test_install = env.Alias('test_svs', env.Install('$OUT_DIR', test_prog))
-
 # svs library objects
 svs_env = env.Clone()
 svs_env['LIBS'] = []
@@ -112,6 +108,8 @@ elif compiler == 'msvc':
 	srcdirs.append('src/windows')
 	incdirs.append('src/windows')
 	scu_src.append('src/windows/platform_specific.cpp')
+else:
+	flags = []
 
 src = []
 if env['SCU']:

@@ -125,7 +125,7 @@ typedef struct bt_info_struct
 
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-
+    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -200,6 +200,7 @@ typedef struct production_struct
 
     double rl_ecr;                // expected current reward (discounted reward)
     double rl_efr;                // expected future reward (discounted next state)
+    double rl_gql;                // second value for implementation of GQ(\lambda)
 
     condition* rl_template_conds;
     rl_symbol_map_set* rl_template_instantiations;
@@ -237,7 +238,7 @@ extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
 extern void init_condition(condition* cond);
 
 /* --- Returns a new copy of the given condition. --- */
-extern condition* copy_condition(agent* thisAgent, condition* cond);
+extern condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
 
 /* --- Returns a new copy of the given condition without any relational tests --- */
 condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
@@ -245,7 +246,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent, condi
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
 extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
-                         condition** dest_bottom);
+                         condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
                                       ::list** var_list);

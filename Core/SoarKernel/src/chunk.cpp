@@ -50,6 +50,7 @@
 #include "wma.h"
 #include "test.h"
 #include "debug.h"
+#include "debug_defines.h"
 #include "variablization_manager.h"
 
 #include <ctype.h>
@@ -215,34 +216,34 @@ action* copy_action_list(agent* thisAgent, action* actions)
     {
         New = make_action(thisAgent);
         if (prev)
-        {
+    {
             prev->next = New;
-        }
+    }
         else
-        {
+    {
             first = New;
-        }
+    }
         prev = New;
         New->type = old->type;
         New->preference_type = old->preference_type;
         New->support = old->support;
         if (old->type == FUNCALL_ACTION)
-        {
+    {
             New->value = copy_rhs_value(thisAgent, old->value);
-        }
+    }
         else
-        {
+    {
             New->id = copy_rhs_value(thisAgent, old->id);
             New->attr = copy_rhs_value(thisAgent, old->attr);
             first_letter = first_letter_from_rhs_value(New->attr);
             New->value = copy_rhs_value(thisAgent, old->value);
             if (preference_is_binary(old->preference_type))
-            {
+    {
                 New->referent = copy_rhs_value(thisAgent, old->referent);
             }
-        }
-        old = old->next;
     }
+        old = old->next;
+        }
     if (prev)
     {
         prev->next = NIL;
@@ -294,9 +295,9 @@ action* copy_action_list(agent* thisAgent, action* actions)
 -------------------------------------------------------------------- */
 
 /* set of all negated conditions we encounter
-   during backtracing--these are all potentials
-   and (some of them) are added to the grounds
-   in one pass at the end of the backtracing */
+                                during backtracing--these are all potentials
+                                and (some of them) are added to the grounds
+                                in one pass at the end of the backtracing */
 
 void init_chunk_cond_set(chunk_cond_set* set)
 {
@@ -318,7 +319,7 @@ chunk_cond* make_chunk_cond_for_negated_condition(agent* thisAgent, condition* c
     chunk_cond* cc;
     uint32_t remainder, hv;
 
-    allocate_with_pool(thisAgent, &thisAgent->chunk_cond_pool, &cc);
+    thisAgent->memoryManager->allocate_with_pool(MP_chunk_cond, &cc);
     cc->cond = cond;
     cc->hash_value = hash_condition(thisAgent, cond);
     remainder = cc->hash_value;
@@ -347,7 +348,7 @@ bool add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* ne
     if (old)
     {
         /* --- the new condition was already in the set; so don't add it --- */
-        free_with_pool(&thisAgent->chunk_cond_pool, new_cc);
+        thisAgent->memoryManager->free_with_pool(MP_chunk_cond, new_cc);
         return false;
     }
     /* --- add new_cc to the table --- */
@@ -408,21 +409,25 @@ inline void add_cond(condition** c, condition** prev, condition** first)
 
 }
 
-void build_chunk_conds_for_grounds_and_add_negateds(
-                            agent* thisAgent,
-                            condition** inst_top,
-                            condition** vrblz_top,
-                            tc_number tc_to_use, bool* reliable)
+void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
+                                                    condition** inst_top,
+                                                    condition** vrblz_top,
+                                                    tc_number tc_to_use,
+                                                    bool* reliable)
 {
     cons* c;
-    condition* ground, *c_inst, *c_vrblz, *first_inst, *first_vrblz, *prev_inst, *prev_vrblz;
+    condition* ground, *c_vrblz, *c_inst, *first_vrblz = nullptr, *first_inst = nullptr, *prev_vrblz, *prev_inst;
+    bool should_unify_and_simplify = thisAgent->variablizationManager->learning_is_on_for_instantiation();
 
-    c_inst = c_vrblz = NIL; /* unnecessary, but gcc -Wall warns without it */
+    c_vrblz = c_inst = NIL; /* unnecessary, but gcc -Wall warns without it */
 
-    dprint(DT_BACKTRACE, "Building conditions for new chunk...\n");
-    dprint(DT_BACKTRACE, "...adding positive conditions from final ground set.\n");
+    dprint(DT_BUILD_CHUNK_CONDS, "Building conditions for new chunk...\n");
+    dprint(DT_BUILD_CHUNK_CONDS, "Grounds from backtrace: \n");
+    dprint_noprefix(DT_BUILD_CHUNK_CONDS, "%3", thisAgent->grounds);
+    dprint(DT_BUILD_CHUNK_CONDS, "...creating positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
-    prev_inst = prev_vrblz = NIL;
+    thisAgent->variablizationManager->reset_constraint_found_tc_num();
+    prev_vrblz = prev_inst = NIL;
     while (thisAgent->grounds)
     {
         c = thisAgent->grounds;
@@ -433,21 +438,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        /* -- Removed stripping of relational constraints b/c it was losing them in
-         *    non-chunky problem spaces but was needed later for a chunky one. --  */
-//        c_inst = copy_condition_without_relational_constraints(thisAgent, ground);
-        c_inst = copy_condition(thisAgent, ground);
-        c_vrblz = copy_condition(thisAgent, c_inst);
-
-        /*-- Store a link from the variablized condition to the instantiated
-         *   condition.  Used during merging if the chunker needs
-         *   to delete a redundant condition.  Also used to reorder
-         *   instantiated condition to match the re-ordered variablized
-         *   conditions list (required by the rete.) -- */
-        c_vrblz->counterpart = c_inst;
-        c_inst->counterpart = c_vrblz;
-
-        add_cond(&c_inst, &prev_inst, &first_inst);
+        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify);
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
@@ -475,16 +466,12 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 print_string(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_inst = copy_condition(thisAgent, cc->cond);
-            c_vrblz = copy_condition(thisAgent, cc->cond);
-            c_vrblz->counterpart = c_inst;
-            c_inst->counterpart = c_vrblz;
+            c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
 
-            add_cond(&c_inst, &prev_inst, &first_inst);
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
-        }
-        else
-        {
+            }
+            else
+            {
             /* --- not in TC, so discard the condition --- */
 
             if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
@@ -498,18 +485,10 @@ void build_chunk_conds_for_grounds_and_add_negateds(
                 *reliable = false;
             }
 
-            free_with_pool(&thisAgent->chunk_cond_pool, cc);
+            thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
         }
     }
 
-    if (prev_inst)
-    {
-        prev_inst->next = NIL;
-    }
-    else
-    {
-        first_inst = NIL;
-    }
     if (prev_vrblz)
     {
         prev_vrblz->next = NIL;
@@ -519,13 +498,39 @@ void build_chunk_conds_for_grounds_and_add_negateds(
         first_vrblz = NIL;
     }
 
-    *inst_top = first_inst;
     *vrblz_top = first_vrblz;
 
-    dprint(DT_CONSTRAINTS, "Instantiated Conditions: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", *inst_top);
-    dprint(DT_CONSTRAINTS, "Variablized conditions: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", *vrblz_top);
+    thisAgent->variablizationManager->add_additional_constraints(*vrblz_top);
+
+    condition* copy_cond = *vrblz_top;
+    while (copy_cond)
+    {
+        c_inst = copy_condition(thisAgent, copy_cond);
+
+        /*-- Store a link from the variablized condition to the instantiated
+         *   condition.  Used during merging if the chunker needs
+         *   to delete a redundant condition.  Also used to reorder
+         *   instantiated condition to match the re-ordered variablized
+         *   conditions list (required by the rete.) -- */
+        c_inst->counterpart = copy_cond;
+        copy_cond->counterpart = c_inst;
+        add_cond(&c_inst, &prev_inst, &first_inst);
+        copy_cond = copy_cond->next;
+            }
+    if (prev_inst)
+            {
+        prev_inst->next = NIL;
+            }
+    else
+            {
+        first_inst = NIL;
+                }
+
+    *inst_top = first_inst;
+
+    dprint(DT_BUILD_CHUNK_CONDS, "Instantiated chunk conditions after identity unification: \n%1", *inst_top);
+    dprint(DT_BUILD_CHUNK_CONDS, "Variablized chunk conditions after copying and adding additional conditions: \n%1", *vrblz_top);
+    dprint(DT_BUILD_CHUNK_CONDS, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
 }
 
 /* --------------------------------------------------------------------
@@ -556,7 +561,7 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             continue;
         }
-        id = equality_test_found_in_test(cc->data.tests.id_test)->data.referent;
+        id = cc->data.tests.id_test->eq_test->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) &&
                 (id->tc_num != tc))
         {
@@ -580,13 +585,6 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
    to put them in the same order as the now-scrambled variablized ones.
    This routine does this.
 
-   Okay, so the obvious way is to have each variablized condition (VCond)
-   point to the corresponding instantiated condition (ICond).  Then after
-   reordering the VConds, we'd scan through the VConds and say
-      VCond->Icond->next = VCond->next->Icond
-      VCond->Icond->prev = VCond->prev->Icond
-   (with some extra checks for the first and last VCond in the list).
-
 -------------------------------------------------------------------- */
 
 void reorder_instantiated_conditions(condition* top_cond,
@@ -602,25 +600,25 @@ void reorder_instantiated_conditions(condition* top_cond,
     for (c = top_cond; c != NIL; c = c->next)
     {
         if (c->counterpart)
-        {
+    {
             p = c->prev;
             n = c->next;
             if (!n)
-            {
+        {
                 c->counterpart->next = NULL;
                 *dest_inst_bottom = c->counterpart;
             } else {
                 c->counterpart->next = n->counterpart;
-            }
+        }
             if (!p)
-            {
+        {
                 c->counterpart->prev = NULL;
                 *dest_inst_top = c->counterpart;
             } else {
                 c->counterpart->prev = p->counterpart;
-            }
         }
-    }
+        }
+        }
     dprint(DT_MERGE, "Result:\n");
     dprint_noprefix(DT_MERGE, "%1", *dest_inst_top);
 }
@@ -645,8 +643,7 @@ void make_clones_of_results(agent* thisAgent, preference* results,
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            soar_module::symbol_triple(result_p->original_symbols.id, result_p->original_symbols.attr, result_p->original_symbols.value),
-                            soar_module::g_id_triple(result_p->g_ids.id, result_p->g_ids.attr, result_p->g_ids.value));
+                            result_p->o_ids, result_p->rhs_funcs);
         symbol_add_ref(thisAgent, p->id);
         symbol_add_ref(thisAgent, p->attr);
         symbol_add_ref(thisAgent, p->value);
@@ -849,10 +846,12 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
 
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
+//        dprint(DT_DEBUG, "Chunk name %s already exists...trying...", lName.str().c_str());
         do
         {
-            newLName.str(lName.str().c_str());
-            newLName << "-" << collision_count++;
+            newLName.str("");
+            newLName << lName.str() << "-" << collision_count++;
+//            dprint_noprefix(DT_DEBUG, "%s\n", newLName.str().c_str());
         }
         while (find_str_constant(thisAgent, newLName.str().c_str()));
         lName.str(newLName.str());
@@ -861,53 +860,6 @@ Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
 
     generated_name = make_str_constant(thisAgent, lName.str().c_str());
     return generated_name;
-}
-
-bool should_variablize(agent* thisAgent, instantiation* inst)
-{
-    preference* p;
-
-    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
-    {
-        return false;
-    }
-
-    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
-            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
-    {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-        {
-            std::ostringstream message;
-            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
-            print(thisAgent,  message.str().c_str());
-            xml_generate_verbose(thisAgent, message.str().c_str());
-        }
-        return false;
-    }
-
-    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
-            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
-    {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-        {
-            std::ostringstream message;
-            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
-            print(thisAgent,  message.str().c_str());
-            xml_generate_verbose(thisAgent, message.str().c_str());
-        }
-        return false;
-    }
-
-    /* allow_bottom_up_chunks will be false if a chunk was already
-       learned in a lower goal
-     */
-    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
-            !inst->match_goal->id->allow_bottom_up_chunks)
-    {
-        return false;
-    }
-
-    return true;
 }
 
 /* ====================================================================
@@ -920,14 +872,73 @@ bool should_variablize(agent* thisAgent, instantiation* inst)
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
-inline void chunk_instantiation_cleanup (agent* thisAgent, Symbol* prod_name)
+void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, condition** vrblz_top)
 {
-    thisAgent->variablizationManager->clear_variablization_tables();
+    if (vrblz_top)
+    {
+        deallocate_condition_list(thisAgent, (*vrblz_top));
+        (*vrblz_top) = NULL;
+    }
+    if (*prod_name)
+    {
+        dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", *prod_name);
+        symbol_remove_ref(thisAgent, *prod_name);
+        *prod_name = NULL;
+    }
+    thisAgent->variablizationManager->clear_variablization_maps();
     thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_ovar_gid_table();
+    thisAgent->variablizationManager->clear_o_id_substitution_map();
+    thisAgent->variablizationManager->clear_attachment_map();
 }
 
-void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variablize, instantiation** custom_inst_list, bool update_grounding_ids)
+//bool should_variablize(agent* thisAgent, instantiation* inst)
+//{
+//    preference* p;
+//
+//    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
+//    {
+//        return false;
+//    }
+//
+//    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
+//            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
+//    {
+//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+//        {
+//            std::ostringstream message;
+//            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
+//            print(thisAgent,  message.str().c_str());
+//            xml_generate_verbose(thisAgent, message.str().c_str());
+//        }
+//        return false;
+//    }
+//
+//    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+//            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
+//    {
+//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+//        {
+//            std::ostringstream message;
+//            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
+//            print(thisAgent,  message.str().c_str());
+//            xml_generate_verbose(thisAgent, message.str().c_str());
+//        }
+//        return false;
+//    }
+//
+//    /* allow_bottom_up_chunks will be false if a chunk was already
+//       learned in a lower goal
+//     */
+//    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
+//            !inst->match_goal->id->allow_bottom_up_chunks)
+//    {
+//        return false;
+//    }
+//
+//    return true;
+//}
+
+void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -943,6 +954,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     bool reliable = true;
     bool variablize;
     inst_top = vrblz_top = NULL;
+    uint64_t chunk_new_i_id = 0;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -985,22 +997,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "chunk_instantiation() called...\n");
-
-    if (update_grounding_ids)
-    {
-        dprint(DT_IDENTITY_PROP, "Re-propagating identity for potentially different match level.\n");
-        propagate_identity(thisAgent, inst->top_of_instantiated_conditions, inst->match_goal_level);
-    }
-
-//    dprint(DT_CONSTRAINTS, "Caching constraints in base conditions...\n");
-//    for (condition* c = inst->top_of_instantiated_conditions; c; c = c->next)
-//    {
-//        if (c->type == POSITIVE_CONDITION)
-//        {
-//            thisAgent->variablizationManager->cache_constraints_in_cond(c);
-//        }
-//    }
+    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called...\n");
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1054,7 +1051,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         reset_backtrace_list(thisAgent);
     }
 
-    dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6", NULL, pref);
+    dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     /* --- backtrace through the instantiation that produced each result --- */
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
@@ -1065,7 +1062,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
             print_preference(thisAgent, pref);
             print_string(thisAgent, " ");
         }
-        backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0);
+        backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0, pref->o_ids, pref->rhs_funcs);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -1087,20 +1084,22 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     }
 
     dprint(DT_BACKTRACE, "Tracing DONE.\n");
-    dprint(DT_BACKTRACE, "Grounds after tracing:\n%3", thisAgent->grounds);
+    dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", thisAgent->grounds);
+//    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 
-    thisAgent->variablizationManager->print_cached_constraints(DT_CONSTRAINTS);
+    dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
 
     free_list(thisAgent, thisAgent->positive_potentials);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
+    chunk_new_i_id = thisAgent->variablizationManager->get_new_inst_id();
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
     }
 
-    variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
+    variablize = thisAgent->variablizationManager->learning_is_on_for_instantiation() && reliable;
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
@@ -1131,7 +1130,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
-    dprint(DT_FUNC_PRODUCTIONS, "Backtracing done.  Building chunk %y\n", prod_name);
+    dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
 
     /* --- if there aren't any grounds, exit --- */
     if (!inst_top)
@@ -1157,47 +1156,37 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         goto chunking_abort;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
-
+    dprint(DT_BUILD_CHUNK_CONDS, "chunk_instantiation instantiated conditions from backtrace: \n%6", inst_top, results);
+    dprint(DT_BUILD_CHUNK_CONDS, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     if (variablize)
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
-        thisAgent->variablizationManager->variablize_relational_constraints();
-        thisAgent->variablizationManager->install_cached_constraints(vrblz_top);
+        #ifdef EBC_MERGE_CONDITIONS
+        thisAgent->variablizationManager->merge_conditions(vrblz_top);
+        #endif
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation variablizing following chunk instantiation: \n%6", vrblz_top, results);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
+    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
+    reset_variable_generator(thisAgent, vrblz_top, NIL);
+    thisAgent->variablizationManager->unify_identities_for_results(results);
+    dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n%6", vrblz_top, results);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions: \n");
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS results...\n");
+    rhs = thisAgent->variablizationManager->variablize_results_into_actions(results, variablize);
+    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS results.\n");
 
-    /* -- Clean up unification constraints and merge redundant conditions
-     *    Note that this is needed even for justifications -- */
-    thisAgent->variablizationManager->fix_conditions(vrblz_top);
-    thisAgent->variablizationManager->merge_conditions(vrblz_top);
-    thisAgent->variablizationManager->fix_conditions(inst_top, true);
-
-    dprint(DT_CONSTRAINTS, "Merged variablized conditions with relational constraints: \n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
-
-    dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS action list:\n");
-
-    rhs = thisAgent->variablizationManager->variablize_results(results, variablize);
-
-    dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS action list.\n");
-
-    dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", inst_top);
-    dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n");
-    dprint_noprefix(DT_CONSTRAINTS, "%1", vrblz_top);
+    dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
+    dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n%1", vrblz_top);
 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created variablized rule: \n%4", vrblz_top, rhs);
+    dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
+     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
-
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered rule: \n%4", vrblz_top, rhs);
 
     if (!prod)
     {
@@ -1211,15 +1200,20 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         print(thisAgent, "through the local state.\n");
 
         deallocate_condition_list(thisAgent, vrblz_top);
+        vrblz_top = NULL;
         deallocate_condition_list(thisAgent, inst_top);
+        inst_top = NULL;
         deallocate_action_list(thisAgent, rhs);
-
+        rhs = NULL;
         // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
         thisAgent->stop_soar = true;
         thisAgent->system_halted = true;
 
         goto chunking_abort;
     }
+
+    /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
+    prod_name = NULL;
 
     {
         condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
@@ -1229,16 +1223,16 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         /* Record the list of grounds in the order they will appear in the chunk. */
         if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
         {
-            temp_explain_chunk.all_grounds = inst_lhs_top;    /* Not a copy yet */
+            temp_explain_chunk.all_grounds = inst_lhs_top;   /* Not a copy yet */
         }
 
-        allocate_with_pool(thisAgent, &thisAgent->instantiation_pool, &chunk_inst);
+        thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &chunk_inst);
         chunk_inst->prod = prod;
         chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
         chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
 
         chunk_inst->GDS_evaluated_already = false;  /* REW:  09.15.96 */
-
+        chunk_inst->i_id = chunk_new_i_id;
         chunk_inst->reliable = reliable;
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
@@ -1247,7 +1241,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created reordered instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint(DT_DEBUG, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
+    dprint(DT_DEBUG, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint(DT_DEBUG, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
@@ -1261,10 +1257,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
         //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
-    /* MToDo | Remove the print_name parameter disabling here. */
-    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name || true);
+    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
-    dprint(DT_PRINT_INSTANTIATIONS, "Add production to rete result: %s\n",
+    dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
            ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
             (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) ? "Refracted instantiation did not match!" :
             (rete_addition_result == REFRACTED_INST_MATCHED) ? "Refracted instantiation matched." :
@@ -1279,25 +1274,21 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
                 && ((prod_type != JUSTIFICATION_PRODUCTION_TYPE)
                     || (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH)))
         {
-            strncpy(temp_explain_chunk.name, prod_name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+            strncpy(temp_explain_chunk.name, prod->name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
             temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
             explain_add_temp_to_chunk_list(thisAgent, &temp_explain_chunk);
         }
         else
         {
-            /* RBD 4/6/95 if excised the chunk, discard previously-copied stuff */
+            /* If excised the chunk, discard previously-copied stuff */
             deallocate_condition_list(thisAgent, temp_explain_chunk.conds);
             deallocate_action_list(thisAgent, temp_explain_chunk.actions);
         }
     }
 
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBefore, "chunk instantiation created final production: \n");
-    dprint_production(DT_PRINT_INSTANTIATIONS, (rete_addition_result != DUPLICATE_PRODUCTION) ? prod : NIL);
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintAfter, "");
-
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, vrblz_top);
-    /* MToDo | Do we need to deallocate the rhs here? It doesn't seem to be done anywhere.*/
+    vrblz_top = NULL;
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
@@ -1329,7 +1320,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
     chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = chunk_inst;
 
-    chunk_instantiation_cleanup(thisAgent, prod_name);
+    chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1340,22 +1331,17 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, bool dont_variab
 
     if (!thisAgent->max_chunks_reached)
     {
-        dprint(DT_FUNC_PRODUCTIONS, "Calling chunk instantiation from chunk instantation...\n");
-        chunk_instantiation(thisAgent, chunk_inst, dont_variablize, custom_inst_list, true);
-        return;
+        dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
+        thisAgent->variablizationManager->set_learning_for_instantiation(chunk_inst);
+        chunk_instantiation(thisAgent, chunk_inst, custom_inst_list);
+        dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
-
 
     return;
 
 chunking_abort:
     {
-        chunk_instantiation_cleanup(thisAgent, prod_name);
-        if (prod_name)
-        {
-            dprint_header(DT_FUNC_PRODUCTIONS, PrintAfter, "chunk_instantiation() done building chunk %y\n", prod_name);
-            symbol_remove_ref(thisAgent, prod_name);
-        }
+        chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
     }
 
 #ifndef NO_TIMING_STUFF
@@ -1375,7 +1361,9 @@ chunking_abort:
 
 void init_chunker(agent* thisAgent)
 {
-    init_memory_pool(thisAgent, &thisAgent->chunk_cond_pool, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
+    thisAgent->memoryManager->init_memory_pool(MP_attachments, sizeof(attachment_struct), "attachments");
     init_chunk_cond_set(&thisAgent->negated_set);
 }
 

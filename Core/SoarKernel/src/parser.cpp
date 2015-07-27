@@ -106,9 +106,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
 test make_placeholder_test(agent* thisAgent, char first_letter)
 {
     Symbol* new_var = make_placeholder_var(thisAgent, first_letter);
-    //  return make_test_without_refcount (thisAgent, new_var, EQUALITY_TEST);
     test new_test = make_test(thisAgent, new_var, EQUALITY_TEST);
-    /* MToDoRefCnt | make placeholder already increases.  So decrease here or use a new version of make_test without refcount */
     symbol_remove_ref(thisAgent, new_var);
     return new_test;
 }
@@ -175,7 +173,7 @@ void substitute_for_placeholders_in_test(agent* thisAgent, test* t)
     cons* c;
     test ct;
 
-    if (test_is_blank(*t))
+    if (!(*t))
     {
         return;
     }
@@ -470,9 +468,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
         case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
             lexer->get_lexeme();
-            //      t = make_test_without_refcount (thisAgent, referent, test_type);
             t = make_test(thisAgent, referent, test_type);
-            /* MToDoRefCnt | make_symbol_for_lexeme already increases.  So decrease here or use a new version of make_test without refcount */
             symbol_remove_ref(thisAgent, referent);
             return t;
 
@@ -559,7 +555,7 @@ test parse_test(agent* thisAgent, Lexer* lexer)
     }
     /* --- parse and return conjunctive test --- */
     lexer->get_lexeme();
-    t = make_blank_test();
+    t = NULL;
     do
     {
         temp = parse_simple_test(thisAgent, lexer);
@@ -735,12 +731,12 @@ condition* negate_condition_list(agent* thisAgent, condition* conds)
                 return conds;
             case CONJUNCTIVE_NEGATION_CONDITION:
                 temp = conds->data.ncc.top;
-                free_with_pool(&thisAgent->condition_pool, conds);
+                thisAgent->memoryManager->free_with_pool(MP_condition, conds);
                 return temp;
         }
     }
     /* --- more than one condition; so build a conjunctive negation --- */
-    allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &temp);
+    thisAgent->memoryManager->allocate_with_pool(MP_condition,  &temp);
     init_condition(temp);
     temp->type = CONJUNCTIVE_NEGATION_CONDITION;
     temp->data.ncc.top = conds;
@@ -773,7 +769,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
             (lexer->current_lexeme.type == R_PAREN_LEXEME))
     {
         /* --- value omitted, so create dummy value test --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memoryManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.value_test = make_placeholder_test(thisAgent, first_letter);
@@ -804,7 +800,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
                 deallocate_condition_list(thisAgent, first_c);
                 return NIL;
             }
-            if (! test_includes_equality_test_for_symbol(value_test, NIL))
+            if (!value_test->eq_test)
             {
                 add_test(thisAgent, &value_test, make_placeholder_test(thisAgent, first_letter));
             }
@@ -817,7 +813,7 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
             lexer->get_lexeme();
         }
         /* --- build condition using the new value test --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memoryManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.value_test = value_test;
@@ -883,7 +879,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     {
         return NIL;
     }
-    if (! test_includes_equality_test_for_symbol(attr_test, NIL))
+    if (!attr_test->eq_test)
     {
         add_test(thisAgent, &attr_test, make_placeholder_test(thisAgent, 'a'));
     }
@@ -895,7 +891,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
         lexer->get_lexeme();  /* consume the "." */
         /* --- setup for next attribute in path:  make a dummy variable,
            create a new condition in the path --- */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memoryManager->allocate_with_pool(MP_condition,  &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         if (last_c)
@@ -925,12 +921,10 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
         if (!attr_test)
         {
             deallocate_condition_list(thisAgent, first_c);
-            /* MToDo | I think we need to deallocate id_test in several places in this function.  It's
-             *            also copied around. */
             return NIL;
         }
         /* AGR 544 begin */
-        if (! test_includes_equality_test_for_symbol(attr_test, NIL))
+        if (!attr_test->eq_test)
         {
             add_test(thisAgent, &attr_test, make_placeholder_test(thisAgent, 'a'));
         }
@@ -1012,12 +1006,12 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         }
         else
         {
-            id_goal_impasse_test = make_blank_test();
+            id_goal_impasse_test = NULL;
         }
     }
     else
     {
-        id_goal_impasse_test = make_blank_test();
+        id_goal_impasse_test = NULL;
     }
 
     /* --- read optional id test; create dummy one if none given --- */
@@ -1031,7 +1025,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
             deallocate_test(thisAgent, id_goal_impasse_test);
             return NIL;
         }
-        if (! test_includes_equality_test_for_symbol(id_test, NIL))
+        if (!id_test->eq_test)
         {
             add_test
             (thisAgent, &id_test, make_placeholder_test(thisAgent, first_letter_if_no_id_given));
@@ -1094,7 +1088,7 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type == R_PAREN_LEXEME)
     {
         lexer->get_lexeme();       /* consume the right parenthesis */
-        allocate_with_pool(thisAgent, &thisAgent->condition_pool,  &c);
+        thisAgent->memoryManager->allocate_with_pool(MP_condition, &c);
         init_condition(c);
         c->type = POSITIVE_CONDITION;
         c->data.tests.attr_test = make_placeholder_test(thisAgent, 'a');
@@ -1413,6 +1407,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string());
     }
+	
+	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+	{
+		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		fun_name = find_str_constant(thisAgent, "halt");
+	}
+	
     if (!fun_name)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
@@ -1420,6 +1421,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
+	
+	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
+	{
+		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		rf = lookup_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
+	}
+	
     if (!rf)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
@@ -1512,8 +1520,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
     {
         // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
-        // make_symbol_for_lexeme already increments refcount
-        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym);
+        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
         lexer->get_lexeme();
         return rv;
     }
@@ -1758,9 +1765,7 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
         prev_a = a;
         a->type = MAKE_ACTION;
         a->preference_type = preference_type;
-        a->id = allocate_rhs_value_for_symbol(thisAgent, id);
-        /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-        // symbol_add_ref(thisAgent, id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
         a->attr = copy_rhs_value(thisAgent, attr);
         a->value = copy_rhs_value(thisAgent, value);
         if (preference_is_binary(preference_type))
@@ -1888,9 +1893,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
             prev_a = a;
             a->type = MAKE_ACTION;
             a->preference_type = preference_type;
-            a->id = allocate_rhs_value_for_symbol(thisAgent, id);
-            /* MToDoRefCnt | May not need this refcount add b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-            //symbol_add_ref(thisAgent, id);
+            a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
             a->attr = copy_rhs_value(thisAgent, attr);
             a->value = copy_rhs_value(thisAgent, value);
         }
@@ -1915,9 +1918,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
                 prev_a = a;
                 a->type = MAKE_ACTION;
                 a->preference_type = ACCEPTABLE_PREFERENCE_TYPE;
-                a->id = allocate_rhs_value_for_symbol(thisAgent, id);
-                /* MToDoRefCnt | May not need these refcount adds b/c rhs_to_symbol did not increase refcount, but make_rhs_value_symbol does */
-                // symbol_add_ref(thisAgent, id);
+                a->id = allocate_rhs_value_for_symbol(thisAgent, id, 0);
                 a->attr = copy_rhs_value(thisAgent, attr);
                 a->value = copy_rhs_value(thisAgent, value);
             }
@@ -1983,11 +1984,11 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         if (strcmp(szAttribute, "operator") != 0)
         {
             new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr,
-                          allocate_rhs_value_for_symbol(thisAgent, new_var));
+                          allocate_rhs_value_for_symbol(thisAgent, new_var, 0));
         }
         else
         {
-            new_actions = parse_preferences(thisAgent, lexer, id, attr, allocate_rhs_value_for_symbol(thisAgent, new_var));
+            new_actions = parse_preferences(thisAgent, lexer, id, attr, allocate_rhs_value_for_symbol(thisAgent, new_var, 0));
         }
 
         for (last = new_actions; last->next != NIL; last = last->next)
@@ -2085,7 +2086,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         all_actions = make_action(thisAgent);
         all_actions->type = FUNCALL_ACTION;
-        all_actions->next = NIL; /* MToDo | Added from 9.4.  Needed? */
         all_actions->value = funcall_value;
         return all_actions;
     }
@@ -2104,7 +2104,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         else
         {
             var = smem_lti_soar_make(thisAgent, lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-            /* MToDo | I don't think we need to add these two here to the parser clean up list.  It seems it cleans it up at the end --*/
+            /* I don't think we need to add these two here to the parser clean up list.  It seems it cleans it up at the end --*/
             // push (thisAgent, (var), thisAgent->parser_syms);
         }
     }
@@ -2232,7 +2232,6 @@ action* destructively_reverse_action_list(action* a)
    If any error occurred, it returns NIL (and may or may not read
    the rest of the body of the sp).
 ================================================================= */
-
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result)
 {
     Symbol* name;
@@ -2389,8 +2388,16 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     lhs_top = lhs;
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
-    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
-
+    /* Not sure if this is needed here, but it was in make_production before.  Don't
+     * think we can get ungrounded LTIs in chunks now, but maybe we can still get
+     * there here from the parser. */
+    if (!smem_valid_production(lhs_top, rhs))
+    {
+        print(thisAgent,  "ungrounded LTI in production\n");
+        p = NULL;
+    } else {
+        p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
+    }
     if (!p)
     {
         if (documentation)

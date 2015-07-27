@@ -169,7 +169,7 @@ class node_test_select_filter : public select_filter<sgnode*>
     public:
         node_test_select_filter(Symbol* root, soar_interface* si,
                                 filter_input* input, node_test* test)
-            : select_filter<sgnode*>(root, si, input), test(test), select_true(true)
+            : select_filter<sgnode * >(root, si, input), test(test), select_true(true)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select);

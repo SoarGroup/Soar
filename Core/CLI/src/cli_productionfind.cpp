@@ -34,7 +34,7 @@ void free_binding_list(agent* thisAgent, list* bindings)
 
     for (c = bindings; c != NIL; c = c->rest)
     {
-        free_memory(thisAgent, c->first, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
     }
     free_list(thisAgent, bindings);
 }
@@ -57,7 +57,7 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
     while (c != *current_binding_point)
     {
         c_next = c->rest;
-        free_memory(thisAgent, c->first, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(c->first, MISCELLANEOUS_MEM_USAGE);
         free_cons(thisAgent, c);
         c = c_next;
     }
@@ -111,7 +111,7 @@ bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, l
     bvar = get_binding(s1, *bindings);
     if (bvar == NIL)
     {
-        b = static_cast<Binding*>(allocate_memory(thisAgent, sizeof(Binding), MISCELLANEOUS_MEM_USAGE));
+        b = static_cast<Binding*>(thisAgent->memoryManager->allocate_memory(sizeof(Binding), MISCELLANEOUS_MEM_USAGE));
         b->from = s1;
         b->to = s2;
         push(thisAgent, b, *bindings);
@@ -227,9 +227,9 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
     test t2;
 
     /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-    if (test_is_blank(t1))
+    if (!t1)
     {
-        return (test_is_blank(test2) == 0);
+        return (test2 != 0);
     }
 
     /* If the pattern doesn't include "(state", but the test from the
@@ -248,7 +248,7 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
     }
     if (t1->type == EQUALITY_TEST)
     {
-        if (!((t2->type == EQUALITY_TEST) && !(test_is_blank(t2))))
+        if (!(t2 && (t2->type == EQUALITY_TEST)))
         {
             dealloc_and_return(thisAgent, t2, false);
         }
@@ -432,7 +432,6 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
                 (but don't necc. need to save them -- maybe can just print them as we go). */
 
                 match = true;
-                /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top, &bottom, NIL);
 
                 free_binding_list(thisAgent, bindings);
@@ -531,7 +530,6 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
                 free_binding_list(thisAgent, bindings);
                 bindings = NIL;
 
-                /* MToDo | Can we use with last param = true (add complex conditions) -- */
                 p_node_to_conditions_and_rhs(thisAgent, prod->p_node, NIL, NIL, &top_cond, &bottom_cond, &rhs);
                 deallocate_condition_list(thisAgent, top_cond);
                 for (a = alist; a != NIL; a = a->next)

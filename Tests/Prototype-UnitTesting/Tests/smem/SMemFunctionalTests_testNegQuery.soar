@@ -1,0 +1,381 @@
+# code written by Nate Derbinsky
+
+watch 0
+
+smem --set learning on
+
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {neg*propose*cue
+   (state <s> ^name neg
+              ^phase cue
+              ^max)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name cue)
+}
+
+sp {apply*cue
+   (state <s> ^operator <op>
+              ^smem.command <smem-cmd>
+              ^attr <a>
+              ^val <v>
+              ^tcnum <tc>)
+   (<op> ^name cue)
+-->
+   (<s> ^phase cue - flag)
+   (<smem-cmd> ^query <q>
+               ^neg-query <nq>)
+   (<q> ^0 0
+        ^<a> <v>)
+   (<nq> ^extra-1 <tc>)
+}
+
+sp {neg*propose*flag
+   (state <s> ^name neg
+              ^phase flag)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name flag)
+}
+
+sp {apply*flag*success
+   (state <s> ^operator <op>
+              ^smem <smem>
+              ^tcnum <tc>)
+   (<op> ^name flag)
+   (<smem> ^command <cmd>
+           ^result.retrieved <lti>)
+   (<cmd> ^query <q>
+          ^neg-query <nq>)
+   (<lti> ^extra-1 <e1>)
+-->
+   (<s> ^phase flag - reset)
+   (<cmd> ^query <q> -
+          ^neg-query <nq> -
+          ^store <lti>)
+   (<lti> ^extra-1 <e1> - <tc>)
+}
+
+sp {apply*flag*failure
+   (state <s> ^operator <op>
+              ^smem <smem>)
+   (<op> ^name flag)
+   (<smem> ^command <cmd>
+           ^result.failure)
+   (<cmd> ^query <q>
+          ^neg-query <nq>)
+-->
+   (<s> ^phase flag - inc)
+   (<cmd> ^query <q> -
+          ^neg-query <nq> -)
+}
+
+sp {neg*propose*inc
+   (state <s> ^name neg
+              ^phase inc)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name inc)
+}
+
+sp {apply*inc*val
+   (state <s> ^operator <op>
+              ^attr <a>
+              ^val {<> <a> <v>}
+              ^phase inc)
+   (<op> ^name inc)
+-->
+   (<s> ^val <v> - (+ <v> 1)
+        ^phase inc - cue)
+   (write (crlf) |done: a=| <a> |, v=| <v> (crlf))
+   #(interrupt)
+   #(write (cmd smem -p))
+}
+
+sp {apply*inc*attr
+   (state <s> ^operator <op>
+              ^max <m>
+              ^attr {<> <m> <a>}
+              ^val <a>
+              ^tcnum <tc>
+              ^phase inc)
+   (<op> ^name inc)
+-->
+   (<s> ^attr <a> - (+ <a> 1)
+        ^val <a> - 1
+        ^tcnum <tc> - (+ <tc> 1)
+        ^phase inc - cue)
+   (write (crlf) |done: a=| <a> |, v=| <a> (crlf))
+   #(interrupt)
+   #(write (cmd smem -p))
+}
+
+sp {apply*inc*done
+   (state <s> ^operator <op>
+              ^max <m>
+              ^attr <m>
+              ^val <m>
+              ^phase inc)
+   (<op> ^name inc)
+-->
+   (write (crlf) |done: a=| <m> |, v=| <m> (crlf))
+   #(write (cmd smem -p))
+   (halt)
+}
+
+sp {propose*initialize-neg
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-neg)
+}
+
+sp {apply*initialize-neg
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-neg)
+-->
+   (<s> ^name neg
+        ^phase cue
+        ^attr 2
+        ^val 1
+        ^tcnum 1)
+}
+
+sp {neg*propose*max
+   (state <s> ^name neg
+             -^max)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name max)
+}
+
+sp {max*propose*max-done
+   (state <s> ^name max
+              ^smem.result.retrieved.<a> 1)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name max-done
+         ^attr <a>)
+}
+
+sp {max*compare*max-done
+   (state <s> ^name max
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name max-done
+          ^attr <a1>)
+   (<op2> ^name max-done
+          ^attr {< <a1> <a2>})
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {apply*max-done
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name max-done
+         ^attr <a>)
+-->
+   (<ss> ^max <a>)
+}
+
+sp {max*propose*max-init
+   (state <s> ^name max
+             -^smem.result.retrieved)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name max-init)
+}
+
+sp {apply*max-init
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name max-init)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^1 1)
+}
+
+sp {neg*propose*reset
+   (state <s> ^name neg
+              ^phase reset)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name reset)
+}
+
+sp {apply*reset
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name reset)
+   (<cmd> ^store <store>)
+-->
+   (<s> ^phase reset - cue)
+   (<cmd> ^store <store> -)
+}
+
+smem --add {
+(<c_node1> ^extra-1 e*1
+           ^0 0
+           ^1 1
+           ^2 1
+           ^3 1
+           ^4 1)
+(<c_node2> ^extra-1 e*1
+           ^0 0
+           ^1 2
+           ^2 2
+           ^3 2
+           ^4 2)
+(<c_node3> ^extra-1 e*1
+           ^0 0
+           ^1 3
+           ^2 1
+           ^3 3
+           ^4 3)
+(<c_node4> ^extra-1 e*1
+           ^0 0
+           ^1 4
+           ^2 2
+           ^3 1
+           ^4 4)
+(<c_node5> ^extra-1 e*1
+           ^0 0
+           ^1 5
+           ^2 1
+           ^3 2
+           ^4 1)
+(<c_node6> ^extra-1 e*1
+           ^0 0
+           ^1 6
+           ^2 2
+           ^3 3
+           ^4 2)
+(<c_node7> ^extra-1 e*1
+           ^0 0
+           ^1 7
+           ^2 1
+           ^3 1
+           ^4 3)
+(<c_node8> ^extra-1 e*1
+           ^0 0
+           ^1 8
+           ^2 2
+           ^3 2
+           ^4 4)
+(<c_node9> ^extra-1 e*1
+           ^0 0
+           ^1 9
+           ^2 1
+           ^3 3
+           ^4 1)
+(<c_node10> ^extra-1 e*1
+            ^0 0
+            ^1 10
+            ^2 2
+            ^3 1
+            ^4 2)
+(<c_node11> ^extra-1 e*1
+            ^0 0
+            ^1 11
+            ^2 1
+            ^3 2
+            ^4 3)
+(<c_node12> ^extra-1 e*1
+            ^0 0
+            ^1 12
+            ^2 2
+            ^3 3
+            ^4 4)
+(<c_node13> ^extra-1 e*1
+            ^0 0
+            ^1 13
+            ^2 1
+            ^3 1
+            ^4 1)
+(<c_node14> ^extra-1 e*1
+            ^0 0
+            ^1 14
+            ^2 2
+            ^3 2
+            ^4 2)
+(<c_node15> ^extra-1 e*1
+            ^0 0
+            ^1 15
+            ^2 1
+            ^3 3
+            ^4 3)
+(<c_node16> ^extra-1 e*1
+            ^0 0
+            ^1 16
+            ^2 2
+            ^3 1
+            ^4 4)
+(<c_node17> ^extra-1 e*1
+            ^0 0
+            ^1 17
+            ^2 1
+            ^3 2
+            ^4 1)
+(<c_node18> ^extra-1 e*1
+            ^0 0
+            ^1 18
+            ^2 2
+            ^3 3
+            ^4 2)
+(<c_node19> ^extra-1 e*1
+            ^0 0
+            ^1 19
+            ^2 1
+            ^3 1
+            ^4 3)
+(<c_node20> ^extra-1 e*1
+            ^0 0
+            ^1 20
+            ^2 2
+            ^3 2
+            ^4 4)
+(<c_node21> ^extra-1 e*1
+            ^0 0
+            ^1 21
+            ^2 1
+            ^3 3
+            ^4 1)
+(<c_node22> ^extra-1 e*1
+            ^0 0
+            ^1 22
+            ^2 2
+            ^3 1
+            ^4 2)
+(<c_node23> ^extra-1 e*1
+            ^0 0
+            ^1 23
+            ^2 1
+            ^3 2
+            ^4 3)
+(<c_node24> ^extra-1 e*1
+            ^0 0
+            ^1 24
+            ^2 2
+            ^3 3
+            ^4 4)
+}
+

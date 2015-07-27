@@ -74,28 +74,26 @@ int64_t lapse_duration;
    Abort_with_fatal_error(msg) terminates Soar, closing
    the log file before exiting.  It also prints
    an error message and tries to write a file before exiting.
-=================================================================== */
 
-/* MToDo | May also want to close debug and other databases here -- */
+   No longer actually aborts.  Allows debugging in many cases.
+=================================================================== */
 
 void abort_with_fatal_error(agent* thisAgent, const char* msg)
 {
     FILE* f;
-    const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
+    const char* warning = "Soar cannot recover from this error. \nData is still available for inspection, but may be corrupt.\nYou will have to restart Soar to run an agent.\nIf a log was open, it has been closed for safety.";
 
     Output_Manager::Get_OM().printa(thisAgent, msg);
     Output_Manager::Get_OM().printa(thisAgent, warning);
+    assert(false);
 
     xml_generate_error(thisAgent, msg);
     xml_generate_error(thisAgent, warning);
 
-    f = fopen("soarerror", "w");
+    f = fopen("soar_crash_log.txt", "w");
     fprintf(f, "%s", msg);
     fprintf(f, "%s", warning);
     fclose(f);
-
-    assert(false);
-
 }
 
 /* -- A version for use when the current agent variable is not available == */
@@ -103,17 +101,16 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
 void abort_with_fatal_error_noagent(const char* msg)
 {
     FILE* f;
-    const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
+    const char* warning = "Soar cannot recover from this error. \nData is still available for inspection, but may be corrupt.\nYou will have to restart Soar to run an agent.\nIf a log was open, it has been closed for safety.";
 
     Output_Manager::Get_OM().print(msg);
     Output_Manager::Get_OM().print(warning);
+    assert(false);
 
-    f = fopen("soarerror", "w");
+    f = fopen("soar_crash_log.txt", "w");
     fprintf(f, "%s", msg);
     fprintf(f, "%s", warning);
     fclose(f);
-
-    assert(false);
 }
 /* ===================================================================
 

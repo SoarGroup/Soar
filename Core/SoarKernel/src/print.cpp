@@ -112,9 +112,6 @@ void print_string(agent* thisAgent, const char* s)
     Output_Manager::Get_OM().printa(thisAgent, s);
 }
 
-/* MToDo | This is just a test to see if previously inlined version is faster
- *         at all.  Had to remove inline from print_string() b/c of linker error. */
-
 inline void inline_print_string(agent* thisAgent, const char* s)
 {
     Output_Manager::Get_OM().printa(thisAgent, s);
@@ -275,132 +272,6 @@ char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
         default:
             return 0 ;
     }
-}
-
-char* symbol_to_string(agent* thisAgent, Symbol* sym,
-                       bool rereadable, char* dest, size_t dest_size)
-{
-    bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-    bool is_rereadable;
-    bool has_angle_bracket;
-
-    switch (sym->symbol_type)
-    {
-        case VARIABLE_SYMBOL_TYPE:
-            if (!dest)
-            {
-                return sym->var->name;
-            }
-            strncpy(dest, sym->var->name, dest_size);
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            return dest;
-
-        case IDENTIFIER_SYMBOL_TYPE:
-            if (!dest)
-            {
-                dest = Output_Manager::Get_OM().get_printed_output_string();
-                dest_size = output_string_size; /* from agent.h */
-            }
-            if (sym->id->smem_lti == NIL)
-            {
-                // NOT an lti (long term identifier), print like we always have
-                SNPRINTF(dest, dest_size, "%c%llu", sym->id->name_letter, static_cast<long long unsigned>(sym->id->name_number));
-            }
-            else
-            {
-                // IS an lti (long term identifier), prepend an @ symbol
-                SNPRINTF(dest, dest_size, "@%c%llu", sym->id->name_letter, static_cast<long long unsigned>(sym->id->name_number));
-            }
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            return dest;
-
-        case INT_CONSTANT_SYMBOL_TYPE:
-            if (!dest)
-            {
-                dest = Output_Manager::Get_OM().get_printed_output_string();
-                dest_size = output_string_size; /* from agent.h */
-            }
-            SNPRINTF(dest, dest_size, "%ld", static_cast<long int>(sym->ic->value));
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            return dest;
-
-        case FLOAT_CONSTANT_SYMBOL_TYPE:
-            if (!dest)
-            {
-                dest = Output_Manager::Get_OM().get_printed_output_string();
-                dest_size = output_string_size; /* from agent.h */
-            }
-            SNPRINTF(dest, dest_size, "%#.16g", sym->fc->value);
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            {
-                /* --- strip off trailing zeros --- */
-                char* start_of_exponent;
-                char* end_of_mantissa;
-                start_of_exponent = dest;
-                while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
-                {
-                    start_of_exponent++;
-                }
-                end_of_mantissa = start_of_exponent - 1;
-                while (*end_of_mantissa == '0')
-                {
-                    end_of_mantissa--;
-                }
-                end_of_mantissa++;
-                while (*start_of_exponent)
-                {
-                    *end_of_mantissa++ = *start_of_exponent++;
-                }
-                *end_of_mantissa = 0;
-            }
-            return dest;
-
-        case STR_CONSTANT_SYMBOL_TYPE:
-            if (!rereadable)
-            {
-                if (!dest)
-                {
-                    return sym->sc->name;
-                }
-                strncpy(dest, sym->sc->name, dest_size);
-                return dest;
-            }
-            soar::Lexer::determine_possible_symbol_types_for_string(sym->sc->name,
-                    strlen(sym->sc->name),
-                    &possible_id,
-                    &possible_var,
-                    &possible_sc,
-                    &possible_ic,
-                    &possible_fc,
-                    &is_rereadable);
-
-            has_angle_bracket = sym->sc->name[0] == '<' ||
-                                sym->sc->name[strlen(sym->sc->name) - 1] == '>';
-
-            if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                    (!is_rereadable) ||
-                    has_angle_bracket)
-            {
-                /* BUGBUG if in context where id's could occur, should check
-                   possible_id flag here also */
-                return string_to_escaped_string(sym->sc->name, '|', dest);
-            }
-            if (!dest)
-            {
-                return sym->sc->name;
-            }
-            strncpy(dest, sym->sc->name, dest_size);
-            return dest;
-
-        default:
-        {
-            char msg[BUFFER_MSG_SIZE];
-            strncpy(msg, "Internal Soar Error:  symbol_to_string called on bad symbol\n", BUFFER_MSG_SIZE);
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
-        }
-    }
-    return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
 char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
@@ -568,7 +439,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
 
     for (c = conds; c != NIL; c = c->next)
     {
-        allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = c;
         if (conds_not_yet_printed)
         {
@@ -602,7 +473,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
         c = static_cast<condition_struct*>(dc->item);
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             inline_print_string(thisAgent, "-{");
             xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition);
             print_condition_list(thisAgent, c->data.ncc.top, indent + 2, internal);
@@ -648,7 +519,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
             xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
         }
 
-        Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
+        Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
         inline_print_string(thisAgent, c_id_test);
         xml_att_val(thisAgent, kConditionId, c_id_test);
         deallocate_test(thisAgent, thisAgent->id_test_to_match);
@@ -660,7 +531,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
             dc = conds_for_this_id;
             conds_for_this_id = conds_for_this_id->next;
             c = static_cast<condition_struct*>(dc->item);
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
 
             {
                 /* --- build and print attr/value test for condition c --- */
@@ -683,7 +554,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 {
                     ch++;
                 }
-                Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
+                Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.attr_test);
                 while (*ch)
                 {
                     ch++;
@@ -691,7 +562,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 if (c->data.tests.value_test)
                 {
                     *(ch++) = ' ';
-                    Output_Manager::Get_OM().sprinta_sf(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
+                    Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp), "%t", c->data.tests.value_test);
                     while (*ch)
                     {
                         ch++;
@@ -768,7 +639,7 @@ void print_action_list(agent* thisAgent, action* actions,
     tail_of_actions_not_yet_printed = NIL;
     for (a = actions; a != NIL; a = a->next)
     {
-        allocate_with_pool(thisAgent, &thisAgent->dl_cons_pool, &dc);
+        thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = a;
         if (actions_not_yet_printed)
         {
@@ -800,7 +671,7 @@ void print_action_list(agent* thisAgent, action* actions,
         a = static_cast<action_struct*>(dc->item);
         if (a->type == FUNCALL_ACTION)
         {
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             xml_begin_tag(thisAgent, kTagAction);
             inline_print_string(thisAgent, rhs_value_to_string(a->value, NULL, 0));
             xml_att_val(thisAgent, kAction, rhs_value_to_string(a->value, NULL, 0));
@@ -833,7 +704,7 @@ void print_action_list(agent* thisAgent, action* actions,
             dc = actions_for_this_id;
             actions_for_this_id = actions_for_this_id->next;
             a = static_cast<action_struct*>(dc->item);
-            free_with_pool(&thisAgent->dl_cons_pool, dc);
+            thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
 
             {
                 /* --- build and print attr/value test for action a --- */

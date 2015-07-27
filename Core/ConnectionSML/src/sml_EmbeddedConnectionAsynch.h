@@ -22,7 +22,7 @@ namespace sml
 
 // This version makes asynchronous calls, which means commands are stored
 // in a queue and are actually executed on a different thread in the server (kernel).
-    class EmbeddedConnectionAsynch : public EmbeddedConnection
+    class EXPORT EmbeddedConnectionAsynch : public EmbeddedConnection
     {
         public:
             static EmbeddedConnection* CreateEmbeddedConnectionAsynch()

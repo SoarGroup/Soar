@@ -1,3 +1,4 @@
+#include "memory_manager.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -87,26 +88,26 @@ void init_soar_agent(agent* thisAgent)
     select_init(thisAgent);
     predict_init(thisAgent);
 
-    init_memory_pool(thisAgent, &(thisAgent->gds_pool), sizeof(goal_dependency_set), "gds");
+    thisAgent->memoryManager->init_memory_pool(MP_gds, sizeof(goal_dependency_set), "gds");
 
-    init_memory_pool(thisAgent, &(thisAgent->rl_info_pool), sizeof(rl_data), "rl_id_data");
-    init_memory_pool(thisAgent, &(thisAgent->rl_et_pool), sizeof(rl_et_map), "rl_et");
-    init_memory_pool(thisAgent, &(thisAgent->rl_rule_pool), sizeof(rl_rule_list), "rl_rules");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_info, sizeof(rl_data), "rl_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_et, sizeof(rl_et_map), "rl_et");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_rule, sizeof(rl_rule_list), "rl_rules");
 
-    init_memory_pool(thisAgent, &(thisAgent->wma_decay_element_pool), sizeof(wma_decay_element), "wma_decay");
-    init_memory_pool(thisAgent, &(thisAgent->wma_decay_set_pool), sizeof(wma_decay_set), "wma_decay_set");
-    init_memory_pool(thisAgent, &(thisAgent->wma_wme_oset_pool), sizeof(wma_pooled_wme_set), "wma_oset");
-    init_memory_pool(thisAgent, &(thisAgent->wma_slot_refs_pool), sizeof(wma_sym_reference_map), "wma_slot_ref");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_decay_element, sizeof(wma_decay_element), "wma_decay");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_decay_set, sizeof(wma_decay_set), "wma_decay_set");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_wme_oset, sizeof(wma_pooled_wme_set), "wma_oset");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_slot_refs, sizeof(wma_sym_reference_map), "wma_slot_ref");
 
-    init_memory_pool(thisAgent, &(thisAgent->epmem_wmes_pool), sizeof(epmem_wme_stack), "epmem_wmes");
-    init_memory_pool(thisAgent, &(thisAgent->epmem_info_pool), sizeof(epmem_data), "epmem_id_data");
-    init_memory_pool(thisAgent, &(thisAgent->smem_wmes_pool), sizeof(smem_wme_stack), "smem_wmes");
-    init_memory_pool(thisAgent, &(thisAgent->smem_info_pool), sizeof(smem_data), "smem_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
+    thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(smem_wme_stack), "smem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
 
-    init_memory_pool(thisAgent, &(thisAgent->epmem_literal_pool), sizeof(epmem_literal), "epmem_literals");
-    init_memory_pool(thisAgent, &(thisAgent->epmem_pedge_pool), sizeof(epmem_pedge), "epmem_pedges");
-    init_memory_pool(thisAgent, &(thisAgent->epmem_uedge_pool), sizeof(epmem_uedge), "epmem_uedges");
-    init_memory_pool(thisAgent, &(thisAgent->epmem_interval_pool), sizeof(epmem_interval), "epmem_intervals");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_pedge, sizeof(epmem_pedge), "epmem_pedges");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_uedge, sizeof(epmem_uedge), "epmem_uedges");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_interval, sizeof(epmem_interval), "epmem_intervals");
 
     thisAgent->epmem_params->exclusions->set_value("epmem");
     thisAgent->epmem_params->exclusions->set_value("smem");
@@ -155,6 +156,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     //agent* thisAgent = static_cast<agent *>(malloc(sizeof(agent)));
     agent* thisAgent = new agent();
+    thisAgent->output_settings = new AgentOutput_Info();
 
     thisAgent->current_tc_number = 0;
 
@@ -203,7 +205,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->locals_tc                          = 0;
     thisAgent->max_chunks_reached                 = false; /* MVP 6-24-94 */
     thisAgent->mcs_counter                        = 1;
-    thisAgent->memory_pools_in_use                = NIL;
     thisAgent->ms_assertions                      = NIL;
     thisAgent->ms_retractions                     = NIL;
     thisAgent->num_existing_wmes                  = 0;
@@ -268,7 +269,8 @@ agent* create_soar_agent(char* agent_name)                                      
 
     if (!getcwd(cur_path, MAXPATHLEN))
     {
-        print(thisAgent,  "Unable to set current directory while initializing agent.\n");
+		char* error = strerror(errno);
+        print(thisAgent, "Unable to set current directory while initializing agent: %s\n", error);
     }
 
     for (int productionTypeCounter = 0; productionTypeCounter < NUM_PRODUCTION_TYPES; productionTypeCounter++)
@@ -288,7 +290,7 @@ agent* create_soar_agent(char* agent_name)                                      
     soar_init_callbacks(thisAgent);
 
     //
-    // This call is needed to set up callbacks.
+    thisAgent->memoryManager = &Memory_Manager::Get_MPM();
     init_memory_utilities(thisAgent);
 
     //
@@ -297,6 +299,7 @@ agent* create_soar_agent(char* agent_name)                                      
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
     thisAgent->variablizationManager = new Variablization_Manager(thisAgent);
+    thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
     // Timers must be initialized after sysparams
@@ -310,11 +313,8 @@ agent* create_soar_agent(char* agent_name)                                      
     reset_timers(thisAgent);
 #endif
 
-    // dynamic memory pools (should come before consumers of dynamic pools)
-    thisAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
-
     // dynamic counters
-    thisAgent->dyn_counters = new std::map< std::string, uint64_t >();
+    thisAgent->dyn_counters = new std::unordered_map< std::string, uint64_t >();
 
     // exploration initialization
     thisAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter(0.1, &exploration_validate_epsilon, "epsilon");
@@ -343,7 +343,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->wma_timers = new wma_timer_container(thisAgent);
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    thisAgent->wma_forget_pq = new wma_forget_p_queue(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >(thisAgent));
+    thisAgent->wma_forget_pq = new wma_forget_p_queue(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >());
     thisAgent->wma_touched_elements = new wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
     thisAgent->wma_touched_sets = new wma_decay_cycle_set(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< wma_d_cycle >(thisAgent));
 #else
@@ -375,7 +375,6 @@ agent* create_soar_agent(char* agent_name)                                      
 
     // debug module parameters
     thisAgent->debug_params = new debug_param_container(thisAgent);
-    thisAgent->output_settings = new AgentOutput_Info();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     thisAgent->epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
@@ -521,10 +520,10 @@ void destroy_soar_agent(agent* delete_agent)
 
         symbol_remove_ref(delete_agent, curmattr->symbol);
 
-        free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
+        delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
         lastmattr = curmattr;
     }
-    free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
 
     /* Freeing all the productions owned by this agent */
     excise_all_productions(delete_agent, false);
@@ -534,19 +533,19 @@ void destroy_soar_agent(agent* delete_agent)
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
 
     /* Releasing rete stuff RPM 11/06 */
-    free_with_pool(&delete_agent->rete_node_pool, delete_agent->dummy_top_node);
-    free_with_pool(&delete_agent->token_pool, delete_agent->dummy_top_token);
+    delete_agent->memoryManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
+    delete_agent->memoryManager->free_with_pool(MP_token, delete_agent->dummy_top_token);
 
     /* Cleaning up the various callbacks
        TODO: Not clear why callbacks need to take the agent pointer essentially twice.
-     */
+    */
     soar_remove_all_monitorable_callbacks(delete_agent);
 
     /* RPM 9/06 begin */
 
-    free_memory(delete_agent, delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
-    free_memory(delete_agent, delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
-    free_memory(delete_agent, delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->left_ht, HASH_TABLE_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->right_ht, HASH_TABLE_MEM_USAGE);
+    delete_agent->memoryManager->free_memory(delete_agent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
 
     /* Releasing trace formats (needs to happen before tracing hashtables are released) */
     remove_trace_format(delete_agent, false, FOR_ANYTHING_TF, NIL);
@@ -580,23 +579,6 @@ void destroy_soar_agent(agent* delete_agent)
     free_hash_table(delete_agent, delete_agent->str_constant_hash_table);
     free_hash_table(delete_agent, delete_agent->int_constant_hash_table);
     free_hash_table(delete_agent, delete_agent->float_constant_hash_table);
-
-    /* Releasing memory pools */
-    memory_pool* cur_pool = delete_agent->memory_pools_in_use;
-    memory_pool* next_pool;
-    while (cur_pool != NIL)
-    {
-        next_pool = cur_pool->next;
-        free_memory_pool(delete_agent, cur_pool);
-        cur_pool = next_pool;
-    }
-
-    // dynamic memory pools (cleared in the last step)
-    for (std::map< size_t, memory_pool* >::iterator it = delete_agent->dyn_memory_pools->begin(); it != delete_agent->dyn_memory_pools->end(); it++)
-    {
-        delete it->second;
-    }
-    delete delete_agent->dyn_memory_pools;
 
     delete delete_agent->dyn_counters;
 

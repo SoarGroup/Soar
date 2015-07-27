@@ -20,7 +20,7 @@ class node_filter : public select_filter<sgnode*>
 {
     public:
         node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
-            : select_filter<sgnode*>(root, si, input), scn(scn)
+            : select_filter<sgnode * >(root, si, input), scn(scn)
         {
         }
         
@@ -86,7 +86,7 @@ class all_nodes_filter : public filter, public sgnode_listener
             scn->get_all_nodes(nodes);
             nodes[0]->listen(this);
             
-            for (int i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
+            for (size_t i = 1, iend = nodes.size(); i < iend; ++i) // don't add world node
             {
                 add_node(nodes[i]);
             }
@@ -155,7 +155,7 @@ class remove_node_filter : public select_filter<sgnode*>
 {
     public:
         remove_node_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
-            : select_filter<sgnode*>(root, si, input), scn(scn)
+            : select_filter<sgnode * >(root, si, input), scn(scn)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select)
@@ -236,7 +236,7 @@ class combine_nodes_filter : public passthru_filter<sgnode*>
 {
     public:
         combine_nodes_filter(Symbol* root, soar_interface* si, filter_input* input)
-            : passthru_filter<sgnode*>(root, si, input)
+            : passthru_filter<sgnode * >(root, si, input)
         {}
 };
 

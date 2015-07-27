@@ -225,11 +225,11 @@ void init_symbol_tables(agent* thisAgent)
     thisAgent->int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
     thisAgent->float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
 
-    init_memory_pool(thisAgent, &thisAgent->variable_pool, sizeof(varSymbol), "variable");
-    init_memory_pool(thisAgent, &thisAgent->identifier_pool, sizeof(idSymbol), "identifier");
-    init_memory_pool(thisAgent, &thisAgent->str_constant_pool, sizeof(strSymbol), "str constant");
-    init_memory_pool(thisAgent, &thisAgent->int_constant_pool, sizeof(intSymbol), "int constant");
-    init_memory_pool(thisAgent, &thisAgent->float_constant_pool, sizeof(floatSymbol), "float constant");
+    thisAgent->memoryManager->init_memory_pool(MP_variable, sizeof(varSymbol), "variable");
+    thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
+    thisAgent->memoryManager->init_memory_pool(MP_str_constant, sizeof(strSymbol), "str constant");
+    thisAgent->memoryManager->init_memory_pool(MP_int_constant, sizeof(intSymbol), "int constant");
+    thisAgent->memoryManager->init_memory_pool(MP_float_constant, sizeof(floatSymbol), "float constant");
 
     reset_id_counters(thisAgent);
 }
@@ -336,7 +336,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
         return sym;
     }
 
-    allocate_with_pool(thisAgent, &thisAgent->variable_pool, &sym);
+    thisAgent->memoryManager->allocate_with_pool(MP_variable, &sym);
     sym->symbol_type = VARIABLE_SYMBOL_TYPE;
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -371,7 +371,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     {
         name_letter = 'I';
     }
-    allocate_with_pool(thisAgent, &thisAgent->identifier_pool, &sym);
+    thisAgent->memoryManager->allocate_with_pool(MP_identifier, &sym);
     sym->symbol_type = IDENTIFIER_SYMBOL_TYPE;
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -456,7 +456,7 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->str_constant_pool, &sym);
+        thisAgent->memoryManager->allocate_with_pool(MP_str_constant, &sym);
         sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -489,7 +489,7 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->int_constant_pool, &sym);
+        thisAgent->memoryManager->allocate_with_pool(MP_int_constant, &sym);
         sym->symbol_type = INT_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -521,7 +521,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
     }
     else
     {
-        allocate_with_pool(thisAgent, &thisAgent->float_constant_pool, &sym);
+        thisAgent->memoryManager->allocate_with_pool(MP_float_constant, &sym);
         sym->symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
@@ -558,24 +558,24 @@ void deallocate_symbol(agent* thisAgent, Symbol* sym)
         case VARIABLE_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->variable_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->var->name);
-            free_with_pool(&thisAgent->variable_pool, sym);
+            thisAgent->memoryManager->free_with_pool(MP_variable, sym);
             break;
         case IDENTIFIER_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->identifier_hash_table, sym);
-            free_with_pool(&thisAgent->identifier_pool, sym);
+            thisAgent->memoryManager->free_with_pool(MP_identifier, sym);
             break;
         case STR_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->str_constant_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->sc->name);
-            free_with_pool(&thisAgent->str_constant_pool, sym);
+            thisAgent->memoryManager->free_with_pool(MP_str_constant, sym);
             break;
         case INT_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->int_constant_hash_table, sym);
-            free_with_pool(&thisAgent->int_constant_pool, sym);
+            thisAgent->memoryManager->free_with_pool(MP_int_constant, sym);
             break;
         case FLOAT_CONSTANT_SYMBOL_TYPE:
             remove_from_hash_table(thisAgent, thisAgent->float_constant_hash_table, sym);
-            free_with_pool(&thisAgent->float_constant_pool, sym);
+            thisAgent->memoryManager->free_with_pool(MP_float_constant, sym);
             break;
         default:
         {
@@ -658,12 +658,44 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     return false;
 }
 
+bool remove_if_sti(agent* thisAgent, void* item, void* userdata)
+{
+    Symbol* sym;
+    char msg[256];
+    sym = static_cast<symbol_struct*>(item);
+
+    if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        if (sym->id->smem_lti == NIL)
+        {
+            SNPRINTF(msg, 256,
+                "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
+                sym->id->name_letter,
+                static_cast<long long unsigned>(sym->id->name_number),
+                static_cast<long long unsigned>(sym->reference_count));
+        }
+
+        deallocate_symbol(thisAgent, sym);
+
+        msg[255] = 0; /* ensure null termination */
+        print(thisAgent,  msg);
+        xml_generate_warning(thisAgent, msg);
+    }
+    else
+    {
+        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+        return true;
+    }
+    return false;
+}
+
 bool reset_id_counters(agent* thisAgent)
 {
     int i;
 
     if (thisAgent->identifier_hash_table->count != 0)
     {
+#ifndef SOAR_RELEASE_VERSION
         // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
         uint64_t ltis = 0;
         do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, smem_count_ltis, &ltis);
@@ -671,24 +703,16 @@ bool reset_id_counters(agent* thisAgent)
         {
             print(thisAgent,  "Internal warning:  wanted to reset identifier generator numbers, but\n");
             print(thisAgent,  "there are still some identifiers allocated.  (Probably a memory leak.)\n");
-            print(thisAgent,  "(Leaving identifier numbers alone.)\n");
-            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
+            print(thisAgent,  "(Deleting identifiers.)\n");
+            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Deleting identifiers.)");
 
             print_internal_symbols(thisAgent);
-            /* RDF 01272003: Added this to improve the output from this error message */
-            //TODO: append this to previous XML string or generate separate output?
-            //do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
 
-            // Also dump the ids to a txt file
-            FILE* ids = fopen("leaked-ids.txt", "w") ;
-            if (ids)
-            {
-                do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, reinterpret_cast<void*>(ids));
-                fclose(ids) ;
-            }
+            do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
 
-            return false;
         }
+#endif
+        do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, remove_if_sti, NULL);
 
         // Getting here means that there are still identifiers but that
         // they are all long-term and (hopefully) exist only in production memory.
@@ -1110,13 +1134,6 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
     bool is_rereadable;
     bool has_angle_bracket;
 
-    /* -- Not sure if this is legit, but works and smooths debugging -- */
-    if (!this)
-    {
-        //assert(false);
-        return Output_Manager::Get_OM().NULL_SYM_STR;
-    }
-
     switch (symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:
@@ -1163,7 +1180,6 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             }
             SNPRINTF(dest, dest_size, "%#.16g", fc->value);
             dest[dest_size - 1] = 0; /* ensure null termination */
-            /* MToDo | Is stripping off trailing zero's still necessary? -- */
             {
                 /* --- strip off trailing zeros --- */
                 char* start_of_exponent;

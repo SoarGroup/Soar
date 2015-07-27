@@ -1,6 +1,0 @@
-sp {answer*apply2*onc*t3-1
-    (state <s1> ^superstate nil ^test-item2 <c2>
-          ^test-item { << 8 9 >> > <c2> <c1> })
-    -->
-    (<s1> ^big <c1> + ^small <c2> + ^unbound <u1> + ^test-done 1 +)
-}

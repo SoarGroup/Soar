@@ -12,10 +12,16 @@ import re
 import fnmatch
 from SCons.Node.Alias import default_ans
 import SCons.Script
+import shutil
 
 join = os.path.join
 
 SOAR_VERSION = "9.5.0"
+
+soarversionFile = open('soarversion', 'w')
+print >> soarversionFile, SOAR_VERSION
+soarversionFile.close()
+
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 #DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
@@ -110,6 +116,18 @@ def InstallDir(env, tgt, src, globstring="*"):
 
     return targets
 
+def InstallDLLs(env):
+  if sys.platform == 'win32' and GetOption('opt'):
+    indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
+    outdir = os.path.realpath(GetOption('outdir')) + '\\'
+    if os.path.isfile(outdir):
+        os.remove(outdir)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    for dll in indlls:
+      #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
+      shutil.copy(dll.rstr(), outdir)
+
 Export('InstallDir')
 
 AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
@@ -197,7 +215,7 @@ if compiler == 'g++':
         cflags.append('-Wreturn-type')
 
         if GetOption('opt'):
-            cflags.extend(['-O2', '-DNDEBUG'])
+            cflags.extend(['-O3', '-DNDEBUG'])
         else:
             cflags.extend(['-g'])
 
@@ -205,6 +223,7 @@ if compiler == 'g++':
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
         if gcc_ver[0] > 3:
             env.Append(CPPFLAGS='-fvisibility=hidden')
+            
             config = Configure(env)
             if config.TryCompile('', '.cpp'):
                 cflags.append('-fvisibility=hidden')
@@ -226,7 +245,7 @@ if compiler == 'g++':
             cflags.extend(['-DSTATIC_LINKED', '-fPIC'])
 
 elif compiler == 'msvc':
-    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
+    cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj', '/nowarn:4503']
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
@@ -268,6 +287,9 @@ elif sys.platform == 'darwin':
 else:
     sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
     sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+
+if sys.platform != 'win32':
+    env.Append(CXXFLAGS='-std=c++11')
 
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 
@@ -326,3 +348,5 @@ if COMMAND_LINE_TARGETS == ['list']:
 for a in DEF_TARGETS:
     if a in all_aliases:
         Default(a)
+
+InstallDLLs(env)

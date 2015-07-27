@@ -30,12 +30,12 @@
 #include "misc.h"
 #include "soar_instance.h"
 #include "output_manager.h"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
 #include <assert.h>
+#include "memory_manager.h"
 
 using namespace sml ;
 using namespace soarxml;
@@ -726,6 +726,7 @@ inline Soar_Instance* instantiate_singletons()
      *    debug output during initialization.  -- */
 
     Output_Manager::Get_OM();
+    Memory_Manager::Get_MPM();
     return (&Soar_Instance::Get_Soar_Instance());
 }
 

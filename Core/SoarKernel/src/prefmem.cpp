@@ -10,6 +10,8 @@
    ====================================================================== */
 
 #include <stdlib.h>
+#include "prefmem.h"
+
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
@@ -19,9 +21,7 @@
 #include "recmem.h"
 #include "tempmem.h"
 #include "decide.h"
-#include "prefmem.h"
 #include "print.h"
-#include "wma.h"
 #include "wmem.h"
 
 /* Note that these must be in the same order as the #define variables
@@ -62,12 +62,12 @@ const char* preference_name[] =
 
 preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
-                            const soar_module::symbol_triple originals,
-                            const soar_module::g_id_triple g_ids)
+                            const soar_module::identity_triple o_ids,
+                            const soar_module::rhs_triple rhs_funcs)
 {
     preference* p;
 
-    allocate_with_pool(thisAgent, &thisAgent->preference_pool, &p);
+    thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
     p->type = type;
     p->in_tm = false;
     p->o_supported = false;
@@ -81,13 +81,12 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->total_preferences_for_candidate = 0;
     p->numeric_value = 0;
     p->rl_contribution = false;
+    p->rl_rho = 1.0;
     p->wma_o_set = NIL;
     p->next_clone = NIL;
     p->prev_clone = NIL;
     p->next = NIL;
     p->prev = NIL;
-    p->inst_next = NIL;
-    p->inst_prev = NIL;
     p->inst_next = NIL;
     p->inst_prev = NIL;
     p->all_of_slot_next = NIL;
@@ -97,25 +96,13 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
     p->next_candidate = NIL;
     p->next_result = NIL;
 
-    p->original_symbols.id = originals.id;
-    p->original_symbols.attr = originals.attr;
-    p->original_symbols.value = originals.value;
-    if (originals.id)
-    {
-        symbol_add_ref(thisAgent, originals.id);
-    }
-    if (originals.attr)
-    {
-        symbol_add_ref(thisAgent, originals.attr);
-    }
-    if (originals.value)
-    {
-        symbol_add_ref(thisAgent, originals.value);
-    }
+    p->o_ids.id = o_ids.id;
+    p->o_ids.attr = o_ids.attr;
+    p->o_ids.value = o_ids.value;
 
-    p->g_ids.id = g_ids.id;
-    p->g_ids.attr = g_ids.attr;
-    p->g_ids.value = g_ids.value;
+    p->rhs_funcs.id = rhs_funcs.id;
+    p->rhs_funcs.attr = rhs_funcs.attr;
+    p->rhs_funcs.value = rhs_funcs.value;
 
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
@@ -156,25 +143,13 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     {
         symbol_remove_ref(thisAgent, pref->referent);
     }
-    if (pref->original_symbols.id)
-    {
-        symbol_remove_ref(thisAgent, pref->original_symbols.id);
-    }
-    if (pref->original_symbols.attr)
-    {
-        symbol_remove_ref(thisAgent, pref->original_symbols.attr);
-    }
-    if (pref->original_symbols.value)
-    {
-        symbol_remove_ref(thisAgent, pref->original_symbols.value);
-    }
     if (pref->wma_o_set)
     {
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
     /* --- free the memory --- */
-    free_with_pool(&thisAgent->preference_pool, pref);
+    thisAgent->memoryManager->free_with_pool(MP_preference, pref);
 }
 
 /* ----------------------------------------------------------------------
@@ -358,9 +333,9 @@ void add_preference_to_tm(agent* thisAgent, preference* pref)
         {
             if (s->wma_val_references == NIL)
             {
-                allocate_with_pool(thisAgent, &(thisAgent->wma_slot_refs_pool), &(s->wma_val_references));
+                thisAgent->memoryManager->allocate_with_pool(MP_wma_slot_refs, &(s->wma_val_references));
 #ifdef USE_MEM_POOL_ALLOCATORS
-                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >(thisAgent));
+                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >());
 #else
                 s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map();
 #endif

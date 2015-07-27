@@ -111,11 +111,6 @@ test var_test_bound_in_reconstructed_conds(
     condition* cond,
     byte where_field_num,
     rete_node_level where_levels_up);
-Symbol* var_bound_in_reconstructed_original_conds(
-    agent* thisAgent,
-    condition* cond,
-    byte where_field_num,
-    rete_node_level where_levels_up);
 
 /* ----------------------------------------------------------------------
 
@@ -404,7 +399,8 @@ extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         condition** dest_top_cond,
         condition** dest_bottom_cond,
         action** dest_rhs,
-        AddAdditionalTestsMode additional_tests = DONT_ADD_TESTS);
+        uint64_t i_id = 0,
+        AddAdditionalTestsMode additional_tests = DONT_EXPLAIN);
 extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
                                         byte field_num,
                                         struct token_struct* tok, wme* w);
@@ -425,6 +421,7 @@ extern bool save_rete_net(agent* thisAgent, FILE* dest_file, bool use_rete_net_6
 extern bool load_rete_net(agent* thisAgent, FILE* source_file);
 
 extern void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t);
+extern void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id);
 
 /* ---------------------------------------------------------------------
 
@@ -467,7 +464,6 @@ inline TestType relational_test_type_to_test_type(byte test_type)
         default:
             break;
     }
-    char msg[BUFFER_MSG_SIZE];
     abort_with_fatal_error_noagent("Bad test_type in add_rete_test_to_test!!!\n");
     return EQUALITY_TEST;
 }

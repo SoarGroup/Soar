@@ -86,7 +86,7 @@ class set_transform_command : public command
         
         bool parse()
         {
-            wme* idwme, *propwme;
+            wme* idwme;
             
             if (!si->find_child_wme(root, "id", idwme))
             {

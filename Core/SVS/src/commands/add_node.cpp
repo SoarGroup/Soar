@@ -166,6 +166,9 @@ class add_node_command : public command
                     verts = bbox_vertices();
                     n = new convex_node(node_id, verts);
                     break;
+                default:
+                    n   = NULL;
+                    break;
             }
             
             for (std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++)

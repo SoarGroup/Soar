@@ -133,7 +133,7 @@ void remove_output_function(agent* thisAgent, const char* name)
             ol->link_wme->output_link = NULL;
             wme_remove_ref(thisAgent, ol->link_wme);
             remove_from_dll(thisAgent->existing_output_links, ol, next, prev);
-            free_with_pool(&(thisAgent->output_link_pool), ol);
+            thisAgent->memoryManager->free_with_pool(MP_output_link, ol);
             break;
         }
     }
@@ -457,7 +457,7 @@ void update_for_top_state_wme_addition(agent* thisAgent, wme* w)
     }
 
     /* --- create new output link structure --- */
-    allocate_with_pool(thisAgent, &thisAgent->output_link_pool, &ol);
+    thisAgent->memoryManager->allocate_with_pool(MP_output_link, &ol);
     insert_at_head_of_dll(thisAgent->existing_output_links, ol, next, prev);
 
     ol->status = NEW_OL_STATUS;
@@ -702,7 +702,7 @@ void add_wme_to_collected_io_wmes(agent* thisAgent, wme* w)
 {
     io_wme* New;
 
-    allocate_with_pool(thisAgent, &thisAgent->io_wme_pool, &New);
+    thisAgent->memoryManager->allocate_with_pool(MP_io_wme, &New);
     New->next = thisAgent->collected_io_wmes;
     thisAgent->collected_io_wmes = New;
     New->id = w->id;
@@ -743,7 +743,7 @@ void deallocate_io_wme_list(agent* thisAgent, io_wme* iw)
     while (iw)
     {
         next = iw->next;
-        free_with_pool(&thisAgent->io_wme_pool, iw);
+        thisAgent->memoryManager->free_with_pool(MP_io_wme, iw);
         iw = next;
     }
 }
@@ -881,7 +881,7 @@ void do_output_cycle(agent* thisAgent)
                 deallocate_io_wme_list(thisAgent, iw_list);
                 wme_remove_ref(thisAgent, ol->link_wme);
                 remove_from_dll(thisAgent->existing_output_links, ol, next, prev);
-                free_with_pool(&thisAgent->output_link_pool, ol);
+                thisAgent->memoryManager->free_with_pool(MP_output_link, ol);
                 break;
         }
     } /* end of for ol */
@@ -940,7 +940,7 @@ bool tio_whitespace[256];
 
 Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_string)
 {
-    int int_val;
+    long int_val;
     double float_val;
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool rereadable;
@@ -1042,8 +1042,8 @@ void init_soar_io(agent* thisAgent)
 {
     unsigned int i;
 
-    init_memory_pool(thisAgent, &thisAgent->output_link_pool, sizeof(output_link), "output link");
-    init_memory_pool(thisAgent, &thisAgent->io_wme_pool, sizeof(io_wme), "io wme");
+    thisAgent->memoryManager->init_memory_pool(MP_output_link, sizeof(output_link), "output link");
+    thisAgent->memoryManager->init_memory_pool(MP_io_wme, sizeof(io_wme), "io wme");
 
     /* --- setup constituent_char array --- */
     for (i = 0; i < 256; i++)

@@ -14,44 +14,125 @@
 #include "print.h"
 #include "debug.h"
 #include "rhs.h"
+#include "xml.h"
 
 Variablization_Manager::Variablization_Manager(agent* myAgent)
 {
     thisAgent = myAgent;
-    sym_to_var_map = new std::map< Symbol*, variablization* >();
-    g_id_to_var_map = new std::map< uint64_t, variablization* >();
-    orig_var_to_g_id_map = new std::map< Symbol*, uint64_t >();
-    sti_constraints = new std::map< Symbol*, ::list* >();
-    constant_constraints = new std::map< uint64_t , ::list* >();
-    literal_constraints = new std::map< uint64_t , test >();
+    sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
+    o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
 
-    cond_merge_map = new std::map< Symbol*, std::map< Symbol*, std::map< Symbol*, condition*> > >();
-    substitution_map = new std::map< Symbol*, test >();
+    rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
+    o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
 
-    dnvl_set = new std::set< Symbol* >;
+    constraints = new std::list< constraint* >;
+    attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
 
-    ground_id_counter = 0;
+    unification_map = new std::unordered_map< uint64_t, uint64_t >();
+
+    cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
+
+    inst_id_counter = 0;
+    ovar_id_counter = 0;
+
+    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+    m_learning_on_for_instantiation = m_learning_on;
+
+    outputManager = &Output_Manager::Get_OM();
 }
 
 Variablization_Manager::~Variablization_Manager()
 {
     clear_data();
     delete sym_to_var_map;
-    delete g_id_to_var_map;
-    delete orig_var_to_g_id_map;
-    delete sti_constraints;
-    delete constant_constraints;
-    delete literal_constraints;
+    delete o_id_to_var_map;
+    delete constraints;
+    delete attachment_points;
     delete cond_merge_map;
-    delete substitution_map;
-    delete dnvl_set;
+    delete rulesym_to_identity_map;
+    delete unification_map;
+    delete o_id_to_ovar_debug_map;
 }
 
 void Variablization_Manager::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
-    ground_id_counter = 0;
+    inst_id_counter = 0;
+    ovar_id_counter = 0;
+}
+
+Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_id)
+{
+    if (index_id == 0)
+    {
+        return NULL;
+    }
+
+    std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    if (iter != (*o_id_to_var_map).end())
+    {
+        dprint(DT_VM_MAPS, "...found o%u in non-STI variablization table: %y\n", index_id, iter->second);
+        return iter->second;
+    }
+    else
+    {
+        dprint(DT_VM_MAPS, "...did not find o%u in non-STI variablization table.\n", index_id);
+        dprint_variablization_tables(DT_LHS_VARIABLIZATION, 2);
+        return NULL;
+    }
+}
+
+Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
+{
+    std::unordered_map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
+    if (iter != (*sym_to_var_map).end())
+    {
+        dprint(DT_VM_MAPS, "...found %y in STI variablization table: %y\n", index_sym, iter->second);
+        return iter->second;
+    }
+    else
+    {
+        dprint(DT_VM_MAPS, "...did not find %y in STI variablization table.\n", index_sym);
+        dprint_variablization_tables(DT_VM_MAPS, 1);
+        return NULL;
+    }
+}
+
+void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
+        Symbol* variable,
+        uint64_t pIdentity)
+{
+    assert(instantiated_sym && variable);
+    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(o%u) to %y.\n",
+           instantiated_sym, pIdentity, variable);
+
+    if (instantiated_sym->is_sti())
+    {
+        /* -- STI variablization is looked up using the matched symbol instead
+         *    of the identity. -- */
+
+        (*sym_to_var_map)[instantiated_sym] = variable;
+        symbol_add_ref(thisAgent, instantiated_sym);
+        symbol_add_ref(thisAgent, variable);
+        dprint(DT_VM_MAPS, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
+                        instantiated_sym, variable);
+    }
+    else if (pIdentity)
+    {
+
+        /* -- A constant symbol is being variablized, so store variablization info
+         *    indexed by the constant's o_id. -- */
+        (*o_id_to_var_map)[pIdentity] = variable;
+        symbol_add_ref(thisAgent, variable);
+
+        dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
+    }
+    else
+    {
+        assert(false);
+    }
+    //  print_variablization_table();
 }
 
 /* ============================================================================
@@ -66,124 +147,99 @@ void Variablization_Manager::reinit()
  *           in the production to determine whether it is a literal and should
  *           not be variablized.
  *
+ *           For RL rules, identity may be NULL
+ *
  * ========================================================================= */
-void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, identity_info* identity)
+void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
 {
     char prefix[2];
     Symbol* var;
-    variablization* var_info;
+    Symbol* var_info;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing %y(g%u)...\n",
-           (*sym),
-           (identity ? identity->grounding_id : 0));
+    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
 
-    if (!((*sym)->is_sti()))
+    if ((*sym)->is_sti())
     {
-        /* MToDo | Identity currently exists for all tests.  This isn't necessary until we change that */
-        assert(identity);
-//        if (identity->grounding_id == NON_GENERALIZABLE)
-//        {
-//            /* -- This symbol has been marked as non-generalizable, for
-//             *    example because it is an LTI retrieved in a substate -- */
-//            dprint(DT_LHS_VARIABLIZATION, "...not variablizing because test marked as non-generalizable.\n");
-//            return;
-//        }
-        var_info = get_variablization(identity->grounding_id);
+        var_info = get_variablization_for_sti(*sym);
     }
     else
     {
-        var_info = get_variablization(*sym);
+        var_info = get_variablization_for_identity(pIdentity);
     }
     if (var_info)
     {
-        /* -- Symbol being passed in is being replaced, so decrease -- */
-        /* -- and increase refcount for new variable symbol being returned -- */
         symbol_remove_ref(thisAgent, (*sym));
-        *sym = var_info->variablized_symbol;
-        symbol_add_ref(thisAgent, var_info->variablized_symbol);
+        *sym = var_info;
+        symbol_add_ref(thisAgent, var_info);
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
+
         return;
+
+    } else {
+
+        /* --- need to create a new variable.  If constant is being variablized
+         *     just used 'c' instead of first letter of id name --- */
+        if ((*sym)->is_identifier())
+        {
+            prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
+        }
+        else
+        {
+            prefix[0] = 'c';
+        }
+        prefix[1] = 0;
+        var = generate_new_variable(thisAgent, prefix);
+
+        store_variablization((*sym), var, pIdentity);
+
+        symbol_remove_ref(thisAgent, *sym);
+        *sym = var;
+        dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
-
-    /* --- need to create a new variable.  If constant is being variablized
-     *     just used 'c' instead of first letter of id name --- */
-    if ((*sym)->is_identifier())
-    {
-        prefix[0] = static_cast<char>(tolower((*sym)->id->name_letter));
-    }
-    else
-    {
-        prefix[0] = 'c';
-    }
-    prefix[1] = 0;
-    var = generate_new_variable(thisAgent, prefix);
-
-    store_variablization((*sym), var, identity);
-
-    dprint(DT_LHS_VARIABLIZATION, "...created new variablization %y.\n", var);
-
-    /* MToDoRefCnt | This remove ref was removed before, but it seems like we should have it, no? */
-    symbol_remove_ref(thisAgent, *sym);
-    *sym = var;
 }
-/* ======================================================================================================
- *
- *                                          variablize_rhs_symbol
- *
- *      The logic for variablizing the rhs is slightly different than the lhs since constants on the
- *      rhs do not yet have grounding id's.  We match variables bound to constants to lhs variables by
- *      looking up the grounding id using the original variable names instead of using the grounding id.
- *
- * ====================================================================================================== */
 
-void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* original_var)
+void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
-    variablization* found_variablization = NULL;
-    uint64_t g_id;
+    Symbol* found_variablization = NULL;
+
+    if (rhs_value_is_funcall(pRhs_val))
+    {
+        list* fl = rhs_value_to_funcall_list(pRhs_val);
+        cons* c;
+
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS value %r\n", static_cast<char*>(c->first));
+            variablize_rhs_symbol(static_cast<char*>(c->first));
+            dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
+        }
+        return;
+    }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y).\n",
-           rs->referent, original_var);
-
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u).\n",
+           rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
 
     if (rs->referent->is_sti())
     {
         dprint(DT_RHS_VARIABLIZATION, "...searching for sti %y in variablization sym table...\n", rs->referent);
-        found_variablization = get_variablization(rs->referent);
+        found_variablization = get_variablization_for_sti(rs->referent);
     }
     else
     {
-        if (original_var)
+        if (rs->o_id)
         {
-            dprint(DT_RHS_VARIABLIZATION, "...searching for original var %y in variablization orig var table...\n", original_var);
-            g_id = get_gid_for_orig_var(original_var);
-            if (g_id != NON_GENERALIZABLE)
-            {
-                found_variablization = get_variablization(g_id);
-            }
-            else
-            {
-                /* Normally this should not occur.  All ovars on rhs for constants should have
-                 * entries in table since we scanned original variables of starting conditions
-                 * of instantiation.
-                 *
-                 * But I think there is one exception.  If we have a preference that is added to
-                 * the result because it is a rhs identifier that previously was linked to the
-                 * resulting state.  The identifier will seem ungrounded because its original
-                 * variable came from another production.  It should be treated like an unbound
-                 * variable, so we'll fall through to code at end of function.
-                 * */
-                dprint(DT_RHS_VARIABLIZATION, "...%y has original_var %y that does not map to any variablized symbol.  Must be linked from top state.  Will treat as unbound variable.\n", rs->referent, original_var);
-            }
+            dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", get_ovar_for_o_id(rs->o_id));
+                found_variablization = get_variablization_for_identity(rs->o_id);
         }
         else
         {
             dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
-            rs->g_id = NON_GENERALIZABLE;
             return;
         }
     }
@@ -192,150 +248,37 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val, Symbol* o
     if (found_variablization)
     {
         /* --- Grounded symbol that has been variablized before--- */
-
-        dprint(DT_RHS_VARIABLIZATION, "... found existing grounded variablization %y.\n", found_variablization->variablized_symbol);
-
-        if (found_variablization->variablized_symbol->tc_num != tc_num_literalized)
-        {
-            /* --- Variablized symbol was not literalized on LHS --- */
-            symbol_remove_ref(thisAgent, rs->referent);
-            rs->referent = found_variablization->variablized_symbol;
-            symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
-            rs->g_id = found_variablization->grounding_id;
-            return;
-        } else {
-            dprint(DT_RHS_VARIABLIZATION, "... skipping variablization of %y because it was literalized on LHS.\n", found_variablization->variablized_symbol);
-        }
-    }
-    /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
-     *    Both cases return 0.  Grounding id will be generated if requested by another match. -- */
-
-    if (rs->referent->is_sti())
-    {
-        /* -- First instance of an unbound rhs var -- */
-        dprint(DT_RHS_VARIABLIZATION, "...is unbound variable.\n");
-        prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
-        prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
-
-        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound rhs %y.\n", var);
-        store_variablization(rs->referent, var, NULL);
-
+        dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization);
         symbol_remove_ref(thisAgent, rs->referent);
-        rs->referent = var;
-    }
-    else
-    {
-        /* -- RHS constant with an original variable that does not map onto a LHS condition.  Do not variablize. -- */
-        /* MToDo | Remove.  Is this even possible?  Won't this be caught by not having an original var above? */
-        dprint(DT_RHS_VARIABLIZATION, "...is a variable that did not appear in the LHS.  Not variablizing!\n");
-    }
-    rs->g_id = NON_GENERALIZABLE;
-}
-
-/* ============================================================================
- *            Variablization_Manager::variablize_test
- *
- * Requires: Test from positive condition.
- *           Test must not be a conjunctive test.
- * Modifies: t
- * Effect:   If referent is variablizable, replaces referent symbol with a
- *           variable by calling variablize_lhs_symbol
- *
- * ========================================================================= */
-void Variablization_Manager::variablize_test(test* t, Symbol* original_referent)
-{
-    Symbol* instantiated_referent;
-
-    assert(t && (*t));
-
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing test %t\n", *t);
-
-    instantiated_referent = (*t)->data.referent;
-    assert(instantiated_referent && original_referent);
-
-    bool is_variablizable = false;
-    if (instantiated_referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-    {
-        if (instantiated_referent->id->smem_lti == NIL)
-        {
-            is_variablizable = true;
-        } else {
-            is_variablizable = instantiated_referent->is_variablizable_constant(original_referent) && !is_in_dnvl(instantiated_referent);
-        }
+        rs->referent = found_variablization;
+        symbol_add_ref(thisAgent, found_variablization);
+        return;
     } else {
-        is_variablizable = instantiated_referent->is_variablizable_constant(original_referent);
-    }
-    if (is_variablizable)
-    {
-        dprint(DT_LHS_VARIABLIZATION, "...variablizing test type %s with referent %y\n", test_type_to_string((*t)->type), instantiated_referent);
-        variablize_lhs_symbol(&((*t)->data.referent), (*t)->identity);
-    }
-    else
-    {
-        dprint(DT_LHS_VARIABLIZATION, "...non-variablizable referent %y or in DNVL.  Original: %y.\n", instantiated_referent, original_referent);
-    }
+        /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
+         *    Both cases return 0. -- */
 
-    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", *t);
-    dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
+        if (rs->referent->is_sti())
+        {
+            /* -- First instance of an unbound rhs var -- */
+            dprint(DT_RHS_VARIABLIZATION, "...is unbound variable.\n");
+            prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
+            prefix[1] = 0;
+            var = generate_new_variable(thisAgent, prefix);
+
+            dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound rhs %y.\n", var);
+            store_variablization(rs->referent, var, 0);
+
+            symbol_remove_ref(thisAgent, rs->referent);
+            rs->referent = var;
+        }
+        else
+        {
+            /* -- RHS constant with an original variable that does not map onto a LHS condition.  Do not variablize. -- */
+            dprint(DT_RHS_VARIABLIZATION, "...matched a constant with an ungrounded variable that that did not appear on the LHS.  Not variablizing.\n");
+        }
+    }
 }
 
-/* ============================================================================
- *            Variablization_Manager::variablize_equality_test
- *
- * Requires: Test from positive condition.
- *           Test must not be a conjunctive test.
- * Modifies: t
- * Effect:   Variablizes all equality tests in a test.  Does not require all
- *           tests to be equality tests.  While it does not require that one
- *           test is an equality test, we have a bug somewhere else if this
- *           funtion gets passed a test that contains at least one equality
- *           test.
- *
- * ========================================================================= */
-void Variablization_Manager::variablize_equality_test(test* t)
-{
-    test original_test, original_eq_test;
-    Symbol* original_referent;
-
-    assert(t && (*t));
-    original_test = (*t)->original_test;
-
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t\n", *t);
-
-    if (original_test)
-    {
-        // Sanity check on originals
-        assert(original_test->type && (original_test->type < NUM_TEST_TYPES));
-
-        if (original_test->type == EQUALITY_TEST)
-        {
-            original_referent = original_test->data.referent;
-        }
-        else if (original_test->type == CONJUNCTIVE_TEST)
-        {
-            /* --  A non-conjunctive test with a conjunctive original test must be an equality tests,
-                   since it is the only type that can sensically have multiple originals and be a conjunction.  -- */
-
-            /* MToDo | It may be legal, but are multiple original equality tests really sensical?  Does it
-             *         ever make sense to put that in a rule?  Can they ever become conjunctive at runtime. */
-
-            dprint(DT_LHS_VARIABLIZATION, "...this is an eq test with conj original test: %t\n", original_test);
-            assert((*t)->type == EQUALITY_TEST);
-            original_eq_test = find_original_equality_test_preferring_vars(original_test, false);
-            if (!original_eq_test)
-            {
-                return;
-            }
-            original_referent = original_eq_test->data.referent;
-        }
-        else /* -- Not an equality test -- */
-        {
-            return;
-        }
-        variablize_test(t, original_referent);
-    }
-}
 /* ============================================================================
  *            Variablization_Manager::variablize_equality_tests
  *
@@ -346,23 +289,29 @@ void Variablization_Manager::variablize_equality_test(test* t)
  *
  * ========================================================================= */
 
-void Variablization_Manager::variablize_equality_tests(test* t)
+void Variablization_Manager::variablize_equality_tests(test t)
 {
     cons* c;
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", *t);
-    assert(*t);
+    test tt;
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", t);
+    assert(t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
-        // Original test should always be null for a conjunctive tests.
-        // MToDo | Previous logic wouldn't assert false but print an error out instead.  Remove.
 
-        assert((*t)->original_test == NULL);
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: ");
-            variablize_equality_test(reinterpret_cast<test*>(&(c->first)));
+            tt = reinterpret_cast<test>(c->first);
+            if (tt->type == EQUALITY_TEST)
+            {
+                dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", tt);
+                if ((tt->identity && tt->data.referent->is_variablizable()) || tt->data.referent->is_sti())
+                {
+                    variablize_lhs_symbol(&(tt->data.referent), tt->identity);
+                }
+                dprint(DT_LHS_VARIABLIZATION, "Setting conjunctive test %t's eq_test to: %t\n", t, tt);
+            }
         }
 
         dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -370,7 +319,14 @@ void Variablization_Manager::variablize_equality_tests(test* t)
     }
     else
     {
-        variablize_equality_test(t);
+        if ((t->type == EQUALITY_TEST) &&
+            ((t->identity && t->data.referent->is_variablizable()) || t->data.referent->is_sti()))
+        {
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", t);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+            variablize_lhs_symbol(&(t->data.referent), t->identity);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+        }
     }
 }
 
@@ -382,72 +338,62 @@ void Variablization_Manager::variablize_equality_tests(test* t)
  * Effect:   Variablizes any symbols in a test that were previously variablized
  *           when variablizing the equality test.
  *
- *           Returns true if test should be kept in condition.  Only returns
- *           false for ungrounded STI that may have been collected during
- *           backtracing.
- *
  * ========================================================================= */
-bool Variablization_Manager::variablize_test_by_lookup(test* t, bool pSkipTopLevelEqualities)
+bool Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    variablization* found_variablization = NULL;
+    Symbol* found_variablization = NULL;
 
-    if (!test_has_referent((*t)))
-    {
-        return true;
-    }
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", t);
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", *t);
-
-    if (pSkipTopLevelEqualities && ((*t)->type == EQUALITY_TEST))
+    if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
     {
         /* -- Wrong test type for this variablization pass -- */
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-    found_variablization = get_variablization(*t);
-    if (found_variablization)
+    if (t->data.referent->is_sti())
     {
-        // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, (*t)->data.referent);
-        (*t)->data.referent = found_variablization->variablized_symbol;
-        symbol_add_ref(thisAgent, found_variablization->variablized_symbol);
+        found_variablization =  get_variablization_for_sti(t->data.referent);
     }
     else
     {
-        if ((*t)->data.referent->is_sti())
-        {
-            /* -- STI identifier that is ungrounded.  Error.  -- */
-            dprint(DT_DEBUG, "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n");
-            return false;
-        }
-        else
-        {
-            /* -- Constant referent that is ungrounded.  Ignore. -- */
-            dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c referent not grounded in chunk.\n");
-        }
+        found_variablization =  get_variablization_for_identity(t->identity);
+    }
+    if (found_variablization)
+    {
+        // It has been variablized before, so just variablize
+        symbol_remove_ref(thisAgent, t->data.referent);
+        t->data.referent = found_variablization;
+        symbol_add_ref(thisAgent, found_variablization);
+    }
+    else
+    {
+        dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
+            "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n" :
+            "Not variablizing constraint b/c referent not grounded in chunk.\n");
+        return false;
     }
 
-    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", *t);
+    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", t);
     dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
-    return true;
 
+    return true;
 }
 
-void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLevelEqualities)
+void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
 
     cons* c;
-    bool isGrounded;
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", *t);
+    test tt;
+//    bool isGrounded;
+//    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", t);
 
-    assert(*t);
+    assert(t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
-        // previous logic wouldn't assert false but print an error out instead.`
-        assert((*t)->original_test == NULL);
         dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = (*t)->data.conjunct_list; c != NIL; c = c->rest)
+        for (c = t->data.conjunct_list; c != NIL; )
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing conjunctive test: \n");
             /* -- Note that we ignore what variablize_test_by_lookup returns b/c merge will later delete
@@ -455,7 +401,23 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
              *    deleted.  We just leave them as a literal. We only use the return value of
              *    variablize_test_by_lookup when variablizing constraints collected during
              *    backtracing, since we can just avoid adding them to the condition list. -- */
-            variablize_test_by_lookup(reinterpret_cast<test*>(&(c->first)), pSkipTopLevelEqualities);
+            tt = reinterpret_cast<test>(c->first);
+            if (test_has_referent(tt))
+            {
+                if (tt->data.referent->is_sti())
+                {
+                    if (!variablize_test_by_lookup(tt, pSkipTopLevelEqualities))
+                    {
+                        c = delete_test_from_conjunct(thisAgent, &t, c);
+                        continue;
+                    }
+                }
+                else if (tt->identity)
+                {
+                    variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
+                }
+            }
+            c = c->rest;
         }
 
         dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -463,12 +425,12 @@ void Variablization_Manager::variablize_tests_by_lookup(test* t, bool pSkipTopLe
     }
     else
     {
-        variablize_test_by_lookup(t, pSkipTopLevelEqualities);
+        if (test_has_referent(t) && (t->identity || t->data.referent->is_sti()))
+        {
+            variablize_test_by_lookup(t, pSkipTopLevelEqualities);
+        }
     }
 }
-
-/* MToDo | Check what was meant by...  This gets passed in a copy of the chunk instantiation's condition lists, which
- * will get thrown away */
 
 void Variablization_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
@@ -483,12 +445,9 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
             if (cond->type == POSITIVE_CONDITION)
             {
                 dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-                variablize_equality_tests(&(cond->data.tests.id_test));
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-                variablize_equality_tests(&(cond->data.tests.attr_test));
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-                variablize_equality_tests(&(cond->data.tests.value_test));
+                variablize_equality_tests(cond->data.tests.id_test);
+                variablize_equality_tests(cond->data.tests.attr_test);
+                variablize_equality_tests(cond->data.tests.value_test);
             }
         }
     }
@@ -498,22 +457,19 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
+            if (cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
+                variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
+            if (cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
+                variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
+            if (cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
+                variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing identifier: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing attribute: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing value: \n");
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
+            variablize_tests_by_lookup(cond->data.tests.id_test, false);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
+            variablize_tests_by_lookup(cond->data.tests.value_test, false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -525,34 +481,21 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
-
-/* =====================================================================
-
-          variablize_rl_symbol and variablize_rl_condition_list
-
-   Variablizing of conditions is done by walking over a condition list
-   and destructively modifying it, replacing tests of identifiers with
-   tests of tests of variables.
-
-   These functions are analogous to the ones in chunk.cpp but without
-   all of the generalized variablization logic introduced in Soar 9.4
-===================================================================== */
-
-void Variablization_Manager::variablize_rl_test(test* t)
+void Variablization_Manager::variablize_rl_test(test t)
 {
     cons* c;
     test ct;
 
-    assert(*t);
-    dprint(DT_RL_VARIABLIZATION, "%t\n", *t);
+    assert(t);
+    dprint(DT_RL_VARIABLIZATION, "%t\n", t);
 
-    if ((*t)->type == CONJUNCTIVE_TEST)
+    if (t->type == CONJUNCTIVE_TEST)
     {
         dprint(DT_RL_VARIABLIZATION, "Iterating through conjunction list.\n");
-        ct = *t;
+        ct = t;
         for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
         {
-            variablize_rl_test(reinterpret_cast<test*>(&(c->first)));
+            variablize_rl_test(reinterpret_cast<test>(c->first));
         }
 
         dprint(DT_RL_VARIABLIZATION, "Done iterating through conjunction list.\n");
@@ -561,11 +504,11 @@ void Variablization_Manager::variablize_rl_test(test* t)
     }
     else
     {
-        if (test_has_referent((*t)) && ((*t)->data.referent->is_sti()))
+        if (test_has_referent(t) && (t->data.referent->is_sti()))
         {
             dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %y\n",
-                   test_type_to_string((*t)->type), (*t)->data.referent);
-            thisAgent->variablizationManager->variablize_lhs_symbol(&((*t)->data.referent), NULL);
+                   test_type_to_string(t->type), t->data.referent);
+            variablize_lhs_symbol(&(t->data.referent), t->identity);
         }
         else
         {
@@ -574,7 +517,7 @@ void Variablization_Manager::variablize_rl_test(test* t)
         }
     }
 
-    dprint(DT_RL_VARIABLIZATION, "Resulting in  %t\n", (*t));
+    dprint(DT_RL_VARIABLIZATION, "Resulting in  %t\n", t);
     dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
 }
 
@@ -588,16 +531,16 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     rhs->type = MAKE_ACTION;
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym);
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym);
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym);
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym);
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, 0);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, 0);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, 0);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, 0);
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
-    variablize_rhs_symbol(rhs->id, NULL);
-    variablize_rhs_symbol(rhs->attr, NULL);
-    variablize_rhs_symbol(rhs->value, NULL);
-    variablize_rhs_symbol(rhs->referent, NULL);
+    variablize_rhs_symbol(rhs->id);
+    variablize_rhs_symbol(rhs->attr);
+    variablize_rhs_symbol(rhs->value);
+    variablize_rhs_symbol(rhs->referent);
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
     return rhs;
 }
@@ -617,11 +560,11 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
             {
                 dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL identifier: ");
-                variablize_rl_test(&(cond->data.tests.id_test));
+                variablize_rl_test(cond->data.tests.id_test);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL attribute: ");
-                variablize_rl_test(&(cond->data.tests.attr_test));
+                variablize_rl_test(cond->data.tests.attr_test);
                 dprint(DT_RL_VARIABLIZATION, "Variablizing RL value: ");
-                variablize_rl_test(&(cond->data.tests.value_test));
+                variablize_rl_test(cond->data.tests.value_test);
             }
         }
     }
@@ -631,16 +574,16 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), !pInNegativeCondition);
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), !pInNegativeCondition);
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
             dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
-            variablize_tests_by_lookup(&(cond->data.tests.id_test), false);
-            variablize_tests_by_lookup(&(cond->data.tests.attr_test), false);
-            variablize_tests_by_lookup(&(cond->data.tests.value_test), false);
+            variablize_tests_by_lookup(cond->data.tests.id_test, false);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
+            variablize_tests_by_lookup(cond->data.tests.value_test, false);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -653,7 +596,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* Variablization_Manager::variablize_results(preference* result, bool variablize)
+action* Variablization_Manager::variablize_results_into_actions(preference* result, bool variablize)
 {
     action* a;
 
@@ -665,108 +608,103 @@ action* Variablization_Manager::variablize_results(preference* result, bool vari
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
 
-    a->id = allocate_rhs_value_for_symbol(thisAgent,  result->id, result->original_symbols.id, 0);
-    a->attr = allocate_rhs_value_for_symbol(thisAgent,  result->attr, result->original_symbols.attr, 0);
-    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->original_symbols.value, 0);
+    if (!result->rhs_funcs.id)
+    {
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.id);
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
+    }
+    if (!result->rhs_funcs.attr)
+    {
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.attr);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
+    }
+    if (!result->rhs_funcs.value)
+    {
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
+    } else {
+        dprint(DT_RHS_VARIABLIZATION, "VM found rhs_func:  %r", result->rhs_funcs.value);
+        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
+    }
     if (preference_is_binary(result->type))
     {
-        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent);
+        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, 0);
     }
 
     if (variablize)
     {
         dprint_set_indents(DT_RHS_VARIABLIZATION, "");
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
-        dprint(DT_IDENTITY_PROP, "\nSetting g_ids for action and variablizing results...\n");
+        dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->id, result->original_symbols.id);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->attr, result->original_symbols.attr);
-        thisAgent->variablizationManager->variablize_rhs_symbol(a->value, result->original_symbols.value);
+        variablize_rhs_symbol(a->id);
+        variablize_rhs_symbol(a->attr);
+        variablize_rhs_symbol(a->value);
         if (preference_is_binary(result->type))
         {
-            thisAgent->variablizationManager->variablize_rhs_symbol(a->referent, NULL);
+            variablize_rhs_symbol(a->referent);
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
-    else
-    {
-        /* MToDo | We might need to set these g_ids properly.  For example, do
-         *         we need g_ids when we have chunk-less states that are being
-         *         chunked through from a chunky state. So justifications need
-         *         them? -- */
-    }
-
 
     a->preference_type = result->type;
 
-    a->next = variablize_results(result->next_result, variablize);
+    a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
 }
 
-void Variablization_Manager::add_ltis_to_dnvl_for_test(test t)
+bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
 {
-    cons* c;
-    dprint(DT_IDENTITY_PROP, "Adding LTIs for test: %t\n", t);
+    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 
-    if (t->type == CONJUNCTIVE_TEST)
+    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
     {
-        dprint(DT_IDENTITY_PROP, "Adding LTIs for conjunctive test: ");
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        m_learning_on_for_instantiation = false;
+        return false;
+    }
+
+    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
+            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
+    {
+        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
-            add_ltis_to_dnvl_for_test(reinterpret_cast<test>(c->first));
+            std::ostringstream message;
+            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
+            print(thisAgent,  message.str().c_str());
+            xml_generate_verbose(thisAgent, message.str().c_str());
         }
+        m_learning_on_for_instantiation = false;
+        return false;
     }
-    else if (test_has_referent(t) && t->data.referent->is_lti())
+
+    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
     {
-        dprint(DT_IDENTITY_PROP, "Adding LTI %y to DNVL.", t->data.referent);
-        add_dnvl(t->data.referent);
+        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        {
+            std::ostringstream message;
+            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
+            print(thisAgent,  message.str().c_str());
+            xml_generate_verbose(thisAgent, message.str().c_str());
+        }
+        m_learning_on_for_instantiation = false;
+        return false;
     }
+
+    /* allow_bottom_up_chunks will be false if a chunk was already
+       learned in a lower goal
+     */
+    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
+            !inst->match_goal->id->allow_bottom_up_chunks)
+    {
+        m_learning_on_for_instantiation = false;
+        return false;
+    }
+
+    m_learning_on_for_instantiation = true;
+    return true;
 }
 
-void Variablization_Manager::add_ltis_to_dnvl_for_conditions(condition* top_cond)
-{
-    dprint(DT_IDENTITY_PROP, "Adding LTIs to DNVL: ");
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            dprint(DT_IDENTITY_PROP, "Adding for condition: %l\n", cond);
-            add_ltis_to_dnvl_for_test(cond->data.tests.id_test);
-            add_ltis_to_dnvl_for_test(cond->data.tests.attr_test);
-            add_ltis_to_dnvl_for_test(cond->data.tests.value_test);
-        }
-        else
-        {
-            dprint(DT_NCC_VARIABLIZATION, "Adding for negative conjunctive condition:\n");
-            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
-            add_ltis_to_dnvl_for_conditions(cond->data.ncc.top);
-        }
-    }
-    dprint_noprefix(DT_IDENTITY_PROP, "\n");
-    dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
-    print_dnvl_set(DT_IDENTITY_PROP);
-
-}
-
-void Variablization_Manager::add_ltis_to_dnvl_for_prefs(preference* prefs)
-{
-    if (!prefs)
-    {
-        dprint_header(DT_IDENTITY_PROP, PrintAfter, "Done adding LTIs to DNVL.\n");
-        print_dnvl_set(DT_IDENTITY_PROP);
-        return;
-    }
-
-    dprint(DT_IDENTITY_PROP, "Adding LTIs to for preference: %p\n",
-        prefs);
-
-    if (prefs->id && (prefs->id->is_lti())) { add_dnvl(prefs->id); }
-    if (prefs->attr && (prefs->attr->is_lti())) { add_dnvl(prefs->attr); }
-    if (prefs->value && (prefs->value->is_lti())) { add_dnvl(prefs->value); }
-    if (preference_is_binary(prefs->type))
-    {
-        if (prefs->referent && (prefs->referent->is_lti())) { add_dnvl(prefs->referent); }
-    }
-    add_ltis_to_dnvl_for_prefs(prefs->next_result);
-
-}

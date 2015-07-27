@@ -13,7 +13,109 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include "sml_Names.h"
+#include "stats.h"
 
+/* -- Just a simple function that can be called from the debug command.  Something to put random code for testing/debugging -- */
+extern void test_print_speed();
+extern void test_print_speed_y();
+using namespace sml;
+
+
+inline size_t strnmove2(char** s1, const char* s2, size_t n) {
+    size_t m = 0;
+    if ( n > 0) {
+        m = strlen(s2);
+        if (m+1 > n) {
+            m = n-1;
+        }
+        memmove(*s1, s2, m);
+        (*s1)[m]=0;
+    } else {
+        return n;
+    }
+    *s1 = &((*s1)[m]);
+    return n-m-1;
+}
+
+void test_strnmove(char* buf1)
+{
+    size_t buffer_left = 0;
+
+    buffer_left = 15;
+    char* start = &(buf1[0]);
+
+    strcpy(buf1, "");
+    std::cout << "Before move |" << buf1 << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&(buf1), "Hellosfasdfsfsfdfsfsfdsfdsfd", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&buf1, " Mazin Assanie the first", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+    buffer_left = strnmove2(&buf1, " Mazin Assanie the first", buffer_left);
+    std::cout << "Buffer:     |" << buf1 << "| " << buffer_left << std::endl;
+    std::cout << "Starting buffer: |" << start << "| " << buffer_left << std::endl;
+
+}
+
+void debug_test(int type)
+{
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (!thisAgent)
+    {
+        return;
+    }
+
+    switch (type)
+    {
+        case 1:
+            print_internal_symbols(thisAgent);
+            dprint_identifiers(DT_DEBUG);
+            break;
+        case 2:
+            /* -- Print all instantiations -- */
+            dprint_all_inst(DT_DEBUG);
+            break;
+        case 3:
+        {
+            /* -- Print all wme's -- */
+            dprint(DT_DEBUG, "%8");
+            break;
+        }
+        case 4:
+            break;
+
+        case 5:
+        {
+
+            break;
+        }
+        case 6:
+        {
+            dprint_variablization_tables(DT_DEBUG);
+            dprint_variablization_tables(DT_DEBUG, 1);
+            dprint_o_id_tables(DT_DEBUG);
+            dprint_attachment_points(DT_DEBUG);
+            dprint_constraints(DT_DEBUG);
+            dprint_merge_map(DT_DEBUG);
+            dprint_ovar_to_o_id_map(DT_DEBUG);
+            dprint_o_id_substitution_map(DT_DEBUG);
+            dprint_o_id_to_ovar_debug_map(DT_DEBUG);
+            dprint_tables(DT_DEBUG);
+            break;
+        }
+        case 7:
+            break;
+        case 8:
+        {
+            break;
+        }
+        case 9:
+            test_print_speed_y();
+            break;
+    }
+}
 void debug_test_structs()
 {
     agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
@@ -87,7 +189,7 @@ void debug_test_structs()
     test intEqTest06 = make_test(debug_agent, newInt06, EQUALITY_TEST);
     test intEqTest07 = make_test(debug_agent, newInt07, EQUALITY_TEST);
     test intEqTest08 = make_test(debug_agent, newInt08, EQUALITY_TEST);
-    test blankTest = make_blank_test();
+//    test blankTest = NULL;
 
 
     test dest, add_me;
@@ -98,9 +200,7 @@ void debug_test_structs()
     //  deallocate_test(debug_agent, dest);
 
     dest = copy_test(debug_agent, idEqTest01);
-    dest->original_test = copy_test(debug_agent, varEqTest01);
     add_me = copy_test(debug_agent, idEqTest02);
-    add_me->original_test = copy_test(debug_agent, varEqTest01);
     add_test(debug_agent, &dest, add_me);
     add_test(debug_agent, &dest, idEqTest03);
 
@@ -201,69 +301,4 @@ void debug_test_delete_conjuncts()
 //    print_internal_symbols(debug_agent);
 
 }
-/* -- Just a simple function that can be called from the debug command.  Something to put random code for testing/debugging -- */
-extern void test_print_speed();
-extern void test_print_speed_y();
-void debug_test(int type)
-{
-    agent* debug_agent = Output_Manager::Get_OM().get_default_agent();
-    if (!debug_agent)
-    {
-        return;
-    }
 
-    Symbol* sym  = make_new_identifier(debug_agent, 'M', 1, 1);
-    test t = make_test(debug_agent, sym, GREATER_TEST);
-    int64_t i1=-23;
-    uint64_t ui1=33;
-
-    switch (type)
-    {
-        case 1:
-            print_internal_symbols(debug_agent);
-            dprint_identifiers(DT_DEBUG);
-            break;
-        case 2:
-            debug_agent->variablizationManager->print_tables();
-            break;
-        case 3:
-        {
-            Symbol* newSym  = find_identifier(debug_agent, 'S', 3);
-            dprint(DT_DEBUG, "S1 refcount %d\n", newSym->reference_count);
-            break;
-        }
-        case 4:
-            debug_test_delete_conjuncts();
-            break;
-
-        case 5:
-            /* -- Print all instantiations -- */
-            dprint_all_inst(DT_DEBUG);
-            break;
-
-        case 6:
-            /* -- Print all wme's that have identities requested -- */
-            dprint(DT_DEBUG, "%8");
-            break;
-
-        case 7:
-            dprint(DT_DEBUG, "Trying dprintf with symbol %y\n", sym);
-            dprint(DT_DEBUG, "Trying dprintf with null symbol %y\n", NULL);
-            dprint(DT_DEBUG, "Trying dprintf with test %t\n", t);
-            dprint(DT_DEBUG, "Trying dprintf with string %s\n", "MAZIN");
-            dprint(DT_DEBUG, "Trying dprintf with char %c\n", 'z');
-            dprint(DT_DEBUG, "Trying dprintf with empty string %s\n", "");
-            dprint(DT_DEBUG, "Trying dprintf with int64_t %i\n", i1);
-            dprint(DT_DEBUG, "Trying dprintf with uint64_t %u\n", ui1);
-            dprint(DT_DEBUG, "Trying dprintf with all %y %y %t %s %s %c %i %u\n", sym, NULL, t, "MAZIN", "", 'z', i1, ui1);
-            symbol_remove_ref(debug_agent, sym);
-            deallocate_test(debug_agent, t);
-            break;
-        case 8:
-            test_print_speed();
-            break;
-        case 9:
-            test_print_speed_y();
-            break;
-    }
-}

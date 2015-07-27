@@ -1,0 +1,31 @@
+sp {generate-facts*propose*check
+   (state <s> ^name generate-facts
+              ^phase check)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name check)
+}
+
+sp {apply*check*new
+   (state <s> ^operator <op>
+              ^smem <smem>)
+   (<op> ^name check)
+   (<smem> ^result.failure <q>
+           ^command <cmd>)
+   (<cmd> ^query <q>)
+-->
+   (<s> ^phase check -
+        ^phase store)
+   (<cmd> ^query <q> -
+          ^store <arithmetic>)
+}
+
+sp {apply*check*existing
+   (state <s> ^operator <op>
+              ^smem.result.success <q>
+              ^superstate <ss>)
+   (<op> ^name check)
+   (<ss> ^operator <ss-op>)
+-->
+   (<ss> ^arithmetic.facts existing)
+}

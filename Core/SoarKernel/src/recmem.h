@@ -26,7 +26,7 @@
 /* TEMPORARY HACK (Ideally this should be doable through
    the external kernel interface but for now using a
    couple of global STL lists to get this information
-   from the rhs function to this prefference adding code)*/
+   from the rhs function to this preference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
 typedef signed short goal_stack_level;
@@ -57,5 +57,7 @@ inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation* i
 }
 
 extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
+
+extern goal_stack_level get_match_goal(condition* top_cond);
 
 #endif

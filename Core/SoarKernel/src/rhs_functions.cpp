@@ -71,13 +71,13 @@ void add_rhs_function(agent* thisAgent,
                       void* user_data)
 {
     rhs_function* rf;
-    
+
     if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
     {
         print(thisAgent,  "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
         return;
     }
-    
+
     for (rf = thisAgent->rhs_functions; rf != NIL; rf = rf->next)
     {
         if (rf->name == name)
@@ -86,13 +86,13 @@ void add_rhs_function(agent* thisAgent,
             return;
         }
     }
-    
-    rf = static_cast<rhs_function_struct*>(allocate_memory(thisAgent, sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE));
-    
+
+    rf = static_cast<rhs_function_struct*>(thisAgent->memoryManager->allocate_memory(sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE));
+
     /* Insertion into the list */
     rf->next = thisAgent->rhs_functions;
     thisAgent->rhs_functions = rf;
-    
+
     /* Rest of the stuff */
     rf->name = name;
     rf->f = f;
@@ -105,7 +105,7 @@ void add_rhs_function(agent* thisAgent,
 rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
 {
     rhs_function* rf;
-    
+
     for (rf = thisAgent->rhs_functions; rf != NIL; rf = rf->next)
     {
         if (rf->name == name)
@@ -120,7 +120,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
 {
 
     rhs_function* rf = NIL, *prev;
-    
+
     /* Find registered function by name */
     for (prev = NIL, rf = thisAgent->rhs_functions;
             rf != NIL;
@@ -131,18 +131,18 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
             break;
         }
     }
-    
+
     /* If not found, there's a problem */
     if (rf == NIL)
     {
         fprintf(stderr, "Internal error: attempt to remove_rhs_function that does not exist.\n");
         print_with_symbols(thisAgent, "Internal error: attempt to remove_rhs_function that does not exist: %y\n", name);
     }
-    
+
     /* Else, remove it */
     else
     {
-    
+
         /* Head of list special */
         if (prev == NIL)
         {
@@ -152,10 +152,10 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
         {
             prev->next = rf->next;
         }
-        
-        free_memory(thisAgent, rf, MISCELLANEOUS_MEM_USAGE);
+
+        thisAgent->memoryManager->free_memory(rf, MISCELLANEOUS_MEM_USAGE);
     }
-    
+
     // DJP-FREE: The name reference needs to be released now the function is gone
     symbol_remove_ref(thisAgent, name);
 }
@@ -177,7 +177,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     Symbol* arg;
     char* string;
     growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
-    
+
     for (; args != NIL; args = args->rest)
     {
         arg = static_cast<symbol_struct*>(args->first);
@@ -187,11 +187,11 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         add_to_growable_string(thisAgent, &gs, string); // for XML generation
         print_string(thisAgent, string);
     }
-    
+
     xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-    
+
     free_growable_string(thisAgent, gs);
-    
+
     return NIL;
 }
 
@@ -218,7 +218,7 @@ Symbol* halt_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_da
     soar_invoke_callbacks(thisAgent,
                           AFTER_HALT_SOAR_CALLBACK,
                           0);
-                          
+
     return NIL;
 }
 
@@ -236,7 +236,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
     std::stringstream buf;
     char* string;
     cons* c;
-    
+
     if (!args)
     {
         buf << "constant";
@@ -270,7 +270,7 @@ Symbol* timestamp_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*us
     struct tm* temp;
 #define TIMESTAMP_BUFFER_SIZE 100
     char buf[TIMESTAMP_BUFFER_SIZE];
-    
+
     now = time(NULL);
 #ifdef THINK_C
     temp = localtime((const time_t*)&now);
@@ -307,7 +307,7 @@ Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_
 {
     char buf[2000], *s;
     Symbol* sym;
-    
+
     while (true)
     {
         s = fgets(buf, 2000, stdin);
@@ -339,26 +339,26 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 {
     char* symbol_to_capitalize;
     Symbol* sym, * returnSym;
-    
+
     if (!args)
     {
         print(thisAgent,  "Error: 'capitalize-symbol' function called with no arguments.\n");
         return NIL;
     }
-    
+
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
         return NIL;
     }
-    
+
     if (args->rest)
     {
         print(thisAgent,  "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
     symbol_to_capitalize = strdup(sym->to_string());
     *symbol_to_capitalize = static_cast<char>(toupper(*symbol_to_capitalize));
     returnSym = make_str_constant(thisAgent, symbol_to_capitalize);
@@ -437,19 +437,19 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 {
     Symbol* arg1, *arg2;
     cons* c;
-    
+
     if (!args)
     {
         print(thisAgent,  "Error: 'ifeq' function called with no arguments\n");
         return NIL;
     }
-    
+
     /* --- two or more arguments --- */
     arg1 = static_cast<symbol_struct*>(args->first);
     c = args->rest;
     arg2 = static_cast<symbol_struct*>(c->first);
     c = c->rest;
-    
+
     if (arg1 == arg2)
     {
         symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
@@ -470,36 +470,36 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 {
     char* symbol_to_trim;
     Symbol* sym, *returnSym;
-    
+
     if (!args)
     {
         print(thisAgent,  "Error: 'trim' function called with no arguments.\n");
         return NIL;
     }
-    
+
     sym = (Symbol*) args->first;
-    
+
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym);
         return NIL;
     }
-    
+
     if (args->rest)
     {
         print(thisAgent,  "Error: 'trim' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
 //  symbol_to_trim = sym->to_string();
 //  symbol_to_trim = savestring( symbol_to_trim );
 
     symbol_to_trim = strdup(sym->to_string());
-    
+
     std::string str(symbol_to_trim);
     size_t start_pos = str.find_first_not_of(" \t\n");
     size_t end_pos = str.find_last_not_of(" \t\n");
-    
+
     if ((std::string::npos == start_pos) || (std::string::npos == end_pos))
     {
         str = "";
@@ -508,24 +508,24 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     {
         str = str.substr(start_pos, end_pos - start_pos + 1);
     }
-    
+
     returnSym = make_str_constant(thisAgent, str.c_str());
     free(symbol_to_trim);
     return returnSym;
-    
+
 }
 
 Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg;
     char* string;
-    
+
     arg = static_cast<symbol_struct*>(args->first);
-    
+
     /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
     string = arg->to_string();
-    
+
     return make_int_constant(thisAgent, static_cast<int64_t>(strlen(string)));
 }
 /* AGR 520     end */
@@ -540,13 +540,13 @@ shouldn't occur when "learning" is set to "except".
 Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* state;
-    
+
     if (!args)
     {
         print(thisAgent,  "Error: 'dont-learn' function called with no arg.\n");
         return NIL;
     }
-    
+
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -557,20 +557,20 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
     {
         print_with_symbols(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n", state);
     }
-    
+
     if (args->rest)
     {
         print(thisAgent,  "Error: 'dont-learn' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
     if (! member_of_list(state, thisAgent->chunk_free_problem_spaces))
     {
         push(thisAgent, state, thisAgent->chunk_free_problem_spaces);
         /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
     }
     return NIL;
-    
+
 }
 
 /* --------------------------------------------------------------------
@@ -583,13 +583,13 @@ should occur when "learning" is set to "only".
 Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* state;
-    
+
     if (!args)
     {
         print(thisAgent,  "Error: 'force-learn' function called with no arg.\n");
         return NIL;
     }
-    
+
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -600,21 +600,21 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
     {
         print_with_symbols(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n", state);
     }
-    
-    
+
+
     if (args->rest)
     {
         print(thisAgent,  "Error: 'force-learn' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
     if (! member_of_list(state, thisAgent->chunky_problem_spaces))
     {
         push(thisAgent, state, thisAgent->chunky_problem_spaces);
         /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
     }
     return NIL;
-    
+
 }
 
 /* ====================================================================
@@ -623,26 +623,26 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
 void recursive_deep_copy_helper(agent* thisAgent,
                                 Symbol* id_to_process,
                                 Symbol* parent_id,
-                                std::map<Symbol*, Symbol*>& processedSymbols);
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols);
 
 void recursive_wme_copy(agent* thisAgent,
                         Symbol* parent_id,
                         wme* curwme,
-                        std::map<Symbol*, Symbol*>& processedSymbols)
+                        std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
 
     bool made_new_attr_symbol = false;
     bool made_new_value_symbol = false;
-    
+
     Symbol* new_id = parent_id;
     Symbol* new_attr = curwme->attr;
     Symbol* new_value = curwme->value;
-    
+
     /* Handling the case where the attribute is an id symbol */
     if (curwme->attr->symbol_type == 1)
     {
         /* Have I already made a new identifier for this identifier */
-        std::map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
+        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -654,18 +654,18 @@ void recursive_wme_copy(agent* thisAgent,
             new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 1, NIL);
             made_new_attr_symbol = true;
         }
-        
+
         recursive_deep_copy_helper(thisAgent,
                                    curwme->attr,
                                    new_attr,
                                    processedSymbols);
     }
-    
+
     /* Handling the case where the value is an id symbol */
     if (curwme->value->symbol_type == 1)
     {
         /* Have I already made a new identifier for this identifier */
-        std::map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->value);
+        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->value);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -677,17 +677,17 @@ void recursive_wme_copy(agent* thisAgent,
             new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 1, NIL);
             made_new_value_symbol = true;
         }
-        
+
         recursive_deep_copy_helper(thisAgent,
                                    curwme->value,
                                    new_value,
                                    processedSymbols);
     }
-    
+
     /* Making the new wme (Note just reusing the wme data structure, these
        wme's actually get converted into preferences later).*/
     wme* oldGlobalWme = glbDeepCopyWMEs;
-    
+
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
        functions. */
@@ -700,16 +700,16 @@ void recursive_wme_copy(agent* thisAgent,
     {
         symbol_add_ref(thisAgent, new_value);
     }
-    
+
     glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
     glbDeepCopyWMEs->next = oldGlobalWme;
-    
+
 }
 
 void recursive_deep_copy_helper(agent* thisAgent,
                                 Symbol* id_to_process,
                                 Symbol* parent_id,
-                                std::map<Symbol*, Symbol*>& processedSymbols)
+                                std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
     /* If this symbol has already been processed then ignore it and return */
     if (processedSymbols.find(id_to_process) != processedSymbols.end())
@@ -717,41 +717,41 @@ void recursive_deep_copy_helper(agent* thisAgent,
         return;
     }
     processedSymbols.insert(std::pair<Symbol*, Symbol*>(id_to_process, parent_id));
-    
+
     /* Iterating over the normal slot wmes */
     for (slot* curslot = id_to_process->id->slots;
             curslot != 0;
             curslot = curslot->next)
     {
-    
+
         /* Iterating over the wmes in this slot */
         for (wme* curwme = curslot->wmes;
                 curwme != 0;
                 curwme = curwme->next)
         {
-        
+
             recursive_wme_copy(thisAgent,
                                parent_id,
                                curwme,
                                processedSymbols);
-                               
+
         }
-        
+
     }
-    
+
     /* Iterating over input wmes */
     for (wme* curwme = id_to_process->id->input_wmes;
             curwme != 0;
             curwme = curwme->next)
     {
-    
+
         recursive_wme_copy(thisAgent,
                            parent_id,
                            curwme,
                            processedSymbols);
-                           
+
     }
-    
+
 }
 /* ====================================================================
                   RHS Deep copy function
@@ -765,18 +765,18 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     {
         return make_str_constant(thisAgent, "*symbol not id*");
     }
-    
+
     /* Making the new root identifier symbol */
     Symbol* retval = make_new_identifier(thisAgent, 'D', 1, NIL);
-    
+
     /* Now processing the wme's associated with the passed in symbol */
-    std::map<Symbol*, Symbol*> processedSymbols;
+    std::unordered_map<Symbol*, Symbol*> processedSymbols;
     recursive_deep_copy_helper(thisAgent,
                                baseid,
                                retval,
                                processedSymbols);
-                               
-                               
+
+
     return retval;
 }
 
@@ -791,7 +791,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 {
     Symbol* arg;
     char* string;
-    
+
     for (; args != NIL; args = args->rest)
     {
         arg = static_cast<symbol_struct*>(args->first);
@@ -800,7 +800,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         string = arg->to_string();
         (*thisAgent->dyn_counters)[ string ]++;
     }
-    
+
     return NIL;
 }
 
@@ -850,22 +850,22 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "strlen"), strlen_rhs_function_code,
                      1, true, false, 0);
     /* AGR 520  end   */
-    
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "dont-learn"),
                      dont_learn_rhs_function_code,
                      1, false, true, 0);
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "force-learn"),
                      force_learn_rhs_function_code,
                      1, false, true, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "deep-copy"),
                      deep_copy_rhs_function_code,
                      1, true, false, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "count"),
                      count_rhs_function_code,
                      -1, false, true, 0);
-                     
+
     init_built_in_rhs_math_functions(thisAgent);
 }
 
@@ -887,6 +887,6 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "force-learn"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "deep-copy"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "count"));
-    
+
     remove_built_in_rhs_math_functions(thisAgent);
 }

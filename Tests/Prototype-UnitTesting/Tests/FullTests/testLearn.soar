@@ -1,0 +1,49 @@
+sp {propose*foo
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name foo)
+}
+
+sp {elaborate*state
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {propose*bar
+   (state <s> ^name foo)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name bar)
+}
+
+sp {apply*bar
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<o> ^name bar)
+-->
+   (<ss> ^result jig)
+}
+
+sp {dont*learn
+   (state <s> ^name foo)
+-->
+   (dont-learn <s>)
+}
+
+sp {force*learn
+   (state <s> ^name foo)
+-->
+   (force-learn <s>)
+}
+
+sp {done
+   (state <s> ^superstate nil
+              ^result jig)
+-->
+   (halt)
+}
+
+

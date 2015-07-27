@@ -38,8 +38,7 @@ void OM_DB::create_db()
 {
     init_db();
 
-    /* MToDo | May still want to drop tables even if in memory mode b/c we might be re-initialized.  Make sure
-     *    other database init code follows same logic -- */
+    /* May still want to drop tables even if in memory mode b/c we might be re-initialized.   -- */
 
     if ((m_OM->m_params->database->get_value() != soar_module::memory) &&
             (m_OM->m_params->append_db->get_value() == off))
@@ -180,8 +179,6 @@ void OM_DB::create_statements()
 #endif
 }
 
-/* MToDo | All refcount stuff should definitely be moved into a debug module -- */
-
 void OM_DB::compile_refcount_summary()
 {
     /* -- Compile refcount summary:
@@ -202,7 +199,7 @@ void OM_DB::compile_refcount_summary()
         /* -- Count total add_refs -- */
         count_refs->bind_text(1, "%add_ref%");
         count_refs->bind_text(2, symString);
-        bool result = count_refs->execute();
+        count_refs->execute();
         add_count = count_refs->column_int(0);
         count_refs->reinitialize();
 
@@ -328,7 +325,7 @@ void OM_DB::init_db()
 
         if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
         {
-            bool switch_to_memory, versions_exists, sql_is_new;
+            bool switch_to_memory, sql_is_new;
             std::string schema_version, version_error_message;
 
             switch_to_memory = true;
@@ -427,9 +424,6 @@ void OM_DB::print_db(MessageType msgType, const char* prefix, const char* msg)
 
     if (m_Debug_DB->get_status() == soar_module::connected)
     {
-        /* MToDo | Will want to first trim white space from msg before storing, then
-         *           make sure it's not empty before incrementing and adding. -- */
-
         increment_message_count(msgType);
         //print_sf(thisAgent, "Inserting msg %i %s| %s\n", message_count, mode_to_prefix(mode), msg);
 

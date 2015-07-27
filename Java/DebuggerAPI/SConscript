@@ -8,6 +8,7 @@ api_deps = [api_env['SML']]
 api_env['JAVACLASSPATH'] = api_env['SML'].abspath
 
 classes = api_env.Java(target = 'classes', source = 'src')
+
 api_env.Depends(classes, api_env['SML'])
 
 jar_name = 'soar-debugger-api.jar'

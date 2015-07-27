@@ -64,14 +64,6 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning = new rl_learning_param("learning", off, new soar_module::f_predicate<boolean>(), new_agent);
     add(learning);
 
-    // meta-learning-rate
-    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
-    add(meta_learning_rate);
-
-    // update-log-path
-    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    add(update_log_path);
-
     // discount-rate
     discount_rate = new soar_module::decimal_param("discount-rate", 0.9, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(discount_rate);
@@ -80,10 +72,20 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     learning_rate = new soar_module::decimal_param("learning-rate", 0.3, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
     add(learning_rate);
 
+    // step-size-parameter
+    step_size_parameter = new soar_module::decimal_param("step-size-parameter", 1.0, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(step_size_parameter);
+
+    // meta-learning-rate
+    meta_learning_rate = new soar_module::decimal_param("meta-learning-rate", 0.1, new soar_module::btw_predicate<double>(0, 1, true), new soar_module::f_predicate<double>());
+    add(meta_learning_rate);
+
     // learning-policy
     learning_policy = new soar_module::constant_param<learning_choices>("learning-policy", sarsa, new soar_module::f_predicate<learning_choices>());
     learning_policy->add_mapping(sarsa, "sarsa");
     learning_policy->add_mapping(q, "q-learning");
+    learning_policy->add_mapping(on_policy_gql, "on-policy-gq-lambda");
+    learning_policy->add_mapping(off_policy_gql, "off-policy-gq-lambda");
     add(learning_policy);
 
     // decay-mode
@@ -121,6 +123,10 @@ rl_param_container::rl_param_container(agent* new_agent): soar_module::param_con
     // meta
     meta = new soar_module::boolean_param("meta", off, new soar_module::f_predicate<boolean>());
     add(meta);
+
+    // update-log-path
+    update_log_path = new soar_module::string_param("update-log-path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    add(update_log_path);
 
     // apoptosis
     apoptosis = new rl_apoptosis_param("apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), thisAgent);
@@ -291,6 +297,7 @@ void rl_reset_data(agent* thisAgent)
 
         data->previous_q = 0;
         data->reward = 0;
+        data->rho = 1.0;
 
         data->gap_age = 0;
         data->hrl_age = 0;
@@ -516,65 +523,23 @@ void rl_revert_template_id(agent* thisAgent)
 
 inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
 {
-    if ((p_sym->symbol_type == VARIABLE_SYMBOL_TYPE) && ((i_sym->symbol_type != IDENTIFIER_SYMBOL_TYPE) || (i_sym->id->smem_lti != NIL)))
+    if (p_sym->is_variable() && (i_sym->is_constant() || i_sym->is_lti()))
     {
         constants->insert(std::make_pair(p_sym, i_sym));
     }
 }
 
-/* MToDo | The part that Nate commented out might need to be fixed.  He may have just punted on it. */
-void rl_get_test_constant(test* p_test, test* i_test, rl_symbol_map* constants)
+void rl_get_test_constant(test p_test, test i_test, rl_symbol_map* constants)
 {
-    if (test_is_blank(*p_test))
+    if (!p_test) return;
+
+    if (p_test->type == EQUALITY_TEST)
     {
+        rl_get_symbol_constant(p_test->data.referent, i_test->data.referent, constants);
+    } else if (p_test->type == CONJUNCTIVE_TEST) {
+        rl_get_symbol_constant(p_test->eq_test->data.referent, i_test->eq_test->data.referent, constants);
         return;
     }
-
-    if ((*p_test)->type == EQUALITY_TEST)
-    {
-        rl_get_symbol_constant(*(reinterpret_cast<Symbol**>(p_test)), *(reinterpret_cast<Symbol**>(i_test)), constants);
-
-        return;
-    }
-
-
-    // complex test stuff
-    // NLD: If the code below is uncommented, it accesses bad memory on the first
-    //      id test and segfaults.  I'm honestly unsure why (perhaps something
-    //      about state test?).  Most of this code was copied/adapted from
-    //      the variablize_test code in production.cpp.
-    /*
-    {
-        complex_test* p_ct = complex_test_from_test( *p_test );
-        complex_test* i_ct = complex_test_from_test( *i_test );
-
-        if ( ( p_ct->type == GOAL_ID_TEST ) || ( p_ct->type == IMPASSE_ID_TEST ) || ( p_ct->type == DISJUNCTION_TEST ) )
-        {
-            return;
-        }
-        else if ( p_ct->type == CONJUNCTIVE_TEST )
-        {
-            cons* p_c=p_ct->data.conjunct_list;
-            cons* i_c=i_ct->data.conjunct_list;
-
-            while ( p_c )
-            {
-                rl_get_test_constant( reinterpret_cast<test*>( &( p_c->first ) ), reinterpret_cast<test*>( &( i_c->first ) ), constants );
-
-                p_c = p_c->rest;
-                i_c = i_c->rest;
-            }
-
-            return;
-        }
-        else
-        {
-            rl_get_symbol_constant( p_ct->data.referent, i_ct->data.referent, constants );
-
-            return;
-        }
-    }
-    */
 }
 
 void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol_map* constants)
@@ -586,9 +551,9 @@ void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol
     {
         if ((p_cond->type == POSITIVE_CONDITION) || (p_cond->type == NEGATIVE_CONDITION))
         {
-            rl_get_test_constant(&(p_cond->data.tests.id_test), &(i_cond->data.tests.id_test), constants);
-            rl_get_test_constant(&(p_cond->data.tests.attr_test), &(i_cond->data.tests.attr_test), constants);
-            rl_get_test_constant(&(p_cond->data.tests.value_test), &(i_cond->data.tests.value_test), constants);
+            rl_get_test_constant(p_cond->data.tests.id_test, i_cond->data.tests.id_test, constants);
+            rl_get_test_constant(p_cond->data.tests.attr_test, i_cond->data.tests.attr_test, constants);
+            rl_get_test_constant(p_cond->data.tests.value_test, i_cond->data.tests.value_test, constants);
         }
         else if (p_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -611,31 +576,36 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         condition* c_top;
         condition* c_bottom;
 
-//    p_node_to_conditions_and_rhs( thisAgent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), NIL, JUST_INEQUALITIES );
-
-        /* MToDo | Seems to be the same call as in recmem.cpp, which is what set up conditions in my_template_instance.  Couldn't we just copy condition list? */
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
-    }
+        dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
 
+    }
     // initialize production instantiation set
     if (my_template_instance->prod->rl_template_instantiations == NIL)
     {
+        dprint(DT_RL_VARIABLIZATION, "Creating rl_symbol_map_set because rL-template_instantiations nil.\n");
         my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
     }
+
 
     // get constants
     rl_symbol_map constant_map;
     {
+        dprint(DT_RL_VARIABLIZATION, "Getting template constants.\n");
+        dprint(DT_RL_VARIABLIZATION, "my_template_instance->prod->rl_template_conds: \n%1", my_template_instance->prod->rl_template_conds);
+        dprint(DT_RL_VARIABLIZATION, "my_template_instance->top_of_instantiated_conditions: \n%1", my_template_instance->top_of_instantiated_conditions);
         rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
     }
 
     // try to insert into instantiation set
-    //if ( !constant_map.empty() )
+//    if ( !constant_map.empty() )
     {
+        dprint(DT_RL_VARIABLIZATION, "Inserting into instantiation set.  (constant map empty: %s\n", constant_map.empty() ? "True" : "False");
         std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert(constant_map);
         if (ins_result.second)
         {
+            dprint(DT_RL_VARIABLIZATION, "Insertion succeeded.\n");
             Symbol* id, *attr, *value, *referent;
             production* my_template = my_template_instance->prod;
             action* my_action = my_template->action_list;
@@ -665,15 +635,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
             thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
 
-
-            dprint(DT_RL_VARIABLIZATION, "Polishing variablized conditions...\n");
-
-            /* -- Clean up unification constraints and merge redundant conditions
-             *    Note that this is needed even for justifications -- */
-            thisAgent->variablizationManager->fix_conditions(cond_top);
-
-            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n");
-            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond_top);
+            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n%1", cond_top);
 
             dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
 
@@ -696,7 +658,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             // make new production
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);
 
-            thisAgent->variablizationManager->clear_data();
+            thisAgent->variablizationManager->clear_variablization_maps();
 
             // set initial expected reward values
             {
@@ -711,12 +673,10 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
+                new_production->rl_gql = 0.0;
             }
-            dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n");
-            dprint_set_indents(DT_RL_VARIABLIZATION, "          ");
-            dprint(DT_RL_VARIABLIZATION, "%4", cond_top, new_action);
+            dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
-            /* MToDo | Normally fifth parameter, warn_on_duplicate, set to false.  Turned on for debugging. */
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, true) == DUPLICATE_PRODUCTION)
             {
                 excise_production(thisAgent, new_production, false);
@@ -727,6 +687,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             deallocate_condition_list(thisAgent, cond_top);
 
             return_val = new_name_symbol;
+        } else {
+            dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
         }
     }
 
@@ -736,7 +698,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds)
 {
     // mark each id as we add a test for it, so we don't add a test for the same id in two different places
-    Symbol* id;
+    Symbol* id_sym;
     test t;
     tc_number tc = get_new_tc_number(thisAgent);
 
@@ -747,12 +709,12 @@ void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_cond
             continue;
         }
 
-        id = equality_test_found_in_test(cond->data.tests.id_test)->data.referent;
-        if ((id->id->isa_goal || id->id->isa_impasse) && (id->tc_num != tc))
+        id_sym = cond->data.tests.id_test->eq_test->data.referent;
+        if ((id_sym->id->isa_goal || id_sym->id->isa_impasse) && (id_sym->tc_num != tc))
         {
-            t = make_test(thisAgent, NIL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            t = make_test(thisAgent, NIL, ((id_sym->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cond->data.tests.id_test), t);
-            id->tc_num = tc;
+            id_sym->tc_num = tc;
         }
     }
 }
@@ -856,6 +818,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     if (just_fired)
     {
         data->previous_q = cand->numeric_value;
+        data->rho = cand->rl_rho;
     }
     else
     {
@@ -877,6 +840,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
             }
 
             data->previous_q = cand->numeric_value;
+            data->rho = 1.0;
         }
         else
         {
@@ -901,6 +865,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
         {
             rl_et_map::iterator iter;
             double alpha = thisAgent->rl_params->learning_rate->get_value();
+            double eta = thisAgent->rl_params->step_size_parameter->get_value();
             double lambda = thisAgent->rl_params->et_decay_rate->get_value();
             double gamma = thisAgent->rl_params->discount_rate->get_value();
             double tolerance = thisAgent->rl_params->et_tolerance->get_value();
@@ -950,12 +915,23 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 }
             }
 
+            if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+            {
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    iter->second *= data->rho;
+                }
+            }
+
             // Update trace for just fired prods
             double sum_old_ecr = 0.0;
             double sum_old_efr = 0.0;
+            double dot_w_phi = 0.0;
             if (!data->prev_op_rl_rules->empty())
             {
-                double trace_increment = (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
+                /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
+                const double I = goal->id->lower_goal ? 0.0 : 1.0;
+                double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
                 rl_rule_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
@@ -973,15 +949,23 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     {
                         (*data->eligibility_traces)[(*p) ] = trace_increment;
                     }
+
+                    dot_w_phi += (*p)->rl_gql;
                 }
             }
 
             // For each prod with a trace, perform update
             {
-                double old_ecr, old_efr;
-                double delta_ecr, delta_efr;
-                double new_combined, new_ecr, new_efr;
+                double old_ecr = 0.0, old_efr = 0.0, old_gql = 0.0;
+                double delta_ecr = 0.0, delta_efr = 0.0;
+                double new_combined = 0.0, new_ecr = 0.0, new_efr = 0.0, new_gql = 0.0;
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
+
+                double dot_w_e = 0.0;
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    dot_w_e += iter->first->rl_gql * iter->second;
+                }
 
                 for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
                 {
@@ -990,6 +974,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     // get old vals
                     old_ecr = prod->rl_ecr;
                     old_efr = prod->rl_efr;
+                    old_gql = prod->rl_gql;
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
@@ -1038,6 +1023,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     new_ecr = (old_ecr + delta_ecr);
                     new_efr = (old_efr + delta_efr);
                     new_combined = (new_ecr + new_efr);
+                    new_gql = old_gql + eta * (delta_ecr + delta_efr);
 
                     // print as necessary
                     if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
@@ -1065,11 +1051,30 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     symbol_remove_ref(thisAgent, rhs_value_to_symbol(prod->action_list->referent));
 
                     // No refcount needed here because make_float_constant will increase
-                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined));
+                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined), 0);
 
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
+                    prod->rl_gql = new_gql;
+                }
+
+                if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+                {
+                    for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
+                    {
+                        pref->inst->prod->rl_efr -= alpha * gamma * (1 - lambda) * dot_w_e;
+                    }
+
+                    for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
+                    {
+                        (*p)->rl_gql -= alpha * eta * dot_w_phi;
+                    }
+                }
+
+                for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
+                {
+                    production* prod = iter->first;
 
                     // change documentation
                     if (thisAgent->rl_params->meta->get_value() == on)

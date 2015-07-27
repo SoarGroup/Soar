@@ -30,10 +30,8 @@
 #include "wma.h"
 #include "test.h"
 #include "wmem.h"
+#include "variablization_manager.h"
 #include "debug.h"
-
-//wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, bool acceptable);
-//typedef struct agent_struct agent;
 
 namespace soar_module
 {
@@ -82,11 +80,11 @@ namespace soar_module
 
     instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
     {
-        dprint_header(DT_FUNC_PRODUCTIONS, PrintBoth, "make_fake_instantiation() called.\n");
+        dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
 
         // make fake instantiation
         instantiation* inst;
-        allocate_with_pool(thisAgent, &(thisAgent->instantiation_pool), &inst);
+        thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
         inst->prod = NULL;
         inst->next = inst->prev = NULL;
         inst->rete_token = NULL;
@@ -96,6 +94,7 @@ namespace soar_module
         inst->reliable = true;
         inst->backtrace_number = 0;
         inst->in_ms = false;
+        inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
         inst->GDS_evaluated_already = false;
         inst->top_of_instantiated_conditions = NULL;
         inst->bottom_of_instantiated_conditions = NULL;
@@ -107,9 +106,6 @@ namespace soar_module
 
             for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
             {
-//                pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL,
-//                    soar_module::symbol_triple((*a_it)->id, (*a_it)->attr, (*a_it)->value),
-//                    soar_module::g_id_triple(0,0,0));
                 pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
                 pref->o_supported = true;
                 symbol_add_ref(thisAgent, pref->id);
@@ -131,7 +127,7 @@ namespace soar_module
             for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
             {
                 // construct the condition
-                allocate_with_pool(thisAgent, &(thisAgent->condition_pool), &cond);
+                thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
                 init_condition(cond);
                 cond->type = POSITIVE_CONDITION;
                 cond->prev = prev_cond;
@@ -146,25 +142,8 @@ namespace soar_module
                     inst->bottom_of_instantiated_conditions = cond;
                 }
                 cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
-//                cond->data.tests.id_test->original_test = copy_test(thisAgent, cond->data.tests.id_test);
-//                cond->data.tests.id_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.id_test->identity->grounding_field = ID_ELEMENT;
-//                cond->data.tests.id_test->identity->original_var = cond->data.tests.id_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.id_test->identity->original_var);
-
                 cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
-//                cond->data.tests.attr_test->original_test = copy_test(thisAgent, cond->data.tests.attr_test);
-//                cond->data.tests.attr_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.attr_test->identity->grounding_field = ATTR_ELEMENT;
-//                cond->data.tests.attr_test->identity->original_var = cond->data.tests.attr_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.attr_test->identity->original_var);
-
                 cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
-//                cond->data.tests.value_test->original_test = copy_test(thisAgent, cond->data.tests.value_test);
-//                cond->data.tests.value_test->identity->grounding_wme = (*c_it);
-//                cond->data.tests.value_test->identity->grounding_field = VALUE_ELEMENT;
-//                cond->data.tests.value_test->identity->original_var = cond->data.tests.value_test->data.referent;
-//                symbol_add_ref(thisAgent, cond->data.tests.value_test->identity->original_var);
 
                 cond->test_for_acceptable_preference = (*c_it)->acceptable;
                 cond->bt.wme_ = (*c_it);
@@ -195,35 +174,9 @@ namespace soar_module
             }
         }
 
-        dprint(DT_GDS, "%7", inst);
         return inst;
     }
 
 
-    /////////////////////////////////////////////////////////////
-    // Memory Pool Allocators
-    /////////////////////////////////////////////////////////////
-
-    memory_pool* get_memory_pool(agent* thisAgent, size_t size)
-    {
-        memory_pool* return_val = NULL;
-
-        std::map< size_t, memory_pool* >::iterator it = thisAgent->dyn_memory_pools->find(size);
-        if (it == thisAgent->dyn_memory_pools->end())
-        {
-            memory_pool* newbie = new memory_pool;
-
-            init_memory_pool(thisAgent, newbie, size, "dynamic");
-            thisAgent->dyn_memory_pools->insert(std::make_pair(size, newbie));
-
-            return_val = newbie;
-        }
-        else
-        {
-            return_val = it->second;
-        }
-
-        return return_val;
-    }
 }
 

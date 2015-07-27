@@ -1,9 +1,0 @@
-sp {answer*chunk*apply17b*onc*t3-1
-    (state <s1> ^superstate nil ^test-id <t1>)
-    -->
-    (<s1> ^result17a <u1> + ^result17b <t1> + ^result17c <u1> +
-           ^result17d <t1> + ^test-done 1 +)
-}
-
-
-

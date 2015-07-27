@@ -1,0 +1,17 @@
+sp {one*propose*inc
+   (state <s> ^name one
+              ^count {<ct> < <max>}
+              ^max <max>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name inc)
+}
+
+sp {apply*inc
+   (state <s> ^operator <op>
+              ^count <ct>)
+   (<op> ^name inc)
+-->
+   (<s> ^count <ct> -
+        ^count (+ <ct> 1))
+}

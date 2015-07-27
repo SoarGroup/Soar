@@ -28,6 +28,7 @@
 #define RHS_H
 
 #include "kernel.h"
+#include "debug.h"
 
 /* -- Forward declarations -- */
 typedef struct condition_struct condition;
@@ -41,8 +42,7 @@ typedef char* rhs_value;
 typedef struct rhs_struct
 {
     Symbol* referent;
-    Symbol* original_rhs_variable;
-    uint64_t g_id;
+    uint64_t o_id;
 } rhs_info;
 typedef rhs_info* rhs_symbol;
 
@@ -143,13 +143,9 @@ inline Symbol*    rhs_value_to_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->referent;
 }
-inline Symbol*    rhs_value_to_original_symbol(rhs_value rv)
+inline uint64_t   rhs_value_to_o_id(rhs_value rv)
 {
-    return reinterpret_cast<rhs_symbol>(rv)->original_rhs_variable;
-}
-inline uint64_t   rhs_value_to_g_id(rhs_value rv)
-{
-    return reinterpret_cast<rhs_symbol>(rv)->g_id;
+    return reinterpret_cast<rhs_symbol>(rv)->o_id;
 }
 inline ::list*    rhs_value_to_funcall_list(rhs_value rv)
 {
@@ -195,37 +191,42 @@ inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2)
     return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
 }
 
-inline bool rhs_values_symbols_equal_with_originals(rhs_value rv1, rhs_value rv2)
-{
-    return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
-}
-
 inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 {
     if (rhs_value_is_symbol(rv1) && rhs_value_is_symbol(rv2))
-    {
         return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
+    else if (rhs_value_is_funcall(rv1) && rhs_value_is_funcall(rv2))
+    {
+        list* fl1 = rhs_value_to_funcall_list(rv1);
+        list* fl2 = rhs_value_to_funcall_list(rv2);
+        if (fl1->first != fl2->first) return false;
+        cons* c, *c2;
+
+        for (c = fl1->rest, c2 = fl2->rest; c != NIL && c2 != NIL; c = c->rest, c2 = c2->rest)
+            if (!rhs_values_equal(static_cast<char*>(c->first), static_cast<char*>(c2->first)))
+                return false;
+        return true;
     }
     else
-    {
         return (rv1 == rv2);
-    }
 }
 
 /* -- Functions to create RHS -- */
 extern action* make_action(agent* thisAgent);
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, Symbol* pOrig_var = NULL, uint64_t pG_ID = 0);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
 
 rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,
                            condition* cond,
                            char first_letter,
-                           AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+                           uint64_t pI_id,
+                           AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 action* create_RHS_action_list(agent* thisAgent,
                                action* actions,
                                condition* cond,
-                               AddAdditionalTestsMode add_original_vars = DONT_ADD_TESTS);
+                               uint64_t pI_id,
+                               AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 
 
 #endif /* RHS_H_ */

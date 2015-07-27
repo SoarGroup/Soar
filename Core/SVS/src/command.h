@@ -44,15 +44,15 @@ class command
         virtual bool update_sub() = 0;
         
     private:
-        void parse_substructure(int& size, int& max_time);
+        void parse_substructure(size_t& size, uint64_t& max_time);
         
         svs_state*      state;
         soar_interface* si;
         Symbol*         root;
         wme*            status_wme;
         std::string     curr_status;
-        int             subtree_size;
-        int             prev_max_time;
+        size_t             subtree_size;
+        uint64_t           prev_max_time;
         bool            first;
         
 };
