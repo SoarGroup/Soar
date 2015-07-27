@@ -1391,6 +1391,96 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
     }
 }
 
+void trajectory_construction_super_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 10)
+{
+    smem_lti_id lti_id = trajectory.back();
+    child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
+
+    //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
+    std::list<smem_lti_id>::iterator lti_iterator;
+    std::list<smem_lti_id>::iterator lti_begin; = lti_trajectories[lti_id]->begin();
+    std::list<smem_lti_id>::iterator lti_end; = lti_trajectories[lti_id]->end();
+    std::queue<std::list<smem_lti_id>*> lti_traversal_queue;
+    /* I'll make this better later. For now, I want it to work. I'm keeping two things.
+     * I want a way to do a breadth-first traversal, and I also want to keep track of the
+     * current path that has been traversed. As such, I need a queue of lists.
+     */
+    // Start with the given lti_id
+
+    smem_lti_id current_lti;
+    uint64_t limit = 100;
+    uint64_t count = 0;
+    std::list<smem_lti_id>* current_lti_list = new std::list<smem_lti_id>;
+    current_lti_list->push_back(lti_id);
+    lti_traversal_queue.push(current_lti_list);
+    //There is a limit to the size of the stored info.
+
+    //
+    std::list<smem_lti_id>::iterator old_list_iterator;
+    std::list<smem_lti_id>::iterator old_list_iterator_begin;
+    std::list<smem_lti_id>::iterator old_list_iterator_end;
+    std::list<smem_lti_id>::iterator new_list_iterator;
+    std::list<smem_lti_id>::iterator new_list_iterator_begin;
+    std::list<smem_lti_id>::iterator new_list_iterator_end;
+    int depth = 0;
+    while (!lti_traversal_queue.empty() && count < limit)
+    {
+        // Find all of the children of the current lti_id. (current = end of the current list from the queue)
+        current_lti_list = lti_traversal_queue.front();
+        current_lti = current_lti_list->back();
+        child_spread(thisAgent, current_lti, lti_trajectories,1);//This just gets the children of the current lti_id.
+        lti_begin = lti_trajectories[current_lti]->begin();//first child
+        lti_end = lti_trajectories[current_lti]->end();//last child
+        old_list_iterator_begin = current_lti_list->begin();
+        old_list_iterator_end = current_lti_list->end();
+        for (lti_iterator = lti_begin; lti_iterator != lti_end; ++lti_iterator)
+        {
+            //First, we make a new copy of the list to add to the queue.
+            std::list<smem_lti_id>* new_list = new std::list<smem_lti_id>;
+            //We copy the contents of the old list.
+            for (old_list_iterator = old_list_iterator_begin; old_list_iterator != old_list_iterator_end; ++old_list_iterator)
+            {
+                new_list->push_back((*old_list_iterator));
+            }
+            //Add the new element to the list.
+            new_list->push_back((*lti_iterator));
+
+            //Now we have a new traversal to add.
+            new_list_iterator_begin = new_list->begin();
+            new_list_iterator_end = new_list->end();
+            depth = 0;
+            for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end; ++new_list_iterator)
+            {
+                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *new_list_iterator);
+            }
+            while (depth < 10)
+            {
+                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
+            }
+            thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
+            ++count;
+
+            //If there's room for more, we add it so that we can continue building.
+            if (new_list->size() < 11) {
+                lti_traversal_queue.push(new_list);
+            }
+            else
+            {
+                delete new_list;//Before ever adding it, we just delete it instead.
+                //The other way to delete is to get added, then to get deleted after a traversal of children.
+            }
+        }
+        lti_traversal_queue.pop();//Get rid of the old list.
+        delete current_lti_list;//No longer need it altogether.
+    }
+    //If we quit the above loop by hitting the limit, we need to delete the old lists that are left.
+    while (!lti_traversal_queue.empty())
+    {
+        delete (*(lti_traversal_queue.front()));
+        lti_traversal_queue.pop();
+    }
+}
+
 //This is a random construction of trajectories with depth up to 10 (or something).
 void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 10)
 {
