@@ -1331,7 +1331,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
 
     instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
 
-    for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
+    for (preference* pref = inst->preferences_generated; pref;)
     {
         // add the preference to temporary memory
         if (add_preference_to_tm(thisAgent, pref))
@@ -1351,9 +1351,16 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
         }
         else
         {
-            preference_add_ref(pref);
-            preference_remove_ref(thisAgent, pref);
+			if (pref->reference_count == 0)
+			{
+				preference* previous = pref;
+				pref = pref->inst_next;
+				possibly_deallocate_preference_and_clones(thisAgent, previous);
+				continue;
+			}
         }
+		
+		pref = pref->inst_next;
     }
 
     if (!epmem_wmes)
