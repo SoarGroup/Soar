@@ -3436,7 +3436,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
     }
 }
 
-inline std::string* smem_parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
+inline std::string* smem_parse_lti_name(agent* thisAgent, soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
 {
     std::string* return_val = new std::string;
     
@@ -3450,6 +3450,12 @@ inline std::string* smem_parse_lti_name(soar::Lexeme* lexeme, char* id_letter, u
         
         (*id_letter) = (*lexeme).id_letter;
         (*id_number) = (*lexeme).id_number;
+
+        char counter_index = (*id_letter - static_cast<char>('A'));
+        if (*id_number >= thisAgent->id_counter[counter_index])
+        {
+            thisAgent->id_counter[counter_index] = *id_number + 1;
+        }
     }
     else
     {
@@ -3513,7 +3519,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
         if (good_at)
         {
             // save identifier
-            chunk_name = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
+            chunk_name = smem_parse_lti_name(thisAgent, &(lexer->current_lexeme), &(temp_letter), &(temp_number));
             new_chunk->lti_letter = temp_letter;
             new_chunk->lti_number = temp_number;
             new_chunk->lti_id = NIL;
@@ -3643,7 +3649,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                                     chunk_value->val_lti.val_type = value_lti_t;
                                     
                                     // get key
-                                    temp_key2 = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
+                                    temp_key2 = smem_parse_lti_name(thisAgent, &(lexer->current_lexeme), &(temp_letter), &(temp_number));
                                     
                                     // search for an existing chunk
                                     smem_str_to_chunk_map::iterator p = chunks->find((*temp_key2));

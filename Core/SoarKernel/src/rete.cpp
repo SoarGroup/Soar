@@ -3710,10 +3710,10 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
     {
         if (a1->type == FUNCALL_ACTION)
         {
-            return false;
-        }
-        if (a2->type == FUNCALL_ACTION)
-        {
+            if (a2->type == FUNCALL_ACTION)
+            {
+                return rhs_values_equal(a1->value, a2->value);
+            }
             return false;
         }
         if (a1->preference_type != a2->preference_type)
@@ -3732,11 +3732,7 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
         {
             return false;
         }
-//    if (a1->id != a2->id) return false;
-//    if (a1->attr != a2->attr) return false;
-//    if (a1->value != a2->value) return false;
         if (preference_is_binary(a1->preference_type))
-//      if (a1->referent != a2->referent)
             if (!rhs_values_equal(a1->referent, a2->referent))
             {
                 bool stop = true;

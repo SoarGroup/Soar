@@ -11,19 +11,17 @@
 
 /* ---------------------------------------------------------------------*/
 
+//#define DEBUG_OUTPUT_ON
+
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
 
-/* -- The schema version used by the output manager's debug database -- */
-#define DEBUG_SCHEMA_VERSION "0.1"
 
-#ifndef SOAR_RELEASE_VERSION
-//    #define DEBUG_OUTPUT_ON
-    //#define EBC_MAP_MERGE_DUPE_GROUNDS
-    #ifdef EBC_MAP_MERGE_DUPE_GROUNDS
-    //#define EBC_SUPERMERGE
-    #endif
+#define DEBUG_SCHEMA_VERSION "0.1"
+//#define EBC_MAP_MERGE_DUPE_GROUNDS
+#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
+//#define EBC_SUPERMERGE
 #endif
 
 #ifdef DEBUG_OUTPUT_ON
@@ -64,10 +62,10 @@
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          false
-#define TRACE_Init_DT_RHS_VARIABLIZATION          true
+#define TRACE_Init_DT_LHS_VARIABLIZATION          true
+#define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VALUE                   false
-#define TRACE_Init_DT_NCC_VARIABLIZATION          false
+#define TRACE_Init_DT_NCC_VARIABLIZATION          true
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
