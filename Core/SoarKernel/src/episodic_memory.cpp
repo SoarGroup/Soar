@@ -1331,22 +1331,36 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
 
     instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
 
-    for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
+    for (preference* pref = inst->preferences_generated; pref;)
     {
         // add the preference to temporary memory
-        add_preference_to_tm(thisAgent, pref);
-        // add to the list of preferences to be removed
-        // when the goal is removed
-        insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-        pref->on_goal_list = true;
-
-        if (epmem_wmes)
+        if (add_preference_to_tm(thisAgent, pref))
         {
-            // if this is a meta wme, then it is completely local
-            // to the state and thus we will manually remove it
-            // (via preference removal) when the time comes
-            epmem_wmes->push_back(pref);
+            // add to the list of preferences to be removed
+            // when the goal is removed
+            insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+            pref->on_goal_list = true;
+            
+            if (epmem_wmes)
+            {
+                // if this is a meta wme, then it is completely local
+                // to the state and thus we will manually remove it
+                // (via preference removal) when the time comes
+                epmem_wmes->push_back(pref);
+            }
         }
+        else
+        {
+			if (pref->reference_count == 0)
+			{
+				preference* previous = pref;
+				pref = pref->inst_next;
+				possibly_deallocate_preference_and_clones(thisAgent, previous);
+				continue;
+			}
+        }
+		
+		pref = pref->inst_next;
     }
 
     if (!epmem_wmes)
@@ -1379,10 +1393,17 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
 
                 for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
                 {
-                    add_preference_to_tm(thisAgent, just_pref);
-                    if (wma_enabled(thisAgent))
+                    if (add_preference_to_tm(thisAgent, just_pref))
                     {
-                        wma_activate_wmes_in_pref(thisAgent, just_pref);
+                        if (wma_enabled(thisAgent))
+                        {
+                            wma_activate_wmes_in_pref(thisAgent, just_pref);
+                        }
+                    }
+                    else
+                    {
+                        preference_add_ref(just_pref);
+                        preference_remove_ref(thisAgent, just_pref);
                     }
                 }
             }
