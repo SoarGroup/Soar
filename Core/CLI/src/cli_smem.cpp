@@ -344,7 +344,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
                 if (pVal)
                 {
-                    if ((((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr")) && strcmp(pVal->c_str(), "ppr-backwards")) && strcmp(pVal->c_str(), "ppr-both"))
+                    if (((((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr")) && strcmp(pVal->c_str(), "ppr-backwards")) && strcmp(pVal->c_str(), "ppr-both")) && strcmp(pVal->c_str(), "ppr-deterministic"))
                     {
                         assert(false); //This shouldn't happen while I'm testing.
                     }
@@ -358,7 +358,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     //This is where a huge batch processing of all of SMem can be run.
                     if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
                     {
-                        smem_calc_spread_trajectory(thisAgent);
+                        smem_calc_spread_trajectory_actr(thisAgent);
                     }
                     else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
                     {
@@ -369,6 +369,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
                     {
                         smem_calc_spread_trajectories(thisAgent);
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_deterministic)
+                    {
+                        smem_calc_spread_trajectories_deterministic(thisAgent);
                     }
                     else
                     {

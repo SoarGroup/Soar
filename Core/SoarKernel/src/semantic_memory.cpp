@@ -89,7 +89,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_type->add_mapping(ppr_both, "ppr-both");
     spreading_type->add_mapping(actr, "actr");//Using act-r's depth 1 log-odds.
     spreading_type->add_mapping(ppr_noloop, "ppr-noloop");//Same as ppr, but with a restriction that trajectories don't loop.
-    //Need to code up and add the one with variable depth ACT-R...
+    spreading_type->add_mapping(ppr_deterministic, "ppr-deterministic");//same as ppr, but deterministic.
     add(spreading_type);
 
     // database
@@ -822,7 +822,11 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(trajectory_remove);
 
     //Removing all invalid trajectories.
-    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
+    trajectory_remove_invalid = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
+    add(trajectory_remove_invalid);
+
+    //Removing all trajectories from ltis with invalid trajectories.
+    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)");
     add(trajectory_remove_all);
 
     //Find all of the ltis with invalid trajectories and find how many new ones they need.
@@ -1392,15 +1396,15 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
     }
 }
 
-void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 10)
+void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 0)
 {
     smem_lti_id lti_id = trajectory.back();
-    child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
+    //child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
 
     //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
     std::list<smem_lti_id>::iterator lti_iterator;
-    std::list<smem_lti_id>::iterator lti_begin; = lti_trajectories[lti_id]->begin();
-    std::list<smem_lti_id>::iterator lti_end; = lti_trajectories[lti_id]->end();
+    std::list<smem_lti_id>::iterator lti_begin;// = lti_trajectories[lti_id]->begin();
+    std::list<smem_lti_id>::iterator lti_end;// = lti_trajectories[lti_id]->end();
     std::queue<std::list<smem_lti_id>*> lti_traversal_queue;
     /* I'll make this better later. For now, I want it to work. I'm keeping two things.
      * I want a way to do a breadth-first traversal, and I also want to keep track of the
@@ -1423,13 +1427,16 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
     std::list<smem_lti_id>::iterator new_list_iterator;
     std::list<smem_lti_id>::iterator new_list_iterator_begin;
     std::list<smem_lti_id>::iterator new_list_iterator_end;
-    int depth = 0;
+    depth = 0;
     while (!lti_traversal_queue.empty() && count < limit)
     {
         // Find all of the children of the current lti_id. (current = end of the current list from the queue)
         current_lti_list = lti_traversal_queue.front();
         current_lti = current_lti_list->back();
-        child_spread(thisAgent, current_lti, lti_trajectories,1);//This just gets the children of the current lti_id.
+        if (lti_trajectories.find(current_lti)==lti_trajectories.end())
+        {
+            child_spread(thisAgent, current_lti, lti_trajectories,1);//This just gets the children of the current lti_id.
+        }
         lti_begin = lti_trajectories[current_lti]->begin();//first child
         lti_end = lti_trajectories[current_lti]->end();//last child
         old_list_iterator_begin = current_lti_list->begin();
@@ -1477,7 +1484,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
     //If we quit the above loop by hitting the limit, we need to delete the old lists that are left.
     while (!lti_traversal_queue.empty())
     {
-        delete (*(lti_traversal_queue.front()));
+        delete ((lti_traversal_queue.front()));
         lti_traversal_queue.pop();
     }
 }
@@ -1707,7 +1714,7 @@ extern bool smem_calc_spread_trajectory_actr(agent* thisAgent)
     return true;
 }
 
-extern bool smem_calc_spread_trajectory_deterministic(agent* thisAgent)
+extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
     smem_attach(thisAgent);
     soar_module::sqlite_statement* lti_a = thisAgent->smem_stmts->lti_all;
@@ -1732,11 +1739,35 @@ extern bool smem_calc_spread_trajectory_deterministic(agent* thisAgent)
     {
         delete to_delete->second;
     }
-    //THESE NEED TO CHANGE GREATLY TO ACCOMODATE DETERMINISTIC BREADTH-FIRST TRAVERSAL!!!
     //I could do a similar sum, but with the restart_p as a coefficient at each depth, but that requires non-int in schema.
-    //
-    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
+    //ACTUALLY - It turns out sqlite will handle reals just fine in an integer column. weird.
+    double p1 = thisAgent->smem_params->restart_probability->get_value();
+    double p2 = p1*p1;
+    double p3 = p2*p1;
+    double p4 = p3*p1;
+    double p5 = p4*p1;
+    double p6 = p5*p1;
+    double p7 = p6*p1;
+    double p8 = p7*p1;
+    double p9 = p8*p1;
+    double p10 = p9*p1;
+    std::stringstream sqlite_string;
+    sqlite_string << "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j)"
+            " SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*)"
+            "*" << p1 << " AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*)"
+            "*" << p2 << " AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*)"
+            "*" << p3 << " AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*)"
+            "*" << p4 << " AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*)"
+            "*" << p5 << " AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*)"
+            "*" << p6 << " AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*)"
+            "*" << p7 << " AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*)"
+            "*" << p8 << " AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*)"
+            "*" << p9 << " AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*)"
+            "*" << p10 << " AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti";
+
+    std::string temp_string = sqlite_string.str();
+
+    soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,temp_string.c_str());
     likelihood_cond_count->prepare();
     likelihood_cond_count->execute(soar_module::op_reinit);
     delete likelihood_cond_count;
@@ -2031,33 +2062,53 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
  * so that for the next query, we again have valid spreading values.
  *
  * It's pretty simple in concept. Find the invalid trajectories, then just redo them.
+ *
+ * deterministic spreading makes this a little harder. Any invalid trajectory for an lti makes all
+ * trajectories for that lti invalid, now.
  */
 void smem_fix_spread(agent* thisAgent)
 {
     smem_lti_id lti_id;
     uint64_t count;
+    std::set<smem_lti_id>::iterator invalid_parent;
     std::set<smem_lti_id> invalidated_parents;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
-    while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
+    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_deterministic)
     {
-        lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
-        invalidated_parents.insert(lti_id);
-        count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
-        for (int i = 0; i < count; ++i)
+        while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
+        {
+            invalidated_parents.insert(thisAgent->smem_stmts->trajectory_find_invalid->column_int(0));
+        }
+        thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
+        thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
+        for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
         {
             std::list<smem_lti_id> trajectory;
-            trajectory.push_back(lti_id);
-            trajectory_construction(thisAgent,trajectory,lti_trajectories);
+            trajectory.push_back(*invalid_parent);
+            trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
         }
     }
-    thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
-    thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
-
+    else
+    {
+        while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
+        {
+            lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
+            invalidated_parents.insert(lti_id);
+            count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
+            for (int i = 0; i < count; ++i)
+            {
+                std::list<smem_lti_id> trajectory;
+                trajectory.push_back(lti_id);
+                trajectory_construction(thisAgent,trajectory,lti_trajectories);
+            }
+        }
+        thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
+        thisAgent->smem_stmts->trajectory_remove_invalid->execute(soar_module::op_reinit);
+    }
     for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
     {
         delete to_delete->second;
     }
-    std::set<smem_lti_id>::iterator invalid_parent;
     for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
     {
         thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*invalid_parent));
@@ -2258,6 +2309,190 @@ void smem_calc_spread(agent* thisAgent)
             {
                 raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)));
                 offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
+                additional = (log(raw_prob)-log(offset));
+            }
+            spread+=additional;//Now, we've adjusted the activation according to this new addition.
+
+            thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+            thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
+            thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+
+            thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
+            thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
+            thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
+            thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+
+            thisAgent->smem_stmts->act_lti_get->reinitialize();
+        }
+        calc_spread->reinitialize();
+
+        //The modified calculation here is as if we had actually calculated the personalized pagerank vector from the entire context.
+        /*double raw_prob = additional_num/additional_denom;
+        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/additional_denom;
+        spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));*/
+
+
+    }
+
+    thisAgent->smem_context_additions->clear();
+}
+
+void smem_calc_spread_deterministic(agent* thisAgent)
+{
+
+/*    soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+                        "SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");*/
+
+    soar_module::sqlite_statement* calc_spread = thisAgent->smem_stmts->calc_spread;
+
+
+    double spread;
+    uint64_t lti_id;
+    double raw_prob;
+    double offset;
+    double additional;
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {//Actually, since smem_lti_activate exists, I might not want to do this at all.
+        //I need to rework this. The idea is to find all of the ltis touched by this addition. I then need to just multiply
+        // the existing value by the additional spread.
+
+
+        //("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
+
+        calc_spread->bind_int(1,(*it));
+        //double additional_num = 0;
+        //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
+        while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
+        {// Here, I need to get the previous activation of the lti_id in question and update that.
+            //First, I need to get the existing info for this lti_id.
+            lti_id = calc_spread->column_int(0);
+
+            thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
+            thisAgent->smem_stmts->act_lti_get->execute();
+            spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+
+            ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
+            //raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
+            //offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
+
+            {
+                raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
+                additional = (log(raw_prob)-log(offset));
+            }
+            spread-=additional;//Now, we've adjusted the activation according to this new addition.
+
+            thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+            thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
+            thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+
+            thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
+            thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
+            thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
+            thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+
+            thisAgent->smem_stmts->act_lti_get->reinitialize();
+        }
+        calc_spread->reinitialize();
+
+        //The modified calculation here is as if we had actually calculated the personalized pagerank vector from the entire context.
+        /*double raw_prob = additional_num/additional_denom;
+        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/additional_denom;
+        spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));*/
+
+
+    }
+
+
+    //Now, delete old entries.
+    /*soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+        "DELETE FROM smem_current_context WHERE lti_id=?");*/
+    soar_module::sqlite_statement* delete_old_context = thisAgent->smem_stmts->delete_old_context;
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {
+        delete_old_context->bind_int(1,(*it));
+        delete_old_context->execute(soar_module::op_reinit);
+    }
+   // delete_old_context->execute(soar_module::op_reinit);
+   // delete delete_old_context;
+    //This deletes from the table that calculates spread, not just the one that contains current context elements.
+    /*soar_module::sqlite_statement* delete_old_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DELETE FROM smem_current_spread WHERE lti_source=?");*/
+    soar_module::sqlite_statement* delete_old_spread = thisAgent->smem_stmts->delete_old_spread;
+    //delete_old_spread->prepare();
+    for(smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    {
+        delete_old_spread->bind_int(1,(*it));
+        delete_old_spread->execute(soar_module::op_reinit);
+    }
+    //delete_old_spread->execute(soar_module::op_reinit);
+    //delete delete_old_spread;
+    thisAgent->smem_context_removals->clear();
+
+    //Insert values that will be used later.
+    /*soar_module::sqlite_statement* add_new_context = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "INSERT INTO smem_current_context (lti_id) VALUES (?)");*/
+    soar_module::sqlite_statement* add_new_context = thisAgent->smem_stmts->add_new_context;
+
+    //add_new_context->prepare();
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+    {
+        add_new_context->bind_int(1,(*it));
+        add_new_context->execute(soar_module::op_reinit);
+    }
+    //delete add_new_context;
+
+    //num_appearances is number of things inside the fingerprint of lti_j.
+    //num_appearances_i_j is number of times i occurs in fingerprint of lti_j.
+    /*soar_module::sqlite_statement* add_fingerprint = new soar_module::sqlite_statement(thisAgent->smem_db,
+            //INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM (SELECT * FROM smem_likelihoods WHERE lti_j<200) INNER JOIN smem_trajectory_num ON lti_id=lti_j;
+            "INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) "
+            "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
+            "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
+            "smem_trajectory_num ON lti_id=lti_j");*/
+    soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
+    //add_fingerprint->prepare();
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+    {
+        add_fingerprint->bind_int(1,(*it));
+        add_fingerprint->execute(soar_module::op_reinit);
+    }
+    //delete add_fingerprint;
+
+
+
+    for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+    {//Actually, since smem_lti_activate exists, I might not want to do this at all.
+        //I need to rework this. The idea is to find all of the ltis touched by this addition. I then need to just multiply
+        // the existing value by the additional spread.
+
+
+        //("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
+
+        calc_spread->prepare();
+        calc_spread->bind_int(1,(*it));
+        //double additional_num = 0;
+        //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
+        while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
+        {// Here, I need to get the previous activation of the lti_id in question and update that.
+            //First, I need to get the existing info for this lti_id.
+            lti_id = calc_spread->column_int(0);
+
+            thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
+            thisAgent->smem_stmts->act_lti_get->execute();
+            spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+
+            ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
+            /*raw_prob = (((double)(calc_spread->column_int(2)))/calc_spread->column_int(1));
+            offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
+            additional = (log(raw_prob)-log(offset));*/
+
+            {
+                raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 additional = (log(raw_prob)-log(offset));
             }
             spread+=additional;//Now, we've adjusted the activation according to this new addition.
@@ -3697,7 +3932,14 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     //Contribution from context
     if (thisAgent->smem_params->spreading->get_value() == on)
     {
-        smem_calc_spread(thisAgent);
+        if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_deterministic)
+        {
+            smem_calc_spread_deterministic(thisAgent);
+        }
+        else
+        {
+            smem_calc_spread(thisAgent);
+        }
     }
 
     // prepare query stats

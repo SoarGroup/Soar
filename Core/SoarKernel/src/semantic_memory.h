@@ -46,7 +46,7 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
-        enum spreading_types { ppr, ppr_noloop, actr, ppr_backwards, ppr_both };
+        enum spreading_types { ppr, ppr_noloop, actr, ppr_backwards, ppr_both, ppr_deterministic };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
@@ -299,6 +299,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;
         soar_module::sqlite_statement* trajectory_remove;
+        soar_module::sqlite_statement* trajectory_remove_invalid;
         soar_module::sqlite_statement* trajectory_remove_all;
         soar_module::sqlite_statement* trajectory_find_invalid;
         soar_module::sqlite_statement* trajectory_get;
@@ -500,6 +501,7 @@ extern void smem_attach(agent* thisAgent);
 
 extern bool smem_calc_spread_trajectory_actr(agent* thisAgent);
 extern bool smem_calc_spread_trajectories(agent* thisAgent);
+extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
