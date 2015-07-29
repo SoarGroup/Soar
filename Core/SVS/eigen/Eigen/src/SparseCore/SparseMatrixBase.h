@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008-2011 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSEMATRIXBASE_H
 #define EIGEN_SPARSEMATRIXBASE_H
+
+namespace Eigen { 
 
 /** \ingroup SparseCore_Module
   *
@@ -102,6 +89,9 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
           */
 
       IsRowMajor = Flags&RowMajorBit ? 1 : 0,
+      
+      InnerSizeAtCompileTime = int(IsVectorAtCompileTime) ? int(SizeAtCompileTime)
+                             : int(IsRowMajor) ? int(ColsAtCompileTime) : int(RowsAtCompileTime),
 
       #ifndef EIGEN_PARSED_BY_DOXYGEN
       _HasDirectAccess = (int(Flags)&DirectAccessBit) ? 1 : 0 // workaround sunCC
@@ -115,18 +105,8 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
                      >::type AdjointReturnType;
 
 
-    typedef SparseMatrix<Scalar, Flags&RowMajorBit ? RowMajor : ColMajor> PlainObject;
+    typedef SparseMatrix<Scalar, Flags&RowMajorBit ? RowMajor : ColMajor, Index> PlainObject;
 
-#define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SparseMatrixBase
-#   include "../plugins/CommonCwiseUnaryOps.h"
-#   include "../plugins/CommonCwiseBinaryOps.h"
-#   include "../plugins/MatrixCwiseUnaryOps.h"
-#   include "../plugins/MatrixCwiseBinaryOps.h"
-#   ifdef EIGEN_SPARSEMATRIXBASE_PLUGIN
-#     include EIGEN_SPARSEMATRIXBASE_PLUGIN
-#   endif
-#   undef EIGEN_CURRENT_STORAGE_BASE_CLASS
-#undef EIGEN_CURRENT_STORAGE_BASE_CLASS
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
     /** This is the "real scalar" type; if the \a Scalar type is already real numbers
@@ -153,6 +133,18 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
     inline Derived& const_cast_derived() const
     { return *static_cast<Derived*>(const_cast<SparseMatrixBase*>(this)); }
 #endif // not EIGEN_PARSED_BY_DOXYGEN
+
+#define EIGEN_CURRENT_STORAGE_BASE_CLASS Eigen::SparseMatrixBase
+#   include "../plugins/CommonCwiseUnaryOps.h"
+#   include "../plugins/CommonCwiseBinaryOps.h"
+#   include "../plugins/MatrixCwiseUnaryOps.h"
+#   include "../plugins/MatrixCwiseBinaryOps.h"
+#   include "../plugins/BlockMethods.h"
+#   ifdef EIGEN_SPARSEMATRIXBASE_PLUGIN
+#     include EIGEN_SPARSEMATRIXBASE_PLUGIN
+#   endif
+#   undef EIGEN_CURRENT_STORAGE_BASE_CLASS
+#undef EIGEN_CURRENT_STORAGE_BASE_CLASS
 
     /** \returns the number of rows. \sa cols() */
     inline Index rows() const { return derived().rows(); }
@@ -223,8 +215,7 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
           for (typename OtherDerived::InnerIterator it(other, j); it; ++it)
           {
             Scalar v = it.value();
-            if (v!=Scalar(0))
-              derived().insertBackByOuterInner(j,it.index()) = v;
+            derived().insertBackByOuterInner(j,it.index()) = v;
           }
         }
         derived().finalize();
@@ -258,8 +249,7 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
         for (typename OtherDerived::InnerIterator it(other.derived(), j); it; ++it)
         {
           Scalar v = it.value();
-          if (v!=Scalar(0))
-            temp.insertBackByOuterInner(Flip?it.index():j,Flip?j:it.index()) = v;
+          temp.insertBackByOuterInner(Flip?it.index():j,Flip?j:it.index()) = v;
         }
       }
       temp.finalize();
@@ -274,12 +264,16 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
 
     friend std::ostream & operator << (std::ostream & s, const SparseMatrixBase& m)
     {
+      typedef typename Derived::Nested Nested;
+      typedef typename internal::remove_all<Nested>::type NestedCleaned;
+
       if (Flags&RowMajorBit)
       {
-        for (Index row=0; row<m.outerSize(); ++row)
+        const Nested nm(m.derived());
+        for (Index row=0; row<nm.outerSize(); ++row)
         {
           Index col = 0;
-          for (typename Derived::InnerIterator it(m.derived(), row); it; ++it)
+          for (typename NestedCleaned::InnerIterator it(nm.derived(), row); it; ++it)
           {
             for ( ; col<it.index(); ++col)
               s << "0 ";
@@ -293,9 +287,10 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
       }
       else
       {
+        const Nested nm(m.derived());
         if (m.cols() == 1) {
           Index row = 0;
-          for (typename Derived::InnerIterator it(m.derived(), 0); it; ++it)
+          for (typename NestedCleaned::InnerIterator it(nm.derived(), 0); it; ++it)
           {
             for ( ; row<it.index(); ++row)
               s << "0" << std::endl;
@@ -307,8 +302,8 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
         }
         else
         {
-          SparseMatrix<Scalar, RowMajorBit> trans = m.derived();
-          s << trans;
+          SparseMatrix<Scalar, RowMajorBit, Index> trans = m;
+          s << static_cast<const SparseMatrixBase<SparseMatrix<Scalar, RowMajorBit, Index> >&>(trans);
         }
       }
       return s;
@@ -330,8 +325,8 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
             typename internal::traits<OtherDerived>::Scalar \
           >::ReturnType \
         >, \
-        Derived, \
-        OtherDerived \
+        const Derived, \
+        const OtherDerived \
       >
 
     template<typename OtherDerived>
@@ -363,7 +358,14 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
     /** sparse * dense (returns a dense object unless it is an outer product) */
     template<typename OtherDerived>
     const typename SparseDenseProductReturnType<Derived,OtherDerived>::Type
-    operator*(const MatrixBase<OtherDerived> &other) const;
+    operator*(const MatrixBase<OtherDerived> &other) const
+    { return typename SparseDenseProductReturnType<Derived,OtherDerived>::Type(derived(), other.derived()); }
+    
+     /** \returns an expression of P H P^-1 where H is the matrix represented by \c *this */
+    SparseSymmetricPermutationProduct<Derived,Upper|Lower> twistedBy(const PermutationMatrix<Dynamic,Dynamic,Index>& perm) const
+    {
+      return SparseSymmetricPermutationProduct<Derived,Upper|Lower>(derived(), perm);
+    }
 
     template<typename OtherDerived>
     Derived& operator*=(const SparseMatrixBase<OtherDerived>& other);
@@ -389,55 +391,45 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
     template<typename OtherDerived> Scalar dot(const SparseMatrixBase<OtherDerived>& other) const;
     RealScalar squaredNorm() const;
     RealScalar norm()  const;
+    RealScalar blueNorm() const;
 
     Transpose<Derived> transpose() { return derived(); }
     const Transpose<const Derived> transpose() const { return derived(); }
     const AdjointReturnType adjoint() const { return transpose(); }
 
-    // sub-vector
-    SparseInnerVectorSet<Derived,1> row(Index i);
-    const SparseInnerVectorSet<Derived,1> row(Index i) const;
-    SparseInnerVectorSet<Derived,1> col(Index j);
-    const SparseInnerVectorSet<Derived,1> col(Index j) const;
-    SparseInnerVectorSet<Derived,1> innerVector(Index outer);
-    const SparseInnerVectorSet<Derived,1> innerVector(Index outer) const;
+    // inner-vector
+    typedef Block<Derived,IsRowMajor?1:Dynamic,IsRowMajor?Dynamic:1,true>       InnerVectorReturnType;
+    typedef Block<const Derived,IsRowMajor?1:Dynamic,IsRowMajor?Dynamic:1,true> ConstInnerVectorReturnType;
+    InnerVectorReturnType innerVector(Index outer);
+    const ConstInnerVectorReturnType innerVector(Index outer) const;
 
-    // set of sub-vectors
-    SparseInnerVectorSet<Derived,Dynamic> subrows(Index start, Index size);
-    const SparseInnerVectorSet<Derived,Dynamic> subrows(Index start, Index size) const;
-    SparseInnerVectorSet<Derived,Dynamic> subcols(Index start, Index size);
-    const SparseInnerVectorSet<Derived,Dynamic> subcols(Index start, Index size) const;
-    
-    SparseInnerVectorSet<Derived,Dynamic> middleRows(Index start, Index size);
-    const SparseInnerVectorSet<Derived,Dynamic> middleRows(Index start, Index size) const;
-    SparseInnerVectorSet<Derived,Dynamic> middleCols(Index start, Index size);
-    const SparseInnerVectorSet<Derived,Dynamic> middleCols(Index start, Index size) const;
-    SparseInnerVectorSet<Derived,Dynamic> innerVectors(Index outerStart, Index outerSize);
-    const SparseInnerVectorSet<Derived,Dynamic> innerVectors(Index outerStart, Index outerSize) const;
+    // set of inner-vectors
+    Block<Derived,Dynamic,Dynamic,true> innerVectors(Index outerStart, Index outerSize);
+    const Block<const Derived,Dynamic,Dynamic,true> innerVectors(Index outerStart, Index outerSize) const;
 
-      /** \internal use operator= */
-      template<typename DenseDerived>
-      void evalTo(MatrixBase<DenseDerived>& dst) const
-      {
-        dst.setZero();
-        for (Index j=0; j<outerSize(); ++j)
-          for (typename Derived::InnerIterator i(derived(),j); i; ++i)
-            dst.coeffRef(i.row(),i.col()) = i.value();
-      }
+    /** \internal use operator= */
+    template<typename DenseDerived>
+    void evalTo(MatrixBase<DenseDerived>& dst) const
+    {
+      dst.setZero();
+      for (Index j=0; j<outerSize(); ++j)
+        for (typename Derived::InnerIterator i(derived(),j); i; ++i)
+          dst.coeffRef(i.row(),i.col()) = i.value();
+    }
 
-      Matrix<Scalar,RowsAtCompileTime,ColsAtCompileTime> toDense() const
-      {
-        return derived();
-      }
+    Matrix<Scalar,RowsAtCompileTime,ColsAtCompileTime> toDense() const
+    {
+      return derived();
+    }
 
     template<typename OtherDerived>
     bool isApprox(const SparseMatrixBase<OtherDerived>& other,
-                  RealScalar prec = NumTraits<Scalar>::dummy_precision()) const
+                  const RealScalar& prec = NumTraits<Scalar>::dummy_precision()) const
     { return toDense().isApprox(other.toDense(),prec); }
 
     template<typename OtherDerived>
     bool isApprox(const MatrixBase<OtherDerived>& other,
-                  RealScalar prec = NumTraits<Scalar>::dummy_precision()) const
+                  const RealScalar& prec = NumTraits<Scalar>::dummy_precision()) const
     { return toDense().isApprox(other,prec); }
 
     /** \returns the matrix or vector obtained by evaluating this expression.
@@ -454,5 +446,7 @@ template<typename Derived> class SparseMatrixBase : public EigenBase<Derived>
 
     bool m_isRValue;
 };
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSEMATRIXBASE_H

@@ -94,7 +94,7 @@ class extract_command : public command, public filter_input::listener
         {
             clear_results();
             filter_output* out = fltr->get_output();
-            for (int i = 0, iend = out->num_current(); i < iend; ++i)
+            for (size_t i = 0, iend = out->num_current(); i < iend; ++i)
             {
                 handle_output(out->get_current(i));
             }
@@ -103,15 +103,13 @@ class extract_command : public command, public filter_input::listener
         
         void update_results()
         {
-        
-            wme* w;
             filter_output* out = fltr->get_output();
             
-            for (int i = out->first_added(), iend = out->num_current(); i < iend; ++i)
+            for (size_t i = out->first_added(), iend = out->num_current(); i < iend; ++i)
             {
                 handle_output(out->get_current(i));
             }
-            for (int i = 0, iend = out->num_removed(); i < iend; ++i)
+            for (size_t i = 0, iend = out->num_removed(); i < iend; ++i)
             {
                 filter_val* fv = out->get_removed(i);
                 record r;
@@ -121,7 +119,7 @@ class extract_command : public command, public filter_input::listener
                 }
                 si->remove_wme(r.rec_wme);
             }
-            for (int i = 0, iend = out->num_changed(); i < iend; ++i)
+            for (size_t i = 0, iend = out->num_changed(); i < iend; ++i)
             {
                 handle_output(out->get_changed(i));
             }

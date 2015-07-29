@@ -1,0 +1,148 @@
+watch 1
+epmem --set learning on
+epmem --set trigger dc
+epmem --set phase output
+epmem --set exclusions superstate
+epmem --set exclusions io
+epmem --set exclusions reward-link
+epmem --set exclusions topstate
+epmem --set exclusions type
+
+# elaborations
+
+sp {all*elaborate*topstate
+    (state <s> ^superstate.topstate <val>)
+-->
+    (<s> ^topstate <val>)
+}
+
+sp {all*elaborate*name
+    (state <s> ^superstate.operator.name <name>)
+-->
+    (<s> ^name <name>)
+}
+
+# init-agent
+
+sp {topstate*propose*init-agent
+    (state <s> ^superstate nil
+              -^name)
+-->
+    (<s> ^operator <op> +)
+    (<op> ^name init-agent)
+}
+
+sp {topstate*apply*init-agent
+    (state <s> ^operator.name init-agent)
+-->
+    (<s> ^topstate <s>
+         ^name bolt-agent
+         ^status add)
+}
+
+# add
+
+sp {topstate*propose*add
+    (state <s> ^name bolt-agent
+               ^status add)
+-->
+    (<s> ^operator.name add)
+}
+
+sp {add*elaborate*new-thing
+    (state <s> ^name add
+               ^topstate.new-thing <seg>)
+-->
+    (<s> ^new-thing <seg>)
+}
+
+# add.create
+
+sp {add*propose*create
+    (state <s> ^name add
+              -^interpreted)
+-->
+    (<s> ^operator.name create)
+}
+
+sp {add*apply*create
+    (state <s> ^name add
+               ^operator.name create
+               ^topstate <ts>)
+-->
+    (<ts> ^new-thing.old1.old2 <help>)
+    (<s> ^interpreted yes)
+}
+
+# add.store
+
+sp {add*propose*store
+    (state <s> ^name add
+               ^new-thing <info>)
+-->
+    (<s> ^operator.name store)
+}
+
+sp {add*apply*store
+    (state <s> ^name add
+               ^operator.name store
+               ^new-thing <info>
+               ^topstate <ts>)
+    (<ts> ^new-thing <new-thing>
+          ^status add)
+    (<new-thing> ^old1 <feature>)
+-->
+    (<ts> ^new-thing <info> -
+          ^thing <thing>
+          ^status add -
+          ^status remove)
+    (<thing> ^new1 <new-thing>
+             ^new2 <feature>)
+}
+
+# remove
+
+sp {topstate*propose*remove
+    (state <s> ^name bolt-agent
+               ^status remove)
+-->
+    (<s> ^operator.name remove)
+}
+
+# remove.unstore
+
+sp {remove*propose*unstore
+    (state <s> ^name remove
+               ^topstate <ts>)
+    (<ts> ^thing <thing>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name unstore
+         ^thing <thing>)
+}
+
+sp {remove*apply*unstore
+    (state <s> ^name remove
+               ^operator.name unstore
+               ^topstate <ts>)
+    (<ts> ^thing <thing>
+          ^status remove)
+-->
+    (<ts> ^thing <thing> -
+          ^status remove -
+          ^status complete)
+}
+
+sp {topstate*propose*succeed
+	(state <s> ^name bolt-agent
+               ^status complete)
+-->
+	(<s> ^operator <o> +)
+    (<o> ^name succeed)
+}
+
+sp {topstate*apply*succeed
+	(state <s> ^operator.name succeed)
+-->
+	(succeeded)
+}

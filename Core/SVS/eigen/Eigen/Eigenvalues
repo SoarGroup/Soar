@@ -11,8 +11,6 @@
 #include "LU"
 #include "Geometry"
 
-namespace Eigen {
-
 /** \defgroup Eigenvalues_Module Eigenvalues module
   *
   *
@@ -35,9 +33,14 @@ namespace Eigen {
 #include "src/Eigenvalues/HessenbergDecomposition.h"
 #include "src/Eigenvalues/ComplexSchur.h"
 #include "src/Eigenvalues/ComplexEigenSolver.h"
+#include "src/Eigenvalues/RealQZ.h"
+#include "src/Eigenvalues/GeneralizedEigenSolver.h"
 #include "src/Eigenvalues/MatrixBaseEigenvalues.h"
-
-} // namespace Eigen
+#ifdef EIGEN_USE_LAPACKE
+#include "src/Eigenvalues/RealSchur_MKL.h"
+#include "src/Eigenvalues/ComplexSchur_MKL.h"
+#include "src/Eigenvalues/SelfAdjointEigenSolver_MKL.h"
+#endif
 
 #include "src/Core/util/ReenableStupidWarnings.h"
 

@@ -98,7 +98,7 @@ namespace sml
             : clientTimeTag(clientTimeTag), type(kRemove) {}
     };
     
-    class AgentSML
+    class EXPORT AgentSML
     {
             friend class KernelSML ;
             friend class InputListener ;

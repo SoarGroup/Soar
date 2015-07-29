@@ -1,0 +1,15 @@
+sp {init*waterjug
+(state <s> ^superstate nil)
+-->
+(<s> ^jug <j1> <j2>)
+(<j1> ^contents 0)
+(<j2> ^contents 1)
+}
+
+sp {monitor*contents
+(state <s> ^jug <j>)
+(<j> ^contents <contents>)
+-->
+(succeeded)
+}
+

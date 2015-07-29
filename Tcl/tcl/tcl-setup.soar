@@ -1,0 +1,6 @@
+#
+# You can put whatever code you want in here to initialize the tcl environment to your liking.
+# E.g., you might want to define new aliases, helper procs, etc.
+# Note that any aliases or commands defined here will override ones of the same name in Soar.
+#
+

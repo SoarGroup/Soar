@@ -1,0 +1,8 @@
+sp {four-acceptable-best*new-scheme*success
+   (state <s> ^superstate <ss>)
+   (<ss> ^name four-acceptable-best
+         ^operator.name d
+         ^top-state <ts>)
+-->
+   (<ts> ^four-acceptable-best success)
+}

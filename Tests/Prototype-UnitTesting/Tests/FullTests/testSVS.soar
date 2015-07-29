@@ -1,0 +1,861 @@
+svs --enable
+#svs connect_viewer 2000
+#  (exec test-failure)
+#  (write (crlf) |SVN unit test-failure!|)
+#  (halt)
+
+############################################
+#
+# init-agent
+#
+############################################
+
+sp {svs-tester*propose*init-agent
+  (state <s> ^superstate nil
+              -^name)
+-->
+  (<s> ^operator <o> + >)
+  (<o> ^name init-agent)
+}
+
+sp {svs-tester*apply*init-agent*name
+  (state <s> ^operator.name init-agent)
+-->
+  (<s> ^name svs-tester)
+}
+
+sp {svs-tester*apply*init-agent*filter-list
+  (state <s> ^operator.name init-agent)
+-->
+  (<s> ^filter-list <fl>)
+  (<fl> ^filter <f1> <f2> <f3> <f4> <f5> <f6> <f7> <f8>
+         <f9> <f10> <f11> <f12> <f13> <f14> <f15> <f16> <f17>
+         <f18> <f19> <f20> <f21> <f22>)
+  (<f1> ^name node_position
+         ^a ball1)
+  (<f2> ^name node_rotation
+         ^a box1)
+  (<f3> ^name node_scale
+         ^a box1)
+  (<f4> ^name node_bbox
+         ^a group1)
+  (<f5> ^name distance
+         ^parameters.distance_type hull
+         ^a ball1
+         ^b box1)
+  (<f6> ^name distance_select
+         ^a point1
+         ^all b
+         ^parameters <p6>)
+  (<p6> ^distance_type centroid
+         ^min .5
+         ^max .7)
+  (<f7> ^name farthest
+         ^parameters.distance_type centroid
+         ^a box1
+         ^all b)
+  (<f8> ^name closest
+         ^parameters.distance_type hull
+         ^a point1
+         ^all b)
+  (<f9> ^name volume
+         ^a group1)
+  (<f10> ^name volume_select
+          ^parameters <p10>
+          ^all a)
+  (<p10> ^min 0.005 ^max 0.009)
+  (<f11> ^name largest
+          ^all a)
+  (<f12> ^name smallest
+          ^all a)
+  (<f13> ^name smaller
+          ^a box1
+          ^b group1)
+  (<f14> ^name larger
+          ^a ball1
+          ^b group1)
+  (<f15> ^name smaller_select
+          ^a box1
+          ^all b)
+  (<f16> ^name larger_select
+          ^a ball1
+          ^all b)
+  (<f17> ^name axis_distance
+          ^a point1
+          ^b box1
+          ^parameters.axis y)
+  (<f18> ^name axis_distance_select
+          ^a box1 
+          ^all b
+          ^parameters <p18>)
+  (<p18> ^min 0 ^max 0 
+          ^axis x)
+  (<f19> ^name intersect
+          ^a ball1
+          ^b box1
+          ^parameters.intersect_type hull)
+  (<f20> ^name intersect_select
+          ^a point1
+          ^all b
+          ^parameters.intersect_type bbox)
+  (<f21> ^name contain
+          ^a group1
+          ^b ball1)
+  (<f22> ^name contain_select
+          ^a ball1
+          ^all b)
+}
+
+sp {svs-tester*apply*init-agent*tests
+  (state <s> ^superstate nil
+              ^operator.name init-agent)
+-->
+  (<s> ^current-test <t1>)
+  # Test 1 - Commands to create all objects
+  (<t1> ^name do-commands
+         ^command-set <c1>
+         ^next-test <t2>)
+  # Test 2 - Assign tags and create sub objects
+  (<t2> ^name do-commands
+         ^command-set <c2>
+         ^next-test <t3>)
+  # Test 3 - Extract filters by id 
+  (<t3> ^name extract-filters
+         ^node-type id
+         ^test-answers <ta3>
+         ^next-test <t4>)
+  # Test 4 - Move the objects around
+  (<t4> ^name do-commands
+         ^command-set <c4>
+         ^next-test <t5>)
+  # Test 5 - Extract filters by color
+  (<t5> ^name extract-filters
+         ^node-type id
+         ^test-answers <ta5>
+         ^next-test <t6>)
+  # Test 6 - Delete objects
+  (<t6> ^name do-commands
+         ^command-set <c6>
+         ^next-test <t7>)
+  # Test 7 - Copy objects
+  (<t7> ^name do-commands
+         ^command-set <c7>
+         ^next-test <t8>)
+  # Test 8 - Extract filters by id
+  (<t8> ^name extract-filters
+         ^node-type id
+         ^test-answers <ta8>
+         ^next-test <t9>)
+  (<t9> ^name halt)
+  
+  # Test 1 - Create all objects
+  (<c1> ^add_node <c11> <c12> <c13> <c14>)
+
+  (<c11> ^id ball1 ^parent world ^geometry sphere
+          ^position <p11> ^scale <s11>)
+  (<p11> ^x .5 ^y .5 ^z .1)
+  (<s11> ^x .1 ^y .1 ^z .1)
+
+  (<c12> ^id box1 ^parent world ^geometry box
+          ^position <p12> ^scale <s12> ^rotation <r12>)
+  (<p12> ^x 0 ^y .2 ^z .2)
+  (<r12> ^x 0 ^y 0 ^z 0.7854)
+  (<s12> ^x .1 ^y .1 ^z .2)
+
+  (<c13> ^id point1 ^parent world ^geometry point
+          ^position <p13>)
+  (<p13> ^x .5 ^y .5 ^z .12)
+
+  (<c14> ^id group1 ^parent world ^geometry group
+          ^position <p14> ^scale <s14> ^rotation <r14>)
+  (<p14> ^x -.2 ^y -.2 ^z 0)
+  (<r14> ^x 1.5708 ^y 0 ^z 0)
+  (<s14> ^x .2 ^y .2 ^z .2)
+
+  # Test 2 - Create tags and subobjects
+  (<c2> ^add_node <c21> <c22> <c23> <c24>
+          ^set_tag <c25> <c26> <c27> <c28>
+          ^set_tag <c29> <c210> <c211> <c212>)
+  
+  (<c21> ^id group1a ^parent group1 ^geometry sphere
+           ^position <p21> ^scale <s21>)
+  (<p21> ^x -1 ^y -1 ^z 0)
+  (<s21> ^x .5 ^y .5 ^z .5)
+
+  (<c22> ^id group1b ^parent group1 ^geometry sphere
+           ^position <p22> ^scale <s21>)
+  (<p22> ^x 1 ^y -1 ^z 0)
+
+  (<c23> ^id group1c ^parent group1 ^geometry sphere
+           ^position <p23> ^scale <s21>)
+  (<p23> ^x 1 ^y 1 ^z 0)
+
+  (<c24> ^id group1d ^parent group1 ^geometry sphere
+           ^position <p24> ^scale <s21>)
+  (<p24> ^x -1 ^y 1 ^z 0)
+
+  (<c25> ^id ball1 ^tag_name color ^tag_value red)
+  (<c26> ^id box1 ^tag_name color ^tag_value yellow)
+  (<c27> ^id point1 ^tag_name color ^tag_value green)
+  (<c28> ^id group1 ^tag_name color ^tag_value blue)
+
+  (<c29> ^id ball1 ^tag_name cat ^tag_value top)
+  (<c210> ^id box1 ^tag_name cat ^tag_value top)
+  (<c211> ^id point1 ^tag_name cat ^tag_value top)
+  (<c212> ^id group1 ^tag_name cat ^tag_value top)
+
+  # Test 3 - Filter Answers
+  (<ta3> ^answer <a31> <a32> <a33> <a34> <a35> <a36>
+          <a37> <a38> <a39> <a310> <a311> <a312> <a313>
+          <a314> <a315> <a316> <a317> <a318> <a319>
+          <a320> <a321> <a322>)
+  (<a31> ^filter axis_distance ^number -.22929)
+  (<a32> ^filter axis_distance_select ^node group1 box1)
+  (<a33> ^filter closest ^number 0)
+  (<a34> ^filter contain ^bool false)
+  (<a35> ^filter contain_select ^node point1 ball1)
+  (<a36> ^filter distance ^number .42373)
+  (<a37> ^filter distance_select ^node box1)
+  (<a38> ^filter farthest ^number .5916)
+  (<a39> ^filter intersect ^bool false)
+  (<a310> ^filter intersect_select ^node ball1 point1)
+  (<a311> ^filter larger ^bool false)
+  (<a312> ^filter larger_select ^node box1 point1)
+  (<a313> ^filter largest ^number .072)
+  (<a314> ^filter node_position ^vec3 <v314>)
+    (<v314> ^x.v .5 ^y.v .5 ^z.v .1)
+  (<a315> ^filter node_rotation ^vec3 <v315>)
+    (<v315> ^x.v 0 ^y.v 0 ^z.v .7854)
+  (<a316> ^filter node_scale ^vec3 <v316>)
+    (<v316> ^x.v .1 ^y.v .1 ^z.v .2)
+  (<a317> ^filter node_bbox ^bbox <b317>)
+    (<b317> ^sx.v -.5 ^sy.v -.3 ^sz.v -.3
+            ^lx.v .1 ^ly.v -.1 ^lz.v .3)
+  (<a318> ^filter smallest ^number 0)
+  (<a319> ^filter smaller ^bool true)
+  (<a320> ^filter smaller_select ^node group1 ball1)
+  (<a321> ^filter volume ^number .072)
+  (<a322> ^filter volume_select ^node ball1)
+
+  # Test 4 - Move the objects
+  (<c4> ^set_transform <c41> <c42> <c43> <c44>)
+  
+  (<c41> ^id ball1 ^position <p41>)
+  (<p41> ^x .2 ^y -.2 ^z 0)
+
+  (<c42> ^id box1 ^position <p42> ^rotation <r42>)
+  (<p42> ^x .4 ^y 0 ^z .1)
+  (<r42> ^x 0 ^y 0 ^z 0)
+
+  (<c43> ^id point1 ^position <p43>)
+  (<p43> ^x .2 ^y -.2 ^z 0.02)
+
+  (<c44> ^id group1 ^position <p44>)
+  (<p44> ^x 0 ^y 0 ^z -.2)
+
+  # Test 5 - Filter Answers
+  (<ta5> ^answer <a51> <a52> <a53> <a54> <a55> <a56>
+          <a57> <a58> <a59> <a510> <a511> <a512> <a513>
+          <a514> <a515> <a516> <a517> <a518> <a519>
+          <a520> <a521> <a522>)
+  (<a51> ^filter axis_distance ^number .15)
+  (<a52> ^filter axis_distance_select ^node box1)
+  (<a53> ^filter closest ^number 0)
+  (<a54> ^filter contain ^bool false)
+  (<a55> ^filter contain_select ^node point1 ball1)
+  (<a56> ^filter distance ^number .1121)
+  (<a57> ^filter distance_select ^none true)
+  (<a58> ^filter farthest ^number .5)
+  (<a59> ^filter intersect ^bool false)
+  (<a510> ^filter intersect_select ^node ball1 point1)
+  (<a511> ^filter larger ^bool false)
+  (<a512> ^filter larger_select ^node box1 point1)
+  (<a513> ^filter largest ^number .072)
+  (<a514> ^filter node_position ^vec3 <v514>)
+    (<v514> ^x.v .2 ^y.v -.2 ^z.v 0)
+  (<a515> ^filter node_rotation ^vec3 <v515>)
+    (<v515> ^x.v 0 ^y.v 0 ^z.v 0)
+  (<a516> ^filter node_scale ^vec3 <v516>)
+    (<v516> ^x.v .1 ^y.v .1 ^z.v .2)
+  (<a517> ^filter node_bbox ^bbox <b517>)
+    (<b517> ^sx.v -.3 ^sy.v -.1 ^sz.v -.5
+            ^lx.v .3 ^ly.v .1 ^lz.v .1)
+  (<a518> ^filter smallest ^number 0)
+  (<a519> ^filter smaller ^bool true)
+  (<a520> ^filter smaller_select ^node group1 ball1)
+  (<a521> ^filter volume ^number .072)
+  (<a522> ^filter volume_select ^node ball1)
+
+  # Test 6 - Delete objects
+  (<c6> ^delete_node <c61> <c62>)
+  (<c61> ^id point1)
+  (<c62> ^id group1)
+
+  # Test 7 - Copy objects
+  (<c7> ^copy_node <c71> <c72>)
+  
+  (<c71> ^id point1 ^source ball1 ^parent world
+          ^scale <s71> ^copy_tags true)
+  (<s71> ^x .05 ^y .05 ^z .05)
+
+  (<c72> ^id group1 ^source box1 ^parent world
+          ^position <p72> ^scale <s72> ^copy_tags true)
+  (<p72> ^x 0 ^y 0 ^z -.2)
+  (<s72> ^x .2 ^y .2 ^z .1)
+
+  # Test 8 - Filter Answers
+  (<ta8> ^answer <a81> <a82> <a83> <a84> <a85> <a86>
+          <a87> <a88> <a89> <a810> <a811> <a812> <a813>
+          <a814> <a815> <a816> <a817> <a818> <a819>
+          <a820> <a821> <a822>)
+  (<a81> ^filter axis_distance ^number .1)
+  (<a82> ^filter axis_distance_select ^node box1)
+  (<a83> ^filter closest ^number 0)
+  (<a84> ^filter contain ^bool false)
+  (<a85> ^filter contain_select ^node point1 ball1)
+  (<a86> ^filter distance ^number .1121)
+  (<a87> ^filter distance_select ^none true)
+  (<a88> ^filter farthest ^number .5)
+  (<a89> ^filter intersect ^bool false)
+  (<a810> ^filter intersect_select ^node ball1 point1)
+  (<a811> ^filter larger ^bool true)
+  (<a812> ^filter larger_select ^node box1 point1 group1)
+  (<a813> ^filter largest ^number .008)
+  (<a814> ^filter node_position ^vec3 <v814>)
+    (<v814> ^x.v .2 ^y.v -.2 ^z.v 0)
+  (<a815> ^filter node_rotation ^vec3 <v815>)
+    (<v815> ^x.v 0 ^y.v 0 ^z.v 0)
+  (<a816> ^filter node_scale ^vec3 <v816>)
+    (<v816> ^x.v .1 ^y.v .1 ^z.v .2)
+  (<a817> ^filter node_bbox ^bbox <b817>)
+    (<b817>  ^sx.v -.1 ^sy.v -.1 ^sz.v -.25
+             ^lx.v .1 ^ly.v .1 ^lz.v -.15)
+  (<a818> ^filter smallest ^number 0.001)
+  (<a819> ^filter smaller ^bool true)
+  (<a820> ^filter smaller_select ^node group1 ball1)
+  (<a821> ^filter volume ^number .004)
+  (<a822> ^filter volume_select ^node ball1)
+
+}
+
+
+
+############################################
+#
+# default-rules
+#
+###########################################
+
+sp {svs-tester*topstate*elaborate*topstate
+  (state <s> ^superstate nil)
+-->
+  (<s> ^topstate <s>)
+}
+
+sp {svs-tester*substate*elaborate*from*superstate
+  (state <s> ^superstate <ss>)
+  (<ss> ^io <io>
+         ^topstate <top>
+         ^filter-list <fl>)
+-->
+  (<s> ^io <io>
+        ^topstate <top>
+        ^filter-list <fl>)
+}
+
+sp {svs-tester*substate*elaborate*name*from*superoperator
+  (state <s> ^superstate.operator.name <name>)
+-->
+  (<s> ^name <name>)
+}
+
+sp {svs-tester*propose*wait
+  (state <s> ^superstate <ss>
+              -^operator.name wait)
+-->
+  (<s> ^operator <o> + <)
+  (<o> ^name wait)
+}
+
+############################################
+#
+# test scheduling
+#
+###########################################
+
+sp {svs-tester*propose*advance-test
+  (state <s> ^name svs-tester
+              ^finished-test true)
+-->
+  (<s> ^operator <o> + >)
+  (<o> ^name advance-test)
+}
+
+sp {svs-tester*apply*advance-test
+  (state <s> ^name svs-tester
+              ^operator.name advance-test
+              ^current-test <t>
+              ^finished-test true)
+  (<t> ^next-test <next>)
+-->
+  (<s> ^current-test <t> -
+        ^current-test <next>
+        ^finished-test true -)
+}
+
+sp {svs-tester*halt*finished
+  (state <s> ^name svs-tester
+              ^current-test.name halt)
+-->
+  (halt)
+}
+
+############################################
+#
+# do-commands
+#
+###########################################
+
+sp {svs-tester*propose*do-commands
+  (state <s> ^name svs-tester
+              ^current-test <t>)
+  (<t> ^name do-commands
+        ^command-set <cmds>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name do-commands
+        ^command-set <cmds>)
+}
+
+sp {svs-tester*apply*do-commands*copy*command
+  (state <s> ^name svs-tester
+              ^operator <o>
+              ^svs.command <svsc>)
+  (<o> ^name do-commands
+        ^command-set.<cmd-name> <cmd>)
+-->
+  (<svsc> ^<cmd-name> <cmd>)
+}
+
+sp {svs-tester*apply*do-commands*mark*finished
+  (state <s> ^name svs-tester
+              ^operator.name do-commands)
+-->
+  (<s> ^finished-test true)
+}
+
+#sp {svs-tester*apply*op*remove*finished*svs*commands
+#  (state <s> ^name svs-tester
+#              ^operator <o>
+#              ^svs.command <svsc>)
+#  (<svsc> ^<cmd-name> <cmd>)
+#  (<cmd> ^status)
+#-->
+#  (<svsc> ^<cmd-name> <cmd> -)
+#}
+#
+############################################
+#
+# extract-filters
+#
+###########################################
+
+sp {svs-tester*propose*extract-filters
+  (state <s> ^name svs-tester
+              ^current-test <t>)
+  (<t> ^name extract-filters
+        ^test-answers <a>
+        ^node-type <type>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name extract-filters
+        ^node-type <type>
+        ^answers <a>)
+}
+
+sp {svs-tester*extract-filters*elaborate*info*superoperator
+  (state <s> ^name extract-filters
+              ^superstate.operator <op>)
+  (<op> ^node-type <t>
+         ^answers <a>)
+-->
+  (<s> ^node-type <t>
+        ^answers <a>)
+}
+              
+sp {svs-tester*extract-filters*propose*extract-filter
+  (state <s> ^name extract-filters
+              ^filter-list.filter <f>
+              -^extracted <f>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name extract-filter
+        ^filter <f>)
+}
+
+sp {svs-tester*extract-filters*extract-filter*prefer*alphabetically
+  (state <s> ^name extract-filters
+              ^operator <o1> +
+              ^operator <o2> +)
+  (<o1> ^name extract-filter
+         ^filter.name <n1>)
+  (<o2> ^name extract-filter
+         ^filter.name > <n1>)
+-->
+  (<s> ^operator <o1> > <o2>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^filter.name <name>)
+-->
+  (<o> ^command <cmd>)
+  (<cmd> ^type <name>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*id*a
+  (state <s> ^name extract-filters
+              ^operator <o> +
+              ^node-type id)
+  (<o> ^name extract-filter
+        ^filter.a <id>
+        ^command <cmd>)
+-->
+  (<cmd> ^a <a>)
+  (<a> ^type node
+        ^id <id>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*id*b
+  (state <s> ^name extract-filters
+              ^operator <o> +
+              ^node-type id)
+  (<o> ^name extract-filter
+        ^filter.b <id>
+        ^command <cmd>)
+-->
+  (<cmd> ^b <b>)
+  (<b> ^type node
+        ^id <id>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*color*a
+  (state <s> ^name extract-filters
+              ^operator <o> +
+              ^svs.spatial-scene.child <obja>
+              ^node-type color)
+  (<o> ^name extract-filter
+        ^filter.a <id>
+        ^command <cmd>)
+  (<obja> ^id <id>
+           ^color <color>)
+-->
+  (<cmd> ^a <a>)
+  (<a> ^type tag_select
+        ^a.type all_nodes
+        ^tag_name color
+        ^tag_value <color>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*color*b
+  (state <s> ^name extract-filters
+              ^operator <o> +
+              ^svs.spatial-scene.child <objb>
+              ^node-type color)
+  (<o> ^name extract-filter
+        ^filter.b <id>
+        ^command <cmd>)
+  (<objb> ^id <id>
+           ^color <color>)
+-->
+  (<cmd> ^b <b>)
+  (<b> ^type tag_select
+        ^a.type all_nodes
+        ^tag_name color
+        ^tag_value <color>)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*all
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^filter.all <all>
+        ^command <cmd>)
+-->
+  (<cmd> ^<all> <top-nodes>)
+  (<top-nodes> ^type tag_select
+                ^a.type all_nodes
+                ^tag_name cat
+                ^tag_value top)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*command*parameter
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^filter.parameters.<param> <val>
+        ^command <cmd>)
+-->
+  (<cmd> ^<param> <val>)
+}
+
+sp {svs-tester*extract-filters*apply*extract-filter*copy*command
+  (state <s> ^name extract-filters
+              ^operator <o>
+              ^svs.command <svsc>)
+  (<o> ^name extract-filter
+        ^command <cmd>)
+-->
+  (<svsc> ^extract_once <cmd>)
+}
+
+sp {svs-tester*extract-filters*apply*extract-filter*complete*mark*extracted*PASSED
+  (state <s> ^name extract-filters
+              ^operator <o>
+              ^svs.command <svsc>)
+  (<o> ^name extract-filter
+        ^finished true
+        ^test-result PASSED
+        ^filter <f>
+        ^command <cmd>)
+  (<f> ^name <name>)
+-->
+  (<s> ^extracted <f>)
+  (<svsc> ^extract_once <cmd> -)
+  (write | PASSED test for filter | <name> (crlf))
+}
+
+sp {svs-tester*extract-filters*apply*extract-filter*complete*mark*extracted
+  (state <s> ^name extract-filters
+              ^operator <o>
+              ^svs.command <svsc>)
+  (<o> ^name extract-filter
+        ^finished true
+        ^test-result { <> PASSED <res> }
+        ^filter <f>
+        ^command <cmd>)
+  (<f> ^name <name>)
+-->
+  (<s> ^extracted <f>)
+  (<svsc> ^extract_once <cmd> -)
+  (write <res> | test for filter | <name> (crlf))
+  (exec test-failure <res> | test for filter | <name>)
+  (halt)
+  }
+
+sp {svs-tester*extract-filters*propose*complete-extract-filters
+  (state <s> ^name extract-filters)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name complete-extract-filters)
+}
+
+sp {svs-tester*extract-filters*prefer*extract*over*complete
+  (state <s> ^name extract-filters
+              ^operator <o1> +
+              ^operator <o2> +)
+  (<o1> ^name extract-filter)
+  (<o2> ^name complete-extract-filters)
+-->
+  (<s> ^operator <o1> > <o2>)
+}
+
+sp {svs-tester*extract-filters*apply*complete-extract-filters*mark*finished
+  (state <s> ^name extract-filters
+              ^operator.name complete-extract-filters
+              ^superstate <ss>)
+-->
+  (<ss> ^finished-test true)
+}
+              
+
+
+###########################################
+# 
+# Test Evaluation
+#
+###########################################
+
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*answer
+  (state <s> ^name extract-filters
+              ^operator <o> +
+              ^answers.answer <a>)
+  (<o> ^name extract-filter
+        ^filter.name <name>)
+  (<a> ^filter <name>)
+-->
+  (<o> ^answer <a>)
+}
+
+sp {svs-tester*extract-filters*elaborate*num*answer*min*max
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^answer <a>)
+  (<a> ^number <v>)
+-->
+  (<a> ^min (- <v> .0001)
+       ^max (+ <v> .0001))
+}
+
+sp {svs-tester*extract-filters*elaborate*num*answer*min*max*bbox*vec
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^answer <a>)
+  (<a> ^{ << bbox vec3 >> } <st>)
+  (<st> ^{ << x y z lx ly lz sx sy sz >> } <dim>)
+  (<dim> ^v <v>)
+-->
+  (<dim> ^min (- <v> .0001)
+         ^max (+ <v> .0001))
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*finished
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^test-result <RES>)
+-->
+  (<o> ^finished true)
+}
+
+sp {svs-tester*extract-filters*elaborate*extract-filter*test-result*FAILED
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^name extract-filter
+        ^command.status 
+        -^test-result PASSED)
+-->
+  (<o> ^test-result FAILED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*bool
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command.result.record.value <bool>
+        ^command.status success
+        ^answer.bool <bool>
+        ^filter.name <name>)
+-->
+  (<o> ^test-result PASSED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*number
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command.result.record.value <val>
+        ^command.status success
+        ^answer <a>
+        ^filter.name <name>)
+  (<a> ^number <num> 
+        ^min < <val>
+        ^max > <val>)
+-->
+  (<o> ^test-result PASSED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*none
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command <cmd>
+        ^answer.none true
+        ^filter.name <name>)
+  (<cmd> ^status success
+          -^result.record.value)
+-->
+  (<o> ^test-result PASSED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*node
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command <cmd>
+        ^answer <a>
+        ^filter.name <name>)
+  (<cmd> ^status success
+          ^result <res>)
+  (<a> ^node <n>)
+  # No node in the answer is missing from the result
+  -{(<a> ^node <req-node>)
+    (<res> -^record.value <req-node>)}
+  # No node in the result is not listed in the answer
+  -{(<res> ^record.value <res-node>)
+    (<a> -^node <res-node>)}
+-->
+  (<o> ^test-result PASSED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*vec3
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command.result.record.value <val>
+        ^command.status success
+        ^answer <a>
+        ^filter.name <name>)
+  (<val> ^x <x> ^y <y> ^z <z>)
+  (<a> ^vec3 <vec>)
+  (<vec> ^x.min < <x>
+          ^x.max > <x>
+          ^y.min < <y>
+          ^y.max > <y>
+          ^z.min < <z>
+          ^z.max > <z>)
+-->
+  (<o> ^test-result PASSED)
+}
+
+sp {svs-tester*extract-filters*elaborate*passed*bbox
+  (state <s> ^name extract-filters
+              ^operator <o> +)
+  (<o> ^command.result.record.value <val>
+        ^command.status success
+        ^answer <a>
+        ^filter.name <name>)
+  (<val> ^min-x <minx> ^min-y <miny> ^min-z <minz>
+         ^max-x <maxx> ^max-y <maxy> ^max-z <maxz>)
+  (<a> ^bbox <bbox>)
+  (<bbox> ^sx.min < <minx>
+          ^sx.max > <minx>
+          ^sy.min < <miny>
+          ^sy.max > <miny>
+          ^sz.min < <minz>
+          ^sz.max > <minz>
+          ^lx.min < <maxx>
+          ^lx.max > <maxx>
+          ^ly.min < <maxy>
+          ^ly.max > <maxy>
+          ^lz.min < <maxz>
+          ^lz.max > <maxz>)
+-->
+  (<o> ^test-result PASSED)
+}
+
+#sp {svs-tester*extract-filters*print*results*just*a
+#  (state <s> ^name extract-filters
+#              ^svs.command.extract_once <e>)
+#  (<e> ^type <name>
+#        ^result.record <r>)
+#  (<r> ^params <p>
+#        ^value <v>)
+#  (<p> ^a <a>
+#        -^b)
+#-->
+#  (write |Result of filter | <name> | for | <a> | is | <v> (crlf))
+#}
+#
+#sp {svs-tester*extract-filters*print*results*a*and*b
+#  (state <s> ^name extract-filters
+#              ^svs.command.extract_once <e>)
+#  (<e> ^type <name>
+#        ^result.record <r>)
+#  (<r> ^params <p>
+#        ^value <v>)
+#  (<p> ^a <a>
+#        ^b <b>)
+#-->
+#  (write |Result of filter | <name> | for | <a> | and | <b> | is | <v> (crlf))
+#}

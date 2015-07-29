@@ -4,27 +4,14 @@
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
 // Copyright (C) 2010 Benoit Jacob <jacob.benoit.1@gmail.com>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_HOUSEHOLDER_SEQUENCE_H
 #define EIGEN_HOUSEHOLDER_SEQUENCE_H
+
+namespace Eigen { 
 
 /** \ingroup Householder_Module
   * \householder_module
@@ -125,6 +112,9 @@ template<typename OtherScalarType, typename MatrixType> struct matrix_type_times
 template<typename VectorsType, typename CoeffsType, int Side> class HouseholderSequence
   : public EigenBase<HouseholderSequence<VectorsType,CoeffsType,Side> >
 {
+    typedef typename internal::hseq_side_dependent_impl<VectorsType,CoeffsType,Side>::EssentialVectorType EssentialVectorType;
+  
+  public:
     enum {
       RowsAtCompileTime = internal::traits<HouseholderSequence>::RowsAtCompileTime,
       ColsAtCompileTime = internal::traits<HouseholderSequence>::ColsAtCompileTime,
@@ -134,13 +124,10 @@ template<typename VectorsType, typename CoeffsType, int Side> class HouseholderS
     typedef typename internal::traits<HouseholderSequence>::Scalar Scalar;
     typedef typename VectorsType::Index Index;
 
-    typedef typename internal::hseq_side_dependent_impl<VectorsType,CoeffsType,Side>::EssentialVectorType
-            EssentialVectorType;
-
-  public:
-
     typedef HouseholderSequence<
-      VectorsType,
+      typename internal::conditional<NumTraits<Scalar>::IsComplex,
+        typename internal::remove_all<typename VectorsType::ConjugateReturnType>::type,
+        VectorsType>::type,
       typename internal::conditional<NumTraits<Scalar>::IsComplex,
         typename internal::remove_all<typename CoeffsType::ConjugateReturnType>::type,
         CoeffsType>::type,
@@ -221,7 +208,7 @@ template<typename VectorsType, typename CoeffsType, int Side> class HouseholderS
     /** \brief Complex conjugate of the Householder sequence. */
     ConjugateReturnType conjugate() const
     {
-      return ConjugateReturnType(m_vectors, m_coeffs.conjugate())
+      return ConjugateReturnType(m_vectors.conjugate(), m_coeffs.conjugate())
              .setTrans(m_trans)
              .setLength(m_length)
              .setShift(m_shift);
@@ -448,5 +435,7 @@ HouseholderSequence<VectorsType,CoeffsType,OnTheRight> rightHouseholderSequence(
 {
   return HouseholderSequence<VectorsType,CoeffsType,OnTheRight>(v, h);
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_HOUSEHOLDER_SEQUENCE_H

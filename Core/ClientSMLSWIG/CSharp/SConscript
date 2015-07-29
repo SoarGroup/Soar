@@ -32,7 +32,7 @@ def late_csharp_builder(target, source, env):
 	if not os.path.isdir(srcdir):
 		print 'source directory does not exist'
 		sys.exit(1)
-	
+
 	cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
 	a = env.Command(env.File(assembly), cs_srcs, 'csc /target:library /out:%s %s\*.cs' % (assembly, srcdir))
 	env.Depends(a, fake_target)
@@ -42,7 +42,10 @@ def late_csharp_builder(target, source, env):
 clone.Append(BUILDERS = {'LateCSharpBuilder' : Builder(action=late_csharp_builder)})
 
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
-swig_cmd = 'swig %s -o "$TARGET" -c++ -csharp -Wall -namespace sml -dllimport %s -outdir "%s" "$SOURCE"' % (incs, name, srcdir)
+nosvs = ''
+if GetOption('nosvs'):
+	nosvs = '-DNO_SVS'
+swig_cmd = 'swig %s -o "$TARGET" -c++ -csharp -Wall -namespace sml -dllimport %s -outdir "%s" %s "$SOURCE"' % (incs, name, srcdir, nosvs)
 if not GetOption('verbose'):
 	swig_cmd = '@' + swig_cmd
 

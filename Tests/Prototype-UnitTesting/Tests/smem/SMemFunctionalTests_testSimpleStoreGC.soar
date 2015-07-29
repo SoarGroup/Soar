@@ -1,0 +1,83 @@
+
+smem --set learning on
+
+# First store something in SMEM
+
+sp {propose*store
+  (state <s> ^superstate nil 
+            -^stored
+             ^smem <smem>)
+  (<smem> -^result.success)
+--> 
+  (<s> ^operator.name store)
+}
+
+sp {apply*store
+  (state <s> ^operator.name store
+             ^smem.command <sc>)
+-->
+  (<s> ^stored true)
+  (<sc> ^store <p>)
+  (<p> ^test <t>)
+  (<t> ^test |Test!|)
+}
+
+# Now query for it to see if it got into SMEM.
+
+sp {propose*remove*store
+   (state <s> ^stored true
+              ^smem.command.store)
+-->
+   (<s> ^operator.name remove-store)
+}
+
+sp {apply*remove*store
+   (state <s> ^operator.name remove-store
+              ^smem.command <sc>)
+   (<sc> ^store <store>)
+-->
+   (<sc> ^store <store> -)
+}
+
+sp {propose*query
+  (state <s> ^superstate nil 
+             ^stored true
+             ^smem <smem>)
+  (<smem> -^result.retrieved
+          -^command.store)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+  (state <s> ^operator.name query
+             ^smem.command <sc>)
+-->
+  (<sc> ^query.test <t>)
+}
+
+sp {propose*query-2
+   (state <s> ^superstate nil
+              ^smem.result.retrieved
+              ^smem.command <sc>)
+-->
+   (<s> ^operator.name query-2)
+}
+
+sp {apply*query-2
+   (state <s> ^superstate nil
+              ^smem.command <sc>
+              ^smem.result.retrieved <t>
+              ^operator.name query-2)
+   (<sc> ^query <q>)
+-->
+   (<sc> ^query <q> -)
+   (<sc> ^retrieve <t>)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^test.test |Test!|)
+-->
+  (succeeded)
+}

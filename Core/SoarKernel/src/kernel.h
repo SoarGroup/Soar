@@ -8,53 +8,64 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-/* --  The following should be commented out for release versions or if you don't
- *     want to use debugging traces/modes or the CLI debug command. Individual debug
- *     #defines are found in debug_defines.h -- */
-
-//#define SOAR_DEBUG_UTILITIES
-
 #include "enums.h"
 typedef struct agent_struct agent;
-extern void dprint(TraceMode mode, const char* format, ...);
-extern void dprint_noprefix(TraceMode mode, const char* format, ...);
 extern void print(agent* thisAgent, const char* format, ...);
 
-/* -- Enables tracing functions that print SQL processing and errors -- */
-//#define DEBUG_EPMEM_SQL
+#define SOAR_RELEASE_VERSION
 
-/* -- Enables the printing of the call trace within debug messages.  Tested
- *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
- *    but not tested. Does not work on Windows. -- */
-//#define DEBUG_MAC_STACKTRACE
+#ifndef SOAR_RELEASE_VERSION
+    /* --  The following enables debugging traces/modes. Individual debug
+     *     #defines are found in debug_defines.h -- */
+    #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
-/* -- Enables extensive refcount and deallocation data tracking into
- *    the debug database -- */
-//#define DEBUG_TRACE_REFCOUNT_INVENTORY
+    /* -- Enables tracing functions that print SQL processing and errors -- */
+    //#define DEBUG_EPMEM_SQL
 
-//#define DEBUG_EPMEM_WME_ADD
+    /* -- Enables the printing of the call trace within debug messages.  Tested
+     *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
+     *    but not tested. Does not work on Windows. -- */
+    //#define DEBUG_MAC_STACKTRACE
 
-//#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-#define MEM_POOLS_ENABLED 1
-#define USE_MEM_POOL_ALLOCATORS 1
+    /* -- Enables extensive refcount and deallocation data tracking into
+     *    the debug database -- */
+    //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
-//#define DEBUG_CHUNK_NAMES
-//#define DEBUG_RETE_PNODES
-//#define DEBUG_WATERFALL
-//#define DEBUG_WMES        /* -- Get slot printouts -- */
-//#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
-//#define DEBUG_SLOTS       /* -- Get slot printouts -- */
-//#define DEBUG_GDS         /* -- Low level GDS debug information -- */
-//#define DEBUG_PREFS       /* -- Preference printouts -- */
-//#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
+    //#define DEBUG_EPMEM_WME_ADD
+    //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+    //#define DEBUG_PREFS         /* -- Preference printouts -- */
+    //#define DEBUG_RETE_PNODES
+    //#define DEBUG_WATERFALL
+    //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
+    //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
+    /* -- Low level GDS debug information -- */
+    //#define DEBUG_GDS
 
-/* For high-level information on the instantiations that created an
- * o-supported element and lead to the elaboration of the GDS */
-//#define DEBUG_GDS_HIGH
+    /* -- High-level information on the instantiations that created an
+     * o-supported element and lead to the elaboration of the GDS */
+    //#define DEBUG_GDS_HIGH
+
+    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+//    #define MEM_POOLS_ENABLED 1
+    #ifdef MEM_POOLS_ENABLED
+//        #define USE_MEM_POOL_ALLOCATORS 1
+    #endif
+#else
+    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    #define MEM_POOLS_ENABLED 1
+    #ifdef MEM_POOLS_ENABLED
+        #define USE_MEM_POOL_ALLOCATORS 1
+    #endif
+#endif
+
+//#define NO_TIMING_STUFF
+#ifndef NO_TIMING_STUFF
+//#define DETAILED_TIMING_STATS
+#endif
 
 /* -------------------------------------------------- */
-/*              Global type declarations, etc.        */
+/*     Global constants, type declarations, etc.      */
 /* -------------------------------------------------- */
 
 #define BUFFER_MSG_SIZE 128
@@ -66,25 +77,23 @@ extern void print(agent* thisAgent, const char* format, ...);
 #define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 
+//typedef uint64_t tc_number;  /* Moving this here breaks windows non-scu build for some reason */
 typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
-//#define MEMORY_POOL_STATS
-
-//#define NO_TIMING_STUFF
 //#define DO_TOP_LEVEL_REF_CTS
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
-#define DISCARD_CHUNK_VARNAMES true
+#define DISCARD_CHUNK_VARNAMES false
+
+/* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
-#ifndef NO_TIMING_STUFF
-//#define DETAILED_TIMING_STATS
-#endif
 
-//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to supress compile-time o-support calculations */
+
+//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */
 //#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
 
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */

@@ -1,0 +1,128 @@
+
+sp {init*waterjug
+(state <s> ^superstate nil)
+-->
+(<s> ^jug <j1> <j2>
+     ^desired-jug <dj>)
+(<j1> ^volume 5 ^contents 0)
+(<j2> ^volume 3 ^contents 0)
+(<dj> ^volume 3 ^contents 1)
+}
+
+sp {elaborate*achieved
+(state <s> ^jug <j>
+           ^desired-jug <dj>)
+(<j> ^volume <vol> ^contents <contents>)
+(<dj> ^volume <vol> ^contents <contents>)
+-->
+(<j> ^achieved *yes*)
+}
+
+sp {prefs*achieved
+(state <s> ^operator <o> +)
+(<o> ^name << Empty Fill Transfer >>
+     ^<< jug from to >>.achieved *yes*)
+-->
+(<s> ^operator <o> -)
+}
+
+sp {elaborate*free
+(state <s> ^jug <j>)
+(<j> ^contents <contents>
+     ^volume <vol>)
+-->
+(<j> ^free (- <vol> <contents>))
+}
+
+sp {propose*empty
+(state <s> ^jug <j>)
+(<j> ^contents > 0)
+-->
+(<s> ^operator <o> + =)
+(<o> ^name Empty
+     ^jug <j>)
+}
+
+sp {propose*fill
+(state <s> ^jug <j>)
+(<j> ^free > 0)
+-->
+(<s> ^operator <o> + =)
+(<o> ^name Fill
+     ^jug <j>)
+}
+
+sp {propose*transfer*full-amount
+(state <s> ^jug <j1> {<j2> <> <j1>})
+(<j1> ^contents {<amt> > 0})
+(<j2> ^free {<free> >= <amt>})
+-->
+(<s> ^operator <o> + =)
+(<o> ^name Transfer
+     ^from <j1>
+     ^to <j2>
+     ^amount <amt>)
+}
+
+sp {propose*transfer*partial-amount
+(state <s> ^jug <j1> {<j2> <> <j1>})
+(<j1> ^contents {<amt> > 0})
+(<j2> ^free {<free> > 0 < <amt>})
+-->
+(<s> ^operator <o> + =)
+(<o> ^name Transfer
+     ^from <j1>
+     ^to <j2>
+     ^amount <free>)
+}
+
+sp {apply*empty
+(state <s> ^operator <o>)
+(<o> ^name Empty
+     ^jug <j>)
+(<j> ^contents <contents>)
+-->
+(<j> ^contents <contents> - 0 +)
+(write (crlf) |*** Emptied jug | <j>)
+}
+
+sp {apply*fill
+(state <s> ^operator <o>)
+(<o> ^name Fill
+     ^jug <j>)
+(<j> ^contents <contents>
+     ^volume <vol>)
+-->
+(<j> ^contents <contents> - <vol> +)
+(write (crlf) |*** Filled jug | <j>)
+}
+
+sp {apply*transfer
+(state <s> ^operator <o>)
+(<o> ^name Transfer
+     ^from <from>
+     ^to <to>
+     ^amount <amount>)
+(<from> ^contents <from-contents>)
+(<to> ^contents <to-contents>)
+-->
+(<from> ^contents <from-contents> - (- <from-contents> <amount>) +)
+(<to> ^contents <to-contents> - (+ <to-contents> <amount>) +)
+(write (crlf) |*** Transferred contents of jug | <from> | to jug | <to>)
+}
+
+sp {monitor*contents
+(state <s> ^jug <j>)
+(<j> ^contents <contents>)
+-->
+(write (crlf) |### Contents of jug | <j> | = | <contents>)
+}
+
+sp {monitor*achieved
+(state <s> ^jug <j>)
+(<j> ^achieved *yes*)
+-->
+(write (crlf) |### Achieved desired state with jug | <j>)
+(halt)
+}
+

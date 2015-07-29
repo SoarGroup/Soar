@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008-2010 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_CWISE_UNARY_OP_H
 #define EIGEN_SPARSE_CWISE_UNARY_OP_H
+
+namespace Eigen { 
 
 template<typename UnaryOp, typename MatrixType>
 class CwiseUnaryOpImpl<UnaryOp,MatrixType,Sparse>
@@ -51,19 +38,19 @@ class CwiseUnaryOpImpl<UnaryOp,MatrixType,Sparse>::InnerIterator
     typedef typename CwiseUnaryOpImpl<UnaryOp,MatrixType,Sparse>::MatrixTypeIterator Base;
   public:
 
-    EIGEN_STRONG_INLINE InnerIterator(const CwiseUnaryOpImpl& unaryOp, Index outer)
+    EIGEN_STRONG_INLINE InnerIterator(const CwiseUnaryOpImpl& unaryOp, typename CwiseUnaryOpImpl::Index outer)
       : Base(unaryOp.derived().nestedExpression(),outer), m_functor(unaryOp.derived().functor())
     {}
 
     EIGEN_STRONG_INLINE InnerIterator& operator++()
     { Base::operator++(); return *this; }
 
-    EIGEN_STRONG_INLINE Scalar value() const { return m_functor(Base::value()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryOpImpl::Scalar value() const { return m_functor(Base::value()); }
 
   protected:
     const UnaryOp m_functor;
   private:
-    Scalar& valueRef();
+    typename CwiseUnaryOpImpl::Scalar& valueRef();
 };
 
 template<typename UnaryOp, typename MatrixType>
@@ -74,19 +61,19 @@ class CwiseUnaryOpImpl<UnaryOp,MatrixType,Sparse>::ReverseInnerIterator
     typedef typename CwiseUnaryOpImpl<UnaryOp,MatrixType,Sparse>::MatrixTypeReverseIterator Base;
   public:
 
-    EIGEN_STRONG_INLINE ReverseInnerIterator(const CwiseUnaryOpImpl& unaryOp, Index outer)
+    EIGEN_STRONG_INLINE ReverseInnerIterator(const CwiseUnaryOpImpl& unaryOp, typename CwiseUnaryOpImpl::Index outer)
       : Base(unaryOp.derived().nestedExpression(),outer), m_functor(unaryOp.derived().functor())
     {}
 
     EIGEN_STRONG_INLINE ReverseInnerIterator& operator--()
     { Base::operator--(); return *this; }
 
-    EIGEN_STRONG_INLINE Scalar value() const { return m_functor(Base::value()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryOpImpl::Scalar value() const { return m_functor(Base::value()); }
 
   protected:
     const UnaryOp m_functor;
   private:
-    Scalar& valueRef();
+    typename CwiseUnaryOpImpl::Scalar& valueRef();
 };
 
 template<typename ViewOp, typename MatrixType>
@@ -115,15 +102,15 @@ class CwiseUnaryViewImpl<ViewOp,MatrixType,Sparse>::InnerIterator
     typedef typename CwiseUnaryViewImpl<ViewOp,MatrixType,Sparse>::MatrixTypeIterator Base;
   public:
 
-    EIGEN_STRONG_INLINE InnerIterator(const CwiseUnaryViewImpl& unaryOp, Index outer)
+    EIGEN_STRONG_INLINE InnerIterator(const CwiseUnaryViewImpl& unaryOp, typename CwiseUnaryViewImpl::Index outer)
       : Base(unaryOp.derived().nestedExpression(),outer), m_functor(unaryOp.derived().functor())
     {}
 
     EIGEN_STRONG_INLINE InnerIterator& operator++()
     { Base::operator++(); return *this; }
 
-    EIGEN_STRONG_INLINE Scalar value() const { return m_functor(Base::value()); }
-    EIGEN_STRONG_INLINE Scalar& valueRef() { return m_functor(Base::valueRef()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryViewImpl::Scalar value() const { return m_functor(Base::value()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryViewImpl::Scalar& valueRef() { return m_functor(Base::valueRef()); }
 
   protected:
     const ViewOp m_functor;
@@ -137,15 +124,15 @@ class CwiseUnaryViewImpl<ViewOp,MatrixType,Sparse>::ReverseInnerIterator
     typedef typename CwiseUnaryViewImpl<ViewOp,MatrixType,Sparse>::MatrixTypeReverseIterator Base;
   public:
 
-    EIGEN_STRONG_INLINE ReverseInnerIterator(const CwiseUnaryViewImpl& unaryOp, Index outer)
+    EIGEN_STRONG_INLINE ReverseInnerIterator(const CwiseUnaryViewImpl& unaryOp, typename CwiseUnaryViewImpl::Index outer)
       : Base(unaryOp.derived().nestedExpression(),outer), m_functor(unaryOp.derived().functor())
     {}
 
     EIGEN_STRONG_INLINE ReverseInnerIterator& operator--()
     { Base::operator--(); return *this; }
 
-    EIGEN_STRONG_INLINE Scalar value() const { return m_functor(Base::value()); }
-    EIGEN_STRONG_INLINE Scalar& valueRef() { return m_functor(Base::valueRef()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryViewImpl::Scalar value() const { return m_functor(Base::value()); }
+    EIGEN_STRONG_INLINE typename CwiseUnaryViewImpl::Scalar& valueRef() { return m_functor(Base::valueRef()); }
 
   protected:
     const ViewOp m_functor;
@@ -170,5 +157,7 @@ SparseMatrixBase<Derived>::operator/=(const Scalar& other)
       i.valueRef() /= other;
   return derived();
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_CWISE_UNARY_OP_H

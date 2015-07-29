@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_MAPPED_SPARSEMATRIX_H
 #define EIGEN_MAPPED_SPARSEMATRIX_H
+
+namespace Eigen { 
 
 /** \class MappedSparseMatrix
   *
@@ -46,9 +33,9 @@ class MappedSparseMatrix
 {
   public:
     EIGEN_SPARSE_PUBLIC_INTERFACE(MappedSparseMatrix)
+    enum { IsRowMajor = Base::IsRowMajor };
 
   protected:
-    enum { IsRowMajor = Base::IsRowMajor };
 
     Index   m_outerSize;
     Index   m_innerSize;
@@ -63,6 +50,8 @@ class MappedSparseMatrix
     inline Index cols() const { return IsRowMajor ? m_innerSize : m_outerSize; }
     inline Index innerSize() const { return m_innerSize; }
     inline Index outerSize() const { return m_outerSize; }
+    
+    bool isCompressed() const { return true; }
 
     //----------------------------------------
     // direct access interface
@@ -186,5 +175,7 @@ class MappedSparseMatrix<Scalar,_Flags,_Index>::ReverseInnerIterator
     const Index m_start;
     const Index m_end;
 };
+
+} // end namespace Eigen
 
 #endif // EIGEN_MAPPED_SPARSEMATRIX_H

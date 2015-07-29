@@ -1,0 +1,6 @@
+sp {four-acceptable-worst*propose*d
+   (state <s> ^name four-acceptable-worst)
+-->
+   (<s> ^operator <op> + <)
+   (<op> ^name d)
+}

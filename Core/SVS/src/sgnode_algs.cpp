@@ -90,7 +90,7 @@ double convex_distance(const sgnode* a, const sgnode* b)
     {
         dists.reserve(g2.size());
         c = a->get_centroid();
-        for (int i = 0, iend = g2.size(); i < iend; ++i)
+        for (size_t i = 0, iend = g2.size(); i < iend; ++i)
         {
             dists.push_back(point_geom_convex_dist(c, g2[i]));
         }
@@ -99,7 +99,7 @@ double convex_distance(const sgnode* a, const sgnode* b)
     {
         dists.reserve(g1.size());
         c = b->get_centroid();
-        for (int i = 0, iend = g1.size(); i < iend; ++i)
+        for (size_t i = 0, iend = g1.size(); i < iend; ++i)
         {
             dists.push_back(point_geom_convex_dist(c, g1[i]));
         }
@@ -107,9 +107,9 @@ double convex_distance(const sgnode* a, const sgnode* b)
     else
     {
         dists.reserve(g1.size() * g2.size());
-        for (int i = 0, iend = g1.size(); i < iend; ++i)
+        for (size_t i = 0, iend = g1.size(); i < iend; ++i)
         {
-            for (int j = 0, jend = g2.size(); j < jend; ++j)
+            for (size_t j = 0, jend = g2.size(); j < jend; ++j)
             {
                 dists.push_back(geom_convex_dist(g1[i], g2[j]));
             }
