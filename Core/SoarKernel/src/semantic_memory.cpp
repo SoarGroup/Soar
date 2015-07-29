@@ -461,12 +461,13 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_likelihood_trajectories (lti_id INTEGER, lti1 INTEGER, lti2 INTEGER, lti3 INTEGER, lti4 INTEGER, lti5 INTEGER, lti6 INTEGER, lti7 INTEGER, lti8 INTEGER, lti9 INTEGER, lti10 INTEGER, valid_bit INTEGER)");
     //This is bookkeeping. It contains counts of how often certain ltis show up in the fingerprints of other ltis.
     add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j INTEGER)");
+    //The above (smem_likelihoods) needs to have integers changed to real in order to support deterministic spreading.
     /*
      * This keeps track of how often an lti shows up in fingerprints at all when used for ACT-R activation and it keeps track of fingerprint size in Soar (personalized pagerank) activation
      */
     add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances INTEGER)");
     // This contains the counts needed to calculation spreading activation values for ltis in working memory.
-    add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
+    add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j INTEGER,num_appearances INTEGER, lti_source INTEGER)");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
@@ -1732,6 +1733,8 @@ extern bool smem_calc_spread_trajectory_deterministic(agent* thisAgent)
         delete to_delete->second;
     }
     //THESE NEED TO CHANGE GREATLY TO ACCOMODATE DETERMINISTIC BREADTH-FIRST TRAVERSAL!!!
+    //I could do a similar sum, but with the restart_p as a coefficient at each depth, but that requires non-int in schema.
+    //
     soar_module::sqlite_statement* likelihood_cond_count = new soar_module::sqlite_statement(thisAgent->smem_db,
             "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 GROUP BY lti, parent) GROUP BY parent, lti");
     likelihood_cond_count->prepare();
