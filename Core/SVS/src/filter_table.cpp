@@ -163,7 +163,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     string pname, ftype, itype;
     filter_input* input;
     bool fail;
-    filter* f;
+    filter* f = NULL;
     
     if (!root->is_identifier())
     {
@@ -177,7 +177,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         }
         else if (get_symbol_value(root, intval))
         {
-            return new const_filter<int>(intval);
+            return new const_filter<int>(static_cast<int>(intval));
         }
         else if (get_symbol_value(root, floatval))
         {

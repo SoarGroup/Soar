@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008-2010 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSEDENSEPRODUCT_H
 #define EIGEN_SPARSEDENSEPRODUCT_H
+
+namespace Eigen { 
 
 template<typename Lhs, typename Rhs, int InnerSize> struct SparseDenseProductReturnType
 {
@@ -32,7 +19,10 @@ template<typename Lhs, typename Rhs, int InnerSize> struct SparseDenseProductRet
 
 template<typename Lhs, typename Rhs> struct SparseDenseProductReturnType<Lhs,Rhs,1>
 {
-  typedef SparseDenseOuterProduct<Lhs,Rhs,false> Type;
+  typedef typename internal::conditional<
+    Lhs::IsRowMajor,
+    SparseDenseOuterProduct<Rhs,Lhs,true>,
+    SparseDenseOuterProduct<Lhs,Rhs,false> >::type Type;
 };
 
 template<typename Lhs, typename Rhs, int InnerSize> struct DenseSparseProductReturnType
@@ -42,7 +32,10 @@ template<typename Lhs, typename Rhs, int InnerSize> struct DenseSparseProductRet
 
 template<typename Lhs, typename Rhs> struct DenseSparseProductReturnType<Lhs,Rhs,1>
 {
-  typedef SparseDenseOuterProduct<Rhs,Lhs,true> Type;
+  typedef typename internal::conditional<
+    Rhs::IsRowMajor,
+    SparseDenseOuterProduct<Rhs,Lhs,true>,
+    SparseDenseOuterProduct<Lhs,Rhs,false> >::type Type;
 };
 
 namespace internal {
@@ -52,7 +45,7 @@ struct traits<SparseDenseOuterProduct<Lhs,Rhs,Tr> >
 {
   typedef Sparse StorageKind;
   typedef typename scalar_product_traits<typename traits<Lhs>::Scalar,
-                                            typename traits<Rhs>::Scalar>::ReturnType Scalar;
+                                         typename traits<Rhs>::Scalar>::ReturnType Scalar;
   typedef typename Lhs::Index Index;
   typedef typename Lhs::Nested LhsNested;
   typedef typename Rhs::Nested RhsNested;
@@ -124,20 +117,34 @@ template<typename Lhs, typename Rhs, bool Transpose>
 class SparseDenseOuterProduct<Lhs,Rhs,Transpose>::InnerIterator : public _LhsNested::InnerIterator
 {
     typedef typename _LhsNested::InnerIterator Base;
+    typedef typename SparseDenseOuterProduct::Index Index;
   public:
     EIGEN_STRONG_INLINE InnerIterator(const SparseDenseOuterProduct& prod, Index outer)
-      : Base(prod.lhs(), 0), m_outer(outer), m_factor(prod.rhs().coeff(outer))
-    {
-    }
+      : Base(prod.lhs(), 0), m_outer(outer), m_factor(get(prod.rhs(), outer, typename internal::traits<Rhs>::StorageKind() ))
+    { }
 
     inline Index outer() const { return m_outer; }
-    inline Index row() const { return Transpose ? Base::row() : m_outer; }
-    inline Index col() const { return Transpose ? m_outer : Base::row(); }
+    inline Index row() const { return Transpose ? m_outer : Base::index(); }
+    inline Index col() const { return Transpose ? Base::index() : m_outer; }
 
     inline Scalar value() const { return Base::value() * m_factor; }
 
   protected:
-    int m_outer;
+    static Scalar get(const _RhsNested &rhs, Index outer, Dense = Dense())
+    {
+      return rhs.coeff(outer);
+    }
+    
+    static Scalar get(const _RhsNested &rhs, Index outer, Sparse = Sparse())
+    {
+      typename Traits::_RhsNested::InnerIterator it(rhs, outer);
+      if (it && it.index()==0)
+        return it.value();
+      
+      return Scalar(0);
+    }
+    
+    Index m_outer;
     Scalar m_factor;
 };
 
@@ -149,6 +156,102 @@ struct traits<SparseTimeDenseProduct<Lhs,Rhs> >
   typedef Dense StorageKind;
   typedef MatrixXpr XprKind;
 };
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType,
+         int LhsStorageOrder = ((SparseLhsType::Flags&RowMajorBit)==RowMajorBit) ? RowMajor : ColMajor,
+         bool ColPerCol = ((DenseRhsType::Flags&RowMajorBit)==0) || DenseRhsType::ColsAtCompileTime==1>
+struct sparse_time_dense_product_impl;
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
+struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, RowMajor, true>
+{
+  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
+  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
+  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef typename Lhs::Index Index;
+  typedef typename Lhs::InnerIterator LhsInnerIterator;
+  static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
+  {
+    for(Index c=0; c<rhs.cols(); ++c)
+    {
+      Index n = lhs.outerSize();
+      for(Index j=0; j<n; ++j)
+      {
+        typename Res::Scalar tmp(0);
+        for(LhsInnerIterator it(lhs,j); it ;++it)
+          tmp += it.value() * rhs.coeff(it.index(),c);
+        res.coeffRef(j,c) = alpha * tmp;
+      }
+    }
+  }
+};
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
+struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, ColMajor, true>
+{
+  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
+  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
+  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef typename Lhs::InnerIterator LhsInnerIterator;
+  typedef typename Lhs::Index Index;
+  static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
+  {
+    for(Index c=0; c<rhs.cols(); ++c)
+    {
+      for(Index j=0; j<lhs.outerSize(); ++j)
+      {
+        typename Res::Scalar rhs_j = alpha * rhs.coeff(j,c);
+        for(LhsInnerIterator it(lhs,j); it ;++it)
+          res.coeffRef(it.index(),c) += it.value() * rhs_j;
+      }
+    }
+  }
+};
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
+struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, RowMajor, false>
+{
+  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
+  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
+  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef typename Lhs::InnerIterator LhsInnerIterator;
+  typedef typename Lhs::Index Index;
+  static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
+  {
+    for(Index j=0; j<lhs.outerSize(); ++j)
+    {
+      typename Res::RowXpr res_j(res.row(j));
+      for(LhsInnerIterator it(lhs,j); it ;++it)
+        res_j += (alpha*it.value()) * rhs.row(it.index());
+    }
+  }
+};
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
+struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, ColMajor, false>
+{
+  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
+  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
+  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef typename Lhs::InnerIterator LhsInnerIterator;
+  typedef typename Lhs::Index Index;
+  static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
+  {
+    for(Index j=0; j<lhs.outerSize(); ++j)
+    {
+      typename Rhs::ConstRowXpr rhs_j(rhs.row(j));
+      for(LhsInnerIterator it(lhs,j); it ;++it)
+        res.row(it.index()) += (alpha*it.value()) * rhs_j;
+    }
+  }
+};
+
+template<typename SparseLhsType, typename DenseRhsType, typename DenseResType,typename AlphaType>
+inline void sparse_time_dense_product(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const AlphaType& alpha)
+{
+  sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType>::run(lhs, rhs, res, alpha);
+}
+
 } // end namespace internal
 
 template<typename Lhs, typename Rhs>
@@ -161,31 +264,9 @@ class SparseTimeDenseProduct
     SparseTimeDenseProduct(const Lhs& lhs, const Rhs& rhs) : Base(lhs,rhs)
     {}
 
-    template<typename Dest> void scaleAndAddTo(Dest& dest, Scalar alpha) const
+    template<typename Dest> void scaleAndAddTo(Dest& dest, const Scalar& alpha) const
     {
-      typedef typename internal::remove_all<Lhs>::type _Lhs;
-      typedef typename internal::remove_all<Rhs>::type _Rhs;
-      typedef typename _Lhs::InnerIterator LhsInnerIterator;
-      enum {
-        LhsIsRowMajor = (_Lhs::Flags&RowMajorBit)==RowMajorBit,
-        RhsIsVector   = Rhs::ColsAtCompileTime==1
-      };
-      Index j=0;
-      for(j=0; j<m_lhs.outerSize(); ++j)
-      {
-        typename Rhs::Scalar rhs_j = alpha * m_rhs.coeff(LhsIsRowMajor ? 0 : j,0);
-        typename Dest::RowXpr dest_j(dest.row(LhsIsRowMajor ? j : 0));
-        typename Dest::Scalar tmp(0);
-        for(LhsInnerIterator it(m_lhs,j); it ;++it)
-        {
-          if(LhsIsRowMajor && RhsIsVector)  tmp += (it.value()) * m_rhs.coeff(it.index());
-          else if(LhsIsRowMajor)            dest_j += (alpha*it.value()) * m_rhs.row(it.index());
-          else if(RhsIsVector)              dest.coeffRef(it.index()) += it.value() * rhs_j;
-          else                              dest.row(it.index()) += (alpha*it.value()) * m_rhs.row(j);
-        }
-        if(LhsIsRowMajor && RhsIsVector)
-          dest.coeffRef(LhsIsRowMajor ? j : 0) = alpha * tmp;
-      }
+      internal::sparse_time_dense_product(m_lhs, m_rhs, dest, alpha);
     }
 
   private:
@@ -213,27 +294,18 @@ class DenseTimeSparseProduct
     DenseTimeSparseProduct(const Lhs& lhs, const Rhs& rhs) : Base(lhs,rhs)
     {}
 
-    template<typename Dest> void scaleAndAddTo(Dest& dest, Scalar alpha) const
+    template<typename Dest> void scaleAndAddTo(Dest& dest, const Scalar& alpha) const
     {
-      typedef typename internal::remove_all<Rhs>::type _Rhs;
-      typedef typename _Rhs::InnerIterator RhsInnerIterator;
-      enum { RhsIsRowMajor = (_Rhs::Flags&RowMajorBit)==RowMajorBit };
-      for(Index j=0; j<m_rhs.outerSize(); ++j)
-        for(RhsInnerIterator i(m_rhs,j); i; ++i)
-          dest.col(RhsIsRowMajor ? i.index() : j) += (alpha*i.value()) * m_lhs.col(RhsIsRowMajor ? j : i.index());
+      Transpose<const _LhsNested> lhs_t(m_lhs);
+      Transpose<const _RhsNested> rhs_t(m_rhs);
+      Transpose<Dest> dest_t(dest);
+      internal::sparse_time_dense_product(rhs_t, lhs_t, dest_t, alpha);
     }
 
   private:
     DenseTimeSparseProduct& operator=(const DenseTimeSparseProduct&);
 };
 
-// sparse * dense
-template<typename Derived>
-template<typename OtherDerived>
-inline const typename SparseDenseProductReturnType<Derived,OtherDerived>::Type
-SparseMatrixBase<Derived>::operator*(const MatrixBase<OtherDerived> &other) const
-{
-  return typename SparseDenseProductReturnType<Derived,OtherDerived>::Type(derived(), other.derived());
-}
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSEDENSEPRODUCT_H

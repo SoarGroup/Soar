@@ -21,7 +21,7 @@ namespace sml
 
 // This version makes synchronous calls, which means for example that a "run" command
 // will be executed on the client's thread.
-    class EmbeddedConnectionSynch : public EmbeddedConnection
+    class EXPORT EmbeddedConnectionSynch : public EmbeddedConnection
     {
         public:
             // Clients should not use this.  Use Connection::CreateEmbeddedConnection instead which creates
@@ -50,6 +50,8 @@ namespace sml
                 ClearError() ;
                 return false ;
             }
+		
+			sml::KernelSML* GetKernelSML() { return m_pKernelSML; }
     };
     
 } // End of namespace

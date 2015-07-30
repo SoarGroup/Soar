@@ -3,32 +3,20 @@
 //
 // Copyright (C) 2008-2010 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSEPRODUCT_H
 #define EIGEN_SPARSEPRODUCT_H
+
+namespace Eigen { 
 
 template<typename Lhs, typename Rhs>
 struct SparseSparseProductReturnType
 {
   typedef typename internal::traits<Lhs>::Scalar Scalar;
+  typedef typename internal::traits<Lhs>::Index Index;
   enum {
     LhsRowMajor = internal::traits<Lhs>::Flags & RowMajorBit,
     RhsRowMajor = internal::traits<Rhs>::Flags & RowMajorBit,
@@ -37,12 +25,12 @@ struct SparseSparseProductReturnType
   };
 
   typedef typename internal::conditional<TransposeLhs,
-    SparseMatrix<Scalar,0>,
-    const typename internal::nested<Lhs,Rhs::RowsAtCompileTime>::type>::type LhsNested;
+    SparseMatrix<Scalar,0,Index>,
+    typename internal::nested<Lhs,Rhs::RowsAtCompileTime>::type>::type LhsNested;
 
   typedef typename internal::conditional<TransposeRhs,
-    SparseMatrix<Scalar,0>,
-    const typename internal::nested<Rhs,Lhs::RowsAtCompileTime>::type>::type RhsNested;
+    SparseMatrix<Scalar,0,Index>,
+    typename internal::nested<Rhs,Lhs::RowsAtCompileTime>::type>::type RhsNested;
 
   typedef SparseSparseProduct<LhsNested, RhsNested> Type;
 };
@@ -112,15 +100,16 @@ class SparseSparseProduct : internal::no_assignment_operator,
     }
 
     template<typename Lhs, typename Rhs>
-    EIGEN_STRONG_INLINE SparseSparseProduct(const Lhs& lhs, const Rhs& rhs, RealScalar tolerance)
+    EIGEN_STRONG_INLINE SparseSparseProduct(const Lhs& lhs, const Rhs& rhs, const RealScalar& tolerance)
       : m_lhs(lhs), m_rhs(rhs), m_tolerance(tolerance), m_conservative(false)
     {
       init();
     }
 
-    SparseSparseProduct pruned(Scalar reference = 0, RealScalar epsilon = NumTraits<RealScalar>::dummy_precision()) const
+    SparseSparseProduct pruned(const Scalar& reference = 0, const RealScalar& epsilon = NumTraits<RealScalar>::dummy_precision()) const
     {
-      return SparseSparseProduct(m_lhs,m_rhs,internal::abs(reference)*epsilon);
+      using std::abs;
+      return SparseSparseProduct(m_lhs,m_rhs,abs(reference)*epsilon);
     }
 
     template<typename Dest>
@@ -193,5 +182,7 @@ SparseMatrixBase<Derived>::operator*(const SparseMatrixBase<OtherDerived> &other
 {
   return typename SparseSparseProductReturnType<Derived,OtherDerived>::Type(derived(), other.derived());
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSEPRODUCT_H

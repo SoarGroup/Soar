@@ -1,0 +1,50 @@
+learn --on
+
+sp {elaborate*state
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator.name <name>
+         ^test-structure <ts>)
+-->
+   (<s> ^name <name>
+        ^test-structure <ts>)
+}
+
+sp {elaborate*initialize*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^test-structure <ts>)
+   (<ts> ^foo <f>)
+}
+
+sp {propose*test
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name test)
+}
+
+sp {propose*test*substate
+   (state <s> ^name test
+              ^test-structure <ts>)
+   (<ts> ^foo <f>
+        -^foo { <x> <> <f> })
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name test)
+}
+
+sp {apply*test*substate
+   (state <s> ^superstate { <ss> <> nil }
+              ^operator <o>
+              ^test-structure <ts>)
+-->
+   (<ts> ^crash <crash>)
+}
+
+sp {done
+   (state <s> ^superstate nil
+              ^test-structure.crash <c>)
+-->
+   (halt)
+}
+

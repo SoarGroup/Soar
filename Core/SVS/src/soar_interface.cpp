@@ -126,7 +126,7 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
     for (int d = 0; d < 3; d++)
     {
         wme* dim_wme;
-        double dim_val;
+        double dim_val = 0.0;
         if (!find_child_wme(vec3_root, dims[d], dim_wme)
                 || !get_symbol_value(get_wme_val(dim_wme), dim_val))
         {

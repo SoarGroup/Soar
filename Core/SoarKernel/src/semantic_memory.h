@@ -54,7 +54,7 @@ class smem_param_container: public soar_module::param_container
         
         enum merge_choices { merge_none, merge_add };
         enum act_choices { act_recency, act_frequency, act_base };
-        
+
         soar_module::boolean_param* learning;
         soar_module::boolean_param* spreading;//clearly, for spreading.
         soar_module::constant_param<db_choices>* database;
@@ -62,30 +62,30 @@ class smem_param_container: public soar_module::param_container
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
-        
+
         soar_module::constant_param<soar_module::timer::timer_level>* timers;
-        
+
         soar_module::constant_param<page_choices>* page_size;
         soar_module::integer_param* cache_size;
         soar_module::constant_param<opt_choices>* opt;
-        
+
         soar_module::integer_param* thresh;
+
         soar_module::decimal_param* number_trajectories;
-        
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
+
         soar_module::decimal_param* spreading_baseline;
         soar_module::decimal_param* restart_probability;
-        
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
-        
+
         soar_module::int_set_param* base_incremental_threshes;
-        
+
         soar_module::boolean_param* mirroring;
-        
+
         smem_param_container(agent* new_agent);
 };
 
@@ -122,16 +122,16 @@ class smem_stat_container: public soar_module::stat_container
         smem_db_lib_version_stat* db_lib_version;
         smem_mem_usage_stat* mem_usage;
         smem_mem_high_stat* mem_high;
-        
+
         soar_module::integer_stat* expansions;
         soar_module::integer_stat* cbr;
         soar_module::integer_stat* stores;
         soar_module::integer_stat* act_updates;
         soar_module::integer_stat* mirrors;
-        
+
         soar_module::integer_stat* chunks;
         soar_module::integer_stat* slots;
-        
+
         smem_stat_container(agent* thisAgent);
 };
 
@@ -141,7 +141,7 @@ class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* 
 {
     protected:
         agent* thisAgent;
-        
+
     public:
         smem_db_lib_version_stat(agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred);
         const char* get_value();
@@ -153,7 +153,7 @@ class smem_mem_usage_stat: public soar_module::integer_stat
 {
     protected:
         agent* thisAgent;
-        
+
     public:
         smem_mem_usage_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred);
         int64_t get_value();
@@ -165,7 +165,7 @@ class smem_mem_high_stat: public soar_module::integer_stat
 {
     protected:
         agent* thisAgent;
-        
+
     public:
         smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred);
         int64_t get_value();
@@ -187,7 +187,7 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* init;
         soar_module::timer* hash;
         soar_module::timer* act;
-        
+
         smem_timer_container(agent* thisAgent);
 };
 
@@ -215,11 +215,11 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* begin;
         soar_module::sqlite_statement* commit;
         soar_module::sqlite_statement* rollback;
-        
+
         soar_module::sqlite_statement* var_get;
         soar_module::sqlite_statement* var_set;
         soar_module::sqlite_statement* var_create;
-        
+
         soar_module::sqlite_statement* hash_rev_int;
         soar_module::sqlite_statement* hash_rev_float;
         soar_module::sqlite_statement* hash_rev_str;
@@ -231,7 +231,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* hash_add_int;
         soar_module::sqlite_statement* hash_add_float;
         soar_module::sqlite_statement* hash_add_str;
-        
+
         soar_module::sqlite_statement* lti_add;
         soar_module::sqlite_statement* lti_get;
         soar_module::sqlite_statement* lti_letter_num;
@@ -239,57 +239,58 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* lti_access_get;
         soar_module::sqlite_statement* lti_access_set;
         soar_module::sqlite_statement* lti_get_t;
-        
+
         soar_module::sqlite_statement* web_add;
         soar_module::sqlite_statement* web_truncate;
         soar_module::sqlite_statement* web_expand;
-        
+
         soar_module::sqlite_statement* web_all;
-        
+
         soar_module::sqlite_statement* web_attr_all;
         soar_module::sqlite_statement* web_const_all;
         soar_module::sqlite_statement* web_lti_all;
-        
+
         soar_module::sqlite_statement* web_attr_child;
         soar_module::sqlite_statement* web_const_child;
         soar_module::sqlite_statement* web_lti_child;
-        
+
         soar_module::sqlite_statement* attribute_frequency_check;
         soar_module::sqlite_statement* wmes_constant_frequency_check;
         soar_module::sqlite_statement* wmes_lti_frequency_check;
-        
+
         soar_module::sqlite_statement* attribute_frequency_add;
         soar_module::sqlite_statement* wmes_constant_frequency_add;
         soar_module::sqlite_statement* wmes_lti_frequency_add;
-        
+
         soar_module::sqlite_statement* attribute_frequency_update;
         soar_module::sqlite_statement* wmes_constant_frequency_update;
         soar_module::sqlite_statement* wmes_lti_frequency_update;
-        
+
         soar_module::sqlite_statement* attribute_frequency_get;
         soar_module::sqlite_statement* wmes_constant_frequency_get;
         soar_module::sqlite_statement* wmes_lti_frequency_get;
-        
+
         soar_module::sqlite_statement* act_set;
         soar_module::sqlite_statement* act_lti_child_ct_set;
         soar_module::sqlite_statement* act_lti_child_ct_get;
         soar_module::sqlite_statement* act_lti_set;
         soar_module::sqlite_statement* act_lti_get;
-        
+
         soar_module::sqlite_statement* history_get;
         soar_module::sqlite_statement* history_push;
         soar_module::sqlite_statement* history_add;
+
         soar_module::sqlite_statement* prohibit_set;
         soar_module::sqlite_statement* prohibit_add;
         soar_module::sqlite_statement* prohibit_check;
         soar_module::sqlite_statement* prohibit_reset;
         soar_module::sqlite_statement* prohibit_remove;
         soar_module::sqlite_statement* history_remove;
-        
         soar_module::sqlite_statement* vis_lti;
         soar_module::sqlite_statement* vis_lti_act;
         soar_module::sqlite_statement* vis_value_const;
         soar_module::sqlite_statement* vis_value_lti;
+
         
         //The ones below are for spreading
         soar_module::sqlite_statement* web_val_parent;
@@ -316,11 +317,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* add_new_context;
         soar_module::sqlite_statement* add_fingerprint;
 
-
         smem_statement_container(agent* new_agent);
-        
+
     private:
-    
+
         void create_tables();
         void create_indices();
         void drop_tables(agent* new_agent);
@@ -391,27 +391,27 @@ typedef struct smem_data_struct
 {
     uint64_t last_cmd_time[2];          // last update to smem.command
     uint64_t last_cmd_count[2];         // last update to smem.command
-    
+
     smem_wme_stack* smem_wmes;          // wmes in last smem
 } smem_data;
 
 //
 
-enum smem_cue_element_type { attr_t, value_const_t, value_lti_t };
+enum smem_cue_element_type { attr_t, value_const_t, value_lti_t, smem_cue_element_type_none };
 
 typedef struct smem_weighted_cue_element_struct
 {
     uint64_t weight;
-    
+
     struct wme_struct* cue_element;
     smem_hash_id attr_hash;
     smem_hash_id value_hash;
     smem_lti_id value_lti;
-    
+
     smem_cue_element_type element_type;
     bool pos_element;
     MathQuery* mathElement;
-    
+
 } smem_weighted_cue_element;
 
 struct smem_compare_weighted_cue_elements
@@ -449,10 +449,10 @@ struct smem_chunk_struct
 {
     Symbol* soar_id;
     smem_lti_id lti_id;
-    
+
     char lti_letter;
     uint64_t lti_number;
-    
+
     smem_slot_map* slots;
 };
 
@@ -510,7 +510,7 @@ extern bool smem_parse_remove(agent* thisAgent, const char* chunks, std::string*
 extern void smem_visualize_store(agent* thisAgent, std::string* return_val);
 extern void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val);
 extern void smem_print_store(agent* thisAgent, std::string* return_val);
-extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth, std::string* return_val, bool history = false);
+extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;

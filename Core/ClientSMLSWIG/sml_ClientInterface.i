@@ -116,6 +116,8 @@
 #include "sml_ClientAnalyzedXML.h"
 #include "soar_instance.h"
 %}
+// name this () operator from soar_instance.h so it can be wrapped
+%rename(compare) cmp_str::operator();
 
 //
 // Override EXPORT macro

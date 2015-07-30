@@ -26,7 +26,7 @@
 /* TEMPORARY HACK (Ideally this should be doable through
    the external kernel interface but for now using a
    couple of global STL lists to get this information
-   from the rhs function to this prefference adding code)*/
+   from the rhs function to this preference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
 typedef signed short goal_stack_level;
@@ -39,12 +39,10 @@ typedef struct wme_struct wme;
 extern void init_firer(agent* thisAgent);
 extern void do_preference_phase(agent* thisAgent);
 
-/* RBD Definitely need more comments here */
 extern preference* find_clone_for_level(preference* p, goal_stack_level level);
 extern void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
         bool need_to_do_support_calculations, instantiation* original_inst);
 
-/* MMA 9-12 */
 extern void build_CDPS(agent* thisAgent, instantiation* inst);
 
 extern void deallocate_instantiation(agent* thisAgent, instantiation* inst);
@@ -59,5 +57,7 @@ inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation* i
 }
 
 extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
+
+extern goal_stack_level get_match_goal(condition* top_cond);
 
 #endif

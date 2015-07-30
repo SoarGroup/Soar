@@ -4,34 +4,21 @@
 // Copyright (C) 2011 Gael Guennebaud <gael.guennebaud@inria.fr>
 // Copyright (C) 2010 Daniel Lowengrub <lowdanie@gmail.com>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSEVIEW_H
 #define EIGEN_SPARSEVIEW_H
+
+namespace Eigen { 
 
 namespace internal {
 
 template<typename MatrixType>
 struct traits<SparseView<MatrixType> > : traits<MatrixType>
 {
-  typedef int Index;
+  typedef typename MatrixType::Index Index;
   typedef Sparse StorageKind;
   enum {
     Flags = int(traits<MatrixType>::Flags) & (RowMajorBit)
@@ -61,7 +48,7 @@ public:
   inline Index outerSize() const { return m_matrix.outerSize(); }
 
 protected:
-  const MatrixTypeNested m_matrix;
+  MatrixTypeNested m_matrix;
   Scalar m_reference;
   typename NumTraits<Scalar>::Real m_epsilon;
 };
@@ -69,6 +56,7 @@ protected:
 template<typename MatrixType>
 class SparseView<MatrixType>::InnerIterator : public _MatrixTypeNested::InnerIterator
 {
+  typedef typename SparseView::Index Index;
 public:
   typedef typename _MatrixTypeNested::InnerIterator IterBase;
   InnerIterator(const SparseView& view, Index outer) :
@@ -101,9 +89,11 @@ private:
 
 template<typename Derived>
 const SparseView<Derived> MatrixBase<Derived>::sparseView(const Scalar& m_reference,
-                                                          typename NumTraits<Scalar>::Real m_epsilon) const
+                                                          const typename NumTraits<Scalar>::Real& m_epsilon) const
 {
   return SparseView<Derived>(derived(), m_reference, m_epsilon);
 }
+
+} // end namespace Eigen
 
 #endif

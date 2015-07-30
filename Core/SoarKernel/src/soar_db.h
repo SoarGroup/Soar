@@ -245,7 +245,7 @@ namespace soar_module
             std::list<statement*>* statements;
             
         public:
-            statement_container(): statements(new std::list<statement*>()) {}
+            statement_container(): statements(new std::list<statement * >()) {}
             
             virtual ~statement_container()
             {
@@ -689,7 +689,8 @@ namespace soar_module
     }
     inline bool sqlite_database::sql_is_new_db(bool& return_value)
     {
-        int64_t numTables, value_retrieved;
+        int64_t numTables;
+        bool value_retrieved;
         
         value_retrieved = sql_simple_get_int("SELECT count(*) FROM sqlite_master WHERE type='table'", numTables);
         if (value_retrieved)
@@ -702,23 +703,6 @@ namespace soar_module
         }
         return value_retrieved;
     }
-    
-    template <typename T>
-    class db_predicate: public soar_module::agent_predicate<T>
-    {
-        public:
-            db_predicate(agent* new_agent);
-            bool operator()(T val);
-    };
-    template <typename T>
-    db_predicate<T>::db_predicate(agent* new_agent): agent_predicate<T>(new_agent) {}
-    
-    template <typename T>
-    bool db_predicate<T>::operator()(T /*val*/)
-    {
-        return (this->thisAgent->epmem_db->get_status() == soar_module::connected);
-    }
-    
 }
 
 #endif

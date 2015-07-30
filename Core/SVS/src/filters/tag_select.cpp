@@ -25,7 +25,7 @@ class tag_select_filter : public select_filter<sgnode*>
     public:
         tag_select_filter(Symbol* root, soar_interface* si,
                           filter_input* input)
-            : select_filter<sgnode*>(root, si, input)
+            : select_filter<sgnode * >(root, si, input)
         {}
         
         bool compute(const filter_params* p, sgnode*& out, bool& select)

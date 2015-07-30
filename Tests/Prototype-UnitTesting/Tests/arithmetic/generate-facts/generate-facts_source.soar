@@ -1,0 +1,5 @@
+source elaborations.soar
+source check.soar
+source clean.soar
+source init.soar
+source store.soar

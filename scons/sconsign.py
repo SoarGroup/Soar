@@ -250,7 +250,7 @@ def map_bkids(entry, name):
         return None
     result = []
     for i in range(len(bkids)):
-        result.append(nodeinfo_string(bkids[i], bkidsigs[i], "        "))
+        result.append(nodeinfo_string(bkids[i], bkidsigs[i], "          "))
     if result == []:
         return None
     return "\n        ".join(result)
@@ -311,13 +311,13 @@ def printfield(name, entry, prefix=""):
     if outlist:
         if Verbose:
             print "    implicit:"
-        print "        " + outlist
+        print "          " + outlist
     outact = field("action", entry, 0)
     if outact:
         if Verbose:
             print "    action: " + outact
         else:
-            print "        " + outact
+            print "          " + outact
 
 def printentries(entries, location):
     if Print_Entries:

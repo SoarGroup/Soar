@@ -72,7 +72,7 @@ namespace sml
     typedef KernelAgentMap::iterator                KernelAgentMapIter ;
     typedef KernelAgentMap::const_iterator          KernelAgentMapConstIter ;
     
-    class KernelSML
+    class EXPORT KernelSML
     {
             // Allow the kernel listener to execute command lines directly
             friend class AgentListener;
@@ -448,7 +448,7 @@ namespace sml
             static std::string  Wme2String(wme* pWME, bool refCounts);
             static void         PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts = false);
             static void         PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
-            void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count);
+            void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count);
             
         protected:
             KernelSML(int portToListenOn);
@@ -524,11 +524,12 @@ namespace sml
             // Note: Register and unregister are both sent to this one handler
             bool HandleRegisterForEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             
+#ifndef NO_SVS
             bool HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             
             bool HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
             bool HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
-            
+#endif
     };
     
 }

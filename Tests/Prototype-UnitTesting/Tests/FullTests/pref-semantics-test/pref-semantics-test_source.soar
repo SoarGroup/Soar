@@ -1,0 +1,45 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source sequence.soar
+source best-over-conflict.soar
+pushd best-over-conflict
+source best-over-conflict_source.soar
+popd
+source four-acceptable-best.soar
+pushd four-acceptable-best
+source four-acceptable-best_source.soar
+popd
+source four-acceptable-worst.soar
+pushd four-acceptable-worst
+source four-acceptable-worst_source.soar
+popd
+source initialize-pref-semantics-test.soar
+source last-better.soar
+pushd last-better
+source last-better_source.soar
+popd
+source simple-conflict.soar
+pushd simple-conflict
+source simple-conflict_source.soar
+popd
+source simple-conflict-worse.soar
+pushd simple-conflict-worse
+source simple-conflict-worse_source.soar
+popd
+source three-way-conflict.soar
+pushd three-way-conflict
+source three-way-conflict_source.soar
+popd
+source three-way-two.soar
+pushd three-way-two
+source three-way-two_source.soar
+popd
+source worst-over-conflict.soar
+pushd worst-over-conflict
+source worst-over-conflict_source.soar
+popd

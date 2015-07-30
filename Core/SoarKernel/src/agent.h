@@ -20,24 +20,21 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#ifndef GSYSPARAMS_H
-#include"gsysparam.h"
-#endif
-
+#include "memory_manager.h"
+#include "gsysparam.h"
 #include "kernel.h"
 #include "init_soar.h"
 #include "soar_module.h"
 #include "mem.h"
-#include "lexer.h"
 #include "callback.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-
 #include <string>
 #include <map>
+#include <unordered_map>
 
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
@@ -54,7 +51,6 @@ typedef struct symbol_struct Symbol;
 typedef struct hash_table_struct hash_table;
 typedef struct wme_struct wme;
 typedef struct memory_pool_struct memory_pool;
-typedef struct lexer_source_file_struct lexer_source_file;
 typedef struct production_struct production;
 typedef struct preference_struct preference;
 typedef struct pi_struct parent_inst;
@@ -66,29 +62,9 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct select_info_struct select_info;
 class AgentOutput_Info;
 class debug_param_container;
-
-// following def's moved here from old interface.h file  KJC nov 05
-/* AGR 568 begin */
-typedef struct expansion_node
-{
-    struct lexeme_info lexeme;
-    struct expansion_node* next;
-} expansion_node;
-
-typedef struct alias_struct
-{
-    char* alias;
-    struct expansion_node* expansion;
-    struct alias_struct* next;
-} alias_struct;
-
-typedef struct dir_stack_struct
-{
-    char* directory;
-    struct dir_stack_struct* next;
-} dir_stack_struct;
-/* AGR 568 end */
-
+class Output_Manager;
+class Variablization_Manager;
+class Memory_Manager;
 
 /* This typedef makes soar_callback_array equivalent to an array of list
    pointers. Since it was used only one time, it has been commented out
@@ -124,12 +100,13 @@ typedef signed short goal_stack_level;
 
 typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
-typedef char* test;
 
 class stats_statement_container;
+#ifndef NO_SVS
 class svs_interface;
+#endif
 
-typedef struct agent_struct
+typedef struct EXPORT agent_struct
 {
 
     /* -- Rete stuff: These are used for statistics in rete.cpp -- */
@@ -187,36 +164,6 @@ typedef struct agent_struct
     uint64_t            num_wmes_in_rete;
     wme*                all_wmes_in_rete;
     
-    /* Memory pools */
-    memory_pool         rete_node_pool;
-    memory_pool         rete_test_pool;
-    memory_pool         right_mem_pool;
-    memory_pool         token_pool;
-    memory_pool         alpha_mem_pool;
-    memory_pool         ms_change_pool;
-    memory_pool         node_varnames_pool;
-    
-    memory_pool         gds_pool;
-    
-    memory_pool         rl_info_pool;
-    memory_pool         rl_et_pool;
-    memory_pool         rl_rule_pool;
-    
-    memory_pool         wma_decay_element_pool;
-    memory_pool         wma_decay_set_pool;
-    memory_pool         wma_wme_oset_pool;
-    memory_pool         wma_slot_refs_pool;
-    
-    memory_pool         epmem_wmes_pool;
-    memory_pool         epmem_info_pool;
-    memory_pool         smem_wmes_pool;
-    memory_pool         smem_info_pool;
-    
-    memory_pool         epmem_literal_pool;
-    memory_pool         epmem_pedge_pool;
-    memory_pool         epmem_uedge_pool;
-    memory_pool         epmem_interval_pool;
-    
     /* Dummy nodes and tokens */
     struct rete_node_struct* dummy_top_node;
     struct token_struct* dummy_top_token;
@@ -238,12 +185,11 @@ typedef struct agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
     
-    /* ----------------------- Lexer stuff -------------------------- */
+    Symbol*             current_production_name;
     
-    lexer_source_file* current_file;  /* file we're currently reading */
-    int                 current_char; /* holds current input character */
-    struct lexeme_info  lexeme;       /* holds current lexeme */
-    bool               print_prompt_flag;
+    Variablization_Manager* variablizationManager;
+    Memory_Manager*         memoryManager;
+    Output_Manager*       outputManager;
     
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at
@@ -281,7 +227,6 @@ typedef struct agent_struct
     Symbol*             to_context_variable;
     Symbol*             ts_context_variable;
     Symbol*             type_symbol;
-    Symbol*             wait_symbol;   /* REW:  10.24.97 */
     
     Symbol*             item_count_symbol; // SBW 5/07
     Symbol*             non_numeric_count_symbol; // NLD 11/11
@@ -364,12 +309,6 @@ typedef struct agent_struct
     struct hash_table_struct* int_constant_hash_table;
     struct hash_table_struct* str_constant_hash_table;
     struct hash_table_struct* variable_hash_table;
-    
-    memory_pool         float_constant_pool;
-    memory_pool         identifier_pool;
-    memory_pool         int_constant_pool;
-    memory_pool         str_constant_pool;
-    memory_pool         variable_pool;
     
     /* ----------------------- Top-level stuff -------------------------- */
     
@@ -611,12 +550,10 @@ typedef struct agent_struct
     /* ----------------------- Chunker stuff -------------------------- */
     
     tc_number           backtrace_number;
-    memory_pool         chunk_cond_pool;
     uint64_t            chunk_count;
     uint64_t            justification_count;
     ::list*             grounds;
     tc_number           grounds_tc;
-    ::list*             instantiations_with_nots;
     ::list*             locals;
     tc_number           locals_tc;
     ::list*             positive_potentials;
@@ -625,33 +562,9 @@ typedef struct agent_struct
     preference*         results;
     goal_stack_level    results_match_goal_level;
     tc_number           results_tc_number;
-    tc_number           variablization_tc;
     preference*         extra_result_prefs_from_instantiation;
     bool               quiescence_t_flag;
     char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
-    
-    /* ----------------------- Misc. top-level stuff -------------------------- */
-    
-    memory_pool         action_pool;
-    memory_pool         complex_test_pool;
-    memory_pool         condition_pool;
-    memory_pool         not_pool;
-    memory_pool         production_pool;
-    
-    /* ----------------------- Reorderer stuff -------------------------- */
-    
-    memory_pool         saved_test_pool;
-    
-    /* ----------------------- Memory utilities -------------------------- */
-    
-    /* Counters for memory usage of various types */
-    size_t              memory_for_usage[NUM_MEM_USAGE_CODES];
-    
-    /* List of all memory pools being used */
-    memory_pool*        memory_pools_in_use;
-    
-    memory_pool         cons_cell_pool; /* pool for cons cells */
-    memory_pool         dl_cons_pool;   /* doubly-linked list cells */
     
     /* ----------------------- Explain.c stuff -------------------------- */
     
@@ -663,7 +576,6 @@ typedef struct agent_struct
     
     /* ----------------------- Firer stuff -------------------------- */
     
-    memory_pool         instantiation_pool;
     instantiation*      newly_created_instantiations;
     
     /* production_being_fired -- during firing, points to the prod. being fired */
@@ -676,10 +588,8 @@ typedef struct agent_struct
        Decider stuff
        =================================================================== */
     
-    memory_pool         preference_pool;
     
     uint64_t            current_wme_timetag;
-    memory_pool         wme_pool;
     ::list*             wmes_to_add;
     ::list*             wmes_to_remove;
     
@@ -697,7 +607,6 @@ typedef struct agent_struct
     Symbol*             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
     dl_list*            context_slots_with_changed_acceptable_preferences;
-    memory_pool         slot_pool;
     ::list*             slots_for_possible_removal;
     
     dl_list*            disconnected_ids;
@@ -738,7 +647,6 @@ typedef struct agent_struct
     struct output_link_struct* existing_output_links;
     
     struct output_link_struct* output_link_for_tc;
-    memory_pool         output_link_pool;
     tc_number           output_link_tc_num;
     
     bool               output_link_changed;
@@ -749,7 +657,6 @@ typedef struct agent_struct
     Symbol*             io_header_input;
     Symbol*             io_header_output;
     
-    memory_pool         io_wme_pool;
     Symbol*             prev_top_state;
     
     /* ------------ Varible Generator stuff (in production.c) ---------------- */
@@ -778,14 +685,6 @@ typedef struct agent_struct
     
     //soar_callback_array soar_callbacks;
     ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
-    
-    const char*         alternate_input_string;
-    const char*         alternate_input_suffix;
-    bool               alternate_input_exit; /* Soar-Bugs #54, TMH */
-    expansion_node*     lex_alias;         /* AGR 568 */
-    bool               load_errors_quit;  /* AGR 527c */
-    dir_stack_struct*   top_dir_stack;   /* AGR 568 */
-    
     
     /* RCHONG: begin 10.11 */
     bool      did_PE;
@@ -876,6 +775,10 @@ typedef struct agent_struct
     
     // debug parameters
     debug_param_container* debug_params;
+
+    // parser symbol clean-up list
+    ::list*             parser_syms;
+
     AgentOutput_Info* output_settings;
     // epmem
     epmem_param_container* epmem_params;
@@ -920,14 +823,29 @@ typedef struct agent_struct
     
     smem_pooled_symbol_set* smem_changed_ids;
     bool smem_ignore_changes;
+
     smem_lti_map* smem_in_wmem;//These are for spreading.
     smem_lti_set* smem_context_additions;
     smem_lti_set* smem_context_removals;
     // dynamic memory pools
     std::map< size_t, memory_pool* >* dyn_memory_pools;
+
+    
+	// BasicWeightedCue from JSoar for unit testing
+	class BasicWeightedCue
+	{
+	public:
+		const wme_struct* cue;
+		const long weight;
+		
+		BasicWeightedCue(wme_struct* c, long w) : cue(c), weight(w) {}
+	};
+	BasicWeightedCue* lastCue;
+	
+
     
     // dynamic RHS counters
-    std::map< std::string, uint64_t >* dyn_counters;
+    std::unordered_map< std::string, uint64_t >* dyn_counters;
     
     
     // JRV: Added to support XML management inside Soar
@@ -986,20 +904,22 @@ typedef struct agent_struct
         std::map<std::vector<std::string>, Entry> split;
     };
     std::map<goal_stack_level, RL_Trace> rl_trace;
+#ifndef NO_SVS
     svs_interface* svs;
+#endif
 } agent;
 /*************** end of agent struct *****/
 
 template <typename T>
 inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer)
 {
-    allocate_with_pool(thisAgent, &thisAgent->cons_cell_pool, (dest_cons_pointer));
+    thisAgent->memoryManager->allocate_with_pool(MP_cons_cell, (dest_cons_pointer));
 }
 
 template <typename T>
 inline void free_cons(agent* thisAgent, T* c)
 {
-    free_with_pool(&thisAgent->cons_cell_pool, (c));
+    thisAgent->memoryManager->free_with_pool(MP_cons_cell, (c));
 }
 
 template <typename P, typename T>
@@ -1015,14 +935,6 @@ inline void push(agent* thisAgent, P item, T*& list_header)
 extern void     init_soar_agent(agent* thisAgent);
 extern agent* create_soar_agent(char* name);
 extern void    destroy_soar_agent(agent* soar_agent);
-
-/* Ideally, this should be in "lexer.h", but to avoid circular dependencies
-   among header files, I am forced to put it here. */
-
-inline bool reading_from_top_level(agent* thisAgent)
-{
-    return (!thisAgent->current_file->parent_file);
-}
 
 #endif
 

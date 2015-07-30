@@ -37,15 +37,15 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
 {
     m_pKernelSML = pKernelSML ;
     m_SuppressRunEndsEvent = false ;
-    
+
     m_agent = pAgent ;
-    
+
     m_pAgentRunCallback = new AgentRunCallback() ;
     m_pAgentRunCallback->SetAgentSML(this) ;
-    
+
     m_pCaptureFile = 0;
     getSoarInstance()->Register_Soar_AgentSML(pAgent->name, this);
-    
+
 }
 
 void AgentSML::InitListeners()
@@ -56,7 +56,7 @@ void AgentSML::InitListeners()
     m_ProductionListener.Init(m_pKernelSML, this) ;
     m_OutputListener.Init(m_pKernelSML, this) ;
     m_InputListener.Init(m_pKernelSML, this) ;
-    
+
     // For KernelSML (us) to work correctly we need to listen for certain events, independently of what any client is interested in
     // Currently:
     // Listen for output callback events so we can send this output over to the clients
@@ -64,7 +64,7 @@ void AgentSML::InitListeners()
     // Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
     m_OutputListener.RegisterForKernelSMLEvents() ;
     m_InputListener.RegisterForKernelSMLEvents() ;
-    
+
 }
 
 // Can't call this until after the Soar agent has been initialized
@@ -72,12 +72,12 @@ void AgentSML::Init()
 {
     // Temporary HACK.  This should be fixed in the kernel.
     m_agent->stop_soar = false;
-    
+
     ResetCaptureReplay();
-    
+
     // Initializing the soar agent
     init_soar_agent(m_agent);
-    
+
     m_pRhsInterrupt = new InterruptRhsFunction(this) ;
     m_pRhsConcat    = new ConcatRhsFunction(this) ;
     m_pRhsExec      = new ExecRhsFunction(this) ;
@@ -86,10 +86,10 @@ void AgentSML::Init()
     RegisterRHSFunction(m_pRhsConcat) ;
     RegisterRHSFunction(m_pRhsExec) ;
     RegisterRHSFunction(m_pRhsCmd) ;
-    
+
     // Set counters and flags used to control runs
     InitializeRuntimeState() ;
-    
+
     // Register for the new INPUT_WME_GARBAGE_COLLECTED_CALLBACK
     // Base the id on the address of this object which ensures it's unique
     std::ostringstream callbackId;
@@ -101,15 +101,15 @@ void AgentSML::Init()
 AgentSML::~AgentSML()
 {
     ResetCaptureReplay();
-    
+
     // Register for the new INPUT_WME_GARBAGE_COLLECTED_CALLBACK
     // Base the id on the address of this object which ensures it's unique
     std::ostringstream callbackId;
     callbackId << "id_0x" << this << "_evt_" << INPUT_WME_GARBAGE_COLLECTED_CALLBACK;
     soar_remove_callback(GetSoarAgent(), INPUT_WME_GARBAGE_COLLECTED_CALLBACK, callbackId.str().c_str()) ;
-    
+
     delete m_pAgentRunCallback ;
-    
+
     /* RPM 9/06 added code from reinitialize_soar to clean up stuff hanging from last run
                need to put it here instead of in destroy_soar_agent because gSKI is
                 cleaning up too much stuff and thus it will crash if called later */
@@ -117,7 +117,7 @@ AgentSML::~AgentSML()
     m_agent->active_level = 0; /* Signal that everything should be retracted */
     m_agent->FIRING_TYPE = IE_PRODS;
     do_preference_phase(m_agent);    /* allow all i-instantiations to retract */
-    
+
     destroy_soar_agent(m_agent);
 }
 
@@ -129,11 +129,11 @@ void AgentSML::Clear(bool deletingThisAgent)
 #ifdef DEBUG_UPDATE
     sml::PrintDebugFormat("AgentSML::Clear start %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
 #endif
-    
+
     // Release any WME objects we still own.
     // (Don't flush removes in this case as we're shutting down rather than just doing an init-soar).
     ReleaseAllWmes(!deletingThisAgent) ;
-    
+
     RemoveRHSFunction(m_pRhsInterrupt) ;
     delete m_pRhsInterrupt ;
     m_pRhsInterrupt = NULL ;
@@ -146,13 +146,13 @@ void AgentSML::Clear(bool deletingThisAgent)
     RemoveRHSFunction(m_pRhsCmd)       ;
     delete m_pRhsCmd       ;
     m_pRhsCmd = NULL ;
-    
+
     m_ProductionListener.Clear();
     m_RunListener.Clear();
     m_PrintListener.Clear();
     m_OutputListener.Clear() ;
     m_XMLListener.Clear() ;
-    
+
 #ifdef DEBUG_UPDATE
     sml::PrintDebugFormat("AgentSML::Clear end %s", deletingThisAgent ? "deleting this agent." : "not deleting this agent.") ;
 #endif
@@ -170,16 +170,16 @@ void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
     sml::PrintDebugFormat("%s AgentSML::ReleaseAllWmes start %s", this->GetgSKIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
     sml::PrintDebugFormat("****************************************************") ;
 #endif
-    
+
     if (flushPendingRemoves)
     {
         // TODO:
         //bool forceAdds = false ;  // It doesn't matter if we do these or not as we're about to release everything.  Seems best to not start things up.
         //bool forceRemoves = true ;    // SML may have deleted a wme but gSKI has yet to act on this.  As SML has removed its object we have no way to free the gSKI object w/o doing this update.
     }
-    
+
     //PrintDebugFormat("About to release kernel wmes") ;
-    
+
     // BADBAD: we don't create or maintain this map anymore -- does this loop need to be replaced with something?
     //for (KernelTimeTagMapIter mapIter = m_KernelTimeTagMap.begin() ; mapIter != m_KernelTimeTagMap.end() ; mapIter++) {
     //  wme* wme = mapIter->second ;
@@ -188,19 +188,19 @@ void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
     //  release_io_symbol(this->GetSoarAgent(), wme->attr) ;
     //  release_io_symbol(this->GetSoarAgent(), wme->value) ;
     //}
-    
+
     for (PendingInputListIter iter = m_PendingInput.begin() ; iter != m_PendingInput.end() ; iter++)
     {
         soarxml::ElementXML* pMsg = *iter ;
         delete pMsg ;
     }
-    
+
     m_PendingInput.clear() ;
     m_DirectInputDeltaList.clear() ;
     m_ToClientIdentifierMap.clear() ;
     m_IdentifierMap.clear() ;
     m_IdentifierRefMap.clear() ;
-    
+
 #ifdef DEBUG_UPDATE
     sml::PrintDebugFormat("****************************************************") ;
     sml::PrintDebugFormat("%s AgentSML::ReleaseAllWmes end %s", this->GetgSKIAgent()->GetName(), flushPendingRemoves ? "flush pending removes." : "do not flush pending removes.") ;
@@ -235,33 +235,33 @@ void AgentSML::ResetCaptureReplay()
     {
         StopCaptureInput();
     }
-    
+
     m_ReplayTimetagMap.clear();
-    
+
     while (!m_CapturedActions.empty())
     {
         m_CapturedActions.pop();
     }
-    
+
     m_ReplayInput = false;
 }
 
 bool AgentSML::Reinitialize()
 {
     m_pKernelSML->FireAgentEvent(this, smlEVENT_BEFORE_AGENT_REINITIALIZED) ;
-    
+
     bool ok = reinitialize_soar(m_agent);
-    
+
     // This must happen now because old output link identifiers get shipped over during do_output_phase above
     // and then the new identifiers get shipped out during do_output_phase inside init_agent_memory below.
     // With smem, those identifier details can change (output-link not being I3) and this causes problems.
     // Can't use smlEVENT_AFTER_AGENT_REINITIALIZED because that happens too late.
     this->m_OutputListener.SendOutputInitEvent();
-    
+
     init_agent_memory(m_agent);
-    
+
     InitializeRuntimeState() ;
-    
+
     ResetCaptureReplay();
     m_pKernelSML->FireAgentEvent(this, smlEVENT_AFTER_AGENT_REINITIALIZED) ;
     return ok ;
@@ -286,7 +286,7 @@ void AgentSML::AddToPendingInputList(ElementXML_Handle hInputMsgHandle)
     // an increased ref count so the caller can do whatever they want with the original message
     soarxml::ElementXML* pMsg = new soarxml::ElementXML(hInputMsgHandle) ;
     pMsg->AddRefOnHandle() ;
-    
+
     m_PendingInput.push_back(pMsg) ;
 }
 
@@ -370,7 +370,7 @@ smlPhase AgentSML::GetCurrentPhase()
             return sml_PREFERENCE_PHASE;
         case WM_PHASE:
             return sml_WM_PHASE;
-            
+
         default:
             assert(false);
             return sml_INPUT_PHASE;
@@ -401,12 +401,12 @@ void AgentSML::Interrupt(smlStopLocationFlags stopLoc)
 {
     // Tell the agent where to stop
     m_interruptFlags = stopLoc;
-    
+
     // If the request for interrupt is sml_STOP_AFTER_DECISION_CYCLE, then it
     // will be caught in the RunScheduler::CompletedRunType() and/or IsAgentFinished().
     // We don't want to interrupt agents until the appropriate time if the request is
     // sml_STOP_AFTER_DECISION_CYCLE.
-    
+
     // These are immediate requests for interrupt, such as from RHS or application
     if ((sml_STOP_AFTER_SMALLEST_STEP == stopLoc) || (sml_STOP_AFTER_PHASE == stopLoc))
     {
@@ -430,7 +430,7 @@ void AgentSML::ClearInterrupts()
 {
     // Clear the interrupts whether running or not
     m_interruptFlags = 0;
-    
+
     // Only change state of agent if it is running
     if (m_runState == sml_RUNSTATE_INTERRUPTED)
     {
@@ -446,9 +446,9 @@ smlRunResult AgentSML::StepInClientThread(smlRunStepSize  stepSize)
     {
         return sml_RUN_ERROR;
     }
-    
+
     m_runState = sml_RUNSTATE_RUNNING;
-    
+
     // This method does all the work
     return Step(stepSize);
 }
@@ -460,7 +460,7 @@ void AgentSML::FireRunEvent(smlRunEventId eventId)
         // Send the trace to the clients
         xml_invoke_callback(GetSoarAgent());   // invokes XML_GENERATION_CALLBACK, clears XML state
     }
-    
+
     // Trigger a callback from the kernel to propagate the event out to listeners.
     // This allows us to use a single uniform model for all run events (even when some are really originating here in SML).
     int callbackEvent = KernelCallback::GetCallbackFromEventID(eventId) ;
@@ -486,15 +486,15 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
     uint64_t count = 1 ;
     uint64_t startCount        = GetRunCounter(stepSize) ; // getReleventCounter(stepSize);
     const uint64_t  END_COUNT  = startCount + count ;
-    
+
     bool interrupted  = (m_runState == sml_RUNSTATE_INTERRUPTED) ? true : false;
-    
+
     if (! interrupted)
     {
         assert(!m_agent->system_halted) ; // , "System should not be halted here!");
         // Notify that agent is about to execute. (NOT the start of a run, just a step)
         FireRunEvent(smlEVENT_BEFORE_RUNNING) ;
-        
+
         switch (stepSize)
         {
             case  sml_ELABORATION:
@@ -511,12 +511,12 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
                 break;
         }
     }
-    
+
     if (m_agent->stop_soar || (m_interruptFlags & sml_STOP_AFTER_SMALLEST_STEP) || (m_interruptFlags & sml_STOP_AFTER_PHASE))
     {
         interrupted = true;
     }
-    
+
     // KJC: If a gSKI_STOP_AFTER_DECISION_CYCLE has been requested, need to
     // check that agent phase is at the proper stopping point before interrupting.
     // If not at the right phase, but interrupt was requested, then the SML scheduler
@@ -536,18 +536,18 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
             interrupted = true;
         }
     }
-    
+
     if (interrupted)
     {
         // Notify of the interrupt
         FireRunEvent(smlEVENT_AFTER_INTERRUPT) ;
-        
+
         /* This is probably redundant with the event above, which clients can listen for... */
         FireSimpleXML("Interrupt received.") ;
     }
-    
+
     smlRunResult retVal;
-    
+
     // We've exited the run loop so we see what we should return
     if (m_agent->system_halted)
     {
@@ -561,9 +561,9 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
             m_runState = sml_RUNSTATE_INTERRUPTED;
             retVal     = sml_RUN_INTERRUPTED;
             // Notify of the interrupt
-            
+
             FireRunEvent(smlEVENT_AFTER_INTERRUPT) ;
-            
+
             /* This is probably redundant with the event above, which clients can listen for... */
             FireSimpleXML("Interrupt received.") ;
         }
@@ -572,9 +572,9 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
             // If we halted, we completed and our state is halted
             m_runState    = sml_RUNSTATE_HALTED;
             retVal        = sml_RUN_COMPLETED;
-            
+
             FireRunEvent(smlEVENT_AFTER_HALTED) ;
-            
+
             // fix for BUG 514  01-12-06
             FireSimpleXML("This Agent halted.") ;
         }
@@ -597,35 +597,35 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
     {
         // We were interrupted before we could complete
         assert(interrupted) ; //, "Should never get here if we aren't interrupted");
-        
+
         m_runState    = sml_RUNSTATE_INTERRUPTED;
         retVal        = sml_RUN_INTERRUPTED;
     }
-    
+
     // Notify that agent stopped. (NOT the end of a run, just a step)
     // Use AFTER_RUN_ENDS if you want to trap the end of the complete run.
     FireRunEvent(smlEVENT_AFTER_RUNNING) ;
-    
+
     return retVal;
 }
 
 void AgentSML::DeleteSelf()
 {
     this->Clear(true) ;
-    
+
     // Remove the listeners that KernelSML uses for this agent.
     // This is important.  Otherwise if we create a new agent using the same kernel object
     // the listener will still exist inside gSKI and will crash when an agent event is next generated.
     this->GetOutputListener()->UnRegisterForKernelSMLEvents() ;
-    
+
     this->GetInputListener()->UnRegisterForKernelSMLEvents() ;
-    
+
     // Unregister ourselves (this is important for the same reasons as listed above)
     //m_pKernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_BEFORE_AGENT_DESTROYED, this) ;
-    
+
     // Then delete our matching agent sml information
     m_pKernelSML->DeleteAgentSML(this->GetName()) ;
-    
+
     // Do self clean-up of this object as it's just called
     // prior to deleting the AgentSML structure.
     delete this ;
@@ -663,9 +663,9 @@ bool AgentSML::ConvertID(char const* pClientID, std::string* pKernelID)
     {
         return false ;
     }
-    
+
     IdentifierMapIter iter = m_IdentifierMap.find(pClientID) ;
-    
+
     if (iter == m_IdentifierMap.end())
     {
         // If the client id is not in the map, then we may have been
@@ -686,15 +686,15 @@ void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 {
     // Do we already have a mapping?
     IdentifierMapIter iter = m_IdentifierMap.find(pClientID);
-    
+
     if (iter == m_IdentifierMap.end())
     {
         // We don't, create a mapping, this indicates a reference count of 1
         m_IdentifierMap[pClientID] = pKernelID ;
-        
+
         // Record in both directions, so we can clean up (at which time we only know the kernel side ID).
         m_ToClientIdentifierMap[pKernelID] = pClientID ;
-        
+
         // Note that we leave the entry out of m_IdentifierRefMap, we only use
         // that for counts of two or greater
     }
@@ -720,7 +720,7 @@ void AgentSML::RemoveID(char const* pKernelID)
 {
     // first, find the identifer
     IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
-    
+
     // This identifier should have been in the table
     // Note: sometimes this is called by gSKI when it is removing wmes. gSKI doesn't know if
     // we're a direct connection and therefore aren't using this map, so in that case we need to not
@@ -730,10 +730,10 @@ void AgentSML::RemoveID(char const* pKernelID)
     {
         return ;
     }
-    
+
     // cache the identifer value
     std::string& clientID = iter->second ;
-    
+
     // decrement the reference count and remove the identifier from the maps if it is there
     IdentifierRefMapIter refIter = m_IdentifierRefMap.find(clientID);
     if (refIter == m_IdentifierRefMap.end())
@@ -748,7 +748,7 @@ void AgentSML::RemoveID(char const* pKernelID)
     {
         // if we have an entry, decrement it
         refIter->second -= 1;
-        
+
         // if the count falls to 1, remove it from this map since presence in the map requires
         // at least a ref count of two
         if (refIter->second < 2)
@@ -761,7 +761,7 @@ void AgentSML::RemoveID(char const* pKernelID)
 uint64_t AgentSML::ConvertTime(int64_t clientTimeTag)
 {
     CKTimeMapIter iter = m_CKTimeMap.find(clientTimeTag) ;
-    
+
     if (iter == m_CKTimeMap.end())
     {
         return 0 ;
@@ -779,7 +779,7 @@ uint64_t AgentSML::ConvertTime(char const* pTimeTag)
     {
         return 0 ;
     }
-    
+
     int64_t value = 0;
     from_c_string(value, pTimeTag);
     return ConvertTime(value);
@@ -803,7 +803,7 @@ void AgentSML::RemoveKernelTime(uint64_t kernelTimeTag)
         //assert( false );
         return;
     }
-    
+
     m_CKTimeMap.erase(kcIter->second);
     m_KCTimeMap.erase(kcIter);
 }
@@ -836,9 +836,9 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
     {
         return ;
     }
-    
+
     char const* szName = rhsFunction->GetName() ;
-    
+
     // Tell the kernel we are done listening.
     //RPM 9/06: removed symbol ref so symbol is released properly
     Symbol* tmp = make_str_constant(m_agent, szName);
@@ -868,35 +868,35 @@ char const* AgentSML::GetValueType(int type)
 std::string AgentSML::ExecuteCommandLine(std::string const& commandLine)
 {
     KernelSML* pKernel = m_pKernelSML ;
-    
+
     // We'll pretend this came from the local (embedded) connection.
     Connection* pConnection = pKernel->GetEmbeddedConnection() ;
-    
+
     // Build up a message to execute the command line
     bool rawOutput = true ;
     soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_CommandLine, rawOutput) ;
     pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, this->GetName());
     pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLine, commandLine.c_str()) ;
-    
+
     AnalyzeXML incoming ;
     incoming.Analyze(pMsg) ;
-    
+
     // Create a response object which the command line can fill in
     soarxml::ElementXML* pResponse = pConnection->CreateSMLResponse(pMsg) ;
-    
+
     // Execute the command line
     bool ok = pKernel->ProcessCommand(sml_Names::kCommand_CommandLine, pConnection, &incoming, pResponse) ;
-    
+
     std::string result ;
-    
+
     if (ok)
     {
         // Take the result from executing the command line and fill it in to our "pReturnValue" array.
         AnalyzeXML response ;
         response.Analyze(pResponse) ;
-        
+
         char const* pRes = response.GetResultString() ;
-        
+
         if (pRes)
         {
             result = pRes ;
@@ -906,11 +906,11 @@ std::string AgentSML::ExecuteCommandLine(std::string const& commandLine)
     {
         result = std::string("Error executing command ") + commandLine ;
     }
-    
+
     // Clean up
     delete pMsg ;
     delete pResponse ;
-    
+
     return result ;
 }
 
@@ -918,45 +918,45 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 {
     std::string idKernel ;
     ConvertID(pID, &idKernel) ;
-    
+
     char idLetter = idKernel[0] ;
     uint64_t idNumber = 0;
     from_c_string(idNumber, idKernel.substr(1).c_str());
-    
+
     // Now create the wme
     Symbol* pIDSymbol   = get_io_identifier(m_agent, idLetter, idNumber) ;
-    Symbol* pAttrSymbol = get_io_sym_constant(m_agent, pAttribute) ;
-    
+    Symbol* pAttrSymbol = get_io_str_constant(m_agent, pAttribute) ;
+
     CHECK_RET_FALSE(pIDSymbol) ;
     CHECK_RET_FALSE(pAttrSymbol) ;
-    
+
     wme* pNewInputWme = add_input_wme(m_agent, pIDSymbol, pAttrSymbol, pValueSymbol) ;
-    
+
     CHECK_RET_FALSE(pNewInputWme) ;
-    
+
     AddWmeToWmeMap(clientTimeTag, pNewInputWme) ;
-    
+
     //uint64_t timeTag = pNewInputWme->timetag ;
-    
+
     //if (kDebugInput)
     //  KernelSML::PrintDebugWme( "Adding wme ", pNewInputWme, true ) ;
-    
+
     // we just created these so lets release our ownership of them (they belong to the wme now)
     /*uint64_t refCount1 = */release_io_symbol(m_agent, pNewInputWme->id) ;
     /*uint64_t refCount2 = */release_io_symbol(m_agent, pNewInputWme->attr) ;
     /*uint64_t refCount3 = */release_io_symbol(m_agent, pNewInputWme->value) ;
-    
+
     //if (kDebugInput)
     //  KernelSML::PrintDebugWme("Adding wme ", pNewInputWme, true) ;
-    
+
     return true ;
 }
 
 bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
     // Creating a wme with a string constant value
-    Symbol* pValueSymbol = get_io_sym_constant(m_agent, pValue) ;
-    
+    Symbol* pValueSymbol = get_io_str_constant(m_agent, pValue) ;
+
     if (CaptureQuery())
     {
         // capture input enabled
@@ -970,7 +970,7 @@ bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char c
         ca.Add()->type = sml_Names::kTypeString;
         CaptureInputWME(ca);
     }
-    
+
     return AddInputWME(pID, pAttribute, pValueSymbol, clientTimeTag);
 }
 
@@ -978,7 +978,7 @@ bool AgentSML::AddIntInputWME(char const* pID, char const* pAttribute, int64_t v
 {
     // Creating a wme with an int constant value
     Symbol* pValueSymbol = get_io_int_constant(m_agent, value) ;
-    
+
     if (CaptureQuery())
     {
         // capture input enabled
@@ -994,7 +994,7 @@ bool AgentSML::AddIntInputWME(char const* pID, char const* pAttribute, int64_t v
         ca.Add()->type = sml_Names::kTypeInt;
         CaptureInputWME(ca);
     }
-    
+
     return AddInputWME(pID, pAttribute, pValueSymbol, clientTimeTag);
 }
 
@@ -1002,7 +1002,7 @@ bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double
 {
     // Creating a wme with an int constant value
     Symbol* pValueSymbol = get_io_float_constant(m_agent, value) ;
-    
+
     if (CaptureQuery())
     {
         // capture input enabled
@@ -1018,23 +1018,23 @@ bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double
         ca.Add()->type = sml_Names::kTypeDouble;
         CaptureInputWME(ca);
     }
-    
+
     return AddInputWME(pID, pAttribute, pValueSymbol, clientTimeTag);
 }
 
 bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
     Symbol* pValueSymbol = 0 ;
-    
+
     // We will always receive a client-side identifier
     // If that identifier is found when we try to convert it, it already exists in the kernel, we make a shared id.
     // If that identifier is not found when we try to convert it, we make a new identifier.
-    
+
     std::string idValue ;
     uint64_t idValueNumber = 0 ;
     char idValueLetter = 0;
     bool didntFindId = true;
-    
+
     if (ConvertID(pValue, &idValue))
     {
         // we found a kernel side mapping, shared id
@@ -1045,7 +1045,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
     else
     {
         // no kernel side mapping, new id
-        
+
         // new id based on first character of attribute
         if (isalpha(pAttribute[0]))
         {
@@ -1060,7 +1060,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
     }
     // Find/create the identifier
     pValueSymbol = get_io_identifier(m_agent, idValueLetter, idValueNumber) ;
-    
+
     // If pValueSymbol is a new id, then RecordIDMapping will create a map between the client and kernel id names.
     // Otherwise, RecordIDMapping will add a ref count to client id name.
     std::ostringstream buffer;
@@ -1071,7 +1071,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
     //{
     //  PrintDebugFormat("Recording id mapping of %s to %s", pValue, newid.c_str()) ;
     //}
-    
+
     if (CaptureQuery())
     {
         // capture input enabled
@@ -1085,7 +1085,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
         ca.Add()->type = sml_Names::kTypeID;
         CaptureInputWME(ca);
     }
-    
+
     return AddInputWME(pID, pAttribute, pValueSymbol, clientTimeTag);
 }
 
@@ -1093,15 +1093,15 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 {
     // TODO:
     // If input performance continues to be an issue, maybe some of these checks are redundant and can be removed.
-    
+
     // Begin sanity check
     // This function requires client side identifiers and timetags
     CHECK_RET_FALSE(pID);        // must have id
     // FIXME: enable, I2 seems to be a special case
     //CHECK_RET_FALSE( islower( pID[0] ) ); // id must be lower case
-    
+
     CHECK_RET_FALSE(pAttribute);         // must have attribute
-    
+
     CHECK_RET_FALSE(pValue);
     if (pType == sml_Names::kTypeID)   // if we're making a shared identifier
     {
@@ -1109,22 +1109,22 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
         CHECK_RET_FALSE(isalpha(pValue[0]));      // id must be alpha
         CHECK_RET_FALSE(islower(pValue[0]));      // id must be lower case
     }
-    
+
     // must have client side timetag
     CHECK_RET_FALSE(pClientTimeTag);
     int64_t clientTimeTag = 0;
     from_c_string(clientTimeTag, pClientTimeTag);
     CHECK_RET_FALSE(clientTimeTag < 0) ;
     // End sanity check
-    
+
     // Convert ID to kernel side.
     CHECK_RET_FALSE(strlen(pID) >= 2) ;
-    
+
     if (IsStringEqual(sml_Names::kTypeString, pType))
     {
         // Creating a wme with a string constant value
         return AddStringInputWME(pID, pAttribute, pValue, clientTimeTag);
-        
+
     }
     else if (IsStringEqual(sml_Names::kTypeInt, pType))
     {
@@ -1132,7 +1132,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
         int64_t value = 0;
         from_c_string(value, pValue);
         return AddIntInputWME(pID, pAttribute, value, clientTimeTag);
-        
+
     }
     else if (IsStringEqual(sml_Names::kTypeDouble, pType))
     {
@@ -1140,7 +1140,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
         double value = 0;
         from_c_string(value, pValue);
         return AddDoubleInputWME(pID, pAttribute, value, clientTimeTag);
-        
+
     }
     else if (IsStringEqual(sml_Names::kTypeID, pType))
     {
@@ -1157,44 +1157,44 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 {
     // Get the wme that matches this time tag
     uint64_t kernelTimeTag = this->ConvertTime(clientTimeTag) ;
-    
+
     //if (kDebugInput)
     //{
     //  PrintDebugFormat("Before removing wme") ;
     //  this->PrintKernelTimeTags() ;
     //}
-    
+
     wme* pWME = 0;
-    
+
     pWME = FindWmeFromKernelTimetag(kernelTimeTag) ;
-    
+
     //if (kDebugInput)
     //{
     //    std::string printInput1 = this->ExecuteCommandLine("print --internal --depth 2 I2") ;
     //  PrintDebugFormat("%s\nLooking for %ld", printInput1.c_str(), timetag) ;
     //}
-    
+
     // The wme is already gone so no work to do
     if (!pWME)
     {
         return false ;
     }
-    
+
     //if (kDebugInput)
     //  KernelSML::PrintDebugWme("Removing input wme ", pWME, true) ;
-    
+
     CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
-    
+
     if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        this->RemoveID(symbol_to_string(GetSoarAgent(), pWME->value, true, 0, 0)) ;
+        this->RemoveID(pWME->value->to_string(true)) ;
     }
-    
+
     RemoveWmeFromWmeMap(pWME);
     bool ok = remove_input_wme(m_agent, pWME) ;
-    
+
     CHECK_RET_FALSE(ok) ;
-    
+
     if (CaptureQuery())
     {
         // capture input enabled
@@ -1203,7 +1203,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
         ca.clientTimeTag = clientTimeTag;
         CaptureInputWME(ca);
     }
-    
+
     return (ok != 0) ;  // BADBAD: redundant with previous line?
 }
 
@@ -1218,7 +1218,7 @@ void AgentSML::AddWmeToWmeMap(int64_t clientTimeTag, wme* w)
 {
     uint64_t timetag = w->timetag ;
     m_KernelTimeTagToWmeMap[timetag] = w ;
-    
+
     // Keep track of which client timetags correspond to which kernel timetags
     this->RecordTime(clientTimeTag, timetag) ;
 }
@@ -1227,7 +1227,7 @@ void AgentSML::RemoveWmeFromWmeMap(wme* w)
 {
     int64_t timetag = w->timetag ;
     m_KernelTimeTagToWmeMap.erase(timetag) ;
-    
+
     // Keep track of which client timetags correspond to which kernel timetags
     this->RemoveKernelTime(timetag) ;
 }
@@ -1246,10 +1246,10 @@ void AgentSML::InputWmeGarbageCollectedHandler(agent* /*pSoarAgent*/, int eventI
 {
     (void)eventID; // silences warning in release mode
     assert(eventID == static_cast< int >(INPUT_WME_GARBAGE_COLLECTED_CALLBACK));
-    
+
     wme* pWME = static_cast< wme* >(pCallData);
     AgentSML* pAgent = static_cast< AgentSML* >(pData);
-    
+
     pAgent->RemoveWmeFromWmeMap(pWME);
 }
 
@@ -1263,9 +1263,9 @@ bool AgentSML::StartCaptureInput(const std::string& pathname, bool autoflush, ui
     {
         return false;
     }
-    
+
     m_CaptureAutoflush = autoflush;
-    
+
     m_pCaptureFile = new std::fstream(pathname.c_str(), std::fstream::out | std::fstream::trunc);
     if (m_pCaptureFile && m_pCaptureFile->good())
     {
@@ -1273,7 +1273,7 @@ bool AgentSML::StartCaptureInput(const std::string& pathname, bool autoflush, ui
         *m_pCaptureFile << seed << std::endl;
         return true;
     }
-    
+
     delete m_pCaptureFile;
     m_pCaptureFile = 0;
     return false;
@@ -1289,7 +1289,7 @@ bool AgentSML::StopCaptureInput()
     {
         return false;
     }
-    
+
     bool good = true;
     if (!m_CaptureAutoflush)
     {
@@ -1300,7 +1300,7 @@ bool AgentSML::StopCaptureInput()
             m_CapturedActions.pop();
         }
     }
-    
+
     delete m_pCaptureFile;
     m_pCaptureFile = 0;
     return good;
@@ -1332,13 +1332,13 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
     {
         return false;
     }
-    
+
     std::fstream replayFile(pathname.c_str(), std::fstream::in);
     if (replayFile.bad())
     {
         return false;
     }
-    
+
     uint32_t seed = 0;
     std::string line;
     if (!getline(replayFile, line))
@@ -1350,15 +1350,15 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
         return false;
     }
     SoarSeedRNG(seed);
-    
+
     // load replay file
     while (getline(replayFile, line))
     {
         std::string::size_type lpos = 0;
         std::string::size_type rpos = 0;
-        
+
         CapturedAction ca;
-        
+
         // decision cycle
         rpos = line.find(CAPTURE_SEPARATOR, lpos);
         if (rpos == std::string::npos)
@@ -1369,7 +1369,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
         {
             return false;
         }
-        
+
         // timetag
         lpos = rpos + 1;
         rpos = line.find(CAPTURE_SEPARATOR, lpos);
@@ -1381,7 +1381,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
         {
             return false;
         }
-        
+
         // action type
         lpos = rpos + 1;
         rpos = line.find(CAPTURE_SEPARATOR, lpos);
@@ -1397,11 +1397,11 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
             }
         }
         std::string actionType = line.substr(lpos, rpos - lpos);
-        
+
         if (actionType == "add-wme")
         {
             ca.CreateAdd();
-            
+
             // id
             lpos = rpos + 1;
             rpos = line.find(CAPTURE_SEPARATOR, lpos);
@@ -1411,7 +1411,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
             }
             ca.Add()->id = line.substr(lpos, rpos - lpos);
             std::cout << ca.Add()->id << std::endl;
-            
+
             // attr
             lpos = rpos + 1;
             rpos = findDelimReplaceEscape(line, lpos);
@@ -1421,7 +1421,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
             }
             ca.Add()->attr = line.substr(lpos, rpos - lpos);
             std::cout << ca.Add()->attr << std::endl;
-            
+
             // value
             lpos = rpos + 1;
             rpos = findDelimReplaceEscape(line, lpos);
@@ -1431,7 +1431,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
             }
             ca.Add()->value = line.substr(lpos, rpos - lpos);
             std::cout << ca.Add()->value << std::endl;
-            
+
             // type
             lpos = rpos + 1;
             rpos = line.length();
@@ -1441,7 +1441,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
             }
             std::string type = line.substr(lpos, rpos - lpos);
             std::cout << type << std::endl;
-            
+
             if (type == sml_Names::kTypeID)
             {
                 ca.Add()->type = sml_Names::kTypeID;
@@ -1474,7 +1474,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
         }
         m_CapturedActions.push(ca);
     }
-    
+
     m_ReplayInput = true;
     replayFile.close();
     return true;
@@ -1490,7 +1490,7 @@ bool AgentSML::StopReplayInput()
     {
         return false;
     }
-    
+
     while (!m_CapturedActions.empty())
     {
         m_CapturedActions.pop();
@@ -1519,7 +1519,7 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
         m_CapturedActions.push(ca);
         return true;
     }
-    
+
     if (!m_pCaptureFile)
     {
         return false;
@@ -1528,7 +1528,7 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
     {
         return false;
     }
-    
+
     *m_pCaptureFile << ca.dc << CAPTURE_SEPARATOR << ca.clientTimeTag << CAPTURE_SEPARATOR;
     if (ca.Add())
     {
@@ -1544,30 +1544,31 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
 
 void AgentSML::ReplayInputWMEs()
 {
+    /* These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
     if (m_CapturedActions.empty())
     {
         print(m_agent, "\n\nWarning: end of replay has been reached.\n");
         return;
     }
-    
+
     while (!m_CapturedActions.empty())
     {
         CapturedAction ca = m_CapturedActions.front();
         assert(ca.dc >= m_agent->d_cycle_count);
-        
+
         if (ca.dc != m_agent->d_cycle_count)
         {
             break;
         }
-        
+
         m_CapturedActions.pop();
-        
+
         if (ca.Add())
         {
             // add-wme
             char timetagString[25];
             SNPRINTF(timetagString, 25, "%ld", static_cast<long int>(ca.clientTimeTag));
-            
+
             if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
             {
                 print(m_agent, "\n\nWarning: replay add-wme failed.\n");

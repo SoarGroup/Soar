@@ -25,7 +25,7 @@ namespace sml
     class KernelSML ;
     
 // Abstract base class for embedded connections
-    class EmbeddedConnection : public Connection
+    class EXPORT EmbeddedConnection : public Connection
     {
         public:
             // Clients should not use this.  Use Connection::CreateEmbeddedConnection instead which creates

@@ -44,8 +44,10 @@
 #define PRINT_H
 
 #include <stdio.h>  // Needed for FILE token below
+#include "kernel.h"
 
-typedef char* test;
+typedef struct test_struct test_info;
+typedef test_info* test;
 typedef char* rhs_value;
 typedef unsigned char byte;
 typedef byte wme_trace_type;
@@ -85,11 +87,12 @@ extern void print(agent* thisAgent, const char* format, ...);
 extern void print_with_symbols(agent* thisAgent, const char* format, ...);
 extern void print_spaces(agent* thisAgent, int n);
 extern void snprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, ...);
+extern void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
 
 extern void filtered_print_wme_remove(agent* thisAgent, wme* w);
 extern void filtered_print_wme_add(agent* thisAgent, wme* w);
 
-
+extern void print_old (agent* thisAgent, const char *format, ...);
 
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion
@@ -114,8 +117,6 @@ extern void filtered_print_wme_add(agent* thisAgent, wme* w);
    Normally symbols are printed rereadably, but for (write) and Text I/O,
    we don't want this.
 
-   Test_to_string() takes a test and produces a string representation.
-
    Rhs_value_to_string() takes an rhs_value and produces a string
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
@@ -138,8 +139,6 @@ inline char bool_to_char(bool b)
 extern char* symbol_to_string(agent* thisAgent, Symbol* sym, bool rereadable, char* dest, size_t dest_size);
 extern char const* symbol_to_typeString(agent* thisAgent, Symbol* sym);
 
-extern char* test_to_string(test t, char* dest = NULL, size_t dest_size = 0, bool show_equality = false);
-
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
 
@@ -157,8 +156,6 @@ extern char* test_to_string(test t, char* dest = NULL, size_t dest_size = 0, boo
    Print_production() prints a given production, optionally using internal
    format.
 
-   print_test() print a verbose representation of a test for use during
-   debugging.  test_to_string() can be used to print tests more generally.
 ----------------------------------------------------------------------- */
 
 extern void print_condition_list(agent* thisAgent, condition* conds, int indent, bool internal);
