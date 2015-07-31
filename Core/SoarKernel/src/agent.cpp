@@ -414,17 +414,17 @@ agent* create_soar_agent(char* agent_name)                                      
 
     // statistics initialization
 
-    newAgent->dc_stat_tracking = false;
-    newAgent->stats_db = new soar_module::sqlite_database();
+    thisAgent->dc_stat_tracking = false;
+    thisAgent->stats_db = new soar_module::sqlite_database();
     /*
      * This is used to keep track of ltis in wmem.
      * */
-    newAgent->smem_in_wmem = new smem_lti_map;
-    newAgent->smem_context_additions = new smem_lti_set;
-    newAgent->smem_context_removals = new smem_lti_set;
-    newAgent->substate_break_level = 0;
+    thisAgent->smem_in_wmem = new smem_lti_map;
+    thisAgent->smem_context_additions = new smem_lti_set;
+    thisAgent->smem_context_removals = new smem_lti_set;
+    thisAgent->substate_break_level = 0;
     
-    return newAgent;
+    return thisAgent;
 }
 
 /*
