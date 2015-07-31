@@ -1,0 +1,9 @@
+sp {answer*apply9b*onc*t3-1
+    (state <s1> ^superstate nil ^test-param2 <p2>
+          ^test-param { <=> <p2> <> <p2> <p1> })
+    -->
+    (<s1> ^result9c <p2> + ^result9d <p1> + ^test-done 1 +)
+}
+
+
+
