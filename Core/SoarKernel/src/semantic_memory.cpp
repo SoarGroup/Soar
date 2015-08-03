@@ -1391,8 +1391,12 @@ void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,st
         parents_q->bind_int(1, lti_id);
         parents_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
-        while(parents_q->execute() == soar_module::row && parents_q->column_int(0) != lti_id)
+        while(parents_q->execute() == soar_module::row)
         {
+            if (parents_q->column_int(0) != lti_id)
+            {
+                continue;
+            }
             (lti_trajectories[lti_id])->push_back(parents_q->column_int(0));
             parents.push_back(parents_q->column_int(0));
         }
@@ -1439,8 +1443,12 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
         children_q->bind_int(1, lti_id);
         children_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
-        while(children_q->execute() == soar_module::row && children_q->column_int(0) != lti_id)
+        while(children_q->execute() == soar_module::row)
         {
+            if (children_q->column_int(0) != lti_id)
+            {
+                continue;
+            }
             (lti_trajectories[lti_id])->push_back(children_q->column_int(0));
             children.push_back(children_q->column_int(0));
         }
