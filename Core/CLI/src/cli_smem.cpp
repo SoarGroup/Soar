@@ -33,7 +33,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
-        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
@@ -54,12 +53,16 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
         PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);
+        PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->smem_params->spreading_depth_limit, 40);
+        PrintCLIMessage_Item("spreading-limit:", thisAgent->smem_params->spreading_limit, 40);
         PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
         PrintCLIMessage_Item("spreading-model:", thisAgent->smem_params->spreading_model, 40);
         PrintCLIMessage_Item("spreading-traversal:", thisAgent->smem_params->spreading_traversal, 40);
+        PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->smem_params->spreading_loop_avoidance, 40);
         PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
         PrintCLIMessage_Item("continue-probability:", thisAgent->smem_params->continue_probability, 40);
         PrintCLIMessage("");
@@ -372,7 +375,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
                     {*/
-                    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::precalculate)
+                    if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
                     {
                         if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
                         {

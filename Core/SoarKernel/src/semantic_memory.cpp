@@ -210,11 +210,13 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_model = new soar_module::constant_param<spreading_models>("spreading-model", likelihood, new soar_module::f_predicate<spreading_models>());
     spreading_model->add_mapping(likelihood, "likelihood");
     spreading_model->add_mapping(belief_update, "belief-update");
+    add(spreading_model);
 
     //spreading traversal
     spreading_traversal = new soar_module::constant_param<spreading_traversals>("spreading-traversal", random, new soar_module::f_predicate<spreading_traversals>());
     spreading_traversal->add_mapping(random, "random");
     spreading_traversal->add_mapping(deterministic, "deterministic");
+    add(spreading_traversal);
 
     //spreading breadth-first search limit
     spreading_limit = new soar_module::decimal_param("spreading-limit", 50, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
