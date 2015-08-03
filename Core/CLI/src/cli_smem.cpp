@@ -56,8 +56,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
+        PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);
+        PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
+        PrintCLIMessage_Item("spreading-model:", thisAgent->smem_params->spreading_model, 40);
+        PrintCLIMessage_Item("spreading-traversal:", thisAgent->smem_params->spreading_traversal, 40);
         PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
-        PrintCLIMessage_Item("restart-probability:", thisAgent->smem_params->restart_probability, 40);
+        PrintCLIMessage_Item("continue-probability:", thisAgent->smem_params->continue_probability, 40);
         PrintCLIMessage("");
 
         return true;
@@ -344,7 +348,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
                 if (pVal)
                 {
-                    if (((((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr")) && strcmp(pVal->c_str(), "ppr-backwards")) && strcmp(pVal->c_str(), "ppr-both")) && strcmp(pVal->c_str(), "ppr-deterministic"))
+                    if (strcmp(pVal->c_str(), "actr") && strcmp(pVal->c_str(), "ppr"))
                     {
                         assert(false); //This shouldn't happen while I'm testing.
                     }
@@ -356,7 +360,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                   /* if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
                     {
                         smem_calc_spread_trajectory_actr(thisAgent);
                     }
@@ -367,16 +371,24 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     else if ((thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
+                    {*/
+                    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::precalculate)
                     {
-                        smem_calc_spread_trajectories(thisAgent);
-                    }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_deterministic)
-                    {
-                        smem_calc_spread_trajectories_deterministic(thisAgent);
-                    }
-                    else
-                    {
-                        assert(false);
+                        if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
+                        {
+                            smem_calc_spread_trajectories(thisAgent);
+                        }
+                        else if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
+                        {
+                            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                            {
+                                smem_calc_spread_trajectory_actr(thisAgent);
+                            }
+                            else
+                            {
+                                smem_calc_spread_trajectories_deterministic(thisAgent);
+                            }
+                        }
                     }
                 }
             }

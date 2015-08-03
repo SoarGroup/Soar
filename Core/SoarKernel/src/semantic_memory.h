@@ -46,7 +46,24 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
-        enum spreading_types { ppr, ppr_noloop, actr, ppr_backwards, ppr_both, ppr_deterministic };
+        // This determines what math is done to combine the spreading and base-level components when using the likelihood probability model.
+        enum spreading_types { ppr, actr };
+        // The network traversal used to calculate spread can go along edges, reverse edge direction, or treat all edges as bidirectional.
+        enum spreading_directions { forwards, backwards, both };
+        // Precalculate - The calculation of a fingerprint is done when spreading is turned on.
+            // When the long-term store changes, the fingerprint will need to be recalculated. This is done at query-time.
+        // query-time - The calculation of a fingerprint isn't done until query-time.
+            // When the long-term store changes, nothing is done.
+        // context-change - The calculation of a fingerprint is done when a LTI enters working memory.
+            // When the long-term store changes, nothing is done.
+        enum spreading_times { precalculate, query_time, context_change };
+        // Currently, only the likelihood option is supported. The way spreading is calculated is only as an additional number combined with BLA
+        // The belief-update model would modify the base-level activation of nodes according to spread isntead of keeping the numbers separate.
+            //For example, when using context-change spreading, a LTI no longer in working memory (because it was recently removed) may still
+            // have an effect on cued-retrieval (queries) because it modified the base-level activation of other elements and that has yet to decay away enough.
+        enum spreading_models { likelihood, belief_update };
+        // Random walks versus limited breadth-first traversal
+        enum spreading_traversals { random, deterministic };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
@@ -59,6 +76,10 @@ class smem_param_container: public soar_module::param_container
         soar_module::boolean_param* spreading;//clearly, for spreading.
         soar_module::constant_param<db_choices>* database;
         soar_module::constant_param<spreading_types>* spreading_type;
+        soar_module::constant_param<spreading_directions>* spreading_direction;
+        soar_module::constant_param<spreading_times>* spreading_time;
+        soar_module::constant_param<spreading_models>* spreading_model;
+        soar_module::constant_param<spreading_traversals>* spreading_traversal;
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
@@ -77,8 +98,11 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
 
+        soar_module::decimal_param* spreading_limit;
+        soar_module::decimal_param* spreading_depth_limit;
         soar_module::decimal_param* spreading_baseline;
-        soar_module::decimal_param* restart_probability;
+        soar_module::decimal_param* continue_probability;
+        soar_module::boolean_param* spreading_loop_avoidance;
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
 
@@ -88,8 +112,8 @@ class smem_param_container: public soar_module::param_container
 
         smem_param_container(agent* new_agent);
 };
-
 class smem_path_param: public soar_module::string_param
+
 {
     protected:
         agent* thisAgent;
