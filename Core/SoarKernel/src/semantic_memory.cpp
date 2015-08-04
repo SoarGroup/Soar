@@ -4051,7 +4051,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     thisAgent->smem_timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
     
-    if (thisAgent->smem_params->spreading->get_value() == on)
+    if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() != smem_param_container::context-change)
     {
         //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
         //First, we fix bad trajectories. (Asynchronous would be nice.)
@@ -6115,7 +6115,12 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 		delete thisAgent->lastCue;
 		thisAgent->lastCue = NULL;
 	}
-    
+	if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context-change)
+	{
+	    smem_fix_spread(thisAgent);
+        //Contribution from context
+        smem_calc_spread(thisAgent);
+	}
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
