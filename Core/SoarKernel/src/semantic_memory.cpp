@@ -2196,18 +2196,24 @@ void smem_fix_spread(agent* thisAgent)
     {
         thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*invalid_parent));
         thisAgent->smem_stmts->likelihood_cond_count_remove->execute(soar_module::op_reinit);
-        for (int i = 1; i < 11; i++)
+        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
         {
-            thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*invalid_parent));
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*invalid_parent));
+            }
+            thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
         }
-        thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
     }
     for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
     {
         thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*invalid_parent));
         thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
-        thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*invalid_parent));
-        thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
+        {
+            thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*invalid_parent));
+            thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+        }
     }
 }
 
@@ -2362,6 +2368,10 @@ void smem_calc_spread(agent* thisAgent)
                     trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
+                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(1,*it);
+                thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+                thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
+                thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
             }
         }
         else
@@ -2376,6 +2386,10 @@ void smem_calc_spread(agent* thisAgent)
                     trajectory_construction(thisAgent,trajectory,lti_trajectories);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
+                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(1,*it);
+                thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+                thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
+                thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
             }
         }
         for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
