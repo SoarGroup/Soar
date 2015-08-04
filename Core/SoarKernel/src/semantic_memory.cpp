@@ -2153,7 +2153,7 @@ void smem_fix_spread(agent* thisAgent)
     std::set<smem_lti_id>::iterator invalid_parent;
     std::set<smem_lti_id> invalidated_parents;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
-    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
+    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic || thisAgent->smem_params->spreading_time->get_value() != smem_param_container::precalculate)
     {
         while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
         {
@@ -2161,15 +2161,18 @@ void smem_fix_spread(agent* thisAgent)
         }
         thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
         thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
-        for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
+        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
         {
-            std::list<smem_lti_id> trajectory;
-            trajectory.push_back(*invalid_parent);
-            trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+            for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
+            {
+                std::list<smem_lti_id> trajectory;
+                trajectory.push_back(*invalid_parent);
+                trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+            }
         }
     }
     else
-    {
+    {//We are both random and on precalculate timing.
         while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
         {
             lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
@@ -2343,6 +2346,43 @@ void smem_calc_spread(agent* thisAgent)
             "SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM "
             "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
             "smem_trajectory_num ON lti_id=lti_j");*/
+    //I may need to make some walks here.
+    if (thisAgent->smem_params->spreading_time->get_value() != smem_param_container::precalculate)
+    {
+        std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
+        if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
+        {
+            for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+            {//We keep track of old walks. If we haven't changed smem, no need to recalculate.
+                thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
+                if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
+                {
+                    std::list<smem_lti_id> trajectory;
+                    trajectory.push_back(*it);
+                    trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+                }
+                thisAgent->smem_stmts->trajectory_get->reinitialize();
+            }
+        }
+        else
+        {
+            for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+            {//We keep track of old walks. If we havent changed smem, no need to recalculate.
+                thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
+                if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
+                {
+                    std::list<smem_lti_id> trajectory;
+                    trajectory.push_back(*it);
+                    trajectory_construction(thisAgent,trajectory,lti_trajectories);
+                }
+                thisAgent->smem_stmts->trajectory_get->reinitialize();
+            }
+        }
+        for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
+        {
+            delete to_delete->second;
+        }
+    }
     soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
     //add_fingerprint->prepare();
 
@@ -3997,24 +4037,15 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     thisAgent->smem_timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
     
-    //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
-    //First, we fix bad trajectories. (Asynchronous would be nice.)
     if (thisAgent->smem_params->spreading->get_value() == on)
     {
+        //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
+        //First, we fix bad trajectories. (Asynchronous would be nice.)
         smem_fix_spread(thisAgent);
-    }
 
-    //Contribution from context
-    if (thisAgent->smem_params->spreading->get_value() == on)
-    {
-        /*if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_deterministic)
-        {
-            smem_calc_spread_deterministic(thisAgent);
-        }
-        else*/
-        {
-            smem_calc_spread(thisAgent);
-        }
+        //Contribution from context
+        smem_calc_spread(thisAgent);
+
     }
 
     // prepare query stats
