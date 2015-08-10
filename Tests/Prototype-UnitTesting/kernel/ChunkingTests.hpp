@@ -148,27 +148,6 @@ public:
 	TEST(testRL_Variablization,-1);
 	void testRL_Variablization();
 	
-	TEST(testChunk43,-1);
-	void testChunk43();
-	
-	TEST(testChunk44,-1);
-	void testChunk44();
-	
-	TEST(testChunk45,-1);
-	void testChunk45();
-	
-	TEST(testChunk46,-1);
-	void testChunk46();
-	
-	TEST(testChunk47,-1);
-	void testChunk47();
-	
-	TEST(testChunk48,-1);
-	void testChunk48();
-	
-	TEST(testChunk49,-1);
-	void testChunk49();
-	
 private:
 	void build_and_check_chunk(const std::string& path, int decisions, int expected_chunks);
 };

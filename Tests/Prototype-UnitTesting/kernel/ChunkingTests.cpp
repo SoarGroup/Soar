@@ -263,38 +263,3 @@ void ChunkingTests::testUnify_through_Two_Traces_Four_Deep()
 {
 	build_and_check_chunk("testUnify_through_Two_Traces_Four_Deep", 3, 1);
 }
-
-void ChunkingTests::testChunk43()
-{
-	build_and_check_chunk("testchunk43", 3, 1);
-}
-
-void ChunkingTests::testChunk44()
-{
-	build_and_check_chunk("testchunk44", 2, 1);
-}
-
-void ChunkingTests::testChunk45()
-{
-	build_and_check_chunk("testchunk45", 3, 1);
-}
-
-void ChunkingTests::testChunk46()
-{
-	build_and_check_chunk("testchunk46", 3, 1);
-}
-
-void ChunkingTests::testChunk47()
-{
-	build_and_check_chunk("testchunk47", 3, 1);
-}
-
-void ChunkingTests::testChunk48()
-{
-	build_and_check_chunk("testchunk48", 3, 1);
-}
-
-void ChunkingTests::testChunk49()
-{
-	build_and_check_chunk("testchunk49", 3, 1);
-}
