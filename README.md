@@ -13,6 +13,10 @@ For binary builds of Soar you can get them in two places:
 * [Latest Successful Development Build](http://soar-jenkins.eecs.umich.edu/Nightlies/)
   * Note: If there isn't a build for your platform or if the 7zip archive is older than the others, the build failed.  You can check [here](https://github.com/SoarGroup/Soar/branches) to see if it successfully built on all platforms.
 
+# Soar Performance
+
+Some performance statistics are calculated automatically using the Factorization Stress Tests.  These can be found [here](http://soar-jenkins.eecs.umich.edu/Performance/).  The raw data used to generate the graphs for each build is there as well (Performance-Build#.zip).
+
 # License
 
-[LICENSE.md](https://github.com/SoarGroup/Soar/blob/development/LICENSE.md) which is [BSD](http://opensource.org/licenses/BSD-2-Clause)
+Soar is available under the following [LICENSE](https://github.com/SoarGroup/Soar/blob/development/LICENSE.md).  This license is [BSD](http://opensource.org/licenses/BSD-2-Clause)
