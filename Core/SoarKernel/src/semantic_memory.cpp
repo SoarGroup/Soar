@@ -489,14 +489,14 @@ void smem_statement_container::create_tables()
     //Just added "valid_bit"
     add_structure("CREATE TABLE smem_likelihood_trajectories (lti_id INTEGER, lti1 INTEGER, lti2 INTEGER, lti3 INTEGER, lti4 INTEGER, lti5 INTEGER, lti6 INTEGER, lti7 INTEGER, lti8 INTEGER, lti9 INTEGER, lti10 INTEGER, valid_bit INTEGER)");
     //This is bookkeeping. It contains counts of how often certain ltis show up in the fingerprints of other ltis.
-    add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j INTEGER)");
+    add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j REAL)");
     //The above (smem_likelihoods) needs to have integers changed to real in order to support deterministic spreading.
     /*
      * This keeps track of how often an lti shows up in fingerprints at all when used for ACT-R activation and it keeps track of fingerprint size in Soar (personalized pagerank) activation
      */
-    add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances INTEGER)");
+    add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances REAL)");
     // This contains the counts needed to calculation spreading activation values for ltis in working memory.
-    add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j INTEGER,num_appearances INTEGER, lti_source INTEGER)");
+    add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER)");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
 
@@ -887,6 +887,37 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //add spread precalculated values for some lti
     likelihood_cond_count_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti, parent) GROUP BY parent, lti");
     add(likelihood_cond_count_insert);
+
+    /*std::stringstream sqlite_string;
+    sqlite_string << "INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j)"
+            " SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*)"
+            "*?" << " AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti) GROUP BY lti";*/
+
+//    std::string temp_string = sqlite_string.str();
+  //  likelihood_cond_count_insert_deterministic = new soar_module::sqlite_statement(new_db,temp_string.c_str());
+    likelihood_cond_count_insert_deterministic = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j)"
+            " SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*)"
+            "*? AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti) GROUP BY lti");
+    add(likelihood_cond_count_insert_deterministic);
+
 
     //add other spread precalculated values for some lti
     lti_count_num_appearances_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods WHERE lti_j=? GROUP BY lti_j");
@@ -1393,7 +1424,7 @@ void parent_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,st
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
         while(parents_q->execute() == soar_module::row)
         {
-            if (parents_q->column_int(0) != lti_id)
+            if (parents_q->column_int(0) == lti_id)
             {
                 continue;
             }
@@ -1445,7 +1476,7 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
         lti_trajectories[lti_id] = new std::list<smem_lti_id>;
         while(children_q->execute() == soar_module::row)
         {
-            if (children_q->column_int(0) != lti_id)
+            if (children_q->column_int(0) == lti_id)
             {
                 continue;
             }
@@ -1501,7 +1532,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
         // Find all of the children of the current lti_id. (current = end of the current list from the queue)
         current_lti_list = lti_traversal_queue.front();
         current_lti = current_lti_list->back();
-        if (lti_trajectories.find(current_lti)==lti_trajectories.end())
+        //if (lti_trajectories.find(current_lti)==lti_trajectories.end())
         {
             child_spread(thisAgent, current_lti, lti_trajectories,1);//This just gets the children of the current lti_id.
         }
@@ -1509,6 +1540,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
         lti_end = lti_trajectories[current_lti]->end();//last child
         old_list_iterator_begin = current_lti_list->begin();
         old_list_iterator_end = current_lti_list->end();
+        //assert(lti_begin != lti_end);
         for (lti_iterator = lti_begin; lti_iterator != lti_end; ++lti_iterator)
         {
             //First, we make a new copy of the list to add to the queue.
@@ -1529,7 +1561,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
             {
                 thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *new_list_iterator);
             }
-            while (depth < 10 && depth < depth_limit)
+            while (depth < 11 && depth < depth_limit+1)
             {
                 thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
             }
@@ -2204,11 +2236,25 @@ void smem_fix_spread(agent* thisAgent)
         thisAgent->smem_stmts->likelihood_cond_count_remove->execute(soar_module::op_reinit);
         if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
         {
-            for (int i = 1; i < 11; i++)
-            {
-                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*invalid_parent));
+            if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
+                {
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*invalid_parent));
+                }
+                thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
             }
-            thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+            else
+            {
+                double p1 = thisAgent->smem_params->continue_probability->get_value();
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_double(2*i-1,p1);
+                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_int(2*i,(*invalid_parent));
+                    p1 = p1 * p1;
+                }
+                thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->execute(soar_module::op_reinit);
+            }
         }
     }
     for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
@@ -2377,8 +2423,16 @@ void smem_calc_spread(agent* thisAgent)
                     trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
-                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(1,*it);
-                thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+
+                double p1 = thisAgent->smem_params->continue_probability->get_value();
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_double(2*i-1,p1);
+                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_int(2*i,(*it));
+                    p1 = p1 * p1;
+                }
+                thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->execute(soar_module::op_reinit);
+
                 thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
                 thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
             }
@@ -2395,7 +2449,10 @@ void smem_calc_spread(agent* thisAgent)
                     trajectory_construction(thisAgent,trajectory,lti_trajectories);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
-                thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(1,*it);
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*it));
+                }
                 thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
                 thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
                 thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
@@ -3367,7 +3424,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = smem_lti_activate(thisAgent, lti_id, true, new_edges);
+        double lti_act = smem_lti_activate(thisAgent, lti_id, false, new_edges);
         
         if (!after_above)
         {
