@@ -17,6 +17,9 @@ For binary builds of Soar you can get them in two places:
 
 Some performance statistics are calculated automatically using the Factorization Stress Tests.  These can be found [here](http://soar-jenkins.eecs.umich.edu/Performance/).  The raw data used to generate the graphs for each build is there as well (Performance-Build#.zip).
 
+![Median CPU Time Used](http://soar-jenkins.eecs.umich.edu/Performance/TimeUsage.png "Median CPU Time Used")
+![Median Memory Used](http://soar-jenkins.eecs.umich.edu/Performance/MemoryUsage.png "Median Memory Used")
+
 # License
 
 Soar is available under the following [LICENSE](https://github.com/SoarGroup/Soar/blob/development/LICENSE.md).  This license is [BSD](http://opensource.org/licenses/BSD-2-Clause)
