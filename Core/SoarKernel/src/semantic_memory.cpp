@@ -1968,6 +1968,24 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     
     int64_t time_now;
     bool prohibited = false;
+
+    // access information
+    uint64_t prev_access_n = 0;
+    uint64_t prev_access_t = 0;
+    uint64_t prev_access_1 = 0;
+
+    // get old (potentially useful below)
+    {
+        thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
+        thisAgent->smem_stmts->lti_access_get->execute();
+
+        prev_access_n = thisAgent->smem_stmts->lti_access_get->column_int(0);
+        prev_access_t = thisAgent->smem_stmts->lti_access_get->column_int(1);
+        prev_access_1 = thisAgent->smem_stmts->lti_access_get->column_int(2);
+
+        thisAgent->smem_stmts->lti_access_get->reinitialize();
+    }
+
     if (add_access)
     {
         time_now = thisAgent->smem_max_cycle++;
@@ -1981,6 +1999,11 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->prohibit_check->reinitialize();
         if (prohibited)
         {//Just need to flip the bit here.
+            //Find the number of touches from the most recent activation. We are removing that many.
+            thisAgent->smem_stmts->history_get->bind_int(1, lti);
+            thisAgent->smem_stmts->history_get->execute();
+            prev_access_n-=thisAgent->smem_stmts->history_get->column_double(10);
+            thisAgent->smem_stmts->history_get->reinitialize();
             //remove the history
             thisAgent->smem_stmts->history_remove->bind_int(1,(lti));
             thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
@@ -2027,35 +2050,19 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stats->act_updates->set_value(thisAgent->smem_stats->act_updates->get_value() + 1);
     }
     
-    // access information
-    uint64_t prev_access_n = 0;
-    uint64_t prev_access_t = 0;
-    uint64_t prev_access_1 = 0;
-    {
-        // get old (potentially useful below)
-        {
-            thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
-            thisAgent->smem_stmts->lti_access_get->execute();
-            
-            prev_access_n = thisAgent->smem_stmts->lti_access_get->column_int(0);
-            prev_access_t = thisAgent->smem_stmts->lti_access_get->column_int(1);
-            prev_access_1 = thisAgent->smem_stmts->lti_access_get->column_int(2);
-            
-            thisAgent->smem_stmts->lti_access_get->reinitialize();
-        }
-        
-        // set new
-        if (add_access)
-        {
 
-            thisAgent->smem_stmts->lti_access_set->bind_int(1, (prohibited) ? (prev_access_n) : (prev_access_n + touches));
-            //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
-            thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
-            thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
-            thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
-            thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
-        }
+    // set new
+    if (add_access)
+    {
+
+        thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + touches));
+        //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
+        thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
+        thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
+        thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
+        thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
     }
+
     
     // get new activation value (depends upon bias)
     double new_activation = 0.0;
