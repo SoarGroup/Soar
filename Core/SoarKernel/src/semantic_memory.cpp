@@ -1561,7 +1561,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
             {
                 thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *new_list_iterator);
             }
-            while (depth < 11 && depth < depth_limit+1)
+            while (depth < 11 && depth < depth_limit+2)
             {
                 thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
             }
@@ -2311,7 +2311,7 @@ void smem_calc_spread(agent* thisAgent)
             calc_spread->bind_int(1,(*it));
             //double additional_num = 0;
             //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
-            while (calc_spread->execute() == soar_module::row && calc_spread->column_int(2))
+            while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
             {// Here, I need to get the previous activation of the lti_id in question and update that.
                 //First, I need to get the existing info for this lti_id.
                 lti_id = calc_spread->column_int(0);
@@ -2335,10 +2335,18 @@ void smem_calc_spread(agent* thisAgent)
                     additional = (log(raw_prob)-log(offset));
                 }
                 spread-=additional;//Now, we've adjusted the activation according to this new addition.
+                thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
+                thisAgent->smem_stmts->act_lti_child_ct_get->execute();
 
-                thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
-                thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
-                thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+                uint64_t num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
+
+                thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
+                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+                {
+                    thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+                    thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
+                    thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+                }
 
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
@@ -2487,7 +2495,7 @@ void smem_calc_spread(agent* thisAgent)
         calc_spread->bind_int(1,(*it));
         //double additional_num = 0;
         //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
-        while (calc_spread->execute() == soar_module::row && calc_spread->column_int(2))
+        while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
         {// Here, I need to get the previous activation of the lti_id in question and update that.
             //First, I need to get the existing info for this lti_id.
             lti_id = calc_spread->column_int(0);
@@ -2518,9 +2526,18 @@ void smem_calc_spread(agent* thisAgent)
             else
             {
                 spread+=additional;//Now, we've adjusted the activation according to this new addition.
-                thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
-                thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
-                thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+
+                thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
+                thisAgent->smem_stmts->act_lti_child_ct_get->execute();
+                uint64_t num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
+
+                thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
+                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+                {
+                    thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+                    thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
+                    thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+                }
 
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
