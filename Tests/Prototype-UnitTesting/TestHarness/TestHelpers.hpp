@@ -33,6 +33,19 @@ bool isfile(const char* path);
 
 void printDebugInformation(std::stringstream& output, sml::Agent* agent);
 
+#define assertEquals_msg(X, Y, msg) if (X != Y) \
+{ \
+	std::stringstream ss; \
+	ss << "Assert: Expected equal values ("; \
+	ss << X; \
+	ss << ", "; \
+	ss << Y; \
+	ss << ") but was unequal:"; \
+	ss << msg; \
+	printDebugInformation(runner->output, agent); \
+	throw SoarAssertionException(ss.str(), __FILE__, __LINE__); \
+	}
+
 #define assertEquals(X, Y) if (X != Y) \
 { \
 	std::stringstream ss; \

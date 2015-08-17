@@ -1,0 +1,11 @@
+sp {answer*chunk*onc*t3-1
+    (state <s1> ^operator <o1> ^result <l2> ^object <l1>)
+    (<o1> ^lti @L1)
+    (<l2> ^value <c1>)
+    (<l1> ^value <c1>)
+    -->
+    (@L1 ^value bar +)
+}
+
+
+

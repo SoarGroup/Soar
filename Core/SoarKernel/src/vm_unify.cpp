@@ -296,10 +296,16 @@ void Variablization_Manager::literalize_RHS_function_args(const rhs_value rv)
     for (c = fl->rest; c != NIL; c = c->rest)
     {
         dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-        rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-        if (rs->o_id && !rs->referent->is_sti())
+        if (rhs_value_is_funcall(static_cast<char*>(c->first)))
         {
-            add_identity_unification(rs->o_id, 0);
+            literalize_RHS_function_args(static_cast<char*>(c->first));
+        } else {
+            assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
+            rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+            if (rs->o_id && !rs->referent->is_sti())
+            {
+                add_identity_unification(rs->o_id, 0);
+            }
         }
     }
 }

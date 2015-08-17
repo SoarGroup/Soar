@@ -1,0 +1,9 @@
+sp {answer*chunk*apply21b*onc*t3-1
+    (state <s1> ^test-current 1 ^superstate nil ^test-item <c2>
+          -^foo { > <c2> <f*1> } ^test-item { < <c2> <c1> })
+    -->
+    (<s1> ^result <c1> + ^test-done 1 +)
+}
+
+
+

@@ -764,22 +764,37 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
     }
     
     instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
-    for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
+    for (preference* pref = inst->preferences_generated; pref;)
     {
         // add the preference to temporary memory
-        add_preference_to_tm(thisAgent, pref);
-        // and add it to the list of preferences to be removed
-        // when the goal is removed
-        insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-        pref->on_goal_list = true;
-        
-        if (meta)
+
+		if (add_preference_to_tm(thisAgent, pref))
         {
-            // if this is a meta wme, then it is completely local
-            // to the state and thus we will manually remove it
-            // (via preference removal) when the time comes
-            state->id->smem_info->smem_wmes->push_back(pref);
+            // and add it to the list of preferences to be removed
+            // when the goal is removed
+            insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+            pref->on_goal_list = true;
+            
+            if (meta)
+            {
+                // if this is a meta wme, then it is completely local
+                // to the state and thus we will manually remove it
+                // (via preference removal) when the time comes
+                state->id->smem_info->smem_wmes->push_back(pref);
+            }
         }
+        else
+        {
+			if (pref->reference_count == 0)
+			{
+				preference* previous = pref;
+				pref = pref->inst_next;
+				possibly_deallocate_preference_and_clones(thisAgent, previous);
+				continue;
+			}
+        }
+		
+		pref = pref->inst_next;
     }
     
     if (!meta)
@@ -810,13 +825,27 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
                     insert_at_head_of_dll(my_justification->prod->instantiations, my_justification, next, prev);
                 }
                 
-                for (just_pref = my_justification->preferences_generated; just_pref != NIL; just_pref = just_pref->inst_next)
+                for (just_pref = my_justification->preferences_generated; just_pref != NIL;)
                 {
-                    add_preference_to_tm(thisAgent, just_pref);
-                    if (wma_enabled(thisAgent))
+                    if (add_preference_to_tm(thisAgent, just_pref))
                     {
-                        wma_activate_wmes_in_pref(thisAgent, just_pref);
+                        if (wma_enabled(thisAgent))
+                        {
+                            wma_activate_wmes_in_pref(thisAgent, just_pref);
+                        }
                     }
+					else
+					{
+						if (just_pref->reference_count == 0)
+						{
+							preference* previous = just_pref;
+							just_pref = just_pref->inst_next;
+							possibly_deallocate_preference_and_clones(thisAgent, previous);
+							continue;
+						}
+					}
+					
+					just_pref = just_pref->inst_next;
                 }
             }
         }

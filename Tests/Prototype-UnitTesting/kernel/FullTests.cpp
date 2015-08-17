@@ -264,14 +264,15 @@ int FullTests_Parent::spawnListener()
 	targetPid = pi.dwProcessId;
 	
 #else // _WIN32
-	const char* executable = SoarHelper::GetResource("Prototype-UnitTesting").c_str();
-	
+	std::string executable = SoarHelper::GetResource("Prototype-UnitTesting");
+
 	pid = vfork();
 	no_agent_assertTrue_msg("fork error", pid >= 0);
 	if (pid == 0)
 	{
 		// child
-		execlp(executable, "Prototype-UnitTesting", "--listener", nullptr);
+		execlp(executable.c_str(), "Prototype-UnitTesting", "--listener", nullptr);
+		
 		// does not return on success
 		no_agent_assertTrue_msg("execlp failed", false);
 	}
