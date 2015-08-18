@@ -476,7 +476,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY, symbol_value REAL)");
     add_structure("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY, symbol_value TEXT)");
     //This (below) was changed. It not includes an additional term, activation from spread.
-    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total INTEGER, activations_last INTEGER, activations_first INTEGER, activation_spread REAL)");
+    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total REAL, activations_last INTEGER, activations_first INTEGER, activation_spread REAL)");
     add_structure("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER, touch1 REAL, touch2 REAL, touch3 REAL, touch4 REAL, touch5 REAL, touch6 REAL, touch7 REAL, touch8 REAL, touch9 REAL, touch10 REAL)");
     add_structure("CREATE TABLE smem_augmentations (lti_id INTEGER, attribute_s_id INTEGER, value_constant_s_id INTEGER, value_lti_id INTEGER, activation_value REAL)");
     add_structure("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY, edge_frequency INTEGER)");
@@ -2055,7 +2055,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     if (add_access)
     {
 
-        thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + touches));
+        thisAgent->smem_stmts->lti_access_set->bind_double(1, (prev_access_n + touches));
         //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
         thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
         thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
@@ -2077,14 +2077,14 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     }
     else if (act_mode == smem_param_container::act_base)
     {
-        if (prev_access_n == 0)
+        if (prev_access_1 == 0)
         {
             if (add_access)
             {
                 if (prohibited)
                 {
                     thisAgent->smem_stmts->history_push->bind_int(1, time_now);
-                    thisAgent->smem_stmts->history_push->bind_int(2, touches);
+                    thisAgent->smem_stmts->history_push->bind_double(2, touches);
                     thisAgent->smem_stmts->history_push->bind_int(3, lti);
                     thisAgent->smem_stmts->history_push->execute(soar_module::op_reinit);
                 }
@@ -2092,7 +2092,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
                 {
                     thisAgent->smem_stmts->history_add->bind_int(1, lti);
                     thisAgent->smem_stmts->history_add->bind_int(2, time_now);
-                    thisAgent->smem_stmts->history_add->bind_int(3, touches);
+                    thisAgent->smem_stmts->history_add->bind_double(3, touches);
                     thisAgent->smem_stmts->history_add->execute(soar_module::op_reinit);
                 }
             }
@@ -2104,7 +2104,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             if (add_access)
             {
                 thisAgent->smem_stmts->history_push->bind_int(1, time_now);
-                thisAgent->smem_stmts->history_push->bind_int(2, touches);
+                thisAgent->smem_stmts->history_push->bind_double(2, touches);
                 thisAgent->smem_stmts->history_push->bind_int(3, lti);
                 thisAgent->smem_stmts->history_push->execute(soar_module::op_reinit);
             }
@@ -2498,7 +2498,7 @@ void smem_calc_spread(agent* thisAgent)
 
         //("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j,num_appearances, lti_source)");
 
-        calc_spread->prepare();
+        //calc_spread->prepare();
         calc_spread->bind_int(1,(*it));
         //double additional_num = 0;
         //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
@@ -2510,7 +2510,8 @@ void smem_calc_spread(agent* thisAgent)
             thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
             thisAgent->smem_stmts->act_lti_get->execute();
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
-
+            double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
+            thisAgent->smem_stmts->act_lti_get->reinitialize();
             ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
             /*raw_prob = (((double)(calc_spread->column_int(2)))/calc_spread->column_int(1));
             offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
@@ -2541,19 +2542,16 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
                 {
-                    thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+                    thisAgent->smem_stmts->act_set->bind_double(1, prev_base+spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
 
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, prev_base);
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
             }
-
-
-            thisAgent->smem_stmts->act_lti_get->reinitialize();
         }
         calc_spread->reinitialize();
 
