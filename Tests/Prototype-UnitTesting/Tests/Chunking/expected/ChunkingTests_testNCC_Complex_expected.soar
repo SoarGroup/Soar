@@ -1,0 +1,15 @@
+sp {answer*apply24*onc*t3-1
+    (state <s1> ^superstate nil)
+    (<s1> ^test-item2 <c2>)
+    (<s1> ^test-item { > <c2> <> <c2> <c1> })
+   -{ (<s1> ^bar <c1>)
+      (<s1> ^foo { > <c1> > <c2> <max> })
+      (<s1> ^test-item3 <max>)}
+    -->
+    (<s1> ^highest <c1> +)
+    (<s1> ^second-highest <c2> +)
+    (<s1> ^unbound <m1> +)
+    (<s1> ^test-done 1 +)
+}
+
+

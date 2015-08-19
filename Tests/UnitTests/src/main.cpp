@@ -107,7 +107,9 @@ int main(int argc, char** argv)
             std::cerr << "Unknown argument " << argument << " ignored." << std::endl;
         }
     }
-    
+ 
+    std::cout << "WARNING: These tests are deprecated.  These are not complete.  Please make any additions to the Prototype-UnitTesting framework." << std::endl;
+   
     srand(static_cast<unsigned>(time(NULL)));
     
     //--- Create the event manager and test controller
@@ -136,6 +138,8 @@ int main(int argc, char** argv)
         std::cin.get();
     }
 #endif
-    
+	
+	std::cout << "WARNING: These tests are deprecated.  These are not complete.  Please make any additions to the Prototype-UnitTesting framework." << std::endl;
+	
     return result.wasSuccessful() ? 0 : 1;
 }

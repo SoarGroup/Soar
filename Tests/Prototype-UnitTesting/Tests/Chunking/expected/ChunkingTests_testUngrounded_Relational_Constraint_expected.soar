@@ -1,0 +1,8 @@
+sp {answer*apply1b*onc*t3-1
+    (state <s1> ^superstate nil ^test-item2 <c2>
+          ^test-item { > 8 < 10 >= 9 >= <c2> <c1> })
+    -->
+    (<s1> ^result1a 9 + ^result1b <c1> + ^result1c <c2> + ^result1d <u1> +
+           ^test-done 1 +)
+    (<u1> ^foo bar +)
+}
