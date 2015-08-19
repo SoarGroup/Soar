@@ -2568,12 +2568,12 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
                 {
-                    thisAgent->smem_stmts->act_set->bind_double(1, prev_base+spread);
+                    thisAgent->smem_stmts->act_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base))+spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
 
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, prev_base);
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
