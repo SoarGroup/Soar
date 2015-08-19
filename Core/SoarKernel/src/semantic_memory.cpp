@@ -1892,19 +1892,20 @@ extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
     return true;
 }
 
-inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0)
+inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time_now, double n = 0, uint64_t activations_first = 0)
 {
     double sum = 0.0;
     double d = thisAgent->smem_params->base_decay->get_value();
     uint64_t t_k;
     uint64_t t_n = (time_now - activations_first);
+    int available_history = 0;
     
     if (n == 0)
     {
         thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
         thisAgent->smem_stmts->lti_access_get->execute();
         
-        n = thisAgent->smem_stmts->lti_access_get->column_int(0);
+        n = thisAgent->smem_stmts->lti_access_get->column_double(0);
         activations_first = thisAgent->smem_stmts->lti_access_get->column_int(2);
         
         thisAgent->smem_stmts->lti_access_get->reinitialize();
@@ -1914,39 +1915,50 @@ inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time
     thisAgent->smem_stmts->history_get->bind_int(1, lti);
     thisAgent->smem_stmts->history_get->execute();
     bool prohibited = false;
+    double small_n = 0;
     {
-        int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
-
-        thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
-        prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
-        if (prohibited)
+        while (thisAgent->smem_stmts->history_get->column_int(available_history) != 0)
         {
-            available_history--;
+            available_history++;//static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
         }
-        thisAgent->smem_stmts->prohibit_check->reinitialize();
+        //thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
+        //prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
+        //if (prohibited)
+        //{
+        //    available_history--;
+        //}
+        //thisAgent->smem_stmts->prohibit_check->reinitialize();
 
         t_k = static_cast<uint64_t>(time_now - thisAgent->smem_stmts->history_get->column_int(available_history - 1));
         
         for (int i = 0; i < available_history; i++)
         {
-            sum += pow(static_cast<double>(time_now - thisAgent->smem_stmts->history_get->column_int(i)),
+            small_n+=thisAgent->smem_stmts->history_get->column_double(i+10);
+            sum += thisAgent->smem_stmts->history_get->column_double(i+10)*pow(static_cast<double>(time_now - thisAgent->smem_stmts->history_get->column_int(i)),
                        static_cast<double>(-d));
         }
     }
     thisAgent->smem_stmts->history_get->reinitialize();
     
     // if available history was insufficient, approximate rest
-    if (n > SMEM_ACT_HISTORY_ENTRIES)
+    if (n > small_n && available_history == SMEM_ACT_HISTORY_ENTRIES)
     {
-        if (prohibited)
+        //if (prohibited)
+        //{
+        //    n=n-thisAgent->smem_stmts->history_get->column_double(10);
+        //}
+        if (t_n != t_k)
         {
-            n--;
-        }
+            double apx_numerator = (static_cast<double>(n - small_n) * (pow(static_cast<double>(t_n), 1.0 - d) - pow(static_cast<double>(t_k), 1.0 - d)));
+            double apx_denominator = ((1.0 - d) * static_cast<double>(t_n - t_k));
 
-        double apx_numerator = (static_cast<double>(n - SMEM_ACT_HISTORY_ENTRIES) * (pow(static_cast<double>(t_n), 1.0 - d) - pow(static_cast<double>(t_k), 1.0 - d)));
-        double apx_denominator = ((1.0 - d) * static_cast<double>(t_n - t_k));
-        
-        sum += (apx_numerator / apx_denominator);
+            sum += (apx_numerator / apx_denominator);
+        }
+        else
+        {
+            sum += (n - small_n)*pow(static_cast<double>(t_n),
+                                   static_cast<double>(-d));
+        }
     }
     if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
     {
@@ -1960,7 +1972,7 @@ inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time
 //       just when storing a new chunk (default is a
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, double touches = 1)
+inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, double touches = 1, bool increment_timer = true)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->act->start();
@@ -1970,7 +1982,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     bool prohibited = false;
 
     // access information
-    uint64_t prev_access_n = 0;
+    double prev_access_n = 0;
     uint64_t prev_access_t = 0;
     uint64_t prev_access_1 = 0;
 
@@ -1979,7 +1991,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
         thisAgent->smem_stmts->lti_access_get->execute();
 
-        prev_access_n = thisAgent->smem_stmts->lti_access_get->column_int(0);
+        prev_access_n = thisAgent->smem_stmts->lti_access_get->column_double(0);
         prev_access_t = thisAgent->smem_stmts->lti_access_get->column_int(1);
         prev_access_1 = thisAgent->smem_stmts->lti_access_get->column_int(2);
 
@@ -1988,7 +2000,14 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 
     if (add_access)
     {
-        time_now = thisAgent->smem_max_cycle++;
+        if (increment_timer)
+        {
+            time_now = thisAgent->smem_max_cycle++;
+        }
+        else
+        {
+            time_now = thisAgent->smem_max_cycle-1;
+        }
         
         /* If we are adding an access, the prohibit changes are set-up in such a way that
         * all I need to do is flip the prohibit bit and the normal activation history updating behavior
@@ -2095,9 +2114,12 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
                     thisAgent->smem_stmts->history_add->bind_double(3, touches);
                     thisAgent->smem_stmts->history_add->execute(soar_module::op_reinit);
                 }
+                new_activation = smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);
             }
-            
-            new_activation = 0;
+            else
+            {
+                new_activation = SMEM_ACT_LOW;
+            }
         }
         else
         {
@@ -2109,7 +2131,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
                 thisAgent->smem_stmts->history_push->execute(soar_module::op_reinit);
             }
             
-            new_activation = smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);
+            new_activation = smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);//smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);
         }
     }
     
@@ -2488,8 +2510,10 @@ void smem_calc_spread(agent* thisAgent)
     }
     //delete add_fingerprint;
 
-
-
+    if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::belief_update)
+    {
+        thisAgent->smem_max_cycle++;
+    }
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {//Actually, since smem_lti_activate exists, I might not want to do this at all.
         //I need to rework this. The idea is to find all of the ltis touched by this addition. I then need to just multiply
@@ -2529,7 +2553,9 @@ void smem_calc_spread(agent* thisAgent)
             }
             if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::belief_update)
             {
-                smem_lti_activate(thisAgent, lti_id, true, SMEM_ACT_MAX, raw_prob);
+
+                smem_lti_activate(thisAgent, lti_id, true, SMEM_ACT_MAX, raw_prob, false);
+
             }
             else
             {
@@ -2987,7 +3013,7 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
     thisAgent->smem_stmts->lti_add->bind_int(2, static_cast<uint64_t>(name_number));
     thisAgent->smem_stmts->lti_add->bind_int(3, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->bind_double(4, static_cast<double>(0));
-    thisAgent->smem_stmts->lti_add->bind_int(5, static_cast<uint64_t>(0));
+    thisAgent->smem_stmts->lti_add->bind_double(5, static_cast<double>(0));
     thisAgent->smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->execute(soar_module::op_reinit);
@@ -4590,7 +4616,7 @@ inline void smem_update_schema_one_to_two(agent* thisAgent)
     thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
     thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
     
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+    thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total REAL,activations_last INTEGER,activations_first INTEGER)");
     thisAgent->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
     thisAgent->smem_db->sql_execute("DROP TABLE smem7_lti");
     
@@ -7450,11 +7476,11 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
             {
                 lti_access_q->bind_int(1, c.first);
                 lti_access_q->execute();
-                uint64_t n = lti_access_q->column_int(0);
+                //uint64_t n = lti_access_q->column_int(0);
                 lti_access_q->reinitialize();
                 hist_q->bind_int(1, c.first);
                 hist_q->execute();
-                for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
+                for (int i = 0; i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
                     if (thisAgent->smem_stmts->history_get->column_int(i) != 0)
                     {
