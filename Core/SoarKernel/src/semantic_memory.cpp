@@ -6241,7 +6241,10 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 	}
 	if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
 	{
-	    smem_fix_spread(thisAgent);
+	    if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
+        {
+	        smem_fix_spread(thisAgent);
+        }
         //Contribution from context
         smem_calc_spread(thisAgent);
 	}
