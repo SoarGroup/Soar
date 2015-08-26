@@ -2481,9 +2481,12 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
                 if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
                 {
-                    std::list<smem_lti_id> trajectory;
-                    trajectory.push_back(*it);
-                    trajectory_construction(thisAgent,trajectory,lti_trajectories);
+                    for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value(); ++i)
+                    {
+                        std::list<smem_lti_id> trajectory;
+                        trajectory.push_back(*it);
+                        trajectory_construction(thisAgent,trajectory,lti_trajectories);
+                    }
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
                 for (int i = 1; i < 11; i++)
