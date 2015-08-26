@@ -15,164 +15,164 @@
 void SMemFunctionalTests::testSimpleCueBasedRetrieval()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testSimpleCueBasedRetrieval", 1);
+	runTest("testSimpleCueBasedRetrieval", 1+1);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testSimpleNonCueBasedRetrieval", 2);
+	runTest("testSimpleNonCueBasedRetrieval", 2+1);
 }
 
 void SMemFunctionalTests::testSimpleStore()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testSimpleStore", 2);
+	runTest("testSimpleStore", 2+1);
 }
 
 void SMemFunctionalTests::testTrivialMathQuery()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testTrivialMathQuery", 2);
+	runTest("testTrivialMathQuery", 2+1);
 }
 
 void SMemFunctionalTests::testBadMathQuery()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testBadMathQuery", 2);
+	runTest("testBadMathQuery", 2+1);
 }
 
 void SMemFunctionalTests::testMaxQuery()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMax", 1);
+	runTest("testMax", 1+1);
 }
 
 
 void SMemFunctionalTests::testMaxMixedTypes()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMaxMixedTypes", 1);
+	runTest("testMaxMixedTypes", 1+1);
 }
 
 void SMemFunctionalTests::testMaxMultivalued()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMaxMultivalued", 1);
+	runTest("testMaxMultivalued", 1+1);
 }
 
 void SMemFunctionalTests::testMin()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMin", 1);
+	runTest("testMin", 1+1);
 }
 
 void SMemFunctionalTests::testMaxNegQuery()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMaxNegation", 1);
+	runTest("testMaxNegation", 1+1);
 }
 
 void SMemFunctionalTests::testGreater()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testGreater", 1);
+	runTest("testGreater", 1+1);
 }
 
 void SMemFunctionalTests::testLess()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testLess", 1);
+	runTest("testLess", 1+1);
 }
 
 void SMemFunctionalTests::testGreaterOrEqual()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testGreaterOrEqual", 1);
+	runTest("testGreaterOrEqual", 1+1);
 }
 
 void SMemFunctionalTests::testLessOrEqual()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testLessOrEqual", 1);
+	runTest("testLessOrEqual", 1+1);
 }
 
 void SMemFunctionalTests::testLessWithNeg()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testLessWithNeg", 1);
+	runTest("testLessWithNeg", 1+1);
 }
 
 void SMemFunctionalTests::testLessNoSolution()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testLessNoSolution", 1);
+	runTest("testLessNoSolution", 1+1);
 }
 
 void SMemFunctionalTests::testMirroring()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMirroring", 4);
+	runTest("testMirroring", 4+1);
 }
 
 void SMemFunctionalTests::testMergeAdd()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeAdd", 4);
+	runTest("testMergeAdd", 4+1);
 }
 
 void SMemFunctionalTests::testMergeNone()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeNone", 4);
+	runTest("testMergeNone", 4+1);
 }
 
 void SMemFunctionalTests::testSimpleStoreMultivaluedAttribute()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testSimpleStoreMultivaluedAttribute", 2);
+	runTest("testSimpleStoreMultivaluedAttribute", 2+1);
 }
 
 void SMemFunctionalTests::testSimpleFloat()
 {
-	runTest("testSimpleFloat", 5);
+	runTest("testSimpleFloat", 5+1);
 }
 
 void SMemFunctionalTests::testMaxDoublePrecision_Irrational()
 {
-	runTest("testMaxDoublePrecision-Irrational", 5);
+	runTest("testMaxDoublePrecision-Irrational", 5+1);
 }
 
 void SMemFunctionalTests::testMaxDoublePrecision()
 {
-	runTest("testMaxDoublePrecision", 5);
+	runTest("testMaxDoublePrecision", 5+1);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrievalOfNonExistingLTI()
 {
-	runTest("testSimpleNonCueBasedRetrievalOfNonExistingLTI", 1);
+	runTest("testSimpleNonCueBasedRetrievalOfNonExistingLTI", 1+1);
 }
 
 void SMemFunctionalTests::testNegQuery()
 {
-	runTest("testNegQuery", 248);
+	runTest("testNegQuery", 248+1);
 }
 
 void SMemFunctionalTests::testNegStringFloat()
 {
-	runTest("testNegStringFloat", 5);
+	runTest("testNegStringFloat", 5+1);
 }
 
 void SMemFunctionalTests::testNegQueryNoHash()
 {
-	runTest("testNegQueryNoHash", 1);
+	runTest("testNegQueryNoHash", 1+1);
 }
 
 void SMemFunctionalTests::testCueSelection()
 {
 	runTestSetup("testCueSelection");
 	
-	std::string result = agent->RunSelf(2);
+	std::string result = agent->RunSelf(2+1);
 	
 	agent::BasicWeightedCue* bwc = internal_agent->lastCue;
 	assertTrue_msg("Incorrect cue selected",

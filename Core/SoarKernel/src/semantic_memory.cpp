@@ -66,6 +66,29 @@
 
 // visualization                smem::viz
 
+#include <thread>
+
+namespace
+{
+	smem_lti_id king_id = NIL;
+	std::thread processQueryThread;
+	std::mutex processQueryMutex;
+	
+	bool didQuery = false;
+	
+	struct processQueryInfo_struct
+	{
+		smem_install_type install_type;
+		Symbol* state;
+		Symbol* query;
+		Symbol* negquery;
+		Symbol* math;
+		soar_module::symbol_triple_list meta_wmes;
+		soar_module::symbol_triple_list retrieval_wmes;
+		soar_module::wme_set cue_wmes;
+		uint64_t depth;
+	} processQueryInfo;
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -2539,8 +2562,14 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
+void smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set prohibit, soar_module::wme_set cue_wmes, soar_module::symbol_triple_list meta_wmes, soar_module::symbol_triple_list retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
 {
+	processQueryMutex.lock();
+	
+	processQueryThread = std::thread([=]() mutable {
+		
+	king_id = NIL;
+	
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
     
@@ -2548,15 +2577,13 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     bool needFullSearch = false;
     
     soar_module::sqlite_statement* q = NULL;
-    
+	
     std::list<smem_lti_id> temp_list;
     if (query_level == qry_full)
     {
         match_ids = &(temp_list);
     }
-    
-    smem_lti_id king_id = NIL;
-    
+	
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
@@ -2746,8 +2773,8 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                 }
                 
                 // if not prohibited, submit to the remaining cue elements
-                prohibit_p = prohibit->find(cand);
-                if (prohibit_p == prohibit->end())
+                prohibit_p = prohibit.find(cand);
+                if (prohibit_p == prohibit.end())
                 {
                     good_cand = true;
                     
@@ -2829,7 +2856,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                         king_id = cand;
                         first_element = true;
                         match_ids->push_back(cand);
-                        prohibit->insert(cand);
+                        prohibit.insert(cand);
                     }
                     if (good_cand && first_element)
                     {
@@ -2874,34 +2901,34 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     // reconstruction depends upon level
     if (query_level == qry_full)
     {
-        // produce results
-        if (king_id != NIL)
-        {
-            // success!
-            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, query);
-            if (negquery)
-            {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, negquery);
-            }
-            
-            ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->query->stop();
-            ////////////////////////////////////////////////////////////////////////////
-            
-            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
-        }
-        else
-        {
-            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, query);
-            if (negquery)
-            {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, negquery);
-            }
-            
-            ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->query->stop();
-            ////////////////////////////////////////////////////////////////////////////
-        }
+//        // produce results
+//        if (king_id != NIL)
+//        {
+//            // success!
+//            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, query);
+//            if (negquery)
+//            {
+//                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, negquery);
+//            }
+//            
+//            ////////////////////////////////////////////////////////////////////////////
+//            thisAgent->smem_timers->query->stop();
+//            ////////////////////////////////////////////////////////////////////////////
+//            
+//            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+//        }
+//        else
+//        {
+//            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, query);
+//            if (negquery)
+//            {
+//                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, negquery);
+//            }
+//            
+//            ////////////////////////////////////////////////////////////////////////////
+//            thisAgent->smem_timers->query->stop();
+//            ////////////////////////////////////////////////////////////////////////////
+//        }
     }
     else
     {
@@ -2909,8 +2936,12 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         thisAgent->smem_timers->query->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
-    
-    return king_id;
+	
+	didQuery = true;
+	
+	processQueryMutex.unlock();
+	
+	}); // Thread creation
 }
 
 
@@ -4169,7 +4200,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         
         std::list<smem_lti_id> match_ids;
         
-        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
+        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, *prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
         
         if (!match_ids.empty())
         {
@@ -4878,9 +4909,37 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->smem_lti);
                     }
-                    
-                    smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
-                    
+					
+					symbol_add_ref(thisAgent, state);
+					symbol_add_ref(thisAgent, query);
+					
+					if (negquery)
+						symbol_add_ref(thisAgent, negquery);
+					
+					if (math)
+						symbol_add_ref(thisAgent, math);
+					
+					for (wme* wme : cue_wmes)
+					{
+						wme_add_ref(wme);
+					}
+					
+					processQueryInfo.state = state;
+					processQueryInfo.install_type = wm_install;
+					processQueryInfo.query = query;
+					processQueryInfo.negquery = negquery;
+					processQueryInfo.meta_wmes = meta_wmes;
+					processQueryInfo.retrieval_wmes = retrieval_wmes;
+					processQueryInfo.cue_wmes = cue_wmes;
+					processQueryInfo.depth = depth;
+					processQueryInfo.math = math;
+					
+					smem_process_query(thisAgent, state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+					
+					meta_wmes.clear();
+					retrieval_wmes.clear();
+					cue_wmes.clear();
+									   
                     // add one to the cbr stat
                     thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
                 }
@@ -5025,18 +5084,126 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     }
 }
 
+void doQueryReconstruction(agent* thisAgent)
+{
+	smem_install_type install_type = processQueryInfo.install_type;
+	Symbol* state = processQueryInfo.state;
+	Symbol* query = processQueryInfo.query;
+	Symbol* negquery = processQueryInfo.negquery;
+	Symbol* math = processQueryInfo.math;
+	soar_module::symbol_triple_list& meta_wmes = processQueryInfo.meta_wmes;
+	soar_module::symbol_triple_list& retrieval_wmes = processQueryInfo.retrieval_wmes;
+	soar_module::wme_set& cue_wmes = processQueryInfo.cue_wmes;
+	uint64_t depth = processQueryInfo.depth;
+	
+	// produce results
+	if (king_id != NIL)
+	{
+		// success!
+		smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, query);
+		if (negquery)
+		{
+			smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, negquery);
+		}
+		
+		////////////////////////////////////////////////////////////////////////////
+		thisAgent->smem_timers->query->stop();
+		////////////////////////////////////////////////////////////////////////////
+		
+		smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+	}
+	else
+	{
+		smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, query);
+		if (negquery)
+		{
+			smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, negquery);
+		}
+		
+		////////////////////////////////////////////////////////////////////////////
+		thisAgent->smem_timers->query->stop();
+		////////////////////////////////////////////////////////////////////////////
+	}
+	
+	if (!meta_wmes.empty() || !retrieval_wmes.empty())
+	{
+		// process preference assertion en masse
+		smem_process_buffered_wmes(thisAgent, state, cue_wmes, meta_wmes, retrieval_wmes);
+		
+		// clear cache
+		{
+			soar_module::symbol_triple_list::iterator mw_it;
+			
+			for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
+			{
+				symbol_remove_ref(thisAgent, (*mw_it)->id);
+				symbol_remove_ref(thisAgent, (*mw_it)->attr);
+				symbol_remove_ref(thisAgent, (*mw_it)->value);
+				
+				delete(*mw_it);
+			}
+			retrieval_wmes.clear();
+			
+			for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
+			{
+				symbol_remove_ref(thisAgent, (*mw_it)->id);
+				symbol_remove_ref(thisAgent, (*mw_it)->attr);
+				symbol_remove_ref(thisAgent, (*mw_it)->value);
+				
+				delete(*mw_it);
+			}
+			meta_wmes.clear();
+		}
+		
+		// process wm changes on this state
+		thisAgent->smem_ignore_changes = true;
+		
+		do_working_memory_phase(thisAgent);
+		
+		thisAgent->smem_ignore_changes = false;
+	}
+	
+	symbol_remove_ref(thisAgent, state);
+	symbol_remove_ref(thisAgent, query);
+	
+	if (negquery)
+		symbol_remove_ref(thisAgent, negquery);
+	
+	if (math)
+		symbol_remove_ref(thisAgent, math);
+	
+	for (wme* wme : cue_wmes)
+	{
+		wme_remove_ref(thisAgent, wme);
+	}
+}
+
 void smem_go(agent* thisAgent, bool store_only)
 {
     thisAgent->smem_timers->total->start();
-    
+	
 #ifndef SMEM_EXPERIMENT
-    
-    smem_respond_to_cmd(thisAgent, store_only);
-    
+	
+	bool hasLock = processQueryMutex.try_lock();
+	
+	if (hasLock)
+	{
+		if (didQuery)
+		{
+			doQueryReconstruction(thisAgent);
+			
+			didQuery = false;
+		}
+		
+		processQueryMutex.unlock();
+		
+		smem_respond_to_cmd(thisAgent, store_only);
+	}
+	
 #else // SMEM_EXPERIMENT
-    
+	
 #endif // SMEM_EXPERIMENT
-    
+	
     thisAgent->smem_timers->total->stop();
 }
 

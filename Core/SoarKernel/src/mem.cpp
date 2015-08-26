@@ -427,7 +427,7 @@ void remove_from_hash_table(agent* thisAgent, struct hash_table_struct* ht,
         if (!prev)
         {
             /* Reaching here means that we couldn't find this_one item */
-            assert(prev && "Couldn't find item to remove from hash table!");
+//            assert(prev && "Couldn't find item to remove from hash table!");
             return;
         }
         prev->next = this_one->next;
