@@ -71,7 +71,6 @@
 namespace
 {
 	smem_lti_id king_id = NIL;
-	std::thread processQueryThread;
 	std::mutex processQueryMutex;
 	
 	bool didQuery = false;
@@ -79,13 +78,9 @@ namespace
 	struct processQueryInfo_struct
 	{
 		smem_install_type install_type;
-		Symbol* state;
-		Symbol* query;
-		Symbol* negquery;
-		Symbol* math;
-		soar_module::symbol_triple_list meta_wmes;
-		soar_module::symbol_triple_list retrieval_wmes;
-		soar_module::wme_set cue_wmes;
+		std::pair<char, uint64_t> state;
+		std::pair<char, uint64_t> query;
+		std::pair<char, uint64_t> negquery;
 		uint64_t depth;
 	} processQueryInfo;
 }
@@ -2562,19 +2557,17 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-void smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set prohibit, soar_module::wme_set cue_wmes, soar_module::symbol_triple_list meta_wmes, soar_module::symbol_triple_list retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
+void smem_process_query(agent* thisAgent, smem_weighted_cue_list weighted_cue, bool needFullSearch, smem_lti_set prohibit, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1)
 {
 	processQueryMutex.lock();
 	
-	processQueryThread = std::thread([=]() mutable {
+	auto runner = [=]() mutable {
+		
+	////////////////////////////////////////////////////////////////////////////
+	thisAgent->smem_timers->query->start();
+	////////////////////////////////////////////////////////////////////////////
 		
 	king_id = NIL;
-	
-    smem_weighted_cue_list weighted_cue;
-    bool good_cue = true;
-    
-    //This is used when doing math queries that need to look at more that just the first valid element
-    bool needFullSearch = false;
     
     soar_module::sqlite_statement* q = NULL;
 	
@@ -2583,97 +2576,9 @@ void smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* 
     {
         match_ids = &(temp_list);
     }
-	
-    ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->query->start();
-    ////////////////////////////////////////////////////////////////////////////
-    
-    // prepare query stats
-    {
-        smem_prioritized_weighted_cue weighted_pq;
-        
-        // positive cue - always
-        {
-            smem_wme_list* cue = smem_get_direct_augs_of_id(query);
-            if (cue->empty())
-            {
-                good_cue = false;
-            }
-            
-            for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
-            {
-                cue_wmes.insert((*cue_p));
-                
-                if (good_cue)
-                {
-                    good_cue = _smem_process_cue_wme(thisAgent, (*cue_p), true, weighted_pq, NIL);
-                }
-            }
-            
-            delete cue;
-        }
-        
-        //Look through while were here, so that we can make sure the attributes we need are in the results
-        if (mathQuery != NIL && good_cue)
-        {
-            std::pair<bool, bool>* mpr = processMathQuery(thisAgent, mathQuery, &weighted_pq);
-            needFullSearch = mpr->first;
-            good_cue = mpr->second;
-            delete mpr;
-        }
-        
-        // negative cue - if present
-        if (negquery)
-        {
-            smem_wme_list* cue = smem_get_direct_augs_of_id(negquery);
-            
-            for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
-            {
-                cue_wmes.insert((*cue_p));
-                
-                if (good_cue)
-                {
-                    good_cue = _smem_process_cue_wme(thisAgent, (*cue_p), false, weighted_pq, NIL);
-                }
-            }
-            
-            delete cue;
-        }
-        
-        // if valid cue, transfer priority queue to list
-        if (good_cue)
-        {
-            while (!weighted_pq.empty())
-            {
-                weighted_cue.push_back(weighted_pq.top());
-                weighted_pq.pop();
-            }
-        }
-        // else deallocate priority queue contents
-        else
-        {
-            while (!weighted_pq.empty())
-            {
-                smem_prioritized_weighted_cue::value_type top = weighted_pq.top();
-                weighted_pq.pop();
-                if (top->mathElement != NIL)
-                {
-                    delete top->mathElement;
-                }
-                delete top;
-                /*if(weighted_pq.top()->mathElement != NIL){
-                    delete weighted_pq.top()->mathElement;
-                }
-                delete weighted_pq.top();
-                weighted_pq.pop();*/
-            }
-        }
-    }
     
     // only search if the cue was valid
-    if (good_cue && !weighted_cue.empty())
-    {
-        // by definition, the first positive-cue element dictates the candidate set
+    // by definition, the first positive-cue element dictates the candidate set
         smem_weighted_cue_list::iterator cand_set;
         smem_weighted_cue_list::iterator next_element;
         for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
@@ -2896,52 +2801,29 @@ void smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* 
             }
             delete(*next_element);
         }
-    }
-    
+		
     // reconstruction depends upon level
     if (query_level == qry_full)
     {
-//        // produce results
-//        if (king_id != NIL)
-//        {
-//            // success!
-//            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, query);
-//            if (negquery)
-//            {
-//                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, negquery);
-//            }
-//            
-//            ////////////////////////////////////////////////////////////////////////////
-//            thisAgent->smem_timers->query->stop();
-//            ////////////////////////////////////////////////////////////////////////////
-//            
-//            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
-//        }
-//        else
-//        {
-//            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, query);
-//            if (negquery)
-//            {
-//                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, negquery);
-//            }
-//            
-//            ////////////////////////////////////////////////////////////////////////////
-//            thisAgent->smem_timers->query->stop();
-//            ////////////////////////////////////////////////////////////////////////////
-//        }
+		didQuery = true;
     }
-    else
-    {
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->query->stop();
-        ////////////////////////////////////////////////////////////////////////////
-    }
-	
-	didQuery = true;
-	
+		
+	////////////////////////////////////////////////////////////////////////////
+	thisAgent->smem_timers->query->stop();
+	////////////////////////////////////////////////////////////////////////////
+		
 	processQueryMutex.unlock();
 	
-	}); // Thread creation
+	}; // Thread creation
+	
+	if (match_ids != nullptr)
+	{
+		runner();
+	}
+	else
+	{
+		std::thread(runner);
+	}
 }
 
 
@@ -3958,6 +3840,9 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
  * -Steven 23-7-2014
  */
 
+std::tuple<bool, bool, smem_weighted_cue_list> checkCue(agent* thisAgent, Symbol* query, Symbol* negquery, Symbol* math, soar_module::wme_set& cue_wmes);
+void doQueryReconstruction(agent* thisAgent);
+
 bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
 {
     uint64_t clause_count = 0;  // This is counting up the number of parsed clauses
@@ -4199,9 +4084,14 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
         (*result_message) = new std::string();
         
         std::list<smem_lti_id> match_ids;
-        
-        smem_process_query(thisAgent, NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, *prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
-        
+		
+		std::tuple<bool, bool, smem_weighted_cue_list> result = checkCue(thisAgent, root_cue_id, minus_ever ? negative_cues : NIL, NIL, cue_wmes);
+		
+		if (std::get<0>(result))
+		{
+			smem_process_query(thisAgent, std::get<2>(result), std::get<1>(result), *prohibit, qry_search, number_to_retrieve, &match_ids, 1);
+		}
+		
         if (!match_ids.empty())
         {
             for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
@@ -4599,19 +4489,110 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+std::tuple<bool, bool, smem_weighted_cue_list> checkCue(agent* thisAgent, Symbol* query, Symbol* negquery, Symbol* math, soar_module::wme_set& cue_wmes)
+{
+	bool good_cue = true;
+	smem_weighted_cue_list weighted_cue;
+	bool needFullSearch = false;
+	
+	// prepare query stats
+	{
+		smem_prioritized_weighted_cue weighted_pq;
+		
+		// positive cue - always
+		{
+			smem_wme_list* cue = smem_get_direct_augs_of_id(query);
+			if (cue->empty())
+			{
+				good_cue = false;
+			}
+			
+			for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+			{
+				cue_wmes.insert((*cue_p));
+				
+				if (good_cue)
+				{
+					good_cue = _smem_process_cue_wme(thisAgent, (*cue_p), true, weighted_pq, NIL);
+				}
+			}
+			
+			delete cue;
+		}
+		
+		//Look through while were here, so that we can make sure the attributes we need are in the results
+		if (math != NIL && good_cue)
+		{
+			std::pair<bool, bool>* mpr = processMathQuery(thisAgent, math, &weighted_pq);
+			needFullSearch = mpr->first;
+			good_cue = mpr->second;
+			delete mpr;
+		}
+		
+		// negative cue - if present
+		if (negquery)
+		{
+			smem_wme_list* cue = smem_get_direct_augs_of_id(negquery);
+			
+			for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+			{
+				cue_wmes.insert((*cue_p));
+				
+				if (good_cue)
+				{
+					good_cue = _smem_process_cue_wme(thisAgent, (*cue_p), false, weighted_pq, NIL);
+				}
+			}
+			
+			delete cue;
+		}
+		
+		// if valid cue, transfer priority queue to list
+		if (good_cue)
+		{
+			while (!weighted_pq.empty())
+			{
+				weighted_cue.push_back(weighted_pq.top());
+				weighted_pq.pop();
+			}
+		}
+		// else deallocate priority queue contents
+		else
+		{
+			while (!weighted_pq.empty())
+			{
+				smem_prioritized_weighted_cue::value_type top = weighted_pq.top();
+				weighted_pq.pop();
+				if (top->mathElement != NIL)
+				{
+					delete top->mathElement;
+				}
+				delete top;
+				/*if(weighted_pq.top()->mathElement != NIL){
+				 delete weighted_pq.top()->mathElement;
+				 }
+				 delete weighted_pq.top();
+				 weighted_pq.pop();*/
+			}
+		}
+	}
+	
+	return {good_cue, needFullSearch, weighted_cue};
+}
+
 void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 {
 
     smem_attach(thisAgent);
-    
+	
     // start at the bottom and work our way up
     // (could go in the opposite direction as well)
     Symbol* state = thisAgent->bottom_goal;
-    
+	
     smem_wme_list* wmes;
     smem_wme_list* cmds;
     smem_wme_list::iterator w_p;
-    
+	
     soar_module::symbol_triple_list meta_wmes;
     soar_module::symbol_triple_list retrieval_wmes;
     soar_module::wme_set cue_wmes;
@@ -4924,22 +4905,36 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 						wme_add_ref(wme);
 					}
 					
-					processQueryInfo.state = state;
+					processQueryInfo.state = {state->id->name_letter, state->id->name_number};
 					processQueryInfo.install_type = wm_install;
-					processQueryInfo.query = query;
-					processQueryInfo.negquery = negquery;
-					processQueryInfo.meta_wmes = meta_wmes;
-					processQueryInfo.retrieval_wmes = retrieval_wmes;
-					processQueryInfo.cue_wmes = cue_wmes;
+					processQueryInfo.query = {query->id->name_letter, query->id->name_number};
+					
+					if (negquery)
+					{
+						processQueryInfo.negquery = {negquery->id->name_letter, negquery->id->name_number};
+					}
+					else
+					{
+						processQueryInfo.negquery = {0,0};
+					}
+					
 					processQueryInfo.depth = depth;
-					processQueryInfo.math = math;
 					
-					smem_process_query(thisAgent, state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+					////////////////////////////////////////////////////////////////////////////
+					thisAgent->smem_timers->query->start();
+					////////////////////////////////////////////////////////////////////////////
 					
-					meta_wmes.clear();
-					retrieval_wmes.clear();
-					cue_wmes.clear();
-									   
+					std::tuple<bool, bool, smem_weighted_cue_list> result = checkCue(thisAgent, query, negquery, math, cue_wmes);
+					
+					////////////////////////////////////////////////////////////////////////////
+					thisAgent->smem_timers->query->stop();
+					////////////////////////////////////////////////////////////////////////////
+					
+					if (std::get<0>(result))
+					{
+						smem_process_query(thisAgent, std::get<2>(result), std::get<1>(result), prohibit_lti, qry_full, 1, NIL, depth);
+					}
+					
                     // add one to the cbr stat
                     thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
                 }
@@ -5086,15 +5081,26 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
 void doQueryReconstruction(agent* thisAgent)
 {
+	////////////////////////////////////////////////////////////////////////////
+	thisAgent->smem_timers->query->start();
+	////////////////////////////////////////////////////////////////////////////
+	
 	smem_install_type install_type = processQueryInfo.install_type;
-	Symbol* state = processQueryInfo.state;
-	Symbol* query = processQueryInfo.query;
-	Symbol* negquery = processQueryInfo.negquery;
-	Symbol* math = processQueryInfo.math;
-	soar_module::symbol_triple_list& meta_wmes = processQueryInfo.meta_wmes;
-	soar_module::symbol_triple_list& retrieval_wmes = processQueryInfo.retrieval_wmes;
-	soar_module::wme_set& cue_wmes = processQueryInfo.cue_wmes;
+	Symbol* state = find_identifier(thisAgent, processQueryInfo.state.first, processQueryInfo.state.second);
+	Symbol* query = find_identifier(thisAgent, processQueryInfo.query.first, processQueryInfo.query.second);
+	Symbol* negquery = find_identifier(thisAgent, processQueryInfo.negquery.first, processQueryInfo.negquery.second);
+	soar_module::symbol_triple_list meta_wmes;
+	soar_module::symbol_triple_list retrieval_wmes;
 	uint64_t depth = processQueryInfo.depth;
+	
+	if (!state || !query)
+	{
+		////////////////////////////////////////////////////////////////////////////
+		thisAgent->smem_timers->query->stop();
+		////////////////////////////////////////////////////////////////////////////
+		
+		return;
+	}
 	
 	// produce results
 	if (king_id != NIL)
@@ -5127,9 +5133,35 @@ void doQueryReconstruction(agent* thisAgent)
 	
 	if (!meta_wmes.empty() || !retrieval_wmes.empty())
 	{
+		// Recreate cue WMEs
+		soar_module::wme_set cue_wmes;
+		
+		// positive cue
+		smem_wme_list* cue = smem_get_direct_augs_of_id(query);
+		
+		for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+		{
+			cue_wmes.insert((*cue_p));
+		}
+			
+		delete cue;
+		
+		// negative cue - if present
+		if (negquery)
+		{
+			smem_wme_list* cue = smem_get_direct_augs_of_id(negquery);
+			
+			for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+			{
+				cue_wmes.insert((*cue_p));
+			}
+			
+			delete cue;
+		}
+		
 		// process preference assertion en masse
 		smem_process_buffered_wmes(thisAgent, state, cue_wmes, meta_wmes, retrieval_wmes);
-		
+
 		// clear cache
 		{
 			soar_module::symbol_triple_list::iterator mw_it;
@@ -5161,20 +5193,6 @@ void doQueryReconstruction(agent* thisAgent)
 		do_working_memory_phase(thisAgent);
 		
 		thisAgent->smem_ignore_changes = false;
-	}
-	
-	symbol_remove_ref(thisAgent, state);
-	symbol_remove_ref(thisAgent, query);
-	
-	if (negquery)
-		symbol_remove_ref(thisAgent, negquery);
-	
-	if (math)
-		symbol_remove_ref(thisAgent, math);
-	
-	for (wme* wme : cue_wmes)
-	{
-		wme_remove_ref(thisAgent, wme);
 	}
 }
 
