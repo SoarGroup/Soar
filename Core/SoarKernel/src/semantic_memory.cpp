@@ -1535,7 +1535,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
     std::list<smem_lti_id>::iterator new_list_iterator;
     std::list<smem_lti_id>::iterator new_list_iterator_begin;
     std::list<smem_lti_id>::iterator new_list_iterator_end;
-    std::unordered_set<smem_lti_id> visited;
+    std::set<smem_lti_id> visited;
     bool good_lti = true;
     depth = 0;
     while (!lti_traversal_queue.empty() && count < limit)
@@ -1563,7 +1563,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
                 new_list->push_back((*old_list_iterator));
                 if (thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
                 {
-                    visited.add((*old_list_iterator));
+                    visited.insert((*old_list_iterator));
                 }
             }
             if (thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
