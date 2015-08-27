@@ -4232,9 +4232,11 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     }
     
     smem_lti_id king_id = NIL;
-    
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->query->start();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act->start();
     ////////////////////////////////////////////////////////////////////////////
     
     if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() != smem_param_container::context_change)
@@ -4251,6 +4253,9 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
 
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act->stop();
+    ////////////////////////////////////////////////////////////////////////////
     // prepare query stats
     {
         smem_prioritized_weighted_cue weighted_pq;
@@ -6304,6 +6309,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 		delete thisAgent->lastCue;
 		thisAgent->lastCue = NULL;
 	}
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act->start();
+    ////////////////////////////////////////////////////////////////////////////
 	if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
 	{
 	    if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
@@ -6313,6 +6321,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
         //Contribution from context
         smem_calc_spread(thisAgent);
 	}
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act->stop();
+    ////////////////////////////////////////////////////////////////////////////
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
