@@ -2788,13 +2788,42 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
         if (delta_child->second > 0)
         {
             //sqlite command that invalidates trajectories from the parent.
-            for (int i = 1; i < 11; i++)
+
+            if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::backwards)
             {
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, delta_child->first);
+                }
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
             }
-            thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
-            delete negative_children;
-            return;
+            else if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::forwards)
+            {
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
+                }
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+            }
+            else if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::both)
+            {
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
+                }
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+                for (int i = 1; i < 11; i++)
+                {
+                    thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, delta_child->first);
+                }
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+            }
+            else
+            {
+                assert(false);
+            }
+            //delete negative_children;
+            //return;
         }
         else if (delta_child->second < 0)
         {
@@ -2806,13 +2835,46 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
     while (!negative_children->empty())
     {
         //sqlite command to delete trajectories involving parent to delta_children->front();
-        for (int i = 1; i < 11; i++)
+        if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::backwards)
         {
-            thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, lti_parent_id);
-            thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, negative_children->front());
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, negative_children->front());
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, lti_parent_id);
+            }
+            thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+            negative_children->pop_front();
         }
-        thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
-        negative_children->pop_front();
+        else if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::forwards)
+        {
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, lti_parent_id);
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, negative_children->front());
+            }
+            thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+            negative_children->pop_front();
+        }
+        else if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::backwards)
+        {
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, lti_parent_id);
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, negative_children->front());
+            }
+            thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+            for (int i = 1; i < 11; i++)
+            {
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(2*i-1, negative_children->front());
+                thisAgent->smem_stmts->trajectory_invalidate_edge->bind_int(1*i, lti_parent_id);
+            }
+            thisAgent->smem_stmts->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+            negative_children->pop_front();
+        }
+        else
+        {
+            assert(false);
+        }
     }
     delete negative_children;
 }
