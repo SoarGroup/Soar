@@ -77,6 +77,7 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::boolean_param* learning;
         soar_module::boolean_param* spreading;//clearly, for spreading.
+        soar_module::boolean_param* spreading_normalization;
         soar_module::constant_param<db_choices>* database;
         soar_module::constant_param<spreading_types>* spreading_type;
         soar_module::constant_param<spreading_directions>* spreading_direction;

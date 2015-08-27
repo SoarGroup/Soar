@@ -87,6 +87,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
     add(spreading);
 
+    spreading_normalization = new soar_module::boolean_param("spreading-normalization", on, new soar_module::f_predicate<boolean>());
+    add(spreading_normalization);
+
     // spreading type
     spreading_type = new soar_module::constant_param<spreading_types>("spreading-type", ppr, new soar_module::f_predicate<spreading_types>());
     spreading_type->add_mapping(ppr, "ppr");//personalized pagerank log(prob)
@@ -1532,6 +1535,8 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
     std::list<smem_lti_id>::iterator new_list_iterator;
     std::list<smem_lti_id>::iterator new_list_iterator_begin;
     std::list<smem_lti_id>::iterator new_list_iterator_end;
+    std::unordered_set<smem_lti_id> visited;
+    bool good_lti = true;
     depth = 0;
     while (!lti_traversal_queue.empty() && count < limit)
     {
@@ -1549,39 +1554,55 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
         //assert(lti_begin != lti_end);
         for (lti_iterator = lti_begin; lti_iterator != lti_end; ++lti_iterator)
         {
+            good_lti = true;
             //First, we make a new copy of the list to add to the queue.
             std::list<smem_lti_id>* new_list = new std::list<smem_lti_id>;
             //We copy the contents of the old list.
             for (old_list_iterator = old_list_iterator_begin; old_list_iterator != old_list_iterator_end; ++old_list_iterator)
             {
                 new_list->push_back((*old_list_iterator));
+                if (thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
+                {
+                    visited.add((*old_list_iterator));
+                }
             }
-            //Add the new element to the list.
-            new_list->push_back((*lti_iterator));
-
-            //Now we have a new traversal to add.
-            new_list_iterator_begin = new_list->begin();
-            new_list_iterator_end = new_list->end();
-            depth = 0;
-            for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end; ++new_list_iterator)
+            if (thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
             {
-                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *new_list_iterator);
+                good_lti = (visited.find(*lti_iterator) != visited.end());
             }
-            while (depth < 11 && depth < depth_limit+2)
+            if (good_lti)
             {
-                thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
-            }
-            thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
-            ++count;
+                //Add the new element to the list.
+                new_list->push_back((*lti_iterator));
 
-            //If there's room for more, we add it so that we can continue building.
-            if (new_list->size() < depth_limit+1) {
-                lti_traversal_queue.push(new_list);
+                //Now we have a new traversal to add.
+                new_list_iterator_begin = new_list->begin();
+                new_list_iterator_end = new_list->end();
+                depth = 0;
+                for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end; ++new_list_iterator)
+                {
+                    thisAgent->smem_stmts->trajectory_add->bind_int(++depth, *new_list_iterator);
+                }
+                while (depth < 11 && depth < depth_limit+2)
+                {
+                    thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
+                }
+                thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
+                ++count;
+
+                //If there's room for more, we add it so that we can continue building.
+                if (new_list->size() < depth_limit+1) {
+                    lti_traversal_queue.push(new_list);
+                }
+                else
+                {
+                    delete new_list;//Before ever adding it, we just delete it instead.
+                    //The other way to delete is to get added, then to get deleted after a traversal of children.
+                }
             }
             else
             {
-                delete new_list;//Before ever adding it, we just delete it instead.
-                //The other way to delete is to get added, then to get deleted after a traversal of children.
+                delete new_list;
             }
         }
         lti_traversal_queue.pop();//Get rid of the old list.
@@ -2365,7 +2386,14 @@ void smem_calc_spread(agent* thisAgent)
                 }
                 else
                 {
-                    raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                    if (thisAgent->smem_params->spreading_normalization->get_value() == off && thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic && thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
+                    {
+                        raw_prob = (((double)(calc_spread->column_double(2))));
+                    }
+                    else
+                    {
+                        raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                    }
                     offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
                     additional = (log(raw_prob)-log(offset));
                 }
@@ -2556,7 +2584,14 @@ void smem_calc_spread(agent* thisAgent)
             }
             else
             {
-                raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                if (thisAgent->smem_params->spreading_normalization->get_value() == off && thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic && thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
+                {
+                    raw_prob = (((double)(calc_spread->column_double(2))));
+                }
+                else
+                {
+                    raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
+                }
                 offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 additional = (log(raw_prob)-log(offset));
             }

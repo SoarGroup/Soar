@@ -57,6 +57,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
         PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);
+        PrintCLIMessage_Item("spreading-normalization:", thisAgent->smem_params->spreading_normalization, 40);
         PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->smem_params->spreading_depth_limit, 40);
         PrintCLIMessage_Item("spreading-limit:", thisAgent->smem_params->spreading_limit, 40);
         PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
