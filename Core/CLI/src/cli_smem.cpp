@@ -60,6 +60,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->smem_params->spreading_depth_limit, 40);
         PrintCLIMessage_Item("spreading-limit:", thisAgent->smem_params->spreading_limit, 40);
         PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
+        PrintCLIMessage_Item("spreading-crawl-time:", thisAgent->smem_params->spreading_crawl_time, 40);
         PrintCLIMessage_Item("spreading-model:", thisAgent->smem_params->spreading_model, 40);
         PrintCLIMessage_Item("spreading-traversal:", thisAgent->smem_params->spreading_traversal, 40);
         PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->smem_params->spreading_loop_avoidance, 40);
@@ -375,7 +376,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
                                 || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
                     {*/
-                    if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
+                    if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
                     {
                         if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
                         {

@@ -56,7 +56,10 @@ class smem_param_container: public soar_module::param_container
             // When the long-term store changes, nothing is done.
         // context-change - The calculation of a fingerprint is done when a LTI enters working memory.
             // When the long-term store changes, nothing is done.
-        enum spreading_times { precalculate, query_time, context_change };
+        enum spreading_times { query_time, context_change };
+
+        enum spreading_crawl_times { on_demand, precalculate };
+
         // Currently, only the likelihood option is supported. The way spreading is calculated is only as an additional number combined with BLA
         // The belief-update model would modify the base-level activation of nodes according to spread isntead of keeping the numbers separate.
             //For example, when using context-change spreading, a LTI no longer in working memory (because it was recently removed) may still
@@ -78,6 +81,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<spreading_types>* spreading_type;
         soar_module::constant_param<spreading_directions>* spreading_direction;
         soar_module::constant_param<spreading_times>* spreading_time;
+        soar_module::constant_param<spreading_crawl_times>* spreading_crawl_time;
         soar_module::constant_param<spreading_models>* spreading_model;
         soar_module::constant_param<spreading_traversals>* spreading_traversal;
         smem_path_param* path;

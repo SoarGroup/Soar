@@ -199,12 +199,18 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading_direction->add_mapping(both, "both");//bidirectional
     add(spreading_direction);
 
-    // spreading direction
-    spreading_time = new soar_module::constant_param<spreading_times>("spreading-time", precalculate, new soar_module::f_predicate<spreading_times>());
-    spreading_time->add_mapping(precalculate, "precalculate");//calculate spread ahead of time, update spread on queries from memory changes
+    // spreading time
+    spreading_time = new soar_module::constant_param<spreading_times>("spreading-time", query_time, new soar_module::f_predicate<spreading_times>());
+    //spreading_time->add_mapping(precalculate, "precalculate");//calculate spread ahead of time, update spread on queries from memory changes
     spreading_time->add_mapping(query_time, "query-time");//don't bother doing spread at all until a query
     spreading_time->add_mapping(context_change, "context-change");//do spread according to when the context changes
     add(spreading_time);
+
+    // spreading crawl time
+    spreading_crawl_time = new soar_module::constant_param<spreading_crawl_times>("spreading-crawl-time", on_demand, new soar_module::f_predicate<spreading_crawl_times>());
+    spreading_crawl_time->add_mapping(precalculate, "precalculate");//calculate spread ahead of time, update spread from memory changes before needed
+    spreading_crawl_time->add_mapping(on_demand, "on-demand");//calculate spread when needed, update spread from memory changes when needed
+    add(spreading_crawl_time);
 
     //spreading model
     spreading_model = new soar_module::constant_param<spreading_models>("spreading-model", likelihood, new soar_module::f_predicate<spreading_models>());
@@ -2220,7 +2226,7 @@ void smem_fix_spread(agent* thisAgent)
     std::set<smem_lti_id>::iterator invalid_parent;
     std::set<smem_lti_id> invalidated_parents;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
-    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic || thisAgent->smem_params->spreading_time->get_value() != smem_param_container::precalculate)
+    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic || thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
     {
         while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
         {
@@ -2228,7 +2234,7 @@ void smem_fix_spread(agent* thisAgent)
         }
         thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
         thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
-        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
+        if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
             for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
             {
@@ -2263,7 +2269,7 @@ void smem_fix_spread(agent* thisAgent)
     {
         thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*invalid_parent));
         thisAgent->smem_stmts->likelihood_cond_count_remove->execute(soar_module::op_reinit);
-        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
+        if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
             if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
                 {
@@ -2290,7 +2296,7 @@ void smem_fix_spread(agent* thisAgent)
     {
         thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*invalid_parent));
         thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
-        if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::precalculate)
+        if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
             thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*invalid_parent));
             thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
@@ -2445,7 +2451,7 @@ void smem_calc_spread(agent* thisAgent)
             "(SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN "
             "smem_trajectory_num ON lti_id=lti_j");*/
     //I may need to make some walks here.
-    if (thisAgent->smem_params->spreading_time->get_value() != smem_param_container::precalculate)
+    if (thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
     {
         std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
         if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
@@ -4239,7 +4245,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     thisAgent->smem_timers->act->start();
     ////////////////////////////////////////////////////////////////////////////
     
-    if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() != smem_param_container::context_change)
+    if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() == smem_param_container::query_time)
     {
         //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
         //First, we fix bad trajectories. (Asynchronous would be nice.)
@@ -6312,7 +6318,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->act->start();
     ////////////////////////////////////////////////////////////////////////////
-	if (thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
+	if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
 	{
 	    if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
         {
