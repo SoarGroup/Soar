@@ -1617,7 +1617,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
 }
 
 //This is a random construction of trajectories with depth up to 10 (or something).
-void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 10)
+void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, uint64_t depth)
 {
     smem_lti_id lti_id = trajectory.back();
     child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
@@ -1649,7 +1649,7 @@ void trajectory_construction(agent* thisAgent, std::list<smem_lti_id>& trajector
         return;
     }
     //probability constant here can be set via command.
-    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||SoarRand()>thisAgent->smem_params->continue_probability->get_value())
+    if ((lti_trajectories.find(lti_id)==lti_trajectories.end() || lti_trajectories[lti_id]->size() == 0)||(SoarRand()>thisAgent->smem_params->continue_probability->get_value() && ((uint64_t)thisAgent->smem_params->spreading_depth_limit->get_value()) != depth))
     {
     //If the element is not in the trajectory map, it was a terminal node and the list should end here. The rest of the values will be 0.
         int i = 0;
@@ -1781,7 +1781,7 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
         //assert(i!=8);
             std::list<smem_lti_id> trajectory;
             trajectory.push_back(lti_id);
-            trajectory_construction(thisAgent,trajectory,lti_trajectories);
+            trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
         }
     }
     lti_a->reinitialize();
@@ -2276,7 +2276,7 @@ void smem_fix_spread(agent* thisAgent)
             {
                 std::list<smem_lti_id> trajectory;
                 trajectory.push_back(lti_id);
-                trajectory_construction(thisAgent,trajectory,lti_trajectories);
+                trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
             }
         }
         thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
@@ -2519,7 +2519,7 @@ void smem_calc_spread(agent* thisAgent)
                     {
                         std::list<smem_lti_id> trajectory;
                         trajectory.push_back(*it);
-                        trajectory_construction(thisAgent,trajectory,lti_trajectories);
+                        trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
                     }
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
