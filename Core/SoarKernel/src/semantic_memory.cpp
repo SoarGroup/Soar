@@ -2484,6 +2484,7 @@ void smem_calc_spread(agent* thisAgent)
     //I may need to make some walks here.
     if (thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
     {
+        uint64_t count = 0;
         std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
         if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
         {
@@ -2518,9 +2519,14 @@ void smem_calc_spread(agent* thisAgent)
             for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
             {//We keep track of old walks. If we havent changed smem, no need to recalculate.
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
-                if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
+                count = 0;
+                while(thisAgent->smem_stmts->trajectory_get->execute() == soar_module::row)
                 {
-                    for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value(); ++i)
+                    count++;
+                }
+                if (count < thisAgent->smem_params->number_trajectories->get_value())
+                {
+                    for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value()-count; ++i)
                     {
                         std::list<smem_lti_id> trajectory;
                         trajectory.push_back(*it);
