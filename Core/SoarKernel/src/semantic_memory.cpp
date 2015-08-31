@@ -2247,7 +2247,7 @@ void smem_fix_spread(agent* thisAgent)
     std::set<smem_lti_id>::iterator invalid_parent;
     std::set<smem_lti_id> invalidated_parents;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
-    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic || thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
+    if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
     {
         while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
         {
@@ -2266,17 +2266,20 @@ void smem_fix_spread(agent* thisAgent)
         }
     }
     else
-    {//We are both random and on precalculate timing.
+    {
         while (thisAgent->smem_stmts->trajectory_find_invalid->execute() == soar_module::row)
         {
             lti_id = thisAgent->smem_stmts->trajectory_find_invalid->column_int(0);
             invalidated_parents.insert(lti_id);
-            count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
-            for (int i = 0; i < count; ++i)
+            if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
             {
-                std::list<smem_lti_id> trajectory;
-                trajectory.push_back(lti_id);
-                trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
+                count = thisAgent->smem_stmts->trajectory_find_invalid->column_int(1);
+                for (int i = 0; i < count; ++i)
+                {
+                    std::list<smem_lti_id> trajectory;
+                    trajectory.push_back(lti_id);
+                    trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
+                }
             }
         }
         thisAgent->smem_stmts->trajectory_find_invalid->reinitialize();
