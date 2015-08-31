@@ -2492,20 +2492,22 @@ void smem_calc_spread(agent* thisAgent)
                     std::list<smem_lti_id> trajectory;
                     trajectory.push_back(*it);
                     trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+                
+                    
+
+                    double p1 = thisAgent->smem_params->continue_probability->get_value();
+                    for (int i = 1; i < 11; i++)
+                    {
+                        thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_double(2*i-1,p1);
+                        thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_int(2*i,(*it));
+                        p1 = p1 * p1;
+                    }
+                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->execute(soar_module::op_reinit);
+
+                    thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
+                    thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
-
-                double p1 = thisAgent->smem_params->continue_probability->get_value();
-                for (int i = 1; i < 11; i++)
-                {
-                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_double(2*i-1,p1);
-                    thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->bind_int(2*i,(*it));
-                    p1 = p1 * p1;
-                }
-                thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->execute(soar_module::op_reinit);
-
-                thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
-                thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
             }
         }
         else
@@ -2521,15 +2523,16 @@ void smem_calc_spread(agent* thisAgent)
                         trajectory.push_back(*it);
                         trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
                     }
+                
+                    for (int i = 1; i < 11; i++)
+                    {
+                        thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*it));
+                    }
+                    thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+                    thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
+                    thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
-                for (int i = 1; i < 11; i++)
-                {
-                    thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*it));
-                }
-                thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
-                thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
             }
         }
         for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
@@ -4284,7 +4287,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     {
         //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
         //First, we fix bad trajectories. (Asynchronous would be nice.)
-        if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
+        //if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
         {
             smem_fix_spread(thisAgent);
         }
@@ -6355,7 +6358,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     ////////////////////////////////////////////////////////////////////////////
 	if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
 	{
-	    if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
+	    //if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
         {
 	        smem_fix_spread(thisAgent);
         }
