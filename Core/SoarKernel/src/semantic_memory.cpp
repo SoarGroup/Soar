@@ -1742,6 +1742,237 @@ void trajectory_construction_actr(agent* thisAgent, std::list<smem_lti_id>& traj
         trajectory_construction_actr(thisAgent, trajectory, lti_trajectories, depth-1);
     }
 }
+
+void smem_delete_trajectory_indices(agent* thisAgent)
+{
+    soar_module::sqlite_statement* trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX trajectory_lti");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX trajectory_valid");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t1");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t2");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t3");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t4");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t5");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t6");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t7");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t8");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t9");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t10");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t12");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t23");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t34");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t45");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t56");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t67");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t78");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t89");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_t910");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX lti_tid10");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+}
+
+void smem_create_trajectory_indices(agent* thisAgent)
+{
+    soar_module::sqlite_statement* trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1,lti2)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2,lti3)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3,lti4)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4,lti5)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5,lti6)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6,lti7)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7,lti8)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8,lti9)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9,lti10)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
+}
+
 extern bool smem_calc_spread_trajectories(agent* thisAgent)
 {//This is written to be a batch process when spreading is turned on. It will take a long time.
 	smem_attach(thisAgent);
@@ -1768,6 +1999,7 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
     smem_lti_id lti_id;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
     int j = 0;
+    smem_delete_trajectory_indices(thisAgent);
     //Iterate through all ltis in SMem
     while (lti_a->execute() == soar_module::row)
     {
@@ -1784,7 +2016,7 @@ extern bool smem_calc_spread_trajectories(agent* thisAgent)
         }
     }
     lti_a->reinitialize();
-
+    smem_create_trajectory_indices(thisAgent);
     for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
     {
         delete to_delete->second;
@@ -1818,6 +2050,7 @@ extern bool smem_calc_spread_trajectory_actr(agent* thisAgent)
     smem_lti_id lti_id;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
     int j = 0;
+    smem_delete_trajectory_indices(thisAgent);
     //Iterate through all ltis in SMem
     while (lti_a->execute() == soar_module::row)
     {
@@ -1832,7 +2065,7 @@ extern bool smem_calc_spread_trajectory_actr(agent* thisAgent)
         }
     }
     lti_a->reinitialize();
-
+    smem_create_trajectory_indices(thisAgent);
     for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
     {
         delete to_delete->second;
@@ -1859,6 +2092,7 @@ extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
     smem_lti_id lti_id;
     std::map<smem_lti_id,std::list<smem_lti_id>*> lti_trajectories;
     int j = 0;
+    smem_delete_trajectory_indices(thisAgent);
     //Iterate through all ltis in SMem
     while (lti_a->execute() == soar_module::row)
     {
@@ -1872,7 +2106,7 @@ extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
         }
     }
     lti_a->reinitialize();
-
+    smem_create_trajectory_indices(thisAgent);
     for (std::map<smem_lti_id,std::list<smem_lti_id>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
     {
         delete to_delete->second;
