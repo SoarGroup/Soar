@@ -564,20 +564,30 @@ void smem_statement_container::create_indices()
      * The indices below are all for spreading.
      * */
     //This is to find the trajectories starting from a given LTI.
-    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id)");
+    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
     //Keep track of invalid trajectories.
-    add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit)");
+    add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
     //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
-    add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti1)");
-    add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti2)");
-    add_structure("CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti3)");
-    add_structure("CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti4)");
-    add_structure("CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti5)");
-    add_structure("CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti6)");
-    add_structure("CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti7)");
-    add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti8)");
-    add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti9)");
-    add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti10)");
+    add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
+    add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2)");
+    add_structure("CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3)");
+    add_structure("CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4)");
+    add_structure("CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5)");
+    add_structure("CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6)");
+    add_structure("CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7)");
+    add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8)");
+    add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9)");
+    add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10)");
+    add_structure("CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1,lti2)");
+    add_structure("CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2,lti3)");
+    add_structure("CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3,lti4)");
+    add_structure("CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4,lti5)");
+    add_structure("CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5,lti6)");
+    add_structure("CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6,lti7)");
+    add_structure("CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7,lti8)");
+    add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8,lti9)");
+    add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9,lti10)");
+    add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
     add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
     add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
     add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
@@ -913,18 +923,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
 //    std::string temp_string = sqlite_string.str();
   //  likelihood_cond_count_insert_deterministic = new soar_module::sqlite_statement(new_db,temp_string.c_str());
-    likelihood_cond_count_insert_deterministic = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j)"
-            " SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? GROUP BY lti UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*)"
-            "*? AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti) GROUP BY lti");
+    likelihood_cond_count_insert_deterministic = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? GROUP BY lti,parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*)*? AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti,parent) GROUP BY parent, lti");
     add(likelihood_cond_count_insert_deterministic);
 
 
