@@ -206,7 +206,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATES, "DEALLOCATE test %t\n", t);
+    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test %t\n", t);
     if (!t)
     {
         return;
@@ -221,7 +221,7 @@ void deallocate_test(agent* thisAgent, test t)
             deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            dprint(DT_DEALLOCATES, "DEALLOCATE conjunctive test\n");
+            dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE conjunctive test\n");
             c = t->data.conjunct_list;
             while (c)
             {
@@ -247,7 +247,7 @@ void deallocate_test(agent* thisAgent, test t)
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
-    dprint(DT_DEALLOCATES, "DEALLOCATE test done.\n");
+    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test done.\n");
 }
 
 /* ----------------------------------------------------------------

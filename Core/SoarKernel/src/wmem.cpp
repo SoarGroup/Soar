@@ -126,9 +126,11 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
            ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
 
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
+        dprint(DT_WME_CHANGES, "Setting up post-link addition for level promotion.\n");
         post_link_addition(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
         {
@@ -139,10 +141,12 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_remove\n", w);
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
     if (w->value->is_identifier())
     {
+        dprint(DT_WME_CHANGES, "Setting up post-link removal for level promotion.\n");
         post_link_removal(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
         {
@@ -217,13 +221,13 @@ void do_buffered_wm_changes(agent* thisAgent)
     }
 
     /* --- call output module in case any changes are output link changes --- */
-    dprint(DT_WME_CHANGES, "...calling output module.\n");
+    dprint(DT_WME_CHANGES, "...informing output code of wm changes.\n");
     inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add,
                                        thisAgent->wmes_to_remove);
 
     /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
     /* --- be fetched from the agent structure.                           --- */
-    dprint(DT_WME_CHANGES, "...invoking callbacks.\n");
+    dprint(DT_WME_CHANGES, "...invoking wm changes callbacks.\n");
     soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 0);
 
     /* --- stuff wme changes through the rete net --- */
@@ -250,7 +254,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     thisAgent->timers_match_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
-    dprint(DT_WME_CHANGES, "...warn if watching wmes.\n");
+    dprint(DT_WME_CHANGES, "...looking for wmes added and removed in same phase.\n");
     /* --- warn if watching wmes and same wme was added and removed -- */
     if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
     {
@@ -263,6 +267,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 next_c = cr->rest;
                 if (w == cr->first)
                 {
+                    dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
                     print(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
@@ -275,7 +280,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     }
 
 
-    dprint(DT_WME_CHANGES, "...printing trace and cleaning up for additions.\n");
+    dprint(DT_WME_CHANGES, "...WMEs to add:\n");
     /* --- do tracing and cleanup stuff --- */
     for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
     {
@@ -289,11 +294,12 @@ void do_buffered_wm_changes(agent* thisAgent)
             filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
         }
 
+        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_add_ref(w);
         free_cons(thisAgent, c);
         thisAgent->wme_addition_count++;
     }
-    dprint(DT_WME_CHANGES, "...printing trace and cleaning up for removals.\n");
+    dprint(DT_WME_CHANGES, "...WMEs to remove:\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = next_c)
     {
         next_c = c->rest;
@@ -306,6 +312,7 @@ void do_buffered_wm_changes(agent* thisAgent)
             filtered_print_wme_remove(thisAgent, w);   /* kjh(CUSP-B2) begin */
         }
 
+        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
