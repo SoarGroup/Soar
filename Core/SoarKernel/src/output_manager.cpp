@@ -207,7 +207,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
     mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
 
-    mode_info[DT_NONE_3].prefix =                       strdup("| ");
+    mode_info[DT_DEALLOCATES_TESTS].prefix =                       strdup("| ");
     mode_info[DT_NONE_4].prefix =                       strdup("| ");
 
     mode_info[TM_EPMEM].enabled =                       TRACE_Init_TM_EPMEM;
@@ -254,7 +254,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_RHS_VALUE].enabled =                   TRACE_Init_DT_RHS_VALUE;
 
     mode_info[DT_WME_CHANGES].enabled =                 TRACE_Init_DT_WME_CHANGES;
-    mode_info[DT_NONE_3].enabled =                      TRACE_Init_DT_NONE_3;
+    mode_info[DT_DEALLOCATES_TESTS].enabled =                      TRACE_Init_DT_DEALLOCATES_TESTS;
     mode_info[DT_NONE_4].enabled =                      TRACE_Init_DT_NONE_4;
 }
 
