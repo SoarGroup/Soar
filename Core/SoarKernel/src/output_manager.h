@@ -184,6 +184,7 @@ class Output_Manager
         void sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...);
         size_t sprinta_sf_cstr(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
 
+        void buffer_start_fresh_line(agent* thisAgent, std::string &destString);
         void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */

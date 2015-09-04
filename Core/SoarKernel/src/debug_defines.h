@@ -54,12 +54,12 @@
 #define TRACE_Init_DT_WME_CHANGES                 false
 //--
 #define TRACE_Init_DT_MILESTONES                  true
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
-#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
