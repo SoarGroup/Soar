@@ -422,7 +422,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             std::ostringstream s_spread_output_string;
             s_spread_output_string << number_spread_elements;
             std::string spread_output_string = s_spread_output_string.str();
-            PrintCLIMessage_Justify("Current Spread Elements:",spread_output_string.c_str(), 40);
+            PrintCLIMessage_Justify("Spread Size:",spread_output_string.c_str(), 40);
             thisAgent->smem_stmts->calc_spread_size_debug_cmd->reinitialize();
         }
         else
