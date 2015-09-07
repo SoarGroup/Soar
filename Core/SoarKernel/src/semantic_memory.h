@@ -342,6 +342,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* likelihood_cond_count_insert_deterministic;
         soar_module::sqlite_statement* lti_count_num_appearances_insert;
         soar_module::sqlite_statement* calc_spread;
+        soar_module::sqlite_statement* calc_spread_size_debug_cmd;
         soar_module::sqlite_statement* delete_old_context;
         soar_module::sqlite_statement* delete_old_spread;
         soar_module::sqlite_statement* add_new_context;

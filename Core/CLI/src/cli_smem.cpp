@@ -417,6 +417,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage_Item("Mirrors:", thisAgent->smem_stats->mirrors, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->smem_stats->chunks, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->smem_stats->slots, 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->execute();
+            uint64_t number_spread_elements = thisAgent->smem_stmts->calc_spread_size_debug_cmd->column_int(0);
+            std::ostringstream s_spread_output_string;
+            s_spread_output_string << number_spread_elements;
+            std::string spread_output_string = s_spread_output_string.str();
+            PrintCLIMessage_Justify("Current Spread Elements:",spread_output_string.c_str(), 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->reinitialize();
         }
         else
         {

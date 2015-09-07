@@ -935,6 +935,10 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     calc_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");
     add(calc_spread);
 
+    //gets the size of the current spread table.
+    calc_spread_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_current_spread");
+    add(calc_spread_size_debug_cmd);
+
     //delete lti from context table
     delete_old_context = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_context WHERE lti_id=?");
     add(delete_old_context);
