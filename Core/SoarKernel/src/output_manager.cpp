@@ -183,7 +183,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_CLI_LIBRARIES].prefix =                strdup("CLI Lib | ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
-    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMem Go| ");
+    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
 
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
@@ -205,9 +205,9 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
+    mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
 
-    mode_info[DT_NONE_2].prefix =                       strdup("| ");
-    mode_info[DT_NONE_3].prefix =                       strdup("| ");
+    mode_info[DT_DEALLOCATES_TESTS].prefix =                       strdup("| ");
     mode_info[DT_NONE_4].prefix =                       strdup("| ");
 
     mode_info[TM_EPMEM].enabled =                       TRACE_Init_TM_EPMEM;
@@ -253,8 +253,8 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_EBC_CLEANUP].enabled =                 TRACE_Init_DT_EBC_CLEANUP;
     mode_info[DT_RHS_VALUE].enabled =                   TRACE_Init_DT_RHS_VALUE;
 
-    mode_info[DT_NONE_2].enabled =                      TRACE_Init_DT_NONE_2;
-    mode_info[DT_NONE_3].enabled =                      TRACE_Init_DT_NONE_3;
+    mode_info[DT_WME_CHANGES].enabled =                 TRACE_Init_DT_WME_CHANGES;
+    mode_info[DT_DEALLOCATES_TESTS].enabled =                      TRACE_Init_DT_DEALLOCATES_TESTS;
     mode_info[DT_NONE_4].enabled =                      TRACE_Init_DT_NONE_4;
 }
 

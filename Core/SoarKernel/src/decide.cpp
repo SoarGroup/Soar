@@ -2337,6 +2337,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
     wme* w, *next_w;
     preference* candidates, *cand, *pref;
 
+    dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y _?_)\n", s->id, s->attr);
     impasse_type = run_preference_semantics(thisAgent, s, &candidates);
 
     if (impasse_type == NONE_IMPASSE_TYPE)
@@ -2369,6 +2370,8 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             {
                 w->value->decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
                 w->value->decider_wme = w; /* so we can set the pref later */
+                dprint(DT_WME_CHANGES, "WME %w already an existing wme.  Marking as ALREADY_EXISTING_WME_DECIDER_FLAG.\n", w);
+
             }
             else
             {
@@ -2409,17 +2412,17 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    creating a GDS for a WME level different from the instantiation level.  This
                      *    solution seems to work well, but it's possible that there are subtle aspects
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
+                    dprint(DT_GDS, "%fWME from duplicate rule.  Skipping gds processing for newly made o-supported wme %p (id level = %d, mg level = %d)\n",
+                           cand, cand->id->id->level, cand->inst->match_goal_level);
                     continue;
                 }
                 else
                 {
-                    dprint_noprefix(DT_GDS, "\n");
-                    dprint(DT_GDS, "wme not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
+                    dprint(DT_GDS, "%fWME not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
                            cand, cand->id->id->level, cand->inst->match_goal_level);
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
                 }
-//                dprint(DT_BACKTRACE, "Adding non-context wme for preference %p.\n", cand);
-//                dprint(DT_BACKTRACE, "   o_ids: %u ^%u %u\n", cand->o_ids.id, cand->o_ids.attr, cand->o_ids.value);
+                dprint(DT_WME_CHANGES, "Adding non-context wme for preference %p.\n", cand);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
                 insert_at_head_of_dll(s->wmes, w, next, prev);
                 w->preference = cand;
@@ -2654,19 +2657,19 @@ void decide_non_context_slots(agent* thisAgent)
     dl_cons* dc;
     slot* s;
 
-    dprint(DT_EPMEM_CMD, "Deciding non-context slots.\n");
+    dprint(DT_WME_CHANGES, "Deciding non-context slots.\n");
     while (thisAgent->changed_slots)
     {
         dc = thisAgent->changed_slots;
         thisAgent->changed_slots = thisAgent->changed_slots->next;
         s = static_cast<slot_struct*>(dc->item);
-        dprint(DT_EPMEM_CMD, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         decide_non_context_slot(thisAgent, s);
         s->changed = NIL;
-        dprint(DT_EPMEM_CMD, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        dprint(DT_WME_CHANGES, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
     }
-    dprint(DT_EPMEM_CMD, "Done deciding non-context slots.\n");
+    dprint(DT_WME_CHANGES, "Done deciding non-context slots.\n");
 }
 
 /* ------------------------------------------------------------------
