@@ -671,8 +671,8 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
      be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
      */
 
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL;
-            cond = cond->next)
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+    {
         if (cond->type == POSITIVE_CONDITION)
         {
 #ifdef DO_TOP_LEVEL_REF_CTS
@@ -704,6 +704,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
 #endif
             }
         }
+    }
 
     if (inst->match_goal)
     {
@@ -863,18 +864,16 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->reliable = true;
     inst->in_ms = true;
     inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
-
-    /*  We want to initialize the GDS_evaluated_already flag
-     *  when a new instantiation is created.
-     */
-
     inst->GDS_evaluated_already = false;
-    dprint_start_fresh_line(DT_MILESTONES);
-    dprint_header(DT_MILESTONES, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
+
+    dprint_header(DT_MILESTONES, PrintBefore,
+        "create_instantiation() for instance of %y (id=%u) begun.\n",
+        inst->prod->name, inst->i_id);
     if (thisAgent->soar_verbose_flag == true)
     {
-        print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
-                           inst->prod->name);
+        print_with_symbols(thisAgent,
+            "\n   In create_instantiation for instance of rule %y",
+            inst->prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "in create_instantiation: %s",
                  inst->prod->name->to_string(true));
@@ -1077,15 +1076,14 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint(DT_MILESTONES, "%f---------------------------------------------------------\n");
-    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBoth, "create_instantiation() finished for %y\n", inst->prod->name);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod->name, inst->i_id);
 
     if (!thisAgent->system_halted)
     {
@@ -1599,7 +1597,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
                     /* REW: begin 09.15.96 */
                     /* No knowledge retrieval necessary in Operand2 */
                     /* REW: end   09.15.96 */
-                    
+
                     if (wma_enabled(thisAgent))
                     {
                         wma_activate_wmes_in_pref(thisAgent, pref);
@@ -1611,7 +1609,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
                     // the top state, and was asserting an acceptable
                     // preference for a WME that was already
                     // o-supported. hence unnecessary.
-                    
+
                     preference_add_ref(pref);
                     preference_remove_ref(thisAgent, pref);
                 }

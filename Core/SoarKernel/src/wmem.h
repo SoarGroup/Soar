@@ -157,10 +157,18 @@ typedef struct wme_struct
 
 } wme;
 
+/* MToDo | Remove */
+#include "debug.h"
 inline void wme_add_ref(wme* w)
 {
     (w)->reference_count++;
+    /* MToDo | Remove */
+    if (wme_matches_bug(w))
+    {
+        dprint(DT_DEBUG, "wme_add_ref(): %w\n", w);
+    }
 }
+
 inline void wme_remove_ref(agent* thisAgent, wme* w)
 {
     /* There are occaisionally wme's with zero reference counts

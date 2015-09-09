@@ -31,15 +31,28 @@
 void Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
     assert(thisAgent && w);
-    if (w->id->is_lti() || w->value->is_lti())
+
+    /* MToDo | Remove */
+//    if (w->id->is_lti() || w->value->is_lti())
+//    {
+//        dprint(DT_DEBUG, "WME with LTI: (t%u: %y ^%y %y), reference count: %u\n",
+//        w->timetag, w->id, w->attr, w->value, w->reference_count);
+////        dprint(DT_WME_CHANGES, "   pref: %p\n", w->preference);
+//    }
+    if (wme_matches_bug(w))
     {
-        dprint(DT_DEBUG, "LTI detected: (t%u: %y ^%y %y), reference count: %u\n",
-        w->timetag, w->id, w->attr, w->value, w->reference_count);
-//        dprint(DT_WME_CHANGES, "   pref: %p\n", w->preference);
+        sprinta_sf(thisAgent, destString, "(t%u(%u): %y ^%y %y%s , id_link_count = %u",
+            w->timetag, w->reference_count, w->id, w->attr, w->value,
+            (w->acceptable ? " +)" : ")"), w->id->id->link_count);
+        if (w->value->is_lti())
+        {
+            sprinta_sf(thisAgent, destString, ", id_link_count = %u", w->value->id->link_count);
+        }
+    } else {
+//        sprinta_sf(thisAgent, destString, "(t%u(%u): %y ^%y %y%s",
+//            w->timetag, w->reference_count, w->id, w->attr, w->value,
+//            (w->acceptable ? " +)" : ")"));
     }
-    sprinta_sf(thisAgent, destString, "(t%u: %y ^%y %y%s",
-        w->timetag, w->id, w->attr, w->value,
-        (w->acceptable ? " +)" : ")"));
     return;
 }
 

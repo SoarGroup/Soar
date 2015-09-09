@@ -141,7 +141,14 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_remove\n", w);
+    dprint(DT_WME_CHANGES, "Removing wme %w by adding to wmes_to_remove list...\n", w);
+
+    /* MToDo | Remove */
+    if (wme_matches_bug(w))
+    {
+        dprint(DT_DEBUG, "remove_wme_from_wm(): %w\n", w);
+    }
+
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
     if (w->value->is_identifier())
@@ -239,13 +246,23 @@ void do_buffered_wm_changes(agent* thisAgent)
     dprint(DT_WME_CHANGES, "...adding wmes_to_add to rete.\n");
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
-        dprint(DT_WME_CHANGES, "...adding %w\n", static_cast<wme_struct*>(c->first));
+        dprint(DT_WME_CHANGES, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
+        /* MToDo | Remove */
+        if (wme_matches_bug(static_cast<wme_struct*>(c->first)))
+        {
+            dprint(DT_DEBUG, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
+        }
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
     dprint(DT_WME_CHANGES, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
-        dprint(DT_WME_CHANGES, "...removing %w\n", static_cast<wme_struct*>(c->first));
+        dprint(DT_WME_CHANGES, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
+        /* MToDo | Remove */
+        if (wme_matches_bug(static_cast<wme_struct*>(c->first)))
+        {
+            dprint(DT_DEBUG, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
+        }
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
 #ifndef NO_TIMING_STUFF
@@ -324,7 +341,12 @@ void do_buffered_wm_changes(agent* thisAgent)
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-    dprint(DT_DEALLOCATES, "Deallocating wme %w\n", w);
+    dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
+    /* MToDo | Remove */
+    if (wme_matches_bug(w))
+    {
+        dprint(DT_DEBUG, "deallocate_wme(): %w\n", w);
+    }
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

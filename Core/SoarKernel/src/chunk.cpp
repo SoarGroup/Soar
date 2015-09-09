@@ -997,7 +997,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         goto chunking_abort;
     }
 
-    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instantiation %y (id=%u)\n", inst->prod->name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
+        (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1080,6 +1081,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     {
         trace_locals(thisAgent, grounds_level, &reliable);
         trace_grounded_potentials(thisAgent);
+        dprint(DT_BACKTRACE, "Grounds after trace_grounded_potentials:\n%3", thisAgent->grounds);
         if (! trace_ungrounded_potentials(thisAgent, grounds_level, &reliable))
         {
             break;
