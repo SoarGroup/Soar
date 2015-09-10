@@ -175,7 +175,6 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 
     va_list args;
     std::string buf;
-    buffer_start_fresh_line(m_defaultAgent, buf);
 
     va_start(args, format);
     vsnprint_sf(m_defaultAgent, buf, format, args);
