@@ -1571,7 +1571,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
             }
             if (thisAgent->smem_params->spreading_loop_avoidance->get_value() == on)
             {
-                good_lti = (visited.find(*lti_iterator) != visited.end());
+                good_lti = (visited.find(*lti_iterator) == visited.end());
             }
             if (good_lti)
             {
