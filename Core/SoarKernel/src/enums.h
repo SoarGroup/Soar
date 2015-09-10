@@ -60,7 +60,7 @@ enum TraceMode
     DT_RHS_VALUE,
     DT_WME_CHANGES,
     DT_DEALLOCATES_TESTS,
-    DT_NONE_4,
+    DT_LINKS,
     DT_EBC_CLEANUP,
     num_trace_modes
 };

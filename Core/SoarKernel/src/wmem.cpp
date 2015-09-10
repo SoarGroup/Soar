@@ -146,7 +146,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     /* MToDo | Remove */
     if (wme_matches_bug(w))
     {
-        dprint(DT_DEBUG, "remove_wme_from_wm(): %w\n", w);
+        dprint(DT_LINKS, "remove_wme_from_wm(): %w\n", w);
     }
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
@@ -250,7 +250,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         /* MToDo | Remove */
         if (wme_matches_bug(static_cast<wme_struct*>(c->first)))
         {
-            dprint(DT_DEBUG, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
+            dprint(DT_LINKS, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
         }
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
@@ -261,7 +261,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         /* MToDo | Remove */
         if (wme_matches_bug(static_cast<wme_struct*>(c->first)))
         {
-            dprint(DT_DEBUG, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
+            dprint(DT_LINKS, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
         }
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
@@ -345,7 +345,7 @@ void deallocate_wme(agent* thisAgent, wme* w)
     /* MToDo | Remove */
     if (wme_matches_bug(w))
     {
-        dprint(DT_DEBUG, "deallocate_wme(): %w\n", w);
+        dprint(DT_LINKS, "deallocate_wme(): %w\n", w);
     }
     if (wma_enabled(thisAgent))
     {

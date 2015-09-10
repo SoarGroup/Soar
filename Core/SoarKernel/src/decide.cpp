@@ -335,19 +335,9 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
 
     to->id->link_count++;
 
-#ifdef DEBUG_LINKS
-    if (from)
-    {
-//        print_with_symbols(thisAgent, "\nAdding link from %y to %y", from, to);
-        dprint(DT_DEBUG, "Adding link from %y to %y (%d to %d) (link count=%u)", from, to, from->id->level, to->id->level, to->id->link_count);
-    }
-    else
-    {
-//        print_with_symbols(thisAgent, "\nAdding special link to %y", to);
-        dprint(DT_DEBUG, "Adding special link to %y (%d) (link count=%u)", to, to->id->level, to->id->link_count);
-    }
-//    print(" (count=%lu)", to->id->link_count);
-#endif
+    dprint(DT_LINKS, "Adding %slink %s%y to %y (%d to %d) (link count=%u)",
+        (from ? "" : "special "), (from ? "from " : ""), from, to,
+        (from ? from->id->level : 0), to->id->level, to->id->link_count);
 
     if (!from)
     {
@@ -503,21 +493,9 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
 
     to->id->link_count--;
 
-#ifdef DEBUG_LINKS
-    if (from)
-    {
-//        print_with_symbols(thisAgent, "\nRemoving link from %y to %y", from, to);
-//        print(" (%d to %d)", from->id->level, to->id->level);
-        dprint(DT_DEBUG, "Removing link from %y to %y (%d to %d) (link count=%u)", from, to, from->id->level, to->id->level, to->id->link_count);
-    }
-    else
-    {
-//        print_with_symbols(thisAgent, "\nRemoving special link to %y ", to);
-//        print(" (%d)", to->id->level);
-        dprint(DT_DEBUG, "Removing special link to %y (%d) (link count=%u)", to, to->id->level, to->id->link_count);
-    }
-//    print(" (count=%lu)", to->id->link_count);
-#endif
+    dprint(DT_LINKS, "Removing %slink %s%y to %y (%d to %d) (link count=%u)",
+        (from ? "" : "special "), (from ? "from " : ""), from, to,
+        (from ? from->id->level : 0), to->id->level, to->id->link_count);
 
     /* --- if a gc is in progress, handle differently --- */
     if (thisAgent->link_update_mode == JUST_UPDATE_COUNT)
@@ -534,7 +512,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
             dc = to->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint (DT_DEBUG, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            dprint (DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
         }
         else
         {
@@ -543,12 +521,12 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
             dc->item = to;
             to->id->unknown_level = dc;
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint (DT_DEBUG, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            dprint (DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
         }
         /* MToDo | Remove */
         if (symbol_matches_string(to, "@D1"))
         {
-            dprint(DT_DEBUG, "@D1 added to disconnected list!!!!!\n");
+            dprint(DT_LINKS, "@D1 added to disconnected list!!!!!\n");
         }
 
 
@@ -583,16 +561,12 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
     slot* s;
     preference* pref, *next_pref;
 
-#ifdef DEBUG_LINKS
-//    print_with_symbols(thisAgent, "\n*** Garbage collecting id: %y", id);
-    dprint(DT_DEBUG, "*** Garbage collecting id: %y", id);
+    dprint(DT_LINKS, "*** Garbage collecting id: %y", id);
     /* MToDo | Remove */
     if (symbol_matches_string(id, "@D1"))
     {
-        dprint(DT_DEBUG, "@D1 being garbage collected!!!!!\n");
+        dprint(DT_LINKS, "@D1 being garbage collected!!!!!\n");
     }
-
-#endif
 
     /* Note--for goal/impasse id's, this does not remove the impasse wme's.
         This is handled by remove_existing_such-and-such... */
@@ -879,7 +853,7 @@ void do_demotion(agent* thisAgent)
         {
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint (DT_DEBUG, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            dprint (DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
         }
     }
 

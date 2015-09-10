@@ -165,7 +165,7 @@ inline void wme_add_ref(wme* w)
     /* MToDo | Remove */
     if (wme_matches_bug(w))
     {
-        dprint(DT_DEBUG, "wme_add_ref(): %w\n", w);
+        dprint(DT_LINKS, "wme_add_ref(): %w\n", w);
     }
 }
 

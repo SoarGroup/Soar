@@ -11,7 +11,7 @@
 
 /* ---------------------------------------------------------------------*/
 
-#define DEBUG_OUTPUT_ON
+//#define DEBUG_OUTPUT_ON
 
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
@@ -52,6 +52,7 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_WME_CHANGES                 false
+#define TRACE_Init_DT_LINKS                       true
 //--
 #define TRACE_Init_DT_MILESTONES                  false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
@@ -74,7 +75,6 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -116,6 +116,7 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_WME_CHANGES                 false
+#define TRACE_Init_DT_LINKS                       false
 //--
 #define TRACE_Init_DT_MILESTONES                  false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
@@ -138,7 +139,6 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

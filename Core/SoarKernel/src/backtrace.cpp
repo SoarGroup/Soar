@@ -37,7 +37,6 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "debug.h"
-#include "debug_defines.h"
 #include "prefmem.h"
 #include "variablization_manager.h"
 #include "soar_module.h"
@@ -697,7 +696,7 @@ void trace_grounded_potentials(agent* thisAgent)
                 }
                 if (pot->bt.wme_->grounds_tc != thisAgent->grounds_tc)   /* add pot to grounds */
                 {
-                    dprint(DT_DEBUG, "Moving potential to grounds: %l\n", pot);
+                    dprint(DT_BACKTRACE, "Moving potential to grounds: %l\n", pot);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
@@ -709,7 +708,7 @@ void trace_grounded_potentials(agent* thisAgent)
                 else     /* pot was already in the grounds */
                 {
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
-                    dprint(DT_DEBUG, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
+                    dprint(DT_BACKTRACE, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
