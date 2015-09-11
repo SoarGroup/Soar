@@ -75,8 +75,15 @@ bool wme_matches_bug(wme *w)
         wme_matches_string(w, "@P4", "default", "@D1") ||
         wme_matches_string(w, "@D1", "name", "pantry") ||
         wme_matches_string(w, "@P2", "1", "@P3") ||
+        wme_matches_string(w, "S1", "goal", "@G1") ||
+        wme_matches_string(w, "R6", "retrieved", "@G1") ||
         wme_matches_string(w, "@P2", "1", "@P4"))
+    {
+        if ((wme_matches_string(w, "S1", "goal", "@G1")) || wme_matches_string(w, "R6", "retrieved", "@G1"))
+
+            dprint(DT_UNKNOWN_LEVEL, "(S1 ^ goal @G1) or (R6 ^retrieved @G1)found.\n");
         return true;
+    }
     return false;
 
 }

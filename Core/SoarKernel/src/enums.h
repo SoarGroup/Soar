@@ -62,6 +62,7 @@ enum TraceMode
     DT_DEALLOCATES_TESTS,
     DT_LINKS,
     DT_EBC_CLEANUP,
+    DT_UNKNOWN_LEVEL,
     num_trace_modes
 };
 

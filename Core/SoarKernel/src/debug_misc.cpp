@@ -83,6 +83,15 @@ void debug_test(int type)
             break;
         }
         case 4:
+        {
+            Symbol *sym = find_identifier(thisAgent, 'G', 1);
+            if (sym)
+            {
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+            } else {
+                dprint(DT_DEBUG, "Could not find G1.\n");
+            }
+        }
             break;
 
         case 5:

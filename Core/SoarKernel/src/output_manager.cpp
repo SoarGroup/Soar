@@ -187,6 +187,8 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
     mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
     mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
+    mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
+
 
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
@@ -255,6 +257,7 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_WME_CHANGES].enabled =                 TRACE_Init_DT_WME_CHANGES;
     mode_info[DT_DEALLOCATES_TESTS].enabled =           TRACE_Init_DT_DEALLOCATES_TESTS;
     mode_info[DT_LINKS].enabled =                       TRACE_Init_DT_LINKS;
+    mode_info[DT_UNKNOWN_LEVEL].enabled =               TRACE_Init_DT_UNKNOWN_LEVEL;
 }
 
 
