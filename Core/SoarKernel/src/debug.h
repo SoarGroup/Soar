@@ -126,9 +126,7 @@ extern bool check_symbol_in_test(agent* thisAgent, test t, const char* message =
 
 extern bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
 extern bool symbol_matches_string(Symbol* sym, const char* match);
-
-/* MToDo | Remove */
-bool wme_matches_bug(wme *w);
+extern bool wme_matches_bug(wme *w);
 
 /**
  * @brief Contains the parameters for the debug command

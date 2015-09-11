@@ -335,9 +335,9 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
 
     to->id->link_count++;
 
-    dprint(DT_LINKS, "Adding %slink %s%y to %y (%d to %d) (link count=%u)",
-        (from ? "" : "special "), (from ? "from " : ""), from, to,
-        (from ? from->id->level : 0), to->id->level, to->id->link_count);
+//    dprint(DT_LINKS, "Adding %slink %s%y to %y (%d to %d) (link count=%u)",
+//        (from ? "" : "special "), (from ? "from " : ""), from, to,
+//        (from ? from->id->level : 0), to->id->level, to->id->link_count);
 
     if (!from)
     {
@@ -493,9 +493,9 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
 
     to->id->link_count--;
 
-    dprint(DT_LINKS, "Removing %slink %s%y to %y (%d to %d) (link count=%u)",
-        (from ? "" : "special "), (from ? "from " : ""), from, to,
-        (from ? from->id->level : 0), to->id->level, to->id->link_count);
+//    dprint(DT_LINKS, "Removing %slink %s%y to %y (%d to %d) (link count=%u)",
+//        (from ? "" : "special "), (from ? "from " : ""), from, to,
+//        (from ? from->id->level : 0), to->id->level, to->id->link_count);
 
     /* --- if a gc is in progress, handle differently --- */
     if (thisAgent->link_update_mode == JUST_UPDATE_COUNT)
@@ -510,29 +510,21 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
         if (to->id->unknown_level)
         {
             dc = to->id->unknown_level;
-            dprint(DT_UNKNOWN_LEVEL, "Removing unknown_level from %y in post_link_removal() while adding to disconnected list.\n", to);
+            //dprint(DT_UNKNOWN_LEVEL, "Removing %y from ids_with_unknown_level in post_link_removal() while adding to disconnected list.\n", to);
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
         }
         else
         {
             symbol_add_ref(thisAgent, to);
             thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = to;
-            /* MToDo | Why does this "mark" this symbol as unknown, when it's being disconnected? In
-             *         previous case, if unknown level already exists, it actually removes it */
             to->id->unknown_level = dc;
-            dprint(DT_UNKNOWN_LEVEL, "Setting %y as unknown_level in post_link_removal() while adding to disconnected list. (problem?)\n", to);
+            //dprint(DT_UNKNOWN_LEVEL, "Setting %y as unknown_level in post_link_removal() while adding to disconnected list. (problem?)\n", to);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", to);
+            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", to);
         }
-        /* MToDo | Remove */
-        if (symbol_matches_string(to, "@D1"))
-        {
-            dprint(DT_LINKS, "@D1 added to disconnected list!!!!!\n");
-        }
-
 
         return;
     }
@@ -550,10 +542,10 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
         thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = to;
         to->id->unknown_level = dc;
-        dprint(DT_UNKNOWN_LEVEL,
-            "Setting %y as unknown_level in post_link_removal() because identifiers in link at "
-            "same level: %s%y (lvl %d) --/--> %y (lvl %d)\n", to,
-            (from ? "" : "special "), from, (from ? from->id->level : 0), to, to->id->level);
+//        dprint(DT_UNKNOWN_LEVEL,
+//            "Setting %y as unknown_level in post_link_removal() because identifiers in link at "
+//            "same level: %s%y (lvl %d) --/--> %y (lvl %d)\n", to,
+//            (from ? "" : "special "), from, (from ? from->id->level : 0), to, to->id->level);
         insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
     }
 }
@@ -569,14 +561,12 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
     slot* s;
     preference* pref, *next_pref;
 
-    dprint(DT_LINKS, "*** Garbage collecting id: %y", id);
-    /* MToDo | Remove */
-    if (symbol_matches_string(id, "@D1"))
-    {
-        dprint(DT_LINKS, "@D1 being garbage collected!!!!!\n");
-    }
+    //dprint(DT_LINKS, "*** Garbage collecting id: %y", id);
 
-    /* Experimental */
+    /* Clean up level information for LTIs.  This fixes a bug
+     * that could occur if that LTI was later retrieved at a
+     * different level.  It forces Soar to set the level of the
+     * LTI to the level in the next instantiation that uses it.*/
     if (id->is_lti())
     {
         id->id->level = SMEM_LTI_UNKNOWN_LEVEL;
@@ -650,7 +640,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 #else
     symbol_list ids_to_walk;
 #endif
-    dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level called on %y.  (mark tc = %u)", root, thisAgent->mark_tc_number);
+    //dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level called on %y.  (mark tc = %u)", root, thisAgent->mark_tc_number);
     ids_to_walk.push_back(root);
 
     while (!ids_to_walk.empty())
@@ -658,12 +648,12 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         id = ids_to_walk.back();
         ids_to_walk.pop_back();
 
-        dprint(DT_UNKNOWN_LEVEL, "   Processing %y (level = %d, tc_num = %u)...\n", id, id->id->level, id->tc_num);
+        //dprint(DT_UNKNOWN_LEVEL, "   Processing %y (level = %d, tc_num = %u)...\n", id, id->id->level, id->tc_num);
 
         /* --- if id is already marked, do nothing --- */
         if (id->tc_num == thisAgent->mark_tc_number)
         {
-            dprint(DT_UNKNOWN_LEVEL, "      Skipping because already marked %d.\n", thisAgent->mark_tc_number);
+            //dprint(DT_UNKNOWN_LEVEL, "      Skipping because already marked %d.\n", thisAgent->mark_tc_number);
             continue;
         }
 
@@ -671,12 +661,12 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
            up, it must have a link to it up there --- */
         if (id->id->level < thisAgent->level_at_which_marking_started)
         {
-            dprint(DT_UNKNOWN_LEVEL, "      Skipping because level is greater than %d( level_at_which_marking_started).\n", thisAgent->level_at_which_marking_started);
+            //dprint(DT_UNKNOWN_LEVEL, "      Skipping because level is greater than %d( level_at_which_marking_started).\n", thisAgent->level_at_which_marking_started);
             continue;
         }
 
         /* --- mark id, so we won't do it again later --- */
-        dprint(DT_UNKNOWN_LEVEL, "      Marking %y with tc %d.\n", id, thisAgent->mark_tc_number);
+        //dprint(DT_UNKNOWN_LEVEL, "      Marking %y with tc %d.\n", id, thisAgent->mark_tc_number);
         id->tc_num = thisAgent->mark_tc_number;
 
         /* --- update range of goal stack levels we'll need to walk --- */
@@ -692,7 +682,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         {
             thisAgent->lowest_level_anything_could_fall_to = LOWEST_POSSIBLE_GOAL_LEVEL;
         }
-        dprint(DT_UNKNOWN_LEVEL, "      Highest level = %d, Lowest level = %d\n", thisAgent->highest_level_anything_could_fall_from, thisAgent->lowest_level_anything_could_fall_to);
+        //dprint(DT_UNKNOWN_LEVEL, "      Highest level = %d, Lowest level = %d\n", thisAgent->highest_level_anything_could_fall_from, thisAgent->lowest_level_anything_could_fall_to);
 
         /* --- add id to the set of ids with unknown level --- */
         if (! id->id->unknown_level)
@@ -700,15 +690,15 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = id;
             id->id->unknown_level = dc;
-            dprint(DT_UNKNOWN_LEVEL, "      Setting %y as unknown_level and adding to list ids_with_unknown_level.\n", id);
+            //dprint(DT_UNKNOWN_LEVEL, "      Setting %y as unknown_level and adding to list ids_with_unknown_level.\n", id);
             insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             symbol_add_ref(thisAgent, id);
         } else {
-            dprint(DT_UNKNOWN_LEVEL, "      Not setting %y as unknown_level because already set.\n", id);
+            //dprint(DT_UNKNOWN_LEVEL, "      Not setting %y as unknown_level because already set.\n", id);
         }
 
         /* -- scan through all preferences and wmes for all slots for this id -- */
-        dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
+        //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
             if (w->value->is_identifier())
@@ -719,7 +709,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         }
         dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
 
-        dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from involved slots to walk list:");
+        //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from involved slots to walk list:");
         for (s = id->id->slots; s != NIL; s = s->next)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
@@ -759,9 +749,9 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             }
         } /* end of for slots loop */
         dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
-        dprint(DT_UNKNOWN_LEVEL, "   Done processing %y (level = %d, tc_num = %u)...\n", id, id->id->level, id->tc_num);
+        //dprint(DT_UNKNOWN_LEVEL, "   Done processing %y (level = %d, tc_num = %u)...\n", id, id->id->level, id->tc_num);
     }
-    dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level DONE for %y.\n", root);
+    //dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level DONE for %y.\n", root);
 }
 
 /* ----------------------------------------------
@@ -791,7 +781,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
 #else
     symbol_list ids_to_walk;
 #endif
-    dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels called for %y.\n", root);
+    //dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels called for %y.\n", root);
     ids_to_walk.push_back(root);
 
     while (!ids_to_walk.empty())
@@ -801,21 +791,21 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
 
         /* --- mark id so we don't walk it twice --- */
         id->tc_num = thisAgent->walk_tc_number;
-        dprint(DT_UNKNOWN_LEVEL, "   processing %y.  level = %d, walk_level = %d, walk tc = %u\n",
-            id, id->id->level, thisAgent->walk_level, thisAgent->walk_tc_number);
+//        dprint(DT_UNKNOWN_LEVEL, "   processing %y.  level = %d, walk_level = %d, walk tc = %u\n",
+//            id, id->id->level, thisAgent->walk_level, thisAgent->walk_tc_number);
 
         /* --- if we already know its level, and it's higher up, then exit --- */
         if ((! id->id->unknown_level) && (id->id->level < thisAgent->walk_level))
         {
-            dprint(DT_UNKNOWN_LEVEL, "...skipping because symbol not unknown level, and level is higher than walk level %y.\n", root);
+            //dprint(DT_UNKNOWN_LEVEL, "...skipping because symbol not unknown level, and level is higher than walk level %y.\n", root);
             continue;
         }
 
         /* --- if we didn't know its level before, we do now --- */
         if (id->id->unknown_level)
         {
-            dprint(DT_UNKNOWN_LEVEL, "   ...removing unknown level for %y and removing from ids_with unknown level\n", id);
-            dprint(DT_UNKNOWN_LEVEL, "   ...setting level, promotion_level to %d\n", thisAgent->walk_level);
+            //dprint(DT_UNKNOWN_LEVEL, "   ...removing unknown level for %y and removing from ids_with unknown level\n", id);
+            //dprint(DT_UNKNOWN_LEVEL, "   ...setting level, promotion_level to %d\n", thisAgent->walk_level);
             dc = id->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
@@ -826,7 +816,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         }
 
         /* -- scan through all preferences and wmes for all slots for this id -- */
-        dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
+        //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
             if (level_update_needed(thisAgent, w->value))
@@ -837,7 +827,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         }
         dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
 
-        dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from slots to walk list:");
+        //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from slots to walk list:");
         for (s = id->id->slots; s != NIL; s = s->next)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
@@ -878,7 +868,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         }
         dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
     }
-    dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels DONE for %y.\n", root);
+    //dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels DONE for %y.\n", root);
 }
 
 /* ----------------------------------------------
@@ -900,7 +890,7 @@ void do_demotion(agent* thisAgent)
         {
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
         }
     }
 
