@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_CWISE_BINARY_OP_H
 #define EIGEN_SPARSE_CWISE_BINARY_OP_H
+
+namespace Eigen { 
 
 // Here we have to handle 3 cases:
 //  1 - sparse op dense
@@ -63,8 +50,18 @@ class CwiseBinaryOpImpl<BinaryOp, Lhs, Rhs, Sparse>
 {
   public:
     class InnerIterator;
+    class ReverseInnerIterator;
     typedef CwiseBinaryOp<BinaryOp, Lhs, Rhs> Derived;
     EIGEN_SPARSE_PUBLIC_INTERFACE(Derived)
+    CwiseBinaryOpImpl()
+    {
+      typedef typename internal::traits<Lhs>::StorageKind LhsStorageKind;
+      typedef typename internal::traits<Rhs>::StorageKind RhsStorageKind;
+      EIGEN_STATIC_ASSERT((
+                (!internal::is_same<LhsStorageKind,RhsStorageKind>::value)
+            ||  ((Lhs::Flags&RowMajorBit) == (Rhs::Flags&RowMajorBit))),
+            THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH);
+    }
 };
 
 template<typename BinaryOp, typename Lhs, typename Rhs>
@@ -76,7 +73,8 @@ class CwiseBinaryOpImpl<BinaryOp,Lhs,Rhs,Sparse>::InnerIterator
     typedef internal::sparse_cwise_binary_op_inner_iterator_selector<
       BinaryOp,Lhs,Rhs, InnerIterator> Base;
 
-    EIGEN_STRONG_INLINE InnerIterator(const CwiseBinaryOpImpl& binOp, Index outer)
+    // NOTE: we have to prefix Index by "typename Lhs::" to avoid an ICE with VC11
+    EIGEN_STRONG_INLINE InnerIterator(const CwiseBinaryOpImpl& binOp, typename Lhs::Index outer)
       : Base(binOp.derived(),outer)
     {}
 };
@@ -246,7 +244,7 @@ class sparse_cwise_binary_op_inner_iterator_selector<scalar_product_op<T>, Lhs, 
     EIGEN_STRONG_INLINE operator bool() const { return m_lhsIter; }
 
   protected:
-    const RhsNested m_rhs;
+    RhsNested m_rhs;
     LhsIterator m_lhsIter;
     const BinaryFunc m_functor;
     const Index m_outer;
@@ -303,7 +301,7 @@ template<typename OtherDerived>
 EIGEN_STRONG_INLINE Derived &
 SparseMatrixBase<Derived>::operator-=(const SparseMatrixBase<OtherDerived> &other)
 {
-  return *this = derived() - other.derived();
+  return derived() = derived() - other.derived();
 }
 
 template<typename Derived>
@@ -311,7 +309,7 @@ template<typename OtherDerived>
 EIGEN_STRONG_INLINE Derived &
 SparseMatrixBase<Derived>::operator+=(const SparseMatrixBase<OtherDerived>& other)
 {
-  return *this = derived() + other.derived();
+  return derived() = derived() + other.derived();
 }
 
 template<typename Derived>
@@ -321,5 +319,7 @@ SparseMatrixBase<Derived>::cwiseProduct(const MatrixBase<OtherDerived> &other) c
 {
   return EIGEN_SPARSE_CWISE_PRODUCT_RETURN_TYPE(derived(), other.derived());
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_CWISE_BINARY_OP_H

@@ -1,0 +1,8 @@
+# learning is irrelevant for this formulation
+learn --off
+
+# this helps Soar reorder conditions so matching is more efficient 
+multi-attributes jug 3
+
+# turn on Soar-RL
+rl --set learning on

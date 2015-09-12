@@ -1,0 +1,116 @@
+## Soar Tests to Port
+
+### JSoar Unit Tests to Port
+
+- [x] AgentTest
+- [x] BasicTests
+- [ ] ChunkingTests
+- [ ] DecisionCycleTest
+- [ ] ??? DefaultProductionManager
+- [x] FunctionalTests
+- [ ] GDSTests
+- [ ] InitSoarTests
+- [ ] ??? LogManagerTest (requires log command??)
+- [ ] ParserTests
+- [ ] PreferenceTests
+- [ ] ??? ProductionFinderTests (Do we have this??)
+- [ ] ??? ProductionTest (Would this require direct access??)
+- [ ] ReteTests
+- [ ] RLTests
+- [x] SMemEpMemCombinedFunctionalTests
+- [ ] WaterfallTests
+- [ ] ??? DebuggerCommand (Is this just a rename of `debug`?)
+- [ ] ExplainBacktracesCommand
+- [ ] ??? Handler (I don’t believe we have this command)
+- [ ] ??? LogCommandTest (I don’t believe we have this command)
+- [ ] PreferencesCommandTest
+- [ ] PrintCommandTest
+- [ ] ProductionBreakCommandTest
+- [ ] ProductionWatchCommandTest
+- [ ] ReteNetCommandTest
+- [ ] RunCommandTest
+- [ ] SaveBacktracesCommandTest
+- [ ] SetStopPhaseCommandTest
+- [ ] SourceCommandTest
+- [ ] WatchCommandTest
+- [ ] ??? DefaultEpisodicMemoryTest (requires direct OR slightly different handling)
+- [ ] ??? EpisodicMemoryDatabaseTest (requires direct)
+- [x] EpMemFunctionalTests
+- [ ] ??? EpMemHamiltonRetrieveTest (requires direct)
+- [ ] ??? EpMemHamiltonStoreTests (requires direct)
+- [ ] ??? EpMemSaveToDbTests (requires direct)
+- [ ] OutputEventTest
+- [ ] StartEventTest
+- [ ] StopEventTest
+- [ ] CycleCountInputTest
+- [ ] InputOutputImplTest
+- [ ] OutputCommandManagerTest
+- [ ] ExplainTest
+- [ ] ReinforcementLearningTest
+- [ ] RLParamsTests
+- [ ] ??? ContextVariableInfoTest (do we have this???)
+- [ ] DummyWmeTest
+- [ ] PreferenceTest (requires writing the tests which JSoar doesn’t have, or just porting it “as is” and requiring someone to do it in the future)
+- [ ] PreferenceTypeTest
+- [ ] RecognitionMemoryTest
+- [ ] ??? WmeImplTest
+- [ ] ??? WmesTest
+- [ ] WmeSupportInfoTest
+- [ ] WmeTest
+- [ ] ??? PredicatesTest (do we have this???)
+- [ ] ??? SoarModuleTest (I believe this is just a test we should have, eventually, but requires modularization of Soar like JSoar)
+- [ ] LexerTest
+- [ ] ParserImplTest
+- [ ] ??? ReteBuilderTest (empty test???)
+- [ ] ??? ReteNodeTypeTest (requires direct to rate???)
+- [ ] ??? ReteSerializeTest (Is this saving of rate to file and back? or?)
+- [ ] ??? ReteUnitTest (requires direct???)
+- [ ] SimplerMatcherTest
+- [ ] SoarReteListenerTest
+- [ ] RhsFunctionCallTest
+- [ ] ??? org.JSoar.kernel.rhs.functions (do we have these all?)
+- [ ] ??? DefaultSemanticMemoryTest (requires direct???)
+- [ ] ??? SemanticMemoryDatabaseTest (requires direct)
+- [x] SMemFunctionalTests
+- [ ] IdentifierImplTest
+- [ ] StringSymbolImplTest
+- [ ] ??? SymbolFactoryImplTest (requires different method but we have this???)
+- [ ] SymbolImplTest
+- [ ] SymbolsTest
+- [ ] ??? PrinterTest (do we have an equivalent?)
+- [ ] ??? PrintEventWriterTest (do we have an equivalent?)
+- [ ] ??? TraceTest (do we have an equivalent?)
+- [x] WmaFunctionalTests
+- [ ] ??? ThreadedAgentTest (do we have an equivalent?)
+- [ ] ??? WaitRhsFunctionTest (do we have an equivalent?)
+- [ ] ??? ScriptCommandTest (we don’t have this? This is javascript in Soar?!?!?)
+- [ ] ??? org.JSoar.util.* (we have none of these right??)
+- [ ] DefaultInterpreterParserTest
+- [ ] DefaultInterpreterTest
+- [ ] OptionProcessorTest
+- [ ] SoarEventsTest
+- [ ] ??? org.soar.util.properties.* (we have none of these???)
+- [ ] ??? DefaultExecutionTimerTest (we don’t have this right???)
+
+### Existing Soar Tests to Port
+
+- [x] Port `aliastest` to Prototype-UnitTesting
+- [x] Port `cliparsertest` to Prototype-UnitTesting
+- [x] Port `elementxmltest` to Prototype-UnitTesting
+- [x] Port `epmemtest` to Prototype-UnitTesting
+- [x] Port `fulltests` to Prototype-UnitTesting
+- [x] Port `iotest` to Prototype-UnitTesting
+- [x] Port `misctests` to Prototype-UnitTesting
+- [x] Port `multiagenttest` to Prototype-UnitTesting
+- [x] Port `smemmathtest` to Prototype-UnitTesting
+- [x] Port `smemtest` to Prototype-UnitTesting
+- [x] Port `tokenizertest` to Prototype-UnitTesting
+- [x] Port `handlers` to Prototype-UnitTesting
+
+- [ ] Port 9.5 Tests to Prototype-UnitTesting
+
+### Misc Todo
+
+- [ ] Split Prototype Unit Testing into its own project and use git modules to check it out
+- [ ] Add fancier output
+- [x] Add summary of tests in #s.

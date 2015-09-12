@@ -473,9 +473,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML* pIncomingMsg)
     // Nobody returned a response
     return NULL ;
 }
-//#include <thread>
-//#include <iostream>
-//#include "soar_instance.h"
+
 /*************************************************************
 * @brief Send a message and get the response.
 *

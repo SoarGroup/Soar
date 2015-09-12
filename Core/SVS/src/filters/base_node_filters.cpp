@@ -6,8 +6,9 @@ using namespace std;
 
 bool node_test_filter::compute(const filter_params* p, bool& out)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
+    
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -21,8 +22,8 @@ bool node_test_filter::compute(const filter_params* p, bool& out)
 
 bool node_test_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -44,8 +45,8 @@ bool node_test_select_filter::compute(const filter_params* p, sgnode*& out, bool
 
 bool node_comparison_filter::compute(const filter_params* p, double& out)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -58,8 +59,8 @@ bool node_comparison_filter::compute(const filter_params* p, double& out)
 
 bool node_comparison_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -89,8 +90,8 @@ bool node_comparison_select_filter::compute(const filter_params* p, sgnode*& out
 
 bool node_comparison_rank_filter::rank(const filter_params* p, double& r)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -104,7 +105,7 @@ bool node_comparison_rank_filter::rank(const filter_params* p, double& r)
 
 bool node_evaluation_filter::compute(const filter_params* p, double& out)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a input");
@@ -117,7 +118,7 @@ bool node_evaluation_filter::compute(const filter_params* p, double& out)
 
 bool node_evaluation_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a input");
@@ -145,7 +146,7 @@ bool node_evaluation_select_filter::compute(const filter_params* p, sgnode*& out
 
 bool node_evaluation_rank_filter::rank(const filter_params* p, double& r)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a as input");

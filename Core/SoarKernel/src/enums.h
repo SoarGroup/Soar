@@ -32,21 +32,19 @@ enum TraceMode
     DT_DEBUG,
     DT_ID_LEAKING,
     DT_LHS_VARIABLIZATION,
-    DT_ADD_CONSTRAINTS_ORIG_TESTS,
+    DT_ADD_ADDITIONALS,
     DT_RHS_VARIABLIZATION,
     DT_VARIABLIZATION_MANAGER,
     DT_PRINT_INSTANTIATIONS,
-    DT_ADD_TEST_TO_TEST,
     DT_DEALLOCATES,
     DT_DEALLOCATE_SYMBOLS,
     DT_REFCOUNT_ADDS,
     DT_REFCOUNT_REMS,
+    DT_EPMEM_CMD,
     DT_PARSER,
-    DT_FUNC_PRODUCTIONS,
-    DT_OVAR_MAPPINGS,
+    DT_MILESTONES,
     DT_REORDERER,
     DT_BACKTRACE,
-    DT_SAVEDVARS,
     DT_GDS,
     DT_RL_VARIABLIZATION,
     DT_NCC_VARIABLIZATION,
@@ -55,8 +53,68 @@ enum TraceMode
     DT_CLI_LIBRARIES,
     DT_CONSTRAINTS,
     DT_MERGE,
-    DT_FIX_CONDITIONS,
+    DT_UNGROUNDED_STI,
+    DT_UNIFICATION,
+    DT_VM_MAPS,
+    DT_BUILD_CHUNK_CONDS,
+    DT_RHS_VALUE,
+    DT_WME_CHANGES,
+    DT_DEALLOCATES_TESTS,
+    DT_LINKS,
+    DT_EBC_CLEANUP,
+    DT_UNKNOWN_LEVEL,
     num_trace_modes
+};
+
+enum MemoryPoolType
+{
+MP_float_constant,
+MP_identifier,
+MP_int_constant,
+MP_str_constant,
+MP_variable,
+MP_instantiation,
+MP_chunk_cond,
+MP_preference,
+MP_wme,
+MP_output_link,
+MP_io_wme,
+MP_slot,
+MP_gds,
+MP_action,
+MP_test,
+MP_condition,
+MP_not,
+MP_production,
+MP_rhs_symbol,
+MP_saved_test,
+MP_cons_cell,
+MP_dl_cons,
+MP_rete_node,
+MP_rete_test,
+MP_right_mem,
+MP_token,
+MP_alpha_mem,
+MP_ms_change,
+MP_node_varnames,
+MP_rl_info,
+MP_rl_et,
+MP_rl_rule,
+MP_wma_decay_element,
+MP_wma_decay_set,
+MP_wma_wme_oset,
+MP_wma_slot_refs,
+MP_epmem_wmes,
+MP_epmem_info,
+MP_smem_wmes,
+MP_smem_info,
+MP_epmem_literal,
+MP_epmem_pedge,
+MP_epmem_uedge,
+MP_epmem_interval,
+MP_constraints,
+MP_attachments,
+num_memory_pools
 };
 
 enum chunkNameFormats
@@ -85,7 +143,7 @@ enum SymbolTypes
 
 enum AddAdditionalTestsMode
 {
-    DONT_ADD_TESTS,
+    DONT_EXPLAIN,
     ALL_ORIGINALS,
     JUST_INEQUALITIES
 };
@@ -95,13 +153,15 @@ enum WME_Field
     ID_ELEMENT = 0,
     ATTR_ELEMENT = 1,
     VALUE_ELEMENT = 2,
-    NO_ELEMENT = 3,
+    NO_ELEMENT = 3
 };
 
-/* MToDo | This was moved from soar_module to make it easier to use debug_defines without including soar_module,
- *    since that file is included in many places.  Naming doesn't seem to conflict with other things, but
- *    this seems risky.  Maybe we can move it back and just do some sort of forward declaration or perhaps
- *    rename to something less common. -- */
+enum Print_Header_Type
+{
+    PrintBoth = 0,
+    PrintAfter = 1,
+    PrintBefore = 2
+};
 
 /* -- An implementation of an on/off boolean parameter --*/
 
@@ -133,7 +193,9 @@ enum TestType
     NUM_TEST_TYPES
 };
 
-/* MToDo | Change these to enums -- */
+/* Null variablization identity set (used by EBC) */
+#define NULL_IDENTITY_SET 0
+
 /* -------------------------------
       Types of Productions
 ------------------------------- */

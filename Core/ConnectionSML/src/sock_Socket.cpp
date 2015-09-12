@@ -29,6 +29,9 @@
 #include <cstdlib>
 #include <assert.h>
 
+#include <signal.h>
+#include <iostream>
+
 #ifdef NON_BLOCKING
 #include "sml_Utils.h"  // For sml::Sleep
 #endif
@@ -45,10 +48,28 @@ Socket::Socket()
     m_bTraceCommunications = false ;
 }
 
+#ifndef _MSC_VER
+void ignore_sigpipe(void)
+{
+	struct sigaction act;
+	int r;
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_IGN;
+	act.sa_flags = SA_RESTART;
+	r = sigaction(SIGPIPE, &act, NULL);
+	if (r)
+		std::cerr << "Sig Action Failed: " << strerror(r) << std::endl;
+}
+#endif
+
 Socket::Socket(SOCKET hSocket)
 {
     m_hSocket = hSocket ;
     m_bTraceCommunications = false ;
+	
+#ifndef _MSC_VER
+	ignore_sigpipe();
+#endif
 }
 
 Socket::~Socket()
@@ -110,7 +131,7 @@ uint32_t sock::GetLocalIP()
         lpstHostent = gethostbyname(szLclHost);
         if (lpstHostent)
         {
-            stLclAddr.sin_addr.s_addr = *((u_long*)(lpstHostent->h_addr));
+            stLclAddr.sin_addr.s_addr = *((u_int*)(lpstHostent->h_addr));
         }
     }
     
@@ -209,8 +230,8 @@ bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
         return false;
     }
     
-    uint32_t bytesSent = 0 ;
-    int    thisSend = 0 ;
+    size_t bytesSent = 0 ;
+    size_t   thisSend = 0 ;
     
     // May need repeated calls to send all of the data.
     while (bytesSent < bufferSize)
@@ -361,8 +382,8 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
         return false;
     }
     
-    uint32_t bytesRead = 0 ;
-    int    thisRead  = 0 ;
+    size_t bytesRead = 0 ;
+    size_t   thisRead  = 0 ;
     
     // Check our incoming data is valid
     if (!pRecvBuffer || !hSock)

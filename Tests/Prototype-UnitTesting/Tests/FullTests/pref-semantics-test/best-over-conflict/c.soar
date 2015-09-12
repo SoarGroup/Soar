@@ -1,0 +1,6 @@
+sp {best-over-conflict*propose*c
+   (state <s> ^name best-over-conflict)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name c)
+}

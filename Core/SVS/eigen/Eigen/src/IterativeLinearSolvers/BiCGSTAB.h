@@ -2,28 +2,16 @@
 // for linear algebra.
 //
 // Copyright (C) 2011 Gael Guennebaud <gael.guennebaud@inria.fr>
+// Copyright (C) 2012 Désiré Nuentsa-Wakam <desire.nuentsa_wakam@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_BICGSTAB_H
 #define EIGEN_BICGSTAB_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -35,9 +23,10 @@ namespace internal {
   *                approximation of Ax=b (regardless of b)
   * \param iters On input the max number of iteration, on output the number of performed iterations.
   * \param tol_error On input the tolerance error, on output an estimation of the relative error.
+  * \return false in the case of numerical issue, for example a break down of BiCGSTAB. 
   */
 template<typename MatrixType, typename Rhs, typename Dest, typename Preconditioner>
-void bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
+bool bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
               const Preconditioner& precond, int& iters,
               typename Dest::RealScalar& tol_error)
 {
@@ -46,14 +35,20 @@ void bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
   typedef typename Dest::RealScalar RealScalar;
   typedef typename Dest::Scalar Scalar;
   typedef Matrix<Scalar,Dynamic,1> VectorType;
-  
   RealScalar tol = tol_error;
   int maxIters = iters;
 
   int n = mat.cols();
   VectorType r  = rhs - mat * x;
   VectorType r0 = r;
+  
   RealScalar r0_sqnorm = r0.squaredNorm();
+  RealScalar rhs_sqnorm = rhs.squaredNorm();
+  if(rhs_sqnorm == 0)
+  {
+    x.setZero();
+    return true;
+  }
   Scalar rho    = 1;
   Scalar alpha  = 1;
   Scalar w      = 1;
@@ -65,17 +60,29 @@ void bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
   VectorType s(n), t(n);
 
   RealScalar tol2 = tol*tol;
+  RealScalar eps2 = NumTraits<Scalar>::epsilon()*NumTraits<Scalar>::epsilon();
   int i = 0;
+  int restarts = 0;
 
-  do
+  while ( r.squaredNorm()/rhs_sqnorm > tol2 && i<maxIters )
   {
     Scalar rho_old = rho;
 
     rho = r0.dot(r);
+    if (abs(rho) < eps2*r0_sqnorm)
+    {
+      // The new residual vector became too orthogonal to the arbitrarily choosen direction r0
+      // Let's restart with a new r0:
+      r0 = r;
+      rho = r0_sqnorm = r.squaredNorm();
+      if(restarts++ == 0)
+        i = 0;
+    }
     Scalar beta = (rho/rho_old) * (alpha / w);
     p = r + beta * (p - w * v);
     
     y = precond.solve(p);
+    
     v.noalias() = mat * y;
 
     alpha = rho / r0.dot(v);
@@ -84,18 +91,18 @@ void bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
     z = precond.solve(s);
     t.noalias() = mat * z;
 
-    kt = precond.solve(t);
-    ks = precond.solve(s);
-
-    w = kt.dot(ks) / kt.squaredNorm();
+    RealScalar tmp = t.squaredNorm();
+    if(tmp>RealScalar(0))
+      w = t.dot(s) / tmp;
+    else
+      w = Scalar(0);
     x += alpha * y + w * z;
     r = s - w * t;
     ++i;
-  } while ( r.squaredNorm()/r0_sqnorm > tol2 && i<maxIters );
-  
-  tol_error = sqrt(r.squaredNorm()/r0_sqnorm);
-  //tol_error = sqrt(abs(absNew / absInit));
+  }
+  tol_error = sqrt(r.squaredNorm()/rhs_sqnorm);
   iters = i;
+  return true; 
 }
 
 }
@@ -125,8 +132,8 @@ struct traits<BiCGSTAB<_MatrixType,_Preconditioner> >
   * \tparam _Preconditioner the type of the preconditioner. Default is DiagonalPreconditioner
   *
   * The maximal number of iterations and tolerance value can be controlled via the setMaxIterations()
-  * and setTolerance() methods. The default are 1000 max iterations and NumTraits<Scalar>::epsilon()
-  * for the tolerance.
+  * and setTolerance() methods. The defaults are the size of the problem for the maximal number of iterations
+  * and NumTraits<Scalar>::epsilon() for the tolerance.
   * 
   * This class can be used as the direct solver classes. Here is a typical usage example:
   * \code
@@ -135,7 +142,7 @@ struct traits<BiCGSTAB<_MatrixType,_Preconditioner> >
   * SparseMatrix<double> A(n,n);
   * // fill A and b
   * BiCGSTAB<SparseMatrix<double> > solver;
-  * solver(A);
+  * solver.compute(A);
   * x = solver.solve(b);
   * std::cout << "#iterations:     " << solver.iterations() << std::endl;
   * std::cout << "estimated error: " << solver.error()      << std::endl;
@@ -216,24 +223,28 @@ public:
   template<typename Rhs,typename Dest>
   void _solveWithGuess(const Rhs& b, Dest& x) const
   {    
+    bool failed = false;
     for(int j=0; j<b.cols(); ++j)
     {
-      m_iterations = Base::m_maxIterations;
+      m_iterations = Base::maxIterations();
       m_error = Base::m_tolerance;
       
       typename Dest::ColXpr xj(x,j);
-      internal::bicgstab(*mp_matrix, b.col(j), xj, Base::m_preconditioner, m_iterations, m_error);
+      if(!internal::bicgstab(*mp_matrix, b.col(j), xj, Base::m_preconditioner, m_iterations, m_error))
+        failed = true;
     }
-    
+    m_info = failed ? NumericalIssue
+           : m_error <= Base::m_tolerance ? Success
+           : NoConvergence;
     m_isInitialized = true;
-    m_info = m_error <= Base::m_tolerance ? Success : NoConvergence;
   }
 
   /** \internal */
   template<typename Rhs,typename Dest>
   void _solve(const Rhs& b, Dest& x) const
   {
-    x.setOnes();
+//     x.setZero();
+  x = b;
     _solveWithGuess(b,x);
   }
 
@@ -257,6 +268,8 @@ struct solve_retval<BiCGSTAB<_MatrixType, _Preconditioner>, Rhs>
   }
 };
 
-}
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_BICGSTAB_H

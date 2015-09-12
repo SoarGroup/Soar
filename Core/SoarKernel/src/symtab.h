@@ -42,12 +42,7 @@
 #include <map>
 #include <sstream>
 
-#ifdef SOAR_DEBUG_UTILITIES
-/* MToDo | Temporary debugging code.  Remove.
-           Allows refcount debug trace for a single, hardcoded ID.
-           Quicker than using full refcount inventory system. */
-//#define DEBUG_TRACE_REFCOUNT_FOR "R7"
-#endif
+#include "Export.h"
 
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;
@@ -92,7 +87,7 @@ struct strSymbol;
  *
  * -- */
 
-typedef struct symbol_struct
+typedef struct EXPORT symbol_struct
 {
     struct symbol_struct* next_in_hash_table;
     uint64_t reference_count;
@@ -109,7 +104,7 @@ typedef struct symbol_struct
     smem_hash_id smem_hash;
     uint64_t smem_valid;
     
-#ifndef SOAR_DEBUG_UTILITIES
+#ifdef SOAR_RELEASE_VERSION
     union
     {
 #endif
@@ -120,7 +115,7 @@ typedef struct symbol_struct
         intSymbol*   ic;
         strSymbol*   sc;
         
-#ifndef SOAR_DEBUG_UTILITIES
+#ifdef SOAR_RELEASE_VERSION
     };
 #endif
     
@@ -129,8 +124,7 @@ typedef struct symbol_struct
     bool        is_constant();
     bool        is_lti();
     bool        is_sti();
-    bool        is_variablizable_constant();
-    bool        is_variablizable(symbol_struct* original_sym);
+    bool is_variablizable();
     bool        is_constant_or_marked_variable(tc_number tc);
     bool        is_in_tc(tc_number tc);
     bool        is_string();
@@ -191,7 +185,6 @@ struct idSymbol    : public Symbol
     dl_cons* unknown_level;
     
     struct slot_struct* slots;  /* dll of slots for this identifier */
-    Symbol* variablization;  /* used by the chunker */
     
     /* --- fields used only on goals and impasse identifiers --- */
     struct wme_struct* impasse_wmes;
@@ -255,12 +248,6 @@ inline bool Symbol::is_constant()
             (symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
             (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE));
 };
-inline bool Symbol::is_variablizable_constant()
-{
-    return ((symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == STR_CONSTANT_SYMBOL_TYPE));
-};
 inline bool Symbol::is_sti()
 {
     return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
@@ -272,15 +259,10 @@ inline bool Symbol::is_lti()
             (id->smem_lti != NIL));
 };
 
-inline bool Symbol::is_variablizable(Symbol* original_sym)
+inline bool Symbol::is_variablizable()
 {
 
-    if (is_sti())
-    {
-        return true;
-    }
-    
-    return (original_sym->is_variable() && !is_variable());
+    return (!is_variable());
     
 };
 
@@ -288,9 +270,6 @@ inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
 {
     return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc));
 };
-
-/* MToDo | Might need to expand is_in_tc to other symbol types b/c of new variablization? Note:
- *         callers are only testing this for equality tests, if that matters*/
 
 inline bool Symbol::is_in_tc(tc_number tc)
 {
@@ -367,7 +346,7 @@ inline bool get_symbol_value(Symbol* sym, long& v)
 {
     if (sym->is_int())
     {
-        v = sym->ic->value;
+        v = static_cast<long>(sym->ic->value);
         return true;
     }
     return false;
@@ -457,26 +436,26 @@ extern void create_predefined_symbols(agent* thisAgent);
 extern void release_predefined_symbols(agent* thisAgent);
 extern void print_internal_symbols(agent* thisAgent);
 
-#ifdef SOAR_DEBUG_UTILITIES
-extern void debug_store_refcount(Symbol* sym, bool isAdd);
+#ifndef SOAR_RELEASE_VERSION
+    extern void debug_store_refcount(Symbol* sym, bool isAdd);
 #endif
 
-extern Symbol* make_variable(agent* thisAgent, const char* name);
-extern Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* make_float_constant(agent* thisAgent, double value);
-extern Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
+extern EXPORT Symbol* make_variable(agent* thisAgent, const char* name);
+extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
 extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
 
-extern void deallocate_symbol(agent* thisAgent, Symbol* sym, long indent = 0);
-extern void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list, long indent = 0);
+extern EXPORT void deallocate_symbol(agent* thisAgent, Symbol* sym);
+extern EXPORT void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list);
 ::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
 
-extern Symbol* find_variable(agent* thisAgent, const char* name);
-extern Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
-extern Symbol* find_str_constant(agent* thisAgent, const char* name);
-extern Symbol* find_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* find_float_constant(agent* thisAgent, double value);
+extern EXPORT Symbol* find_variable(agent* thisAgent, const char* name);
+extern EXPORT Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
+extern EXPORT Symbol* find_str_constant(agent* thisAgent, const char* name);
+extern EXPORT Symbol* find_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* find_float_constant(agent* thisAgent, double value);
 
 extern bool reset_id_counters(agent* thisAgent);
 extern void reset_id_and_variable_tc_numbers(agent* thisAgent);
@@ -493,7 +472,6 @@ extern double get_number_from_symbol(Symbol* sym);
  *      that sends a bunch of trace information to the debug database for deeper analysis of possible
  *      bugs. -- */
 
-/* MToDo | Remove.  Just for debugging. */
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 #include <string>
 extern std::string get_refcount_stacktrace_string(const char* prefix);
@@ -506,13 +484,13 @@ extern std::string get_refcount_stacktrace_string(const char* prefix);
 
 inline void symbol_add_ref_func(agent* thisAgent, Symbol* x)
 #else
-inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
+inline void symbol_add_ref(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %s -> %lld\n", x->to_string(), (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
 #else
-    //dprint(DT_REFCOUNT_ADDS, "%*sADD-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count + 1);
+    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
 #endif
     
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -520,7 +498,7 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("add_ref");
-        //dprint(DT_ID_LEAKING, "-- | %s(%lld) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     
@@ -534,14 +512,15 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x, long indent = 0)
 
 inline void symbol_remove_ref_func(agent* thisAgent, Symbol* x)
 #else
-inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
+inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #else
-    //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #endif
+//    assert((x)->reference_count > 0);
     (x)->reference_count--;
     
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -549,11 +528,10 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
     
-    assert((x)->reference_count >= 0);
     if ((x)->reference_count == 0)
     {
         deallocate_symbol(thisAgent, x);
@@ -571,13 +549,13 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x, long indent = 0)
 
 inline void symbol_remove_ref_no_deallocate_func(agent* thisAgent, Symbol* x)
 #else
-inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long indent = 0)
+inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %s -> %lld\n", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
 #else
-    //dprint(DT_REFCOUNT_REMS, "%*sREMOVE-REF UNNECESSARY %s -> %lld\n", indent, "", x->to_string(), (x)->reference_count - 1);
+    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
 #endif
     
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -585,11 +563,11 @@ inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x, long in
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%lld) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
     }
 #endif
+//    assert((x)->reference_count > 0);
     (x)->reference_count--;
-    assert((x)->reference_count >= 0);
 }
 
 /* -----------------------------------------------------------------

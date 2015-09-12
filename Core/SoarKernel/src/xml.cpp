@@ -176,7 +176,7 @@ void xml_att_val(agent* pAgent, char const* pAttribute, Symbol* pSymbol)
     // Passing 0, 0 as buffer to symbol to string causes it to use internal, temporary buffers
     // which is fine because we immediately copy that string in XMLAddAttribute.
     soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >(pAgent->xml_destination);
-    pXML->AddAttribute(pAttribute, symbol_to_string(pAgent, pSymbol, true, 0, 0)) ;
+    pXML->AddAttribute(pAttribute, pSymbol->to_string(true)) ;
 }
 
 void xml_object(agent* pAgent, char const* pTag)
@@ -239,7 +239,7 @@ void xml_object(agent* pAgent, wme* pWME, bool printTimetag)
     xml_att_val(pAgent, kWME_Id, pWME->id);
     xml_att_val(pAgent, kWME_Attribute, pWME->attr);
     xml_att_val(pAgent, kWME_Value, pWME->value);
-    xml_att_val(pAgent, kWME_ValueType, symbol_to_typeString(pAgent, pWME->value));
+    xml_att_val(pAgent, kWME_ValueType, pWME->value->type_string());
     
     if (pWME->acceptable)
     {

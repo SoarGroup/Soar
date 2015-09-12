@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2011 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_CONJUGATE_GRADIENT_H
 #define EIGEN_CONJUGATE_GRADIENT_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -52,33 +39,53 @@ void conjugate_gradient(const MatrixType& mat, const Rhs& rhs, Dest& x,
   int maxIters = iters;
   
   int n = mat.cols();
-  VectorType residual = rhs - mat * x; //initial residual
-  VectorType p(n);
 
+  VectorType residual = rhs - mat * x; //initial residual
+
+  RealScalar rhsNorm2 = rhs.squaredNorm();
+  if(rhsNorm2 == 0) 
+  {
+    x.setZero();
+    iters = 0;
+    tol_error = 0;
+    return;
+  }
+  RealScalar threshold = tol*tol*rhsNorm2;
+  RealScalar residualNorm2 = residual.squaredNorm();
+  if (residualNorm2 < threshold)
+  {
+    iters = 0;
+    tol_error = sqrt(residualNorm2 / rhsNorm2);
+    return;
+  }
+  
+  VectorType p(n);
   p = precond.solve(residual);      //initial search direction
 
   VectorType z(n), tmp(n);
-  RealScalar absNew = internal::real(residual.dot(p));  // the square of the absolute value of r scaled by invM
-  RealScalar absInit = absNew;          // the initial absolute value
-
+  RealScalar absNew = numext::real(residual.dot(p));  // the square of the absolute value of r scaled by invM
   int i = 0;
-  while ((i < maxIters) && (absNew > tol*tol*absInit))
+  while(i < maxIters)
   {
     tmp.noalias() = mat * p;              // the bottleneck of the algorithm
 
     Scalar alpha = absNew / p.dot(tmp);   // the amount we travel on dir
     x += alpha * p;                       // update solution
     residual -= alpha * tmp;              // update residue
+    
+    residualNorm2 = residual.squaredNorm();
+    if(residualNorm2 < threshold)
+      break;
+    
     z = precond.solve(residual);          // approximately solve for "A z = residual"
 
     RealScalar absOld = absNew;
-    absNew = internal::real(residual.dot(z));     // update the absolute value of r
-    RealScalar beta = absNew / absOld;            // calculate the Gram-Schmidit value used to create the new search direction
+    absNew = numext::real(residual.dot(z));     // update the absolute value of r
+    RealScalar beta = absNew / absOld;            // calculate the Gram-Schmidt value used to create the new search direction
     p = z + beta * p;                             // update search direction
     i++;
   }
-
-  tol_error = sqrt(abs(absNew / absInit));
+  tol_error = sqrt(residualNorm2 / rhsNorm2);
   iters = i;
 }
 
@@ -111,8 +118,8 @@ struct traits<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner> >
   * \tparam _Preconditioner the type of the preconditioner. Default is DiagonalPreconditioner
   *
   * The maximal number of iterations and tolerance value can be controlled via the setMaxIterations()
-  * and setTolerance() methods. The default are 1000 max iterations and NumTraits<Scalar>::epsilon()
-  * for the tolerance.
+  * and setTolerance() methods. The defaults are the size of the problem for the maximal number of iterations
+  * and NumTraits<Scalar>::epsilon() for the tolerance.
   * 
   * This class can be used as the direct solver classes. Here is a typical usage example:
   * \code
@@ -206,12 +213,12 @@ public:
   template<typename Rhs,typename Dest>
   void _solveWithGuess(const Rhs& b, Dest& x) const
   {
-    m_iterations = Base::m_maxIterations;
+    m_iterations = Base::maxIterations();
     m_error = Base::m_tolerance;
 
     for(int j=0; j<b.cols(); ++j)
     {
-      m_iterations = Base::m_maxIterations;
+      m_iterations = Base::maxIterations();
       m_error = Base::m_tolerance;
 
       typename Dest::ColXpr xj(x,j);
@@ -251,6 +258,8 @@ struct solve_retval<ConjugateGradient<_MatrixType,_UpLo,_Preconditioner>, Rhs>
   }
 };
 
-}
+} // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_CONJUGATE_GRADIENT_H

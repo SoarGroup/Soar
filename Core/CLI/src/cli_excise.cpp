@@ -62,7 +62,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+                excise_production(thisAgent, prod, thisAgent->sysparams[TRACE_LOADING_SYSPARAM] != 0);
             }
         }
         
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+                excise_production(thisAgent, prod, thisAgent->sysparams[TRACE_LOADING_SYSPARAM] != 0);
             }
         }
         
@@ -80,7 +80,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod, static_cast<bool>(thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+                excise_production(thisAgent, prod, thisAgent->sysparams[TRACE_LOADING_SYSPARAM] != 0);
             }
         }
         

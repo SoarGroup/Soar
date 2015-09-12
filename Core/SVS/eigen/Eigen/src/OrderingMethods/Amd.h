@@ -2,25 +2,6 @@
 // for linear algebra.
 //
 // Copyright (C) 2010 Gael Guennebaud <gael.guennebaud@inria.fr>
-//
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
 
 /*
 
@@ -45,8 +26,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 */
 
+#include "../Core/util/NonMPL2.h"
+
 #ifndef EIGEN_SPARSE_AMD_H
 #define EIGEN_SPARSE_AMD_H
+
+namespace Eigen { 
 
 namespace internal {
   
@@ -97,6 +82,7 @@ Index cs_tdfs(Index j, Index k, Index *head, const Index *next, Index *post, Ind
 
 
 /** \internal
+  * \ingroup OrderingMethods_Module 
   * Approximate minimum degree ordering algorithm.
   * \returns the permutation P reducing the fill-in of the input matrix \a C
   * The input matrix \a C must be a selfadjoint compressed column major SparseMatrix object. Both the upper and lower parts have to be stored, but the diagonal entries are optional.
@@ -104,7 +90,7 @@ Index cs_tdfs(Index j, Index k, Index *head, const Index *next, Index *post, Ind
 template<typename Scalar, typename Index>
 void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, PermutationMatrix<Dynamic,Dynamic,Index>& perm)
 {
-  typedef SparseMatrix<Scalar,ColMajor,Index> CCS;
+  using std::sqrt;
   
   int d, dk, dext, lemax = 0, e, elenk, eln, i, j, k, k1,
       k2, k3, jlast, ln, dense, nzmax, mindeg = 0, nvi, nvj, nvk, mark, wnvi,
@@ -112,7 +98,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
   unsigned int h;
   
   Index n = C.cols();
-  dense = std::max<Index> (16, 10 * sqrt ((double) n));   /* find dense threshold */
+  dense = std::max<Index> (16, Index(10 * sqrt(double(n))));   /* find dense threshold */
   dense = std::min<Index> (n-2, dense);
   
   Index cnz = C.nonZeros();
@@ -150,7 +136,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
     elen[i]   = 0;                      // Ek of node i is empty
     degree[i] = len[i];                 // degree of node i
   }
-  mark = cs_wclear<Index>(0, 0, w, n);         /* clear w */
+  mark = internal::cs_wclear<Index>(0, 0, w, n);         /* clear w */
   elen[n] = -2;                         /* n is a dead element */
   Cp[n] = -1;                           /* n is a root of assembly tree */
   w[n] = 0;                             /* n is a dead element */
@@ -265,7 +251,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
     elen[k] = -2;                     /* k is now an element */
     
     /* --- Find set differences ----------------------------------------- */
-    mark = cs_wclear<Index>(mark, lemax, w, n);  /* clear w if necessary */
+    mark = internal::cs_wclear<Index>(mark, lemax, w, n);  /* clear w if necessary */
     for(pk = pk1; pk < pk2; pk++)    /* scan 1: find |Le\Lk| */
     {
       i = Ci[pk];
@@ -348,7 +334,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
     }                                   /* scan2 is done */
     degree[k] = dk;                   /* finalize |Lk| */
     lemax = std::max<Index>(lemax, dk);
-    mark = cs_wclear<Index>(mark+lemax, lemax, w, n);    /* clear w */
+    mark = internal::cs_wclear<Index>(mark+lemax, lemax, w, n);    /* clear w */
     
     /* --- Supernode detection ------------------------------------------ */
     for(pk = pk1; pk < pk2; pk++)
@@ -434,7 +420,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
   }
   for(k = 0, i = 0; i <= n; i++)       /* postorder the assembly tree */
   {
-    if(Cp[i] == -1) k = cs_tdfs<Index>(i, k, head, next, perm.indices().data(), w);
+    if(Cp[i] == -1) k = internal::cs_tdfs<Index>(i, k, head, next, perm.indices().data(), w);
   }
   
   perm.indices().conservativeResize(n);
@@ -443,5 +429,7 @@ void minimum_degree_ordering(SparseMatrix<Scalar,ColMajor,Index>& C, Permutation
 }
 
 } // namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_AMD_H
