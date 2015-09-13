@@ -28,19 +28,17 @@
 #include "variablization_manager.h"
 #include "test.h"
 
-void Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
+bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
     assert(thisAgent && w);
-    if (w->id->is_lti() || w->value->is_lti())
-    {
-        dprint(DT_DEBUG, "LTI detected: (t%u: %y ^%y %y), reference count: %u\n",
-        w->timetag, w->id, w->attr, w->value, w->reference_count);
-//        dprint(DT_WME_CHANGES, "   pref: %p\n", w->preference);
-    }
-    sprinta_sf(thisAgent, destString, "(t%u: %y ^%y %y%s",
-        w->timetag, w->id, w->attr, w->value,
+
+    sprinta_sf(thisAgent, destString, "(t%u(%u): %y ^%y %y%s",
+        w->timetag, w->reference_count, w->id, w->attr, w->value,
         (w->acceptable ? " +)" : ")"));
-    return;
+
+    /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
+     * Return value used to determine whether to print newline*/
+    return true;
 }
 
 void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
@@ -49,9 +47,11 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
     destString += "--------------------------- WMEs --------------------------\n";
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (m_pre_string) destString += m_pre_string;
-        wme_to_string(thisAgent, w, destString);
-        destString += '\n';
+//        if (m_pre_string) destString += m_pre_string;
+        if (wme_to_string(thisAgent, w, destString))
+        {
+            destString += '\n';
+        }
     }
     return;
 }

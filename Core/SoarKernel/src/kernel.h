@@ -36,7 +36,6 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
-    //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
     //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
     /* -- Low level GDS debug information -- */

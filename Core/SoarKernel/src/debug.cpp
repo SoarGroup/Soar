@@ -13,7 +13,6 @@
 ------------------------------------------------------------------ */
 
 #include "debug.h"
-#include "debug_defines.h"
 #include "agent.h"
 #include "test.h"
 #include "variablization_manager.h"
@@ -23,6 +22,8 @@
 #include "soar_instance.h"
 #include "print.h"
 #include "output_manager.h"
+#include "wmem.h"
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -51,7 +52,41 @@ debug_param_container::debug_param_container(agent* new_agent): soar_module::par
 }
 
 #include "sqlite3.h"
+bool symbol_matches_string(Symbol* sym, const char* match)
+{
+    std::string strName(sym->to_string());
+    if (strName == match)
+    {
+//        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
+        return true;
+    }
+    return false;
+}
+bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
+{
+    return (symbol_matches_string(w->id, match_id) &&
+            symbol_matches_string(w->attr, match_attr) &&
+            symbol_matches_string(w->value, match_value));
+}
 
+bool wme_matches_bug(wme *w)
+{
+    if (wme_matches_string(w, "@P3", "default", "@D1") ||
+        wme_matches_string(w, "@P4", "default", "@D1") ||
+        wme_matches_string(w, "@D1", "name", "pantry") ||
+        wme_matches_string(w, "@P2", "1", "@P3") ||
+        wme_matches_string(w, "S1", "goal", "@G1") ||
+        wme_matches_string(w, "R6", "retrieved", "@G1") ||
+        wme_matches_string(w, "@P2", "1", "@P4"))
+    {
+        if ((wme_matches_string(w, "S1", "goal", "@G1")) || wme_matches_string(w, "R6", "retrieved", "@G1"))
+
+            dprint(DT_UNKNOWN_LEVEL, "(S1 ^ goal @G1) or (R6 ^retrieved @G1)found.\n");
+        return true;
+    }
+    return false;
+
+}
 bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
 {
 #ifdef DEBUG_CHECK_SYMBOL

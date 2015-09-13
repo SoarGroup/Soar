@@ -50,7 +50,6 @@
 #include "wma.h"
 #include "test.h"
 #include "debug.h"
-#include "debug_defines.h"
 #include "variablization_manager.h"
 
 #include <ctype.h>
@@ -997,7 +996,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         goto chunking_abort;
     }
 
-    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called...\n");
+    dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
+        (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1053,6 +1053,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
 
     dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     /* --- backtrace through the instantiation that produced each result --- */
+    dprint(DT_BACKTRACE,  "Backtracing through instantiation: \n%7", inst);
     for (pref = results; pref != NIL; pref = pref->next_result)
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -1062,6 +1063,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
             print_preference(thisAgent, pref);
             print_string(thisAgent, " ");
         }
+        dprint(DT_BACKTRACE, "Backtracing through result preference: %p\n", pref);
+        dprint(DT_BACKTRACE, " from instantiation...\n%7", pref->inst);
         backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0, pref->o_ids, pref->rhs_funcs);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -1077,6 +1080,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     {
         trace_locals(thisAgent, grounds_level, &reliable);
         trace_grounded_potentials(thisAgent);
+        dprint(DT_BACKTRACE, "Grounds after trace_grounded_potentials:\n%3", thisAgent->grounds);
         if (! trace_ungrounded_potentials(thisAgent, grounds_level, &reliable))
         {
             break;
@@ -1162,12 +1166,13 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     {
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
+        dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
         #ifdef EBC_MERGE_CONDITIONS
         thisAgent->variablizationManager->merge_conditions(vrblz_top);
         #endif
+        dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", vrblz_top, results);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
     dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
@@ -1241,9 +1246,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_DEBUG, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
-    dprint(DT_DEBUG, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
-    dprint(DT_DEBUG, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
     /* Need to copy cond's and actions for the production here,
     otherwise some of the variables might get deallocated by the call to
