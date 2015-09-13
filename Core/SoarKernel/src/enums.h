@@ -58,8 +58,8 @@ enum TraceMode
     DT_VM_MAPS,
     DT_BUILD_CHUNK_CONDS,
     DT_RHS_VALUE,
-    DT_NONE_2,
-    DT_NONE_3,
+    DT_WME_CHANGES,
+    DT_DEALLOCATES_TESTS,
     DT_NONE_4,
     DT_EBC_CLEANUP,
     num_trace_modes

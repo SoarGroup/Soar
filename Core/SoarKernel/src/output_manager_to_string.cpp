@@ -31,6 +31,12 @@
 void Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
     assert(thisAgent && w);
+    if (w->id->is_lti() || w->value->is_lti())
+    {
+        dprint(DT_DEBUG, "LTI detected: (t%u: %y ^%y %y), reference count: %u\n",
+        w->timetag, w->id, w->attr, w->value, w->reference_count);
+//        dprint(DT_WME_CHANGES, "   pref: %p\n", w->preference);
+    }
     sprinta_sf(thisAgent, destString, "(t%u: %y ^%y %y%s",
         w->timetag, w->id, w->attr, w->value,
         (w->acceptable ? " +)" : ")"));
@@ -45,6 +51,7 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
     {
         if (m_pre_string) destString += m_pre_string;
         wme_to_string(thisAgent, w, destString);
+        destString += '\n';
     }
     return;
 }
@@ -291,8 +298,13 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
         rhs_value_to_string(thisAgent, a->attr, destString, NULL, NULL);
         destString += ' ';
         rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
-        destString += " ~ ";
-        rhs_value_to_string(thisAgent, a->referent, destString, NULL, NULL);
+        destString += " ";
+        destString += preference_to_char(a->preference_type);
+        if (a->referent)
+        {
+            destString += " ";
+            rhs_value_to_string(thisAgent, a->referent, destString, NULL, NULL);
+        }
         destString += ')';
     }
 }

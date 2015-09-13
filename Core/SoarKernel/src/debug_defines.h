@@ -43,6 +43,7 @@
 #define TRACE_Init_DT_REFCOUNT_REMS               false
 #define TRACE_Init_DT_DEALLOCATES                 false
 #define TRACE_Init_DT_DEALLOCATE_SYMBOLS          false
+#define TRACE_Init_DT_DEALLOCATES_TESTS           false
 #define TRACE_Init_DT_ID_LEAKING                  false
 //--
 #define TRACE_Init_DT_SOAR_INSTANCE               false
@@ -50,30 +51,29 @@
 #define TRACE_Init_DT_EPMEM_CMD                   false
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
+#define TRACE_Init_DT_WME_CHANGES                 false
 //--
 #define TRACE_Init_DT_MILESTONES                  true
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
-#define TRACE_Init_DT_VARIABLIZATION_MANAGER      true
+#define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
 #define TRACE_Init_DT_BACKTRACE                   true
-#define TRACE_Init_DT_BUILD_CHUNK_CONDS           true
+#define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
 #define TRACE_Init_DT_CONSTRAINTS                 false
-#define TRACE_Init_DT_LHS_VARIABLIZATION          true
+#define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VALUE                   false
-#define TRACE_Init_DT_NCC_VARIABLIZATION          true
+#define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_2                      false
-#define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
@@ -107,6 +107,7 @@
 #define TRACE_Init_DT_REFCOUNT_REMS               false
 #define TRACE_Init_DT_DEALLOCATES                 false
 #define TRACE_Init_DT_DEALLOCATE_SYMBOLS          false
+#define TRACE_Init_DT_DEALLOCATES_TESTS           false
 #define TRACE_Init_DT_ID_LEAKING                  false
 //--
 #define TRACE_Init_DT_SOAR_INSTANCE               false
@@ -114,6 +115,7 @@
 #define TRACE_Init_DT_EPMEM_CMD                   false
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
+#define TRACE_Init_DT_WME_CHANGES                 false
 //--
 #define TRACE_Init_DT_MILESTONES                  false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
@@ -128,6 +130,7 @@
 #define TRACE_Init_DT_CONSTRAINTS                 false
 #define TRACE_Init_DT_LHS_VARIABLIZATION          false
 #define TRACE_Init_DT_RHS_VARIABLIZATION          false
+#define TRACE_Init_DT_RHS_VALUE                   false
 #define TRACE_Init_DT_NCC_VARIABLIZATION          false
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
@@ -135,9 +138,6 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_RHS_VALUE                   false
-#define TRACE_Init_DT_NONE_2                      false
-#define TRACE_Init_DT_NONE_3                      false
 #define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
