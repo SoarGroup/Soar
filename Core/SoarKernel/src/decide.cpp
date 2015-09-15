@@ -703,11 +703,11 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         {
             if (w->value->is_identifier())
             {
-                dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
+                //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                 ids_to_walk.push_back(w->value);
             }
         }
-        dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
+        //dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
 
         //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from involved slots to walk list:");
         for (s = id->id->slots; s != NIL; s = s->next)
@@ -716,7 +716,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             {
                 if (pref->value->is_identifier())
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
                     ids_to_walk.push_back(pref->value);
                 }
 
@@ -724,7 +724,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
                 {
                     if (pref->referent->is_identifier())
                     {
-                        dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
+                        //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
                         ids_to_walk.push_back(pref->referent);
                     }
                 }
@@ -734,7 +734,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             {
                 if (s->impasse_id->is_identifier())
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
                     ids_to_walk.push_back(s->impasse_id);
                 }
             }
@@ -743,12 +743,12 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             {
                 if (w->value->is_identifier())
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                     ids_to_walk.push_back(w->value);
                 }
             }
         } /* end of for slots loop */
-        dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
+        //dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
         //dprint(DT_UNKNOWN_LEVEL, "   Done processing %y (level = %d, tc_num = %u)...\n", id, id->id->level, id->tc_num);
     }
     //dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level DONE for %y.\n", root);
@@ -821,11 +821,11 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
         {
             if (level_update_needed(thisAgent, w->value))
             {
-                dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
+                //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                 ids_to_walk.push_back(w->value);
             }
         }
-        dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
+        //dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
 
         //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from slots to walk list:");
         for (s = id->id->slots; s != NIL; s = s->next)
@@ -834,14 +834,14 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             {
                 if (level_update_needed(thisAgent, pref->value))
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
                     ids_to_walk.push_back(pref->value);
 
                     if (preference_is_binary(pref->type))
                     {
                         if (level_update_needed(thisAgent, pref->referent))
                         {
-                            dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
+                            //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
                             ids_to_walk.push_back(pref->referent);
                         }
                     }
@@ -852,7 +852,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             {
                 if (level_update_needed(thisAgent, s->impasse_id))
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
                     ids_to_walk.push_back(s->impasse_id);
                 }
             }
@@ -861,12 +861,12 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             {
                 if (level_update_needed(thisAgent, w->value))
                 {
-                    dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
+                    //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                     ids_to_walk.push_back(w->value);
                 }
             }
         }
-        dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
+        //dprint_noprefix(DT_UNKNOWN_LEVEL, "\n");
     }
     //dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels DONE for %y.\n", root);
 }

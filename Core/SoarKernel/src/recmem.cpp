@@ -350,6 +350,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                 (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
                 (new_id_level > 0))
         {
+            dprint(DT_UNKNOWN_LEVEL, "Setting level for LTI %y from SMEM_LTI_UNKNOWN_LEVEL to %d.\n", result, new_id_level);
             result->id->level = new_id_level;
             result->id->promotion_level = new_id_level;
         }
