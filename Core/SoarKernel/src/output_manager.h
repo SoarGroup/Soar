@@ -162,7 +162,7 @@ class Output_Manager
         void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NIL, wme* w = NIL);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string_brief(byte test_type);
-        void wme_to_string(agent* thisAgent, wme* w, std::string &destString);
+        bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
 
         void vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list args);
@@ -184,6 +184,7 @@ class Output_Manager
         void sprinta_sf(agent* thisAgent, std::string &destString, const char* format, ...);
         size_t sprinta_sf_cstr(agent* thisAgent, char* dest, size_t dest_size, const char* format, ...);
 
+        void buffer_start_fresh_line(agent* thisAgent, std::string &destString);
         void start_fresh_line(agent* pSoarAgent = NULL);
 
         /* Print functions that will use default agent if set */

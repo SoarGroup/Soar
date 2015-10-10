@@ -52,14 +52,16 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_WME_CHANGES                 false
+#define TRACE_Init_DT_LINKS                       false
+#define TRACE_Init_DT_UNKNOWN_LEVEL               true
 //--
-#define TRACE_Init_DT_MILESTONES                  true
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
+#define TRACE_Init_DT_MILESTONES                  false
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false
 #define TRACE_Init_DT_VM_MAPS                     false
-#define TRACE_Init_DT_BACKTRACE                   true
+#define TRACE_Init_DT_BACKTRACE                   false
 #define TRACE_Init_DT_BUILD_CHUNK_CONDS           false
 #define TRACE_Init_DT_IDENTITY_PROP               false
 #define TRACE_Init_DT_UNIFICATION                 false
@@ -74,7 +76,6 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on
@@ -116,6 +117,8 @@
 #define TRACE_Init_DT_PARSER                      false
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_WME_CHANGES                 false
+#define TRACE_Init_DT_LINKS                       false
+#define TRACE_Init_DT_UNKNOWN_LEVEL               false
 //--
 #define TRACE_Init_DT_MILESTONES                  false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
@@ -138,7 +141,6 @@
 #define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
-#define TRACE_Init_DT_NONE_4                      false
 
 /* -- Which output listeners should be initially turned on -- */
 #define OM_Init_print_enabled     on

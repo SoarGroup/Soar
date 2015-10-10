@@ -37,7 +37,6 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "debug.h"
-#include "debug_defines.h"
 #include "prefmem.h"
 #include "variablization_manager.h"
 #include "soar_module.h"
@@ -697,6 +696,7 @@ void trace_grounded_potentials(agent* thisAgent)
                 }
                 if (pot->bt.wme_->grounds_tc != thisAgent->grounds_tc)   /* add pot to grounds */
                 {
+                    dprint(DT_BACKTRACE, "Moving potential to grounds: %l\n", pot);
                     pot->bt.wme_->grounds_tc = thisAgent->grounds_tc;
                     c->rest = thisAgent->grounds;
                     thisAgent->grounds = c;
@@ -705,7 +705,7 @@ void trace_grounded_potentials(agent* thisAgent)
 
                     need_another_pass = true;
                 }
-                else     /* pot was already in the grounds, do don't add it */
+                else     /* pot was already in the grounds */
                 {
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
                     dprint(DT_BACKTRACE, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
@@ -714,7 +714,9 @@ void trace_grounded_potentials(agent* thisAgent)
                     thisAgent->grounds = c;
 //                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
-#endif
+//                    free_cons(thisAgent, c);
+
+                    #endif
 #ifdef EBC_SUPERMERGE
                     thisAgent->variablizationManager->cache_constraints_in_cond(pot);
 #endif
