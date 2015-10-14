@@ -750,3 +750,42 @@ void Lexer::set_allow_ids (bool allow_identifiers) {
 bool Lexer::get_allow_ids() {
     return allow_ids;
 }
+
+void Lexer::get_lexeme_from_string ()
+{
+    const char * c;
+    current_lexeme.lex_string = "";
+    consume_whitespace_and_comments();
+
+    // dispatch to lexer routine by first character in lexeme
+    record_position_of_start_of_lexeme();
+
+    bool sym_constant_start_found = FALSE;
+    bool sym_constant_end_found = FALSE;
+
+    while (current_char!=EOF)
+    {
+        if (current_char=='|') {
+          if (!sym_constant_start_found)
+          {
+              sym_constant_start_found = TRUE;
+          }
+          else
+          {
+              sym_constant_end_found = TRUE;
+          }
+        get_next_char();
+      } else {
+        store_and_advance();
+      }
+    };
+
+    if (sym_constant_end_found)
+    {
+        current_lexeme.type = STR_CONSTANT_LEXEME;
+    }
+    else
+    {
+        determine_type_of_constituent_string();
+    }
+}
