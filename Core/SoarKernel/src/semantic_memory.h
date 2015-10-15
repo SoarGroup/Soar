@@ -216,6 +216,20 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* init;
         soar_module::timer* hash;
         soar_module::timer* act;
+        soar_module::timer* spreading_act;
+        soar_module::timer* spreading_fix_1;
+        soar_module::timer* spreading_fix_1_1;
+        soar_module::timer* spreading_fix_1_1_1;
+        soar_module::timer* spreading_fix_1_1_2;
+        soar_module::timer* spreading_fix_1_2;
+        soar_module::timer* spreading_fix_2;
+        soar_module::timer* spreading_calc_1;
+        soar_module::timer* spreading_calc_2;
+        soar_module::timer* spreading_calc_2_1;
+        soar_module::timer* spreading_calc_2_2;
+        soar_module::timer* spreading_calc_2_2_1;
+        soar_module::timer* spreading_calc_2_2_2;
+        soar_module::timer* spreading_calc_2_2_3;
 
         smem_timer_container(agent* thisAgent);
 };
