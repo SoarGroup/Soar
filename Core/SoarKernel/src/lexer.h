@@ -228,10 +228,28 @@ namespace soar
 
         bool determine_type_of_constituent_string ();
         void record_position_of_start_of_lexeme();
+        /**
+         * Appends the current character to the current lexeme
+         * and then retrieves the next character.
+         */
         void store_and_advance();
-        void finish();
+        /**
+         * Calls store_and_advance until a non-constituent character
+         * is found (constituent characters are alphanumerics and
+         * $%&*+-/:<=>?_@).
+         */
         void read_constituent_string ();
-        void read_rest_of_floating_point_number ();
+        /**
+         * This is called when the current character is "." and we believe
+         * the current lexeme will be a floating point number. Calls
+         * store_and_advance for every character left in the number (
+         * including e, E, + and - for scientific notation).
+         *
+         * @return true if a floating point number was found, false otherwise
+         *
+         * TODO: perhaps this return value can eliminate some calls to determine_type_of_constituent_string
+         */
+        bool read_rest_of_floating_point_number ();
     };
 }
 
