@@ -594,7 +594,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
 	soar::Lexer lexer(thisAgent, arg);
 //	lexer.get_lexeme();
-	lexer.get_lexeme_from_string();
+	lexer.get_lexeme_from_rest_of_string();
 
 	soar::Lexeme lexeme = lexer.current_lexeme;
 

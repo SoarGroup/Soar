@@ -110,7 +110,7 @@ namespace soar
         /**
          * Only used by print command.
          */
-        void get_lexeme_from_string ();
+        void get_lexeme_from_rest_of_string ();
 
         /**
          * Tell the lexer whether to allow identifiers to be read.

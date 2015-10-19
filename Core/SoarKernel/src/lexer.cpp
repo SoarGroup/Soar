@@ -751,7 +751,7 @@ bool Lexer::get_allow_ids() {
     return allow_ids;
 }
 
-void Lexer::get_lexeme_from_string ()
+void Lexer::get_lexeme_from_rest_of_string ()
 {
     const char * c;
     current_lexeme.lex_string = "";
@@ -760,19 +760,19 @@ void Lexer::get_lexeme_from_string ()
     // dispatch to lexer routine by first character in lexeme
     record_position_of_start_of_lexeme();
 
-    bool sym_constant_start_found = FALSE;
-    bool sym_constant_end_found = FALSE;
+    bool sym_constant_start_found = false;
+    bool sym_constant_end_found = false;
 
     while (current_char!=EOF)
     {
         if (current_char=='|') {
           if (!sym_constant_start_found)
           {
-              sym_constant_start_found = TRUE;
+              sym_constant_start_found = true;
           }
           else
           {
-              sym_constant_end_found = TRUE;
+              sym_constant_end_found = true;
           }
         get_next_char();
       } else {
