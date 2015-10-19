@@ -2899,6 +2899,7 @@ void smem_calc_spread(agent* thisAgent)
         calc_spread->bind_int(1,(*it));
         //double additional_num = 0;
         //double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
+        //SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?
         while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
         {// Here, I need to get the previous activation of the lti_id in question and update that.
             //First, I need to get the existing info for this lti_id.
