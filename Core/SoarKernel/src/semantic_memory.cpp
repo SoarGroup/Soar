@@ -910,8 +910,10 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(trajectory_remove_invalid);
 
     //Removing all trajectories from ltis with invalid trajectories.
-    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)");
-    add(trajectory_remove_all);
+    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = smem_likelihood_trajectories.lti_id AND b.valid_bit = 0)");
+    add(trajectory_remove_all);//"DELETE a.* FROM smem_likelihood_trajectories AS a INNER JOIN smem_likelihood_trajectories AS b on a.lti_id = b.lti_id WHERE b.valid_bit=0"
+//"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)"
+    //"DELETE FROM smem_likelihood_trajectories AS a WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = a.lti_id AND b.valid_bit = 0)"
 
     //Find all of the ltis with invalid trajectories and find how many new ones they need.
     trajectory_find_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id, COUNT(*) FROM smem_likelihood_trajectories WHERE valid_bit=0 GROUP BY lti_id");
