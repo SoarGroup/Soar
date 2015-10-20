@@ -199,7 +199,11 @@ preference* get_results_for_instantiation(agent* thisAgent, instantiation* inst)
                 (pref->id->tc_num != thisAgent->results_tc_number))
         {
             add_pref_to_results(thisAgent, pref);
+            dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
+        } else {
+            dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, thisAgent->results_match_goal_level);
         }
+
     return thisAgent->results;
 }
 
