@@ -324,7 +324,6 @@ namespace cli
 ===============================
 */
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
-extern soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
 extern Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme);
 
 #endif //COMMAND_LINE_INTERFACE_H

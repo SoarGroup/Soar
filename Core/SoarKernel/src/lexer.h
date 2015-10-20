@@ -108,9 +108,11 @@ namespace soar
         void get_lexeme();
 
         /**
-         * Only used by print command.
+         * Return a single lexeme created from the input string;
+         *
+         * @param input string to analyze for lexeme value/type
          */
-        void get_lexeme_from_rest_of_string ();
+        static Lexeme get_lexeme_from_string (agent* thisAgent, const char* input);
 
         /**
          * Tell the lexer whether to allow identifiers to be read.

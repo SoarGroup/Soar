@@ -22,6 +22,7 @@
 #include <assert.h>
 
 using soar::Lexer;
+using soar::Lexeme;
 
 //static lexing structures
 Lexer::lex_func_ptr Lexer::lexer_routines[256];
@@ -751,21 +752,22 @@ bool Lexer::get_allow_ids() {
     return allow_ids;
 }
 
-void Lexer::get_lexeme_from_rest_of_string ()
+Lexeme Lexer::get_lexeme_from_string (agent* thisAgent, const char* input)
 {
+    Lexer lexer = Lexer(thisAgent, input);
     const char * c;
-    current_lexeme.lex_string = "";
-    consume_whitespace_and_comments();
+    lexer.current_lexeme.lex_string = "";
+    lexer.consume_whitespace_and_comments();
 
     // dispatch to lexer routine by first character in lexeme
-    record_position_of_start_of_lexeme();
+    lexer.record_position_of_start_of_lexeme();
 
     bool sym_constant_start_found = false;
     bool sym_constant_end_found = false;
 
-    while (current_char!=EOF)
+    while (lexer.current_char!=EOF)
     {
-        if (current_char=='|') {
+        if (lexer.current_char=='|') {
           if (!sym_constant_start_found)
           {
               sym_constant_start_found = true;
@@ -774,18 +776,19 @@ void Lexer::get_lexeme_from_rest_of_string ()
           {
               sym_constant_end_found = true;
           }
-        get_next_char();
+        lexer.get_next_char();
       } else {
-        store_and_advance();
+        lexer.store_and_advance();
       }
     };
 
     if (sym_constant_end_found)
     {
-        current_lexeme.type = STR_CONSTANT_LEXEME;
+        lexer.current_lexeme.type = STR_CONSTANT_LEXEME;
     }
     else
     {
-        determine_type_of_constituent_string();
+        lexer.determine_type_of_constituent_string();
     }
+    return lexer.current_lexeme;
 }
