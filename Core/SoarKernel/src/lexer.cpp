@@ -79,16 +79,37 @@ void Lexer::read_constituent_string () {
     store_and_advance();
 }
 
-void Lexer::read_rest_of_floating_point_number () {
-  /* --- at entry, current_char=="."; we read the "." and rest of number --- */
+// At entry, current_char=="."; we read the "." and rest of number.
+bool Lexer::read_rest_of_floating_point_number () {
+  // Save the lexer input location, first; if we see unseparated
+  // constituent characters at the end, then restore the state and return
+  // false, meaning the input was not a floating point number after all.
+
+  //store state
+  std::string old_lexeme =  current_lexeme.lex_string;
+  int old_cur_char = current_char;
+  int old_prev_char = prev_char;
+  const char* old_prod_string = production_string;
+
   store_and_advance();
-  while (isdigit(current_char)) store_and_advance(); /* string of digits */
+  while (isdigit(current_char)){
+    store_and_advance(); /* string of digits */
+  }
   if ((current_char=='e')||(current_char=='E')) {
     store_and_advance();                             /* E */
     if ((current_char=='+')||(current_char=='-'))
       store_and_advance();                       /* optional leading + or - */
     while (isdigit(current_char)) store_and_advance(); /* string of digits */
   }
+  // if characters were read restore state if it wasn't a float after all
+  if(constituent_char[(int)current_char] && !isspace(prev_char)){
+    current_lexeme.lex_string = old_lexeme;
+    current_char = old_cur_char;
+    prev_char = old_prev_char;
+    production_string = old_prod_string;
+    return false;
+  }
+  return true;
 }
 
 bool Lexer::determine_type_of_constituent_string () {
