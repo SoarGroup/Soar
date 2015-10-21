@@ -88,11 +88,13 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     first_action = NIL;
     last_action = NIL;
 
+    dprint_header(DT_REORDERER, PrintBoth, "Reordering action list:\n%2", *action_list);
     while (remaining_actions)
     {
         /* --- scan through remaining_actions, look for one that's legal --- */
         prev_a = NIL;
         a = remaining_actions;
+        dprint(DT_REORDERER, "Looking for an action with a knowable level...\n");
         while (true)
         {
             if (!a)
@@ -101,15 +103,20 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             }
             if (legal_to_execute_action(a, lhs_tc))
             {
+                dprint(DT_REORDERER, "...   Found. Levels of %a ARE knowable.\n", a);
                 break;
+            } else {
+                dprint(DT_REORDERER, "...   Skipping. Levels of %a NOT knowable.\n", a);
             }
             prev_a = a;
             a = a->next;
         }
         if (!a)
         {
+            dprint(DT_REORDERER, "...no more actions with a knowable level.\n");
             break;
         }
+        dprint(DT_REORDERER, "...moving %a to reordered list.\n", a);
         /* --- move action a from remaining_actions to reordered list --- */
         if (prev_a)
         {
@@ -130,7 +137,8 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
+        dprint(DT_REORDERER, "...marking vars and LTIs in %a\n", a);
+        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars, true);
     }
 
     if (remaining_actions)
@@ -163,10 +171,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
+    dprint_header(DT_REORDERER, PrintAfter, "Final action list:\n%2", *action_list);
     return result_flag;
 }
 
-bool all_variables_in_rhs_value_bound(rhs_value rv, tc_number tc)
+bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
 {
     cons* c;
     list* fl;
@@ -177,7 +186,7 @@ bool all_variables_in_rhs_value_bound(rhs_value rv, tc_number tc)
         /* --- function calls --- */
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
-            if (! all_variables_in_rhs_value_bound(static_cast<char*>(c->first), tc))
+            if (! all_vars_LTIs_in_rhs_value_bound(static_cast<char*>(c->first), tc))
             {
                 return false;
             }
@@ -187,7 +196,7 @@ bool all_variables_in_rhs_value_bound(rhs_value rv, tc_number tc)
     {
         /* --- ordinary (symbol) rhs values --- */
         sym = rhs_value_to_symbol(rv);
-        if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (sym->is_variable() || sym->is_lti())
         {
             return (sym->tc_num == tc);
         }
@@ -199,30 +208,30 @@ bool legal_to_execute_action(action* a, tc_number tc)
 {
     if (a->type == MAKE_ACTION)
     {
-        if (! all_variables_in_rhs_value_bound(a->id, tc))
+        if (! all_vars_LTIs_in_rhs_value_bound(a->id, tc))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->attr) &&
-                (! all_variables_in_rhs_value_bound(a->attr, tc)))
+                (! all_vars_LTIs_in_rhs_value_bound(a->attr, tc)))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->value) &&
-                (! all_variables_in_rhs_value_bound(a->value, tc)))
+                (! all_vars_LTIs_in_rhs_value_bound(a->value, tc)))
         {
             return false;
         }
         if (preference_is_binary(a->preference_type) &&
                 rhs_value_is_funcall(a->referent) &&
-                (! all_variables_in_rhs_value_bound(a->referent, tc)))
+                (! all_vars_LTIs_in_rhs_value_bound(a->referent, tc)))
         {
             return false;
         }
         return true;
     }
     /* --- otherwise it's a function call; make sure args are all bound  --- */
-    return all_variables_in_rhs_value_bound(a->value, tc);
+    return all_vars_LTIs_in_rhs_value_bound(a->value, tc);
 }
 
 /* =====================================================================

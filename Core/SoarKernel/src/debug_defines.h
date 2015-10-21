@@ -53,7 +53,7 @@
 #define TRACE_Init_DT_GDS                         false
 #define TRACE_Init_DT_WME_CHANGES                 false
 #define TRACE_Init_DT_LINKS                       false
-#define TRACE_Init_DT_UNKNOWN_LEVEL               true
+#define TRACE_Init_DT_UNKNOWN_LEVEL               false
 //--
 #define TRACE_Init_DT_MILESTONES                  false
 #define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
@@ -73,7 +73,7 @@
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
-#define TRACE_Init_DT_REORDERER                   false
+#define TRACE_Init_DT_REORDERER                   true
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 

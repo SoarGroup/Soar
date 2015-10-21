@@ -591,9 +591,10 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     Symbol* id;
     wme* w;
     list* wmes;
-	
+
 	soar::Lexer lexer(thisAgent, arg);
-	lexer.get_lexeme();
+//	lexer.get_lexeme();
+	lexer.get_lexeme_from_rest_of_string();
 
 	soar::Lexeme lexeme = lexer.current_lexeme;
 
@@ -602,7 +603,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 		lexer.get_lexeme();
 		lexeme = lexer.current_lexeme;
 	}
-	
+
     switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:

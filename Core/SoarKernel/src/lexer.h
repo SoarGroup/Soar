@@ -106,6 +106,12 @@ namespace soar
          * Read the input and set the current lexeme.
          */
         void get_lexeme();
+
+        /**
+         * Only used by print command.
+         */
+        void get_lexeme_from_rest_of_string ();
+
         /**
          * Tell the lexer whether to allow identifiers to be read.
          * @param allow True to allow identifiers to be read; false
