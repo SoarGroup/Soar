@@ -850,18 +850,29 @@ list* collect_root_variables(agent* thisAgent,
             }
             if (! found_goal_impasse_test)
             {
-                print(thisAgent,  "\nWarning: On the LHS of production %s, identifier ",
+                print(thisAgent,  "\nWarning for production \"%s\":\n",
                       thisAgent->name_of_production_being_reordered);
-                print_with_symbols(thisAgent, "%y is not connected to any goal or impasse.\n",
-                                   static_cast<Symbol*>(c->first));
+                print_with_symbols(thisAgent, "   On the LHS of production, the symbol %y is the identifier element of a \n"
+                    "   condition but is not linked to any goal or impasse, either directly in a\n"
+                    "   condition or indirectly through other conditions.\n\n"
+                    "   Note: Soar does not condition the attribute element of a condition when\n"
+                    "   determining whether there is a link between two identifiers.  Using Soar\n"
+                    "   identifiers in an attribute slot may work but is not fully supported in the\n"
+                    "   current version of Soar.\n", static_cast<Symbol*>(c->first));
 
                 // XML geneneration
                 growable_string gs = make_blank_growable_string(thisAgent);
-                add_to_growable_string(thisAgent, &gs, "Warning: On the LHS of production ");
+                add_to_growable_string(thisAgent, &gs, "Warning for production \"");
                 add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-                add_to_growable_string(thisAgent, &gs, ", identifier ");
+                add_to_growable_string(thisAgent, &gs, "\":\n   On the LHS of production, the symbol ");
                 add_to_growable_string(thisAgent, &gs, static_cast<Symbol*>(c->first)->to_string(true));
-                add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
+                add_to_growable_string(thisAgent, &gs, " is the identifier element of a \n"
+                    "   condition but is not linked to any goal or impasse, either directly in a\n"
+                    "   condition or indirectly through other conditions.\n\n"
+                    "   Note: Soar does not condition the attribute element of a condition when\n"
+                    "   determining whether there is a link between two identifiers.  Using Soar\n"
+                    "   identifiers in an attribute slot may work but is not fully supported in the\n"
+                    "   current version of Soar.\n");
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
 
