@@ -1544,9 +1544,9 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
     }
 }
 
-void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_id>& trajectory, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 0)
+void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 0)
 {
-    smem_lti_id lti_id = trajectory.back();
+    //smem_lti_id lti_id = trajectory.back();
     //child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
 
     //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
@@ -2142,9 +2142,9 @@ extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
         //Make the fingerprint for this lti.
         for (int i = 0; i < 1; ++i)
         {
-            std::list<smem_lti_id> trajectory;
-            trajectory.push_back(lti_id);
-            trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+            //std::list<smem_lti_id> trajectory;
+            //trajectory.push_back(lti_id);
+            trajectory_construction_deterministic(thisAgent,lti_id,lti_trajectories);
         }
     }
     lti_a->reinitialize();
@@ -2556,11 +2556,13 @@ void smem_fix_spread(agent* thisAgent)
         ////////////////////////////////////////////////////////////////////////////
         if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
-            for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent) // ** This is costly.
+            std::set<smem_lti_id>::iterator invalid_parent_begin = invalidated_parents.begin();
+            std::set<smem_lti_id>::iterator invalid_parent_end = invalidated_parents.end();
+            for (invalid_parent = invalid_parent_begin; invalid_parent!= invalid_parent_end; ++invalid_parent) // ** This is costly.
             {
-                std::list<smem_lti_id> trajectory;
-                trajectory.push_back(*invalid_parent);
-                trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+                //std::list<smem_lti_id> trajectory;
+                //trajectory.push_back(*invalid_parent);
+                trajectory_construction_deterministic(thisAgent,*invalid_parent,lti_trajectories);
             }
         }
         ////////////////////////////////////////////////////////////////////////////
@@ -2813,9 +2815,9 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
                 if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
                 {
-                    std::list<smem_lti_id> trajectory;
-                    trajectory.push_back(*it);
-                    trajectory_construction_deterministic(thisAgent,trajectory,lti_trajectories);
+                    //std::list<smem_lti_id> trajectory;
+                    //trajectory.push_back(*it);
+                    trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
                 
                     
 
