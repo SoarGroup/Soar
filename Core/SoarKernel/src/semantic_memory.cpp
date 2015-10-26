@@ -913,7 +913,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)");
     add(trajectory_remove_all);//"DELETE a.* FROM smem_likelihood_trajectories AS a INNER JOIN smem_likelihood_trajectories AS b on a.lti_id = b.lti_id WHERE b.valid_bit=0"
 //"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)"
-    //"DELETE FROM smem_likelihood_trajectories AS a WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = a.lti_id AND b.valid_bit = 0)"
+    //"DELETE FROM smem_likelihood_trajectories WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = smem_likelihood_trajectories.lti_id AND b.valid_bit = 0)"
 
     //Find all of the ltis with invalid trajectories and find how many new ones they need.
     trajectory_find_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id, COUNT(*) FROM smem_likelihood_trajectories WHERE valid_bit=0 GROUP BY lti_id");
@@ -1632,7 +1632,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
                 ++count;
 
                 //If there's room for more, we add it so that we can continue building.
-                if (new_list->size() < depth_limit+1) {
+                if (new_list->size() < depth_limit+1 && count < limit) {
                     lti_traversal_queue.push(new_list);
                 }
                 else
@@ -2544,7 +2544,7 @@ void smem_fix_spread(agent* thisAgent)
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_fix_1_1_2->start();
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);
+        thisAgent->smem_stmts->trajectory_remove_all->execute(soar_module::op_reinit);// ** This is costly.
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_fix_1_1_2->stop();
         ////////////////////////////////////////////////////////////////////////////
@@ -2556,7 +2556,7 @@ void smem_fix_spread(agent* thisAgent)
         ////////////////////////////////////////////////////////////////////////////
         if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
-            for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent)
+            for (invalid_parent = invalidated_parents.begin(); invalid_parent!= invalidated_parents.end(); ++invalid_parent) // ** This is costly.
             {
                 std::list<smem_lti_id> trajectory;
                 trajectory.push_back(*invalid_parent);
@@ -2967,7 +2967,7 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_2->start();
                 ////////////////////////////////////////////////////////////////////////////
-                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) // ** This is costly.
                 {
                     thisAgent->smem_stmts->act_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base))+spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
