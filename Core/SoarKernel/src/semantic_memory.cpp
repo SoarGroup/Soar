@@ -1593,7 +1593,7 @@ void trajectory_construction_deterministic(agent* thisAgent, std::list<smem_lti_
         old_list_iterator_begin = current_lti_list->begin();
         old_list_iterator_end = current_lti_list->end();
         //assert(lti_begin != lti_end);
-        for (lti_iterator = lti_begin; lti_iterator != lti_end; ++lti_iterator)
+        for (lti_iterator = lti_begin; lti_iterator != lti_end && count < limit; ++lti_iterator)
         {
             good_lti = true;
             //First, we make a new copy of the list to add to the queue.
