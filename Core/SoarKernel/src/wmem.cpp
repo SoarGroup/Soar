@@ -298,22 +298,22 @@ void do_buffered_wm_changes(agent* thisAgent)
         }
 
         //This is for spreading (keeping track of context).
-        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
+        if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
         {
-            if (thisAgent->smem_in_wmem->find(w->value->id->smem_lti)==thisAgent->smem_in_wmem->end())
+            if (thisAgent->smem_in_wmem->find(w->id->id->smem_lti)==thisAgent->smem_in_wmem->end())
             {
-                (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] = (uint64_t)1;
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (uint64_t)1;
                 //Here, I should also add to a data structure containing "ltis to add to context".
-                thisAgent->smem_context_additions->insert(w->value->id->smem_lti);
+                thisAgent->smem_context_additions->insert(w->id->id->smem_lti);
                 //edge case? - I should remove ltis from "ltis to remove from context".
-                if (thisAgent->smem_context_removals->find(w->value->id->smem_lti)!=thisAgent->smem_context_removals->end())
+                if (thisAgent->smem_context_removals->find(w->id->id->smem_lti)!=thisAgent->smem_context_removals->end())
                 {
-                    thisAgent->smem_context_removals->erase(w->value->id->smem_lti);
+                    thisAgent->smem_context_removals->erase(w->id->id->smem_lti);
                 }
             }
             else
             {
-                (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] + 1;
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] + 1;
             }
         }
         wme_add_ref(w);
@@ -337,22 +337,22 @@ void do_buffered_wm_changes(agent* thisAgent)
         //We shouldn't ever get here without having already added the lti before.
         //TODO:I need to read through buffered WM changes and see if that could screw things up.
         //I won't (shouldn't) be doing any add-remove of the same LTI in 1 DC, so I'm guessing things will be okay for now.
-        if(thisAgent->smem_in_wmem->find(w->value->id->smem_lti)!=thisAgent->smem_in_wmem->end())
+        if(thisAgent->smem_in_wmem->find(w->id->id->smem_lti)!=thisAgent->smem_in_wmem->end())
         {
-            if ((*(thisAgent->smem_in_wmem))[w->value->id->smem_lti]==1)
+            if ((*(thisAgent->smem_in_wmem))[w->id->id->smem_lti]==1)
             {
-                thisAgent->smem_in_wmem->erase(w->value->id->smem_lti);
+                thisAgent->smem_in_wmem->erase(w->id->id->smem_lti);
                 //should also add to a data structure like "ltis to remove from context.
-                thisAgent->smem_context_removals->insert(w->value->id->smem_lti);
+                thisAgent->smem_context_removals->insert(w->id->id->smem_lti);
                 //edge case - should remove from "ltis to add to context."
-                if (thisAgent->smem_context_additions->find(w->value->id->smem_lti)!=thisAgent->smem_context_additions->end())
+                if (thisAgent->smem_context_additions->find(w->id->id->smem_lti)!=thisAgent->smem_context_additions->end())
                 {
-                    thisAgent->smem_context_additions->erase(w->value->id->smem_lti);
+                    thisAgent->smem_context_additions->erase(w->id->id->smem_lti);
                 }
             }
             else
             {
-                (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->value->id->smem_lti] - 1;
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] - 1;
             }
         }
         wme_remove_ref(thisAgent, w);
