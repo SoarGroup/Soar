@@ -1207,6 +1207,12 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         print(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
         print(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
         print(thisAgent, "through the local state.\n");
+        xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
+        xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+        xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
+        xml_generate_warning(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+        xml_generate_warning(thisAgent, "through the local state.\n");
 
         deallocate_condition_list(thisAgent, vrblz_top);
         vrblz_top = NULL;
@@ -1217,7 +1223,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
         thisAgent->stop_soar = true;
         thisAgent->system_halted = true;
-
+        thisAgent->reason_for_stopping = "Could not re-order chunk.";
         goto chunking_abort;
     }
 
