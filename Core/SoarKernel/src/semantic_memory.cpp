@@ -905,6 +905,14 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
     add(trajectory_remove);
 
+    //Removing trajectories for a particular lti.
+    trajectory_remove_lti = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=?");
+    add(trajectory_remove_lti);
+
+    //like trajectory_get, but with invalid instead of valid.
+    trajectory_check_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
+    add(trajectory_check_invalid);
+
     //Removing all invalid trajectories.
     trajectory_remove_invalid = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
     add(trajectory_remove_invalid);
@@ -1548,7 +1556,8 @@ void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id,
 {
     //smem_lti_id lti_id = trajectory.back();
     //child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
-
+    thisAgent->smem_stmts->trajectory_remove_lti->bind_int(1,lti_id);
+    thisAgent->smem_stmts->trajectory_remove_lti->execute(soar_module::op_reinit);
     //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
     std::list<smem_lti_id>::iterator lti_iterator;
     std::list<smem_lti_id>::iterator lti_begin;// = lti_trajectories[lti_id]->begin();
@@ -2812,14 +2821,22 @@ void smem_calc_spread(agent* thisAgent)
         {
             for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
             {//We keep track of old walks. If we haven't changed smem, no need to recalculate.
+                thisAgent->smem_stmts->trajectory_check_invalid->bind_int(1,*it);
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
-                if (thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
+                bool was_invalid = (thisAgent->smem_stmts->trajectory_check_invalid->execute() == soar_module::row);
+                if (was_invalid || thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
                 {
                     //std::list<smem_lti_id> trajectory;
                     //trajectory.push_back(*it);
                     trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
                 
-                    
+                    if (was_invalid)
+                    {
+                        thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*it));
+                        thisAgent->smem_stmts->likelihood_cond_count_remove->execute(soar_module::op_reinit);
+                        thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*it));
+                        thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
+                    }
 
                     double p1 = thisAgent->smem_params->continue_probability->get_value();
                     for (int i = 1; i < 11; i++)
@@ -2833,6 +2850,7 @@ void smem_calc_spread(agent* thisAgent)
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
                 }
+                thisAgent->smem_stmts->trajectory_check_invalid->reinitialize();
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
             }
         }
@@ -4658,6 +4676,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         //Here is the major change for spreading. Instead of just using the base-level value for sorting, I also must include the change from context.
         //First, we fix bad trajectories. (Asynchronous would be nice.)
         //if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
+        if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
         {
             smem_fix_spread(thisAgent);
         }
@@ -6729,7 +6748,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 	if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() == smem_param_container::context_change)
 	{
 	    //if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
-        {
+	    if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
+	    {
 	        smem_fix_spread(thisAgent);
         }
         //Contribution from context

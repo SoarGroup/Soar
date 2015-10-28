@@ -343,6 +343,8 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* lti_all;
         soar_module::sqlite_statement* trajectory_add;
         soar_module::sqlite_statement* trajectory_remove;
+        soar_module::sqlite_statement* trajectory_remove_lti;
+        soar_module::sqlite_statement* trajectory_check_invalid;
         soar_module::sqlite_statement* trajectory_remove_invalid;
         soar_module::sqlite_statement* trajectory_remove_all;
         soar_module::sqlite_statement* trajectory_find_invalid;
