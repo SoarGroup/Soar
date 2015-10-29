@@ -1552,12 +1552,15 @@ void child_spread(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std
     }
 }
 
-void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 0)
+void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id, std::map<smem_lti_id,std::list<smem_lti_id>*>& lti_trajectories, int depth = 0, bool initial = false)
 {
     //smem_lti_id lti_id = trajectory.back();
     //child_spread(thisAgent, lti_id, lti_trajectories,1);//This just gets the children of the current lti_id.
-    thisAgent->smem_stmts->trajectory_remove_lti->bind_int(1,lti_id);
-    thisAgent->smem_stmts->trajectory_remove_lti->execute(soar_module::op_reinit);
+    if (!initial)
+    {
+        thisAgent->smem_stmts->trajectory_remove_lti->bind_int(1,lti_id);
+        thisAgent->smem_stmts->trajectory_remove_lti->execute(soar_module::op_reinit);
+    }
     //If we reach here, the element is not at maximum depth and is not inherently terminal, so recursion continues.
     std::list<smem_lti_id>::iterator lti_iterator;
     std::list<smem_lti_id>::iterator lti_begin;// = lti_trajectories[lti_id]->begin();
@@ -2153,7 +2156,7 @@ extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent)
         {
             //std::list<smem_lti_id> trajectory;
             //trajectory.push_back(lti_id);
-            trajectory_construction_deterministic(thisAgent,lti_id,lti_trajectories);
+            trajectory_construction_deterministic(thisAgent,lti_id,lti_trajectories,0,true);
         }
     }
     lti_a->reinitialize();
