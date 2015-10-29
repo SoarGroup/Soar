@@ -498,6 +498,10 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_store_2);
     spreading_store_3 = new smem_timer("spreading_store_3", thisAgent, soar_module::timer::three);
     add(spreading_store_3);
+    spreading_store_3_1 = new smem_timer("spreading_store_3_1", thisAgent, soar_module::timer::three);
+    add(spreading_store_3_1);
+    spreading_store_3_2 = new smem_timer("spreading_store_3_2", thisAgent, soar_module::timer::three);
+    add(spreading_store_3_2);
     spreading_store_4 = new smem_timer("spreading_store_4", thisAgent, soar_module::timer::three);
     add(spreading_store_4);
 }
@@ -3914,6 +3918,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     ////////////////////////////////////////////////////////////////////////////
     if (new_children != NULL)
     {
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_1->start();
+        ////////////////////////////////////////////////////////////////////////////
         if (remove_old_children)
         {//This is where the delta has to be calculated.
             /* Delta: Loop over the new children.
@@ -3941,9 +3948,18 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                 (*new_children)[old_child->first] = old_child->second;
             }
         }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_1->stop();
+        ////////////////////////////////////////////////////////////////////////////
         //At this point, new_children contains the set of changes to memory that are relevant to spreading.
         //We use those changes to invalidate the appropriate spreading values.
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2->start();
+        ////////////////////////////////////////////////////////////////////////////
         smem_invalidate_trajectories(thisAgent, lti_id, new_children);
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
     }
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_store_3->stop();

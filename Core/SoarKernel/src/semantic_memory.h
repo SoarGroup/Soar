@@ -233,6 +233,8 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* spreading_store_1;
         soar_module::timer* spreading_store_2;
         soar_module::timer* spreading_store_3;
+        soar_module::timer* spreading_store_3_1;
+        soar_module::timer* spreading_store_3_2;
         soar_module::timer* spreading_store_4;
 
         smem_timer_container(agent* thisAgent);
