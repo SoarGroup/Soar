@@ -491,6 +491,15 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_calc_2_2_2);
     spreading_calc_2_2_3 = new smem_timer("spreading_calc_2_2_3", thisAgent, soar_module::timer::three);
     add(spreading_calc_2_2_3);
+
+    spreading_store_1 = new smem_timer("spreading_store_1", thisAgent, soar_module::timer::three);
+    add(spreading_store_1);
+    spreading_store_2 = new smem_timer("spreading_store_2", thisAgent, soar_module::timer::three);
+    add(spreading_store_2);
+    spreading_store_3 = new smem_timer("spreading_store_3", thisAgent, soar_module::timer::three);
+    add(spreading_store_3);
+    spreading_store_4 = new smem_timer("spreading_store_4", thisAgent, soar_module::timer::three);
+    add(spreading_store_4);
 }
 
 //
@@ -3723,6 +3732,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
 
     std::map<smem_lti_id, uint64_t>* old_children = NULL;
     std::map<smem_lti_id, int64_t>* new_children = NULL;
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_1->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (thisAgent->smem_params->spreading->get_value() == on)
     {
         new_children = new std::map<smem_lti_id, int64_t>;
@@ -3759,7 +3771,12 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
         
         thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_2->start();
+    ////////////////////////////////////////////////////////////////////////////
     // get new edges
     // if didn't disconnect, entails lookups in existing edges
     std::set<smem_hash_id> attr_new;
@@ -3883,13 +3900,18 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
             }
         }
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
     /*
      * Here, the delta between what the children of the lti used to be and
      * what they are now is calculated and used to determine what spreading
      * likelihoods need to be recalculated (since the network structure
      * behind them are not longer valid).
      */
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_3->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (new_children != NULL)
     {
         if (remove_old_children)
@@ -3923,7 +3945,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
         //We use those changes to invalidate the appropriate spreading values.
         smem_invalidate_trajectories(thisAgent, lti_id, new_children);
     }
-
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
     // activation function assumes proper thresholding state
     // thus, consider four cases of augmentation counts (w.r.t. thresh)
     // 1. before=below, after=below: good (activation will update smem_augmentations)
@@ -3932,6 +3956,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // 4. before=after, after=after: good (activation won't touch smem_augmentations)
     //
     // hence, we detect + handle case #2 here
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_4->start();
+    ////////////////////////////////////////////////////////////////////////////
     uint64_t new_edges = (existing_edges + const_new.size() + lti_new.size());
     bool after_above;
     double web_act = static_cast<double>(SMEM_ACT_MAX);
@@ -4093,6 +4120,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     {
         delete new_children;
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_store_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL)
