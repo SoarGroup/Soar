@@ -502,6 +502,10 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_store_3_1);
     spreading_store_3_2 = new smem_timer("spreading_store_3_2", thisAgent, soar_module::timer::three);
     add(spreading_store_3_2);
+    spreading_store_3_2_1 = new smem_timer("spreading_store_3_2_1", thisAgent, soar_module::timer::three);
+    add(spreading_store_3_2_1);
+    spreading_store_3_2_2 = new smem_timer("spreading_store_3_2_2", thisAgent, soar_module::timer::three);
+    add(spreading_store_3_2_2);
     spreading_store_4 = new smem_timer("spreading_store_4", thisAgent, soar_module::timer::three);
     add(spreading_store_4);
 }
@@ -3229,6 +3233,9 @@ void smem_calc_spread(agent* thisAgent)
 
 void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, std::map<smem_lti_id, int64_t>* delta_children)
 {
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2_1->start();
+        ////////////////////////////////////////////////////////////////////////////
     std::map<smem_lti_id, int64_t>::iterator delta_child;
     std::list<smem_lti_id>* negative_children = new std::list<smem_lti_id>;
     for (delta_child = delta_children->begin(); delta_child != delta_children->end(); ++delta_child)
@@ -3278,8 +3285,14 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
             negative_children->push_front(delta_child->first);
         }
     }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2_1->stop();
+        ////////////////////////////////////////////////////////////////////////////
     // If we even get here, it means that we only had negative children (removals) and we invalidate according to them.
     // (Additions make you invalidate a lot more than removals.)
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2_2->start();
+        ////////////////////////////////////////////////////////////////////////////
     while (!negative_children->empty())
     {
         //sqlite command to delete trajectories involving parent to delta_children->front();
@@ -3325,6 +3338,9 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
         }
     }
     delete negative_children;
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_store_3_2_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
 }
 
 
