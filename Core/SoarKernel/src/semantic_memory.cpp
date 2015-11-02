@@ -631,15 +631,15 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8)");
     add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9)");
     add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10)");
-    add_structure("CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1,lti2)");
-    add_structure("CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2,lti3)");
-    add_structure("CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3,lti4)");
-    add_structure("CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4,lti5)");
-    add_structure("CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5,lti6)");
-    add_structure("CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6,lti7)");
-    add_structure("CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7,lti8)");
-    add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8,lti9)");
-    add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9,lti10)");
+    add_structure("CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti2,lti1)");
+    add_structure("CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti3,lti2)");
+    add_structure("CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti4,lti3)");
+    add_structure("CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti5,lti4)");
+    add_structure("CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti6,lti5)");
+    add_structure("CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti7,lti6)");
+    add_structure("CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti8,lti7)");
+    add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti9,lti8)");
+    add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti10,lti9)");
     add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
     add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
     add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
@@ -951,26 +951,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //invalidating trajectories containing some lti and don't have null afterwards
     trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
     add(trajectory_invalidate_from_lti);
-    trajectory_invalidate_from_lti_1 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0)");
-    add(trajectory_invalidate_from_lti_1);
-    trajectory_invalidate_from_lti_2 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti1=? AND lti2!=0)");
-    add(trajectory_invalidate_from_lti_2);
-    trajectory_invalidate_from_lti_3 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti2=? AND lti3!=0)");
-    add(trajectory_invalidate_from_lti_3);
-    trajectory_invalidate_from_lti_4 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti3=? AND lti4!=0)");
-    add(trajectory_invalidate_from_lti_4);
-    trajectory_invalidate_from_lti_5 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti4=? AND lti5!=0)");
-    add(trajectory_invalidate_from_lti_5);
-    trajectory_invalidate_from_lti_6 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti5=? AND lti6!=0)");
-    add(trajectory_invalidate_from_lti_6);
-    trajectory_invalidate_from_lti_7 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti6=? AND lti7!=0)");
-    add(trajectory_invalidate_from_lti_7);
-    trajectory_invalidate_from_lti_8 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti7=? AND lti8!=0)");
-    add(trajectory_invalidate_from_lti_8);
-    trajectory_invalidate_from_lti_9 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti8=? AND lti9!=0)");
-    add(trajectory_invalidate_from_lti_9);
-    trajectory_invalidate_from_lti_10 = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti9=? AND lti10!=0)");
-    add(trajectory_invalidate_from_lti_10);
+
     //invalidating trajectories containing some lti followed by a particular different lti
     trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
     add(trajectory_invalidate_edge);
@@ -3275,27 +3256,10 @@ void smem_invalidate_trajectories(agent* thisAgent, smem_lti_id lti_parent_id, s
             {
                 for (int i = 1; i < 11; i++)
                 {
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_1->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_2->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_3->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_4->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_5->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_6->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_7->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_8->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_9->bind_int(i, lti_parent_id);
-                    thisAgent->smem_stmts->trajectory_invalidate_from_lti_10->bind_int(i, lti_parent_id);
+                    thisAgent->smem_stmts->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
+                    //As it turns out, sqlite is smart about unioning ors that all have a single index.
                 }
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_1->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_2->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_3->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_4->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_5->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_6->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_7->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_8->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_9->execute(soar_module::op_reinit);
-                thisAgent->smem_stmts->trajectory_invalidate_from_lti_10->execute(soar_module::op_reinit);
+                thisAgent->smem_stmts->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
             }
             else if (thisAgent->smem_params->spreading_direction->get_value() == smem_param_container::both)
             {
