@@ -617,9 +617,9 @@ void smem_statement_container::create_indices()
      * The indices below are all for spreading.
      * */
     //This is to find the trajectories starting from a given LTI.
-    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
+    //add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
     //Keep track of invalid trajectories.
-    add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
+    //add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
     //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
     add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
     add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2)");
@@ -1817,16 +1817,16 @@ void trajectory_construction_actr(agent* thisAgent, std::list<smem_lti_id>& traj
 void smem_delete_trajectory_indices(agent* thisAgent)
 {
     soar_module::sqlite_statement* trajectory_index_delete;
-    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "DROP INDEX trajectory_lti");
-    trajectory_index_delete->prepare();
-    trajectory_index_delete->execute(soar_module::op_reinit);
-    delete trajectory_index_delete;
-    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "DROP INDEX trajectory_valid");
-    trajectory_index_delete->prepare();
-    trajectory_index_delete->execute(soar_module::op_reinit);
-    delete trajectory_index_delete;
+//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+//            "DROP INDEX trajectory_lti");
+//    trajectory_index_delete->prepare();
+//    trajectory_index_delete->execute(soar_module::op_reinit);
+//    delete trajectory_index_delete;
+//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+//            "DROP INDEX trajectory_valid");
+//    trajectory_index_delete->prepare();
+//    trajectory_index_delete->execute(soar_module::op_reinit);
+//    delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
             "DROP INDEX lti_t1");
     trajectory_index_delete->prepare();
@@ -1932,16 +1932,16 @@ void smem_delete_trajectory_indices(agent* thisAgent)
 void smem_create_trajectory_indices(agent* thisAgent)
 {
     soar_module::sqlite_statement* trajectory_index_delete;
-    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
-    trajectory_index_delete->prepare();
-    trajectory_index_delete->execute(soar_module::op_reinit);
-    delete trajectory_index_delete;
-    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
-    trajectory_index_delete->prepare();
-    trajectory_index_delete->execute(soar_module::op_reinit);
-    delete trajectory_index_delete;
+//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+//            "CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
+//    trajectory_index_delete->prepare();
+//    trajectory_index_delete->execute(soar_module::op_reinit);
+//    delete trajectory_index_delete;
+//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+//            "CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
+//    trajectory_index_delete->prepare();
+//    trajectory_index_delete->execute(soar_module::op_reinit);
+//    delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
             "CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
     trajectory_index_delete->prepare();
