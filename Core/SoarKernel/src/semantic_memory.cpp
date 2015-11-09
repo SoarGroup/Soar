@@ -87,6 +87,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
     add(spreading);
 
+    spontaneous_retrieval = new soar_module::boolean_param("spontaneous_retrieval", off, new soar_module::f_predicate<boolean>());
+    add(spontaneous_retrieval);
+
     spreading_normalization = new soar_module::boolean_param("spreading-normalization", on, new soar_module::f_predicate<boolean>());
     add(spreading_normalization);
 
@@ -532,6 +535,20 @@ smem_timer::smem_timer(const char* new_name, agent* new_agent, soar_module::time
 void smem_statement_container::create_tables()
 {
     add_structure("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+    add_structure("CREATE TABLE smem_constants_store (smem_act_max REAL, smem_act_low REAL)");
+    {
+        /*std::stringstream insert_statement;
+        insert_statement << "INSERT OR IGNORE INTO smem_constants_store (smem_act_max, smem_act_low) VALUES (";
+        insert_statement << SMEM_ACT_MAX << ", " << SMEM_ACT_LOW << ")";
+        std::string insert_statement_str = insert_statement.str();
+        char insert_statement_cstr[insert_statement_str.length()+1] = "";
+        strcpy(insert_statement_cstr,insert_statement_str.c_str());
+        add_structure(insert_statement_cstr);*/
+
+        //I'm sure I'm just not thinking right, but I was unable to get the above to work correctly and it's probably some stupid pointer stuff.
+        //Anyway, I'm doing a hack for now to quit wasting time on it:
+        add_structure("INSERT OR IGNORE INTO smem_constants_store (smem_act_max, smem_act_low) VALUES (9223372036854775807, -1000000000)");
+    }
     add_structure("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
     add_structure("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY, symbol_type INTEGER)");
     add_structure("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY, symbol_value INTEGER)");
@@ -603,6 +620,8 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
     add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+    add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)");
+    add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)");
     add_structure("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)");
     add_structure("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
     add_structure("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
@@ -1033,6 +1052,10 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     vis_value_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh.symbol_type AS attr_type, tsh.s_id AS attr_hash, value_lti_id FROM smem_augmentations w, smem_symbols_type tsh WHERE (w.attribute_s_id=tsh.s_id) AND (value_lti_id<>" SMEM_AUGMENTATIONS_NULL_STR ")");
     add(vis_value_lti);
+
+    //Now adding what's needed for spontaneous //INSERT OR IGNORE INTO smem_constants_store (smem_act_max
+    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM (SELECT * FROM (SELECT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT 1) UNION SELECT * FROM (SELECT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT 1) ORDER BY activation_value DESC LIMIT 1)");
+    add(lti_get_high_act);
 }
 
 
@@ -6791,6 +6814,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     unsigned int time_slot = ((store_only) ? (1) : (0));
     uint64_t wme_count;
     bool new_cue;
+    bool has_cue;
     
     tc_number tc;
     
@@ -6803,6 +6827,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     bool do_wm_phase = false;
     bool mirroring_on = (thisAgent->smem_params->mirroring->get_value() == on);
     
+    bool should_spontaneously_retrieve = false;
+    bool spontaneously_retrieved = false;
+
 	//Free this up as soon as we start a phase that allows queries
 	if(!store_only){
 		delete thisAgent->lastCue;
@@ -6833,6 +6860,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
         // make sure this state has had some sort of change to the cmd
         // NOTE: we only care one-level deep!
         new_cue = false;
+        has_cue = false;
         wme_count = 0;
         cmds = NIL;
         {
@@ -6856,6 +6884,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 {
                     for (w_p = wmes->begin(); w_p != wmes->end(); w_p++)
                     {
+                        has_cue = true;
                         if (((store_only) && ((parent_level != 0) || ((*w_p)->attr == thisAgent->smem_sym_store))) ||
                                 ((!store_only) && ((parent_level != 0) || ((*w_p)->attr != thisAgent->smem_sym_store))))
                         {
@@ -6904,250 +6933,283 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 
                 do_wm_phase = true;
             }
+            // set new_cue to true if we need to do a spontaneous retrieval
+            if ( !store_only && !new_cue && !has_cue &&
+                    thisAgent->smem_params->spontaneous_retrieval->get_value() == on &&
+                    state == thisAgent->top_goal )
+            {
+                should_spontaneously_retrieve = true;
+                new_cue = true;
+            }
         }
         
         // a command is issued if the cue is new
         // and there is something on the cue
-        if (new_cue && wme_count)
+        if (new_cue)
         {
-            cue_wmes.clear();
-            meta_wmes.clear();
-            retrieval_wmes.clear();
-            
-            // initialize command vars
-            retrieve = NIL;
-            query = NIL;
-            negquery = NIL;
-            math = NIL;
-            store.clear();
-            prohibit.clear();
-            path = blank_slate;
-            depth = 1;
-            
-            // process top-level symbols
-            for (w_p = cmds->begin(); w_p != cmds->end(); w_p++)
+            if (wme_count)
             {
-                cue_wmes.insert((*w_p));
+                cue_wmes.clear();
+                meta_wmes.clear();
+                retrieval_wmes.clear();
+
+                // initialize command vars
+                retrieve = NIL;
+                query = NIL;
+                negquery = NIL;
+                math = NIL;
+                store.clear();
+                prohibit.clear();
+                path = blank_slate;
+                depth = 1;
                 
+                // process top-level symbols
+                for (w_p = cmds->begin(); w_p != cmds->end(); w_p++)
+                {
+                    cue_wmes.insert((*w_p));
+
+                    if (path != cmd_bad)
+                    {
+                        // collect information about known commands
+                        if ((*w_p)->attr == thisAgent->smem_sym_retrieve)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    (path == blank_slate))
+                            {
+                                retrieve = (*w_p)->value;
+                                path = cmd_retrieve;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_query)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    ((path == blank_slate) || (path == cmd_query)) &&
+                                    (query == NIL))
+
+                            {
+                                query = (*w_p)->value;
+                                path = cmd_query;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_negquery)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    ((path == blank_slate) || (path == cmd_query)) &&
+                                    (negquery == NIL))
+
+                            {
+                                negquery = (*w_p)->value;
+                                path = cmd_query;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_prohibit)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    ((path == blank_slate) || (path == cmd_query)) &&
+                                    ((*w_p)->value->id->smem_lti != NIL))
+                            {
+                                prohibit.push_back((*w_p)->value);
+                                path = cmd_query;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_math_query)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    ((path == blank_slate) || (path == cmd_query)) &&
+                                    (math == NIL))
+                            {
+                                math = (*w_p)->value;
+                                path = cmd_query;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_store)
+                        {
+                            if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                    ((path == blank_slate) || (path == cmd_store)))
+                            {
+                                store.push_back((*w_p)->value);
+                                path = cmd_store;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else if ((*w_p)->attr == thisAgent->smem_sym_depth)
+                        {
+                            if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+                            {
+                                depth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
+                            }
+                            else
+                            {
+                                path = cmd_bad;
+                            }
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
+                }
+
+                // if on path 3 must have query/neg-query
+                if ((path == cmd_query) && (query == NULL))
+                {
+                    path = cmd_bad;
+                }
+
+                // must be on a path
+                if (path == blank_slate)
+                {
+                    path = cmd_bad;
+                }
+
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->api->stop();
+                ////////////////////////////////////////////////////////////////////////////
+
+                // process command
                 if (path != cmd_bad)
                 {
-                    // collect information about known commands
-                    if ((*w_p)->attr == thisAgent->smem_sym_retrieve)
+                    // performing any command requires an initialized database
+                    smem_attach(thisAgent);
+
+                    // retrieve
+                    if (path == cmd_retrieve)
                     {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                (path == blank_slate))
+                        if (retrieve->id->smem_lti == NIL)
                         {
-                            retrieve = (*w_p)->value;
-                            path = cmd_retrieve;
+                            // retrieve is not pointing to an lti!
+                            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, retrieve);
                         }
                         else
                         {
-                            path = cmd_bad;
+                            // status: success
+                            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, retrieve);
+
+                            // install memory directly onto the retrieve identifier
+                            smem_install_memory(thisAgent, state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
+
+                            // add one to the expansions stat
+                            thisAgent->smem_stats->expansions->set_value(thisAgent->smem_stats->expansions->get_value() + 1);
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_query)
+                    // query
+                    else if (path == cmd_query)
                     {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
-                                (query == NIL))
-                                
+                        smem_lti_set prohibit_lti;
+                        smem_sym_list::iterator sym_p;
+
+                        for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                         {
-                            query = (*w_p)->value;
-                            path = cmd_query;
+                            prohibit_lti.insert((*sym_p)->id->smem_lti);
                         }
-                        else
-                        {
-                            path = cmd_bad;
-                        }
+
+                        smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+
+                        // add one to the cbr stat
+                        thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_negquery)
+                    else if (path == cmd_store)
                     {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
-                                (negquery == NIL))
-                                
+                        smem_sym_list::iterator sym_p;
+
+                        ////////////////////////////////////////////////////////////////////////////
+                        thisAgent->smem_timers->storage->start();
+                        ////////////////////////////////////////////////////////////////////////////
+                        
+                        // start transaction (if not lazy)
+                        if (thisAgent->smem_params->lazy_commit->get_value() == off)
                         {
-                            negquery = (*w_p)->value;
-                            path = cmd_query;
+                            thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
                         }
-                        else
+                        
+                        for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                         {
-                            path = cmd_bad;
+                            smem_soar_store(thisAgent, (*sym_p), ((mirroring_on) ? (store_recursive) : (store_level)));
+
+                            // status: success
+                            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, (*sym_p));
+
+                            // add one to the store stat
+                            thisAgent->smem_stats->stores->set_value(thisAgent->smem_stats->stores->get_value() + 1);
                         }
-                    }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_prohibit)
-                    {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
-                                ((*w_p)->value->id->smem_lti != NIL))
+                        
+                        // commit transaction (if not lazy)
+                        if (thisAgent->smem_params->lazy_commit->get_value() == off)
                         {
-                            prohibit.push_back((*w_p)->value);
-                            path = cmd_query;
+                            thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
                         }
-                        else
-                        {
-                            path = cmd_bad;
-                        }
-                    }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_math_query)
-                    {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
-                                (math == NIL))
-                        {
-                            math = (*w_p)->value;
-                            path = cmd_query;
-                        }
-                        else
-                        {
-                            path = cmd_bad;
-                        }
-                    }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_store)
-                    {
-                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_store)))
-                        {
-                            store.push_back((*w_p)->value);
-                            path = cmd_store;
-                        }
-                        else
-                        {
-                            path = cmd_bad;
-                        }
-                    }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_depth)
-                    {
-                        if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-                        {
-                            depth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
-                        }
-                        else
-                        {
-                            path = cmd_bad;
-                        }
-                    }
-                    else
-                    {
-                        path = cmd_bad;
+                        
+                        ////////////////////////////////////////////////////////////////////////////
+                        thisAgent->smem_timers->storage->stop();
+                        ////////////////////////////////////////////////////////////////////////////
                     }
                 }
-            }
-            
-            // if on path 3 must have query/neg-query
-            if ((path == cmd_query) && (query == NULL))
-            {
-                path = cmd_bad;
-            }
-            
-            // must be on a path
-            if (path == blank_slate)
-            {
-                path = cmd_bad;
-            }
-            
-            ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->api->stop();
-            ////////////////////////////////////////////////////////////////////////////
-            
-            // process command
-            if (path != cmd_bad)
-            {
-                // performing any command requires an initialized database
-                smem_attach(thisAgent);
-                
-                // retrieve
-                if (path == cmd_retrieve)
+                else
                 {
-                    if (retrieve->id->smem_lti == NIL)
-                    {
-                        // retrieve is not pointing to an lti!
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, retrieve);
-                    }
-                    else
-                    {
-                        // status: success
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, retrieve);
-                        
-                        // install memory directly onto the retrieve identifier
-                        smem_install_memory(thisAgent, state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
-                        
-                        // add one to the expansions stat
-                        thisAgent->smem_stats->expansions->set_value(thisAgent->smem_stats->expansions->get_value() + 1);
-                    }
-                }
-                // query
-                else if (path == cmd_query)
-                {
-                    smem_lti_set prohibit_lti;
-                    smem_sym_list::iterator sym_p;
-                    
-                    for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
-                    {
-                        prohibit_lti.insert((*sym_p)->id->smem_lti);
-                    }
-                    
-                    smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
-                    
-                    // add one to the cbr stat
-                    thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
-                }
-                else if (path == cmd_store)
-                {
-                    smem_sym_list::iterator sym_p;
-                    
-                    ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->smem_timers->storage->start();
-                    ////////////////////////////////////////////////////////////////////////////
-                    
-                    // start transaction (if not lazy)
-                    if (thisAgent->smem_params->lazy_commit->get_value() == off)
-                    {
-                        thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
-                    }
-                    
-                    for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
-                    {
-                        smem_soar_store(thisAgent, (*sym_p), ((mirroring_on) ? (store_recursive) : (store_level)));
-                        
-                        // status: success
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, (*sym_p));
-                        
-                        // add one to the store stat
-                        thisAgent->smem_stats->stores->set_value(thisAgent->smem_stats->stores->get_value() + 1);
-                    }
-                    
-                    // commit transaction (if not lazy)
-                    if (thisAgent->smem_params->lazy_commit->get_value() == off)
-                    {
-                        thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
-                    }
-                    
-                    ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->smem_timers->storage->stop();
-                    ////////////////////////////////////////////////////////////////////////////
+                    smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_bad_cmd, state->id->smem_cmd_header);
                 }
             }
-            else
+            else if (should_spontaneously_retrieve)
             {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_bad_cmd, state->id->smem_cmd_header);
+                // spontaneous retrieval
+                soar_module::sqlite_statement *q;
+                q = thisAgent->smem_stmts->lti_get_high_act;
+                while ( q->execute() == soar_module::row )
+                {
+                    smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
+                    if ( find_identifier( thisAgent, static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ) ) == NIL )
+                    {
+                        if ( !state->id->smem_info->smem_wmes->empty() )
+                        {
+                            smem_clear_result( thisAgent, state );
+                        }
+                        smem_install_memory( thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes );
+                        do_wm_phase = true;
+                        break;
+                    }
+                }
+                q->reinitialize();
+                // only set a boolean here to allow for spontaneous retrievals on different level goals
+                spontaneously_retrieved = true;
             }
-            
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
                 // process preference assertion en masse
                 smem_process_buffered_wmes(thisAgent, state, cue_wmes, meta_wmes, retrieval_wmes);
-                
+
                 // clear cache
                 {
                     soar_module::symbol_triple_list::iterator mw_it;
-                    
+
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {
                         symbol_remove_ref(thisAgent, (*mw_it)->id);
                         symbol_remove_ref(thisAgent, (*mw_it)->attr);
                         symbol_remove_ref(thisAgent, (*mw_it)->value);
-                        
+
                         delete(*mw_it);
                     }
                     retrieval_wmes.clear();
@@ -7157,7 +7219,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                         symbol_remove_ref(thisAgent, (*mw_it)->id);
                         symbol_remove_ref(thisAgent, (*mw_it)->attr);
                         symbol_remove_ref(thisAgent, (*mw_it)->value);
-                        
+
                         delete(*mw_it);
                     }
                     meta_wmes.clear();
@@ -7166,7 +7228,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // process wm changes on this state
                 do_wm_phase = true;
             }
-            
+
             // clear cue wmes
             cue_wmes.clear();
         }

@@ -54,6 +54,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
         PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
+        PrintCLIMessage_Item("spontaneous_retrieval:", thisAgent->smem_params->spontaneous_retrieval, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
         PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);

@@ -77,6 +77,7 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::boolean_param* learning;
         soar_module::boolean_param* spreading;//clearly, for spreading.
+        soar_module::boolean_param* spontaneous_retrieval;
         soar_module::boolean_param* spreading_normalization;
         soar_module::constant_param<db_choices>* database;
         soar_module::constant_param<spreading_types>* spreading_type;
@@ -341,6 +342,8 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* vis_lti_act;
         soar_module::sqlite_statement* vis_value_const;
         soar_module::sqlite_statement* vis_value_lti;
+
+        soar_module::sqlite_statement* lti_get_high_act;
 
         
         //The ones below are for spreading
