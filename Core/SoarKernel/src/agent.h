@@ -282,6 +282,7 @@ typedef struct EXPORT agent_struct
     Symbol*             smem_sym_success;
     Symbol*             smem_sym_failure;
     Symbol*             smem_sym_bad_cmd;
+    Symbol*             smem_sym_spontaneously_retrieved;
     
     Symbol*             smem_sym_retrieve;
     Symbol*             smem_sym_query;

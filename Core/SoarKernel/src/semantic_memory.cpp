@@ -4331,6 +4331,10 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     if (install_type == wm_install)
     {
         smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->smem_sym_retrieved, lti);
+        if (spontaneous)
+        {
+            smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->smem_sym_spontaneously_retrieved, lti);
+        }
     }
     if (lti_created_here)
     {
