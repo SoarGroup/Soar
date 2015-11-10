@@ -1220,10 +1220,17 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         inst_top = NULL;
         deallocate_action_list(thisAgent, rhs);
         rhs = NULL;
-        // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
-        thisAgent->stop_soar = true;
-        thisAgent->system_halted = true;
-        thisAgent->reason_for_stopping = "Could not re-order chunk.";
+        /* Prior to 11/10/15, Soar would halt if it could not create the
+         * production.  We're not sure if the conditions that would cause it to
+         * crash previously can still occur, but we have cases now with chunks
+         * formed from retrievals that we don't want Soar to stop on.  So far, we have
+         * not had any issues with rejecting this chunk but allowing Soar to continue.
+         *
+         * Previous comment:  // We cannot proceed, the GDS will crash in
+         * decide.cpp:decide_non_context_slot */
+//        thisAgent->stop_soar = true;
+//        thisAgent->system_halted = true;
+//        thisAgent->reason_for_stopping = "Could not re-order chunk.";
         goto chunking_abort;
     }
 
