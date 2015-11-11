@@ -639,7 +639,7 @@ void recursive_wme_copy(agent* thisAgent,
     Symbol* new_value = curwme->value;
 
     /* Handling the case where the attribute is an id symbol */
-    if (curwme->attr->symbol_type == 1)
+    if (curwme->attr->is_identifier())
     {
         /* Have I already made a new identifier for this identifier */
         std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
@@ -651,7 +651,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 1, NIL);
+            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 0, NIL);
             made_new_attr_symbol = true;
         }
 
@@ -674,7 +674,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 1, NIL);
+            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 0, NIL);
             made_new_value_symbol = true;
         }
 
@@ -766,8 +766,8 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         return make_str_constant(thisAgent, "*symbol not id*");
     }
 
-    /* Making the new root identifier symbol */
-    Symbol* retval = make_new_identifier(thisAgent, 'D', 1, NIL);
+    /* Make the new root identifier symbol.  We'll set the level in create_instantiation. */
+    Symbol* retval = make_new_identifier(thisAgent, 'D', 0, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;

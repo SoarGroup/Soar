@@ -54,6 +54,7 @@ do
 	awk '
 		BEGIN {
 			cmdname = "'$c'"
+			gsub("_", "-", cmdname)
 			inhead = 1
 		}
 		inhead == 1 {

@@ -798,14 +798,11 @@ production* make_production(agent* thisAgent,
             return NIL;
         }
 
-        /* Don't think we need this any more.  We should never get ungrounded
-         * LTIs from the 9.5 chunker.  We may need a call like this in the
-         * parser perhaps, so moved there. */
-//        if (!smem_valid_production(*lhs_top, *rhs_top))
-//        {
-//            print(thisAgent,  "ungrounded LTI in production\n");
-//            return NIL;
-//        }
+        if (!smem_valid_production(*lhs_top, *rhs_top))
+        {
+            print(thisAgent,  "Ungrounded LTI in production.  Not creating production.\n");
+            return NIL;
+        }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);

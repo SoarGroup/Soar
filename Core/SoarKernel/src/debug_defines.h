@@ -73,7 +73,7 @@
 #define TRACE_Init_DT_RL_VARIABLIZATION           false
 #define TRACE_Init_DT_UNGROUNDED_STI              false
 #define TRACE_Init_DT_MERGE                       false
-#define TRACE_Init_DT_REORDERER                   true
+#define TRACE_Init_DT_REORDERER                   false
 #define TRACE_Init_DT_EBC_CLEANUP                 false
 //--
 

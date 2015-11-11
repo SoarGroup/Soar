@@ -199,7 +199,11 @@ preference* get_results_for_instantiation(agent* thisAgent, instantiation* inst)
                 (pref->id->tc_num != thisAgent->results_tc_number))
         {
             add_pref_to_results(thisAgent, pref);
+            dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
+        } else {
+            dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, thisAgent->results_match_goal_level);
         }
+
     return thisAgent->results;
 }
 
@@ -1189,7 +1193,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
-     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
 
@@ -1203,6 +1207,12 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         print(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
         print(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
         print(thisAgent, "through the local state.\n");
+        xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
+        xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+        xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
+        xml_generate_warning(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+        xml_generate_warning(thisAgent, "through the local state.\n");
 
         deallocate_condition_list(thisAgent, vrblz_top);
         vrblz_top = NULL;
@@ -1210,10 +1220,17 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         inst_top = NULL;
         deallocate_action_list(thisAgent, rhs);
         rhs = NULL;
-        // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
-        thisAgent->stop_soar = true;
-        thisAgent->system_halted = true;
-
+        /* Prior to 11/10/15, Soar would halt if it could not create the
+         * production.  We're not sure if the conditions that would cause it to
+         * crash previously can still occur, but we have cases now with chunks
+         * formed from retrievals that we don't want Soar to stop on.  So far, we have
+         * not had any issues with rejecting this chunk but allowing Soar to continue.
+         *
+         * Previous comment:  // We cannot proceed, the GDS will crash in
+         * decide.cpp:decide_non_context_slot */
+//        thisAgent->stop_soar = true;
+//        thisAgent->system_halted = true;
+//        thisAgent->reason_for_stopping = "Could not re-order chunk.";
         goto chunking_abort;
     }
 
