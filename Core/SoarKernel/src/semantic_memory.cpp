@@ -6939,8 +6939,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             }
             // set new_cue to true if we need to do a spontaneous retrieval
             if ( !store_only && !new_cue && !has_cue &&
-                    thisAgent->smem_params->spontaneous_retrieval->get_value() == on)/* &&
-                    state == thisAgent->top_goal )*/
+                    thisAgent->smem_params->spontaneous_retrieval->get_value() == on &&
+                    state == thisAgent->top_goal )
             {
                 should_spontaneously_retrieve = true;
                 new_cue = true;
@@ -7181,17 +7181,19 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // spontaneous retrieval
                 soar_module::sqlite_statement *q;
                 q = thisAgent->smem_stmts->lti_get_high_act;
-                while ( q->execute() == soar_module::row )
+                if ( q->execute() == soar_module::row )
                 {
                     smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
                     if ( find_identifier( thisAgent, static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ) ) == NIL )
                     {
-                        if ( !state->id->smem_info->smem_wmes->empty() )
+                        if ( state->id->smem_info->smem_wmes->empty() )
                         {
-                            smem_clear_result( thisAgent, state );
+                            //smem_clear_result( thisAgent, state );
+                            smem_install_memory(thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes, wm_install, 1, NULL, true);
+                            do_wm_phase = true;
                         }
-                        smem_install_memory(thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes, wm_install, 1, NULL, true);
-                        do_wm_phase = true;
+                        //smem_install_memory(thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes, wm_install, 1, NULL, true);
+                        //do_wm_phase = true;
                         break;
                     }
                 }
