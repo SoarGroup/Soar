@@ -1054,7 +1054,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(vis_value_lti);
 
     //Now adding what's needed for spontaneous //INSERT OR IGNORE INTO smem_constants_store (smem_act_max
-    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM (SELECT * FROM (SELECT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT 1) UNION SELECT * FROM (SELECT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT 1) ORDER BY activation_value DESC LIMIT 1)");
+    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT lti_id FROM (SELECT * FROM (SELECT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT 1) UNION SELECT * FROM (SELECT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT 1) ) ORDER BY activation_value DESC LIMIT 1)");
     add(lti_get_high_act);
 }
 
@@ -6939,8 +6939,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             }
             // set new_cue to true if we need to do a spontaneous retrieval
             if ( !store_only && !new_cue && !has_cue &&
-                    thisAgent->smem_params->spontaneous_retrieval->get_value() == on &&
-                    state == thisAgent->top_goal )
+                    thisAgent->smem_params->spontaneous_retrieval->get_value() == on)/* &&
+                    state == thisAgent->top_goal )*/
             {
                 should_spontaneously_retrieve = true;
                 new_cue = true;
