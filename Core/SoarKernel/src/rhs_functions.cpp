@@ -59,6 +59,8 @@
 #include <map>
 #include <string>
 #include <time.h>
+#include <chrono>
+#include <thread>
 
 using namespace soar_TraceNames;
 
@@ -804,6 +806,31 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     return NIL;
 }
 
+/* --------------------------------------------------------------------
+                                Wait
+
+   Puts the curret thread to sleep for the specified number of
+   milliseconds
+-------------------------------------------------------------------- */
+
+Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    int ms = 1; // if there is no valid argument, then just default to 1
+    if(args != NIL)
+    {
+        Symbol* arg;
+        arg = static_cast<symbol_struct*>(args->first);
+        if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+        {
+            ms = arg->ic->value;
+        }
+    }
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    
+    return NIL;
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Functions
@@ -865,6 +892,10 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "count"),
                      count_rhs_function_code,
                      -1, false, true, 0);
+                     
+    add_rhs_function(thisAgent, make_str_constant(thisAgent, "wait"),
+                     wait_rhs_function_code,
+                     1, false, true, 0);
 
     init_built_in_rhs_math_functions(thisAgent);
 }
@@ -887,6 +918,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "force-learn"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "deep-copy"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "count"));
+    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "wait"));
 
     remove_built_in_rhs_math_functions(thisAgent);
 }
