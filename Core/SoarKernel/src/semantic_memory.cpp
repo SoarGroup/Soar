@@ -6930,13 +6930,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             }
             
             
-            if (new_cue)
-            {
-                // clear old results
-                smem_clear_result(thisAgent, state);
-                
-                do_wm_phase = true;
-            }
+
             // set new_cue to true if we need to do a spontaneous retrieval
             if ( !store_only && !new_cue && !has_cue &&
                     thisAgent->smem_params->spontaneous_retrieval->get_value() == on &&
@@ -6944,6 +6938,14 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             {
                 should_spontaneously_retrieve = true;
                 new_cue = true;
+            }
+
+            if (new_cue)
+            {
+                // clear old results
+                smem_clear_result(thisAgent, state);
+
+                do_wm_phase = true;
             }
         }
         
@@ -7181,7 +7183,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // spontaneous retrieval
                 soar_module::sqlite_statement *q;
                 q = thisAgent->smem_stmts->lti_get_high_act;
-                if ( q->execute() == soar_module::row )
+                while ( q->execute() == soar_module::row )
                 {
                     smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
                     if ( find_identifier( thisAgent, static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ) ) == NIL )
