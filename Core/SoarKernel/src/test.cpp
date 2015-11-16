@@ -708,8 +708,13 @@ void add_all_variables_in_test(agent* thisAgent, test t,
     }
 }
 
+/* The add_LTI parameter is available so that when Soar is marking symbols for
+ * action ordering based on whether the levels of the symbols would be known,
+ * it also consider whether the LTIs level can be determined by being linked
+ * to a LHS element or a RHS action that has already been executed */
+
 void add_bound_variables_in_test(agent* thisAgent, test t,
-                                 tc_number tc, list** var_list)
+                                 tc_number tc, list** var_list, bool add_LTIs)
 {
     cons* c;
     Symbol* referent;
@@ -722,7 +727,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     if (t->type == EQUALITY_TEST)
     {
         referent = t->data.referent;
-        if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (referent->is_variable() || (add_LTIs && referent->is_lti()))
         {
             referent->mark_if_unmarked(thisAgent, tc, var_list);
         }
@@ -732,7 +737,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
+            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, add_LTIs);
         }
     }
 }

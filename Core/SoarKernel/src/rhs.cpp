@@ -174,7 +174,7 @@ char first_letter_from_rhs_value(rhs_value rv)
 
 void add_all_variables_in_rhs_value(agent* thisAgent,
                                     rhs_value rv, tc_number tc,
-                                    list** var_list)
+                                    list** var_list, bool add_LTIs)
 {
     list* fl;
     cons* c;
@@ -184,7 +184,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
     {
         /* --- ordinary values (i.e., symbols) --- */
         sym = rhs_value_to_symbol(rv);
-        if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (sym->is_variable() || (add_LTIs && sym->is_lti()))
         {
             sym->mark_if_unmarked(thisAgent, tc, var_list);
         }
@@ -195,13 +195,18 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            add_all_variables_in_rhs_value(thisAgent, static_cast<char*>(c->first), tc, var_list);
+            add_all_variables_in_rhs_value(thisAgent, static_cast<char*>(c->first), tc, var_list, add_LTIs);
         }
     }
 }
 
+/* The add_LTI parameter is available so that when Soar is marking symbols for
+ * action ordering based on whether the levels of the symbols would be known,
+ * it also consider whether the LTIs level can be determined by being linked
+ * to a LHS element or a RHS action that has already been executed */
+
 void add_all_variables_in_action(agent* thisAgent, action* a,
-                                 tc_number tc, list** var_list)
+                                 tc_number tc, list** var_list, bool add_LTIs)
 {
     Symbol* id;
 
@@ -209,21 +214,21 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
     {
         /* --- ordinary make actions --- */
         id = rhs_value_to_symbol(a->id);
-        if (id->is_variable())
+        if (id->is_variable() || (add_LTIs && id->is_lti()))
         {
             id->mark_if_unmarked(thisAgent, tc, var_list);
         }
-        add_all_variables_in_rhs_value(thisAgent, a->attr, tc, var_list);
-        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
+        add_all_variables_in_rhs_value(thisAgent, a->attr, tc, var_list, add_LTIs);
+        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list, add_LTIs);
         if (preference_is_binary(a->preference_type))
         {
-            add_all_variables_in_rhs_value(thisAgent, a->referent, tc, var_list);
+            add_all_variables_in_rhs_value(thisAgent, a->referent, tc, var_list, add_LTIs);
         }
     }
     else
     {
         /* --- function call actions --- */
-        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
+        add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list, add_LTIs);
     }
 }
 

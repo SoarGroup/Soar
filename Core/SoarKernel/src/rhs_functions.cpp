@@ -59,6 +59,8 @@
 #include <map>
 #include <string>
 #include <time.h>
+#include <chrono>
+#include <thread>
 
 using namespace soar_TraceNames;
 
@@ -639,7 +641,7 @@ void recursive_wme_copy(agent* thisAgent,
     Symbol* new_value = curwme->value;
 
     /* Handling the case where the attribute is an id symbol */
-    if (curwme->attr->symbol_type == 1)
+    if (curwme->attr->is_identifier())
     {
         /* Have I already made a new identifier for this identifier */
         std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
@@ -651,7 +653,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 1, NIL);
+            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 0, NIL);
             made_new_attr_symbol = true;
         }
 
@@ -674,7 +676,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 1, NIL);
+            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 0, NIL);
             made_new_value_symbol = true;
         }
 
@@ -766,8 +768,8 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         return make_str_constant(thisAgent, "*symbol not id*");
     }
 
-    /* Making the new root identifier symbol */
-    Symbol* retval = make_new_identifier(thisAgent, 'D', 1, NIL);
+    /* Make the new root identifier symbol.  We'll set the level in create_instantiation. */
+    Symbol* retval = make_new_identifier(thisAgent, 'D', 0, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
@@ -801,6 +803,31 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         (*thisAgent->dyn_counters)[ string ]++;
     }
 
+    return NIL;
+}
+
+/* --------------------------------------------------------------------
+                                Wait
+
+   Puts the curret thread to sleep for the specified number of
+   milliseconds
+-------------------------------------------------------------------- */
+
+Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    int ms = 1; // if there is no valid argument, then just default to 1
+    if(args != NIL)
+    {
+        Symbol* arg;
+        arg = static_cast<symbol_struct*>(args->first);
+        if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+        {
+            ms = arg->ic->value;
+        }
+    }
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    
     return NIL;
 }
 
@@ -865,6 +892,10 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "count"),
                      count_rhs_function_code,
                      -1, false, true, 0);
+                     
+    add_rhs_function(thisAgent, make_str_constant(thisAgent, "wait"),
+                     wait_rhs_function_code,
+                     1, false, true, 0);
 
     init_built_in_rhs_math_functions(thisAgent);
 }
@@ -887,6 +918,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "force-learn"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "deep-copy"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "count"));
+    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "wait"));
 
     remove_built_in_rhs_math_functions(thisAgent);
 }
