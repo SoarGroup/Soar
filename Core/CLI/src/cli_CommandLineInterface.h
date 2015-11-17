@@ -132,7 +132,7 @@ namespace cli
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0);
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
             virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0);
-            virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0);
+            virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0);
             virtual bool DoGDSPrint();
             virtual bool DoGP(const std::string& productionString);
             virtual bool DoGPMax(const int& maximum);
@@ -324,7 +324,6 @@ namespace cli
 ===============================
 */
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
-extern soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* the_lexeme);
 extern Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme);
 
 #endif //COMMAND_LINE_INTERFACE_H

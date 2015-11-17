@@ -333,6 +333,8 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
          1. Identifier is LTI, does NOT exist as a LHS symbol
          - we do NOT support this!!!  bad things will likely happen due to potential for adding an identifier to working memory
          with an unknown goal level.
+         - Note:  The re-orderer has been changed so that we can allow LTIs in the identifier element if it is indirectly
+                  linked to an identifier with a level
 
          2. Attribute/Value is LTI, does NOT exist as a LHS symbol (!!!!!IMPORTANT CASE!!!!!)
          - the caller of this function will supply new_id_level (probably based upon the level of the id).
@@ -342,14 +344,14 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
          3. Identifier/Attribute/Value is LTI, DOES exist as LHS symbol
          - in this situation, we are *guaranteed* that the resulting LTI (since it is in WM) has a valid goal level.
          - it should be noted that if a value, the level of the LTI may change during promotion/demotion/garbage collection,
-         but this is natural Soar behavior and outside our perview.
+         but this is natural Soar behavior and outside our purvue.
 
          */
-        if ((result->is_identifier())
-                && (result->id->smem_lti != NIL) &&
+        if ((result->is_lti()) &&
                 (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
                 (new_id_level > 0))
         {
+            dprint(DT_UNKNOWN_LEVEL, "Setting level for LTI %y from SMEM_LTI_UNKNOWN_LEVEL to %d.\n", result, new_id_level);
             result->id->level = new_id_level;
             result->id->promotion_level = new_id_level;
         }
@@ -671,8 +673,8 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
      be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
      */
 
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL;
-            cond = cond->next)
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+    {
         if (cond->type == POSITIVE_CONDITION)
         {
 #ifdef DO_TOP_LEVEL_REF_CTS
@@ -704,6 +706,7 @@ void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
 #endif
             }
         }
+    }
 
     if (inst->match_goal)
     {
@@ -863,18 +866,16 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->reliable = true;
     inst->in_ms = true;
     inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
-
-    /*  We want to initialize the GDS_evaluated_already flag
-     *  when a new instantiation is created.
-     */
-
     inst->GDS_evaluated_already = false;
-    dprint_start_fresh_line(DT_MILESTONES);
-    dprint_header(DT_MILESTONES, PrintBoth, "create_instantiation() called for %y (id=%u)\n", inst->prod->name, inst->i_id);
+
+    dprint_header(DT_MILESTONES, PrintBefore,
+        "create_instantiation() for instance of %y (id=%u) begun.\n",
+        inst->prod->name, inst->i_id);
     if (thisAgent->soar_verbose_flag == true)
     {
-        print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
-                           inst->prod->name);
+        print_with_symbols(thisAgent,
+            "\n   In create_instantiation for instance of rule %y",
+            inst->prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "in create_instantiation: %s",
                  inst->prod->name->to_string(true));
@@ -953,6 +954,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->preferences_generated = NIL;
     need_to_do_support_calculations = false;
     a2 = rhs_vars;
+    goal_stack_level glbDeepCopyWMELevel = 0;
+
     for (a = prod->action_list; a != NIL; a = a->next)
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
@@ -975,6 +978,12 @@ void create_instantiation(agent* thisAgent, production* prod,
 
         }
 
+        /* If glbDeepCopyWMEs exists it must have been the rhs function executed, so
+         * save the goal stack level for preferences that it generates. */
+        if (pref && glbDeepCopyWMEs)
+        {
+            glbDeepCopyWMELevel = pref->id->id->level;
+        }
         /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
         while (pref)
         {
@@ -1028,9 +1037,22 @@ void create_instantiation(agent* thisAgent, production* prod,
             if (glbDeepCopyWMEs != 0)
             {
                 wme* tempwme = glbDeepCopyWMEs;
-                pref = make_preference(thisAgent, a->preference_type,
-                                       tempwme->id, tempwme->attr, tempwme->value,
-                                       NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
+//                pref = make_preference(thisAgent, a->preference_type,
+//                    tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
+                if (tempwme->id->id->level == 0)
+                {
+                    tempwme->id->id->level = glbDeepCopyWMELevel;
+                }
+                if (tempwme->attr->is_identifier() && tempwme->attr->id->level == 0)
+                {
+                    tempwme->attr->id->level = glbDeepCopyWMELevel;
+                }
+                if (tempwme->value->is_identifier() && tempwme->value->id->level == 0)
+                {
+                    tempwme->value->id->level = glbDeepCopyWMELevel;
+                }
+
+                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
                 glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
             }
@@ -1077,15 +1099,14 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint(DT_MILESTONES, "%f---------------------------------------------------------\n");
-    dprint(DT_PRINT_INSTANTIATIONS,  "create_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_PRINT_INSTANTIATIONS, PrintBoth, "create_instantiation() finished for %y\n", inst->prod->name);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod->name, inst->i_id);
 
     if (!thisAgent->system_halted)
     {
@@ -1599,7 +1620,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
                     /* REW: begin 09.15.96 */
                     /* No knowledge retrieval necessary in Operand2 */
                     /* REW: end   09.15.96 */
-                    
+
                     if (wma_enabled(thisAgent))
                     {
                         wma_activate_wmes_in_pref(thisAgent, pref);
@@ -1611,7 +1632,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
                     // the top state, and was asserting an acceptable
                     // preference for a WME that was already
                     // o-supported. hence unnecessary.
-                    
+
                     preference_add_ref(pref);
                     preference_remove_ref(thisAgent, pref);
                 }

@@ -1407,13 +1407,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string());
     }
-	
+
 	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
 		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
 		fun_name = find_str_constant(thisAgent, "halt");
 	}
-	
+
     if (!fun_name)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
@@ -1421,13 +1421,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
-	
+
 	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
 		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
 		rf = lookup_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
 	}
-	
+
     if (!rf)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
@@ -2388,16 +2388,8 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     lhs_top = lhs;
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
-    /* Not sure if this is needed here, but it was in make_production before.  Don't
-     * think we can get ungrounded LTIs in chunks now, but maybe we can still get
-     * there here from the parser. */
-    if (!smem_valid_production(lhs_top, rhs))
-    {
-        print(thisAgent,  "ungrounded LTI in production\n");
-        p = NULL;
-    } else {
-        p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
-    }
+
+    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true);
     if (!p)
     {
         if (documentation)

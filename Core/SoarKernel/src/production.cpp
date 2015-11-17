@@ -82,7 +82,7 @@ void deallocate_condition_list(agent* thisAgent,
         }
         else     /* positive and negative conditions */
         {
-            dprint(DT_DEALLOCATES, "Deallocating condition: %l", c);
+            dprint(DT_DEALLOCATES, "Deallocating condition: %l\n", c);
             deallocate_test(thisAgent, c->data.tests.id_test);
             deallocate_test(thisAgent, c->data.tests.attr_test);
             deallocate_test(thisAgent, c->data.tests.value_test);
@@ -420,28 +420,33 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
    Their "var_list" arguments should either be NIL or else should point
    to the header of the list of marked variables being constructed.
 
+   The add_LTI parameter is available so that when Soar is marking symbols for
+   action ordering based on whether the levels of the symbols would be known,
+   it also consider whether the LTIs level can be determined by being linked
+   to a LHS element or a RHS action that has already been executed.
+
 ===================================================================== */
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                      list** var_list)
+                                      list** var_list, bool add_LTIs)
 {
     if (c->type != POSITIVE_CONDITION)
     {
         return;
     }
-    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list);
-    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list);
-    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list);
+    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list, add_LTIs);
+    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list, add_LTIs);
+    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list, add_LTIs);
 }
 
 void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list)
+        tc_number tc, list** var_list, bool add_LTIs = false)
 {
     condition* c;
 
     for (c = cond_list; c != NIL; c = c->next)
     {
-        add_bound_variables_in_condition(thisAgent, c, tc, var_list);
+        add_bound_variables_in_condition(thisAgent, c, tc, var_list, add_LTIs);
     }
 }
 
@@ -782,7 +787,7 @@ production* make_production(agent* thisAgent,
     {
         reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
         tc = get_new_tc_number(thisAgent);
-        add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
+        add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
 
         if (! reorder_action_list(thisAgent, rhs_top, tc))
         {
@@ -793,14 +798,11 @@ production* make_production(agent* thisAgent,
             return NIL;
         }
 
-        /* Don't think we need this any more.  We should never get ungrounded
-         * LTIs from the 9.5 chunker.  We may need a call like this in the
-         * parser perhaps, so moved there. */
-//        if (!smem_valid_production(*lhs_top, *rhs_top))
-//        {
-//            print(thisAgent,  "ungrounded LTI in production\n");
-//            return NIL;
-//        }
+        if (!smem_valid_production(*lhs_top, *rhs_top))
+        {
+            print(thisAgent,  "Ungrounded LTI in production.  Not creating production.\n");
+            return NIL;
+        }
 
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);

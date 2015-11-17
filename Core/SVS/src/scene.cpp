@@ -206,7 +206,7 @@ bool parse_mods(vector<string>& f, int& start, string& mods, vector<ptlist>& val
     char m;
     while (start < static_cast<int>(f.size()))
     {
-        if (f[start].size() != 1)
+        if (f[start].size() == 0)
         {
             return true;
         }

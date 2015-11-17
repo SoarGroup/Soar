@@ -173,42 +173,43 @@ void Output_Manager::fill_mode_info()
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
 
-    mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
-    mode_info[DT_DEALLOCATES].prefix =                  strdup("Memory  | ");
-    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =           strdup("Memory  | ");
     mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
+    mode_info[DT_DEALLOCATES].prefix =                  strdup("Delete  | ");
+    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =           strdup("DelSymbl| ");
+    mode_info[DT_DEALLOCATES_TESTS].prefix =            strdup("DelTests| ");
+    mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
 
     mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
     mode_info[DT_CLI_LIBRARIES].prefix =                strdup("CLI Lib | ");
+    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
-    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMem Go| ");
+    mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
+    mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
+    mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
 
-    mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
+
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
+    mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
 
     mode_info[DT_ADD_ADDITIONALS].prefix =              strdup("AddAddtn| ");
     mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
     mode_info[DT_VM_MAPS].prefix =                      strdup("VM Maps | ");
     mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
+    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_IDENTITY_PROP].prefix =                strdup("ID Prop | ");
     mode_info[DT_UNIFICATION].prefix =                  strdup("Unify   | ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
+    mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
     mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
-    mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
-    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
+    mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
-    mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
-
-    mode_info[DT_NONE_2].prefix =                       strdup("| ");
-    mode_info[DT_NONE_3].prefix =                       strdup("| ");
-    mode_info[DT_NONE_4].prefix =                       strdup("| ");
 
     mode_info[TM_EPMEM].enabled =                       TRACE_Init_TM_EPMEM;
     mode_info[TM_SMEM].enabled =                        TRACE_Init_TM_SMEM;
@@ -253,9 +254,10 @@ void Output_Manager::fill_mode_info()
     mode_info[DT_EBC_CLEANUP].enabled =                 TRACE_Init_DT_EBC_CLEANUP;
     mode_info[DT_RHS_VALUE].enabled =                   TRACE_Init_DT_RHS_VALUE;
 
-    mode_info[DT_NONE_2].enabled =                      TRACE_Init_DT_NONE_2;
-    mode_info[DT_NONE_3].enabled =                      TRACE_Init_DT_NONE_3;
-    mode_info[DT_NONE_4].enabled =                      TRACE_Init_DT_NONE_4;
+    mode_info[DT_WME_CHANGES].enabled =                 TRACE_Init_DT_WME_CHANGES;
+    mode_info[DT_DEALLOCATES_TESTS].enabled =           TRACE_Init_DT_DEALLOCATES_TESTS;
+    mode_info[DT_LINKS].enabled =                       TRACE_Init_DT_LINKS;
+    mode_info[DT_UNKNOWN_LEVEL].enabled =               TRACE_Init_DT_UNKNOWN_LEVEL;
 }
 
 

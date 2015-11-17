@@ -39,6 +39,7 @@
 #include "MiscTests.hpp"
 #include "MultiAgentTest.hpp"
 #include "TokenizerTest.hpp"
+#include "ChunkingTests.hpp"
 
 #include "SimpleListener.hpp"
 
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(MiscTests);
 	TEST_DECLARATION(MultiAgentTest);
 	TEST_DECLARATION(TokenizerTest);
+	TEST_DECLARATION(ChunkingTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;

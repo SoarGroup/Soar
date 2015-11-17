@@ -24,20 +24,19 @@ using namespace sml;
 bool CommandLineInterface::DoSaveBacktraces(bool* pSetting)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (!pSetting)
+    if (pSetting)
     {
-        if (m_RawOutput)
+        set_sysparam(thisAgent, EXPLAIN_SYSPARAM, *pSetting);
+    }
+    if (m_RawOutput)
         {
-            m_Result << "Save bactraces is " << (thisAgent->sysparams[EXPLAIN_SYSPARAM] ? "enabled." : "disabled.");
+            m_Result << "Save backtraces is " << (thisAgent->sysparams[EXPLAIN_SYSPARAM] ? "enabled.  Use save-backtraces -d to disable." : "disabled.  Use save-backtraces -e to enable.");
         }
         else
         {
             AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, thisAgent->sysparams[EXPLAIN_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
         }
-        return true;
-    }
-    
-    set_sysparam(thisAgent, EXPLAIN_SYSPARAM, *pSetting);
+
     return true;
 }
 

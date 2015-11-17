@@ -1261,44 +1261,118 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: firing-counts [n]\nfiring-counts production_name";
+                return "Syntax: firing-counts -[acdjrtu] [n]\nfiring-counts production_name";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
+                cli::Options opt;
+                OptionsData optionsData[] =
+                {
+                    {'a', "all",            OPTARG_NONE},
+                    {'c', "chunks",            OPTARG_NONE},
+                    {'d', "defaults",        OPTARG_NONE},
+                    {'j', "justifications",    OPTARG_NONE},
+                    {'r', "rl",                OPTARG_NONE},
+                    {'t', "template",        OPTARG_NONE},
+                    {'u', "user",            OPTARG_NONE},
+                    {0, 0, OPTARG_NONE}
+                };
+
                 // The number to list defaults to -1 (list all)
                 int numberToList = -1;
 
                 // Production defaults to no production
-                std::string* pProduction = 0;
+                std::string pProduction;
 
-                // no more than 1 arg
-                if (argv.size() > 2)
+                // We're using a subset of the print options, so
+                // we'll just use the same data structure
+                Cli::PrintBitset options(0);
+                bool hasOptions = false;
+
+                for (;;)
                 {
-                    return cli.SetError(GetSyntax());
+                    if (!opt.ProcessOptions(argv, optionsData))
+                    {
+                        return cli.SetError(opt.GetError().c_str());
+                    }
+                    ;
+                    if (opt.GetOption() == -1)
+                    {
+                        break;
+                    }
+
+                    switch (opt.GetOption())
+                    {
+                        case 'a':
+                            options.set(Cli::PRINT_ALL);
+                            hasOptions = true;
+                            break;
+                        case 'c':
+                            options.set(Cli::PRINT_CHUNKS);
+                            hasOptions = true;
+                            break;
+                        case 'd':
+                            options.set(Cli::PRINT_DEFAULTS);
+                            hasOptions = true;
+                            break;
+                        case 'j':
+                            options.set(Cli::PRINT_JUSTIFICATIONS);
+                            hasOptions = true;
+                            break;
+                        case 'r':
+                            options.set(Cli::PRINT_RL);
+                            hasOptions = true;
+                            break;
+                        case 't':
+                            options.set(Cli::PRINT_TEMPLATE);
+                            hasOptions = true;
+                            break;
+                        case 'u':
+                            options.set(Cli::PRINT_USER);
+                            hasOptions = true;
+                            break;
+                    }
                 }
 
-                if (argv.size() == 2)
+                if (opt.GetNonOptionArguments() > 0)
                 {
-                    // one argument, figure out if it is a non-negative integer or a production
-                    if (from_string(numberToList, argv[1]))
+                    if (opt.GetNonOptionArguments() > 1)
                     {
-                        if (numberToList < 0)
+                        return cli.SetError(GetSyntax());
+                    } else {
+                        /* This might not be needed since we can only get a single argument */
+                        for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
                         {
-                            return cli.SetError("Expected non-negative integer (count).");
+                            if (!pProduction.empty())
+                            {
+                                pProduction.push_back(' ');
+                            }
+                            pProduction.append(argv[i]);
                         }
-
-                    }
-                    else
-                    {
-                        numberToList = -1;
-
-                        // non-integer argument, hopfully a production
-                        pProduction = &(argv[1]);
+                        // one argument, figure out if it is a non-negative integer or a production
+                        if (from_string(numberToList, pProduction))
+                        {
+                            if (numberToList < 0)
+                            {
+                                return cli.SetError("Expected non-negative integer (count).");
+                            } else {
+                                pProduction.clear();
+                            }
+                        }
+                        else
+                        {
+                            // non-integer argument, hopfully a production
+                            numberToList = -1;
+                            if (hasOptions)
+                            {
+                                cli.SetError("Ignoring unexpected options when printing firing count for a single production.\n");
+                            }
+                        }
                     }
                 }
 
-                return cli.DoFiringCounts(numberToList, pProduction);
+                return cli.DoFiringCounts(options, numberToList, &pProduction);
             }
 
         private:

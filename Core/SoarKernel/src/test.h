@@ -113,9 +113,8 @@ void add_identity_to_original_id_test(agent* thisAgent, condition* cond, byte fi
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
-void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list, bool add_LTIs = false);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
-/* UITODO| Make this method of Test */
 const char* test_type_to_string(byte test_type);
 
 #endif /* TEST_H_ */

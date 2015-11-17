@@ -249,7 +249,7 @@ extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                      ::list** var_list);
+                                      ::list** var_list, bool add_LTIs = false);
 void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 /* --- Returns true iff the two conditions are identical. --- */

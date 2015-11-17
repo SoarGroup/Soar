@@ -148,7 +148,7 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 
 bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
 {
-    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(s));
+    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, const_cast<char*>(s));
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
         if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL)

@@ -53,7 +53,7 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
     // mode == 0 name
     // mode > 0 condition
 
-    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
+    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
 
     if (lexeme.type != STR_CONSTANT_LEXEME)
     {

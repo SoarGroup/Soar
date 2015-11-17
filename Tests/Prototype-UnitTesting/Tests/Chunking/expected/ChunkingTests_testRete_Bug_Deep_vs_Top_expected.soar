@@ -1,0 +1,10 @@
+sp {answer*chunk*apply*11*onc*t3-1
+    (state <s1> ^superstate nil ^test-param2 <t2> ^test-item <c2>)
+    (<t2> ^foo <t1>)
+    (<t1> ^value <c2> ^value { <> <c2> <c1> })
+    -->
+    (<s1> ^result11a <c2> + ^result11b <c1> + ^test-done 1 +)
+}
+
+
+

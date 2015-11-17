@@ -138,6 +138,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
     }
 
     std::string buf;
+    buffer_start_fresh_line(m_defaultAgent, buf);
     buf.append(mode_info[mode].prefix);
     buf.append(msg);
     printa(m_defaultAgent, buf.c_str());
@@ -154,6 +155,7 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 
     va_list args;
     std::string buf;
+    buffer_start_fresh_line(m_defaultAgent, buf);
     buf.append(mode_info[mode].prefix);
 
     va_start(args, format);
@@ -191,7 +193,7 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
     }
 
     std::string buf;
-
+    buffer_start_fresh_line(m_defaultAgent, buf);
     if ((whichHeaders == PrintBoth) || (whichHeaders == PrintBefore))
         buf.append("=========================================================\n");
     buf.append(mode_info[mode].prefix);
@@ -206,6 +208,28 @@ void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichH
         buf.append("=========================================================\n");
 
     printa(m_defaultAgent, buf.c_str());
+}
+
+void Output_Manager::buffer_start_fresh_line(agent* thisAgent, std::string &destString)
+{
+    if (!thisAgent)
+    {
+        std::cout << std::endl;
+        return;
+    }
+
+    if (destString.empty())
+    {
+        if ((global_printer_output_column != 1) || (thisAgent->output_settings->printer_output_column != 1))
+        {
+            destString.append("\n");
+        }
+    } else {
+        if (destString.back() != '\n')
+        {
+            destString.append("\n");
+        }
+    }
 }
 
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
