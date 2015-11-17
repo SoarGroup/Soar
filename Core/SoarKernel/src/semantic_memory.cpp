@@ -87,7 +87,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
     add(spreading);
 
-    spontaneous_retrieval = new soar_module::boolean_param("spontaneous_retrieval", off, new soar_module::f_predicate<boolean>());
+    spontaneous_retrieval = new soar_module::boolean_param("spontaneous-retrieval", off, new soar_module::f_predicate<boolean>());
     add(spontaneous_retrieval);
 
     spreading_normalization = new soar_module::boolean_param("spreading-normalization", on, new soar_module::f_predicate<boolean>());
@@ -161,7 +161,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(activate_on_query);
     
     // activation_mode
-    activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_base, new soar_module::f_predicate<act_choices>());
+    activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_recency, new soar_module::f_predicate<act_choices>());
     activation_mode->add_mapping(act_recency, "recency");
     activation_mode->add_mapping(act_frequency, "frequency");
     activation_mode->add_mapping(act_base, "base-level");
@@ -225,13 +225,13 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     add(spreading_model);
 
     //spreading traversal
-    spreading_traversal = new soar_module::constant_param<spreading_traversals>("spreading-traversal", random, new soar_module::f_predicate<spreading_traversals>());
+    spreading_traversal = new soar_module::constant_param<spreading_traversals>("spreading-traversal", deterministic, new soar_module::f_predicate<spreading_traversals>());
     spreading_traversal->add_mapping(random, "random");
     spreading_traversal->add_mapping(deterministic, "deterministic");
     add(spreading_traversal);
 
     //spreading breadth-first search limit
-    spreading_limit = new soar_module::decimal_param("spreading-limit", 50, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    spreading_limit = new soar_module::decimal_param("spreading-limit", 30, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
     add(spreading_limit);
 
     //general limit to the depth of spreading. Must be <= 10.
