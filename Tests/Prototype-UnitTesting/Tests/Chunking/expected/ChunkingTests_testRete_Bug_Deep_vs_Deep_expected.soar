@@ -1,0 +1,13 @@
+sp {answer*apply*12*onc*t3-1
+    (state <s1> ^superstate nil ^test-param2 <p2> ^test-param <p1>
+          ^test-item <c2>)
+    (<p2> ^foo <f1>)
+    (<p1> ^foo <f2>)
+    (<f2> ^value <c2>)
+    (<f1> ^value { <> <c2> <c1> })
+    -->
+    (<s1> ^result12a <c2> + ^result12b <c1> + ^test-done 1 +)
+}
+
+
+

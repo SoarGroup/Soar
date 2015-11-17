@@ -1,0 +1,9 @@
+sp {answer*chunk*apply18*onc*t3-1
+    (state <s1> ^superstate nil ^test-item <c1>
+          -^test-item { > <c1> <supermax> })
+    -->
+    (<s1> ^result18a <s2> + ^result18b <c1> + ^test-done 1 +)
+}
+
+
+

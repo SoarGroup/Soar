@@ -2,6 +2,7 @@
 #import "kernel/AgentTest.mm"
 #import "kernel/AliasTest.mm"
 #import "kernel/BasicTests.mm"
+#import "kernel/ChunkingTests.mm"
 #import "kernel/CliParserTest.mm"
 #import "kernel/ElementXMLTest.mm"
 #import "kernel/EpMemFunctionalTests.mm"

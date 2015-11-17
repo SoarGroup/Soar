@@ -13,7 +13,6 @@
 #include "wmem.h"
 #include "print.h"
 #include "debug.h"
-#include "debug_defines.h"
 
 void Variablization_Manager::clear_data()
 {

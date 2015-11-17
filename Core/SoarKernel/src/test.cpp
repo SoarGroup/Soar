@@ -206,7 +206,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATES, "DEALLOCATE test %t\n", t);
+    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test %t\n", t);
     if (!t)
     {
         return;
@@ -221,7 +221,7 @@ void deallocate_test(agent* thisAgent, test t)
             deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            dprint(DT_DEALLOCATES, "DEALLOCATE conjunctive test\n");
+            dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE conjunctive test\n");
             c = t->data.conjunct_list;
             while (c)
             {
@@ -247,7 +247,7 @@ void deallocate_test(agent* thisAgent, test t)
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
-    dprint(DT_DEALLOCATES, "DEALLOCATE test done.\n");
+    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test done.\n");
 }
 
 /* ----------------------------------------------------------------
@@ -708,8 +708,13 @@ void add_all_variables_in_test(agent* thisAgent, test t,
     }
 }
 
+/* The add_LTI parameter is available so that when Soar is marking symbols for
+ * action ordering based on whether the levels of the symbols would be known,
+ * it also consider whether the LTIs level can be determined by being linked
+ * to a LHS element or a RHS action that has already been executed */
+
 void add_bound_variables_in_test(agent* thisAgent, test t,
-                                 tc_number tc, list** var_list)
+                                 tc_number tc, list** var_list, bool add_LTIs)
 {
     cons* c;
     Symbol* referent;
@@ -722,7 +727,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     if (t->type == EQUALITY_TEST)
     {
         referent = t->data.referent;
-        if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (referent->is_variable() || (add_LTIs && referent->is_lti()))
         {
             referent->mark_if_unmarked(thisAgent, tc, var_list);
         }
@@ -732,7 +737,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
         {
-            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
+            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, add_LTIs);
         }
     }
 }

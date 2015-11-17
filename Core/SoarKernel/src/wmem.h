@@ -161,9 +161,10 @@ inline void wme_add_ref(wme* w)
 {
     (w)->reference_count++;
 }
+
 inline void wme_remove_ref(agent* thisAgent, wme* w)
 {
-    /* There are occaisionally wme's with zero reference counts
+    /* There are occasionally wme's with zero reference counts
        created in the system. Make sure this function handles them
        correctly. */
     if ((w)->reference_count != 0)

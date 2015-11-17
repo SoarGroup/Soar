@@ -160,7 +160,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
+            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
             if (lexeme.type == IDENTIFIER_LEXEME)
             {
                 lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
@@ -214,12 +214,18 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (lexeme.type == IDENTIFIER_LEXEME)
+            const char* pAttr_c_str = pAttr->c_str();
+            soar::Lexer lexer(thisAgent, pAttr_c_str);
+            lexer.get_lexeme();
+            if (lexer.current_lexeme.type == AT_LEXEME)
+            {
+                lexer.get_lexeme();
+            }
+            if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
+                    lti_id = smem_lti_get_id(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
@@ -492,7 +498,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (pAttr)
         {
-            soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, pAttr->c_str());
+            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
             if (lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)

@@ -126,11 +126,13 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
            ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
 
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
+        dprint(DT_WME_CHANGES, "Setting up post-link addition for level promotion.\n");
         post_link_addition(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
         {
@@ -141,6 +143,8 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
 {
+    dprint(DT_WME_CHANGES, "Removing wme %w by adding to wmes_to_remove list...\n", w);
+
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
     
@@ -151,6 +155,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 
     if (w->value->is_identifier())
     {
+        dprint(DT_WME_CHANGES, "Setting up post-link removal for level promotion.\n");
         post_link_removal(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
         {
@@ -208,7 +213,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     void filtered_print_wme_add(wme *w), filtered_print_wme_remove(wme *w);
     */
 
-    dprint(DT_EPMEM_CMD, "Doing buffered WM changes...\n");
+    dprint(DT_WME_CHANGES, "Doing buffered WM changes...\n");
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -220,18 +225,18 @@ void do_buffered_wm_changes(agent* thisAgent)
     /* --- if no wme changes are buffered, do nothing --- */
     if (!thisAgent->wmes_to_add && !thisAgent->wmes_to_remove)
     {
-        dprint(DT_EPMEM_CMD, "...nothing to do.\n");
+        dprint(DT_WME_CHANGES, "...nothing to do.\n");
         return;
     }
 
     /* --- call output module in case any changes are output link changes --- */
-    dprint(DT_EPMEM_CMD, "...calling output module.\n");
+    dprint(DT_WME_CHANGES, "...informing output code of wm changes.\n");
     inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add,
                                        thisAgent->wmes_to_remove);
 
     /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
     /* --- be fetched from the agent structure.                           --- */
-    dprint(DT_EPMEM_CMD, "...invoking callbacks.\n");
+    dprint(DT_WME_CHANGES, "...invoking wm changes callbacks.\n");
     soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 0);
 
     /* --- stuff wme changes through the rete net --- */
@@ -240,16 +245,16 @@ void do_buffered_wm_changes(agent* thisAgent)
     local_timer.start();
 #endif
 #endif
-    dprint(DT_EPMEM_CMD, "...adding wmes_to_add to rete.\n");
+    dprint(DT_WME_CHANGES, "...adding wmes_to_add to rete.\n");
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
-        dprint(DT_EPMEM_CMD, "...adding %w\n", static_cast<wme_struct*>(c->first));
+        dprint(DT_WME_CHANGES, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
-    dprint(DT_EPMEM_CMD, "...removing wmes_to_remove from rete.\n");
+    dprint(DT_WME_CHANGES, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
-        dprint(DT_EPMEM_CMD, "...removing %w\n", static_cast<wme_struct*>(c->first));
+        dprint(DT_WME_CHANGES, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
 #ifndef NO_TIMING_STUFF
@@ -258,7 +263,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     thisAgent->timers_match_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
-    dprint(DT_EPMEM_CMD, "...warn if watching wmes.\n");
+    dprint(DT_WME_CHANGES, "...looking for wmes added and removed in same phase.\n");
     /* --- warn if watching wmes and same wme was added and removed -- */
     if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
     {
@@ -271,6 +276,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 next_c = cr->rest;
                 if (w == cr->first)
                 {
+                    dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
                     print(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
@@ -283,7 +289,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     }
 
 
-    dprint(DT_EPMEM_CMD, "...printing trace and cleaning up for additions.\n");
+    dprint(DT_WME_CHANGES, "...WMEs to add:\n");
     /* --- do tracing and cleanup stuff --- */
     for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
     {
@@ -316,11 +322,12 @@ void do_buffered_wm_changes(agent* thisAgent)
                 (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] + 1;
             }
         }
+        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_add_ref(w);
         free_cons(thisAgent, c);
         thisAgent->wme_addition_count++;
     }
-    dprint(DT_EPMEM_CMD, "...printing trace and cleaning up for removals.\n");
+    dprint(DT_WME_CHANGES, "...WMEs to remove:\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = next_c)
     {
         next_c = c->rest;
@@ -337,6 +344,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         //We shouldn't ever get here without having already added the lti before.
         //TODO:I need to read through buffered WM changes and see if that could screw things up.
         //I won't (shouldn't) be doing any add-remove of the same LTI in 1 DC, so I'm guessing things will be okay for now.
+            //What about elaboration cycles? Does the wmem phase happen after that is resolved?
         if(thisAgent->smem_in_wmem->find(w->id->id->smem_lti)!=thisAgent->smem_in_wmem->end())
         {
             if ((*(thisAgent->smem_in_wmem))[w->id->id->smem_lti]==1)
@@ -355,18 +363,19 @@ void do_buffered_wm_changes(agent* thisAgent)
                 (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] - 1;
             }
         }
+        dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
     }
-    dprint(DT_EPMEM_CMD, "Finished doing buffered WM changes\n");
+    dprint(DT_WME_CHANGES, "Finished doing buffered WM changes\n");
     thisAgent->wmes_to_add = NIL;
     thisAgent->wmes_to_remove = NIL;
 }
 
 void deallocate_wme(agent* thisAgent, wme* w)
 {
-    dprint(DT_DEALLOCATES, "Deallocating wme %w\n", w);
+    dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

@@ -36,7 +36,6 @@ extern void print(agent* thisAgent, const char* format, ...);
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
-    //#define DEBUG_LINKS       /* -- Get links, gc printouts -- */
     //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
     /* -- Low level GDS debug information -- */
@@ -46,10 +45,10 @@ extern void print(agent* thisAgent, const char* format, ...);
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 
-    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-//    #define MEM_POOLS_ENABLED 1
+//    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
-//        #define USE_MEM_POOL_ALLOCATORS 1
+        #define USE_MEM_POOL_ALLOCATORS 1
     #endif
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */

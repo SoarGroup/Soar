@@ -169,6 +169,30 @@ namespace cli
              */
             virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0) = 0;
 
+            /* These enums moved here because we re-used for fc options*/
+            enum ePrintOptions
+            {
+                PRINT_ALL,
+                PRINT_CHUNKS,
+                PRINT_DEPTH,
+                PRINT_DEFAULTS,
+                PRINT_FULL,
+                PRINT_FILENAME,
+                PRINT_INTERNAL,
+                PRINT_TREE,
+                PRINT_JUSTIFICATIONS,
+                PRINT_NAME,
+                PRINT_OPERATORS,
+                PRINT_RL,
+                PRINT_STACK,
+                PRINT_STATES,
+                PRINT_TEMPLATE,
+                PRINT_USER,
+                PRINT_VARPRINT,
+                PRINT_EXACT,
+                PRINT_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
             /**
              * @brief firing-counts command
              * @param numberToList The number of top-firing productions to list.
@@ -176,7 +200,7 @@ namespace cli
              * @param pProduction The specific production to list, pass 0 (null) to list
              *        multiple productions
              */
-            virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0) = 0;
+            virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0) = 0;
 
             /**
              * @brief gds-print command
@@ -390,30 +414,6 @@ namespace cli
              * @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
              */
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;
-
-            enum ePrintOptions
-            {
-                PRINT_ALL,
-                PRINT_CHUNKS,
-                PRINT_DEPTH,
-                PRINT_DEFAULTS,
-                PRINT_FULL,
-                PRINT_FILENAME,
-                PRINT_INTERNAL,
-                PRINT_TREE,
-                PRINT_JUSTIFICATIONS,
-                PRINT_NAME,
-                PRINT_OPERATORS,
-                PRINT_RL,
-                PRINT_STACK,
-                PRINT_STATES,
-                PRINT_TEMPLATE,
-                PRINT_USER,
-                PRINT_VARPRINT,
-                PRINT_EXACT,
-                PRINT_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
 
             /**
              * @brief print command

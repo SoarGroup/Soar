@@ -20,7 +20,7 @@ class CliAdapter : public cli::Cli
 {
 public:
 	virtual ~CliAdapter() {}
-	
+
 	virtual bool SetError(const std::string& error)
 	{
 		return false;
@@ -97,7 +97,7 @@ public:
 	{
 		return false;
 	}
-	virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0)
+	virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0)
 	{
 		return false;
 	}
@@ -343,13 +343,13 @@ class CliEcho : public CliAdapter
 {
 public:
 	virtual ~CliEcho() {}
-	
+
 	void SetExpected(unsigned numArgs, bool newLine)
 	{
 		this->numArgs = numArgs;
 		this->newLine = newLine;
 	}
-	
+
 	virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
 	{
 		return (argv.size() == numArgs) && (echoNewline == newLine);
@@ -363,12 +363,12 @@ class CliMaxDCTime : public CliAdapter
 {
 public:
 	virtual ~CliMaxDCTime() {}
-	
+
 	void SetExpected(int n)
 	{
 		this->n = n;
 	}
-	
+
 	virtual bool DoMaxDCTime(const int n)
 	{
 		return this->n == n;
@@ -380,77 +380,77 @@ private:
 class CliParserTest : public TestCategory
 {
 	sml::Agent* agent;
-	
+
 private:
 	soar::tokenizer tok;
 	cli::Parser* parser;
-	
+
 	CliEcho echo;
 	CliMaxDCTime maxdctime;
-	
+
 public:
 	TEST_CATEGORY(CliParserTest)
-	
+
 	void before() { setUp(); }
 	void setUp();
-	
+
 	void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);
-	
+
 	TEST(testEcho1, -1)
 	void testEcho1();
-	
+
 	TEST(testEcho2, -1)
 	void testEcho2();
-	
+
 	TEST(testEcho3, -1)
 	void testEcho3();
-	
+
 	TEST(testEcho4, -1)
 	void testEcho4();
-	
+
 	TEST(testEcho5, -1)
 	void testEcho5();
-	
+
 	TEST(testEcho6, -1)
 	void testEcho6();
-	
+
 	TEST(testEcho7, -1)
 	void testEcho7();
-	
+
 	TEST(testMaxDCTime1, -1)
 	void testMaxDCTime1();
-	
+
 	TEST(testMaxDCTime2, -1)
 	void testMaxDCTime2();
-	
+
 	TEST(testMaxDCTime3, -1)
 	void testMaxDCTime3();
-	
+
 	TEST(testMaxDCTime4, -1)
 	void testMaxDCTime4();
-	
+
 	TEST(testMaxDCTime5, -1)
 	void testMaxDCTime5();
-	
+
 	TEST(testMaxDCTime6, -1)
 	void testMaxDCTime6();
-	
+
 	TEST(testMaxDCTime7, -1)
 	void testMaxDCTime7();
-	
+
 	TEST(testMaxDCTime8, -1)
 	void testMaxDCTime8();
-	
+
 	TEST(testMaxDCTime9, -1)
 	void testMaxDCTime9();
-	
+
 	TEST(testMaxDCTime10, -1)
 	void testMaxDCTime10();
-	
+
 	TEST(testMaxDCTime11, -1)
 	void testMaxDCTime11();
-	
+
 	TEST(testMaxDCTime12, -1)
 	void testMaxDCTime12();
 };

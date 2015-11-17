@@ -411,6 +411,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->smem_changed_ids = new smem_pooled_symbol_set();
 #endif
     thisAgent->smem_ignore_changes = false;
+    thisAgent->lastCue = NULL;
 
     // statistics initialization
 

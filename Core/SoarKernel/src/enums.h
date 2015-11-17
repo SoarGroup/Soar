@@ -58,10 +58,11 @@ enum TraceMode
     DT_VM_MAPS,
     DT_BUILD_CHUNK_CONDS,
     DT_RHS_VALUE,
-    DT_NONE_2,
-    DT_NONE_3,
-    DT_NONE_4,
+    DT_WME_CHANGES,
+    DT_DEALLOCATES_TESTS,
+    DT_LINKS,
     DT_EBC_CLEANUP,
+    DT_UNKNOWN_LEVEL,
     num_trace_modes
 };
 
