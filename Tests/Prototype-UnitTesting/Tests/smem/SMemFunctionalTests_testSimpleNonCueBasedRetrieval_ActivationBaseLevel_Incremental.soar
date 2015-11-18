@@ -1,10 +1,10 @@
 smem --set learning on
 smem --set activation-mode base-level
 smem --set activate-on-query on
-
+smem --set activate-on-add on
 smem --set base-incremental-threshes 1
 smem --set base-update-policy incremental
-
+smem --set spreading-type actr
 # Add some data with multiple levels
 smem --add {
   (<x> ^name foo
@@ -14,7 +14,6 @@ smem --add {
         ^location <loc2>)
   (<loc2> ^x 2 ^y 3 ^z 1)
 }
-
 sp {propose*first-query
   (state <s> ^superstate nil 
   		    -^first)

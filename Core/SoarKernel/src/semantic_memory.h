@@ -101,6 +101,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::decimal_param* number_trajectories;
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
+        soar_module::boolean_param* activate_on_add;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
 
@@ -340,6 +341,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* history_remove;
         soar_module::sqlite_statement* vis_lti;
         soar_module::sqlite_statement* vis_lti_act;
+        soar_module::sqlite_statement* vis_act;
         soar_module::sqlite_statement* vis_value_const;
         soar_module::sqlite_statement* vis_value_lti;
 

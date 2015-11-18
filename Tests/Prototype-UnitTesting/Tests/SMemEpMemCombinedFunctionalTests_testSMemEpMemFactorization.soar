@@ -2,7 +2,8 @@
 
 epmem --set learning on
 smem --set learning on
-
+smem --set activate-on-query on
+smem --set activate-on-add on
 learn --off
 
 sp {elaboration*original-number-to-factor-mod-two
@@ -1407,3 +1408,4 @@ sp {apply*initialize*top-state
    (<s> ^name Factorization
         ^counter 1)
 }
+

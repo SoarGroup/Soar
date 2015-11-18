@@ -159,6 +159,8 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // activate_on_query
     activate_on_query = new soar_module::boolean_param("activate-on-query", on, new soar_module::f_predicate<boolean>());
     add(activate_on_query);
+    activate_on_add = new soar_module::boolean_param("activate-on-add", off, new soar_module::f_predicate<boolean>());
+    add(activate_on_add);
     
     // activation_mode
     activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_recency, new soar_module::f_predicate<act_choices>());
@@ -1047,6 +1049,9 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value,activation_spread FROM smem_lti WHERE lti_id=?");
     add(vis_lti_act);
     
+    vis_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT activation_value FROM smem_augmentations WHERE lti_id=?");
+    add(vis_act);
+
     vis_value_const = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)");
     add(vis_value_const);
     
@@ -4055,7 +4060,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = smem_lti_activate(thisAgent, lti_id, false, new_edges);
+        double lti_act = smem_lti_activate(thisAgent, lti_id, (thisAgent->smem_params->activate_on_add->get_value() == on), new_edges);
         
         if (!after_above)
         {
@@ -6109,8 +6114,8 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
             for (c_new = newbies.begin(); c_new != newbies.end(); c_new++)
             {
                 if ((*c_new)->slots != NIL)
-                {
-                    smem_store_chunk(thisAgent, (*c_new)->lti_id, (*c_new)->slots, false);
+                {//smem_store_chunk(, , , , Symbol* print_id = NULL, bool activate = true, smem_storage_type store_type = store_level)
+                    smem_store_chunk(thisAgent, (*c_new)->lti_id, (*c_new)->slots, false, NULL, (thisAgent->smem_params->activate_on_add->get_value() == on));
                 }
             }
             
@@ -8101,7 +8106,7 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
     std::set< smem_lti_id >::iterator next_it;
     
     soar_module::sqlite_statement* lti_q = thisAgent->smem_stmts->lti_letter_num;
-    soar_module::sqlite_statement* act_q = thisAgent->smem_stmts->vis_lti_act;
+    soar_module::sqlite_statement* act_q;
     soar_module::sqlite_statement* hist_q = thisAgent->smem_stmts->history_get;
     soar_module::sqlite_statement* lti_access_q = thisAgent->smem_stmts->lti_access_get;
     unsigned int i;
@@ -8126,7 +8131,23 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
         {
             lti_q->bind_int(1, c.first);
             lti_q->execute();
-            
+            uint64_t num_edges;
+            {
+                thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, c.first);
+                thisAgent->smem_stmts->act_lti_child_ct_get->execute();
+
+                num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
+
+                thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
+            }
+            if (num_edges >= static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+            {
+                act_q = thisAgent->smem_stmts->vis_lti_act;
+            }
+            else
+            {
+                act_q = thisAgent->smem_stmts->vis_act;
+            }
             act_q->bind_int(1, c.first);
             act_q->execute();
             

@@ -41,6 +41,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Activation", 40);
         PrintCLIMessage_Item("activation-mode:", thisAgent->smem_params->activation_mode, 40);
         PrintCLIMessage_Item("activate-on-query:", thisAgent->smem_params->activate_on_query, 40);
+        PrintCLIMessage_Item("activate-on-add:", thisAgent->smem_params->activate_on_add, 40);
         PrintCLIMessage_Item("base-decay:", thisAgent->smem_params->base_decay, 40);
         PrintCLIMessage_Item("base-update-policy:", thisAgent->smem_params->base_update, 40);
         PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->smem_params->base_incremental_threshes, 40);
