@@ -1059,7 +1059,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(vis_value_lti);
 
     //Now adding what's needed for spontaneous //INSERT OR IGNORE INTO smem_constants_store (smem_act_max
-    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT lti_id FROM (SELECT * FROM (SELECT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT 1) UNION SELECT * FROM (SELECT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT 1) ) ORDER BY activation_value DESC LIMIT 1)");
+    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT DISTINCT lti_id FROM (SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT ?) UNION SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT ?) ) ORDER BY activation_value DESC LIMIT ?)");
     add(lti_get_high_act);
 }
 
@@ -7199,10 +7199,14 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // spontaneous retrieval
                 soar_module::sqlite_statement *q;
                 q = thisAgent->smem_stmts->lti_get_high_act;
+                uint64_t limit_to_retrieve = thisAgent->smem_in_wmem->size()+1;
+                q->bind_int(1,limit_to_retrieve);
+                q->bind_int(2,limit_to_retrieve);
+                q->bind_int(3,limit_to_retrieve);
                 while ( q->execute() == soar_module::row )
                 {
                     smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));
-                    if ( find_identifier( thisAgent, static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ) ) == NIL )
+                    if ( thisAgent->smem_in_wmem->find(spontaneous_result) == thisAgent->smem_in_wmem->end() )
                     {
                         if ( state->id->smem_info->smem_wmes->empty() )
                         {
