@@ -62,7 +62,7 @@ filter_table_entry* occlusion_filter_entry();
 
 // filters/overlap.cpp
 filter_table_entry* overlap_filter_entry();
-filter_table_entry* contain_select_filter_entry();
+filter_table_entry* overlap_select_filter_entry();
 
 // filters/monitor_object.cpp
 filter_table_entry* monitor_position_filter_entry();

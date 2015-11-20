@@ -8,6 +8,7 @@
 #include "sgnode.h"
 #include "ccd/ccd.h"
 #include "params.h"
+#include "scene.h"
 
 #include <iostream>
 using namespace std;
