@@ -550,6 +550,7 @@ void smem_statement_container::create_tables()
         //I'm sure I'm just not thinking right, but I was unable to get the above to work correctly and it's probably some stupid pointer stuff.
         //Anyway, I'm doing a hack for now to quit wasting time on it:
         add_structure("INSERT OR IGNORE INTO smem_constants_store (smem_act_max, smem_act_low) VALUES (9223372036854775807, -1000000000)");
+        add_structure("INSERT OR IGNORE INTO smem_constants_store (smem_act_max, smem_act_low) VALUES (9223372036854775808, -1000000000)");
     }
     add_structure("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
     add_structure("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY, symbol_type INTEGER)");
@@ -6944,9 +6945,13 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 new_cue = true;
                 state->id->smem_info->last_cmd_count[ time_slot ] = wme_count;
             }
-            
-            
+            if (new_cue)
+            {
+                // clear old results
+                smem_clear_result(thisAgent, state);
 
+                do_wm_phase = true;
+            }
             // set new_cue to true if we need to do a spontaneous retrieval
             if ( !store_only && !new_cue && !has_cue &&
                     thisAgent->smem_params->spontaneous_retrieval->get_value() == on &&
@@ -6954,14 +6959,6 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             {
                 should_spontaneously_retrieve = true;
                 new_cue = true;
-            }
-
-            if (new_cue)
-            {
-                // clear old results
-                smem_clear_result(thisAgent, state);
-
-                do_wm_phase = true;
             }
         }
         
