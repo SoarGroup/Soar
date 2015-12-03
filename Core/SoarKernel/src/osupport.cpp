@@ -813,7 +813,8 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
 
     /* --- find root variables --- */
     tc = get_new_tc_number(thisAgent);
-    roots = collect_root_variables(thisAgent, lhs, tc, false);
+    bool ungrounded_found = false;
+    roots = collect_root_variables(thisAgent, lhs, tc, false, &ungrounded_found);
 
     /* --- intersect roots with known_goals, producing root_goals --- */
     root_goals = NIL;

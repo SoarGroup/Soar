@@ -11,7 +11,7 @@
 
 /* ---------------------------------------------------------------------*/
 
-//#define DEBUG_OUTPUT_ON
+#define DEBUG_OUTPUT_ON
 
 /* These are just for experimental purposes.  Should not be commented out */
 #define EBC_MERGE_CONDITIONS
@@ -56,7 +56,7 @@
 #define TRACE_Init_DT_UNKNOWN_LEVEL               false
 //--
 #define TRACE_Init_DT_MILESTONES                  false
-#define TRACE_Init_DT_PRINT_INSTANTIATIONS        false
+#define TRACE_Init_DT_PRINT_INSTANTIATIONS        true
 //--
 #define TRACE_Init_DT_ADD_ADDITIONALS             false
 #define TRACE_Init_DT_VARIABLIZATION_MANAGER      false

@@ -774,12 +774,12 @@ production* make_production(agent* thisAgent,
                             condition** lhs_top,
                             action** rhs_top,
                             bool reorder_nccs,
-                            preference* results)
+                            preference* results,
+                            bool from_chunking)
 {
     production* p;
     tc_number tc;
     action* a;
-
 
     thisAgent->name_of_production_being_reordered = name->sc->name;
 
@@ -793,7 +793,7 @@ production* make_production(agent* thisAgent,
         {
             return NIL;
         }
-        if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs))
+        if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, from_chunking))
         {
             return NIL;
         }

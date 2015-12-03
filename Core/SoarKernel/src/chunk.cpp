@@ -1195,7 +1195,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, true);
 
     if (!prod)
     {
@@ -1263,7 +1263,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
+    dprint(DT_PRINT_INSTANTIATIONS, "chunk instantiation created final reordered chunk: \n%4", vrblz_top, rhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
     dprint(DT_VARIABLIZATION_MANAGER, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
@@ -1279,6 +1279,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
         temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
     }
+
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",

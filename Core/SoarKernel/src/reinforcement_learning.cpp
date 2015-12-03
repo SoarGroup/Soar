@@ -656,7 +656,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             action* new_action = thisAgent->variablizationManager->make_variablized_rl_action(id, attr, value, referent);
 
             // make new production
-            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);
+            production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL, false);
 
             thisAgent->variablizationManager->clear_variablization_maps();
 

@@ -798,7 +798,8 @@ void remove_vars_requiring_bindings(agent* thisAgent,
 list* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
-                             bool allow_printing_warnings)
+                             bool allow_printing_warnings,
+                             bool* ungrounded_found)
 {
 
     list* new_vars_from_value_slot;
@@ -806,6 +807,8 @@ list* collect_root_variables(agent* thisAgent,
     cons* c;
     condition* cond;
     bool found_goal_impasse_test;
+
+    *ungrounded_found = false;
 
     /* --- find everthing that's in the value slot of some condition --- */
     new_vars_from_value_slot = NIL;
@@ -878,6 +881,7 @@ list* collect_root_variables(agent* thisAgent,
                 free_growable_string(thisAgent, gs);
 
             }
+            *ungrounded_found = true;
         }
     }
 
@@ -1268,8 +1272,9 @@ void reorder_simplified_conditions(agent* thisAgent,
         {
             dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
             list* ncc_roots;
+            bool ungrounded_found = false;
             ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top,
-                                               bound_vars_tc_number, true);
+                                               bound_vars_tc_number, true, &ungrounded_found);
             reorder_condition_list(thisAgent, &(chosen->data.ncc.top),
                                    ncc_roots,
                                    bound_vars_tc_number,
@@ -1502,16 +1507,22 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool from_chunking)
 {
     tc_number tc;
     list* roots;
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
+    bool ungrounded_found = false;
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, &ungrounded_found);
 
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true);
-
+    if (from_chunking && ungrounded_found)
+    {
+        print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
+        print(thisAgent,  "        We're debugging aborting when there are ungrounded identifier elements.\n");
+        return false;
+    }
 
     /* SBH/MVP 6-24-94 Fix to include only root "STATE" test in the LHS of a chunk.*/
     if (roots)
