@@ -26,7 +26,9 @@ class MiscTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testMultipleKernels);
         CPPUNIT_TEST(testSoarRand);
         CPPUNIT_TEST(testPreferenceDeallocation);
+#ifndef SKIP_JAVA_DEBUGGER_TEST
         CPPUNIT_TEST(testSoarDebugger);
+#endif
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstantiationDeallocationStackOverflow);
         CPPUNIT_TEST(testSmemArithmetic);
