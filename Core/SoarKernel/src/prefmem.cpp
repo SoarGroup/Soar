@@ -255,7 +255,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
 	if (!s->isa_context_slot && pref->o_supported && (pref->type == ACCEPTABLE_PREFERENCE_TYPE) && (pref->inst->match_goal == thisAgent->top_state))
     {
         bool already_top_o_supported = false;
-        
+
         for (p2 = s->all_preferences; (p2 && !already_top_o_supported); p2 = p2->all_of_slot_next)
         {
             if ((p2->value == pref->value) && p2->o_supported && (p2->inst->match_goal == thisAgent->top_state))
@@ -263,14 +263,14 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
                 already_top_o_supported = true;
             }
         }
-        
+
         if (already_top_o_supported)
         {
             // NLD: if it is suspected that this code is causing an issue, simply comment out the following line to debug.
             return false;
         }
     }
-	
+
 	pref->slot = s;
 
     insert_at_head_of_dll(s->all_preferences, pref,
@@ -386,7 +386,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     {
         mark_context_slot_as_acceptable_preference_changed(thisAgent, s);
     }
-    
+
     return true;
 }
 
