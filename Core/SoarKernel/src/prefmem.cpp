@@ -367,13 +367,27 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     /* --- update identifier levels --- */
     if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
+        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", pref->id, pref->value);
         post_link_addition(thisAgent, pref->id, pref->value);
     }
+#ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", pref->id, pref->attr);
+        post_link_addition(thisAgent, pref->id, pref->attr);
+        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
+//        if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+//        {
+//            post_link_addition(thisAgent, pref->id, pref->value);
+//        }
+    }
+#endif
 
     if (preference_is_binary(pref->type))
     {
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
+            dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and referent %y.\n", pref->id, pref->referent);
             post_link_addition(thisAgent, pref->id, pref->referent);
         }
     }
@@ -427,11 +441,25 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
     /* --- update identifier levels --- */
     if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
+        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", pref->id, pref->value);
         post_link_removal(thisAgent, pref->id, pref->value);
     }
+#ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", pref->id, pref->attr);
+        post_link_removal(thisAgent, pref->id, pref->attr);
+        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
+//        if (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+//        {
+//            post_link_addition(thisAgent, pref->id, pref->value);
+//        }
+    }
+#endif
     if (preference_is_binary(pref->type))
         if (pref->referent->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
+            dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and referent %y.\n", pref->id, pref->referent);
             post_link_removal(thisAgent, pref->id, pref->referent);
         }
 
