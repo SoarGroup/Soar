@@ -615,6 +615,9 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
 {
     Symbol* sym;
     char msg[256];
+    /* ensure null termination */
+    msg[0] = 0;
+    msg[255] = 0;
     sym = static_cast<symbol_struct*>(item);
     FILE* f = reinterpret_cast<FILE*>(userdata);
 
@@ -622,31 +625,20 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-
-            if (sym->id->smem_lti != NIL)
+            if (sym->id->smem_lti == NIL)
             {
                 SNPRINTF(msg, 256,
-                         "\t@%c%llu --> %llu\n",
-                         sym->id->name_letter,
-                         static_cast<long long unsigned>(sym->id->name_number),
-                         static_cast<long long unsigned>(sym->reference_count));
-            }
-            else
-            {
-                SNPRINTF(msg, 256,
-                         "\t%c%llu --> %llu\n",
-                         sym->id->name_letter,
-                         static_cast<long long unsigned>(sym->id->name_number),
-                         static_cast<long long unsigned>(sym->reference_count));
-            }
+                    "\t%c%llu --> %llu\n",
+                    sym->id->name_letter,
+                    static_cast<long long unsigned>(sym->id->name_number),
+                    static_cast<long long unsigned>(sym->reference_count));
+                print(thisAgent,  msg);
+                xml_generate_warning(thisAgent, msg);
 
-            msg[255] = 0; /* ensure null termination */
-            print(thisAgent,  msg);
-            xml_generate_warning(thisAgent, msg);
-
-            if (f)
-            {
-                fprintf(f, "%s", msg) ;
+                if (f)
+                {
+                    fprintf(f, "%s", msg) ;
+                }
             }
         }
     }
@@ -664,17 +656,14 @@ bool remove_if_sti(agent* thisAgent, void* item, void* userdata)
     char msg[256];
     sym = static_cast<symbol_struct*>(item);
 
-    if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    if (sym->is_sti())
     {
-        if (sym->id->smem_lti == NIL)
-        {
-            SNPRINTF(msg, 256,
-                "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
-                sym->id->name_letter,
-                static_cast<long long unsigned>(sym->id->name_number),
-                static_cast<long long unsigned>(sym->reference_count));
-        }
-
+        SNPRINTF(msg, 256,
+            "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
+            sym->id->name_letter,
+            static_cast<long long unsigned>(sym->id->name_number),
+            static_cast<long long unsigned>(sym->reference_count));
+        dprint(DT_DEBUG, "Warning:  Symbol %y still exists because refcount = %u.  Deallocating anyway.\n", sym, sym->reference_count);
         deallocate_symbol(thisAgent, sym);
 
         msg[255] = 0; /* ensure null termination */
@@ -683,8 +672,13 @@ bool remove_if_sti(agent* thisAgent, void* item, void* userdata)
     }
     else
     {
-        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-        return true;
+        if (!sym->is_identifier())
+        {
+            dprint(DT_DEBUG, "ERROR: HASHTABLE ITEM %y IS NOT AN IDENTIFIER!  (refcount = %u)\n", sym, sym->reference_count);
+            print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+            return true;
+        }
+        return false;
     }
     return false;
 }
@@ -695,7 +689,6 @@ bool reset_id_counters(agent* thisAgent)
 
     if (thisAgent->identifier_hash_table->count != 0)
     {
-#ifndef SOAR_RELEASE_VERSION
         // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
         uint64_t ltis = 0;
         do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, smem_count_ltis, &ltis);
@@ -703,16 +696,19 @@ bool reset_id_counters(agent* thisAgent)
         {
             print(thisAgent,  "Internal warning:  wanted to reset identifier generator numbers, but\n");
             print(thisAgent,  "there are still some identifiers allocated.  (Probably a memory leak.)\n");
-            print(thisAgent,  "(Deleting identifiers.)\n");
-            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Deleting identifiers.)");
+            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)");
 
-            print_internal_symbols(thisAgent);
-
+//            print_internal_symbols(thisAgent);
             do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
 
+            #ifndef SOAR_RELEASE_VERSION
+                print(thisAgent,  "(Deleting identifiers not in semantic memory.)\n");
+                xml_generate_warning(thisAgent, "(Deleting identifiers not in semantic memory.)");
+                do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, remove_if_sti, NULL);
+            #else
+                return false;
+            #endif
         }
-#endif
-        do_for_all_items_in_hash_table(thisAgent, thisAgent->identifier_hash_table, remove_if_sti, NULL);
 
         // Getting here means that there are still identifiers but that
         // they are all long-term and (hopefully) exist only in production memory.

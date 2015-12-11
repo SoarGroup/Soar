@@ -607,6 +607,8 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cc->counterpart->data.tests.id_test), t);
+            //t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            //add_test(thisAgent, &(cc->data.tests.id_test), t);
             id->tc_num = tc;
         }
     }
@@ -1279,7 +1281,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
 
         add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
-        print_with_symbols(thisAgent, "Creating justification instead:\n\nsp {%y\n", prod_name);
+        print_with_symbols(thisAgent, "\nCreating justification instead:\n\nsp {%y\n", prod_name);
         print_condition_list(thisAgent, vrblz_top, 4, false);
         print(thisAgent, "\n  -->\n");
         print_action_list(thisAgent, rhs, 4, false);
