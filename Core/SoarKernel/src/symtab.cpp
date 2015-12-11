@@ -36,6 +36,7 @@
 #include "print.h"
 #include "xml.h"
 #include "output_manager.h"
+#include "debug.h"
 #include <ctype.h>
 
 /* -------------------------------------------------------------------
