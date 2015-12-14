@@ -412,17 +412,49 @@ inline void add_cond(condition** c, condition** prev, condition** first)
 
 }
 
+void create_instantiated_counterparts(agent* thisAgent, condition* vrblz_top, condition** inst_top, condition** inst_bottom)
+{
+    condition* copy_cond = vrblz_top;
+    condition* c_inst = NULL, *first_inst = NULL, *prev_inst = NULL;
+    while (copy_cond)
+    {
+        c_inst = copy_condition(thisAgent, copy_cond);
+
+        /*-- Store a link from the variablized condition to the instantiated
+         *   condition.  Used during merging if the chunker needs
+         *   to delete a redundant condition.  Also used to reorder
+         *   instantiated condition to match the re-ordered variablized
+         *   conditions list (required by the rete.) -- */
+        c_inst->counterpart = copy_cond;
+        copy_cond->counterpart = c_inst;
+        add_cond(&c_inst, &prev_inst, &first_inst);
+        copy_cond = copy_cond->next;
+    }
+    if (prev_inst)
+    {
+        prev_inst->next = NIL;
+    }
+    else
+    {
+        first_inst->next = NIL;
+    }
+
+    *inst_top = first_inst;
+    *inst_bottom = c_inst;
+}
+
 void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
                                                     condition** inst_top,
+                                                    condition** inst_bottom,
                                                     condition** vrblz_top,
                                                     tc_number tc_to_use,
                                                     bool* reliable)
 {
     cons* c;
-    condition* ground, *c_vrblz, *c_inst, *first_vrblz = nullptr, *first_inst = nullptr, *prev_vrblz, *prev_inst;
+    condition* ground, *c_vrblz, *first_vrblz = nullptr, *prev_vrblz;
     bool should_unify_and_simplify = thisAgent->variablizationManager->learning_is_on_for_instantiation();
 
-    c_vrblz = c_inst = NIL; /* unnecessary, but gcc -Wall warns without it */
+    c_vrblz  = NIL; /* unnecessary, but gcc -Wall warns without it */
 
     dprint(DT_BUILD_CHUNK_CONDS, "Building conditions for new chunk...\n");
     dprint(DT_BUILD_CHUNK_CONDS, "Grounds from backtrace: \n");
@@ -430,7 +462,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
     dprint(DT_BUILD_CHUNK_CONDS, "...creating positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
     thisAgent->variablizationManager->reset_constraint_found_tc_num();
-    prev_vrblz = prev_inst = NIL;
+    prev_vrblz = NIL;
     while (thisAgent->grounds)
     {
         c = thisAgent->grounds;
@@ -498,38 +530,43 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
     }
     else
     {
-        first_vrblz = NIL;
+        first_vrblz->next = NIL;
     }
 
     *vrblz_top = first_vrblz;
 
     thisAgent->variablizationManager->add_additional_constraints(*vrblz_top);
 
-    condition* copy_cond = *vrblz_top;
-    while (copy_cond)
-    {
-        c_inst = copy_condition(thisAgent, copy_cond);
-
-        /*-- Store a link from the variablized condition to the instantiated
-         *   condition.  Used during merging if the chunker needs
-         *   to delete a redundant condition.  Also used to reorder
-         *   instantiated condition to match the re-ordered variablized
-         *   conditions list (required by the rete.) -- */
-        c_inst->counterpart = copy_cond;
-        copy_cond->counterpart = c_inst;
-        add_cond(&c_inst, &prev_inst, &first_inst);
-        copy_cond = copy_cond->next;
-            }
-    if (prev_inst)
-            {
-        prev_inst->next = NIL;
-            }
-    else
-            {
-        first_inst = NIL;
-                }
-
-    *inst_top = first_inst;
+//    condition* c_inst, *first_inst = nullptr, *prev_inst;
+//
+//    c_inst = NIL;
+//    prev_inst = NIL;
+//    condition* copy_cond = *vrblz_top;
+//    while (copy_cond)
+//    {
+//        c_inst = copy_condition(thisAgent, copy_cond);
+//
+//        /*-- Store a link from the variablized condition to the instantiated
+//         *   condition.  Used during merging if the chunker needs
+//         *   to delete a redundant condition.  Also used to reorder
+//         *   instantiated condition to match the re-ordered variablized
+//         *   conditions list (required by the rete.) -- */
+//        c_inst->counterpart = copy_cond;
+//        copy_cond->counterpart = c_inst;
+//        add_cond(&c_inst, &prev_inst, &first_inst);
+//        copy_cond = copy_cond->next;
+//            }
+//    if (prev_inst)
+//            {
+//        prev_inst->next = NIL;
+//            }
+//    else
+//            {
+//        first_inst->next = NIL;
+//                }
+//
+//    *inst_top = first_inst;
+    create_instantiated_counterparts(thisAgent, *vrblz_top, inst_top, inst_bottom);
 
     dprint(DT_BUILD_CHUNK_CONDS, "Instantiated chunk conditions after identity unification: \n%1", *inst_top);
     dprint(DT_BUILD_CHUNK_CONDS, "Variablized chunk conditions after copying and adding additional conditions: \n%1", *vrblz_top);
@@ -570,6 +607,8 @@ void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition*
         {
             t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cc->counterpart->data.tests.id_test), t);
+            //t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            //add_test(thisAgent, &(cc->data.tests.id_test), t);
             id->tc_num = tc;
         }
     }
@@ -952,11 +991,13 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     byte prod_type;
     bool print_name, print_prod;
     byte rete_addition_result;
-    condition* inst_top;
-    condition* vrblz_top;
+    condition* inst_top = NULL, * inst_bottom = NULL;
+    condition* vrblz_top = NULL;
     bool reliable = true;
     bool variablize;
     inst_top = vrblz_top = NULL;
+    condition*  saved_justification_top = 0;
+    condition*  saved_justification_bottom = 0;
     uint64_t chunk_new_i_id = 0;
 
     explain_chunk_str temp_explain_chunk;
@@ -1104,7 +1145,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &vrblz_top, tc_for_grounds, &reliable);
+        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = thisAgent->variablizationManager->learning_is_on_for_instantiation() && reliable;
@@ -1168,6 +1209,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     dprint(DT_BUILD_CHUNK_CONDS, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     if (variablize)
     {
+        /* Save conditions and results in case we need to make a justification because chunking fails */
+        copy_condition_list(thisAgent, vrblz_top, &saved_justification_top, &saved_justification_bottom);
+
         reset_variable_generator(thisAgent, vrblz_top, NIL);
         thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
@@ -1177,7 +1221,6 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", vrblz_top, results);
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Polishing variablized conditions... \n");
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
     thisAgent->variablizationManager->unify_identities_for_results(results);
@@ -1196,7 +1239,68 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
     prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
+    if (!prod && variablize)
+    {
+        /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
+        dprint(DT_VARIABLIZATION_MANAGER, "Could not create production for variablized rule.  Attempting to create justification instead... \n");
+        print_with_symbols(thisAgent, "\nCould not create production for variablized rule:\n\nsp {%y\n", prod_name);
+        print_condition_list(thisAgent, vrblz_top, 4, false);
+        print(thisAgent, "\n  -->\n");
+        print_action_list(thisAgent, rhs, 4, false);
+        print(thisAgent, "\n}\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+        print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+        print(thisAgent, "through the local state.\n");
+        xml_generate_warning(thisAgent, "\nCould not create production for variablized rule.\n...creating justification instead.\n");
+        xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+        xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+        xml_generate_warning(thisAgent, "through the local state.\n\n");
 
+        symbol_remove_ref(thisAgent, prod_name);
+        prod_name = NULL;
+        prod_name = generate_new_str_constant(thisAgent, "justification-", &thisAgent->justification_count);
+        prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+        print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+
+        deallocate_condition_list(thisAgent, vrblz_top);
+        vrblz_top = saved_justification_top;
+        saved_justification_top = saved_justification_bottom = NULL;
+
+        deallocate_condition_list(thisAgent, inst_top);
+        inst_top = inst_bottom = NULL;
+
+        deallocate_action_list(thisAgent, rhs);
+        rhs = NULL;
+
+        create_instantiated_counterparts(thisAgent, vrblz_top, &inst_top, &inst_bottom);
+
+        dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
+        rhs = thisAgent->variablizationManager->variablize_results_into_actions(results, false);
+
+        add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
+
+        print_with_symbols(thisAgent, "\nCreating justification instead:\n\nsp {%y\n", prod_name);
+        print_condition_list(thisAgent, vrblz_top, 4, false);
+        print(thisAgent, "\n  -->\n");
+        print_action_list(thisAgent, rhs, 4, false);
+        print(thisAgent, "\n}\n\n");
+
+        dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
+        dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
+        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false);
+        if (prod)
+        {
+            dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
+        }
+    }
+    /* Note that there cannot be a GOTO chunk_abort between creation of these saved conditions above and here */
+    if (saved_justification_top)
+    {
+        deallocate_condition_list(thisAgent, saved_justification_top);
+        saved_justification_top = saved_justification_bottom = NULL;
+    }
     if (!prod)
     {
         print(thisAgent, "\nUnable to reorder this chunk:\n  ");
@@ -1204,14 +1308,13 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         print(thisAgent, "\n  -->\n   ");
         print_action_list(thisAgent, rhs, 3, false);
         print(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
-        print(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+        print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
         print(thisAgent, "through the local state.\n");
         xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
-        xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
         xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n\n");
-        xml_generate_warning(thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+        xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
         xml_generate_warning(thisAgent, "through the local state.\n");
 
         deallocate_condition_list(thisAgent, vrblz_top);
@@ -1225,6 +1328,8 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
          * crash previously can still occur, but we have cases now with chunks
          * formed from retrievals that we don't want Soar to stop on.  So far, we have
          * not had any issues with rejecting this chunk but allowing Soar to continue.
+         * We do now create a justification instead in that ugly code prior to this
+         * that re-does the final steps of chunk creation without variablizaiton.
          *
          * Previous comment:  // We cannot proceed, the GDS will crash in
          * decide.cpp:decide_non_context_slot */
