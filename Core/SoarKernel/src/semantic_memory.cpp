@@ -466,6 +466,13 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     spreading_act = new smem_timer("spreading_activation", thisAgent, soar_module::timer::three);
     add(spreading_act);
 
+    spontaneous_retrieval = new smem_timer("spontaneous_retrieval", thisAgent, soar_module::timer::three);
+    add(spontaneous_retrieval);
+    spontaneous_retrieval_1 = new smem_timer("spontaneous_retrieval_1", thisAgent, soar_module::timer::three);
+    add(spontaneous_retrieval_1);
+    spontaneous_retrieval_2 = new smem_timer("spontaneous_retrieval_2", thisAgent, soar_module::timer::three);
+    add(spontaneous_retrieval_2);
+
     //Extra and temporary timers for testing spreading activation efficiency
     spreading_fix_1 = new smem_timer("spreading_fix_1", thisAgent, soar_module::timer::three);
     add(spreading_fix_1);
@@ -622,6 +629,7 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
     add_structure("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
     add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
+    add_structure("CREATE UNIQUE INDEX smem_lti_id_letter_num ON smem_lti (lti_id, soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
     add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)");
     add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)");
@@ -1060,7 +1068,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(vis_value_lti);
 
     //Now adding what's needed for spontaneous //INSERT OR IGNORE INTO smem_constants_store (smem_act_max
-    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT DISTINCT lti_id FROM (SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_augmentations WHERE activation_value NOT IN (SELECT smem_act_max FROM smem_constants_store) ORDER BY activation_value DESC LIMIT ?) UNION SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT ?) ) ORDER BY activation_value DESC LIMIT ?)");
+    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT DISTINCT lti_id FROM (SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_augmentations WHERE activation_value < 9223372036854775807 ORDER BY activation_value DESC LIMIT ?) UNION SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT ?) ) ORDER BY activation_value DESC LIMIT ?)");
     add(lti_get_high_act);
 }
 
@@ -7193,6 +7201,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             }
             else if (should_spontaneously_retrieve)
             {
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spontaneous_retrieval->start();
+                ////////////////////////////////////////////////////////////////////////////
                 // spontaneous retrieval
                 soar_module::sqlite_statement *q;
                 q = thisAgent->smem_stmts->lti_get_high_act;
@@ -7208,7 +7219,13 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                         if ( state->id->smem_info->smem_wmes->empty() )
                         {
                             //smem_clear_result( thisAgent, state );
+                            ////////////////////////////////////////////////////////////////////////////
+                            thisAgent->smem_timers->spontaneous_retrieval_2->start();
+                            ////////////////////////////////////////////////////////////////////////////
                             smem_install_memory(thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes, wm_install, 1, NULL, true);
+                            ////////////////////////////////////////////////////////////////////////////
+                            thisAgent->smem_timers->spontaneous_retrieval_2->stop();
+                            ////////////////////////////////////////////////////////////////////////////
                             do_wm_phase = true;
                         }
                         //smem_install_memory(thisAgent, state, spontaneous_result, NIL, false, meta_wmes, retrieval_wmes, wm_install, 1, NULL, true);
@@ -7219,6 +7236,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 q->reinitialize();
                 // only set a boolean here to allow for spontaneous retrievals on different level goals
                 spontaneously_retrieved = true;
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spontaneous_retrieval->stop();
+                ////////////////////////////////////////////////////////////////////////////
             }
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
