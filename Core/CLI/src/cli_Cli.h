@@ -160,6 +160,26 @@ namespace cli
              */
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
 
+            enum eExplainOptions
+            {
+                EXPLAIN_ENABLE,
+                EXPLAIN_DISABLE,
+                EXPLAIN_DEPENDENCY,
+                EXPLAIN_CONSTRAINTS,
+                EXPLAIN_IDENTITY_SETS,
+                EXPLAIN_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
+            /**
+             * @brief explain command
+             * @param pProduction Pointer to involved production. Pass 0 (null) for
+             *        query
+             * @param condition A number representing the condition number to explain,
+             *        0 for production name, -1 for full,
+             *        this argument ignored if pProduction is 0 (null)
+             */
+            virtual bool DoExplain(ExplainBitset options, const std::string* pObject = 0) = 0;
+
             /**
              * @brief explain-backtraces command
              * @param pProduction Pointer to involved production. Pass 0 (null) for

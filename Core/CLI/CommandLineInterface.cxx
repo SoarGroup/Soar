@@ -15,6 +15,7 @@
 #include "src/cli_editproduction.cpp"
 #include "src/cli_epmem.cpp"
 #include "src/cli_excise.cpp"
+#include "src/cli_explain.cpp"
 #include "src/cli_explainbacktraces.cpp"
 #include "src/cli_firingcounts.cpp"
 #include "src/cli_gdsprint.cpp"

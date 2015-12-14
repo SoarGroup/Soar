@@ -56,6 +56,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExciseCommand(*this));
+    m_Parser.AddCommand(new cli::ExplainCommand(*this));
     m_Parser.AddCommand(new cli::ExplainBacktracesCommand(*this));
     m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
     m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
