@@ -81,6 +81,10 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
+        virtual bool DoExplain(ExplainBitset options, const std::string* pObject = 0)
+        {
+            return false;
+        }
         virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0)
         {
             return false;
