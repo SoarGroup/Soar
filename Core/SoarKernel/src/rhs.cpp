@@ -79,18 +79,18 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 
 rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
 {
-    cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
+    cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
+    list* fl=NULL, *new_fl=NULL;
 
     if (rhs_value_is_reteloc(rv))
     {
         return rv;
-    }
-    if (rhs_value_is_unboundvar(rv))
+    } else if (rhs_value_is_unboundvar(rv))
     {
         return rv;
-    }
-    if (rhs_value_is_funcall(rv))
+    } else if (!rv) {
+        return NULL;
+    } else if (rhs_value_is_funcall(rv))
     {
         fl = rhs_value_to_funcall_list(rv);
         allocate_cons(thisAgent, &new_fl);
