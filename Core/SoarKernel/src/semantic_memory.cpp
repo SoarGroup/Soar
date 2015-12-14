@@ -27,7 +27,6 @@
 #include "decide.h"
 #include "test.h"
 #include "tempmem.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 #include <list>
@@ -35,6 +34,7 @@
 #include <queue>
 #include <utility>
 #include <ctype.h>
+#include <ebc_variablize.h>
 #include <fstream>
 #include <algorithm>
 

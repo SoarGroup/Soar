@@ -32,10 +32,10 @@
 #include "rete.h"
 #include "reinforcement_learning.h"
 #include "test.h"
-#include "chunk.h"
 #include "debug.h"
-#include "variablization_manager.h"
 #include <ctype.h>
+#include <ebc_chunk.h>
+#include <ebc_variablize.h>
 
 void init_production_utilities(agent* thisAgent)
 {

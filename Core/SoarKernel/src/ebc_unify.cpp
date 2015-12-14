@@ -5,7 +5,7 @@
  *      Author: mazzin
  */
 
-#include "variablization_manager.h"
+#include <ebc_variablize.h>
 #include "agent.h"
 #include "instantiations.h"
 #include "prefmem.h"

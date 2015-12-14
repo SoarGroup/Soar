@@ -12,6 +12,7 @@
 
 ------------------------------------------------------------------ */
 
+#include <ebc_variablize.h>
 #include "rhs.h"
 #include "print.h"
 #include "agent.h"
@@ -26,8 +27,6 @@
 #include "wmem.h"
 #include "soar_instance.h"
 #include "test.h"
-#include "variablization_manager.h"
-
 #include <iostream>
 
 #include <cstdarg>

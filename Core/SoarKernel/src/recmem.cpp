@@ -1,3 +1,4 @@
+#include <ebc_variablize.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -52,7 +53,6 @@
 #include "consistency.h"
 #include "misc.h"
 #include "soar_module.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 #include "assert.h"

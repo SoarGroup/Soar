@@ -1,3 +1,4 @@
+#include <ebc_variablize.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -30,7 +31,6 @@
 #include "wma.h"
 #include "test.h"
 #include "wmem.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 namespace soar_module

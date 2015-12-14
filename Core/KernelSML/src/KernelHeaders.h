@@ -11,13 +11,13 @@
 /////////////////////////////////////////////////////////////////
 
 // NOTE: Requires that portability.h be loaded first
+#include <ebc_chunk.h>
 #include "portability.h"
 
 #include "kernel.h"
 #include "init_soar.h"
 #include "mem.h"
 #include "lexer.h"
-#include "chunk.h"
 #include "callback.h"
 #include "agent.h"
 #include "init_soar.h"

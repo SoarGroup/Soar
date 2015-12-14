@@ -37,13 +37,13 @@
 #include "stats.h"
 
 #include <assert.h>
+#include <ebc_variablize.h>
 #include <time.h>
 
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
 #include "semantic_memory.h"
-#include "variablization_manager.h"
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif

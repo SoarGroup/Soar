@@ -10,6 +10,7 @@
  * =======================================================================
  */
 #include <assert.h>
+#include <ebc_variablize.h>
 #include "test.h"
 #include "debug.h"
 #include "kernel.h"
@@ -18,7 +19,6 @@
 #include "print.h"
 #include "rete.h"
 #include "instantiations.h"
-#include "variablization_manager.h"
 #include "output_manager.h"
 #include "wmem.h"
 #include "prefmem.h"

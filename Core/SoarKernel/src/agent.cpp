@@ -1,3 +1,5 @@
+#include <ebc_chunk.h>
+#include <ebc_variablize.h>
 #include "memory_manager.h"
 #include "portability.h"
 
@@ -39,7 +41,6 @@
 #include "print.h"
 #include "recmem.h"
 #include "backtrace.h"
-#include "chunk.h"
 #include "explain.h"
 #include "rete.h"
 #include "trace.h"
@@ -55,7 +56,6 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
-#include "variablization_manager.h"
 #include "output_manager.h"
 #ifndef NO_SVS
 #include "svs_interface.h"

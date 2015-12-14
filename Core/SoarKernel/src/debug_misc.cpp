@@ -1,7 +1,7 @@
+#include <ebc_variablize.h>
 #include "debug.h"
 #include "agent.h"
 #include "test.h"
-#include "variablization_manager.h"
 #include "episodic_memory.h"
 #include "soar_module.h"
 #include "lexer.h"

@@ -1,3 +1,4 @@
+#include <ebc_variablize.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -30,7 +31,6 @@
 #include "soar_TraceNames.h"
 #include "wma.h"
 #include "episodic_memory.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 using namespace soar_TraceNames;

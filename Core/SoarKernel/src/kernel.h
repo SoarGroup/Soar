@@ -9,6 +9,8 @@
 #define KERNEL_H
 
 #include "enums.h"
+#include "portability.h"
+
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 

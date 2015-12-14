@@ -1,3 +1,4 @@
+#include <ebc_variablize.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -33,7 +34,6 @@
 #include "xml.h"
 #include "instantiations.h"
 #include "decide.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 //////////////////////////////////////////////////////////

@@ -85,6 +85,7 @@
 
 ====================================================================== */
 
+#include <ebc_variablize.h>
 #include "portability.h"
 #include <stdlib.h>
 
@@ -111,7 +112,6 @@
 #include "semantic_memory.h"
 #include "test.h"
 #include "decide.h"
-#include "variablization_manager.h"
 #include "debug.h"
 
 #include "assert.h"

@@ -10,6 +10,7 @@
  *               Utility Routines for Actions and RHS Values
  *
  * ================================================================= */
+#include <ebc_variablize.h>
 #include "portability.h"
 #include <stdlib.h>
 
@@ -18,7 +19,6 @@
 #include "print.h"
 #include "agent.h"
 #include "production.h"
-#include "variablization_manager.h"
 #include "test.h"
 #include "debug.h"
 

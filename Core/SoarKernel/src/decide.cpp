@@ -52,7 +52,7 @@
 #include "svs_interface.h"
 #endif
 #include "test.h"
-#include "variablization_manager.h"
+#include <ebc_variablize.h>
 #include "debug.h"
 #include <cmath>
 

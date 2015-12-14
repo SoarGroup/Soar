@@ -12,6 +12,7 @@
 
 ------------------------------------------------------------------ */
 
+#include <ebc_variablize.h>
 #include "rhs.h"
 #include "print.h"
 #include "agent.h"
@@ -25,7 +26,6 @@
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
-#include "variablization_manager.h"
 #include "test.h"
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)

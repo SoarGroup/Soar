@@ -28,8 +28,6 @@
 #include <cstring>
 
 #include "kernel.h"
-#include "chunk.h"
-
 #include "symtab.h"
 #include "wmem.h"
 #include "agent.h"
@@ -50,9 +48,9 @@
 #include "wma.h"
 #include "test.h"
 #include "debug.h"
-#include "variablization_manager.h"
-
 #include <ctype.h>
+#include <ebc_chunk.h>
+#include <ebc_variablize.h>
 
 
 using namespace soar_TraceNames;
