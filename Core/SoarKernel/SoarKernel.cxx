@@ -1,3 +1,6 @@
+#include <ebc.cpp>
+#include <ebc_build.cpp>
+#include <ebc_explanation_trace.cpp>
 #include "src/agent.cpp"
 #include "src/callback.cpp"
 #include "src/consistency.cpp"
@@ -10,10 +13,7 @@
 #include "src/decision_manipulation.cpp"
 #include "src/episodic_memory.cpp"
 #include "src/ebc_backtrace.cpp"
-#include "src/ebc_chunk.cpp"
 #include "src/ebc_constraints.cpp"
-#include "src/ebc_explanation.cpp"
-#include "src/ebc_manager.cpp"
 #include "src/ebc_map.cpp"
 #include "src/ebc_merge.cpp"
 #include "src/ebc_print.cpp"
