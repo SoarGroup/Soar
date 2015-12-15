@@ -1,6 +1,3 @@
-#include <ebc.h>
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -27,36 +24,36 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
-
-
-#include "instantiations.h"
 #include "kernel.h"
-#include "mem.h"
-#include "symtab.h"
+#include "recmem.h"
+
 #include "agent.h"
+#include "condition.h"
+#include "consistency.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
+#include "instantiations.h"
+#include "mem.h"
+#include "misc.h"
+#include "osupport.h"
 #include "prefmem.h"
-#include "rhs.h"
-#include "rhs_functions.h"
-#include "rete.h"
 #include "print.h"
 #include "production.h"
-#include "condition.h"
-#include "wmem.h"
-#include "osupport.h"
-#include "recmem.h"
-#include "tempmem.h"
 #include "reinforcement_learning.h"
-#include "wma.h"
-#include "xml.h"
-#include "decide.h"
-#include "soar_TraceNames.h"
-#include "consistency.h"
-#include "misc.h"
+#include "rete.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "soar_module.h"
-#include "debug.h"
+#include "soar_TraceNames.h"
+#include "symtab.h"
+#include "tempmem.h"
+#include "wma.h"
+#include "wmem.h"
+#include "xml.h"
 
 #include "assert.h"
+#include <stdlib.h>
 #include <string> // SBW 8/4/08
 #include <list>
 

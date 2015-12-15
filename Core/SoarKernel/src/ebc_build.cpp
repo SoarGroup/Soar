@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -7,52 +5,41 @@
 
 /*************************************************************************
  *
- *  file:  chunk.cpp
+ *  file:  ebc_build.cpp
  *
  * =======================================================================
- *  Supports the learning mechanism in Soar.  Learning can be set
- *  on | off | only | except (for other choices see soarCommands.c: learn).
- *  If set to "only" | "except" users must specify rhs functions in
- *  productions: dont-learn | force-learn.   See rhsfun.c
+ *  These are the routines that support printing Soar data structures.
+ *
  * =======================================================================
  */
 
-
-/* ====================================================================
-
-                          Chunking Routines
-
-   ==================================================================== */
-
-#include <stdlib.h>
-#include <cstring>
-
 #include "kernel.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "ebc.h"
+
 #include "agent.h"
+#include "debug.h"
+#include "decide.h"
+#include "explain.h"
+#include "init_soar.h"
 #include "instantiations.h"
 #include "production.h"
 #include "condition.h"
 #include "rhs.h"
-#include "print.h"
-#include "init_soar.h"
 #include "prefmem.h"
-#include "decide.h"
-#include "explain.h"
-#include "ebc.h"
+#include "print.h"
 #include "recmem.h"
 #include "rete.h"
-#include "xml.h"
+#include "symtab.h"
 #include "soar_TraceNames.h"
 #include "soar_instance.h"
-#include "wma.h"
 #include "test.h"
-#include "debug.h"
-#include <ctype.h>
-#include <ebc.h>
-#include "ebc.h"
+#include "wma.h"
+#include "wmem.h"
+#include "xml.h"
 
+#include <stdlib.h>
+#include <cstring>
+#include <ctype.h>
 
 using namespace soar_TraceNames;
 

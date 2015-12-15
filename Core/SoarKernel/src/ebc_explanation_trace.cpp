@@ -119,19 +119,19 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
         {
             if (rt->right_field_num == 0)
             {
-                explain_constraint(&(cond->data.tests.id_test), chunk_test, pI_id);
+                add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, pI_id);
 
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
             }
             else if (rt->right_field_num == 1)
             {
-                explain_constraint(&(cond->data.tests.attr_test), chunk_test, pI_id);
+                add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, pI_id);
 
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
             }
             else
             {
-                explain_constraint(&(cond->data.tests.value_test), chunk_test, pI_id);
+                add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, pI_id);
 
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
             }
@@ -242,17 +242,17 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         {
             if (rt->right_field_num == 0)
             {
-                explain_constraint(&(cond->data.tests.id_test), chunk_test, pI_id, has_referent);
+                add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, pI_id, has_referent);
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to id element resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
             }
             else if (rt->right_field_num == 1)
             {
-                explain_constraint(&(cond->data.tests.attr_test), chunk_test, pI_id, has_referent);
+                add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, pI_id, has_referent);
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to attribute element resulting in: %t [%g]\n", cond->data.tests.attr_test, cond->data.tests.attr_test);
             }
             else
             {
-                explain_constraint(&(cond->data.tests.value_test), chunk_test, pI_id, has_referent);
+                add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, pI_id, has_referent);
                 dprint(DT_ADD_ADDITIONALS, "Added relational test to value element resulting in: %t [%g]\n", cond->data.tests.value_test, cond->data.tests.value_test);
             }
         }
@@ -261,17 +261,16 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
     dprint(DT_ADD_ADDITIONALS, "Final test after add_constraints_and_identities: %l\n", cond);
 }
 
-/* -- This function is a special purpose function for extracting identity information for an
- *    equality test already in the explanation for a condition indirectly via another test
- *    in the rete's other tests lists.  The function is odd because in most cases the rete
- *    only uses the other-tests list for tests that place additional constraints on the value.
- *    For some reason, it can also store an equality test that contains the original symbol name,
- *    which is normally stored in the varlist for the node.  For certain conditions that are
- *    seem to always be linked one or two levels away from the state, those tests seems to
- *    propagate from varnames down to this test list.
+/* -- This function adds a constraint test from the rete's other tests lists.  This function
+ *    is odd because, although in most cases the rete only uses the other-tests list for
+ *    tests that place additional constraints on the value, sometimes, for as of yet not
+ *    understood reason, it can also store an equality test that contains the original rule
+ *    symbol, which is normally stored in the varlist for the node.  This seems to happen for
+ *    certain conditions that are linked more than one or two levels away from the state.  We
+ *    need that symbol to assign an identity, so we look for that case here.
  * -- */
 
-void Explanation_Based_Chunker::explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
+void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
 {
     if (has_referent)
     {

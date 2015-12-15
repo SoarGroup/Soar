@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -12,32 +10,27 @@
  * =======================================================================
  *  These are the routines that support printing Soar data structures.
  *
- * obsolete comments deleted
  * =======================================================================
  */
-/* =================================================================
-                 Printing Utility Routines
-   ================================================================= */
 
-
-
-#include "print.h"
 #include "kernel.h"
+#include "print.h"
+
 #include "agent.h"
-#include "symtab.h"
+#include "condition.h"
 #include "init_soar.h"
-#include "wmem.h"
+#include "instantiations.h"
+#include "output_manager.h"
+#include "prefmem.h"
+#include "production.h"
 #include "rete.h"
 #include "rhs.h"
 #include "rhs_functions.h"
-#include "production.h"
-#include "condition.h"
-#include "instantiations.h"
-#include "xml.h"
+#include "symtab.h"
 #include "soar_TraceNames.h"
-#include "output_manager.h"
-#include "prefmem.h"
 #include "test.h"
+#include "wmem.h"
+#include "xml.h"
 
 #include <stdlib.h>
 #include <stdarg.h>

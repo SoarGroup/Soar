@@ -20,8 +20,9 @@
 #ifndef RECMEM_H
 #define RECMEM_H
 
-
 #include "instantiations.h"
+
+typedef char* rhs_value;
 
 /* TEMPORARY HACK (Ideally this should be doable through
    the external kernel interface but for now using a

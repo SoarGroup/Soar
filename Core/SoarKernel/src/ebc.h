@@ -127,7 +127,7 @@ class Explanation_Based_Chunker
 
         /* Explanation/identity generation methods */
         void add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
-        void explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
+        void add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void add_explanation_to_RL_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         void add_explanation_to_condition(rete_node* node, condition* cond,
