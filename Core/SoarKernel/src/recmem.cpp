@@ -865,7 +865,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
-    inst->i_id = thisAgent->ebcManager->get_new_inst_id();
+    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
     inst->GDS_evaluated_already = false;
 
     dprint_header(DT_MILESTONES, PrintBefore,
@@ -1092,7 +1092,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         }
     }
 
-    thisAgent->ebcManager->set_learning_for_instantiation(inst);
+    thisAgent->ebChunker->set_learning_for_instantiation(inst);
 
     /* Copy any context-dependent preferences for conditions of this instantiation */
     build_CDPS(thisAgent, inst);
@@ -1102,7 +1102,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
+    thisAgent->ebChunker->chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
 
@@ -1221,7 +1221,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
 
         level = inst->match_goal_level;
-        thisAgent->ebcManager->cleanup_for_instantiation_deallocation(inst->i_id);
+        thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
         {

@@ -16,7 +16,7 @@
 #include "rhs.h"
 #include "debug.h"
 
-bool EBC_Manager::in_null_identity_set(test t)
+bool Explanation_Based_Chunker::in_null_identity_set(test t)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
@@ -29,7 +29,7 @@ bool EBC_Manager::in_null_identity_set(test t)
     return (t->identity == NULL_IDENTITY_SET);
 }
 
-void EBC_Manager::unify_identity(test t)
+void Explanation_Based_Chunker::unify_identity(test t)
 {
     if (!m_learning_on) return;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
@@ -41,7 +41,7 @@ void EBC_Manager::unify_identity(test t)
         t->identity = iter->second;
     }
 }
-void EBC_Manager::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
+void Explanation_Based_Chunker::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
 {
 
     uint64_t lO_id = 0;
@@ -72,7 +72,7 @@ void EBC_Manager::unify_identity_for_result_element(agent* thisAgent, preference
     }
 }
 
-void EBC_Manager::unify_identities_for_results(preference* result)
+void Explanation_Based_Chunker::unify_identities_for_results(preference* result)
 {
     if (!m_learning_on) return;
     if (!result) return;
@@ -95,7 +95,7 @@ void EBC_Manager::unify_identities_for_results(preference* result)
     unify_identities_for_results(result->next_result);
 }
 
-void EBC_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
+void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
 
@@ -110,7 +110,7 @@ void EBC_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_i
     }
 }
 
-void EBC_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
+void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t newID;
@@ -195,7 +195,7 @@ void EBC_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_i
     dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 
-bool EBC_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
+bool Explanation_Based_Chunker::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
 {
     if (!m_learning_on) return true;
 
@@ -287,7 +287,7 @@ bool EBC_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condi
     return true;
 }
 
-void EBC_Manager::literalize_RHS_function_args(const rhs_value rv)
+void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
     list* fl = rhs_value_to_funcall_list(rv);
@@ -310,7 +310,7 @@ void EBC_Manager::literalize_RHS_function_args(const rhs_value rv)
     }
 }
 
-void EBC_Manager::unify_backtraced_conditions(condition* parent_cond,
+void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
                                                          const soar_module::identity_triple o_ids_to_replace,
                                                          const soar_module::rhs_triple rhs_funcs)
 {

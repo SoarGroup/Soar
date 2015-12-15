@@ -359,7 +359,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     destString += " [o";
                                     destString += std::to_string(t->identity);
                                     destString += ' ';
-                                    sym = thisAgent->ebcManager->get_ovar_for_o_id(t->identity);
+                                    sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
                                     if (sym) destString += sym->to_string(true); else destString += '#';
                                     destString += ']';
                                 } else {
@@ -378,7 +378,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         destString += " [o";
                                         destString += std::to_string(t->identity);
                                         destString += ' ';
-                                        sym = thisAgent->ebcManager->get_ovar_for_o_id(t->identity);
+                                        sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
                                         if (sym) destString += sym->to_string(true); else destString += '#';
                                         destString += ']';
                                     } else {

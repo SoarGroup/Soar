@@ -1,4 +1,3 @@
-#include <ebc.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -21,7 +20,7 @@
 
 #include <stdlib.h>
 
-#include "backtrace.h"
+#include "ebc.h"
 #include "mem.h"
 #include "memory_manager.h"
 #include "kernel.h"
@@ -113,10 +112,10 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
         dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
         condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
 #ifdef EBC_SUPERMERGE
-        thisAgent->ebcManager->cache_constraints_in_cond(cond);
-        thisAgent->ebcManager->unify_backtraced_dupe_conditions(last_cond, cond);
+        thisAgent->ebChunker->cache_constraints_in_cond(cond);
+        thisAgent->ebChunker->unify_backtraced_dupe_conditions(last_cond, cond);
 #else
-        if (!thisAgent->ebcManager->unify_backtraced_dupe_conditions(last_cond, cond))
+        if (!thisAgent->ebChunker->unify_backtraced_dupe_conditions(last_cond, cond))
         {
             push(thisAgent, (cond), thisAgent->grounds);
             cond->bt.wme_->chunker_bt_last_ground_cond = cond;
@@ -197,7 +196,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
 
-void backtrace_through_instantiation(agent* thisAgent,
+void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent,
                                      instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
@@ -215,9 +214,9 @@ void backtrace_through_instantiation(agent* thisAgent,
     backtrace_str temp_explain_backtrace;
     dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod ? inst->prod->name : NULL, grounds_level);
     dprint(DT_BACKTRACE, "(%y [o%u] ^%y [o%u] %y [o%u]) that matched condition %l\n",
-        thisAgent->ebcManager->get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
-        thisAgent->ebcManager->get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
-        thisAgent->ebcManager->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
+        thisAgent->ebChunker->get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
+        thisAgent->ebChunker->get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
+        thisAgent->ebChunker->get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
 
@@ -247,7 +246,7 @@ void backtrace_through_instantiation(agent* thisAgent,
 
     if (trace_cond)
     {
-        thisAgent->ebcManager->unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
+        thisAgent->ebChunker->unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
     }
 
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
@@ -326,7 +325,7 @@ void backtrace_through_instantiation(agent* thisAgent,
          *    chunk, whether the original condition the constraint came from made it into
          *    the chunk or not.  Since the constraint was necessary for the problem-solving
          *    -- */
-        thisAgent->ebcManager->cache_constraints_in_cond(c);
+        thisAgent->ebChunker->cache_constraints_in_cond(c);
 
         thisID = c->data.tests.id_test->eq_test->data.referent;
 
@@ -522,7 +521,7 @@ void backtrace_through_instantiation(agent* thisAgent,
    there are no more locals to BT.
 --------------------------------------------------------------- */
 
-void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
+void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
 {
 
     /* mvp 5-17-94 */
@@ -648,7 +647,7 @@ void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliab
    the TC of the grounds.
 --------------------------------------------------------------- */
 
-void trace_grounded_potentials(agent* thisAgent)
+void Explanation_Based_Chunker::trace_grounded_potentials(agent* thisAgent)
 {
     tc_number tc;
     cons* c, *next_c, *prev_c;
@@ -718,13 +717,13 @@ void trace_grounded_potentials(agent* thisAgent)
 
                     #endif
 #ifdef EBC_SUPERMERGE
-                    thisAgent->ebcManager->cache_constraints_in_cond(pot);
+                    thisAgent->ebChunker->cache_constraints_in_cond(pot);
 #endif
 #ifdef EBC_MAP_MERGE_DUPE_GROUNDS
                     condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
                     dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
                     dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
-                    if (thisAgent->ebcManager->unify_backtraced_dupe_conditions(last_cond, pot))
+                    if (thisAgent->ebChunker->unify_backtraced_dupe_conditions(last_cond, pot))
                     {
                         free_cons(thisAgent, c);
                     }
@@ -755,7 +754,7 @@ void trace_grounded_potentials(agent* thisAgent)
    if anything was BT'd; false if nothing changed.
 --------------------------------------------------------------- */
 
-bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
+bool Explanation_Based_Chunker::trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
 {
 
     /* mvp 5-17-94 */
@@ -865,7 +864,7 @@ bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_leve
     return true;
 }
 
-void report_local_negation(agent* thisAgent, condition* c)
+void Explanation_Based_Chunker::report_local_negation(agent* thisAgent, condition* c)
 {
     if (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM])
     {

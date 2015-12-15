@@ -14,7 +14,7 @@
 #include "print.h"
 #include "debug.h"
 
-void EBC_Manager::clear_data()
+void Explanation_Based_Chunker::clear_data()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Clearing all variablization manager maps.\n");
     clear_cached_constraints();
@@ -26,7 +26,7 @@ void EBC_Manager::clear_data()
     clear_attachment_map();
 }
 
-void EBC_Manager::clear_attachment_map()
+void Explanation_Based_Chunker::clear_attachment_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing attachment map...\n");
     for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
@@ -38,7 +38,7 @@ void EBC_Manager::clear_attachment_map()
     attachment_points->clear();
 }
 
-void EBC_Manager::clear_variablization_maps()
+void Explanation_Based_Chunker::clear_variablization_maps()
 {
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
@@ -63,26 +63,26 @@ void EBC_Manager::clear_variablization_maps()
 }
 
 
-void EBC_Manager::clear_o_id_to_ovar_debug_map()
+void Explanation_Based_Chunker::clear_o_id_to_ovar_debug_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
     o_id_to_ovar_debug_map->clear();
 }
 
-void EBC_Manager::clear_o_id_substitution_map()
+void Explanation_Based_Chunker::clear_o_id_substitution_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
     unification_map->clear();
 }
 
 
-void EBC_Manager::clear_rulesym_to_identity_map()
+void Explanation_Based_Chunker::clear_rulesym_to_identity_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
     rulesym_to_identity_map->clear();
 }
 
-uint64_t EBC_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
+uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 {
     if (!m_learning_on) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
@@ -108,7 +108,7 @@ uint64_t EBC_Manager::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
 
 }
 
-void EBC_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
+void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
     assert(m_learning_on || rulesym_to_identity_map->size() == 0);
     assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
@@ -137,7 +137,7 @@ void EBC_Manager::cleanup_for_instantiation_deallocation(uint64_t pI_id)
     dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
 }
 
-uint64_t EBC_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
+uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
 {
     if (!m_learning_on) return 0;
     assert(orig_var->is_variable());
@@ -158,7 +158,7 @@ uint64_t EBC_Manager::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
     }
 }
 
-Symbol * EBC_Manager::get_ovar_for_o_id(uint64_t o_id)
+Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
 {
 #ifndef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
     return NULL;

@@ -2147,22 +2147,22 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
 
     /* --- make the fake instantiation --- */
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
-    inst->i_id = thisAgent->ebcManager->get_new_inst_id();
+    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
 
     /* --- make the fake condition --- */
     thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
     init_condition(cond);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->ebcManager->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->ebcManager->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
                            soar_module::identity_triple(
-                               thisAgent->ebcManager->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
+                               thisAgent->ebChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
                                0,
                                cond->data.tests.value_test->identity));
     symbol_add_ref(thisAgent, pref->id);

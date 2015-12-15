@@ -1,5 +1,5 @@
 #include <ebc.h>
-#include <ebc_chunk.h>
+#include "ebc.h"
 #include "memory_manager.h"
 #include "portability.h"
 
@@ -40,7 +40,7 @@
 #include "decide.h"
 #include "print.h"
 #include "recmem.h"
-#include "backtrace.h"
+#include "ebc.h"
 #include "explain.h"
 #include "rete.h"
 #include "trace.h"
@@ -82,11 +82,14 @@ void init_soar_agent(agent* thisAgent)
     init_firer(thisAgent);
     init_decider(thisAgent);
     init_soar_io(thisAgent);
-    init_chunker(thisAgent);
     init_tracing(thisAgent);
     init_explain(thisAgent);  /* AGR 564 */
     select_init(thisAgent);
     predict_init(thisAgent);
+
+    thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
+    thisAgent->memoryManager->init_memory_pool(MP_attachments, sizeof(attachment_struct), "attachments");
 
     thisAgent->memoryManager->init_memory_pool(MP_gds, sizeof(goal_dependency_set), "gds");
 
@@ -298,7 +301,7 @@ agent* create_soar_agent(char* agent_name)                                      
     // be set before the agent was initialized.
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
-    thisAgent->ebcManager = new EBC_Manager(thisAgent);
+    thisAgent->ebChunker = new Explanation_Based_Chunker(thisAgent);
     thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
@@ -559,7 +562,7 @@ void destroy_soar_agent(agent* delete_agent)
     dprint_identifiers(DT_ID_LEAKING);
 
     // delete unique varname lookup table
-    delete delete_agent->ebcManager;
+    delete delete_agent->ebChunker;
 
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)

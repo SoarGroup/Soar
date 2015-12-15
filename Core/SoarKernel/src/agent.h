@@ -63,7 +63,7 @@ typedef struct select_info_struct select_info;
 class AgentOutput_Info;
 class debug_param_container;
 class Output_Manager;
-class EBC_Manager;
+class Explanation_Based_Chunker;
 class Memory_Manager;
 
 /* This typedef makes soar_callback_array equivalent to an array of list
@@ -187,9 +187,9 @@ typedef struct EXPORT agent_struct
 
     Symbol*             current_production_name;
 
-    EBC_Manager*        ebcManager;
-    Memory_Manager*     memoryManager;
-    Output_Manager*     outputManager;
+    Explanation_Based_Chunker*  ebChunker;
+    Memory_Manager*             memoryManager;
+    Output_Manager*             outputManager;
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at

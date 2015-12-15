@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////
 
 // NOTE: Requires that portability.h be loaded first
-#include <ebc_chunk.h>
+#include "ebc.h"
 #include "portability.h"
 
 #include "kernel.h"

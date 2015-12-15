@@ -15,16 +15,28 @@
 #include <set>
 #include <unordered_map>
 
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-typedef struct preference_struct preference;
+#define BUFFER_PROD_NAME_SIZE 256
+#define CHUNK_COND_HASH_TABLE_SIZE 1024
+#define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
+
 typedef char* rhs_value;
+typedef signed short goal_stack_level;
+typedef struct action_struct action;
+typedef struct agent_struct agent;
 typedef struct chunk_cond_struct chunk_cond;
+typedef struct condition_struct condition;
+typedef struct instantiation_struct instantiation;
+typedef struct preference_struct preference;
+typedef struct symbol_struct Symbol;
+typedef struct test_struct test_info;
+typedef test_info* test;
+
 tc_number get_new_tc_number(agent* thisAgent);
 class Output_Manager;
 
 namespace soar_module
 {
+    typedef struct symbol_triple_struct symbol_triple;
     typedef struct identity_triple_struct identity_triple;
     typedef struct rhs_triple_struct rhs_triple;
 }
@@ -44,6 +56,43 @@ typedef struct attachment_struct
 
 } attachment_point;
 
+typedef struct chunk_cond_struct
+{
+    condition* cond;                /* points to the original condition */
+
+    condition* instantiated_cond;   /* points to cond in chunk instantiation */
+    condition* variablized_cond;    /* points to cond in the actual chunk */
+
+    /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
+    struct chunk_cond_struct* next, *prev;
+
+    /* dll of cond's in this particular hash bucket for this set */
+    struct chunk_cond_struct* next_in_bucket, *prev_in_bucket;
+
+    uint32_t hash_value;             /* equals hash_condition(cond) */
+    uint32_t compressed_hash_value;  /* above, compressed to a few bits */
+} chunk_cond;
+
+typedef struct chunk_cond_set_struct
+{
+    chunk_cond* all;       /* header for dll of all chunk_cond's in the set */
+    chunk_cond* table[CHUNK_COND_HASH_TABLE_SIZE];  /* hash table buckets */
+} chunk_cond_set;
+
+typedef struct backtrace_struct
+{
+    int result;                    /* 1 when this is a result of the chunk */
+    condition* trace_cond;         /* The (local) condition being traced */
+    char   prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
+    condition* grounds;            /* The list of conds for the LHS of chunk */
+    condition* potentials;         /* The list of conds which aren't linked */
+    condition* locals;             /* Conds in the subgoal -- need to BT */
+    condition* negated;            /* Negated conditions (sub/super) */
+    struct backtrace_struct* next_backtrace; /* Pointer to next in this list */
+} backtrace_str;
+
+
+
 /* -- Variablization_Manager
  *
  * variablization_table
@@ -62,7 +111,7 @@ typedef struct attachment_struct
  *
  * -- */
 
-class EBC_Manager
+class Explanation_Based_Chunker
 {
     public:
 
@@ -71,15 +120,26 @@ class EBC_Manager
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
         bool set_learning_for_instantiation(instantiation* inst);
 
+        /* Core public chunking methods */
+        void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** custom_inst_list);
+        chunk_cond* make_chunk_cond_for_negated_condition(agent* thisAgent, condition* cond);
+        bool add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* new_cc);
+
+        /* Explanation/identity generation methods */
         void add_identity_to_original_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void explain_RL_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         void explain_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+
+        /* Variablization methods */
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+        action* variablize_results_into_actions(preference* result, bool variablize);
+        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
+        /* Clean-up */
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         void clear_variablization_maps();
         void clear_attachment_map();
@@ -95,10 +155,12 @@ class EBC_Manager
         void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
+        /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
         void add_additional_constraints(condition* cond);
         bool has_positive_condition(uint64_t pO_id);
 
+        /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void unify_identity(test t);
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
@@ -107,12 +169,8 @@ class EBC_Manager
             const soar_module::rhs_triple rhs_funcs);
         void literalize_RHS_function_args(const rhs_value rv);
         bool in_null_identity_set(test t);
-
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
-
-        action* variablize_results_into_actions(preference* result, bool variablize);
-        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
         void print_tables(TraceMode mode);
@@ -124,38 +182,52 @@ class EBC_Manager
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
 
-        EBC_Manager(agent* myAgent);
-        ~EBC_Manager();
+        Explanation_Based_Chunker(agent* myAgent);
+        ~Explanation_Based_Chunker();
 
     private:
         agent* thisAgent;
         Output_Manager* outputManager;
 
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
+        /* Dependency analysis methods */
+        void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliable);
+        void trace_grounded_potentials(agent* thisAgent);
+        bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_level, bool* reliable);
+        void backtrace_through_instantiation(agent* thisAgent,
+                instantiation* inst,
+                goal_stack_level grounds_level,
+                condition* trace_cond,
+                bool* reliable,
+                int indent,
+                const soar_module::identity_triple o_ids_to_replace,
+                const soar_module::rhs_triple rhs_funcs);
+        void report_local_negation(agent* thisAgent, condition* c);
 
-        Symbol* get_variablization_for_identity(uint64_t index_id);
-        Symbol* get_variablization_for_sti(Symbol* index_sym);
+        /* Chunk building methods */
+        void add_pref_to_results(agent* thisAgent, preference* pref);
+        void add_results_for_id(agent* thisAgent, Symbol* id);
+        void add_results_if_needed(agent* thisAgent, Symbol* sym);
+        preference* get_results_for_instantiation(agent* thisAgent, instantiation* inst);
+        action* copy_action_list(agent* thisAgent, action* actions);
+        void init_chunk_cond_set(chunk_cond_set* set);
+        void remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
+        void create_instantiated_counterparts(agent* thisAgent, condition* vrblz_top, condition** inst_top, condition** inst_bottom);
+        void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent, condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition* vrblz_top);
+        void reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
+        void make_clones_of_results(agent* thisAgent, preference* results, instantiation* chunk_inst);
+        Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
+        Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
+        Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst);
+        void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, condition** vrblz_top);
 
-        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
-        void variablize_rhs_symbol(rhs_value pRhs_val);
-
-        void variablize_equality_tests(test t);
-
-        void variablize_rl_test(test chunk_test);
-
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-
-        void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
-        void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
-        condition* get_previously_seen_cond(condition* pCond);
-
+        /* Identity analysis and unification methods */
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
 
+        /* Constraint analysis and enforcement methods */
         void cache_constraints_in_test(test t);
-
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
@@ -163,6 +235,23 @@ class EBC_Manager
         void invert_relational_test(test* pEq_test, test* pRelational_test);
         void attach_relational_test(test pEq_test, test pRelational_test);
 
+        /* Variablization methods */
+        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
+        Symbol* get_variablization_for_identity(uint64_t index_id);
+        Symbol* get_variablization_for_sti(Symbol* index_sym);
+        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
+        void variablize_rhs_symbol(rhs_value pRhs_val);
+        void variablize_equality_tests(test t);
+        void variablize_rl_test(test chunk_test);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+
+        /* Condition polishing methods */
+        void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
+        void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
+        condition* get_previously_seen_cond(condition* pCond);
+
+        /* Clean-up methods */
         void clear_merge_map();
         void clear_o_id_to_ovar_debug_map();
         void clear_rulesym_to_identity_map();

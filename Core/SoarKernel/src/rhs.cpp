@@ -402,7 +402,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
         if (add_original_vars && pI_id)
         {
-            lO_id = thisAgent->ebcManager->get_existing_o_id(sym, pI_id);
+            lO_id = thisAgent->ebChunker->get_existing_o_id(sym, pI_id);
         }
 
         dprint(DT_RHS_VALUE, "create_RHS_value: previous unbound %y o%u\n", sym, lO_id);

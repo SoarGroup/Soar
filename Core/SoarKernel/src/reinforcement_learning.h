@@ -13,7 +13,7 @@
 #ifndef REINFORCEMENT_LEARNING_H
 #define REINFORCEMENT_LEARNING_H
 
-#include <ebc_chunk.h>
+#include "ebc.h"
 #include <map>
 #include <string>
 #include <list>

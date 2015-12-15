@@ -16,7 +16,7 @@
 #include "rhs.h"
 #include "xml.h"
 
-Symbol* EBC_Manager::get_variablization_for_identity(uint64_t index_id)
+Symbol* Explanation_Based_Chunker::get_variablization_for_identity(uint64_t index_id)
 {
     if (index_id == 0)
     {
@@ -37,7 +37,7 @@ Symbol* EBC_Manager::get_variablization_for_identity(uint64_t index_id)
     }
 }
 
-Symbol* EBC_Manager::get_variablization_for_sti(Symbol* index_sym)
+Symbol* Explanation_Based_Chunker::get_variablization_for_sti(Symbol* index_sym)
 {
     std::unordered_map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
     if (iter != (*sym_to_var_map).end())
@@ -53,7 +53,7 @@ Symbol* EBC_Manager::get_variablization_for_sti(Symbol* index_sym)
     }
 }
 
-void EBC_Manager::store_variablization(Symbol* instantiated_sym,
+void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
         Symbol* variable,
         uint64_t pIdentity)
 {
@@ -104,7 +104,7 @@ void EBC_Manager::store_variablization(Symbol* instantiated_sym,
  *           For RL rules, identity may be NULL
  *
  * ========================================================================= */
-void EBC_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
+void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
 {
     char prefix[2];
     Symbol* var;
@@ -152,7 +152,7 @@ void EBC_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
     }
 }
 
-void EBC_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
+void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
@@ -243,7 +243,7 @@ void EBC_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
  *
  * ========================================================================= */
 
-void EBC_Manager::variablize_equality_tests(test t)
+void Explanation_Based_Chunker::variablize_equality_tests(test t)
 {
     cons* c;
     test tt;
@@ -293,7 +293,7 @@ void EBC_Manager::variablize_equality_tests(test t)
  *           when variablizing the equality test.
  *
  * ========================================================================= */
-bool EBC_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
+bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
     Symbol* found_variablization = NULL;
 
@@ -334,7 +334,7 @@ bool EBC_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities
     return true;
 }
 
-void EBC_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
+void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
 
     cons* c;
@@ -386,7 +386,7 @@ void EBC_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualitie
     }
 }
 
-void EBC_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
+void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
     dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list:\n");
 
@@ -435,7 +435,7 @@ void EBC_Manager::variablize_condition_list(condition* top_cond, bool pInNegativ
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
-void EBC_Manager::variablize_rl_test(test t)
+void Explanation_Based_Chunker::variablize_rl_test(test t)
 {
     cons* c;
     test ct;
@@ -477,7 +477,7 @@ void EBC_Manager::variablize_rl_test(test t)
 
 
 // creates an action for a template instantiation
-action* EBC_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
+action* Explanation_Based_Chunker::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
 {
     action* rhs;
 
@@ -499,7 +499,7 @@ action* EBC_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym
     return rhs;
 }
 
-void EBC_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
+void Explanation_Based_Chunker::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
 
     dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list for template:\n");
@@ -550,7 +550,7 @@ void EBC_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNega
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* EBC_Manager::variablize_results_into_actions(preference* result, bool variablize)
+action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result, bool variablize)
 {
     action* a;
 

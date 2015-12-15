@@ -14,7 +14,7 @@
 #include "print.h"
 #include "debug.h"
 
-void EBC_Manager::clear_cached_constraints()
+void Explanation_Based_Chunker::clear_cached_constraints()
 {
     for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
@@ -26,7 +26,7 @@ void EBC_Manager::clear_cached_constraints()
     constraints->clear();
 }
 
-void EBC_Manager::cache_constraints_in_test(test t)
+void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 {
     /* -- Only conjunctive tests can have relational tests here.  Otherwise,
      *    should be an equality test. -- */
@@ -72,7 +72,7 @@ void EBC_Manager::cache_constraints_in_test(test t)
     }
 }
 
-void EBC_Manager::cache_constraints_in_cond(condition* c)
+void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 {
     if (!m_learning_on) return;
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
@@ -83,7 +83,7 @@ void EBC_Manager::cache_constraints_in_cond(condition* c)
 }
 
 
-attachment_point* EBC_Manager::get_attachment_point(uint64_t pO_id)
+attachment_point* Explanation_Based_Chunker::get_attachment_point(uint64_t pO_id)
 {
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
@@ -99,7 +99,7 @@ attachment_point* EBC_Manager::get_attachment_point(uint64_t pO_id)
     return 0;
 }
 
-bool EBC_Manager::has_positive_condition(uint64_t pO_id)
+bool Explanation_Based_Chunker::has_positive_condition(uint64_t pO_id)
 {
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
@@ -116,7 +116,7 @@ bool EBC_Manager::has_positive_condition(uint64_t pO_id)
     return false;
 }
 
-void EBC_Manager::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
+void Explanation_Based_Chunker::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
 {
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
@@ -135,7 +135,7 @@ void EBC_Manager::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Fie
     (*attachment_points)[pO_id] = new_attachment;
 }
 
-void EBC_Manager::find_attachment_points(condition* pCond)
+void Explanation_Based_Chunker::find_attachment_points(condition* pCond)
 {
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Scanning conditions for constraint attachment points...\n%1", pCond);
 
@@ -166,7 +166,7 @@ void EBC_Manager::find_attachment_points(condition* pCond)
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done scanning conditions for attachment points.\n");
 }
 
-void EBC_Manager::invert_relational_test(test* pEq_test, test* pRelational_test)
+void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRelational_test)
 {
     assert(test_has_referent(*pEq_test));
     assert(test_has_referent(*pRelational_test));
@@ -206,7 +206,7 @@ void EBC_Manager::invert_relational_test(test* pEq_test, test* pRelational_test)
 
 }
 
-void EBC_Manager::attach_relational_test(test pEq_test, test pRelational_test)
+void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRelational_test)
 {
     dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity, pEq_test, pEq_test->identity);
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
@@ -231,7 +231,7 @@ void EBC_Manager::attach_relational_test(test pEq_test, test pRelational_test)
     assert(false);
 }
 
-void EBC_Manager::prune_redundant_constraints()
+void Explanation_Based_Chunker::prune_redundant_constraints()
 {
     dprint(DT_CONSTRAINTS, "Pruning redundant constraints from set of size %u.\n", static_cast<uint64_t>(constraints->size()));
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
@@ -248,7 +248,7 @@ void EBC_Manager::prune_redundant_constraints()
     dprint(DT_CONSTRAINTS, "Final pruned constraints is a set of size %u.\n", static_cast<uint64_t>(constraints->size()));
 }
 
-void EBC_Manager::add_additional_constraints(condition* cond)
+void Explanation_Based_Chunker::add_additional_constraints(condition* cond)
 {
     if (!m_learning_on) return;
 

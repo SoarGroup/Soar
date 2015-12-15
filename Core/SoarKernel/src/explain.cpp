@@ -30,7 +30,7 @@
 #include "explain.h"
 #include "kernel.h"
 #include "agent.h"
-#include "backtrace.h"
+#include "ebc.h"
 #include "production.h"
 #include "rhs.h"
 #include "print.h"

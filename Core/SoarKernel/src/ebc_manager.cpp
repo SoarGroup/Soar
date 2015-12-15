@@ -16,32 +16,34 @@
 #include "rhs.h"
 #include "xml.h"
 
-EBC_Manager::EBC_Manager(agent* myAgent)
+Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 {
+    /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
-    sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
-    o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
+    outputManager = &Output_Manager::Get_OM();
 
-    rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
-    o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
-
-    constraints = new std::list< constraint* >;
-    attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
-
-    unification_map = new std::unordered_map< uint64_t, uint64_t >();
-
-    cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
-
+    /* Initialize instantiation and identity ID counters */
     inst_id_counter = 0;
     ovar_id_counter = 0;
 
+    /* Create data structures used for EBC */
+    sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
+    o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
+    rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
+    o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
+    constraints = new std::list< constraint* >;
+    attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
+    unification_map = new std::unordered_map< uint64_t, uint64_t >();
+    cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
+    init_chunk_cond_set(&thisAgent->negated_set);
+
+    /* Initialize learning setting */
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
     m_learning_on_for_instantiation = m_learning_on;
 
-    outputManager = &Output_Manager::Get_OM();
 }
 
-EBC_Manager::~EBC_Manager()
+Explanation_Based_Chunker::~Explanation_Based_Chunker()
 {
     clear_data();
     delete sym_to_var_map;
@@ -54,7 +56,7 @@ EBC_Manager::~EBC_Manager()
     delete o_id_to_ovar_debug_map;
 }
 
-void EBC_Manager::reinit()
+void Explanation_Based_Chunker::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
@@ -62,7 +64,7 @@ void EBC_Manager::reinit()
     ovar_id_counter = 0;
 }
 
-bool EBC_Manager::set_learning_for_instantiation(instantiation* inst)
+bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
 {
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 

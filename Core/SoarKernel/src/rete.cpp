@@ -2855,7 +2855,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        t->identity = thisAgent->ebcManager->get_or_create_o_id(temp, pI_id);
+        t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
         dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity, temp->var->name);
     }
     else
@@ -2866,7 +2866,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            t->identity = thisAgent->ebcManager->get_or_create_o_id(temp, pI_id);
+            t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
             dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity, temp->var->name);
         }
     }
@@ -4417,7 +4417,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebcManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
             }
 #endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
@@ -4479,7 +4479,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebcManager->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->explain_condition(node, cond, w, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else

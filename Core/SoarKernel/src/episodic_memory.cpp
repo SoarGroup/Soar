@@ -1340,7 +1340,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
             // when the goal is removed
             insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
             pref->on_goal_list = true;
-            
+
             if (epmem_wmes)
             {
                 // if this is a meta wme, then it is completely local
@@ -1359,7 +1359,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
 				continue;
 			}
         }
-		
+
 		pref = pref->inst_next;
     }
 
@@ -1370,8 +1370,8 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
         dprint(DT_MILESTONES, "Calling chunk instantiation from _epem_process_buffered_wme_list...\n");
-        thisAgent->ebcManager->set_learning_for_instantiation(inst);
-        chunk_instantiation(thisAgent, inst, &my_justification_list);
+        thisAgent->ebChunker->set_learning_for_instantiation(inst);
+        thisAgent->ebChunker->chunk_instantiation(thisAgent, inst, &my_justification_list);
 
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)

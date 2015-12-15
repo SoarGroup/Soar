@@ -1,5 +1,4 @@
 #include "src/agent.cpp"
-#include "src/backtrace.cpp"
 #include "src/callback.cpp"
 #include "src/consistency.cpp"
 #include "src/debug.cpp"
@@ -10,6 +9,7 @@
 #include "src/decide.cpp"
 #include "src/decision_manipulation.cpp"
 #include "src/episodic_memory.cpp"
+#include "src/ebc_backtrace.cpp"
 #include "src/ebc_chunk.cpp"
 #include "src/ebc_constraints.cpp"
 #include "src/ebc_explanation.cpp"
