@@ -22,6 +22,7 @@
 #include "agent.h"
 #include "print.h"
 #include "explain.h"
+#include "condition.h"
 
 using namespace cli;
 using namespace sml;

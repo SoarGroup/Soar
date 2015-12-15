@@ -30,6 +30,7 @@
 #include "init_soar.h"
 #include "prefmem.h"
 #include "production.h"
+#include "condition.h"
 #include "print.h"
 #include "trace.h"
 #include "explain.h"
@@ -140,6 +141,30 @@ void print_candidates(agent* thisAgent, preference* candidates)
    A new preference type: unary indifferent + constant (probability) value
 */
 #define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 8
+
+Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
+{
+    Symbol* g;
+
+    for (g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
+        if (g->id->level == level)
+        {
+            return (g);
+        }
+    return (NIL);
+}
+
+Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr)
+{
+    wme* w;
+
+    for (w = id->id->impasse_wmes; w != NIL; w = w->next)
+        if (w->attr == attr)
+        {
+            return w->value;
+        }
+    return NIL;
+}
 
 /* ======================================================================
 

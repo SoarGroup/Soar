@@ -30,6 +30,7 @@
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
+#include "condition.h"
 #include "symtab.h"
 #include "explain.h"
 #include "recmem.h"
@@ -85,7 +86,7 @@ using namespace soar_TraceNames;
 
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
 // Add everything
-inline void add_to_grounds(agent* thisAgent, condition* cond)
+void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
 //    cons* c;
 
@@ -97,7 +98,7 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
     push(thisAgent, (cond), thisAgent->grounds);
 }
 #else
-inline void add_to_grounds(agent* thisAgent, condition* cond)
+void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
     if ((cond)->bt.wme_->grounds_tc != thisAgent->grounds_tc)
     {
@@ -125,7 +126,7 @@ inline void add_to_grounds(agent* thisAgent, condition* cond)
 }
 #endif
 
-inline void add_to_potentials(agent* thisAgent, condition* cond)
+void Explanation_Based_Chunker::add_to_potentials(condition* cond)
 {
     if ((cond)->bt.wme_->potentials_tc != thisAgent->potentials_tc)
     {
@@ -135,7 +136,7 @@ inline void add_to_potentials(agent* thisAgent, condition* cond)
     push(thisAgent, (cond), thisAgent->positive_potentials);
 }
 
-inline void add_to_locals(agent* thisAgent, condition* cond)
+void Explanation_Based_Chunker::add_to_locals(condition* cond)
 {
     if ((cond)->bt.wme_->locals_tc != thisAgent->locals_tc)
     {
@@ -196,8 +197,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
 
-void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent,
-                                     instantiation* inst,
+void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
                                      bool* reliable,
@@ -413,7 +413,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent
             if (thisID->tc_num == tc)
             {
                 dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l\n", c);
-                add_to_grounds(thisAgent, c);
+                add_to_grounds(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
                 {
@@ -423,7 +423,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent
             else if (c->bt.level <= grounds_level)
             {
                 dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l\n", c);
-                add_to_potentials(thisAgent, c);
+                add_to_potentials(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
                 {
@@ -433,7 +433,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent
             else
             {
                 dprint(DT_BACKTRACE, "Backtracing adding local condition... %l\n", c);
-                add_to_locals(thisAgent, c);
+                add_to_locals(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                         thisAgent->sysparams[EXPLAIN_SYSPARAM])
                 {
@@ -445,8 +445,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent
         {
             dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l\n", c);
             /* --- negative or nc cond's are either grounds or potentials --- */
-            add_to_chunk_cond_set(thisAgent, &thisAgent->negated_set,
-                                  make_chunk_cond_for_negated_condition(thisAgent, c));
+            add_to_chunk_cond_set(&thisAgent->negated_set,
+                                  make_chunk_cond_for_negated_condition(c));
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
                     thisAgent->sysparams[EXPLAIN_SYSPARAM])
             {
@@ -521,7 +521,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(agent* thisAgent
    there are no more locals to BT.
 --------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
+void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level, bool* reliable)
 {
 
     /* mvp 5-17-94 */
@@ -555,7 +555,7 @@ void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level 
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-            backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, cond, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -571,7 +571,7 @@ void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level 
                     }
                     /* This used to pass in cond instead of NULL, but I think CDPS prefs are
                      * essentially like results in this context, which get NULL in that parameter */
-                    backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -623,7 +623,7 @@ void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level 
             xml_begin_tag(thisAgent, kTagAddToPotentials);
             xml_end_tag(thisAgent, kTagAddToPotentials);
         }
-        add_to_potentials(thisAgent, cond);
+        add_to_potentials(cond);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -647,7 +647,7 @@ void Explanation_Based_Chunker::trace_locals(agent* thisAgent, goal_stack_level 
    the TC of the grounds.
 --------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::trace_grounded_potentials(agent* thisAgent)
+void Explanation_Based_Chunker::trace_grounded_potentials()
 {
     tc_number tc;
     cons* c, *next_c, *prev_c;
@@ -754,7 +754,7 @@ void Explanation_Based_Chunker::trace_grounded_potentials(agent* thisAgent)
    if anything was BT'd; false if nothing changed.
 --------------------------------------------------------------- */
 
-bool Explanation_Based_Chunker::trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_level, bool* reliable)
+bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level grounds_level, bool* reliable)
 {
 
     /* mvp 5-17-94 */
@@ -825,7 +825,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(agent* thisAgent, go
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
-        backtrace_through_instantiation(thisAgent, bt_pref->inst, grounds_level, potential, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+        backtrace_through_instantiation(bt_pref->inst, grounds_level, potential, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
         if (potential->bt.CDPS)
         {
@@ -841,7 +841,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(agent* thisAgent, go
 
                 /* This used to pass in potential instead of NULL, but I think CDPS prefs are
                  * essentially like results in this context, which get NULL in that parameter */
-                backtrace_through_instantiation(thisAgent, p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
+                backtrace_through_instantiation(p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -864,7 +864,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(agent* thisAgent, go
     return true;
 }
 
-void Explanation_Based_Chunker::report_local_negation(agent* thisAgent, condition* c)
+void Explanation_Based_Chunker::report_local_negation(condition* c)
 {
     if (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM])
     {

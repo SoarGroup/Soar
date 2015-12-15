@@ -1,4 +1,4 @@
-#include "portability.h"
+#include "kernel.h"
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -22,6 +22,7 @@
 
 #include "agent.h"
 #include "wmem.h"
+#include "condition.h"
 #include "instantiations.h"
 #include "explain.h"
 #include "rete.h"

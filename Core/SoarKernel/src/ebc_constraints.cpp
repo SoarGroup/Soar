@@ -5,7 +5,7 @@
  *      Author: mazzin
  */
 
-#include <ebc.h>
+#include "ebc.h"
 #include "agent.h"
 #include "instantiations.h"
 #include "assert.h"
@@ -13,6 +13,7 @@
 #include "wmem.h"
 #include "print.h"
 #include "debug.h"
+#include "condition.h"
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {

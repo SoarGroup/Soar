@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -14,6 +12,8 @@
  * =======================================================================
  */
 
+#include "kernel.h"
+
 #include "semantic_memory.h"
 #include "agent.h"
 #include "prefmem.h"
@@ -23,6 +23,7 @@
 #include "xml.h"
 #include "lexer.h"
 #include "instantiations.h"
+#include "condition.h"
 #include "rhs.h"
 #include "decide.h"
 #include "test.h"
@@ -805,7 +806,7 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
         instantiation* my_justification_list = NIL;
         dprint(DT_MILESTONES, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
         thisAgent->ebChunker->set_learning_for_instantiation(inst);
-        thisAgent->ebChunker->chunk_instantiation(thisAgent, inst, &my_justification_list);
+        thisAgent->ebChunker->build_chunk_or_justification(inst, &my_justification_list);
 
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)

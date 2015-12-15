@@ -33,6 +33,7 @@
 #include "agent.h"
 #include "instantiations.h"
 #include "production.h"
+#include "condition.h"
 #include "rhs.h"
 #include "print.h"
 #include "init_soar.h"
@@ -70,17 +71,17 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(agent* thisAgent, Symbol* sym)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         if (((sym)->id->level >= thisAgent->results_match_goal_level) &&
                 ((sym)->tc_num != thisAgent->results_tc_number))
         {
-            add_results_for_id(thisAgent, sym);
+            add_results_for_id(sym);
         }
 }
 
-void Explanation_Based_Chunker::add_pref_to_results(agent* thisAgent, preference* pref)
+void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
 {
     preference* p;
 
@@ -140,14 +141,14 @@ void Explanation_Based_Chunker::add_pref_to_results(agent* thisAgent, preference
     thisAgent->results = pref;
 
     /* --- follow transitive closure through value, referent links --- */
-    add_results_if_needed(thisAgent, pref->value);
+    add_results_if_needed(pref->value);
     if (preference_is_binary(pref->type))
     {
-        add_results_if_needed(thisAgent, pref->referent);
+        add_results_if_needed(pref->referent);
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(agent* thisAgent, Symbol* id)
+void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
 {
     slot* s;
     preference* pref;
@@ -158,17 +159,17 @@ void Explanation_Based_Chunker::add_results_for_id(agent* thisAgent, Symbol* id)
     /* --- scan through all preferences and wmes for all slots for this id --- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
-        add_results_if_needed(thisAgent, w->value);
+        add_results_if_needed(w->value);
     }
     for (s = id->id->slots; s != NIL; s = s->next)
     {
         for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
         {
-            add_pref_to_results(thisAgent, pref);
+            add_pref_to_results(pref);
         }
         for (w = s->wmes; w != NIL; w = w->next)
         {
-            add_results_if_needed(thisAgent, w->value);
+            add_results_if_needed(w->value);
         }
     } /* end of for slots loop */
     /* --- now scan through extra prefs and look for any with this id --- */
@@ -177,12 +178,12 @@ void Explanation_Based_Chunker::add_results_for_id(agent* thisAgent, Symbol* id)
     {
         if (pref->id == id)
         {
-            add_pref_to_results(thisAgent, pref);
+            add_pref_to_results(pref);
         }
     }
 }
 
-preference* Explanation_Based_Chunker::get_results_for_instantiation(agent* thisAgent, instantiation* inst)
+preference* Explanation_Based_Chunker::get_results_for_instantiation(instantiation* inst)
 {
     preference* pref;
 
@@ -194,7 +195,7 @@ preference* Explanation_Based_Chunker::get_results_for_instantiation(agent* this
         if ((pref->id->id->level < thisAgent->results_match_goal_level) &&
                 (pref->id->tc_num != thisAgent->results_tc_number))
         {
-            add_pref_to_results(thisAgent, pref);
+            add_pref_to_results(pref);
             dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
         } else {
             dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, thisAgent->results_match_goal_level);
@@ -203,7 +204,7 @@ preference* Explanation_Based_Chunker::get_results_for_instantiation(agent* this
     return thisAgent->results;
 }
 
-action* Explanation_Based_Chunker::copy_action_list(agent* thisAgent, action* actions)
+action* Explanation_Based_Chunker::copy_action_list(action* actions)
 {
     action* old, *New, *prev, *first;
     char first_letter;
@@ -313,7 +314,7 @@ void Explanation_Based_Chunker::init_chunk_cond_set(chunk_cond_set* set)
  *           only used for negative conditions and NCCS.  Used in a single line in
  *           backtrace_through_instantiation() -- */
 
-chunk_cond* Explanation_Based_Chunker::make_chunk_cond_for_negated_condition(agent* thisAgent, condition* cond)
+chunk_cond* Explanation_Based_Chunker::make_chunk_cond_for_negated_condition(condition* cond)
 {
     chunk_cond* cc;
     uint32_t remainder, hv;
@@ -333,7 +334,7 @@ chunk_cond* Explanation_Based_Chunker::make_chunk_cond_for_negated_condition(age
     return cc;
 }
 
-bool Explanation_Based_Chunker::add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* new_cc)
+bool Explanation_Based_Chunker::add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc)
 {
     chunk_cond* old;
 
@@ -408,7 +409,7 @@ inline void add_cond(condition** c, condition** prev, condition** first)
 
 }
 
-void Explanation_Based_Chunker::create_instantiated_counterparts(agent* thisAgent, condition* vrblz_top, condition** inst_top, condition** inst_bottom)
+void Explanation_Based_Chunker::create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom)
 {
     condition* copy_cond = vrblz_top;
     condition* c_inst = NULL, *first_inst = NULL, *prev_inst = NULL;
@@ -439,7 +440,7 @@ void Explanation_Based_Chunker::create_instantiated_counterparts(agent* thisAgen
     *inst_bottom = c_inst;
 }
 
-void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
+void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
                                                     condition** inst_top,
                                                     condition** inst_bottom,
                                                     condition** vrblz_top,
@@ -512,7 +513,7 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(a
                 // SBW 5/07
                 // report what local negations are preventing the chunk,
                 // and set flags like we saw a ^quiescence t so it won't be created
-                report_local_negation(thisAgent, cc->cond);    // in backtrace.cpp
+                report_local_negation(cc->cond);    // in backtrace.cpp
                 *reliable = false;
             }
 
@@ -562,7 +563,7 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(a
 //                }
 //
 //    *inst_top = first_inst;
-    create_instantiated_counterparts(thisAgent, *vrblz_top, inst_top, inst_bottom);
+    create_instantiated_counterparts(*vrblz_top, inst_top, inst_bottom);
 
     dprint(DT_BUILD_CHUNK_CONDS, "Instantiated chunk conditions after identity unification: \n%1", *inst_top);
     dprint(DT_BUILD_CHUNK_CONDS, "Variablized chunk conditions after copying and adding additional conditions: \n%1", *vrblz_top);
@@ -582,7 +583,7 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(a
    set.  So part of this code is unnecessary.)
 -------------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition* vrblz_top)
+void Explanation_Based_Chunker::add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top)
 {
     condition* cc;
     tc_number tc;   /* mark each id as we add a test for it, so we don't add
@@ -670,7 +671,7 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
    makes these clones and fills in chunk_inst->preferences_generated.
 -------------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::make_clones_of_results(agent* thisAgent, preference* results,
+void Explanation_Based_Chunker::make_clones_of_results(preference* results,
                             instantiation* chunk_inst)
 {
     preference* p, *result_p;
@@ -704,31 +705,7 @@ void Explanation_Based_Chunker::make_clones_of_results(agent* thisAgent, prefere
     }
 }
 
-Symbol* Explanation_Based_Chunker::find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
-{
-    Symbol* g;
-
-    for (g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
-        if (g->id->level == level)
-        {
-            return (g);
-        }
-    return (NIL);
-}
-
-Symbol* Explanation_Based_Chunker::find_impasse_wme_value(Symbol* id, Symbol* attr)
-{
-    wme* w;
-
-    for (w = id->id->impasse_wmes; w != NIL; w = w->next)
-        if (w->attr == attr)
-        {
-            return w->value;
-        }
-    return NIL;
-}
-
-Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst)
+Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiation* inst)
 {
     Symbol* generated_name;
     Symbol* goal;
@@ -910,7 +887,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(agent* thisA
    chunk-free-problem-spaces, ^quiescence t, etc.)
 ==================================================================== */
 
-void Explanation_Based_Chunker::chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, condition** vrblz_top)
+void Explanation_Based_Chunker::chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top)
 {
     if (vrblz_top)
     {
@@ -929,54 +906,7 @@ void Explanation_Based_Chunker::chunk_instantiation_cleanup (agent* thisAgent, S
     thisAgent->ebChunker->clear_attachment_map();
 }
 
-//bool should_variablize(agent* thisAgent, instantiation* inst)
-//{
-//    preference* p;
-//
-//    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
-//    {
-//        return false;
-//    }
-//
-//    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
-//            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
-//    {
-//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-//        {
-//            std::ostringstream message;
-//            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
-//            print(thisAgent,  message.str().c_str());
-//            xml_generate_verbose(thisAgent, message.str().c_str());
-//        }
-//        return false;
-//    }
-//
-//    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
-//            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
-//    {
-//        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
-//        {
-//            std::ostringstream message;
-//            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
-//            print(thisAgent,  message.str().c_str());
-//            xml_generate_verbose(thisAgent, message.str().c_str());
-//        }
-//        return false;
-//    }
-//
-//    /* allow_bottom_up_chunks will be false if a chunk was already
-//       learned in a lower goal
-//     */
-//    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
-//            !inst->match_goal->id->allow_bottom_up_chunks)
-//    {
-//        return false;
-//    }
-//
-//    return true;
-//}
-
-void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** custom_inst_list)
+void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
     preference* results, *pref;
@@ -1031,7 +961,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
 #endif
 #endif
 
-    results = get_results_for_instantiation(thisAgent, inst);
+    results = get_results_for_instantiation(inst);
     if (!results)
     {
         goto chunking_abort;
@@ -1106,7 +1036,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
         }
         dprint(DT_BACKTRACE, "Backtracing through result preference: %p\n", pref);
         dprint(DT_BACKTRACE, " from instantiation...\n%7", pref->inst);
-        backtrace_through_instantiation(thisAgent, pref->inst, grounds_level, NULL, &reliable, 0, pref->o_ids, pref->rhs_funcs);
+        backtrace_through_instantiation(pref->inst, grounds_level, NULL, &reliable, 0, pref->o_ids, pref->rhs_funcs);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -1119,10 +1049,10 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
 
     while (true)
     {
-        trace_locals(thisAgent, grounds_level, &reliable);
-        trace_grounded_potentials(thisAgent);
+        trace_locals(grounds_level, &reliable);
+        trace_grounded_potentials();
         dprint(DT_BACKTRACE, "Grounds after trace_grounded_potentials:\n%3", thisAgent->grounds);
-        if (! trace_ungrounded_potentials(thisAgent, grounds_level, &reliable))
+        if (! trace_ungrounded_potentials(grounds_level, &reliable))
         {
             break;
         }
@@ -1141,7 +1071,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
+        build_chunk_conds_for_grounds_and_add_negateds(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = thisAgent->ebChunker->learning_is_on_for_instantiation() && reliable;
@@ -1150,7 +1080,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
     if (variablize)
     {
         thisAgent->chunks_this_d_cycle++;
-        prod_name = generate_chunk_name_str_constant(thisAgent, inst);
+        prod_name = generate_chunk_name_str_constant(inst);
 
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -1229,7 +1159,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
     dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n%1", vrblz_top);
 
-    add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
+    add_goal_or_impasse_tests(inst_top, vrblz_top);
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
@@ -1270,12 +1200,12 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
         deallocate_action_list(thisAgent, rhs);
         rhs = NULL;
 
-        create_instantiated_counterparts(thisAgent, vrblz_top, &inst_top, &inst_bottom);
+        create_instantiated_counterparts(vrblz_top, &inst_top, &inst_bottom);
 
         dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
         rhs = thisAgent->ebChunker->variablize_results_into_actions(results, false);
 
-        add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
+        add_goal_or_impasse_tests(inst_top, vrblz_top);
 
         print_with_symbols(thisAgent, "\nCreating justification instead:\n\nsp {%y\n", prod_name);
         print_condition_list(thisAgent, vrblz_top, 4, false);
@@ -1360,7 +1290,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
 
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
 
-        make_clones_of_results(thisAgent, results, chunk_inst);
+        make_clones_of_results(results, chunk_inst);
         fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
     }
 
@@ -1378,7 +1308,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
         copy_condition_list(thisAgent, vrblz_top, &new_top, &new_bottom);
         temp_explain_chunk.conds = new_top;
         //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
-        temp_explain_chunk.actions = copy_action_list(thisAgent, rhs);
+        temp_explain_chunk.actions = copy_action_list(rhs);
     }
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
@@ -1443,7 +1373,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
     chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = chunk_inst;
 
-    chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
+    chunk_instantiation_cleanup(&prod_name, &(vrblz_top));
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1456,7 +1386,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
     {
         dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
         thisAgent->ebChunker->set_learning_for_instantiation(chunk_inst);
-        chunk_instantiation(thisAgent, chunk_inst, custom_inst_list);
+        build_chunk_or_justification(chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }
 
@@ -1464,7 +1394,7 @@ void Explanation_Based_Chunker::chunk_instantiation(agent* thisAgent, instantiat
 
 chunking_abort:
     {
-        chunk_instantiation_cleanup(thisAgent, &prod_name, &(vrblz_top));
+        chunk_instantiation_cleanup(&prod_name, &(vrblz_top));
     }
 
 #ifndef NO_TIMING_STUFF

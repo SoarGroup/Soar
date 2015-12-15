@@ -8,6 +8,7 @@
 #include <ebc.h>
 #include "agent.h"
 #include "instantiations.h"
+#include "condition.h"
 #include "prefmem.h"
 #include "assert.h"
 #include "test.h"
@@ -41,7 +42,7 @@ void Explanation_Based_Chunker::unify_identity(test t)
         t->identity = iter->second;
     }
 }
-void Explanation_Based_Chunker::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
+void Explanation_Based_Chunker::unify_identity_for_result_element(preference* result, WME_Field field)
 {
 
     uint64_t lO_id = 0;
@@ -82,15 +83,15 @@ void Explanation_Based_Chunker::unify_identities_for_results(preference* result)
 
     if (result->o_ids.id)
     {
-        unify_identity_for_result_element(thisAgent, result, ID_ELEMENT);
+        unify_identity_for_result_element(result, ID_ELEMENT);
     }
     if (result->o_ids.attr)
     {
-        unify_identity_for_result_element(thisAgent, result, ATTR_ELEMENT);
+        unify_identity_for_result_element(result, ATTR_ELEMENT);
     }
     if (result->o_ids.value)
     {
-        unify_identity_for_result_element(thisAgent, result, VALUE_ELEMENT);
+        unify_identity_for_result_element(result, VALUE_ELEMENT);
     }
     unify_identities_for_results(result->next_result);
 }

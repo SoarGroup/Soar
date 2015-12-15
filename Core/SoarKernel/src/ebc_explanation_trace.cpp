@@ -22,8 +22,9 @@
 #include "output_manager.h"
 #include "wmem.h"
 #include "prefmem.h"
+#include "condition.h"
 
-void Explanation_Based_Chunker::add_identity_to_original_id_test(condition* cond,
+void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,
                                        rete_node_level levels_up)
 {
@@ -48,7 +49,7 @@ void Explanation_Based_Chunker::add_identity_to_original_id_test(condition* cond
    fired to the appropriate tests.
 
 ---------------------------------------------------------------------- */
-void Explanation_Based_Chunker::explain_RL_condition(rete_node* node,
+void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
     condition* cond,
     wme* w,
     node_varnames* nvn,
@@ -143,7 +144,7 @@ void Explanation_Based_Chunker::explain_RL_condition(rete_node* node,
     dprint(DT_ADD_ADDITIONALS, "Final test after add_additional_tests and creating identity: %l\n", cond);
 }
 
-void Explanation_Based_Chunker::explain_condition(rete_node* node,
+void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
                                         wme* w,
                                         node_varnames* nvn,
@@ -152,7 +153,7 @@ void Explanation_Based_Chunker::explain_condition(rete_node* node,
 {
     if (additional_tests == JUST_INEQUALITIES)
     {
-        explain_RL_condition(node, cond, w, nvn, pI_id, additional_tests);
+        add_explanation_to_RL_condition(node, cond, w, nvn, pI_id, additional_tests);
         return;
     }
 
@@ -185,7 +186,7 @@ void Explanation_Based_Chunker::explain_condition(rete_node* node,
     if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
     {
         dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for MP_BNODE or NEGATIVE_BNODE...\n");
-        add_identity_to_original_id_test(cond,
+        add_identity_to_id_test(cond,
             node->left_hash_loc_field_num,
             node->left_hash_loc_levels_up);
         dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
@@ -194,7 +195,7 @@ void Explanation_Based_Chunker::explain_condition(rete_node* node,
     else if (node->node_type == POSITIVE_BNODE)
     {
         dprint(DT_ADD_ADDITIONALS, "adding unique hash info to original id test for POSITIVE_BNODE...\n");
-        add_identity_to_original_id_test(cond,
+        add_identity_to_id_test(cond,
             node->parent->left_hash_loc_field_num,
             node->parent->left_hash_loc_levels_up);
         dprint(DT_ADD_ADDITIONALS, "...resulting in: %t [%g]\n", cond->data.tests.id_test, cond->data.tests.id_test);
@@ -260,15 +261,16 @@ void Explanation_Based_Chunker::explain_condition(rete_node* node,
     dprint(DT_ADD_ADDITIONALS, "Final test after add_constraints_and_identities: %l\n", cond);
 }
 
-/* -- This function is a special purpose function for extracting information for the explanation
- *    trace from the rete's other tests lists.  The function is odd because the rete can store
- *    more than just constraints in its other tests lists.  It can also store anan equality test
- *    that contains the original symbol name, which we use to assign a variablization identity.
- *    Normally, that information is stored in the varlist, but for certain condtitions that are
- *    one or two levels deep, it seems to propagate those varnames down via its other test structure.
+/* -- This function is a special purpose function for extracting identity information for an
+ *    equality test already in the explanation for a condition indirectly via another test
+ *    in the rete's other tests lists.  The function is odd because in most cases the rete
+ *    only uses the other-tests list for tests that place additional constraints on the value.
+ *    For some reason, it can also store an equality test that contains the original symbol name,
+ *    which is normally stored in the varlist for the node.  For certain conditions that are
+ *    seem to always be linked one or two levels away from the state, those tests seems to
+ *    propagate from varnames down to this test list.
  * -- */
 
-//void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true)
 void Explanation_Based_Chunker::explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
 {
     if (has_referent)

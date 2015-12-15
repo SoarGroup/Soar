@@ -25,7 +25,7 @@
 #include "parser.h"
 #include "symtab.h"
 #include "kernel.h"
-
+#include "condition.h"
 #include "production.h"
 #include "mem.h"
 #include "rhs.h"

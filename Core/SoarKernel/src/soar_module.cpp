@@ -1,6 +1,3 @@
-#include <ebc.h>
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -15,23 +12,24 @@
  * =======================================================================
  */
 
+#include "kernel.h"
 #include "soar_module.h"
 
 #include "agent.h"
+#include "condition.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
 #include "instantiations.h"
 #include "tempmem.h"
-#include "prefmem.h"
 #include "mem.h"
+#include "prefmem.h"
 #include "print.h"
-#include "decide.h"
-#include "xml.h"
-#include "wmem.h"
-#include "agent.h"
 #include "soar_TraceNames.h"
-#include "wma.h"
 #include "test.h"
+#include "xml.h"
+#include "wma.h"
 #include "wmem.h"
-#include "debug.h"
 
 namespace soar_module
 {

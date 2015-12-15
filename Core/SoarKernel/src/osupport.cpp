@@ -32,6 +32,7 @@
 #include "agent.h"
 #include "kernel.h"
 #include "production.h"
+#include "condition.h"
 #include "instantiations.h"
 #include "rhs.h"
 #include "print.h"

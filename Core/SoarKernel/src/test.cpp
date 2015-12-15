@@ -9,19 +9,22 @@
  *
  * =======================================================================
  */
-#include <assert.h>
-#include <ebc.h>
-#include "test.h"
-#include "debug.h"
 #include "kernel.h"
-#include "symtab.h"
+#include "test.h"
+
 #include "agent.h"
-#include "print.h"
-#include "rete.h"
+#include "condition.h"
+#include "debug.h"
+#include "ebc.h"
 #include "instantiations.h"
 #include "output_manager.h"
-#include "wmem.h"
 #include "prefmem.h"
+#include "print.h"
+#include "rete.h"
+#include "symtab.h"
+#include "wmem.h"
+
+#include <assert.h>
 
 /* =================================================================
 

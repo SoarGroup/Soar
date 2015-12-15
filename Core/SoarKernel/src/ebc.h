@@ -121,16 +121,16 @@ class Explanation_Based_Chunker
         bool set_learning_for_instantiation(instantiation* inst);
 
         /* Core public chunking methods */
-        void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** custom_inst_list);
-        chunk_cond* make_chunk_cond_for_negated_condition(agent* thisAgent, condition* cond);
-        bool add_to_chunk_cond_set(agent* thisAgent, chunk_cond_set* set, chunk_cond* new_cc);
+        void build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list);
+        chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
+        bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
 
         /* Explanation/identity generation methods */
-        void add_identity_to_original_id_test(condition* cond, byte field_num, rete_node_level levels_up);
+        void add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
-        void explain_RL_condition(rete_node* node, condition* cond,
+        void add_explanation_to_RL_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-        void explain_condition(rete_node* node, condition* cond,
+        void add_explanation_to_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
 
         /* Variablization methods */
@@ -190,10 +190,13 @@ class Explanation_Based_Chunker
         Output_Manager* outputManager;
 
         /* Dependency analysis methods */
-        void trace_locals(agent* thisAgent, goal_stack_level grounds_level, bool* reliable);
-        void trace_grounded_potentials(agent* thisAgent);
-        bool trace_ungrounded_potentials(agent* thisAgent, goal_stack_level grounds_level, bool* reliable);
-        void backtrace_through_instantiation(agent* thisAgent,
+        void add_to_grounds(condition* cond);
+        void add_to_potentials(condition* cond);
+        void add_to_locals(condition* cond);
+        void trace_locals(goal_stack_level grounds_level, bool* reliable);
+        void trace_grounded_potentials();
+        bool trace_ungrounded_potentials(goal_stack_level grounds_level, bool* reliable);
+        void backtrace_through_instantiation(
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
@@ -201,29 +204,27 @@ class Explanation_Based_Chunker
                 int indent,
                 const soar_module::identity_triple o_ids_to_replace,
                 const soar_module::rhs_triple rhs_funcs);
-        void report_local_negation(agent* thisAgent, condition* c);
+        void report_local_negation(condition* c);
 
         /* Chunk building methods */
-        void add_pref_to_results(agent* thisAgent, preference* pref);
-        void add_results_for_id(agent* thisAgent, Symbol* id);
-        void add_results_if_needed(agent* thisAgent, Symbol* sym);
-        preference* get_results_for_instantiation(agent* thisAgent, instantiation* inst);
-        action* copy_action_list(agent* thisAgent, action* actions);
+        void add_pref_to_results(preference* pref);
+        void add_results_for_id(Symbol* id);
+        void add_results_if_needed(Symbol* sym);
+        preference* get_results_for_instantiation(instantiation* inst);
+        action* copy_action_list(action* actions);
         void init_chunk_cond_set(chunk_cond_set* set);
         void remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
-        void create_instantiated_counterparts(agent* thisAgent, condition* vrblz_top, condition** inst_top, condition** inst_bottom);
-        void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent, condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
-        void add_goal_or_impasse_tests(agent* thisAgent, condition* inst_top, condition* vrblz_top);
+        void create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
+        void build_chunk_conds_for_grounds_and_add_negateds(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        void add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
         void reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        void make_clones_of_results(agent* thisAgent, preference* results, instantiation* chunk_inst);
-        Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
-        Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
-        Symbol* generate_chunk_name_str_constant(agent* thisAgent, instantiation* inst);
-        void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, condition** vrblz_top);
+        void make_clones_of_results(preference* results, instantiation* chunk_inst);
+        Symbol* generate_chunk_name_str_constant(instantiation* inst);
+        void chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top);
 
         /* Identity analysis and unification methods */
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
-        void unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field);
+        void unify_identity_for_result_element(preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
 
         /* Constraint analysis and enforcement methods */

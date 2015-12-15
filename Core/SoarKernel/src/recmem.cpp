@@ -41,6 +41,7 @@
 #include "rete.h"
 #include "print.h"
 #include "production.h"
+#include "condition.h"
 #include "wmem.h"
 #include "osupport.h"
 #include "recmem.h"
@@ -1102,7 +1103,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    thisAgent->ebChunker->chunk_instantiation(thisAgent, inst, &(thisAgent->newly_created_instantiations));
+    thisAgent->ebChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
 

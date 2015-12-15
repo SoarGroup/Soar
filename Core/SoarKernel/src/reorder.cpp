@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -16,11 +14,10 @@
  *
  * =======================================================================
  */
-
-#include <stdlib.h>
+#include "kernel.h"
 
 #include "reorder.h"
-#include "kernel.h"
+#include "condition.h"
 #include "rhs.h"
 #include "production.h"
 #include "mem.h"
@@ -32,6 +29,8 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "debug.h"
+
+#include <stdlib.h>
 
 /* *********************************************************************
 

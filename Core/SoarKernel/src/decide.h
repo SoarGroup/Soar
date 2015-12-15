@@ -227,4 +227,7 @@ extern Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal);
 extern byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
 unsigned int count_candidates(preference* candidates);
 
+Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
+Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
+
 #endif

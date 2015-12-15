@@ -16,6 +16,7 @@
 #include "rhs.h"
 #include "print.h"
 #include "agent.h"
+#include "condition.h"
 #include "instantiations.h"
 #include "rete.h"
 #include "reorder.h"

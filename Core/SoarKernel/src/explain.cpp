@@ -32,6 +32,7 @@
 #include "agent.h"
 #include "ebc.h"
 #include "production.h"
+#include "condition.h"
 #include "rhs.h"
 #include "print.h"
 
@@ -54,7 +55,7 @@ void init_explain(agent* thisAgent)
 {
 
     /* "AGR 564" applies to this whole function */
-    
+
     thisAgent->explain_chunk_name[0] = '\0';
     thisAgent->explain_chunk_list = NULL;
     thisAgent->explain_backtrace_list = NULL;
@@ -63,7 +64,7 @@ void init_explain(agent* thisAgent)
      */
     /*  should we be re-initializing here??  */
     set_sysparam(thisAgent, EXPLAIN_SYSPARAM, false);
-    
+
     /*
      * add_help("explain",help_on_explain);
      * add_command("explain",explain_interface_routine);
@@ -82,7 +83,7 @@ void free_backtrace_list(agent* thisAgent, backtrace_str* prod)
 {
 
     backtrace_str* next_prod;
-    
+
     while (prod != NULL)
     {
         next_prod = prod->next_backtrace;
@@ -106,7 +107,7 @@ void reset_backtrace_list(agent* thisAgent)
     free_backtrace_list(thisAgent, thisAgent->explain_backtrace_list);
     thisAgent->explain_backtrace_list = NULL;
     /* AGR 564  In both statements, the current_agent(...) was added.  2-May-94 */
-    
+
 }
 
 /***************************************************************************
@@ -118,7 +119,7 @@ condition* copy_cond_list(agent* thisAgent, condition* top_list)
 
     condition* new_top = 0;
     condition* new_bottom = 0;
-    
+
     copy_condition_list(thisAgent, top_list, &new_top, &new_bottom);
     return (new_top);
 }
@@ -132,15 +133,15 @@ condition* copy_conds_from_list(agent* thisAgent, cons* top_list)
 
     condition* top, *cond, *prev, *next;
     cons* cc;
-    
+
     prev = next = top = NIL;
-    
+
     for (cc = top_list; cc != NIL; cc = cc->rest)
     {
         cond = copy_condition(thisAgent, static_cast<condition_struct*>(cc->first));
         cond->prev = prev;
         cond->next = NIL;
-        
+
         if (prev == NIL)
         {
             top = cond;
@@ -149,7 +150,7 @@ condition* copy_conds_from_list(agent* thisAgent, cons* top_list)
         {
             prev->next = cond;
         }
-        
+
         prev = cond;
     }
     return (top);
@@ -164,7 +165,7 @@ void explain_add_temp_to_backtrace_list
 {
 
     backtrace_str* back;
-    
+
     back = static_cast<backtrace_str*>(malloc(sizeof(backtrace_str)));
     back->result = temp->result;
     back->trace_cond = copy_condition(thisAgent, temp->trace_cond);
@@ -174,16 +175,16 @@ void explain_add_temp_to_backtrace_list
     }
     strncpy(back->prod_name, temp->prod_name, BUFFER_PROD_NAME_SIZE);
     back->prod_name[BUFFER_PROD_NAME_SIZE - 1] = 0; /* ensure null termination */
-    
+
     back->grounds    = copy_conds_from_list(thisAgent, grounds);
     back->potentials = copy_conds_from_list(thisAgent, pots);
     back->locals     = copy_conds_from_list(thisAgent, locals);
     back->negated    = copy_conds_from_list(thisAgent, negateds);
-    
+
     back->next_backtrace = thisAgent->explain_backtrace_list;
     thisAgent->explain_backtrace_list = back;
     /* AGR 564  In last 2 statements, current_agent(...) was added.  2-May-94 */
-    
+
 }
 
 /***************************************************************************
@@ -201,23 +202,23 @@ void explain_add_temp_to_chunk_list(agent* thisAgent, explain_chunk_str* temp)
 {
 
     explain_chunk_str* chunk;
-    
+
     chunk = static_cast<explain_chunk_str*>(malloc(sizeof(explain_chunk_str)));
     chunk->conds   = temp->conds;
     chunk->actions = temp->actions;
     strncpy(chunk->name, temp->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
     chunk->name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
-    
+
     chunk->backtrace = thisAgent->explain_backtrace_list;
     thisAgent->explain_backtrace_list = NULL;
     /* AGR 564  In last 2 statements, current_agent(...) was added.  2-May-94 */
-    
+
     chunk->all_grounds = copy_cond_list(thisAgent, temp->all_grounds);
-    
+
     chunk->next_chunk  = thisAgent->explain_chunk_list;
     thisAgent->explain_chunk_list = chunk;
     /* AGR 564  In last 2 statements, current_agent(...) was added.  2-May-94 */
-    
+
 }
 
 
@@ -233,11 +234,11 @@ void free_explain_chunk(agent* thisAgent, explain_chunk_str* chunk)
 
     /* First free up all the traced productions */
     free_backtrace_list(thisAgent, chunk->backtrace);
-    
+
     deallocate_condition_list(thisAgent, chunk->conds);
     deallocate_action_list(thisAgent, chunk->actions);
     deallocate_condition_list(thisAgent, chunk->all_grounds);
-    
+
     /* Then free up this structure */
     free(chunk);
 }
@@ -250,20 +251,20 @@ void reset_explain(agent* thisAgent)
 {
 
     explain_chunk_str* top, *chunk;
-    
+
     top = thisAgent->explain_chunk_list;
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     while (top != NULL)
     {
         chunk = top;
         top = top->next_chunk;
         free_explain_chunk(thisAgent, chunk);
     }
-    
+
     thisAgent->explain_chunk_list = NULL;
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     reset_backtrace_list(thisAgent);
 }
 
@@ -285,11 +286,11 @@ explain_chunk_str* find_chunk(agent* thisAgent, explain_chunk_str* chunk, const 
         }
         chunk = chunk->next_chunk;
     }
-    
+
     print(thisAgent, "Could not find the chunk.  Maybe explain was not on when it was created.");
     /* BUGBUG: this doesn't belong here!  changed for bug 608 */
     print(thisAgent, "\nTo turn on explain: save-backtraces --enable before the chunk is created.\n");
-    
+
     return (NULL);
 }
 
@@ -303,7 +304,7 @@ condition* find_ground(agent* thisAgent, explain_chunk_str* chunk, int number)
 {
 
     condition* ground, *cond;
-    
+
     ground = NIL;  /* unnecessary, but gcc -Wall warns without it */
     for (cond = chunk->all_grounds; cond != NIL; cond = cond->next)
     {
@@ -329,7 +330,7 @@ void explain_trace_chunk(agent* thisAgent, explain_chunk_str* chunk)
 {
 
     backtrace_str* prod;
-    
+
     print(thisAgent, "Chunk : %s\n", chunk->name);
     prod = chunk->backtrace;
     while (prod != NULL)
@@ -366,10 +367,10 @@ void explain_trace_named_chunk(agent* thisAgent, const char* chunk_name)
 {
 
     explain_chunk_str* chunk;
-    
+
     chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, chunk_name);
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     if (chunk)
     {
         explain_trace_chunk(thisAgent, chunk);
@@ -385,7 +386,7 @@ condition* explain_find_cond(condition* target, condition* cond_list)
 {
 
     condition* cond, *match;
-    
+
     match = NULL;
     for (cond = cond_list; cond != NULL; cond = cond->next)
     {
@@ -409,12 +410,12 @@ void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod
     int count;
     condition* match, *target;
     backtrace_str* prod;
-    
+
     /* Find which prod. inst. tested the ground originally to get
     it included in the chunk.
     Need to check potentials too, in case they got included
     later on.                                                  */
-    
+
     prod = prod_list;
     match = NULL;
     while (prod != NULL && match == NULL)
@@ -433,31 +434,31 @@ void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod
             prod = prod->next_backtrace;
         }
     }
-    
+
     if (match == NULL)
     {
         print(thisAgent, "EXPLAIN: Error, couldn't find the ground condition\n");
         return;
     }
-    
+
     print(thisAgent, "Explanation of why condition ");
     print_condition(thisAgent, ground);
     print(thisAgent, " was included in %s\n\n", chunk_name);
-    
+
     print(thisAgent, "Production %s matched\n   ", prod->prod_name);
     print_condition(thisAgent, match);
     print(thisAgent, " which caused\n");
-    
+
     /* Trace back the series of productions to find which one
     caused the matched condition to be created.
     Build in a safety limit of tracing 50 productions before cancelling.
     This is in case there is a loop in the search procedure somehow or
     a really long sequence of production firings.  Either way you probably
     don't want to see more than 50 lines of junk....                       */
-    
+
     target = prod->trace_cond;
     count = 0;
-    
+
     while (prod->result == false && count < 50 && match != NULL)
     {
         prod = prod_list;
@@ -484,7 +485,7 @@ void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod
                 prod = prod->next_backtrace;
             }
         }
-        
+
         if (match == NULL)
         {
             print(thisAgent, "EXPLAIN : Unable to find which production matched condition ");
@@ -502,7 +503,7 @@ void explain_trace(agent* thisAgent, const char* chunk_name, backtrace_str* prod
             target = prod->trace_cond;
         }
     }
-    
+
     if (prod->result == 1/*true*/)
     {
         print(thisAgent, "A result to be generated.\n");
@@ -523,21 +524,21 @@ void explain_chunk(agent* thisAgent, const char* chunk_name, int cond_number)
 
     explain_chunk_str* chunk;
     condition* ground;
-    
+
     chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, chunk_name);
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     if (chunk == NULL)
     {
         return;
     }
-    
+
     ground = find_ground(thisAgent, chunk, cond_number);
     if (ground == NIL)
     {
         return;
     }
-    
+
     explain_trace(thisAgent, chunk_name, chunk->backtrace, ground);
 }
 
@@ -552,28 +553,28 @@ void explain_cond_list(agent* thisAgent, const char* chunk_name)
     explain_chunk_str* chunk;
     condition* cond, *ground;
     int i;
-    
+
     chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, chunk_name);
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     if (chunk == NULL)
     {
         return;
     }
-    
+
     /* First print out the production in "normal" form */
-    
+
     print(thisAgent, "(sp %s\n  ", chunk->name);
     print_condition_list(thisAgent, chunk->conds, 2, false);
     print(thisAgent, "\n-->\n   ");
     print_action_list(thisAgent, chunk->actions, 3, false);
     print(thisAgent, ")\n\n");
-    
+
     /* Then list each condition and the associated "ground" WME */
-    
+
     i = 0;
     ground = chunk->all_grounds;
-    
+
     for (cond = chunk->conds; cond != NIL; cond = cond->next)
     {
         i++;
@@ -583,7 +584,7 @@ void explain_cond_list(agent* thisAgent, const char* chunk_name)
         {
             print(thisAgent, " ");
         }
-        
+
         print(thisAgent, " Ground :");
         print_condition(thisAgent, ground);
         print(thisAgent, "\n");
@@ -600,10 +601,10 @@ void explain_list_chunks(agent* thisAgent)
 {
 
     explain_chunk_str* chunk;
-    
+
     chunk = thisAgent->explain_chunk_list;
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     if (!chunk)
     {
         print(thisAgent, "No chunks/justifications built yet!\n");
@@ -627,10 +628,10 @@ void explain_full_trace(agent* thisAgent)
 {
 
     explain_chunk_str* chunk;
-    
+
     chunk = thisAgent->explain_chunk_list;
     /* AGR 564  In previous statement, current_agent(...) was added.  2-May-94 */
-    
+
     while (chunk != NULL)
     {
         explain_trace_chunk(thisAgent, chunk);

@@ -31,6 +31,7 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "production.h"
+#include "condition.h"
 #include "instantiations.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
