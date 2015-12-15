@@ -804,7 +804,7 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
         dprint(DT_MILESTONES, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
-        thisAgent->variablizationManager->set_learning_for_instantiation(inst);
+        thisAgent->ebcManager->set_learning_for_instantiation(inst);
         chunk_instantiation(thisAgent, inst, &my_justification_list);
         
         // if any justifications are created, assert their preferences manually

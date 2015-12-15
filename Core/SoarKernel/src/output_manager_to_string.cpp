@@ -234,7 +234,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             }        }
         if (m_print_identity_effective) {
             sprinta_sf(thisAgent, destString, " [%y/o%u]",
-                thisAgent->variablizationManager->get_ovar_for_o_id(rsym->o_id),
+                thisAgent->ebcManager->get_ovar_for_o_id(rsym->o_id),
                 rsym->o_id);
         }
     }
@@ -334,9 +334,9 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     if (m_print_identity_effective)
     {
         sprinta_sf(thisAgent, destString, "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual_effective) ? ", " : "",
-            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
-            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
-            thisAgent->variablizationManager->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
+            thisAgent->ebcManager->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
+            thisAgent->ebcManager->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
+            thisAgent->ebcManager->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
             preference_to_char(pref->type),
             (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
             (pref->o_supported) ? " :O " : NULL);

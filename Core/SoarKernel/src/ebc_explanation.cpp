@@ -23,7 +23,7 @@
 #include "wmem.h"
 #include "prefmem.h"
 
-void Variablization_Manager::add_identity_to_original_id_test(condition* cond,
+void EBC_Manager::add_identity_to_original_id_test(condition* cond,
                                        byte field_num,
                                        rete_node_level levels_up)
 {
@@ -48,7 +48,7 @@ void Variablization_Manager::add_identity_to_original_id_test(condition* cond,
    fired to the appropriate tests.
 
 ---------------------------------------------------------------------- */
-void Variablization_Manager::explain_RL_condition(rete_node* node,
+void EBC_Manager::explain_RL_condition(rete_node* node,
     condition* cond,
     wme* w,
     node_varnames* nvn,
@@ -143,7 +143,7 @@ void Variablization_Manager::explain_RL_condition(rete_node* node,
     dprint(DT_ADD_ADDITIONALS, "Final test after add_additional_tests and creating identity: %l\n", cond);
 }
 
-void Variablization_Manager::explain_condition(rete_node* node,
+void EBC_Manager::explain_condition(rete_node* node,
                                         condition* cond,
                                         wme* w,
                                         node_varnames* nvn,
@@ -269,7 +269,7 @@ void Variablization_Manager::explain_condition(rete_node* node,
  * -- */
 
 //void add_relational_test(agent* thisAgent, test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true)
-void Variablization_Manager::explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
+void EBC_Manager::explain_constraint(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
 {
     if (has_referent)
     {

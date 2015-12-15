@@ -16,7 +16,7 @@
 #include "rhs.h"
 #include "debug.h"
 
-bool Variablization_Manager::in_null_identity_set(test t)
+bool EBC_Manager::in_null_identity_set(test t)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
@@ -29,7 +29,7 @@ bool Variablization_Manager::in_null_identity_set(test t)
     return (t->identity == NULL_IDENTITY_SET);
 }
 
-void Variablization_Manager::unify_identity(test t)
+void EBC_Manager::unify_identity(test t)
 {
     if (!m_learning_on) return;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
@@ -41,7 +41,7 @@ void Variablization_Manager::unify_identity(test t)
         t->identity = iter->second;
     }
 }
-void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
+void EBC_Manager::unify_identity_for_result_element(agent* thisAgent, preference* result, WME_Field field)
 {
 
     uint64_t lO_id = 0;
@@ -72,7 +72,7 @@ void Variablization_Manager::unify_identity_for_result_element(agent* thisAgent,
     }
 }
 
-void Variablization_Manager::unify_identities_for_results(preference* result)
+void EBC_Manager::unify_identities_for_results(preference* result)
 {
     if (!m_learning_on) return;
     if (!result) return;
@@ -95,7 +95,7 @@ void Variablization_Manager::unify_identities_for_results(preference* result)
     unify_identities_for_results(result->next_result);
 }
 
-void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
+void EBC_Manager::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
 
@@ -110,7 +110,7 @@ void Variablization_Manager::update_unification_table(uint64_t pOld_o_id, uint64
     }
 }
 
-void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
+void EBC_Manager::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t newID;
@@ -195,7 +195,7 @@ void Variablization_Manager::add_identity_unification(uint64_t pOld_o_id, uint64
     dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 
-bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
+bool EBC_Manager::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
 {
     if (!m_learning_on) return true;
 
@@ -287,7 +287,7 @@ bool Variablization_Manager::unify_backtraced_dupe_conditions(condition* ground_
     return true;
 }
 
-void Variablization_Manager::literalize_RHS_function_args(const rhs_value rv)
+void EBC_Manager::literalize_RHS_function_args(const rhs_value rv)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
     list* fl = rhs_value_to_funcall_list(rv);
@@ -310,7 +310,7 @@ void Variablization_Manager::literalize_RHS_function_args(const rhs_value rv)
     }
 }
 
-void Variablization_Manager::unify_backtraced_conditions(condition* parent_cond,
+void EBC_Manager::unify_backtraced_conditions(condition* parent_cond,
                                                          const soar_module::identity_triple o_ids_to_replace,
                                                          const soar_module::rhs_triple rhs_funcs)
 {

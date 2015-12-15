@@ -13,12 +13,12 @@
 #include "print.h"
 #include "debug.h"
 
-void Variablization_Manager::clear_merge_map()
+void EBC_Manager::clear_merge_map()
 {
     cond_merge_map->clear();
 }
 
-void Variablization_Manager::merge_values_in_conds(condition* pDestCond, condition* pSrcCond)
+void EBC_Manager::merge_values_in_conds(condition* pDestCond, condition* pSrcCond)
 {
     dprint(DT_MERGE, "...merging conditions in attribute element...\n");
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.attr_test), pSrcCond->data.tests.attr_test);
@@ -26,7 +26,7 @@ void Variablization_Manager::merge_values_in_conds(condition* pDestCond, conditi
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
 }
 
-condition* Variablization_Manager::get_previously_seen_cond(condition* pCond)
+condition* EBC_Manager::get_previously_seen_cond(condition* pCond)
 {
     std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >::iterator iter_id;
     std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> >::iterator iter_attr;
@@ -105,7 +105,7 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
     c->counterpart = NULL;
 }
 
-void Variablization_Manager::merge_conditions(condition* top_cond)
+void EBC_Manager::merge_conditions(condition* top_cond)
 {
     if (!m_learning_on) return;
 

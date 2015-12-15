@@ -5,8 +5,8 @@
  *      Author: mazzin
  */
 
-#ifndef VARIABLIZATION_MANAGER_H_
-#define VARIABLIZATION_MANAGER_H_
+#ifndef EBC_MANAGER_H_
+#define EBC_MANAGER_H_
 
 #include "portability.h"
 #include "symtab.h"
@@ -62,7 +62,7 @@ typedef struct attachment_struct
  *
  * -- */
 
-class Variablization_Manager
+class EBC_Manager
 {
     public:
 
@@ -124,8 +124,8 @@ class Variablization_Manager
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
 
-        Variablization_Manager(agent* myAgent);
-        ~Variablization_Manager();
+        EBC_Manager(agent* myAgent);
+        ~EBC_Manager();
 
     private:
         agent* thisAgent;
@@ -198,4 +198,4 @@ class Variablization_Manager
 
 };
 
-#endif /* VARIABLIZATION_MANAGER_H_ */
+#endif /* EBC_MANAGER_H_ */

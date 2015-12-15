@@ -94,7 +94,7 @@ namespace soar_module
         inst->reliable = true;
         inst->backtrace_number = 0;
         inst->in_ms = false;
-        inst->i_id = thisAgent->variablizationManager->get_new_inst_id();
+        inst->i_id = thisAgent->ebcManager->get_new_inst_id();
         inst->GDS_evaluated_already = false;
         inst->top_of_instantiated_conditions = NULL;
         inst->bottom_of_instantiated_conditions = NULL;

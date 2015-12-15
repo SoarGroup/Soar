@@ -450,7 +450,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
 {
     cons* c;
     condition* ground, *c_vrblz, *first_vrblz = nullptr, *prev_vrblz;
-    bool should_unify_and_simplify = thisAgent->variablizationManager->learning_is_on_for_instantiation();
+    bool should_unify_and_simplify = thisAgent->ebcManager->learning_is_on_for_instantiation();
 
     c_vrblz  = NIL; /* unnecessary, but gcc -Wall warns without it */
 
@@ -459,7 +459,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
     dprint_noprefix(DT_BUILD_CHUNK_CONDS, "%3", thisAgent->grounds);
     dprint(DT_BUILD_CHUNK_CONDS, "...creating positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
-    thisAgent->variablizationManager->reset_constraint_found_tc_num();
+    thisAgent->ebcManager->reset_constraint_found_tc_num();
     prev_vrblz = NIL;
     while (thisAgent->grounds)
     {
@@ -533,7 +533,7 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
 
     *vrblz_top = first_vrblz;
 
-    thisAgent->variablizationManager->add_additional_constraints(*vrblz_top);
+    thisAgent->ebcManager->add_additional_constraints(*vrblz_top);
 
 //    condition* c_inst, *first_inst = nullptr, *prev_inst;
 //
@@ -925,10 +925,10 @@ void chunk_instantiation_cleanup (agent* thisAgent, Symbol** prod_name, conditio
         symbol_remove_ref(thisAgent, *prod_name);
         *prod_name = NULL;
     }
-    thisAgent->variablizationManager->clear_variablization_maps();
-    thisAgent->variablizationManager->clear_cached_constraints();
-    thisAgent->variablizationManager->clear_o_id_substitution_map();
-    thisAgent->variablizationManager->clear_attachment_map();
+    thisAgent->ebcManager->clear_variablization_maps();
+    thisAgent->ebcManager->clear_cached_constraints();
+    thisAgent->ebcManager->clear_o_id_substitution_map();
+    thisAgent->ebcManager->clear_attachment_map();
 }
 
 //bool should_variablize(agent* thisAgent, instantiation* inst)
@@ -1139,14 +1139,14 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     free_list(thisAgent, thisAgent->positive_potentials);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
-    chunk_new_i_id = thisAgent->variablizationManager->get_new_inst_id();
+    chunk_new_i_id = thisAgent->ebcManager->get_new_inst_id();
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
         build_chunk_conds_for_grounds_and_add_negateds(thisAgent, &inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
     }
 
-    variablize = thisAgent->variablizationManager->learning_is_on_for_instantiation() && reliable;
+    variablize = thisAgent->ebcManager->learning_is_on_for_instantiation() && reliable;
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
@@ -1211,21 +1211,21 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         copy_condition_list(thisAgent, vrblz_top, &saved_justification_top, &saved_justification_bottom);
 
         reset_variable_generator(thisAgent, vrblz_top, NIL);
-        thisAgent->variablizationManager->variablize_condition_list(vrblz_top);
+        thisAgent->ebcManager->variablize_condition_list(vrblz_top);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
         #ifdef EBC_MERGE_CONDITIONS
-        thisAgent->variablizationManager->merge_conditions(vrblz_top);
+        thisAgent->ebcManager->merge_conditions(vrblz_top);
         #endif
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", vrblz_top, results);
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
-    thisAgent->variablizationManager->unify_identities_for_results(results);
+    thisAgent->ebcManager->unify_identities_for_results(results);
     dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n%6", vrblz_top, results);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS results...\n");
-    rhs = thisAgent->variablizationManager->variablize_results_into_actions(results, variablize);
+    rhs = thisAgent->ebcManager->variablize_results_into_actions(results, variablize);
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS results.\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
@@ -1275,7 +1275,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         create_instantiated_counterparts(thisAgent, vrblz_top, &inst_top, &inst_bottom);
 
         dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
-        rhs = thisAgent->variablizationManager->variablize_results_into_actions(results, false);
+        rhs = thisAgent->ebcManager->variablize_results_into_actions(results, false);
 
         add_goal_or_impasse_tests(thisAgent, inst_top, vrblz_top);
 
@@ -1457,7 +1457,7 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
     if (!thisAgent->max_chunks_reached)
     {
         dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
-        thisAgent->variablizationManager->set_learning_for_instantiation(chunk_inst);
+        thisAgent->ebcManager->set_learning_for_instantiation(chunk_inst);
         chunk_instantiation(thisAgent, chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }

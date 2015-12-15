@@ -15,7 +15,7 @@
 #include "print.h"
 #include "debug.h"
 
-void Variablization_Manager::print_o_id_tables(TraceMode mode)
+void EBC_Manager::print_o_id_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     print_ovar_to_o_id_map(mode);
@@ -24,7 +24,7 @@ void Variablization_Manager::print_o_id_tables(TraceMode mode)
 
 }
 
-void Variablization_Manager::print_merge_map(TraceMode mode)
+void EBC_Manager::print_merge_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -55,7 +55,7 @@ void Variablization_Manager::print_merge_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
+void EBC_Manager::print_ovar_to_o_id_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -83,7 +83,7 @@ void Variablization_Manager::print_ovar_to_o_id_map(TraceMode mode)
 }
 
 
-void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
+void EBC_Manager::print_o_id_substitution_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -107,7 +107,7 @@ void Variablization_Manager::print_o_id_substitution_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
+void EBC_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -128,7 +128,7 @@ void Variablization_Manager::print_o_id_to_ovar_debug_map(TraceMode mode)
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
-void Variablization_Manager::print_attachment_points(TraceMode mode)
+void EBC_Manager::print_attachment_points(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -146,7 +146,7 @@ void Variablization_Manager::print_attachment_points(TraceMode mode)
     }
 
 }
-void Variablization_Manager::print_constraints(TraceMode mode)
+void EBC_Manager::print_constraints(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -165,7 +165,7 @@ void Variablization_Manager::print_constraints(TraceMode mode)
 }
 /* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
 
-void Variablization_Manager::print_variablization_tables(TraceMode mode, int whichTable)
+void EBC_Manager::print_variablization_tables(TraceMode mode, int whichTable)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -196,7 +196,7 @@ void Variablization_Manager::print_variablization_tables(TraceMode mode, int whi
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Variablization_Manager::print_tables(TraceMode mode)
+void EBC_Manager::print_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
     print_variablization_tables(mode);

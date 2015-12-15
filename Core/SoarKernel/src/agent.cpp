@@ -298,7 +298,7 @@ agent* create_soar_agent(char* agent_name)                                      
     // be set before the agent was initialized.
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
-    thisAgent->variablizationManager = new Variablization_Manager(thisAgent);
+    thisAgent->ebcManager = new EBC_Manager(thisAgent);
     thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
@@ -559,7 +559,7 @@ void destroy_soar_agent(agent* delete_agent)
     dprint_identifiers(DT_ID_LEAKING);
 
     // delete unique varname lookup table
-    delete delete_agent->variablizationManager;
+    delete delete_agent->ebcManager;
 
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)

@@ -633,7 +633,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
             reset_variable_generator(thisAgent, cond_top, NIL);
             rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-            thisAgent->variablizationManager->variablize_rl_condition_list(cond_top);
+            thisAgent->ebcManager->variablize_rl_condition_list(cond_top);
 
             dprint(DT_RL_VARIABLIZATION, "Final conditions: \n%1", cond_top);
 
@@ -653,12 +653,12 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             symbol_remove_ref(thisAgent, referent);
 
             // make new action list
-            action* new_action = thisAgent->variablizationManager->make_variablized_rl_action(id, attr, value, referent);
+            action* new_action = thisAgent->ebcManager->make_variablized_rl_action(id, attr, value, referent);
 
             // make new production
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false);
 
-            thisAgent->variablizationManager->clear_variablization_maps();
+            thisAgent->ebcManager->clear_variablization_maps();
 
             // set initial expected reward values
             {

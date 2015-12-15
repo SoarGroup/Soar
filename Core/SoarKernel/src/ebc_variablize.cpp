@@ -16,7 +16,7 @@
 #include "rhs.h"
 #include "xml.h"
 
-Variablization_Manager::Variablization_Manager(agent* myAgent)
+EBC_Manager::EBC_Manager(agent* myAgent)
 {
     thisAgent = myAgent;
     sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
@@ -41,7 +41,7 @@ Variablization_Manager::Variablization_Manager(agent* myAgent)
     outputManager = &Output_Manager::Get_OM();
 }
 
-Variablization_Manager::~Variablization_Manager()
+EBC_Manager::~EBC_Manager()
 {
     clear_data();
     delete sym_to_var_map;
@@ -54,7 +54,7 @@ Variablization_Manager::~Variablization_Manager()
     delete o_id_to_ovar_debug_map;
 }
 
-void Variablization_Manager::reinit()
+void EBC_Manager::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
@@ -62,7 +62,7 @@ void Variablization_Manager::reinit()
     ovar_id_counter = 0;
 }
 
-Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_id)
+Symbol* EBC_Manager::get_variablization_for_identity(uint64_t index_id)
 {
     if (index_id == 0)
     {
@@ -83,7 +83,7 @@ Symbol* Variablization_Manager::get_variablization_for_identity(uint64_t index_i
     }
 }
 
-Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
+Symbol* EBC_Manager::get_variablization_for_sti(Symbol* index_sym)
 {
     std::unordered_map< Symbol*, Symbol* >::iterator iter = (*sym_to_var_map).find(index_sym);
     if (iter != (*sym_to_var_map).end())
@@ -99,7 +99,7 @@ Symbol* Variablization_Manager::get_variablization_for_sti(Symbol* index_sym)
     }
 }
 
-void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
+void EBC_Manager::store_variablization(Symbol* instantiated_sym,
         Symbol* variable,
         uint64_t pIdentity)
 {
@@ -150,7 +150,7 @@ void Variablization_Manager::store_variablization(Symbol* instantiated_sym,
  *           For RL rules, identity may be NULL
  *
  * ========================================================================= */
-void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
+void EBC_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
 {
     char prefix[2];
     Symbol* var;
@@ -198,7 +198,7 @@ void Variablization_Manager::variablize_lhs_symbol(Symbol** sym, uint64_t pIdent
     }
 }
 
-void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
+void EBC_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
 {
     char prefix[2];
     Symbol* var;
@@ -289,7 +289,7 @@ void Variablization_Manager::variablize_rhs_symbol(rhs_value pRhs_val)
  *
  * ========================================================================= */
 
-void Variablization_Manager::variablize_equality_tests(test t)
+void EBC_Manager::variablize_equality_tests(test t)
 {
     cons* c;
     test tt;
@@ -339,7 +339,7 @@ void Variablization_Manager::variablize_equality_tests(test t)
  *           when variablizing the equality test.
  *
  * ========================================================================= */
-bool Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
+bool EBC_Manager::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
     Symbol* found_variablization = NULL;
 
@@ -380,7 +380,7 @@ bool Variablization_Manager::variablize_test_by_lookup(test t, bool pSkipTopLeve
     return true;
 }
 
-void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
+void EBC_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
 
     cons* c;
@@ -432,7 +432,7 @@ void Variablization_Manager::variablize_tests_by_lookup(test t, bool pSkipTopLev
     }
 }
 
-void Variablization_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
+void EBC_Manager::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
     dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list:\n");
 
@@ -481,7 +481,7 @@ void Variablization_Manager::variablize_condition_list(condition* top_cond, bool
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
-void Variablization_Manager::variablize_rl_test(test t)
+void EBC_Manager::variablize_rl_test(test t)
 {
     cons* c;
     test ct;
@@ -523,7 +523,7 @@ void Variablization_Manager::variablize_rl_test(test t)
 
 
 // creates an action for a template instantiation
-action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
+action* EBC_Manager::make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym)
 {
     action* rhs;
 
@@ -545,7 +545,7 @@ action* Variablization_Manager::make_variablized_rl_action(Symbol* id_sym, Symbo
     return rhs;
 }
 
-void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
+void EBC_Manager::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
 
     dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list for template:\n");
@@ -596,7 +596,7 @@ void Variablization_Manager::variablize_rl_condition_list(condition* top_cond, b
     dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
-action* Variablization_Manager::variablize_results_into_actions(preference* result, bool variablize)
+action* EBC_Manager::variablize_results_into_actions(preference* result, bool variablize)
 {
     action* a;
 
@@ -656,7 +656,7 @@ action* Variablization_Manager::variablize_results_into_actions(preference* resu
     return a;
 }
 
-bool Variablization_Manager::set_learning_for_instantiation(instantiation* inst)
+bool EBC_Manager::set_learning_for_instantiation(instantiation* inst)
 {
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 
