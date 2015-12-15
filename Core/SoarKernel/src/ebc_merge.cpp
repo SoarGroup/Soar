@@ -5,7 +5,7 @@
  *      Author: mazzin
  */
 
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include "agent.h"
 #include "instantiations.h"
 #include "assert.h"

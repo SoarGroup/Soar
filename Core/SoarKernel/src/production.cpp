@@ -34,8 +34,8 @@
 #include "test.h"
 #include "debug.h"
 #include <ctype.h>
+#include <ebc.h>
 #include <ebc_chunk.h>
-#include <ebc_variablize.h>
 
 void init_production_utilities(agent* thisAgent)
 {

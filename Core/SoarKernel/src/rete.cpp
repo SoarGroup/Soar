@@ -85,7 +85,7 @@
 
 ====================================================================== */
 
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include "portability.h"
 #include <stdlib.h>
 

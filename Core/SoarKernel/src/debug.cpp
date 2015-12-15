@@ -12,7 +12,7 @@
 
 ------------------------------------------------------------------ */
 
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include "debug.h"
 #include "agent.h"
 #include "test.h"

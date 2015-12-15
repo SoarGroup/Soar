@@ -10,7 +10,7 @@
  * =======================================================================
  */
 #include <assert.h>
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include "test.h"
 #include "debug.h"
 #include "kernel.h"

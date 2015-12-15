@@ -34,7 +34,7 @@
 #include <queue>
 #include <utility>
 #include <ctype.h>
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include <fstream>
 #include <algorithm>
 

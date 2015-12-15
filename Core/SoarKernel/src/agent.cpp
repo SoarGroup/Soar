@@ -1,5 +1,5 @@
+#include <ebc.h>
 #include <ebc_chunk.h>
-#include <ebc_variablize.h>
 #include "memory_manager.h"
 #include "portability.h"
 

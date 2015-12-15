@@ -37,7 +37,7 @@
 #include "stats.h"
 
 #include <assert.h>
-#include <ebc_variablize.h>
+#include <ebc.h>
 #include <time.h>
 
 #include "reinforcement_learning.h"
