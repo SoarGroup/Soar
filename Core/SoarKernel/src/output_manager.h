@@ -29,22 +29,41 @@ typedef char varnames;
 typedef struct node_varnames_struct node_varnames;
 typedef struct identity_struct identity_info;
 
-// TODO: this isn't good enough. Arbitrary length should be acceptable.
 #define MAX_LEXER_LINE_LENGTH 1000
-// a little bigger to avoid any off-by-one-errors
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
-
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
+#define DEBUG_SCHEMA_VERSION "0.1"
 
 /* These determine whether we print identity information when printing tests in debug statements */
 
 #ifndef SOAR_RELEASE_VERSION
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity true;
+    /* -- Which output listeners should be initially turned on -- */
+    #define OM_Init_print_enabled     on
+    #define OM_Init_db_mode           off
+    #define OM_Init_callback_mode     off
+    #define OM_Init_stdout_mode       on
+
+    /* -- Which output debug listeners should be initially turned on -- */
+    #define OM_Init_db_dbg_mode       off
+    #define OM_Init_callback_dbg_mode off
+    #define OM_Init_stdout_dbg_mode   on
 #else
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity false;
+
+    /* -- Which output listeners should be initially turned on -- */
+    #define OM_Init_print_enabled     on
+    #define OM_Init_db_mode           off
+    #define OM_Init_callback_mode     on
+    #define OM_Init_stdout_mode       off
+
+    /* -- Which output debug listeners should be initially turned on -- */
+    #define OM_Init_db_dbg_mode       off
+    #define OM_Init_callback_dbg_mode on
+    #define OM_Init_stdout_dbg_mode   off
 #endif
 
 typedef struct trace_mode_info_struct
@@ -144,8 +163,6 @@ class Output_Manager
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
-
-        void fill_mode_info();
 
         void action_to_string(agent* thisAgent, action* a, std::string &destString);
         void action_list_to_string(agent* thisAgent, action* action_list, std::string &destString);

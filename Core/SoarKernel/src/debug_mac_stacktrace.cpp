@@ -46,7 +46,7 @@
 #ifdef DEBUG_MAC_STACKTRACE
 #ifndef WIN32
 
-#include "debug_trace.h"
+#include <debug_mac_stacktrace.h>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>

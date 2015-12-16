@@ -10,8 +10,8 @@
  * =======================================================================
  */
 
-#include "debug_defines.h"
 #include "output_manager_params.h"
+#include "output_manager.h"
 
 OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
 {

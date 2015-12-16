@@ -1032,13 +1032,13 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     dprint(DT_BACKTRACE, "Backtracing through results DONE.\n");
-    dprint(DT_BACKTRACE, "Grounds:\n%3", thisAgent->grounds);
+    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
 
     while (true)
     {
         trace_locals(grounds_level, &reliable);
         trace_grounded_potentials();
-        dprint(DT_BACKTRACE, "Grounds after trace_grounded_potentials:\n%3", thisAgent->grounds);
+        dprint(DT_BACKTRACE, "Grounds after trace_grounded_potentials:\n%3", grounds);
         if (! trace_ungrounded_potentials(grounds_level, &reliable))
         {
             break;
@@ -1046,7 +1046,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     dprint(DT_BACKTRACE, "Tracing DONE.\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", thisAgent->grounds);
+    dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", grounds);
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 
     dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");

@@ -28,16 +28,103 @@
 #include <iostream>
 #include <sstream>
 
-
 /* -- For stack trace printing (works on Mac.  Not sure about other platforms) --*/
 #ifdef DEBUG_MAC_STACKTRACE
 #include <execinfo.h>
 #include <cxxabi.h>
-#include "debug_trace.h"
+#include <debug_mac_stacktrace.h>
 #endif
 
 using namespace soar_module;
 
+void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
+{
+    mode_info[No_Mode].prefix =                         strdup("        | ");
+    mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
+
+    mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
+    mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
+    mode_info[DT_DEALLOCATES].prefix =                  strdup("Delete  | ");
+    mode_info[DT_DEALLOCATE_SYMBOLS].prefix =           strdup("DelSymbl| ");
+    mode_info[DT_DEALLOCATES_TESTS].prefix =            strdup("DelTests| ");
+    mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
+
+    mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
+    mode_info[DT_CLI_LIBRARIES].prefix =                strdup("CLI Lib | ");
+    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
+    mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
+    mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
+    mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
+    mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
+    mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
+
+
+    mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
+    mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
+
+    mode_info[DT_ADD_ADDITIONALS].prefix =              strdup("AddAddtn| ");
+    mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
+    mode_info[DT_VM_MAPS].prefix =                      strdup("VM Maps | ");
+    mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
+    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
+    mode_info[DT_IDENTITY_PROP].prefix =                strdup("ID Prop | ");
+    mode_info[DT_UNIFICATION].prefix =                  strdup("Unify   | ");
+    mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
+    mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
+    mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
+    mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
+    mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
+    mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
+    mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
+    mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
+    mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
+    mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
+
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        mode_info[i].enabled = false;
+    }
+    mode_info[No_Mode].enabled =                        true;
+    mode_info[DT_DEBUG].enabled =                       true;
+
+    mode_info[DT_ID_LEAKING].enabled =                  true;
+    mode_info[DT_DEALLOCATES].enabled =                 true;
+    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
+    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
+    mode_info[DT_REFCOUNT_REMS].enabled =               true;
+
+    mode_info[DT_SOAR_INSTANCE].enabled =               true;
+    mode_info[DT_CLI_LIBRARIES].enabled =               true;
+    mode_info[DT_PARSER].enabled =                      true;
+    mode_info[DT_GDS].enabled =                         true;
+    mode_info[DT_EPMEM_CMD].enabled =                   true;
+
+    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
+    mode_info[DT_MILESTONES].enabled =                  true;
+
+    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
+    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
+    mode_info[DT_VM_MAPS].enabled =                     true;
+    mode_info[DT_BACKTRACE].enabled =                   true;
+    mode_info[DT_IDENTITY_PROP].enabled =               true;
+    mode_info[DT_UNIFICATION].enabled =                 true;
+    mode_info[DT_CONSTRAINTS].enabled =                 true;
+    mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
+    mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
+    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
+    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
+    mode_info[DT_UNGROUNDED_STI].enabled =              true;
+    mode_info[DT_REORDERER].enabled =                   true;
+    mode_info[DT_MERGE].enabled =                       true;
+    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
+    mode_info[DT_EBC_CLEANUP].enabled =                 true;
+    mode_info[DT_RHS_VALUE].enabled =                   true;
+
+    mode_info[DT_WME_CHANGES].enabled =                 true;
+    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
+    mode_info[DT_LINKS].enabled =                       true;
+    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
+}
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
     epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());

@@ -455,9 +455,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
     } /* end of for loop */
 
-    dprint(DT_BACKTRACE, "Grounds:\n%3", thisAgent->grounds);
-    dprint(DT_BACKTRACE, "Potentials:\n%3", thisAgent->positive_potentials);
-    dprint(DT_BACKTRACE, "Locals:\n%3", thisAgent->locals);
+    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
+    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
     /* Now record the sets of conditions.  Note that these are not necessarily */
     /* the final resting place for these wmes.  In particular potentials may   */

@@ -14,8 +14,6 @@
 #include "output_manager.h"
 #include "output_manager_params.h"
 
-#include "debug_defines.h"
-
 OM_DB::OM_DB(soar_module::sqlite_database* pDebugDB)
     : soar_module::sqlite_statement_container(pDebugDB)
 {

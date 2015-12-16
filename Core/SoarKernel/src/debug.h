@@ -19,15 +19,16 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
-#include "portability.h"
 #include "kernel.h"
 #include "soar_db.h"
 #include "soar_module.h"
 #include "Export.h"
 #include "output_manager.h"
-#include "debug_defines.h"
 
 #include <string>
+
+/* Comment the following line out to completely compile out debug statements */
+#define DEBUG_OUTPUT_ON
 
 #ifdef DEBUG_EPMEM_SQL
     static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
@@ -68,15 +69,15 @@
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
 
-    #define dprint_variablization_tables(mode, ...) thisAgent->variablizationManager->print_variablization_tables (mode , ##__VA_ARGS__)
-    #define dprint_tables(mode) thisAgent->variablizationManager->print_tables (mode)
-    #define dprint_o_id_tables(mode) thisAgent->variablizationManager->print_o_id_tables (mode)
-    #define dprint_attachment_points(mode) thisAgent->variablizationManager->print_attachment_points (mode)
-    #define dprint_constraints(mode) thisAgent->variablizationManager->print_constraints (mode)
-    #define dprint_merge_map(mode) thisAgent->variablizationManager->print_merge_map (mode)
-    #define dprint_ovar_to_o_id_map(mode) thisAgent->variablizationManager->print_ovar_to_o_id_map (mode)
-    #define dprint_o_id_substitution_map(mode) thisAgent->variablizationManager->print_o_id_substitution_map (mode)
-    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->variablizationManager->print_o_id_to_ovar_debug_map (mode)
+    #define dprint_variablization_tables(mode, ...) thisAgent->ebChunker->print_variablization_tables (mode , ##__VA_ARGS__)
+    #define dprint_tables(mode) thisAgent->ebChunker->print_tables (mode)
+    #define dprint_o_id_tables(mode) thisAgent->ebChunker->print_o_id_tables (mode)
+    #define dprint_attachment_points(mode) thisAgent->ebChunker->print_attachment_points (mode)
+    #define dprint_constraints(mode) thisAgent->ebChunker->print_constraints (mode)
+    #define dprint_merge_map(mode) thisAgent->ebChunker->print_merge_map (mode)
+    #define dprint_ovar_to_o_id_map(mode) thisAgent->ebChunker->print_ovar_to_o_id_map (mode)
+    #define dprint_o_id_substitution_map(mode) thisAgent->ebChunker->print_o_id_substitution_map (mode)
+    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->ebChunker->print_o_id_to_ovar_debug_map (mode)
 
 #else
 
@@ -110,6 +111,7 @@
 
 #endif
 
+extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
 extern void debug_init_db(agent* thisAgent);
 extern void debug_print_db_err(TraceMode mode = DT_DEBUG);
 extern void debug_print_epmem_table(const char* table_name, TraceMode mode = DT_DEBUG);

@@ -10,25 +10,15 @@
 
 typedef unsigned char byte;
 
-/* ------------------------- Various trace and debug modes ----------------------
+/* ------------------------- debug trace channels -----------------------------
  *
- *     NOTE: IF YOU ADD A NEW TRACE OR DEBUG MODE, MAKE SURE TO
+ * NOTE: IF YOU ADD A NEW TRACE OR DEBUG MODE, MAKE SURE TO INITIALIZE PREFIX
+ *       INFO AND INITIAL VALUE IN Output_Manager::initialize_debug_trace
  *
- *       (1) SET AN INITIAL VALUE IN debug_defines.h
- *       (2) INITIALIZE OUTPUT PREFIX INFO AND INITIAL VALUE IN
- *           Output_Manager::fill_mode_info
- *
- * ------------------------------------------------------------------------------ */
-
+ * ------------------------------------------------------------------------- */
 enum TraceMode
 {
     No_Mode,
-    TM_EPMEM,
-    TM_SMEM,
-    TM_LEARNING,
-    TM_CHUNKING,
-    TM_RL,
-    TM_WMA,
     DT_DEBUG,
     DT_ID_LEAKING,
     DT_LHS_VARIABLIZATION,

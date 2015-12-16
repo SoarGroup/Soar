@@ -146,6 +146,17 @@ class Explanation_Based_Chunker
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
+        /* Debug printing methods */
+        void print_variablization_tables(TraceMode mode, int whichTable = 0);
+        void print_tables(TraceMode mode);
+        void print_o_id_tables(TraceMode mode);
+        void print_attachment_points(TraceMode mode);
+        void print_constraints(TraceMode mode);
+        void print_merge_map(TraceMode mode);
+        void print_ovar_to_o_id_map(TraceMode mode);
+        void print_o_id_substitution_map(TraceMode mode);
+        void print_o_id_to_ovar_debug_map(TraceMode mode);
+
         /* Clean-up */
         void reinit();
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
@@ -306,17 +317,6 @@ class Explanation_Based_Chunker
         void clear_cached_constraints();
         void clear_o_id_substitution_map();
         void clear_data();
-
-        /* Debug printing methods */
-        void print_variablization_tables(TraceMode mode, int whichTable = 0);
-        void print_tables(TraceMode mode);
-        void print_o_id_tables(TraceMode mode);
-        void print_attachment_points(TraceMode mode);
-        void print_constraints(TraceMode mode);
-        void print_merge_map(TraceMode mode);
-        void print_ovar_to_o_id_map(TraceMode mode);
-        void print_o_id_substitution_map(TraceMode mode);
-        void print_o_id_to_ovar_debug_map(TraceMode mode);
 
 };
 

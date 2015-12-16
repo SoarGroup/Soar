@@ -14,13 +14,28 @@
 typedef struct agent_struct agent;
 extern void print(agent* thisAgent, const char* format, ...);
 
-#define SOAR_RELEASE_VERSION
+/* Uncomment this to get common compile settings for release version of Soar */
+//#define SOAR_RELEASE_VERSION
+
+/* Experimental setting that forces Soar to consider the attribute element
+ * of a wme/pref when incrementing/decrementing link counts, which are use
+ * for garbage collection. */
+//    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+
+/* Some settings used for EBC.  Do not uncomment. */
+#define EBC_MERGE_CONDITIONS
+#define EBC_ADD_CONSTRAINTS_IDENTITIES
+
+/* Experimental setting for handling ground conditions that match the same wme */
+//#define EBC_MAP_MERGE_DUPE_GROUNDS
+#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
+//#define EBC_SUPERMERGE
+#endif
+
 
 #ifndef SOAR_RELEASE_VERSION
-    /* --  The following enables debugging traces/modes. Individual debug
-     *     #defines are found in debug_defines.h -- */
+
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-//    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL
@@ -48,7 +63,7 @@ extern void print(agent* thisAgent, const char* format, ...);
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 
-//    #define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
