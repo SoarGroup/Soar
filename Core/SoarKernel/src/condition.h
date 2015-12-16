@@ -1,7 +1,6 @@
 #ifndef CONDITION_H
 #define CONDITION_H
 
-#include "portability.h"
 #include "kernel.h"
 
 typedef unsigned char byte;

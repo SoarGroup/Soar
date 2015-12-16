@@ -9,16 +9,16 @@
  *
  * ===================================================================== */
 
-#include <stdlib.h>
 
 #include "lexer.h"
+#include "agent.h"
 #include "print.h"
-#include "xml.h"
 #include "misc.h"
+#include "xml.h"
 
+#include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-
 #include <assert.h>
 
 using soar::Lexer;

@@ -17,7 +17,8 @@
 
 #include <string>
 #include "stdint.h"
-#include "agent.h"
+
+typedef struct agent_struct agent;
 
 /**
  * Types of tokens read by the lexer

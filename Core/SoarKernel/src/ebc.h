@@ -9,8 +9,6 @@
 #define EBC_MANAGER_H_
 
 #include "kernel.h"
-//#include "symtab.h"
-//#include "test.h"
 #include <list>
 #include <set>
 #include <unordered_map>
