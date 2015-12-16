@@ -61,8 +61,8 @@ using namespace soar_TraceNames;
 void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-        if (((sym)->id->level >= thisAgent->results_match_goal_level) &&
-                ((sym)->tc_num != thisAgent->results_tc_number))
+        if (((sym)->id->level >= results_match_goal_level) &&
+                ((sym)->tc_num != results_tc_number))
         {
             add_results_for_id(sym);
         }
@@ -73,7 +73,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
     preference* p;
 
     /* --- if an equivalent pref is already a result, don't add this one --- */
-    for (p = thisAgent->results; p != NIL; p = p->next_result)
+    for (p = results; p != NIL; p = p->next_result)
     {
         if (p->id != pref->id)
         {
@@ -103,16 +103,16 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
     }
 
     /* --- if pref isn't at the right level, find a clone that is --- */
-    if (pref->inst->match_goal_level != thisAgent->results_match_goal_level)
+    if (pref->inst->match_goal_level != results_match_goal_level)
     {
         for (p = pref->next_clone; p != NIL; p = p->next_clone)
-            if (p->inst->match_goal_level == thisAgent->results_match_goal_level)
+            if (p->inst->match_goal_level == results_match_goal_level)
             {
                 break;
             }
         if (!p)
             for (p = pref->prev_clone; p != NIL; p = p->prev_clone)
-                if (p->inst->match_goal_level == thisAgent->results_match_goal_level)
+                if (p->inst->match_goal_level == results_match_goal_level)
                 {
                     break;
                 }
@@ -124,8 +124,8 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
     }
 
     /* --- add this preference to the result list --- */
-    pref->next_result = thisAgent->results;
-    thisAgent->results = pref;
+    pref->next_result = results;
+    results = pref;
 
     /* --- follow transitive closure through value, referent links --- */
     add_results_if_needed(pref->value);
@@ -141,7 +141,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
     preference* pref;
     wme* w;
 
-    id->tc_num = thisAgent->results_tc_number;
+    id->tc_num = results_tc_number;
 
     /* --- scan through all preferences and wmes for all slots for this id --- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
@@ -160,7 +160,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
         }
     } /* end of for slots loop */
     /* --- now scan through extra prefs and look for any with this id --- */
-    for (pref = thisAgent->extra_result_prefs_from_instantiation; pref != NIL;
+    for (pref = extra_result_prefs_from_instantiation; pref != NIL;
             pref = pref->inst_next)
     {
         if (pref->id == id)
@@ -174,21 +174,21 @@ preference* Explanation_Based_Chunker::get_results_for_instantiation(instantiati
 {
     preference* pref;
 
-    thisAgent->results = NIL;
-    thisAgent->results_match_goal_level = inst->match_goal_level;
-    thisAgent->results_tc_number = get_new_tc_number(thisAgent);
-    thisAgent->extra_result_prefs_from_instantiation = inst->preferences_generated;
+    results = NIL;
+    results_match_goal_level = inst->match_goal_level;
+    results_tc_number = get_new_tc_number(thisAgent);
+    extra_result_prefs_from_instantiation = inst->preferences_generated;
     for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
-        if ((pref->id->id->level < thisAgent->results_match_goal_level) &&
-                (pref->id->tc_num != thisAgent->results_tc_number))
+        if ((pref->id->id->level < results_match_goal_level) &&
+                (pref->id->tc_num != results_tc_number))
         {
             add_pref_to_results(pref);
             dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
         } else {
-            dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, thisAgent->results_match_goal_level);
+            dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, results_match_goal_level);
         }
 
-    return thisAgent->results;
+    return results;
 }
 
 action* Explanation_Based_Chunker::copy_action_list(action* actions)
@@ -436,21 +436,21 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
 {
     cons* c;
     condition* ground, *c_vrblz, *first_vrblz = nullptr, *prev_vrblz;
-    bool should_unify_and_simplify = thisAgent->ebChunker->learning_is_on_for_instantiation();
+    bool should_unify_and_simplify = learning_is_on_for_instantiation();
 
     c_vrblz  = NIL; /* unnecessary, but gcc -Wall warns without it */
 
     dprint(DT_BUILD_CHUNK_CONDS, "Building conditions for new chunk...\n");
     dprint(DT_BUILD_CHUNK_CONDS, "Grounds from backtrace: \n");
-    dprint_noprefix(DT_BUILD_CHUNK_CONDS, "%3", thisAgent->grounds);
+    dprint_noprefix(DT_BUILD_CHUNK_CONDS, "%3", grounds);
     dprint(DT_BUILD_CHUNK_CONDS, "...creating positive conditions from final ground set.\n");
     /* --- build instantiated conds for grounds and setup their TC --- */
-    thisAgent->ebChunker->reset_constraint_found_tc_num();
+    reset_constraint_found_tc_num();
     prev_vrblz = NIL;
-    while (thisAgent->grounds)
+    while (grounds)
     {
-        c = thisAgent->grounds;
-        thisAgent->grounds = thisAgent->grounds->rest;
+        c = grounds;
+        grounds = grounds->rest;
         ground = static_cast<condition_struct*>(c->first);
         free_cons(thisAgent, c);
         /* --- make the instantiated condition --- */
@@ -473,10 +473,10 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
     }
 
     chunk_cond *cc;
-    while (thisAgent->negated_set.all)
+    while (negated_set.all)
     {
-        cc = thisAgent->negated_set.all;
-        remove_from_chunk_cond_set(&thisAgent->negated_set, cc);
+        cc = negated_set.all;
+        remove_from_chunk_cond_set(&negated_set, cc);
         if (cond_is_in_tc(thisAgent, cc->cond, tc_to_use))
         {
             /* --- negated cond is in the TC, so add it to the grounds --- */
@@ -519,7 +519,7 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
 
     *vrblz_top = first_vrblz;
 
-    thisAgent->ebChunker->add_additional_constraints(*vrblz_top);
+    add_additional_constraints(*vrblz_top);
 
 //    condition* c_inst, *first_inst = nullptr, *prev_inst;
 //
@@ -719,8 +719,8 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiatio
         {
             return (generate_new_str_constant(
                         thisAgent,
-                        thisAgent->chunk_name_prefix,
-                        &thisAgent->chunk_count));
+                        chunk_name_prefix,
+                        &chunk_count));
         }
         case longFormat:
         {
@@ -772,8 +772,8 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiatio
             {
                 lImpasseName = "unknownimpasse";
             }
-            lName << thisAgent->chunk_name_prefix << "-" << thisAgent->chunk_count++ << "*" <<
-                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << thisAgent->chunks_this_d_cycle;
+            lName << chunk_name_prefix << "-" << chunk_count++ << "*" <<
+                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
 
             break;
         }
@@ -782,9 +782,9 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiatio
             std::string real_prod_name;
 
             lImpasseName.erase();
-            lName << thisAgent->chunk_name_prefix;
+            lName << chunk_name_prefix;
 
-            thisAgent->chunk_count++;
+            chunk_count++;
             if (goal)
             {
                 impasse_type = type_of_existing_impasse(thisAgent, goal);
@@ -823,7 +823,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiatio
 
             if (inst->prod)
             {
-                if (strstr(inst->prod->name->sc->name, thisAgent->chunk_name_prefix) == inst->prod->name->sc->name)
+                if (strstr(inst->prod->name->sc->name, chunk_name_prefix) == inst->prod->name->sc->name)
                 {
                     /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                     lName << "-multi";
@@ -834,7 +834,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiatio
             {
                 lName << "*" << lImpasseName;
             }
-            lName << "*t" << thisAgent->d_cycle_count << "-" << thisAgent->chunks_this_d_cycle;
+            lName << "*t" << thisAgent->d_cycle_count << "-" << chunks_this_d_cycle;
         }
     }
     lImpasseName.erase();
@@ -887,10 +887,10 @@ void Explanation_Based_Chunker::chunk_instantiation_cleanup (Symbol** prod_name,
         symbol_remove_ref(thisAgent, *prod_name);
         *prod_name = NULL;
     }
-    thisAgent->ebChunker->clear_variablization_maps();
-    thisAgent->ebChunker->clear_cached_constraints();
-    thisAgent->ebChunker->clear_o_id_substitution_map();
-    thisAgent->ebChunker->clear_attachment_map();
+    clear_variablization_maps();
+    clear_cached_constraints();
+    clear_o_id_substitution_map();
+    clear_attachment_map();
 }
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
@@ -968,33 +968,33 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     grounds_level = inst->match_goal_level - 1;
 
-    thisAgent->backtrace_number++;
-    if (thisAgent->backtrace_number == 0)
+    backtrace_number++;
+    if (backtrace_number == 0)
     {
-        thisAgent->backtrace_number = 1;
+        backtrace_number = 1;
     }
 
-    thisAgent->grounds_tc++;
-    if (thisAgent->grounds_tc == 0)
+    grounds_tc++;
+    if (grounds_tc == 0)
     {
-        thisAgent->grounds_tc = 1;
+        grounds_tc = 1;
     }
 
-    thisAgent->potentials_tc++;
-    if (thisAgent->potentials_tc == 0)
+    potentials_tc++;
+    if (potentials_tc == 0)
     {
-        thisAgent->potentials_tc = 1;
+        potentials_tc = 1;
     }
 
-    thisAgent->locals_tc++;
-    if (thisAgent->locals_tc == 0)
+    locals_tc++;
+    if (locals_tc == 0)
     {
-        thisAgent->locals_tc = 1;
+        locals_tc = 1;
     }
 
-    thisAgent->grounds = NIL;
-    thisAgent->positive_potentials = NIL;
-    thisAgent->locals = NIL;
+    grounds = NIL;
+    positive_potentials = NIL;
+    locals = NIL;
 
     /* Start a new structure for this potential chunk */
 
@@ -1051,22 +1051,22 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
 
-    free_list(thisAgent, thisAgent->positive_potentials);
+    free_list(thisAgent, positive_potentials);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
-    chunk_new_i_id = thisAgent->ebChunker->get_new_inst_id();
+    chunk_new_i_id = get_new_inst_id();
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
         build_chunk_conds_for_grounds_and_add_negateds(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
     }
 
-    variablize = thisAgent->ebChunker->learning_is_on_for_instantiation() && reliable;
+    variablize = learning_is_on_for_instantiation() && reliable;
 
     /* --- get symbol for name of new chunk or justification --- */
     if (variablize)
     {
-        thisAgent->chunks_this_d_cycle++;
+        chunks_this_d_cycle++;
         prod_name = generate_chunk_name_str_constant(inst);
 
         prod_type = CHUNK_PRODUCTION_TYPE;
@@ -1075,7 +1075,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     else
     {
-        prod_name = generate_new_str_constant(thisAgent, "justification-", &thisAgent->justification_count);
+        prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
@@ -1106,14 +1106,14 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         goto chunking_abort;
     }
 
-    if (thisAgent->chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
+    if (chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
             print(thisAgent, "Warning: reached max-chunks! Halting system.\n");
             xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
         }
-        thisAgent->max_chunks_reached = true;
+        max_chunks_reached = true;
 
         goto chunking_abort;
     }
@@ -1126,21 +1126,21 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         copy_condition_list(thisAgent, vrblz_top, &saved_justification_top, &saved_justification_bottom);
 
         reset_variable_generator(thisAgent, vrblz_top, NIL);
-        thisAgent->ebChunker->variablize_condition_list(vrblz_top);
+        variablize_condition_list(vrblz_top);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", vrblz_top, results);
         #ifdef EBC_MERGE_CONDITIONS
-        thisAgent->ebChunker->merge_conditions(vrblz_top);
+        merge_conditions(vrblz_top);
         #endif
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", vrblz_top, results);
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying identities in results... \n%6", vrblz_top, results);
     reset_variable_generator(thisAgent, vrblz_top, NIL);
-    thisAgent->ebChunker->unify_identities_for_results(results);
+    unify_identities_for_results(results);
     dprint(DT_VARIABLIZATION_MANAGER, "Polished and merged conditions/results with relational constraints: \n%6", vrblz_top, results);
 
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Variablizing RHS results...\n");
-    rhs = thisAgent->ebChunker->variablize_results_into_actions(results, variablize);
+    rhs = variablize_results_into_actions(results, variablize);
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS results.\n");
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
@@ -1172,7 +1172,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
         symbol_remove_ref(thisAgent, prod_name);
         prod_name = NULL;
-        prod_name = generate_new_str_constant(thisAgent, "justification-", &thisAgent->justification_count);
+        prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
@@ -1190,7 +1190,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         create_instantiated_counterparts(vrblz_top, &inst_top, &inst_bottom);
 
         dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
-        rhs = thisAgent->ebChunker->variablize_results_into_actions(results, false);
+        rhs = variablize_results_into_actions(results, false);
 
         add_goal_or_impasse_tests(inst_top, vrblz_top);
 
@@ -1369,10 +1369,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 #endif
 #endif
 
-    if (!thisAgent->max_chunks_reached)
+    if (!max_chunks_reached)
     {
         dprint(DT_MILESTONES, "Calling chunk instantiation from chunk instantiation for i%u START\n", chunk_new_i_id);
-        thisAgent->ebChunker->set_learning_for_instantiation(chunk_inst);
+        set_learning_for_instantiation(chunk_inst);
         build_chunk_or_justification(chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     }

@@ -1762,7 +1762,7 @@ void do_preference_phase(agent* thisAgent)
         {
             assertionsExist = true;
 
-            if (thisAgent->max_chunks_reached)
+            if (thisAgent->ebChunker->max_chunks_reached)
             {
                 consume_last_postponed_assertion(thisAgent);
                 thisAgent->system_halted = true;

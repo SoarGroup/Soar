@@ -115,45 +115,139 @@ class Explanation_Based_Chunker
 {
     public:
 
-        uint64_t get_new_inst_id() { return (++inst_id_counter); };
+        Explanation_Based_Chunker(agent* myAgent);
+        ~Explanation_Based_Chunker();
 
-        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
-        bool set_learning_for_instantiation(instantiation* inst);
-
-        /* Core public chunking methods */
+        /* Builds a chunk or justification based on a submitted instantiation
+         * and adds it to the rete.  Called by create_instantiation, smem and epmem */
         void build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list);
+
+        /* Methods used during instantiation creation to generate identities used by the
+         * explanation trace. */
+        void add_explanation_to_condition(rete_node* node, condition* cond,
+                                          wme* w, node_varnames* nvn, uint64_t pI_id,
+                                          AddAdditionalTestsMode additional_tests);
+        uint64_t get_new_inst_id() { return (++inst_id_counter); };
+        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
+        Symbol * get_ovar_for_o_id(uint64_t o_id);
+        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
+
+        /* Methods used during condition copying to make unification and constraint
+         * attachment more effecient */
+        void unify_identity(test t);
+        bool in_null_identity_set(test t);
+        tc_number get_constraint_found_tc_num() { return tc_num_found; };
+
+        /* Methods used by cli learn command */
+        uint64_t get_chunk_count() { return chunk_count; };
+        void set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
+        char* get_chunk_name_prefix() { return chunk_name_prefix; };
+        void set_chunk_name_prefix(const char* pChunk_name_prefix) {
+            free(chunk_name_prefix);
+            strcpy(chunk_name_prefix, pChunk_name_prefix); };
+
+        /* Determines whether learning is on for a particular instantiation
+         * based on the global learning settings and whether the state chunky */
+        bool set_learning_for_instantiation(instantiation* inst);
+        bool max_chunks_reached;
+        void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; };
+
+        /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
+        ::list*             chunk_free_problem_spaces;
+        ::list*             chunky_problem_spaces;   /* AGR MVL1 */
+
+
+        /* RL templates utilize the EBChunker variablization code when building
+         * template instances.  We make these two methods public to support that. */
+        void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
+
+        /* Clean-up */
+        void reinit();
+        void cleanup_for_instantiation_deallocation(uint64_t pI_id);
+        void clear_variablization_maps();
+
+    private:
+
+        agent* thisAgent;
+        Output_Manager* outputManager;
+
+        /* Statistics on learning performed so far */
+        uint64_t            chunk_count;
+        uint64_t            justification_count;
+        uint64_t            chunks_this_d_cycle;
+
+        /* String that every chunk name begins with */
+        char                chunk_name_prefix[kChunkNamePrefixMaxLength];
+
+        /* Variables used by dependency analysis methods */
+        ::list*             grounds;
+        ::list*             locals;
+        ::list*             positive_potentials;
+        chunk_cond_set      negated_set;
+        tc_number           grounds_tc;
+        tc_number           locals_tc;
+        tc_number           potentials_tc;
+        tc_number           backtrace_number;
+        bool                quiescence_t_flag;
+
+        /* Variables used by result building methods */
+        preference*         results;
+        goal_stack_level    results_match_goal_level;
+        tc_number           results_tc_number;
+        preference*         extra_result_prefs_from_instantiation;
+
+        /* -- The following are tables used by the variablization manager during
+         *    instantiation creation, backtracing and chunk formation.  The data
+         *    they store is temporary and cleared after use. -- */
+
+        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
+        std::unordered_map< uint64_t, Symbol* >*                                    o_id_to_ovar_debug_map;
+        std::unordered_map< uint64_t, uint64_t >*                                   unification_map;
+
+        /* -- Look-up tables for LHS variablization -- */
+        std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
+        std::unordered_map< Symbol*, Symbol* >*    sym_to_var_map;
+
+        std::list< constraint* >* constraints;
+        std::unordered_map< uint64_t, attachment_point* >* attachment_points;
+
+        /* -- Table of previously seen conditions.  Used to determine whether to
+         *    merge or eliminate positive conditions on the LHS of a chunk. -- */
+        std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >* cond_merge_map;
+
+        /* -- A counter for variablization and instantiation id's. 0 is the default
+         *    value and not considered a valid id. -- */
+        uint64_t inst_id_counter;
+        uint64_t ovar_id_counter;
+
+        bool m_learning_on_for_instantiation;
+        bool m_learning_on;
+
+        tc_number tc_num_found;
+
+        /* Core chunk building methods */
         chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
         bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
+        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
         /* Explanation/identity generation methods */
         void add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void add_explanation_to_RL_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-        void add_explanation_to_condition(rete_node* node, condition* cond,
-            wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
 
         /* Variablization methods */
         void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         action* variablize_results_into_actions(preference* result, bool variablize);
-        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
 
         /* Clean-up */
-        void cleanup_for_instantiation_deallocation(uint64_t pI_id);
-        void clear_variablization_maps();
         void clear_attachment_map();
         void clear_cached_constraints();
         void clear_o_id_substitution_map();
         void clear_data();
-        void reinit();
-
-        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
-        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
-        Symbol * get_ovar_for_o_id(uint64_t o_id);
 
         void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
-        tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
         /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
@@ -162,13 +256,11 @@ class Explanation_Based_Chunker
 
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        void unify_identity(test t);
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
         void unify_backtraced_conditions(condition* parent_cond,
             const soar_module::identity_triple o_ids_to_replace,
             const soar_module::rhs_triple rhs_funcs);
         void literalize_RHS_function_args(const rhs_value rv);
-        bool in_null_identity_set(test t);
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
 
@@ -181,13 +273,6 @@ class Explanation_Based_Chunker
         void print_ovar_to_o_id_map(TraceMode mode);
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
-
-        Explanation_Based_Chunker(agent* myAgent);
-        ~Explanation_Based_Chunker();
-
-    private:
-        agent* thisAgent;
-        Output_Manager* outputManager;
 
         /* Dependency analysis methods */
         void add_to_grounds(condition* cond);
@@ -257,34 +342,7 @@ class Explanation_Based_Chunker
         void clear_o_id_to_ovar_debug_map();
         void clear_rulesym_to_identity_map();
 
-        /* -- The following are tables used by the variablization manager during
-         *    instantiation creation, backtracing and chunk formation.  The data
-         *    they store is temporary and cleared after use. -- */
 
-        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
-        std::unordered_map< uint64_t, Symbol* >*                          o_id_to_ovar_debug_map;
-        std::unordered_map< uint64_t, uint64_t >*                         unification_map;
-
-        /* -- Look-up tables for LHS variablization -- */
-        std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
-        std::unordered_map< Symbol*, Symbol* >*    sym_to_var_map;
-
-        std::list< constraint* >* constraints;
-        std::unordered_map< uint64_t, attachment_point* >* attachment_points;
-
-        /* -- Table of previously seen conditions.  Used to determine whether to
-         *    merge or eliminate positive conditions on the LHS of a chunk. -- */
-        std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >* cond_merge_map;
-
-        /* -- A counter for variablization and instantiation id's. 0 is the default
-         *    value and not considered a valid id. -- */
-        uint64_t inst_id_counter;
-        uint64_t ovar_id_counter;
-
-        bool m_learning_on_for_instantiation;
-        bool m_learning_on;
-
-        tc_number tc_num_found;
 
 };
 

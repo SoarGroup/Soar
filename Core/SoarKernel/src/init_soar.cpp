@@ -308,7 +308,7 @@ void reset_statistics(agent* thisAgent)
     thisAgent->decision_phases_count = 0;
     thisAgent->e_cycle_count = 0;
     thisAgent->e_cycles_this_d_cycle = 0;
-    thisAgent->chunks_this_d_cycle = 0;
+    thisAgent->ebChunker->reset_chunks_this_d_cycle();
     thisAgent->production_firing_count = 0;
     thisAgent->start_dc_production_firing_count = 0;
     thisAgent->wme_addition_count = 0;
@@ -597,7 +597,7 @@ void do_one_top_level_phase(agent* thisAgent)
              * we need to do some initialization in the INPUT PHASE, which
              * now comes first.  e_cycles are also zeroed before the APPLY Phase.
              */
-            thisAgent->chunks_this_d_cycle = 0;
+            thisAgent->ebChunker->reset_chunks_this_d_cycle();
             thisAgent->e_cycles_this_d_cycle = 0;
 #ifndef NO_TIMING_STUFF   /* REW:  28.07.96 */
             thisAgent->timers_phase.start();

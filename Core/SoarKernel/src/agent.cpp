@@ -175,14 +175,9 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->all_wmes_in_rete                   = NIL;
     thisAgent->alpha_mem_id_counter               = 0;
-    thisAgent->backtrace_number                   = 0;
     thisAgent->beta_node_id_counter               = 0;
     thisAgent->bottom_goal                        = NIL;
     thisAgent->changed_slots                      = NIL;
-    thisAgent->chunk_count                        = 1;
-    thisAgent->chunk_free_problem_spaces          = NIL;
-    thisAgent->chunky_problem_spaces              = NIL;  /* AGR MVL1 */
-    strcpy(thisAgent->chunk_name_prefix, "chunk"); /* ajc (5/14/02) */
     thisAgent->context_slots_with_changed_acceptable_preferences = NIL;
     thisAgent->current_phase                      = INPUT_PHASE;
     thisAgent->applyPhase                         = false;
@@ -198,21 +193,16 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->go_type                            = GO_DECISION;
     thisAgent->init_count                         = 0;
     thisAgent->rl_init_count                      = 0;
-    thisAgent->grounds_tc                         = 0;
     thisAgent->highest_goal_whose_context_changed = NIL;
     thisAgent->ids_with_unknown_level             = NIL;
     thisAgent->input_period                       = 0;     /* AGR REW1 */
     thisAgent->input_cycle_flag                   = true;  /* AGR REW1 */
-    thisAgent->justification_count                = 1;
     thisAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
-    thisAgent->locals_tc                          = 0;
-    thisAgent->max_chunks_reached                 = false; /* MVP 6-24-94 */
     thisAgent->mcs_counter                        = 1;
     thisAgent->ms_assertions                      = NIL;
     thisAgent->ms_retractions                     = NIL;
     thisAgent->num_existing_wmes                  = 0;
     thisAgent->num_wmes_in_rete                   = 0;
-    thisAgent->potentials_tc                      = 0;
     thisAgent->prev_top_state                     = NIL;
     thisAgent->production_being_fired             = NIL;
     thisAgent->productions_being_traced           = NIL;

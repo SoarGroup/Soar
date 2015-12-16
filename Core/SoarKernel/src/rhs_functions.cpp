@@ -566,9 +566,9 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->chunk_free_problem_spaces))
+    if (! member_of_list(state, thisAgent->ebChunker->chunk_free_problem_spaces))
     {
-        push(thisAgent, state, thisAgent->chunk_free_problem_spaces);
+        push(thisAgent, state, thisAgent->ebChunker->chunk_free_problem_spaces);
         /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
     }
     return NIL;
@@ -610,9 +610,9 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->chunky_problem_spaces))
+    if (! member_of_list(state, thisAgent->ebChunker->chunky_problem_spaces))
     {
-        push(thisAgent, state, thisAgent->chunky_problem_spaces);
+        push(thisAgent, state, thisAgent->ebChunker->chunky_problem_spaces);
         /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
     }
     return NIL;
@@ -825,9 +825,9 @@ Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
             ms = arg->ic->value;
         }
     }
-    
+
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-    
+
     return NIL;
 }
 
@@ -892,7 +892,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "count"),
                      count_rhs_function_code,
                      -1, false, true, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "wait"),
                      wait_rhs_function_code,
                      1, false, true, 0);

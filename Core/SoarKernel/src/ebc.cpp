@@ -35,11 +35,23 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
     unification_map = new std::unordered_map< uint64_t, uint64_t >();
     cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
-    init_chunk_cond_set(&thisAgent->negated_set);
+    init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
     m_learning_on_for_instantiation = m_learning_on;
+
+    backtrace_number                   = 0;
+    chunk_count                        = 1;
+    justification_count                = 1;
+    strcpy(chunk_name_prefix, "chunk"); /* ajc (5/14/02) */
+    grounds_tc                         = 0;
+    locals_tc                          = 0;
+    potentials_tc                      = 0;
+
+    max_chunks_reached = false;
+    chunk_free_problem_spaces          = NIL;
+    chunky_problem_spaces              = NIL;
 
 }
 
@@ -62,6 +74,8 @@ void Explanation_Based_Chunker::reinit()
     clear_data();
     inst_id_counter = 0;
     ovar_id_counter = 0;
+    chunk_free_problem_spaces          = NIL;
+    chunky_problem_spaces              = NIL;
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
@@ -75,7 +89,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     }
 
     if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
-            member_of_list(inst->match_goal, thisAgent->chunk_free_problem_spaces))
+            member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
@@ -89,7 +103,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     }
 
     if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
-            !member_of_list(inst->match_goal, thisAgent->chunky_problem_spaces))
+            !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {

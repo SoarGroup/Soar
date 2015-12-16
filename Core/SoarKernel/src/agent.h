@@ -318,10 +318,6 @@ typedef struct EXPORT agent_struct
     /* --- counts of how many productions there are of each type --- */
     uint64_t            num_productions_of_type[NUM_PRODUCTION_TYPES];
 
-    /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-    ::list*             chunk_free_problem_spaces;
-    ::list*             chunky_problem_spaces;   /* AGR MVL1 */
-
     /* --- default depth for "print" command --- */
     int                 default_wme_depth;      /* AGR 646 */
 
@@ -340,10 +336,6 @@ typedef struct EXPORT agent_struct
 
     /* --- the RHS action (halt) sets this true --- */
     bool               system_halted;
-
-    /* --- stuff for max-chunks (which is a sysparam) --- */
-    uint64_t       chunks_this_d_cycle; /* # chunks built this DC */
-    bool           max_chunks_reached;
 
     /* --- list of productions whose firings are being traced --- */
     ::list*             productions_being_traced;
@@ -546,26 +538,6 @@ typedef struct EXPORT agent_struct
     /* Used only if #def'd ATTENTION_LAPSE in */
     struct timeval*   attention_lapse_tracker;
     bool              attention_lapsing;
-
-
-    /* ----------------------- Chunker stuff -------------------------- */
-
-    tc_number           backtrace_number;
-    uint64_t            chunk_count;
-    uint64_t            justification_count;
-    ::list*             grounds;
-    tc_number           grounds_tc;
-    ::list*             locals;
-    tc_number           locals_tc;
-    ::list*             positive_potentials;
-    tc_number           potentials_tc;
-    chunk_cond_set      negated_set;
-    preference*         results;
-    goal_stack_level    results_match_goal_level;
-    tc_number           results_tc_number;
-    preference*         extra_result_prefs_from_instantiation;
-    bool               quiescence_t_flag;
-    char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
 
     /* ----------------------- Explain.c stuff -------------------------- */
 

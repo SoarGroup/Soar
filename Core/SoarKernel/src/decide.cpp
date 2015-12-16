@@ -2951,8 +2951,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
 
     /* We have to remove this state from the list of states to learn in (NLD: and free cons)
      * jzxu April 24, 2009 */
-    free_list(thisAgent, extract_list_elements(thisAgent, &thisAgent->chunky_problem_spaces, cons_equality_fn, reinterpret_cast<void*>(goal)));
-    free_list(thisAgent, extract_list_elements(thisAgent, &thisAgent->chunk_free_problem_spaces, cons_equality_fn, reinterpret_cast<void*>(goal)));
+    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->ebChunker->chunky_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
+    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->ebChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
     symbol_remove_ref(thisAgent, goal);
