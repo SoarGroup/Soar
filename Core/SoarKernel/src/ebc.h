@@ -1,19 +1,20 @@
 /*
- * variablization_manager.h
+ * ebc.h
  *
- *  Created on: Jul 25, 2013
- *      Author: mazzin
+ *  Created on: Dec 15, 2015
+ *      Author: Mazin Assanie
  */
 
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
-#include "portability.h"
-#include "symtab.h"
-#include "test.h"
+#include "kernel.h"
+//#include "symtab.h"
+//#include "test.h"
 #include <list>
 #include <set>
 #include <unordered_map>
+#include <cstdlib>
 
 #define BUFFER_PROD_NAME_SIZE 256
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
@@ -30,6 +31,13 @@ typedef struct preference_struct preference;
 typedef struct symbol_struct Symbol;
 typedef struct test_struct test_info;
 typedef test_info* test;
+typedef struct wme_struct wme;
+typedef struct rete_node_struct rete_node;
+typedef struct node_varnames_struct node_varnames;
+typedef unsigned short rete_node_level;
+typedef uint64_t tc_number;
+typedef struct cons_struct cons;
+typedef cons list;
 
 tc_number get_new_tc_number(agent* thisAgent);
 class Output_Manager;
@@ -91,26 +99,6 @@ typedef struct backtrace_struct
     struct backtrace_struct* next_backtrace; /* Pointer to next in this list */
 } backtrace_str;
 
-
-
-/* -- Variablization_Manager
- *
- * variablization_table
- *
- *    The variablization_table is used during chunking.  It stores a mapping from either a
- *    symbol's original variable, if available, or the actual symbol to the variable
- *    that was created for variablization.  It is keep track of the current variablized
- *    symbols in a chunk that is being built. This mapping is temporary and cleared after
- *    the chunk is built. This replaces the variablized pointer in versions of Soar
- *    prior to 9.4
- *
- * original_symbol_ht and original_symbol_mp
- *
- *     A hash table and memory pool to store data structures that keep track of original
- *    symbols.  Used to keep track of the next unique symbol to generate
- *
- * -- */
-
 class Explanation_Based_Chunker
 {
     public:
@@ -140,11 +128,10 @@ class Explanation_Based_Chunker
 
         /* Methods used by cli learn command */
         uint64_t get_chunk_count() { return chunk_count; };
-        void set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
-        char* get_chunk_name_prefix() { return chunk_name_prefix; };
-        void set_chunk_name_prefix(const char* pChunk_name_prefix) {
-            free(chunk_name_prefix);
-            strcpy(chunk_name_prefix, pChunk_name_prefix); };
+        void     set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
+        char*    get_chunk_name_prefix() { return chunk_name_prefix; };
+        void     set_chunk_name_prefix(const char* pChunk_name_prefix)
+                 { free(chunk_name_prefix); strcpy(chunk_name_prefix, pChunk_name_prefix); };
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -156,7 +143,6 @@ class Explanation_Based_Chunker
         ::list*             chunk_free_problem_spaces;
         ::list*             chunky_problem_spaces;   /* AGR MVL1 */
 
-
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
@@ -165,6 +151,7 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
+        /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
     private:
@@ -226,9 +213,6 @@ class Explanation_Based_Chunker
 
         tc_number tc_num_found;
 
-        /* Core chunk building methods */
-        chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
-        bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
         /* Explanation/identity generation methods */
@@ -237,42 +221,23 @@ class Explanation_Based_Chunker
         void add_explanation_to_RL_condition(rete_node* node, condition* cond,
             wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
 
-        /* Variablization methods */
-        void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        action* variablize_results_into_actions(preference* result, bool variablize);
-
-        /* Clean-up */
-        void clear_attachment_map();
-        void clear_cached_constraints();
-        void clear_o_id_substitution_map();
-        void clear_data();
-
-        void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
-
-        /* Constraint analysis and enforcement methods */
-        void cache_constraints_in_cond(condition* c);
-        void add_additional_constraints(condition* cond);
-        bool has_positive_condition(uint64_t pO_id);
-
-        /* Identity analysis and unification methods */
-        void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
-        void unify_backtraced_conditions(condition* parent_cond,
-            const soar_module::identity_triple o_ids_to_replace,
-            const soar_module::rhs_triple rhs_funcs);
-        void literalize_RHS_function_args(const rhs_value rv);
-        void unify_identities_for_results(preference* result);
-        void merge_conditions(condition* top_cond);
-
-        void print_variablization_tables(TraceMode mode, int whichTable = 0);
-        void print_tables(TraceMode mode);
-        void print_o_id_tables(TraceMode mode);
-        void print_attachment_points(TraceMode mode);
-        void print_constraints(TraceMode mode);
-        void print_merge_map(TraceMode mode);
-        void print_ovar_to_o_id_map(TraceMode mode);
-        void print_o_id_substitution_map(TraceMode mode);
-        void print_o_id_to_ovar_debug_map(TraceMode mode);
+        /* Chunk building methods */
+        void add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
+        void add_pref_to_results(preference* pref);
+        void add_results_for_id(Symbol* id);
+        void add_results_if_needed(Symbol* sym);
+        bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
+        void build_chunk_conds_for_grounds_and_add_negateds(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        action* copy_action_list(action* actions);
+        void chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top);
+        void create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
+        preference* get_results_for_instantiation(instantiation* inst);
+        Symbol* generate_chunk_name_str_constant(instantiation* inst);
+        void init_chunk_cond_set(chunk_cond_set* set);
+        chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
+        void make_clones_of_results(preference* results, instantiation* chunk_inst);
+        void remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
+        void reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
 
         /* Dependency analysis methods */
         void add_to_grounds(condition* cond);
@@ -291,29 +256,25 @@ class Explanation_Based_Chunker
                 const soar_module::rhs_triple rhs_funcs);
         void report_local_negation(condition* c);
 
-        /* Chunk building methods */
-        void add_pref_to_results(preference* pref);
-        void add_results_for_id(Symbol* id);
-        void add_results_if_needed(Symbol* sym);
-        preference* get_results_for_instantiation(instantiation* inst);
-        action* copy_action_list(action* actions);
-        void init_chunk_cond_set(chunk_cond_set* set);
-        void remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
-        void create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
-        void build_chunk_conds_for_grounds_and_add_negateds(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
-        void add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
-        void reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        void make_clones_of_results(preference* results, instantiation* chunk_inst);
-        Symbol* generate_chunk_name_str_constant(instantiation* inst);
-        void chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top);
-
         /* Identity analysis and unification methods */
+        void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void unify_identity_for_result_element(preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
+        bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
+        void unify_backtraced_conditions(condition* parent_cond,
+            const soar_module::identity_triple o_ids_to_replace,
+            const soar_module::rhs_triple rhs_funcs);
+        void literalize_RHS_function_args(const rhs_value rv);
+        void unify_identities_for_results(preference* result);
+        void merge_conditions(condition* top_cond);
 
         /* Constraint analysis and enforcement methods */
+        void cache_constraints_in_cond(condition* c);
+        void add_additional_constraints(condition* cond);
+        bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
+        void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
@@ -322,15 +283,17 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
-        Symbol* get_variablization_for_identity(uint64_t index_id);
-        Symbol* get_variablization_for_sti(Symbol* index_sym);
+        void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+        action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
         void variablize_equality_tests(test t);
         void variablize_rl_test(test chunk_test);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
+        Symbol* get_variablization_for_identity(uint64_t index_id);
+        Symbol* get_variablization_for_sti(Symbol* index_sym);
 
         /* Condition polishing methods */
         void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
@@ -341,8 +304,21 @@ class Explanation_Based_Chunker
         void clear_merge_map();
         void clear_o_id_to_ovar_debug_map();
         void clear_rulesym_to_identity_map();
+        void clear_attachment_map();
+        void clear_cached_constraints();
+        void clear_o_id_substitution_map();
+        void clear_data();
 
-
+        /* Debug printing methods */
+        void print_variablization_tables(TraceMode mode, int whichTable = 0);
+        void print_tables(TraceMode mode);
+        void print_o_id_tables(TraceMode mode);
+        void print_attachment_points(TraceMode mode);
+        void print_constraints(TraceMode mode);
+        void print_merge_map(TraceMode mode);
+        void print_ovar_to_o_id_map(TraceMode mode);
+        void print_o_id_substitution_map(TraceMode mode);
+        void print_o_id_to_ovar_debug_map(TraceMode mode);
 
 };
 

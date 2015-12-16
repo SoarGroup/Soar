@@ -19,6 +19,7 @@
 
 #include "condition.h"
 #include "debug.h"
+#include "test.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).
