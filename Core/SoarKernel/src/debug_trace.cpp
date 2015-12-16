@@ -1,5 +1,4 @@
-#ifdef DEBUG_MAC_STACKTRACE
-#ifndef WIN32
+
 /*
  * Simple and lightweight memory leak detector
  * Copyright (c) 2011,2012,2013 Mario 'rlyeh' Rodriguez
@@ -42,12 +41,17 @@
  * - rlyeh ~~ listening to Long Distance Calling / Metulsky Curse Revisited
  */
 
+#include "kernel.h"
+
+#ifdef DEBUG_MAC_STACKTRACE
+#ifndef WIN32
+
+#include "debug_trace.h"
 #include <cassert>
 #include <cstddef>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-
 #include <algorithm>
 #include <cctype>
 #include <deque>
@@ -58,12 +62,7 @@
 #include <memory>
 #include <new>
 #include <sstream>
-#include <string>
 #include <vector>
-
-#include "debug_trace.h"
-
-#include "debug_thread.h" // header not found? copy tinythread++ sources to tracey's folder!
 namespace std
 {
     using namespace tthread;
@@ -1024,4 +1023,227 @@ void operator delete[](void* ptr) throw()
 #undef $yes
 #undef $no
 #endif
+
+#ifdef DEBUG_MAC_STACKTRACE
+#ifndef WIN32
+/*
+ * debug_thread.cpp
+ *
+ *  Created on: Jun 23, 2013
+ *      Author: mazzin
+ */
+
+
+
+
+/* -*- mode: c++; tab-width: 2; indent-tabs-mode: nil; -*-
+Copyright (c) 2010-2012 Marcus Geelnard
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source
+    distribution.
+ */
+
+#include <exception>
+
+#if defined(_TTHREAD_POSIX_)
+#include <unistd.h>
+#include <map>
+#endif
+
+namespace tthread
+{
+
+
+    //------------------------------------------------------------------------------
+    // POSIX pthread_t to unique thread::id mapping logic.
+    // Note: Here we use a global thread safe std::map to convert instances of
+    // pthread_t to small thread identifier numbers (unique within one process).
+    // This method should be portable across different POSIX implementations.
+    //------------------------------------------------------------------------------
+
+#if defined(_TTHREAD_POSIX_)
+    static thread::id _pthread_t_to_ID(const pthread_t& aHandle)
+    {
+        static mutex idMapLock;
+        static std::map<pthread_t, unsigned long int> idMap;
+        static unsigned long int idCount(1);
+
+        lock_guard<mutex> guard(idMapLock);
+        if (idMap.find(aHandle) == idMap.end())
+        {
+            idMap[aHandle] = idCount ++;
+        }
+        return thread::id(idMap[aHandle]);
+    }
+#endif // _TTHREAD_POSIX_
+
+
+    //------------------------------------------------------------------------------
+    // thread
+    //------------------------------------------------------------------------------
+
+    /// Information to pass to the new thread (what to run).
+    struct _thread_start_info
+    {
+        void (*mFunction)(void*);  ///< Pointer to the function to be executed.
+        void* mArg;                ///< Function argument for the thread function.
+        thread* mThread;           ///< Pointer to the thread object.
+    };
+
+    // Thread wrapper function.
+#if defined(_TTHREAD_POSIX_)
+    void* thread::wrapper_function(void* aArg)
+#endif
+    {
+        // Get thread startup information
+        _thread_start_info* ti = (_thread_start_info*) aArg;
+
+        try
+        {
+            // Call the actual client thread function
+            ti->mFunction(ti->mArg);
+        }
+        catch (...)
+        {
+            // Uncaught exceptions will terminate the application (default behavior
+            // according to C++11)
+            std::terminate();
+        }
+
+        // The thread is no longer executing
+        lock_guard<mutex> guard(ti->mThread->mDataMutex);
+        ti->mThread->mNotAThread = true;
+
+        // The thread is responsible for freeing the startup information
+        delete ti;
+
+        return 0;
+    }
+
+    thread::thread(void (*aFunction)(void*), void* aArg)
+    {
+        // Serialize access to this thread structure
+        lock_guard<mutex> guard(mDataMutex);
+
+        // Fill out the thread startup information (passed to the thread wrapper,
+        // which will eventually free it)
+        _thread_start_info* ti = new _thread_start_info;
+        ti->mFunction = aFunction;
+        ti->mArg = aArg;
+        ti->mThread = this;
+
+        // The thread is now alive
+        mNotAThread = false;
+
+        // Create the thread
+#if defined(_TTHREAD_POSIX_)
+        if (pthread_create(&mHandle, NULL, wrapper_function, (void*) ti) != 0)
+        {
+            mHandle = 0;
+        }
+#endif
+
+        // Did we fail to create the thread?
+        if (!mHandle)
+        {
+            mNotAThread = true;
+            delete ti;
+        }
+    }
+
+    thread::~thread()
+    {
+        if (joinable())
+        {
+            std::terminate();
+        }
+    }
+
+    void thread::join()
+    {
+        if (joinable())
+        {
+#if defined(_TTHREAD_POSIX_)
+            pthread_join(mHandle, NULL);
+#endif
+        }
+    }
+
+    bool thread::joinable() const
+    {
+        mDataMutex.lock();
+        bool result = !mNotAThread;
+        mDataMutex.unlock();
+        return result;
+    }
+
+    void thread::detach()
+    {
+        mDataMutex.lock();
+        if (!mNotAThread)
+        {
+#if defined(_TTHREAD_POSIX_)
+            pthread_detach(mHandle);
+#endif
+            mNotAThread = true;
+        }
+        mDataMutex.unlock();
+    }
+
+    thread::id thread::get_id() const
+    {
+        if (!joinable())
+        {
+            return id();
+        }
+#if defined(_TTHREAD_POSIX_)
+        return _pthread_t_to_ID(mHandle);
+#endif
+    }
+
+    unsigned thread::hardware_concurrency()
+    {
+#if defined(_SC_NPROCESSORS_ONLN)
+        return (int) sysconf(_SC_NPROCESSORS_ONLN);
+#elif defined(_SC_NPROC_ONLN)
+        return (int) sysconf(_SC_NPROC_ONLN);
+#else
+        // The standard requires this function to return zero if the number of
+        // hardware cores could not be determined.
+        return 0;
+#endif
+    }
+
+
+    //------------------------------------------------------------------------------
+    // this_thread
+    //------------------------------------------------------------------------------
+
+    thread::id this_thread::get_id()
+    {
+#if defined(_TTHREAD_POSIX_)
+        return _pthread_t_to_ID(pthread_self());
+#endif
+    }
+
+}
+#endif
+#endif
+
 #endif

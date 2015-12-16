@@ -190,3 +190,69 @@ std::string get_stacktrace(const char* prefix)
     return return_string;
 }
 #endif
+
+void debug_test(int type)
+{
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (!thisAgent)
+    {
+        return;
+    }
+
+    switch (type)
+    {
+        case 1:
+            print_internal_symbols(thisAgent);
+            dprint_identifiers(DT_DEBUG);
+            break;
+        case 2:
+            /* -- Print all instantiations -- */
+            dprint_all_inst(DT_DEBUG);
+            break;
+        case 3:
+        {
+            /* -- Print all wme's -- */
+            dprint(DT_DEBUG, "%8");
+            break;
+        }
+        case 4:
+        {
+            Symbol *sym = find_identifier(thisAgent, 'G', 1);
+            if (sym)
+            {
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+            } else {
+                dprint(DT_DEBUG, "Could not find G1.\n");
+            }
+        }
+            break;
+
+        case 5:
+        {
+
+            break;
+        }
+        case 6:
+        {
+            dprint_variablization_tables(DT_DEBUG);
+            dprint_variablization_tables(DT_DEBUG, 1);
+            dprint_o_id_tables(DT_DEBUG);
+            dprint_attachment_points(DT_DEBUG);
+            dprint_constraints(DT_DEBUG);
+            dprint_merge_map(DT_DEBUG);
+            dprint_ovar_to_o_id_map(DT_DEBUG);
+            dprint_o_id_substitution_map(DT_DEBUG);
+            dprint_o_id_to_ovar_debug_map(DT_DEBUG);
+            dprint_tables(DT_DEBUG);
+            break;
+        }
+        case 7:
+            break;
+        case 8:
+        {
+            break;
+        }
+        case 9:
+            break;
+    }
+}
