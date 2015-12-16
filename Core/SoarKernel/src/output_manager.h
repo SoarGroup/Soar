@@ -17,6 +17,7 @@
 #include "lexer.h"
 #include "soar_db.h"
 #include "output_manager_db.h"
+#include "debug.h"
 
 typedef char* rhs_value;
 typedef struct test_struct test_info;
@@ -34,12 +35,11 @@ typedef struct identity_struct identity_info;
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
-
-/* These determine whether we print identity information when printing tests in debug statements */
-
-#ifndef SOAR_RELEASE_VERSION
+#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+    /* These determine whether we print identity information when printing tests in debug statements */
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity true;
+
     /* -- Which output listeners should be initially turned on -- */
     #define OM_Init_print_enabled     on
     #define OM_Init_db_mode           off
@@ -51,6 +51,7 @@ typedef struct identity_struct identity_info;
     #define OM_Init_callback_dbg_mode off
     #define OM_Init_stdout_dbg_mode   on
 #else
+/* These determine whether we print identity information when printing tests in debug statements */
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity false;
 

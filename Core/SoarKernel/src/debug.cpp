@@ -32,7 +32,7 @@
 #ifdef DEBUG_MAC_STACKTRACE
 #include <execinfo.h>
 #include <cxxabi.h>
-#include <debug_mac_stacktrace.h>
+#include <debug_stacktrace.h>
 #endif
 
 using namespace soar_module;

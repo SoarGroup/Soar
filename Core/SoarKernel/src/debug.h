@@ -19,6 +19,9 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+/* Comment the following line out to completely compile out debug statements */
+//#define DEBUG_OUTPUT_ON
+
 #include "kernel.h"
 #include "soar_db.h"
 #include "soar_module.h"
@@ -27,8 +30,9 @@
 
 #include <string>
 
-/* Comment the following line out to completely compile out debug statements */
-#define DEBUG_OUTPUT_ON
+typedef struct test_struct test_info;
+typedef test_info* test;
+typedef struct trace_mode_info_struct trace_mode_info;
 
 #ifdef DEBUG_EPMEM_SQL
     static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
@@ -40,7 +44,7 @@
     fprintf(stderr, "Query: %s\n", query);
     }
 #endif
-#ifdef DEBUG_OUTPUT_ON
+#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
 
     /* Sometimes it's useful to break when a single, hardcoded ID is encountered
      * in a piece of code being debugged.  You can set this variable to the name

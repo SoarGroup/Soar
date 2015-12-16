@@ -1,9 +1,9 @@
-#include <debug_mac_stacktrace.cpp>
 #include "src/agent.cpp"
 #include "src/callback.cpp"
 #include "src/condition.cpp"
 #include "src/consistency.cpp"
 #include "src/debug.cpp"
+#include "src/debug_stacktrace.cpp"
 #include "src/decide.cpp"
 #include "src/decision_manipulation.cpp"
 #include "src/episodic_memory.cpp"
