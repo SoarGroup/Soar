@@ -566,7 +566,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY, symbol_value REAL)");
     add_structure("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY, symbol_value TEXT)");
     //This (below) was changed. It not includes an additional term, activation from spread.
-    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total REAL, activations_last INTEGER, activations_first INTEGER, activation_spread REAL)");
+    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_base_level REAL, activations_total REAL, activations_last INTEGER, activations_first INTEGER, activation_spread REAL, activation_value REAL)");
     add_structure("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER, touch1 REAL, touch2 REAL, touch3 REAL, touch4 REAL, touch5 REAL, touch6 REAL, touch7 REAL, touch8 REAL, touch9 REAL, touch10 REAL)");
     add_structure("CREATE TABLE smem_augmentations (lti_id INTEGER, attribute_s_id INTEGER, value_constant_s_id INTEGER, value_lti_id INTEGER, activation_value REAL)");
     add_structure("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY, edge_frequency INTEGER)");
@@ -776,7 +776,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     //
     
-    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (soar_letter,soar_number,total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?,?,?)");
+    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (soar_letter,soar_number,total_augmentations,activation_base_level,activations_total,activations_last,activations_first,activation_spread,activation_value) VALUES (?,?,?,?,?,?,?,?,?)");
     add(lti_add);
     
     lti_get = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE soar_letter=? AND soar_number=?");
@@ -902,11 +902,11 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(act_lti_child_ct_set);
     
     //Modified to include spread and base-level.
-    act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_value=?,activation_spread=? WHERE lti_id=?");
+    act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_base_level=?,activation_spread=?,activation_value=? WHERE lti_id=?");
     add(act_lti_set);
     
     //Modified to include spread and base-level.
-    act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_value,activation_spread FROM smem_lti WHERE lti_id=?");
+    act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level,activation_spread,activation_value FROM smem_lti WHERE lti_id=?");
     add(act_lti_get);
     
     history_get = new soar_module::sqlite_statement(new_db, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10 FROM smem_activation_history WHERE lti_id=?");
@@ -1052,11 +1052,11 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //
 
     //Modified to include spread value.
-    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_value, activation_spread FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
+    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_base_level, activation_spread FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
     add(vis_lti);
     
     //Modified to include spread value.
-    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value,activation_spread FROM smem_lti WHERE lti_id=?");
+    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level,activation_spread FROM smem_lti WHERE lti_id=?");
     add(vis_lti_act);
     
     vis_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT activation_value FROM smem_augmentations WHERE lti_id=?");
@@ -2553,7 +2553,8 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         // activation_value=? spreading value = ? WHERE lti=?
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-        thisAgent->smem_stmts->act_lti_set->bind_int(3, lti);
+        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_activation+spread);
+        thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
         // only if augmentation count is less than threshold do we associate with edges
         if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
@@ -2805,7 +2806,8 @@ void smem_calc_spread(agent* thisAgent)
 
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
+                thisAgent->smem_stmts->act_lti_set->bind_double(3, spread+thisAgent->smem_stmts->act_lti_get->column_double(0));
+                thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
 
                 thisAgent->smem_stmts->act_lti_get->reinitialize();
@@ -3051,7 +3053,8 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_int(3, lti_id);
+                thisAgent->smem_stmts->act_lti_set->bind_double(3, spread+ ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3->stop();
@@ -3396,6 +3399,8 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
     thisAgent->smem_stmts->lti_add->bind_double(5, static_cast<double>(0));
     thisAgent->smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
+    thisAgent->smem_stmts->lti_add->bind_double(8, static_cast<uint64_t>(0));
+    thisAgent->smem_stmts->lti_add->bind_double(9, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->execute(soar_module::op_reinit);
     
     return_val = static_cast<smem_lti_id>(thisAgent->smem_db->last_insert_rowid());
