@@ -3399,8 +3399,8 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
     thisAgent->smem_stmts->lti_add->bind_double(5, static_cast<double>(0));
     thisAgent->smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
     thisAgent->smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->bind_double(8, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->bind_double(9, static_cast<uint64_t>(0));
+    thisAgent->smem_stmts->lti_add->bind_double(8, static_cast<double>(0));
+    thisAgent->smem_stmts->lti_add->bind_double(9, static_cast<double>(0));
     thisAgent->smem_stmts->lti_add->execute(soar_module::op_reinit);
     
     return_val = static_cast<smem_lti_id>(thisAgent->smem_db->last_insert_rowid());
