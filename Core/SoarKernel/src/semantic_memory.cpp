@@ -3887,7 +3887,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = smem_lti_activate(thisAgent, lti_id, (thisAgent->smem_params->activate_on_add->get_value() == on), new_edges);
+        double lti_act = smem_lti_activate(thisAgent, lti_id, false, new_edges);
         
         if (!after_above)
         {
@@ -5941,7 +5941,7 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
             {
                 if ((*c_new)->slots != NIL)
                 {//smem_store_chunk(, , , , Symbol* print_id = NULL, bool activate = true, smem_storage_type store_type = store_level)
-                    smem_store_chunk(thisAgent, (*c_new)->lti_id, (*c_new)->slots, false, NULL, (thisAgent->smem_params->activate_on_add->get_value() == on));
+                    smem_store_chunk(thisAgent, (*c_new)->lti_id, (*c_new)->slots, false);
                 }
             }
             
