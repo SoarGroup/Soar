@@ -49,44 +49,44 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
 #endif
 #endif
     /* REW: end   11.25.96 */
-    
+
     /*         printf("Examining slot (next)\n");
     for (next = s; next; next=next->next){
          print_with_symbols("Slot ID:   [%y]\n", next->id);
      print_with_symbols("Slot Attr: [%y]\n", next->attr);
     }
-    
+
          printf("Examining slot (prev)\n");
     for (prev = s->prev; prev; prev=prev->prev){
          print_with_symbols("Slot ID:   [%y]\n", prev->id);
      print_with_symbols("Slot Attr: [%y]\n", prev->attr);
     }
-    
+
     printf("Examining slot WMEs\n");
     for (slot_wmes=s->wmes; slot_wmes; slot_wmes=slot_wmes->next){
       print_wme(thisAgent, slot_wmes);
     }
-    
+
     printf("Examining acceptable preference WMEs\n");
     for (slot_wmes=s->acceptable_preference_wmes; slot_wmes; slot_wmes=slot_wmes->next){
       print_wme(thisAgent, slot_wmes);
     }
-    
+
     if (thisAgent->highest_goal_whose_context_changed) print_with_symbols("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
-    
+
     print_with_symbols("Slot ID:   [%y]\n", s->id);
     print_with_symbols("Slot Attr: [%y]\n", s->attr);
     if (s->isa_context_slot) printf("this is a context slot.\n");
     if (s->impasse_id) print_with_symbols("Impasse: [%y]\n", s->impasse_id);
     if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
-    
+
     print_with_symbols("WME ID:    [%y]\n", w->id);
     print_with_symbols("WME Attr:  [%y]\n", w->attr);
     print_with_symbols("WME Value: [%y]\n", w->value);
     if (w->value->id->isa_operator) printf("This is an operator\n");
-    
+
     print_with_symbols("s->id->id->operator_slot->id: [%y]\n", s->id->id->operator_slot->id); */
-    
+
     if (s->wmes)   /* If there is something in the context slot */
     {
         if (s->wmes->value == w->value)   /* The WME in the context slot is WME whose pref changed */
@@ -103,12 +103,12 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
                 {
                     print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
                 }
-                
+
                 remove_existing_context_and_descendents(thisAgent, s->id->id->lower_goal);
             }
         }
     }
-    
+
     /* REW: begin 11.25.96 */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -133,7 +133,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
     wme* current_operator;
     preference* candidates, *cand;
     bool operator_in_slot, goal_is_impassed;
-    
+
 #ifdef DEBUG_CONSISTENCY_CHECK
     if (s->isa_context_slot)
     {
@@ -147,7 +147,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
         printf("    Impasse ID is set (non-NIL)\n");
     }
 #endif
-    
+
     /* Determine the current operator/impasse in the slot*/
     if (goal->id->operator_slot->wmes)
     {
@@ -161,7 +161,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
         current_operator = NIL;
         operator_in_slot = false;
     }
-    
+
     if (goal->id->lower_goal)
     {
         /* the goal is impassed */
@@ -198,26 +198,26 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
         printf("    Goal is not impassed: ");
 #endif
     }
-    
+
     /* Determine the new impasse type, based on the preferences that exist now */
     new_impasse_type = run_preference_semantics(thisAgent, s, &candidates, true);
-    
+
 #ifdef DEBUG_CONSISTENCY_CHECK
     printf("    Impasse Type returned by run preference semantics: %d\n", new_impasse_type);
-    
+
     for (cand = candidates; cand; cand = cand->next)
     {
         printf("    Preference for slot:");
         print_preference(thisAgent, cand);
     }
-    
+
     for (cand = candidates; cand; cand = cand->next_candidate)
     {
         printf("\n    Candidate  for slot:");
         print_preference(thisAgent, cand);
     }
 #endif
-    
+
     if (current_impasse_type != new_impasse_type)
     {
         /* Then there is an inconsistency: no more work necessary */
@@ -226,19 +226,19 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
 #endif
         return false;
     }
-    
-    
-    
+
+
+
     /* in these cases, we know that the new impasse and the old impasse *TYPES* are the same.  We
        just want to check and make the actual impasses/decisions are the same. */
     switch (new_impasse_type)
     {
-    
+
         case NONE_IMPASSE_TYPE:
             /* There are four cases to consider when NONE_IMPASSE_TYPE is returned: */
             /* 1.  Previous operator and operator returned by run_pref_sem are the same.
                    In this case, return true (decision remains consistent) */
-            
+
             /* This next if is meant to test that there actually is something in the slot but
                I'm nut quite certain that it will not always be true? */
             if (operator_in_slot)
@@ -247,7 +247,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
                 printf("    There is a WME in the operator slot:");
                 print_wme(current_operator);
 #endif
-                
+
                 /* Because of indifferent preferences, we need to compare all possible candidates
                 with the current decision */
                 for (cand = candidates; cand; cand = cand->next_candidate)
@@ -262,17 +262,17 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
                         return true;
                     }
                 }
-                
+
                 /* 2.  A different operator is indicated for the slot than the one that is
                        currently installed.  In this case, we return false (the decision is
                        not consistent with the preferences). */
-                
+
                 /* Now we know that the decision is inconsistent */
                 return false;
-                
+
                 /* 3.  A single operator is suggested when an impasse existed previously.
                        In this case, return false so that the impasse can be removed. */
-                
+
             }
             else     /* There is no operator in the slot */
             {
@@ -287,7 +287,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
                     return false;
                 }
             }
-            
+
             /* 4.  This is the bottom goal in the stack and there is no operator or
                    impasse for the operator slot created yet.  We shouldn't call this
                    routine in this case (this condition is checked before
@@ -298,28 +298,28 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
             printf("\n\n   *************This should never be executed*******************\n\n");
             return true;
             break;
-            
+
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
             printf("    Constraint Failure Impasse: Returning true\n");
 #endif
             return true;
             break;
-            
+
         case CONFLICT_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
             printf("    Conflict Impasse: Returning true\n");
 #endif
             return true;
             break;
-            
+
         case TIE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
             printf("    Tie Impasse: Returning true\n");
 #endif
             return true;
             break;
-            
+
         case NO_CHANGE_IMPASSE_TYPE:
 #ifdef DEBUG_CONSISTENCY_CHECK
             printf("    No change Impasse: Returning true\n");
@@ -327,12 +327,12 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
             return true;
             break;
     }
-    
+
     printf("\n   After switch................");
     printf("\n\n   *************This should never be executed*******************\n\n");
     return true;
-    
-    
+
+
 }
 
 void remove_current_decision(agent* thisAgent, slot* s)
@@ -343,24 +343,24 @@ void remove_current_decision(agent* thisAgent, slot* s)
         {
             print_with_symbols(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
         }
-        
+
     if (s->id)
         if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
             print_with_symbols(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id);
         }
-        
+
     /* If there is an operator in the slot, remove it */
     remove_wmes_for_context_slot(thisAgent, s);
-    
+
     /* If there are any subgoals, remove those */
     if (s->id->id->lower_goal)
     {
         remove_existing_context_and_descendents(thisAgent, s->id->id->lower_goal);
     }
-    
+
     do_buffered_wm_and_ownership_changes(thisAgent);
-    
+
 }
 
 /* ------------------------------------------------------------------
@@ -376,14 +376,14 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 {
     Symbol* goal;
     slot* s;
-    
+
 #ifdef DEBUG_CONSISTENCY_CHECK
     if (thisAgent->highest_goal_whose_context_changed)
     {
         print_with_symbols(thisAgent, "    Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
     }
 #endif
-    
+
     /* REW: begin 05.05.97 */
     /* Check only those goals where preferences have changes that are at or above the level
        of the consistency check */
@@ -394,7 +394,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
         print_with_symbols(thisAgent, "    Looking at goal [%y] to see if its preferences have changed\n", goal);
 #endif
         s = goal->id->operator_slot;
-        
+
         if ((goal->id->lower_goal) ||
                 (s->wmes))
         {
@@ -415,9 +415,10 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #endif
                     if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                     {
-                        print_with_symbols(thisAgent, "Removing state %y because of a failed consistency check.\n", goal);
+                        print_with_symbols(thisAgent, "Removing sub-states of %y because the operator last selected in %y is not\n", goal, goal);
+                        print_with_symbols(thisAgent, "consistent with the current preferences.\n");
                     }
-                    /* This doesn;t seem like it should be necessary but evidently it is: see 2.008 */
+                    /* This doesn't seem like it should be necessary but evidently it is: see 2.008 */
                     remove_current_decision(thisAgent, s);
                     return false;
                     break;   /* No need to continue once a decision is removed */
@@ -431,7 +432,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
         }
 #endif
     }
-    
+
     return true;
 }
 
@@ -441,18 +442,18 @@ bool i_activity_at_goal(Symbol* goal)
 {
 
     /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
-    
+
     if (goal->id->ms_i_assertions)
     {
         return true;
     }
-    
+
     if (goal->id->ms_retractions)
     {
         return true;
     }
-    
-    
+
+
     /* printf("\nNo instantiation found.  Returning false\n");  */
     return false;
 }
@@ -499,10 +500,10 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
 {
 
     Symbol* goal;
-    
+
     for (goal = start_goal; goal; goal = goal->id->lower_goal)
     {
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
         /* Debugging only */
         print(thisAgent,  "In highest_active_goal_propose:\n");
@@ -515,20 +516,20 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
             print_retraction(goal->id->ms_retractions);
         }
 #endif
-        
+
         /* If there are any active productions at this goal, return the goal */
         if ((goal->id->ms_i_assertions) || (goal->id->ms_retractions))
         {
             return goal;
         }
     }
-    
+
     /* This routine should only be called when !quiescence.  However, there is
        still the possibility that the only active productions are retractions
        that matched in a NIL goal.  If so, then we just return the bottom goal.
        If not, then all possibilities have been exausted and we have encounted
        an unrecoverable error. */
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     print(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
     xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
@@ -537,7 +538,7 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
     {
         return NIL;
     }
-    
+
     if (!noneOk)
     {
         char msg[BUFFER_MSG_SIZE];
@@ -545,7 +546,7 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
-    
+
     return NIL;
 }
 
@@ -553,10 +554,10 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
 {
 
     Symbol* goal;
-    
+
     for (goal = start_goal; goal; goal = goal->id->lower_goal)
     {
-    
+
 #if 0 //DEBUG_DETERMINE_LEVEL_PHASE
         /* Debugging only */
         print(thisAgent,  "In highest_active_goal_apply :\n");
@@ -573,7 +574,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
             print_retraction(goal->id->ms_retractions);
         }
 #endif
-        
+
         /* If there are any active productions at this goal, return the goal */
         if ((goal->id->ms_i_assertions) || (goal->id->ms_o_assertions)
                 || (goal->id->ms_retractions))
@@ -581,13 +582,13 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
             return goal;
         }
     }
-    
+
     /* This routine should only be called when !quiescence.  However, there is
        still the possibility that the only active productions are retractions
        that matched in a NIL goal.  If so, then we just return the bottom goal.
        If not, then all possibilities have been exausted and we have encounted
        an unrecoverable error. */
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     print(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
     xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
@@ -596,7 +597,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
     {
         return NIL;
     }
-    
+
     if (!noneOk)
     {
         char msg[BUFFER_MSG_SIZE];
@@ -604,7 +605,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
-    
+
     return NIL;
 }
 
@@ -637,16 +638,16 @@ int active_production_type_at_goal(Symbol* goal)
 bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
 {
     bool test;
-    
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     thisAgent->timers_gds.start();
 #endif
 #endif
-    
+
 #ifdef DEBUG_CONSISTENCY_CHECK
     print(thisAgent,  "\nStart: CONSISTENCY CHECK at level %d\n", goal->id->level);
-    
+
     /* Just a bunch of debug stuff for now */
     if (thisAgent->highest_goal_whose_context_changed)
     {
@@ -658,20 +659,20 @@ bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
         printf("Evidently, nothing has changed: not checking slots\n");
     }
 #endif
-    
+
     test = check_context_slot_decisions(thisAgent, goal->id->level);
-    
+
 #ifdef DEBUG_CONSISTENCY_CHECK
     printf("\nEnd:   CONSISTENCY CHECK\n");
 #endif
-    
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     thisAgent->timers_gds.stop();
     thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
 #endif
 #endif
-    
+
     return test;
 }
 /* REW: end   08.20.97 */
@@ -685,15 +686,15 @@ void initialize_consistency_calculations_for_new_decision(agent* thisAgent)
 {
 
     Symbol* goal;
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\nInitialize consistency calculations for new decision.\n");
 #endif
-    
+
     /* No current activity level */
     thisAgent->active_level = 0;
     thisAgent->active_goal = NIL;
-    
+
     /* Clear any interruption flags on the goals....*/
     for (goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal)
     {
@@ -720,43 +721,43 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
     Symbol* goal;
     int level_change_type, diff;
-    
+
     /* KJC 04/05 - moved phase printing to init_soar: do_one_top_level_phase, case APPLY */
-    
-    
+
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\nDetermining the highest active level in the stack....\n");
 #endif
-    
+
     if (!any_assertions_or_retractions_ready(thisAgent))
     {
         /* This is quiescence */
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
         printf("\n(Full) APPLY phase Quiescence has been reached...going to output\n");
 #endif
-        
+
         /* Need to determine if this quiescence is also a minor quiescence,
         otherwise, an inconsistent decision could get retained here (because
         the consistency check was never run). (2.008).  Therefore, if
         in the previous preference phase, IE_PRODS fired, then force a
         consistency check over the entire stack (by checking at the
         bottom goal). */
-        
+
         if (minor_quiescence_at_goal(thisAgent, thisAgent->bottom_goal))
         {
             goal_stack_consistent_through_goal(thisAgent, thisAgent->bottom_goal);
         }
-        
+
         /* regardless of the outcome, we go to the output phase */
-        
+
         thisAgent->current_phase = OUTPUT_PHASE;
         return;
     }
-    
+
     /* Not Quiescence */
-    
+
     /* Check for Max ELABORATIONS EXCEEDED */
-    
+
     if (thisAgent->e_cycles_this_d_cycle >=
             static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
     {
@@ -768,11 +769,11 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
         thisAgent->current_phase = OUTPUT_PHASE;
         return;
     }
-    
+
     /* Save the old goal and level (must save level explicitly in case goal is NIL) */
     thisAgent->previous_active_goal = thisAgent->active_goal;
     thisAgent->previous_active_level = thisAgent->active_level;
-    
+
     /* Determine the new highest level of activity */
     thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->top_goal, false);
     if (thisAgent->active_goal)
@@ -783,12 +784,12 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
     {
         thisAgent->active_level = 0;    /* Necessary for get_next_retraction */
     }
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\nHighest level of activity is....%d", thisAgent->active_level);
     printf("\n   Previous level of activity is....%d", thisAgent->previous_active_level);
 #endif
-    
+
     if (!thisAgent->active_goal)
         /* Only NIL goal retractions */
     {
@@ -814,8 +815,8 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             level_change_type = HIGHER_LEVEL;
         }
     }
-    
-    
+
+
     switch (level_change_type)
     {
         case NIL_GOAL_RETRACTIONS:
@@ -825,7 +826,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case NEW_DECISION:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThis is a new decision....");
@@ -834,7 +835,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             /* in APPLY phase, we can test for ONC here, check ms_o_assertions */
             // KJC:  thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case LOWER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is lower than the previous level....");
@@ -851,11 +852,11 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                     break;
                 }
             }
-            
+
             /* else: check if return to interrupted level */
-            
+
             goal = thisAgent->active_goal;
-            
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
@@ -870,7 +871,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                 print(thisAgent,  "\nSaved production type: NONE");
             }
 #endif
-            
+
             if (goal->id->saved_firing_type != NO_SAVED_PRODS)
             {
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
@@ -884,15 +885,15 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                 // returned from a lower level (solved a subgoal or changed the conditions).
                 // We could return a flag instead and test it everytime thru loop in APPLY.
                 determine_highest_active_production_level_in_stack_apply(thisAgent);
-                
+
                 break;
             }
-            
+
             /* else: just do a preference phase */
             thisAgent->FIRING_TYPE = active_production_type_at_goal(thisAgent->active_goal);
             //KJC: thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case SAME_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is the same as the previous level....");
@@ -911,15 +912,15 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
             thisAgent->FIRING_TYPE = active_production_type_at_goal(thisAgent->active_goal);
             //thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case HIGHER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is higher than the previous level....");
 #endif
-            
+
             goal = thisAgent->previous_active_goal;
             goal->id->saved_firing_type = thisAgent->FIRING_TYPE;
-            
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
@@ -938,10 +939,10 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                 print(thisAgent,  "\n Unknown SAVED firing type???????");
             }
 #endif
-            
+
             /* run consistency check at new active level *before* firing any
                productions there */
-            
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             printf("\nMinor quiescence at level %d", thisAgent->active_level);
 #endif
@@ -950,13 +951,13 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
                 thisAgent->current_phase = OUTPUT_PHASE;
                 break;
             }
-            
+
             /* If the decision is consistent, then just start processing at this level */
             thisAgent->FIRING_TYPE = active_production_type_at_goal(thisAgent->active_goal);
             //thisAgent->current_phase = PREFERENCE_PHASE;
             break;
     }
-    
+
 }
 /* REW: end   05.05.97 */
 
@@ -985,17 +986,17 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
     Symbol* goal;
     int level_change_type, diff;
-    
+
     /* KJC 04/05 - moved phase printing to init_soar: do_one_top_level_phase, case APPLY */
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\n(Propose) Determining the highest active level in the stack....\n");
 #endif
-    
+
     // KJC 01.24.06  Changed logic for testing for IE prods.  Was incorrectly
     // checking only the bottom goal.  Need to check at all levels.  A previous
     // code change required #define, but it was never defined.
-    
+
     /* We are only checking for i_assertions, not o_assertions, since we don't
      *  want operators to fire in the proposal phase
      */
@@ -1003,27 +1004,27 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     {
         if (minor_quiescence_at_goal(thisAgent, thisAgent->bottom_goal))
         {
-        
+
             /* This is minor quiescence */
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             printf("\n Propose Phase Quiescence has been reached...going to decision\n");
 #endif
-            
+
             /* Force a consistency check over the entire stack (by checking at
             the bottom goal). */
             goal_stack_consistent_through_goal(thisAgent, thisAgent->bottom_goal);
-            
+
             /* Decision phase is always next */
-            
+
             thisAgent->current_phase = DECISION_PHASE;
             return;
         }
     }
-    
+
     /* Not Quiescence, there are elaborations ready to fire at some level. */
-    
+
     /* Check for Max ELABORATIONS EXCEEDED */
-    
+
     if (thisAgent->e_cycles_this_d_cycle >=
             static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
     {
@@ -1035,14 +1036,14 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
         thisAgent->current_phase = DECISION_PHASE;
         return;
     }
-    
+
     /* not Max Elaborations */
-    
+
     /* Save the old goal and level (must save level explicitly in case
        goal is NIL) */
     thisAgent->previous_active_goal = thisAgent->active_goal;
     thisAgent->previous_active_level = thisAgent->active_level;
-    
+
     /* Determine the new highest level of activity */
     thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->top_goal, false);
     if (thisAgent->active_goal)
@@ -1053,12 +1054,12 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     {
         thisAgent->active_level = 0;    /* Necessary for get_next_retraction */
     }
-    
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\nHighest level of activity is....%d", thisAgent->active_level);
     printf("\n   Previous level of activity is....%d", thisAgent->previous_active_level);
 #endif
-    
+
     if (!thisAgent->active_goal)
         /* Only NIL goal retractions */
     {
@@ -1084,7 +1085,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
             level_change_type = HIGHER_LEVEL;
         }
     }
-    
+
     switch (level_change_type)
     {
         case NIL_GOAL_RETRACTIONS:
@@ -1094,7 +1095,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case NEW_DECISION:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThis is a new decision....");
@@ -1102,7 +1103,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case LOWER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is lower than the previous level....");
@@ -1118,7 +1119,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
             thisAgent->FIRING_TYPE = IE_PRODS;
             // thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case SAME_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is the same as the previous level....");
@@ -1126,15 +1127,15 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
             thisAgent->FIRING_TYPE = IE_PRODS;
             // thisAgent->current_phase = PREFERENCE_PHASE;
             break;
-            
+
         case HIGHER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             print(thisAgent,  "\nThe level is higher than the previous level....");
 #endif
-            
+
             goal = thisAgent->previous_active_goal;
             goal->id->saved_firing_type = thisAgent->FIRING_TYPE;
-            
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
@@ -1153,10 +1154,10 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
                 print(thisAgent,  "\n Unknown SAVED firing type???????");
             }
 #endif
-            
+
             /* run consistency check at new active level *before* firing any
                productions there */
-            
+
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             printf("\nMinor quiescence at level %d", thisAgent->active_level);
 #endif
@@ -1165,15 +1166,15 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
                 thisAgent->current_phase = DECISION_PHASE;
                 break;
             }
-            
+
             /* If the decision is consistent, then just keep processing
                at this level */
-            
+
             thisAgent->FIRING_TYPE = IE_PRODS;
             // thisAgent->current_phase = PREFERENCE_PHASE;
             break;
     }
-    
+
 }
 /* KJC: end   10.04.98 */
 
