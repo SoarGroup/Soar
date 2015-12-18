@@ -31,7 +31,6 @@
 #include "rete.h"
 #include "symtab.h"
 #include "soar_TraceNames.h"
-#include "soar_instance.h"
 #include "test.h"
 #include "wma.h"
 #include "wmem.h"
@@ -427,7 +426,7 @@ void Explanation_Based_Chunker::create_instantiated_counterparts(condition* vrbl
     *inst_bottom = c_inst;
 }
 
-void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
+void Explanation_Based_Chunker::create_initial_chunk_condition_lists(
                                                     condition** inst_top,
                                                     condition** inst_bottom,
                                                     condition** vrblz_top,
@@ -512,46 +511,18 @@ void Explanation_Based_Chunker::build_chunk_conds_for_grounds_and_add_negateds(
     {
         prev_vrblz->next = NIL;
     }
-    else
+    else if (first_vrblz)
     {
         first_vrblz->next = NIL;
     }
 
     *vrblz_top = first_vrblz;
 
-    add_additional_constraints(*vrblz_top);
-
-//    condition* c_inst, *first_inst = nullptr, *prev_inst;
-//
-//    c_inst = NIL;
-//    prev_inst = NIL;
-//    condition* copy_cond = *vrblz_top;
-//    while (copy_cond)
-//    {
-//        c_inst = copy_condition(thisAgent, copy_cond);
-//
-//        /*-- Store a link from the variablized condition to the instantiated
-//         *   condition.  Used during merging if the chunker needs
-//         *   to delete a redundant condition.  Also used to reorder
-//         *   instantiated condition to match the re-ordered variablized
-//         *   conditions list (required by the rete.) -- */
-//        c_inst->counterpart = copy_cond;
-//        copy_cond->counterpart = c_inst;
-//        add_cond(&c_inst, &prev_inst, &first_inst);
-//        copy_cond = copy_cond->next;
-//            }
-//    if (prev_inst)
-//            {
-//        prev_inst->next = NIL;
-//            }
-//    else
-//            {
-//        first_inst->next = NIL;
-//                }
-//
-//    *inst_top = first_inst;
-    create_instantiated_counterparts(*vrblz_top, inst_top, inst_bottom);
-
+    if (first_vrblz)
+    {
+        add_additional_constraints(*vrblz_top);
+        create_instantiated_counterparts(*vrblz_top, inst_top, inst_bottom);
+    }
     dprint(DT_BUILD_CHUNK_CONDS, "Instantiated chunk conditions after identity unification: \n%1", *inst_top);
     dprint(DT_BUILD_CHUNK_CONDS, "Variablized chunk conditions after copying and adding additional conditions: \n%1", *vrblz_top);
     dprint(DT_BUILD_CHUNK_CONDS, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
@@ -692,177 +663,6 @@ void Explanation_Based_Chunker::make_clones_of_results(preference* results,
     }
 }
 
-Symbol* Explanation_Based_Chunker::generate_chunk_name_str_constant(instantiation* inst)
-{
-    Symbol* generated_name;
-    Symbol* goal;
-    byte impasse_type;
-    preference* p;
-    goal_stack_level lowest_result_level;
-    std::string lImpasseName;
-    std::stringstream lName;
-
-    chunkNameFormats chunkNameFormat = Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format();
-
-    lowest_result_level = thisAgent->top_goal->id->level;
-    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
-        if (p->id->id->level > lowest_result_level)
-        {
-            lowest_result_level = p->id->id->level;
-        }
-
-    goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
-
-    switch (chunkNameFormat)
-    {
-        case numberedFormat:
-        {
-            return (generate_new_str_constant(
-                        thisAgent,
-                        chunk_name_prefix,
-                        &chunk_count));
-        }
-        case longFormat:
-        {
-            if (goal)
-            {
-                impasse_type = type_of_existing_impasse(thisAgent, goal);
-                switch (impasse_type)
-                {
-                    case NONE_IMPASSE_TYPE:
-                        lImpasseName = "unknownimpasse";
-                        break;
-                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        lImpasseName = "cfailure";
-                        break;
-                    case CONFLICT_IMPASSE_TYPE:
-                        lImpasseName = "conflict";
-                        break;
-                    case TIE_IMPASSE_TYPE:
-                        lImpasseName = "tie";
-                        break;
-                    case NO_CHANGE_IMPASSE_TYPE:
-                    {
-                        Symbol* sym;
-
-                        if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
-                        {
-                            lImpasseName = "unknownimpasse";
-                        }
-                        else if (sym == thisAgent->operator_symbol)
-                        {
-                            lImpasseName = "opnochange";
-                        }
-                        else if (sym == thisAgent->state_symbol)
-                        {
-                            lImpasseName = "snochange";
-                        }
-                        else
-                        {
-                            lImpasseName = "unknownimpasse";
-                        }
-                    }
-                    break;
-                    default:
-                        lImpasseName = "unknownimpasse";
-                        break;
-                }
-            }
-            else
-            {
-                lImpasseName = "unknownimpasse";
-            }
-            lName << chunk_name_prefix << "-" << chunk_count++ << "*" <<
-                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
-
-            break;
-        }
-        case ruleFormat:
-        {
-            std::string real_prod_name;
-
-            lImpasseName.erase();
-            lName << chunk_name_prefix;
-
-            chunk_count++;
-            if (goal)
-            {
-                impasse_type = type_of_existing_impasse(thisAgent, goal);
-                switch (impasse_type)
-                {
-                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        lImpasseName = "cfo";
-                        break;
-                    case CONFLICT_IMPASSE_TYPE:
-                        lImpasseName = "con";
-                        break;
-                    case TIE_IMPASSE_TYPE:
-                        lImpasseName = "tie";
-                        break;
-                    case NO_CHANGE_IMPASSE_TYPE:
-                    {
-                        Symbol* sym;
-                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
-                        if (sym)
-                        {
-                            if (sym == thisAgent->operator_symbol)
-                            {
-                                lImpasseName = "onc";
-                            }
-                            else if (sym == thisAgent->state_symbol)
-                            {
-                                lImpasseName = "snc";
-                            }
-                        }
-                    }
-                    break;
-                    default:
-                        break;
-                }
-            }
-
-            if (inst->prod)
-            {
-                if (strstr(inst->prod->name->sc->name, chunk_name_prefix) == inst->prod->name->sc->name)
-                {
-                    /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
-                    lName << "-multi";
-                }
-                lName << "*" << inst->prod->original_rule_name;
-            }
-            if (!lImpasseName.empty())
-            {
-                lName << "*" << lImpasseName;
-            }
-            lName << "*t" << thisAgent->d_cycle_count << "-" << chunks_this_d_cycle;
-        }
-    }
-    lImpasseName.erase();
-    if (lName.str().empty()) { return NULL; }
-
-    /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
-    if (find_str_constant(thisAgent, lName.str().c_str()))
-    {
-        uint64_t collision_count = 1;
-        std::stringstream newLName;
-
-        print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
-        xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
-//        dprint(DT_DEBUG, "Chunk name %s already exists...trying...", lName.str().c_str());
-        do
-        {
-            newLName.str("");
-            newLName << lName.str() << "-" << collision_count++;
-//            dprint_noprefix(DT_DEBUG, "%s\n", newLName.str().c_str());
-        }
-        while (find_str_constant(thisAgent, newLName.str().c_str()));
-        lName.str(newLName.str());
-        newLName.str("");
-    }
-
-    generated_name = make_str_constant(thisAgent, lName.str().c_str());
-    return generated_name;
-}
 
 /* ====================================================================
 
@@ -1058,7 +858,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         tc_number tc_for_grounds;
         tc_for_grounds = get_new_tc_number(thisAgent);
-        build_chunk_conds_for_grounds_and_add_negateds(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
+        create_initial_chunk_condition_lists(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
     }
 
     variablize = learning_is_on_for_instantiation() && reliable;
@@ -1067,7 +867,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize)
     {
         chunks_this_d_cycle++;
-        prod_name = generate_chunk_name_str_constant(inst);
+        prod_name = generate_chunk_name(inst);
 
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -1099,8 +899,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print_string(thisAgent, " Warning: chunk has no grounds, ignoring it.");
-            xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
+            print_string(thisAgent, "Warning: Chunk/justification has no conditions.  Soar cannot learn a rule for\n");
+            print_string(thisAgent, "         the results created from this substate. To avoid this issue, the agent\n");
+            print_string(thisAgent, "         needs to positively test at least one item in the superstate.\n");
+            xml_generate_warning(thisAgent, "Warning: Chunk/justification has no conditions.  Soar cannot learn a rule for");
+            xml_generate_warning(thisAgent, "         the results created by this substate. To avoid this issue, the agent");
+            xml_generate_warning(thisAgent, "         needs to positively test at least one item in the superstate.");
         }
 
         goto chunking_abort;

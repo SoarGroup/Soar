@@ -415,7 +415,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #endif
                     if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                     {
-                        print_with_symbols(thisAgent, "Removing sub-states of %y because the operator last selected in %y is not\n", goal, goal);
+                        print_with_symbols(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
                         print_with_symbols(thisAgent, "consistent with the current preferences.\n");
                     }
                     /* This doesn't seem like it should be necessary but evidently it is: see 2.008 */

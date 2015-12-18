@@ -236,12 +236,12 @@ class Explanation_Based_Chunker
         void add_results_for_id(Symbol* id);
         void add_results_if_needed(Symbol* sym);
         bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
-        void build_chunk_conds_for_grounds_and_add_negateds(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        void create_initial_chunk_condition_lists(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
         action* copy_action_list(action* actions);
         void chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top);
         void create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
         preference* get_results_for_instantiation(instantiation* inst);
-        Symbol* generate_chunk_name_str_constant(instantiation* inst);
+        Symbol* generate_chunk_name(instantiation* inst);
         void init_chunk_cond_set(chunk_cond_set* set);
         chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
         void make_clones_of_results(preference* results, instantiation* chunk_inst);
