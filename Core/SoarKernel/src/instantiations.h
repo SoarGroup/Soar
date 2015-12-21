@@ -96,7 +96,6 @@ typedef struct instantiation_struct
     tc_number backtrace_number;
     bool GDS_evaluated_already;
     uint64_t i_id;       /* Used by ebChunker to generate instantiation-specific ids */
-    uint64_t explain_id; /* Used by ebChunker's self-explanation mechanism */
 } instantiation;
 
 /* A dll of instantiations that will be used to determine the gds through

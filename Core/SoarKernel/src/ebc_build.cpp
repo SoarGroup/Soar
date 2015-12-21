@@ -758,8 +758,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
         (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
 
-    explainChunkID = explanationLogger->add_chunk_record(inst);
-
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
         Symbol* g;
@@ -812,6 +810,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         reset_backtrace_list(thisAgent);
     }
 
+    explanationLogger->set_backtrace_number(backtrace_number);
+
     dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     /* --- backtrace through the instantiation that produced each result --- */
     dprint(DT_BACKTRACE,  "Backtracing through instantiation: \n%7", inst);
@@ -852,9 +852,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "Grounds after tracing:\n%3", grounds);
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 
-    dprint(DT_IDENTITY_PROP, "Variablization identity propagation resulted in the following substitutions:\n");
-
     free_list(thisAgent, positive_potentials);
+
+    explainChunkID = explanationLogger->add_chunk_record(inst);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
     chunk_new_i_id = get_new_inst_id();

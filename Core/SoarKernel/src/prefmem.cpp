@@ -19,6 +19,7 @@
 #include "instantiations.h"
 #include "symtab.h"
 #include "recmem.h"
+#include "rhs.h"
 #include "tempmem.h"
 #include "decide.h"
 #include "print.h"
@@ -115,6 +116,65 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
           value or referent .isa_goal or .isa_impasse; */
 }
 
+preference* copy_preference(agent* thisAgent, preference* pPref)
+{
+    preference* p;
+
+    thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
+    p->type = pPref->type;
+    p->numeric_value = pPref->numeric_value;
+    p->o_supported = pPref->o_supported;
+    p->id = pPref->id;
+    p->attr = pPref->attr;
+    p->value = pPref->value;
+    p->referent = pPref->referent;
+    symbol_add_ref(thisAgent, p->id);
+    symbol_add_ref(thisAgent, p->attr);
+    symbol_add_ref(thisAgent, p->value);
+    if (p->referent) symbol_add_ref(thisAgent, p->referent);
+    p->o_ids.id = pPref->o_ids.id;
+    p->o_ids.attr = pPref->o_ids.attr;
+    p->o_ids.value = pPref->o_ids.value;
+
+    p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
+    p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
+    p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
+
+
+    /*Not sure if we want to copy these */
+    p->in_tm = pPref->in_tm;
+    p->on_goal_list = pPref->on_goal_list;
+    p->reference_count = pPref->reference_count;
+    p->slot = pPref->slot;
+    p->total_preferences_for_candidate = pPref->total_preferences_for_candidate;
+    p->rl_contribution = pPref->rl_contribution;
+    p->rl_rho = pPref->rl_rho;
+    p->wma_o_set = pPref->wma_o_set;
+
+    /* Don't want to copy links to other preferences */
+    p->next_clone = NULL;
+    p->prev_clone = NULL;
+    p->next = NULL;
+    p->prev = NULL;
+    p->inst_next = NULL;
+    p->inst_prev = NULL;
+    p->all_of_slot_next = NULL;
+    p->all_of_slot_prev = NULL;
+    p->all_of_goal_next = NULL;
+    p->all_of_goal_prev = NULL;
+    p->next_candidate = NULL;
+    p->next_result = NULL;
+
+#ifdef DEBUG_PREFS
+    print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
+    print_preference(thisAgent, p);
+#endif
+
+    return p;
+
+    /* BUGBUG check to make sure the pref doesn't have
+          value or referent .isa_goal or .isa_impasse; */
+}
 /* ----------------------------------------------------------------------
    Deallocate_preference() deallocates a given preference.
 ---------------------------------------------------------------------- */

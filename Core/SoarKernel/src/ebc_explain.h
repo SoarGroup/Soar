@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <list>
 #include <cstdlib>
+#include <string>
 
 typedef char* rhs_value;
 typedef signed short goal_stack_level;
@@ -33,38 +34,48 @@ typedef unsigned short rete_node_level;
 typedef uint64_t tc_number;
 typedef struct cons_struct cons;
 typedef cons list;
+namespace soar_module
+{
+    typedef struct symbol_triple_struct symbol_triple;
+    typedef struct identity_triple_struct identity_triple;
+    typedef struct rhs_triple_struct rhs_triple;
+}
 
 class Output_Manager;
 
 typedef struct action_record_struct {
     preference*     instantiated_pref;
+    preference*     original_pref;          // Only used when building explain records
     action*         variablized_action;
     u_int64_t       actionID;
 } action_record;
 
 typedef struct condition_record_struct {
-    condition*      variablized_cond;
-    condition*      instantiated_cond;
-    wme*            matched_wme;
-    action_record*  parent_action;
-    u_int64_t       conditionID;
+    condition*                  variablized_cond;
+    condition*                  instantiated_cond;
+    soar_module::symbol_triple* matched_wme;
+    action_record*              parent_action;
+    u_int64_t                   conditionID;
 } condition_record;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-#include "soar_module.h"
-typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > > condition_record_list;
-typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > > action_record_list;
-#else
+//#ifdef USE_MEM_POOL_ALLOCATORS
+//#include "soar_module.h"
+//typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > > condition_record_list;
+//typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > > action_record_list;
+//typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > > id_list;
+//#else
+//typedef std::list< condition_record* > condition_record_list;
+//typedef std::list< action_record* > action_record_list;
+//typedef std::list< uint64_t > id_list;
+//#endif
 typedef std::list< condition_record* > condition_record_list;
 typedef std::list< action_record* > action_record_list;
-#endif
+typedef std::list< uint64_t > id_list;
 
 typedef struct instantiation_record_struct {
     Symbol*                 production_name;
     condition_record_list*  conditions;
     action_record_list*     actions;
-    std::string             identity_set_mapping_explanation;
-    u_int64_t               instantiationID;
 } instantiation_record;
 
 typedef struct chunk_record_struct {
@@ -72,23 +83,21 @@ typedef struct chunk_record_struct {
     condition_record_list*  conditions;
     action_record_list*     actions;
     std::string             identity_set_mapping_explanation;
-    u_int64_t               baseInstantiationID;
+    instantiation_record*   baseInstantiation;
     u_int64_t               chunkID;
 } chunk_record;
-
 
 class Explanation_Logger
 {
     public:
 
+        void re_init();
+
         uint64_t add_chunk_record(instantiation* pbaseInstantiation);
         void     set_chunk_name(uint64_t pC_ID, Symbol* pNameSym);
+        void     set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
-        uint64_t add_instantiation_record(instantiation* pInst);
-        uint64_t add_condition_to_instantiation_record(condition* pCond, uint64_t pI_ID);
-        uint64_t add_result_to_instantiation_record(preference* pPref, uint64_t pI_ID);
-        uint64_t add_condition_to_chunk_record(condition* pCond, uint64_t pC_ID);
-        uint64_t add_result_to_chunk_record(action* pAction, preference* pPref, uint64_t pC_ID);
+        instantiation_record* add_instantiation(instantiation* pInst);
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -98,19 +107,30 @@ class Explanation_Logger
         agent* thisAgent;
         Output_Manager* outputManager;
 
+        tc_number               backtrace_number;
+
+        instantiation_record*   get_instantiation(instantiation* pInst);
+        void                    delete_condition(condition_record* lCondRecord);
+        condition_record*       add_condition(condition* pCond);
+        action_record*          add_result(preference* pPref);
+        uint64_t                add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord);
+        uint64_t                add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord);
+        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
+
         /* Statistics on learning performed so far */
         uint64_t            chunks_attempted_count;
         uint64_t            duplicate_chunks_count;
         uint64_t            merge_count;
 
         uint64_t            chunk_id_count;
-        uint64_t            instantiation_id_count;
         uint64_t            condition_id_count;
-        /* -- The following are tables used by the variablization manager during
-         *    instantiation creation, backtracing and chunk formation.  The data
-         *    they store is temporary and cleared after use. -- */
+        uint64_t            action_id_count;
 
+        /* These maps store all of the records the logger keeps */
         std::unordered_map< uint64_t, chunk_record* >* chunks;
+        std::unordered_map< uint64_t, instantiation_record* >* instantiations;
+        std::unordered_map< uint64_t, condition_record* >* conditions;
+        std::unordered_map< uint64_t, action_record* >* actions;
 };
 
 #endif /* EBC_EXPLAIN_H_ */
