@@ -13,13 +13,13 @@
  * =======================================================================
  */
 
-#include "kernel.h"
 #include "ebc.h"
 
 #include "agent.h"
 #include "debug.h"
 #include "decide.h"
 #include "explain.h"
+#include "ebc_explain.h"
 #include "init_soar.h"
 #include "instantiations.h"
 #include "production.h"
@@ -712,6 +712,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     condition*  saved_justification_top = 0;
     condition*  saved_justification_bottom = 0;
     uint64_t chunk_new_i_id = 0;
+    uint64_t explainChunkID = 0;
 
     explain_chunk_str temp_explain_chunk;
     memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -756,6 +757,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
         (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
+
+    explainChunkID = explanationLogger->add_chunk_record(inst);
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {

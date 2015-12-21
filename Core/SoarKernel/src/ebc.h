@@ -39,6 +39,7 @@ typedef cons list;
 
 tc_number get_new_tc_number(agent* thisAgent);
 class Output_Manager;
+class Explanation_Logger;
 
 namespace soar_module
 {
@@ -165,8 +166,9 @@ class Explanation_Based_Chunker
 
     private:
 
-        agent* thisAgent;
-        Output_Manager* outputManager;
+        agent*              thisAgent;
+        Output_Manager*     outputManager;
+        Explanation_Logger* explanationLogger;
 
         /* Statistics on learning performed so far */
         uint64_t            chunk_count;

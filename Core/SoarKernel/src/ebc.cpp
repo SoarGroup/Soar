@@ -9,6 +9,8 @@
 #include "agent.h"
 #include "assert.h"
 #include "debug.h"
+#include "decide.h"
+#include "ebc_explain.h"
 #include "instantiations.h"
 #include "prefmem.h"
 #include "print.h"
@@ -16,7 +18,6 @@
 #include "soar_instance.h"
 #include "test.h"
 #include "xml.h"
-#include "decide.h"
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
@@ -27,6 +28,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
+    explanationLogger = new Explanation_Logger(thisAgent);
 
     /* Initialize instantiation and identity ID counters */
     inst_id_counter = 0;

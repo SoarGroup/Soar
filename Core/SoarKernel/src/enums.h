@@ -53,6 +53,7 @@ enum TraceMode
     DT_LINKS,
     DT_EBC_CLEANUP,
     DT_UNKNOWN_LEVEL,
+    DT_EXPLAIN,
     num_trace_modes
 };
 
