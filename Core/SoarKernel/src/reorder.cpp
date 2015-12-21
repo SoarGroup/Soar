@@ -144,12 +144,12 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     if (remaining_actions)
     {
         /* --- there are remaining_actions but none can be legally added --- */
-        print(thisAgent,  "Error: production %s has a bad RHS--\n",
+        print(thisAgent,  "\nError: Could not re-order actions of production %s --\n",
               thisAgent->name_of_production_being_reordered);
-        print(thisAgent, "       Either it creates a variable that is not tested in a\n");
-        print(thisAgent, "       positive condition on the LHS (negative conditions\n");
-        print(thisAgent, "       don't count) or it tries to pass an unbound variable\n");
-        print(thisAgent, "       as an argument to a function.\n");
+        print(thisAgent, "       They either contain variables or long-term identifiers\n");
+        print(thisAgent, "       that are not tested in a positive condition on the\n");
+        print(thisAgent, "       LHS (negative conditions don't count) or it tries to\n");
+        print(thisAgent, "       pass an unbound variable as an argument to a function.\n");
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {

@@ -148,6 +148,7 @@ namespace cli
                 EXCISE_TASK,
                 EXCISE_TEMPLATE,
                 EXCISE_USER,
+                EXCISE_NEVER_FIRED,
                 EXCISE_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
