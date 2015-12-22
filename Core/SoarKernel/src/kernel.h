@@ -18,6 +18,7 @@ extern void print(agent* thisAgent, const char* format, ...);
     /* --  The following enables debugging traces/modes. Individual debug
      *     #defines are found in debug_defines.h -- */
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+//    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL

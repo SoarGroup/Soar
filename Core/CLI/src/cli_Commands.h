@@ -1088,14 +1088,15 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'a', "all",        OPTARG_NONE},
-                    {'c', "chunks",        OPTARG_NONE},
-                    {'d', "default",    OPTARG_NONE},
-                    {'r', "rl",            OPTARG_NONE},
-                    {'t', "task",        OPTARG_NONE},
-                    {'T', "template",    OPTARG_NONE},
-                    {'u', "user",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {'a', "all",            OPTARG_NONE},
+                    {'c', "chunks",         OPTARG_NONE},
+                    {'d', "default",        OPTARG_NONE},
+                    {'n', "never-fired",    OPTARG_NONE},
+                    {'r', "rl",             OPTARG_NONE},
+                    {'t', "task",           OPTARG_NONE},
+                    {'T', "template",       OPTARG_NONE},
+                    {'u', "user",           OPTARG_NONE},
+                    {0, 0,                  OPTARG_NONE}
                 };
 
                 Cli::ExciseBitset options(0);
@@ -1122,6 +1123,9 @@ namespace cli
                             break;
                         case 'd':
                             options.set(Cli::EXCISE_DEFAULT);
+                            break;
+                        case 'n':
+                            options.set(Cli::EXCISE_NEVER_FIRED);
                             break;
                         case 'r':
                             options.set(Cli::EXCISE_RL);

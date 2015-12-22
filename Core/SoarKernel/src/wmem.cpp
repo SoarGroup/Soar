@@ -129,16 +129,28 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
-    
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        dprint(DT_WME_CHANGES, "Setting up post-link addition for level promotion.\n");
+        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", w->id, w->value);
         post_link_addition(thisAgent, w->id, w->value);
         if (w->attr == thisAgent->operator_symbol)
         {
             w->value->id->isa_operator++;
         }
     }
+
+    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
+        post_link_addition(thisAgent, w->id, w->attr);
+        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
+//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+//        {
+//            post_link_addition(thisAgent, w->id, w->value);
+//        }
+    }
+    #endif
 }
 
 void remove_wme_from_wm(agent* thisAgent, wme* w)
@@ -155,9 +167,21 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 
     if (w->value->is_identifier())
     {
-        dprint(DT_WME_CHANGES, "Setting up post-link removal for level promotion.\n");
+        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-        if (w->attr == thisAgent->operator_symbol)
+    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
+        post_link_removal(thisAgent, w->id, w->attr);
+        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
+//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+//        {
+//            post_link_addition(thisAgent, w->id, w->value);
+//        }
+    }
+    #endif
+    if (w->attr == thisAgent->operator_symbol)
         {
             /* Do this afterward so that gSKI can know that this is an operator */
             w->value->id->isa_operator--;
