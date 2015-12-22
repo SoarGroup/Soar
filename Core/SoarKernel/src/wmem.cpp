@@ -159,6 +159,12 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
+    
+    if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->value->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
+    {
+        
+    }
+
     if (w->value->is_identifier())
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
@@ -321,6 +327,25 @@ void do_buffered_wm_changes(agent* thisAgent)
             filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
         }
 
+        //This is for spreading (keeping track of context).
+        if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->smem_lti)//test for lti, if so, either add or increment count in context map vector.
+        {
+            if (thisAgent->smem_in_wmem->find(w->id->id->smem_lti)==thisAgent->smem_in_wmem->end())
+            {
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (uint64_t)1;
+                //Here, I should also add to a data structure containing "ltis to add to context".
+                thisAgent->smem_context_additions->insert(w->id->id->smem_lti);
+                //edge case? - I should remove ltis from "ltis to remove from context".
+                if (thisAgent->smem_context_removals->find(w->id->id->smem_lti)!=thisAgent->smem_context_removals->end())
+                {
+                    thisAgent->smem_context_removals->erase(w->id->id->smem_lti);
+                }
+            }
+            else
+            {
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] + 1;
+            }
+        }
         dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_add_ref(w);
         free_cons(thisAgent, c);
@@ -339,6 +364,29 @@ void do_buffered_wm_changes(agent* thisAgent)
             filtered_print_wme_remove(thisAgent, w);   /* kjh(CUSP-B2) begin */
         }
 
+        //This assert is almost more a test of my understanding of what is happening.
+        //We shouldn't ever get here without having already added the lti before.
+        //TODO:I need to read through buffered WM changes and see if that could screw things up.
+        //I won't (shouldn't) be doing any add-remove of the same LTI in 1 DC, so I'm guessing things will be okay for now.
+            //What about elaboration cycles? Does the wmem phase happen after that is resolved?
+        if(thisAgent->smem_in_wmem->find(w->id->id->smem_lti)!=thisAgent->smem_in_wmem->end())
+        {
+            if ((*(thisAgent->smem_in_wmem))[w->id->id->smem_lti]==1)
+            {
+                thisAgent->smem_in_wmem->erase(w->id->id->smem_lti);
+                //should also add to a data structure like "ltis to remove from context.
+                thisAgent->smem_context_removals->insert(w->id->id->smem_lti);
+                //edge case - should remove from "ltis to add to context."
+                if (thisAgent->smem_context_additions->find(w->id->id->smem_lti)!=thisAgent->smem_context_additions->end())
+                {
+                    thisAgent->smem_context_additions->erase(w->id->id->smem_lti);
+                }
+            }
+            else
+            {
+                (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] = (*(thisAgent->smem_in_wmem))[w->id->id->smem_lti] - 1;
+            }
+        }
         dprint(DT_WME_CHANGES, "      %w:\n",w);
         wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);

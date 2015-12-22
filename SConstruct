@@ -120,10 +120,12 @@ def InstallDLLs(env):
   if sys.platform == 'win32' and GetOption('opt'):
     indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
     outdir = os.path.realpath(GetOption('outdir')) + '\\'
+
     if os.path.isfile(outdir):
         os.remove(outdir)
     if not os.path.exists(outdir):
         os.mkdir(outdir)
+
     for dll in indlls:
       #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
       shutil.copy(dll.rstr(), outdir)

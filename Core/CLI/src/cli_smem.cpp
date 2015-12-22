@@ -41,6 +41,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Activation", 40);
         PrintCLIMessage_Item("activation-mode:", thisAgent->smem_params->activation_mode, 40);
         PrintCLIMessage_Item("activate-on-query:", thisAgent->smem_params->activate_on_query, 40);
+        PrintCLIMessage_Item("activate-on-add:", thisAgent->smem_params->activate_on_add, 40);
         PrintCLIMessage_Item("base-decay:", thisAgent->smem_params->base_decay, 40);
         PrintCLIMessage_Item("base-update-policy:", thisAgent->smem_params->base_update, 40);
         PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->smem_params->base_incremental_threshes, 40);
@@ -53,6 +54,21 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
+        PrintCLIMessage_Item("spontaneous-retrieval:", thisAgent->smem_params->spontaneous_retrieval, 40);
+        PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
+        PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
+        PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);
+        PrintCLIMessage_Item("spreading-normalization:", thisAgent->smem_params->spreading_normalization, 40);
+        PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->smem_params->spreading_depth_limit, 40);
+        PrintCLIMessage_Item("spreading-limit:", thisAgent->smem_params->spreading_limit, 40);
+        PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
+        PrintCLIMessage_Item("spreading-crawl-time:", thisAgent->smem_params->spreading_crawl_time, 40);
+        PrintCLIMessage_Item("spreading-model:", thisAgent->smem_params->spreading_model, 40);
+        PrintCLIMessage_Item("spreading-traversal:", thisAgent->smem_params->spreading_traversal, 40);
+        PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->smem_params->spreading_loop_avoidance, 40);
+        PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
+        PrintCLIMessage_Item("continue-probability:", thisAgent->smem_params->continue_probability, 40);
         PrintCLIMessage("");
 
         return true;
@@ -340,6 +356,55 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
 
             }
+            if (!strcmp(pAttr->c_str(), "spreading-type"))
+            {
+                //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
+                if (pVal)
+                {
+                    if (strcmp(pVal->c_str(), "actr") && strcmp(pVal->c_str(), "ppr"))
+                    {
+                        assert(false); //This shouldn't happen while I'm testing.
+                    }
+                }
+            }
+            if (!strcmp(pAttr->c_str(), "spreading"))
+            {
+                if (thisAgent->smem_params->spreading->get_value() == on)
+                {
+                    PrintCLIMessage("This might take a long while.\n");
+                    //This is where a huge batch processing of all of SMem can be run.
+                   /* if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                    {
+                        smem_calc_spread_trajectory_actr(thisAgent);
+                    }
+                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
+                    {
+                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
+                    }
+                    else if ((thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr
+                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
+                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
+                    {*/
+                    if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
+                    {
+                        if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
+                        {
+                            smem_calc_spread_trajectories(thisAgent);
+                        }
+                        else if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
+                        {
+                            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                            {
+                                smem_calc_spread_trajectory_actr(thisAgent);
+                            }
+                            else
+                            {
+                                smem_calc_spread_trajectories_deterministic(thisAgent);
+                            }
+                        }
+                    }
+                }
+            }
         }
         return result;
     }
@@ -360,6 +425,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage_Item("Mirrors:", thisAgent->smem_stats->mirrors, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->smem_stats->chunks, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->smem_stats->slots, 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->execute();
+            uint64_t number_spread_elements = thisAgent->smem_stmts->calc_spread_size_debug_cmd->column_int(0);
+            std::ostringstream s_spread_output_string;
+            s_spread_output_string << number_spread_elements;
+            std::string spread_output_string = s_spread_output_string.str();
+            PrintCLIMessage_Justify("Spread Size:",spread_output_string.c_str(), 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->reinitialize();
         }
         else
         {

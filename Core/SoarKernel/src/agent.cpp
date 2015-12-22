@@ -414,11 +414,17 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->lastCue = NULL;
 
     // statistics initialization
+
     thisAgent->dc_stat_tracking = false;
     thisAgent->stats_db = new soar_module::sqlite_database();
-
+    /*
+     * This is used to keep track of ltis in wmem.
+     * */
+    thisAgent->smem_in_wmem = new smem_lti_map;
+    thisAgent->smem_context_additions = new smem_lti_set;
+    thisAgent->smem_context_removals = new smem_lti_set;
     thisAgent->substate_break_level = 0;
-
+    
     return thisAgent;
 }
 
@@ -487,6 +493,10 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->smem_params;
     delete delete_agent->smem_stats;
     delete delete_agent->smem_timers;
+
+    delete delete_agent->smem_in_wmem;//These are for spreading.
+    delete delete_agent->smem_context_additions;
+    delete delete_agent->smem_context_removals;
 
     delete delete_agent->smem_db;
 

@@ -46,6 +46,27 @@ class smem_path_param;
 class smem_param_container: public soar_module::param_container
 {
     public:
+        // This determines what math is done to combine the spreading and base-level components when using the likelihood probability model.
+        enum spreading_types { ppr, actr };
+        // The network traversal used to calculate spread can go along edges, reverse edge direction, or treat all edges as bidirectional.
+        enum spreading_directions { forwards, backwards, both };
+        // Precalculate - The calculation of a fingerprint is done when spreading is turned on.
+            // When the long-term store changes, the fingerprint will need to be recalculated. This is done at query-time.
+        // query-time - The calculation of a fingerprint isn't done until query-time.
+            // When the long-term store changes, nothing is done.
+        // context-change - The calculation of a fingerprint is done when a LTI enters working memory.
+            // When the long-term store changes, nothing is done.
+        enum spreading_times { query_time, context_change };
+
+        enum spreading_crawl_times { on_demand, precalculate };
+
+        // Currently, only the likelihood option is supported. The way spreading is calculated is only as an additional number combined with BLA
+        // The belief-update model would modify the base-level activation of nodes according to spread isntead of keeping the numbers separate.
+            //For example, when using context-change spreading, a LTI no longer in working memory (because it was recently removed) may still
+            // have an effect on cued-retrieval (queries) because it modified the base-level activation of other elements and that has yet to decay away enough.
+        enum spreading_models { likelihood, belief_update };
+        // Random walks versus limited breadth-first traversal
+        enum spreading_traversals { random, deterministic };
         enum db_choices { memory, file };
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
@@ -55,7 +76,16 @@ class smem_param_container: public soar_module::param_container
         enum act_choices { act_recency, act_frequency, act_base };
 
         soar_module::boolean_param* learning;
+        soar_module::boolean_param* spreading;//clearly, for spreading.
+        soar_module::boolean_param* spontaneous_retrieval;
+        soar_module::boolean_param* spreading_normalization;
         soar_module::constant_param<db_choices>* database;
+        soar_module::constant_param<spreading_types>* spreading_type;
+        soar_module::constant_param<spreading_directions>* spreading_direction;
+        soar_module::constant_param<spreading_times>* spreading_time;
+        soar_module::constant_param<spreading_crawl_times>* spreading_crawl_time;
+        soar_module::constant_param<spreading_models>* spreading_model;
+        soar_module::constant_param<spreading_traversals>* spreading_traversal;
         smem_path_param* path;
         soar_module::boolean_param* lazy_commit;
         soar_module::boolean_param* append_db;
@@ -68,11 +98,18 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::integer_param* thresh;
 
+        soar_module::decimal_param* number_trajectories;
         soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
+        soar_module::boolean_param* activate_on_add;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
 
+        soar_module::decimal_param* spreading_limit;
+        soar_module::decimal_param* spreading_depth_limit;
+        soar_module::decimal_param* spreading_baseline;
+        soar_module::decimal_param* continue_probability;
+        soar_module::boolean_param* spreading_loop_avoidance;
         enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
         soar_module::constant_param<base_update_choices>* base_update;
 
@@ -82,8 +119,8 @@ class smem_param_container: public soar_module::param_container
 
         smem_param_container(agent* new_agent);
 };
-
 class smem_path_param: public soar_module::string_param
+
 {
     protected:
         agent* thisAgent;
@@ -181,6 +218,31 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* init;
         soar_module::timer* hash;
         soar_module::timer* act;
+        soar_module::timer* spreading_act;
+        soar_module::timer* spontaneous_retrieval;
+        soar_module::timer* spontaneous_retrieval_1;
+        soar_module::timer* spontaneous_retrieval_2;
+        soar_module::timer* spreading_fix_1;
+        soar_module::timer* spreading_fix_1_1;
+        soar_module::timer* spreading_fix_1_1_1;
+        soar_module::timer* spreading_fix_1_1_2;
+        soar_module::timer* spreading_fix_1_2;
+        soar_module::timer* spreading_fix_2;
+        soar_module::timer* spreading_calc_1;
+        soar_module::timer* spreading_calc_2;
+        soar_module::timer* spreading_calc_2_1;
+        soar_module::timer* spreading_calc_2_2;
+        soar_module::timer* spreading_calc_2_2_1;
+        soar_module::timer* spreading_calc_2_2_2;
+        soar_module::timer* spreading_calc_2_2_3;
+        soar_module::timer* spreading_store_1;
+        soar_module::timer* spreading_store_2;
+        soar_module::timer* spreading_store_3;
+        soar_module::timer* spreading_store_3_1;
+        soar_module::timer* spreading_store_3_2;
+        soar_module::timer* spreading_store_3_2_1;
+        soar_module::timer* spreading_store_3_2_2;
+        soar_module::timer* spreading_store_4;
 
         smem_timer_container(agent* thisAgent);
 };
@@ -274,10 +336,49 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* history_push;
         soar_module::sqlite_statement* history_add;
 
+        soar_module::sqlite_statement* prohibit_set;
+        soar_module::sqlite_statement* prohibit_add;
+        soar_module::sqlite_statement* prohibit_check;
+        soar_module::sqlite_statement* prohibit_reset;
+        soar_module::sqlite_statement* prohibit_remove;
+        soar_module::sqlite_statement* history_remove;
         soar_module::sqlite_statement* vis_lti;
         soar_module::sqlite_statement* vis_lti_act;
+        soar_module::sqlite_statement* vis_act;
         soar_module::sqlite_statement* vis_value_const;
         soar_module::sqlite_statement* vis_value_lti;
+
+        soar_module::sqlite_statement* lti_get_high_act;
+
+        
+        //The ones below are for spreading
+        soar_module::sqlite_statement* web_val_parent;
+        soar_module::sqlite_statement* web_val_parent_2;
+        soar_module::sqlite_statement* web_val_child;
+        soar_module::sqlite_statement* web_val_both;
+        soar_module::sqlite_statement* lti_all;
+        soar_module::sqlite_statement* trajectory_add;
+        soar_module::sqlite_statement* trajectory_remove;
+        soar_module::sqlite_statement* trajectory_remove_lti;
+        soar_module::sqlite_statement* trajectory_check_invalid;
+        soar_module::sqlite_statement* trajectory_remove_invalid;
+        soar_module::sqlite_statement* trajectory_remove_all;
+        soar_module::sqlite_statement* trajectory_find_invalid;
+        soar_module::sqlite_statement* trajectory_get;
+        soar_module::sqlite_statement* trajectory_invalidate_from_lti;
+        soar_module::sqlite_statement* trajectory_invalidate_edge;
+
+        soar_module::sqlite_statement* likelihood_cond_count_remove;
+        soar_module::sqlite_statement* lti_count_num_appearances_remove;
+        soar_module::sqlite_statement* likelihood_cond_count_insert;
+        soar_module::sqlite_statement* likelihood_cond_count_insert_deterministic;
+        soar_module::sqlite_statement* lti_count_num_appearances_insert;
+        soar_module::sqlite_statement* calc_spread;
+        soar_module::sqlite_statement* calc_spread_size_debug_cmd;
+        soar_module::sqlite_statement* delete_old_context;
+        soar_module::sqlite_statement* delete_old_spread;
+        soar_module::sqlite_statement* add_new_context;
+        soar_module::sqlite_statement* add_fingerprint;
 
         smem_statement_container(agent* new_agent);
 
@@ -323,12 +424,13 @@ typedef uint64_t smem_hash_id;
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;
 typedef std::set<smem_lti_id> smem_lti_set;
+typedef std::map<smem_lti_id, uint64_t> smem_lti_map;
 
 // a list of symbols
 typedef std::list<Symbol*> smem_sym_list;
 
 // ways to store an identifier
-enum smem_storage_type { store_level, store_recursive };
+enum smem_storage_type { store_level, store_recursive, store_mirrored };
 
 // represents a list of wmes
 typedef std::list<wme*> smem_wme_list;
@@ -459,6 +561,10 @@ enum smem_install_type { wm_install, fake_install };
 
 extern bool smem_enabled(agent* thisAgent);
 extern void smem_attach(agent* thisAgent);
+
+extern bool smem_calc_spread_trajectory_actr(agent* thisAgent);
+extern bool smem_calc_spread_trajectories(agent* thisAgent);
+extern bool smem_calc_spread_trajectories_deterministic(agent* thisAgent);
 
 extern bool smem_parse_chunks(agent* thisAgent, const char* chunks, std::string** err_msg);
 extern bool smem_parse_cues(agent* thisAgent, const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);

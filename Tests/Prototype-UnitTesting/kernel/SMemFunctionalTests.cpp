@@ -491,7 +491,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	
 	std::string actualResult = agent->ExecuteCommandLine("smem --print");
 	
-	std::string expectedResult = "========================================\n            Semantic Memory             \n========================================\n(@F1 ^complete true ^factor @F2 ^number 2 [+5.000])\n(@F2 ^multiplicity 1 ^value 2 [+6.000])\n(@F3 ^complete true ^factor @F4 ^number 3 [+3.000])\n(@F4 ^multiplicity 1 ^value 3 [+4.000])\n(@F5 ^complete true ^factor @F6 ^number 4 [+7.000])\n(@F6 ^multiplicity 2 ^value 2 [+8.000])\n\n";
+	std::string expectedResult = "========================================\n            Semantic Memory             \n========================================\n(@F1 ^complete true ^factor @F2 ^number 2 [+1.000])\n(@F2 ^multiplicity 1 ^value 2 [+1.000])\n(@F3 ^complete true ^factor @F4 ^number 3 [+1.000])\n(@F4 ^multiplicity 1 ^value 3 [+1.000])\n(@F5 ^complete true ^factor @F6 ^number 4 [+1.000])\n(@F6 ^multiplicity 2 ^value 2 [+1.000])\n\n";
 	
 	assertTrue_msg("Unexpected output from CSoar database!", actualResult == expectedResult);
 }
