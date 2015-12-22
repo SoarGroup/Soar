@@ -11,6 +11,7 @@
 #include "src/ebc_backtrace.cpp"
 #include "src/ebc_build.cpp"
 #include "src/ebc_constraints.cpp"
+#include "src/ebc_explain.cpp"
 #include "src/ebc_explanation_trace.cpp"
 #include "src/ebc_map.cpp"
 #include "src/ebc_merge.cpp"
