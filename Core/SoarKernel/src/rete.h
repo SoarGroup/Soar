@@ -57,6 +57,7 @@
 #include <stdio.h>  // Needed for FILE token below
 #include "kernel.h"
 
+typedef signed short goal_stack_level;
 typedef byte wme_trace_type;
 typedef byte ms_trace_type;
 typedef struct instantiation_struct instantiation;
@@ -368,6 +369,25 @@ typedef struct token_struct
     struct token_struct* negrm_tokens; /* join results: for Neg, CN nodes only */
 } token;
 
+/* --- info about a change to the match set --- */
+typedef struct ms_change_struct
+{
+    struct ms_change_struct* next;         /* dll for all p nodes */
+    struct ms_change_struct* prev;
+    struct ms_change_struct* next_of_node; /* dll for just this p node */
+    struct ms_change_struct* prev_of_node;
+    struct rete_node_struct* p_node;       /* for retractions, this can be NIL
+                                            if the p_node has been excised */
+    struct token_struct* tok;            /* for assertions only */
+
+    wme* w;                              /* for assertions only */
+    struct instantiation_struct* inst;   /* for retractions only */
+
+    Symbol* goal;
+    goal_stack_level level;              /* Level of the match of the assertion or retraction */
+    struct ms_change_struct* next_in_level; /* dll for goal level */
+    struct ms_change_struct* prev_in_level;
+} ms_change;
 extern void init_rete(agent* thisAgent);
 
 extern bool any_assertions_or_retractions_ready(agent* thisAgent);

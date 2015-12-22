@@ -18,28 +18,28 @@
                         Backtracing routines
    ==================================================================== */
 
-#include <stdlib.h>
-
 #include "ebc.h"
-#include "mem.h"
-#include "memory_manager.h"
-#include "kernel.h"
-#include "print.h"
-#include "wmem.h"
 
 #include "agent.h"
-#include "instantiations.h"
-#include "production.h"
 #include "condition.h"
-#include "symtab.h"
-#include "explain.h"
-#include "recmem.h"
-#include "xml.h"
-#include "soar_TraceNames.h"
-#include "test.h"
 #include "debug.h"
+#include "instantiations.h"
+#include "kernel.h"
+#include "mem.h"
+#include "memory_manager.h"
 #include "prefmem.h"
+#include "print.h"
+#include "production.h"
+#include "recmem.h"
 #include "soar_module.h"
+#include "soar_TraceNames.h"
+#include "symtab.h"
+#include "test.h"
+#include "wmem.h"
+#include "xml.h"
+
+#include <stdlib.h>
+
 
 using namespace soar_TraceNames;
 
@@ -211,7 +211,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     condition* c;
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
-    backtrace_str temp_explain_backtrace;
     dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod ? inst->prod->name : NULL, grounds_level);
     dprint(DT_BACKTRACE, "(%y [o%u] ^%y [o%u] %y [o%u]) that matched condition %l\n",
         get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
@@ -265,38 +264,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         return;
     }
     inst->backtrace_number = backtrace_number;
-
-    /* Record information on the production being backtraced through */
-    /* if (thisAgent->explain_flag) { */
-    if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-    {
-        temp_explain_backtrace.trace_cond = trace_cond;  /* Not copied yet */
-        if (trace_cond == NULL)   /* Backtracing for a result */
-        {
-            temp_explain_backtrace.result = true;
-        }
-        else
-        {
-            temp_explain_backtrace.result = false;
-        }
-
-        temp_explain_backtrace.grounds    = NIL;
-        temp_explain_backtrace.potentials = NIL;
-        temp_explain_backtrace.locals     = NIL;
-        temp_explain_backtrace.negated    = NIL;
-
-        if (inst->prod)
-        {
-            strncpy(temp_explain_backtrace.prod_name, inst->prod->name->sc->name, BUFFER_PROD_NAME_SIZE);
-        }
-        else
-        {
-            strncpy(temp_explain_backtrace.prod_name, "Dummy production", BUFFER_PROD_NAME_SIZE);
-        }
-        (temp_explain_backtrace.prod_name)[BUFFER_PROD_NAME_SIZE - 1] = 0; /* ensure null termination */
-
-        temp_explain_backtrace.next_backtrace = NULL;
-    }
 
     if (!inst->reliable)
     {
@@ -414,8 +381,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             {
                 dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l\n", c);
                 add_to_grounds(c);
-                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
-                        thisAgent->sysparams[EXPLAIN_SYSPARAM])
+                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
                     push(thisAgent, c, grounds_to_print);
                 }
@@ -424,8 +390,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             {
                 dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l\n", c);
                 add_to_potentials(c);
-                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
-                        thisAgent->sysparams[EXPLAIN_SYSPARAM])
+                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
                     push(thisAgent, c, pots_to_print);
                 }
@@ -434,8 +399,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             {
                 dprint(DT_BACKTRACE, "Backtracing adding local condition... %l\n", c);
                 add_to_locals(c);
-                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
-                        thisAgent->sysparams[EXPLAIN_SYSPARAM])
+                if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
                     push(thisAgent, c, locals_to_print);
                 }
@@ -447,8 +411,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(&negated_set,
                                   make_chunk_cond_for_negated_condition(c));
-            if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] ||
-                    thisAgent->sysparams[EXPLAIN_SYSPARAM])
+            if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
                 push(thisAgent, c, negateds_to_print);
             }
@@ -463,10 +426,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     /* the final resting place for these wmes.  In particular potentials may   */
     /* move over to become grounds, but since all we really need for explain is*/
     /* the list of wmes, this will do as a place to record them.               */
-
-    if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-        explain_add_temp_to_backtrace_list(thisAgent, &temp_explain_backtrace, grounds_to_print,
-                                           pots_to_print, locals_to_print, negateds_to_print);
 
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])

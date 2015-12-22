@@ -1,5 +1,3 @@
-#include "kernel.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -16,22 +14,21 @@
 
 #include "wma.h"
 
+#include "agent.h"
+#include "condition.h"
+#include "decide.h"
+#include "instantiations.h"
+#include "misc.h"
+#include "rete.h"
+#include "prefmem.h"
+#include "print.h"
+#include "wmem.h"
+#include "xml.h"
+
 #include <set>
 #include <cmath>
 #include <cstdlib>
 
-#include "agent.h"
-#include "wmem.h"
-#include "condition.h"
-#include "instantiations.h"
-#include "explain.h"
-#include "rete.h"
-#include "decide.h"
-#include "prefmem.h"
-
-#include "misc.h"
-#include "xml.h"
-#include "print.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

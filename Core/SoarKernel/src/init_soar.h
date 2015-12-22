@@ -10,6 +10,8 @@
 #ifndef INIT_SOAR_H
 #define INIT_SOAR_H
 
+#include "kernel.h"
+
 typedef signed short goal_stack_level;
 typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;

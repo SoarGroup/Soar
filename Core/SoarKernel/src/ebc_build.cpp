@@ -18,7 +18,6 @@
 #include "agent.h"
 #include "debug.h"
 #include "decide.h"
-#include "explain.h"
 #include "ebc_explain.h"
 #include "init_soar.h"
 #include "instantiations.h"
@@ -714,9 +713,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     uint64_t chunk_new_i_id = 0;
     uint64_t explainChunkID = 0;
 
-    explain_chunk_str temp_explain_chunk;
-    memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
-
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
@@ -796,19 +792,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     grounds = NIL;
     positive_potentials = NIL;
     locals = NIL;
-
-    /* Start a new structure for this potential chunk */
-
-    if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-    {
-        temp_explain_chunk.conds       = NULL;
-        temp_explain_chunk.actions     = NULL;
-        temp_explain_chunk.backtrace   = NULL;
-        temp_explain_chunk.name[0]     = '\0';
-        temp_explain_chunk.all_grounds = NIL;
-        temp_explain_chunk.next_chunk  = NULL;
-        reset_backtrace_list(thisAgent);
-    }
 
     explanationLogger->set_backtrace_number(backtrace_number);
 
@@ -1067,12 +1050,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
         reorder_instantiated_conditions(vrblz_top, &inst_lhs_top, &inst_lhs_bottom);
 
-        /* Record the list of grounds in the order they will appear in the chunk. */
-        if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-        {
-            temp_explain_chunk.all_grounds = inst_lhs_top;   /* Not a copy yet */
-        }
-
         thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &chunk_inst);
         chunk_inst->prod = prod;
         chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
@@ -1092,18 +1069,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
     dprint(DT_VARIABLIZATION_MANAGER, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
-    /* Need to copy cond's and actions for the production here,
-    otherwise some of the variables might get deallocated by the call to
-    add_production_to_rete() when it throws away chunk variable names. */
-    if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-    {
-        condition* new_top = 0;
-        condition* new_bottom = 0;
-        copy_condition_list(thisAgent, vrblz_top, &new_top, &new_bottom);
-        temp_explain_chunk.conds = new_top;
-        //temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
-        temp_explain_chunk.actions = copy_action_list(rhs);
-    }
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
@@ -1112,26 +1077,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             (rete_addition_result == REFRACTED_INST_MATCHED) ? "Refracted instantiation matched." :
             (rete_addition_result == NO_REFRACTED_INST) ? "No refracted instantiation given." : "INVALID RETE RETURN TYPE!"));
 
-    /* If didn't immediately excise the chunk from the rete net
-    then record the temporary structure in the list of explained chunks. */
-
-    if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-    {
-        if ((rete_addition_result != DUPLICATE_PRODUCTION)
-                && ((prod_type != JUSTIFICATION_PRODUCTION_TYPE)
-                    || (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH)))
-        {
-            strncpy(temp_explain_chunk.name, prod->name->sc->name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
-            temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
-            explain_add_temp_to_chunk_list(thisAgent, &temp_explain_chunk);
-        }
-        else
-        {
-            /* If excised the chunk, discard previously-copied stuff */
-            deallocate_condition_list(thisAgent, temp_explain_chunk.conds);
-            deallocate_action_list(thisAgent, temp_explain_chunk.actions);
-        }
-    }
+    /* MToDo | Might need to remove explain structures if this rule addition failed */
 
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, vrblz_top);

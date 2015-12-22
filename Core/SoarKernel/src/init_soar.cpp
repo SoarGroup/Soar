@@ -1,6 +1,3 @@
-#include "portability.h"
-#include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -18,36 +15,34 @@
  */
 
 #include "init_soar.h"
+
 #include "agent.h"
-#include "consistency.h"
 #include "callback.h"
-#include "agent.h"
+#include "consistency.h"
+#include "decide.h"
+#include "episodic_memory.h"
+#include "ebc.h"
+#include "io_soar.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
-#include "decide.h"
 #include "recmem.h"
-#include "explain.h"
-#include "symtab.h"
-#include "wmem.h"
-#include "io_soar.h"
-#include "rete.h"
-
-
-#include "xml.h"
-#include "stats.h"
-
-#include <assert.h>
-#include <ebc.h>
-#include <time.h>
-
 #include "reinforcement_learning.h"
-#include "wma.h"
-#include "episodic_memory.h"
+#include "rete.h"
 #include "semantic_memory.h"
+#include "soar_rand.h"
+#include "stats.h"
+#include "symtab.h"
+#include "wma.h"
+#include "wmem.h"
+#include "xml.h"
+
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif
-#include "output_manager.h"
+
+#include <assert.h>
+#include <time.h>
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
@@ -223,7 +218,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = true;  /* AGR 627 */
-    thisAgent->sysparams[EXPLAIN_SYSPARAM] = false; /* KJC 7/96 */
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
 
@@ -467,7 +461,6 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->FIRING_TYPE = IE_PRODS;
     do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
 
-    reset_explain(thisAgent);
     bool ok = reset_id_counters(thisAgent);
     reset_wme_timetags(thisAgent);
     reset_statistics(thisAgent);

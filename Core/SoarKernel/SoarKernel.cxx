@@ -17,7 +17,6 @@
 #include "src/ebc_print.cpp"
 #include "src/ebc_unify.cpp"
 #include "src/ebc_variablize.cpp"
-#include "src/explain.cpp"
 #include "src/exploration.cpp"
 #include "src/init_soar.cpp"
 #include "src/io_soar.cpp"

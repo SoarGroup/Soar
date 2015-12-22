@@ -85,39 +85,34 @@
 
 ====================================================================== */
 
-#include <ebc.h>
-#include "portability.h"
-#include <stdlib.h>
-
 #include "rete.h"
-#include "kernel.h"
-#include "mem.h"
-#include "wmem.h"
-#include "explain.h"
-#include "symtab.h"
+
 #include "agent.h"
-#include "print.h"
-#include "production.h"
+#include "assert.h"
 #include "condition.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
+#include "episodic_memory.h"
 #include "init_soar.h"
 #include "instantiations.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "lexer.h"
-#include "xml.h"
-#include "soar_TraceNames.h"
+#include "mem.h"
 #include "output_manager.h"
-
+#include "print.h"
+#include "production.h"
 #include "reinforcement_learning.h"
-#include "episodic_memory.h"
+#include "rhs_functions.h"
+#include "rhs.h"
 #include "semantic_memory.h"
+#include "soar_TraceNames.h"
+#include "symtab.h"
 #include "test.h"
-#include "decide.h"
-#include "debug.h"
-
-#include "assert.h"
+#include "wmem.h"
+#include "xml.h"
 
 #include <sstream>
+#include <stdlib.h>
 
 /* ----------- handle inter-switch dependencies ----------- */
 

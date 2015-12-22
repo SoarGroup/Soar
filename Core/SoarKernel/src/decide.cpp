@@ -32,8 +32,8 @@
 #include "production.h"
 #include "condition.h"
 #include "print.h"
+#include "rete.h"
 #include "trace.h"
-#include "explain.h"
 #include "tempmem.h"
 #include "io_soar.h"
 #include "xml.h"
@@ -61,6 +61,8 @@
 
 #include <algorithm>
 #include <list>
+
+typedef struct ms_change_struct ms_change;
 
 using namespace soar_TraceNames;
 

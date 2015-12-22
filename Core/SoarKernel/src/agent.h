@@ -20,18 +20,20 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-#include "memory_manager.h"
-#include "gsysparam.h"
 #include "kernel.h"
-#include "init_soar.h"
-#include "soar_module.h"
-#include "mem.h"
+
 #include "callback.h"
-#include "exploration.h"
-#include "reinforcement_learning.h"
-#include "wma.h"
 #include "episodic_memory.h"
+#include "exploration.h"
+#include "gsysparam.h"
+#include "init_soar.h"
+#include "mem.h"
+#include "memory_manager.h"
+#include "reinforcement_learning.h"
 #include "semantic_memory.h"
+#include "soar_module.h"
+#include "wma.h"
+
 #include <string>
 #include <map>
 #include <unordered_map>
@@ -538,14 +540,6 @@ typedef struct EXPORT agent_struct
     /* Used only if #def'd ATTENTION_LAPSE in */
     struct timeval*   attention_lapse_tracker;
     bool              attention_lapsing;
-
-    /* ----------------------- Explain.c stuff -------------------------- */
-
-    backtrace_str*      explain_backtrace_list;     /* AGR 564 */
-    explain_chunk_str* explain_chunk_list;          /* AGR 564 */
-    char                explain_chunk_name[256];    /* AGR 564 */
-    /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
-    /* bool               explain_flag; */
 
     /* ----------------------- Firer stuff -------------------------- */
 

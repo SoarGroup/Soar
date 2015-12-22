@@ -13,9 +13,11 @@
 #ifndef WMA_H
 #define WMA_H
 
+#include "kernel.h"
+#include "soar_module.h"
+
 #include <string>
 #include <queue>
-#include "soar_module.h"
 
 typedef struct wme_struct wme;
 
@@ -66,19 +68,19 @@ class wma_param_container: public soar_module::param_container
         wma_decay_param* decay_rate;
         wma_decay_param* decay_thresh;
         soar_module::boolean_param* petrov_approx;
-        
+
         enum forgetting_choices { disabled, naive, bsearch, approx };
         soar_module::constant_param<forgetting_choices>* forgetting;
-        
+
         enum forget_wme_choices { all, lti };
         soar_module::constant_param<forget_wme_choices>* forget_wme;
-        
+
         soar_module::boolean_param* fake_forgetting;
-        
+
         // performance
         soar_module::constant_param< soar_module::timer::timer_level >* timers;
         soar_module::integer_param* max_pow_cache;
-        
+
         wma_param_container(agent* new_agent);
 };
 
@@ -87,7 +89,7 @@ class wma_activation_param: public soar_module::boolean_param
     public:
         wma_activation_param(const char* new_name, boolean new_value, soar_module::predicate<boolean>* new_prot_pred, agent* new_agent);
         virtual void set_value(boolean new_value);
-        
+
     private:
         agent* thisAgent;
 };
@@ -115,7 +117,7 @@ class wma_stat_container: public soar_module::stat_container
 {
     public:
         soar_module::integer_stat* forgotten_wmes;
-        
+
         wma_stat_container(agent* new_agent);
 };
 
@@ -129,7 +131,7 @@ class wma_timer_container: public soar_module::timer_container
     public:
         soar_module::timer* history;
         soar_module::timer* forgetting;
-        
+
         wma_timer_container(agent* thisAgent);
 };
 
@@ -165,7 +167,7 @@ typedef struct wma_history_struct
     wma_cycle_reference access_history[ WMA_DECAY_HISTORY ];
     unsigned int next_p;
     unsigned int history_ct;
-    
+
     wma_reference history_references;
     wma_reference total_references;
     wma_d_cycle first_reference;
@@ -176,29 +178,29 @@ typedef struct wma_decay_element_struct
 {
     // the wme that this element goes with
     wme* this_wme;
-    
+
     // when a WME is removed from working memory, the data
     // structure is not necessarily deallocated right away
     // because its reference count has not fallen to zero.
     // This flag indicates that the WME is in this "limbo" state.
     bool just_removed;
-    
+
     // notes the awkward period between first activation
     // and dealing with history changes
     bool just_created;
-    
+
     // how many times this wme has been referenced so far
     // this cycle
     wma_reference num_references;
-    
+
     // when and how often this wme has been referenced in recent
     // history.
     wma_history touches;
-    
+
     // if forgetting is enabled, this tells us when we think
     // we need to forget this wme
     wma_d_cycle forget_cycle;
-    
+
 } wma_decay_element;
 
 #ifdef USE_MEM_POOL_ALLOCATORS

@@ -1,8 +1,3 @@
-#include <ebc.h>
-#include "ebc.h"
-#include "memory_manager.h"
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -22,44 +17,46 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
-#include <map>
 
 #include "agent.h"
+
+#include "callback.h"
 #include "debug.h"
-#include "kernel.h"
-#include "mem.h"
-#include "lexer.h"
-#include "symtab.h"
-#include "rhs.h"
-#include "rhs_functions.h"
-#include "instantiations.h"
-#include "production.h"
+#include "decide.h"
+#include "decision_manipulation.h"
+#include "ebc.h"
+#include "episodic_memory.h"
+#include "exploration.h"
 #include "gsysparam.h"
 #include "init_soar.h"
-#include "decide.h"
-#include "print.h"
-#include "recmem.h"
-#include "ebc.h"
-#include "explain.h"
-#include "rete.h"
-#include "trace.h"
-#include "callback.h"
+#include "instantiations.h"
 #include "io_soar.h"
-#include "xml.h"
-#include "stats.h"
-#include "soar_module.h"
-#include "exploration.h"
+#include "lexer.h"
+#include "mem.h"
+#include "memory_manager.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "recmem.h"
 #include "reinforcement_learning.h"
-#include "decision_manipulation.h"
-#include "wma.h"
-#include "episodic_memory.h"
+#include "rete.h"
+#include "rhs_functions.h"
+#include "rhs.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
-#include "output_manager.h"
+#include "soar_module.h"
+#include "stats.h"
+#include "symtab.h"
+#include "trace.h"
+#include "wma.h"
+#include "xml.h"
+
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif
+
+#include <stdlib.h>
+#include <map>
 
 /* ===================================================================
 
@@ -83,7 +80,7 @@ void init_soar_agent(agent* thisAgent)
     init_decider(thisAgent);
     init_soar_io(thisAgent);
     init_tracing(thisAgent);
-    init_explain(thisAgent);  /* AGR 564 */
+    //init_explain(thisAgent);  /* AGR 564 */
     select_init(thisAgent);
     predict_init(thisAgent);
 

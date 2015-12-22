@@ -78,6 +78,8 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 
 void Explanation_Based_Chunker::reinit()
 {
+    explanationLogger->re_init();
+
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
     inst_id_counter = 0;

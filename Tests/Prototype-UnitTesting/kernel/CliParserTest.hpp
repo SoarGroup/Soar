@@ -97,10 +97,6 @@ public:
     {
         return false;
     }
-	virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0)
-	{
-		return false;
-	}
 	virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0)
 	{
 		return false;
@@ -250,10 +246,6 @@ public:
 		return false;
 	}
 	virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT)
-	{
-		return false;
-	}
-	virtual bool DoSaveBacktraces(bool* pSetting = 0)
 	{
 		return false;
 	}
