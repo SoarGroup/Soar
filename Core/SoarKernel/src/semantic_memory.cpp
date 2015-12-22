@@ -3889,7 +3889,6 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     {
         bool activate_on_add = false;
         activate_on_add = (thisAgent->smem_params->activate_on_add->get_value() == on);
-        assert(!activate_on_add);
         double lti_act = smem_lti_activate(thisAgent, lti_id, activate_on_add, new_edges);
         
         if (!after_above)
