@@ -22,7 +22,6 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "output_manager.h"
-#include "output_manager_db.h"
 #include "prefmem.h"
 #include "wmem.h"
 #include "soar_instance.h"
@@ -128,7 +127,7 @@ void Output_Manager::sprint_sf(std::string &destString, const char* format, ...)
 
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!is_debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent)
     {
@@ -145,7 +144,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!is_debug_mode_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -165,7 +164,7 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!is_debug_mode_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -184,7 +183,7 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 
 void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!is_debug_mode_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -233,7 +232,7 @@ void Output_Manager::buffer_start_fresh_line(agent* thisAgent, std::string &dest
 
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
-    if (!debug_mode_enabled(mode)) return;
+    if (!is_debug_mode_enabled(mode)) return;
 
     if (!m_defaultAgent)
     {

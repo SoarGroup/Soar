@@ -17,7 +17,7 @@
 
 void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     print_ovar_to_o_id_map(mode);
     print_o_id_substitution_map(mode);
     print_o_id_to_ovar_debug_map(mode);
@@ -26,7 +26,7 @@ void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "            Merge Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -57,7 +57,7 @@ void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "        ovar_to_o_id_map Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -85,7 +85,7 @@ void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_o_id_substitution_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     o_id_substitution_map Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -109,7 +109,7 @@ void Explanation_Based_Chunker::print_o_id_substitution_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_o_id_to_ovar_debug_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     o_id_to_ovar_debug_map Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -130,7 +130,7 @@ void Explanation_Based_Chunker::print_o_id_to_ovar_debug_map(TraceMode mode)
 }
 void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "   Attachment Points in conditions\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -148,7 +148,7 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 }
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "    Relational Constraints List\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -167,7 +167,7 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 
 void Explanation_Based_Chunker::print_variablization_tables(TraceMode mode, int whichTable)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
     {
@@ -198,7 +198,7 @@ void Explanation_Based_Chunker::print_variablization_tables(TraceMode mode, int 
 
 void Explanation_Based_Chunker::print_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().debug_mode_enabled(mode)) return;
+    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     print_variablization_tables(mode);
     print_o_id_tables(mode);
 }

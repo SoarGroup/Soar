@@ -37,6 +37,58 @@
 
 using namespace soar_module;
 
+void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
+{
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        mode_info[i].enabled = false;
+    }
+    if (pEnabled)
+    {
+        mode_info[No_Mode].enabled =                        true;
+        mode_info[DT_DEBUG].enabled =                       true;
+
+    //    mode_info[DT_ID_LEAKING].enabled =                  true;
+    //    mode_info[DT_DEALLOCATES].enabled =                 true;
+    //    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
+    //    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
+    //    mode_info[DT_REFCOUNT_REMS].enabled =               true;
+    //
+    //    mode_info[DT_SOAR_INSTANCE].enabled =               true;
+    //    mode_info[DT_CLI_LIBRARIES].enabled =               true;
+    //    mode_info[DT_PARSER].enabled =                      true;
+    //    mode_info[DT_GDS].enabled =                         true;
+    //    mode_info[DT_EPMEM_CMD].enabled =                   true;
+    //
+    //    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
+        mode_info[DT_MILESTONES].enabled =                  true;
+    //
+    //    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
+    //    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
+    //    mode_info[DT_VM_MAPS].enabled =                     true;
+    //    mode_info[DT_BACKTRACE].enabled =                   true;
+    //    mode_info[DT_IDENTITY_PROP].enabled =               true;
+    //    mode_info[DT_UNIFICATION].enabled =                 true;
+    //    mode_info[DT_CONSTRAINTS].enabled =                 true;
+    //    mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
+    //    mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
+    //    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
+    //    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
+    //    mode_info[DT_UNGROUNDED_STI].enabled =              true;
+    //    mode_info[DT_REORDERER].enabled =                   true;
+    //    mode_info[DT_MERGE].enabled =                       true;
+    //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
+    //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
+    //    mode_info[DT_RHS_VALUE].enabled =                   true;
+        mode_info[DT_EXPLAIN].enabled =                     true;
+    //
+    //    mode_info[DT_WME_CHANGES].enabled =                 true;
+    //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
+    //    mode_info[DT_LINKS].enabled =                       true;
+    //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
+    }
+}
+
 void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
     mode_info[No_Mode].prefix =                         strdup("        | ");
@@ -81,51 +133,11 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
 
-    for (int i=0; i < num_trace_modes; i++)
-    {
-        mode_info[i].enabled = false;
-    }
-    mode_info[No_Mode].enabled =                        true;
-    mode_info[DT_DEBUG].enabled =                       true;
-
-//    mode_info[DT_ID_LEAKING].enabled =                  true;
-//    mode_info[DT_DEALLOCATES].enabled =                 true;
-//    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
-//    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
-//    mode_info[DT_REFCOUNT_REMS].enabled =               true;
-//
-//    mode_info[DT_SOAR_INSTANCE].enabled =               true;
-//    mode_info[DT_CLI_LIBRARIES].enabled =               true;
-//    mode_info[DT_PARSER].enabled =                      true;
-//    mode_info[DT_GDS].enabled =                         true;
-//    mode_info[DT_EPMEM_CMD].enabled =                   true;
-//
-//    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
-//    mode_info[DT_MILESTONES].enabled =                  true;
-//
-//    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
-//    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
-//    mode_info[DT_VM_MAPS].enabled =                     true;
-//    mode_info[DT_BACKTRACE].enabled =                   true;
-//    mode_info[DT_IDENTITY_PROP].enabled =               true;
-//    mode_info[DT_UNIFICATION].enabled =                 true;
-//    mode_info[DT_CONSTRAINTS].enabled =                 true;
-//    mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
-//    mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
-//    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
-//    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
-//    mode_info[DT_UNGROUNDED_STI].enabled =              true;
-//    mode_info[DT_REORDERER].enabled =                   true;
-//    mode_info[DT_MERGE].enabled =                       true;
-//    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
-//    mode_info[DT_EBC_CLEANUP].enabled =                 true;
-//    mode_info[DT_RHS_VALUE].enabled =                   true;
-    mode_info[DT_EXPLAIN].enabled =                     true;
-//
-//    mode_info[DT_WME_CHANGES].enabled =                 true;
-//    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
-//    mode_info[DT_LINKS].enabled =                       true;
-//    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
+#ifdef DEBUG_OUTPUT_ON
+    debug_set_mode_info(mode_info, true);
+#else
+    debug_set_mode_info(mode_info, false);
+#endif
 }
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
@@ -291,12 +303,14 @@ void debug_test(int type)
     switch (type)
     {
         case 1:
-            print_internal_symbols(thisAgent);
-            dprint_identifiers(DT_DEBUG);
+            Output_Manager::Get_OM().set_output_params_global(true);
+            thisAgent->output_settings->set_output_params_agent(true);
+            print(thisAgent, "Debug output enabled.\n");
             break;
         case 2:
-            /* -- Print all instantiations -- */
-            dprint_all_inst(DT_DEBUG);
+            Output_Manager::Get_OM().set_output_params_global(false);
+            thisAgent->output_settings->set_output_params_agent(false);
+            print(thisAgent, "Debug output disabled.\n");
             break;
         case 3:
         {
@@ -318,7 +332,8 @@ void debug_test(int type)
 
         case 5:
         {
-
+            print_internal_symbols(thisAgent);
+            dprint_identifiers(DT_DEBUG);
             break;
         }
         case 6:
@@ -336,6 +351,8 @@ void debug_test(int type)
             break;
         }
         case 7:
+            /* -- Print all instantiations -- */
+            dprint_all_inst(DT_DEBUG);
             break;
         case 8:
         {

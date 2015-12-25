@@ -10,24 +10,64 @@
  * =======================================================================
  */
 
+#include "output_manager.h"
+
+#include "agent.h"
 #include "callback.h"
 #include "debug.h"
-#include "output_manager.h"
-#include "output_manager_db.h"
-#include "output_manager_params.h"
 #include "print.h"
-#include "agent.h"
 
-AgentOutput_Info::AgentOutput_Info() :
-    print_enabled(OM_Init_print_enabled),
-    callback_mode(OM_Init_callback_mode),
-    stdout_mode(OM_Init_stdout_mode),
-    db_mode(OM_Init_db_mode),
-    callback_dbg_mode(OM_Init_callback_dbg_mode),
-    stdout_dbg_mode(OM_Init_stdout_dbg_mode),
-    db_dbg_mode(OM_Init_db_dbg_mode),
-    printer_output_column(1)
-{}
+AgentOutput_Info::AgentOutput_Info()
+{
+    print_enabled = true;
+    printer_output_column = 1;
+    #if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+        set_output_params_agent(true);
+    #else
+        set_output_params_agent(false);
+    #endif
+}
+
+void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
+    if (pDebugEnabled)
+    {
+        callback_mode = false;
+        stdout_mode = true;
+        db_mode = false;
+        callback_dbg_mode = false;
+        stdout_dbg_mode = true;
+        db_dbg_mode = false;
+    } else {
+        callback_mode = true;
+        stdout_mode = false;
+        db_mode = false;
+        callback_dbg_mode = false;
+        stdout_dbg_mode = false;
+        db_dbg_mode = false;
+    }
+}
+
+
+void Output_Manager::set_output_params_global(bool pDebugEnabled){
+    if (pDebugEnabled)
+    {
+        m_print_actual = true;
+        m_print_identity = true;
+        m_print_actual_effective = true;
+        m_print_identity_effective = true;
+        db_mode = false;
+        stdout_mode = true;
+        debug_set_mode_info(mode_info, true);
+    } else {
+        m_print_actual = true;
+        m_print_identity = false;
+        m_print_actual_effective = true;
+        m_print_identity_effective = false;
+        db_mode = false;
+        stdout_mode = false;
+        debug_set_mode_info(mode_info, false);
+    }
+}
 
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
@@ -45,23 +85,19 @@ void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pS
 
 Output_Manager::Output_Manager()
 {
-    initialize_debug_trace(mode_info);
-
     m_defaultAgent = NIL;
     m_params = new OM_Parameters();
     m_db = NIL;
-
-    m_print_actual = OM_Default_print_actual;
-    m_print_identity = OM_Default_print_identity;
-    m_print_actual_effective = OM_Default_print_actual;
-    m_print_identity_effective = OM_Default_print_identity;
     m_pre_string = strdup("          ");
     m_post_string = NULL;
-
     next_output_string = 0;
 
-    db_mode = OM_Init_db_mode;
-    stdout_mode = OM_Init_stdout_mode;
+    initialize_debug_trace(mode_info);
+    #if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+        set_output_params_global(true);
+    #else
+        set_output_params_global(false);
+    #endif
 
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
      *    place to put it.  Leaving here for now. -- */
@@ -161,4 +197,32 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
     }
 }
 
+OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
+{
+    database = new soar_module::constant_param<soar_module::db_choices>("database", soar_module::file, new soar_module::f_predicate<soar_module::db_choices>());
+    database->add_mapping(soar_module::memory, "memory");
+    database->add_mapping(soar_module::file, "file");
+    append_db = new soar_module::boolean_param("append", off, new soar_module::f_predicate<boolean>());
+    path = new soar_module::string_param("path", "debug.db", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    lazy_commit = new soar_module::boolean_param("lazy-commit", off, new soar_module::f_predicate<boolean>());
+    page_size = new soar_module::constant_param<soar_module::page_choices>("page-size", soar_module::page_8k, new soar_module::f_predicate<soar_module::page_choices>());
+    page_size->add_mapping(soar_module::page_1k, "1k");
+    page_size->add_mapping(soar_module::page_2k, "2k");
+    page_size->add_mapping(soar_module::page_4k, "4k");
+    page_size->add_mapping(soar_module::page_8k, "8k");
+    page_size->add_mapping(soar_module::page_16k, "16k");
+    page_size->add_mapping(soar_module::page_32k, "32k");
+    page_size->add_mapping(soar_module::page_64k, "64k");
+    cache_size = new soar_module::integer_param("cache-size", 10000, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
+    opt = new soar_module::constant_param<soar_module::opt_choices>("optimization", soar_module::opt_safety, new soar_module::f_predicate<soar_module::opt_choices>());
+    opt->add_mapping(soar_module::opt_safety, "safety");
+    opt->add_mapping(soar_module::opt_speed, "performance");
 
+    add(database);
+    add(append_db);
+    add(path);
+    add(lazy_commit);
+    add(page_size);
+    add(cache_size);
+    add(opt);
+}

@@ -14,10 +14,9 @@
 #define OUTPUT_MANAGER_H_
 
 #include "kernel.h"
+#include "debug.h"
 #include "lexer.h"
 #include "soar_db.h"
-#include "output_manager_db.h"
-#include "debug.h"
 
 typedef char* rhs_value;
 typedef struct test_struct test_info;
@@ -35,41 +34,6 @@ typedef struct identity_struct identity_info;
 #define output_string_size MAX_LEXEME_LENGTH*2+10
 #define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
-#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
-    /* Settings used when debugging.  Prints straight to stdout. */
-
-    /* These determine whether we print identity information when printing tests in debug statements */
-    #define OM_Default_print_actual true;
-    #define OM_Default_print_identity true;
-
-    /* -- Which output listeners should be initially turned on -- */
-    #define OM_Init_print_enabled     on
-    #define OM_Init_db_mode           off
-    #define OM_Init_callback_mode     off
-    #define OM_Init_stdout_mode       on
-
-    /* -- Which output debug listeners should be initially turned on -- */
-    #define OM_Init_db_dbg_mode       off
-    #define OM_Init_callback_dbg_mode off
-    #define OM_Init_stdout_dbg_mode   on
-#else
-    /* Settings for normal Soar operation */
-
-    /* These determine whether we print identity information when printing tests in debug statements */
-    #define OM_Default_print_actual true;
-    #define OM_Default_print_identity false;
-
-    /* -- Which output listeners should be initially turned on -- */
-    #define OM_Init_print_enabled     on
-    #define OM_Init_db_mode           off
-    #define OM_Init_callback_mode     on
-    #define OM_Init_stdout_mode       off
-
-    /* -- Which output debug listeners should be initially turned on -- */
-    #define OM_Init_db_dbg_mode       off
-    #define OM_Init_callback_dbg_mode on
-    #define OM_Init_stdout_dbg_mode   off
-#endif
 
 typedef struct trace_mode_info_struct
 {
@@ -89,8 +53,7 @@ namespace cli
 }
 
 class Soar_Instance;
-class OM_DB;
-class OM_Parameters;
+class Output_Manager;
 
 inline size_t om_strncpy(char* s1, const char* s2, size_t n, size_t num_chars) {
     if ( n > 0) {
@@ -115,9 +78,71 @@ class AgentOutput_Info
         bool callback_mode, stdout_mode, db_mode;
         bool callback_dbg_mode, stdout_dbg_mode, db_dbg_mode;
         int  printer_output_column;
+        void set_output_params_agent(bool pDebugEnabled);
 } ;
 
+class OM_Parameters: public soar_module::param_container
+{
+    public:
 
+        OM_Parameters();
+
+        // storage
+        soar_module::constant_param<soar_module::db_choices>* database;
+        soar_module::string_param* path;
+        soar_module::boolean_param* lazy_commit;
+        soar_module::boolean_param* append_db;
+
+        // performance
+        soar_module::constant_param<soar_module::page_choices>* page_size;
+        soar_module::integer_param* cache_size;
+        soar_module::constant_param<soar_module::opt_choices>* opt;
+
+};
+
+class OM_DB: public soar_module::sqlite_statement_container
+{
+    public:
+
+        OM_DB(soar_module::sqlite_database* pDebugDB);
+        virtual ~OM_DB();
+
+        void print_db(MessageType msgType, const char* prefix, const char* msg);
+        void create_db();
+        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
+
+    private:
+        soar_module::sqlite_database*    m_Debug_DB;
+        Output_Manager*                  m_OM;
+
+        soar_module::sqlite_statement*   begin, *commit, *rollback;
+        soar_module::sqlite_statement*   add_message_id;
+        soar_module::sqlite_statement*   add_debug_message;
+        soar_module::sqlite_statement*   add_trace_message;
+        soar_module::sqlite_statement*   add_refcnt_message;
+        soar_module::sqlite_statement*   add_refcnt_problem;
+        soar_module::sqlite_statement*   generate_symbols_seen;
+        soar_module::sqlite_statement*   count_refs;
+        soar_module::sqlite_statement*   add_refcnt_totals;
+        soar_module::sqlite_statement*   get_entries_for_symbol;
+
+        int64_t                         message_count;
+
+        void create_tables();
+        void create_indices();
+        void create_statements();
+        void drop_tables();
+        void init_tables();
+        void clear();
+        void init_db();
+        void close_db();
+        void switch_to_memory_db(std::string& buf);
+
+        void compile_refcount_summary();
+
+        void increment_message_count(MessageType msgType);
+
+};
 
 class Output_Manager
 {
@@ -192,8 +217,9 @@ class Output_Manager
     public:
 
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
+        void set_output_params_global(bool pDebugEnabled);
 
-        bool debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+        bool is_debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
 
         void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
@@ -263,24 +289,17 @@ class Output_Manager
                 }
             }
         }
-        void set_default_print_test_format(bool pActual, bool p_Identity)
+        void set_default_print_test_format(bool pActual, bool pIdentity)
         {
             m_print_actual = pActual;
-            m_print_identity = p_Identity;
+            m_print_identity = pIdentity;
         }
 
-        void set_print_test_format(bool pActual, bool p_Identity)
+        void set_print_test_format(bool pActual, bool pIdentity)
         {
             m_print_actual_effective = pActual;
-            m_print_identity_effective = p_Identity;
+            m_print_identity_effective = pIdentity;
         }
-        void reset_print_test_format()
-        {
-            m_print_actual = OM_Default_print_actual;
-            m_print_identity = OM_Default_print_identity;
-            clear_print_test_format();
-        }
-
         void clear_print_test_format()
         {
             m_print_actual_effective = m_print_actual;
@@ -290,22 +309,18 @@ class Output_Manager
 
         void set_dprint_indents(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
+            if (is_debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
         }
         void set_dprint_test_format(TraceMode mode, bool pActual, bool p_Identity)
         {
-            if (debug_mode_enabled(mode)) set_print_test_format(pActual, p_Identity);
+            if (is_debug_mode_enabled(mode)) set_print_test_format(pActual, p_Identity);
         }
         void clear_dprint_indents(TraceMode mode)
         {
-            if (debug_mode_enabled(mode)) clear_print_indents();
+            if (is_debug_mode_enabled(mode)) clear_print_indents();
         }
-        void reset_dprint_test_format(TraceMode mode) {
-            if (debug_mode_enabled(mode)) reset_print_test_format();
-        }
-
         void clear_dprint_test_format(TraceMode mode) {
-            if (debug_mode_enabled(mode)) clear_print_test_format();
+            if (is_debug_mode_enabled(mode)) clear_print_test_format();
         }
 
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */

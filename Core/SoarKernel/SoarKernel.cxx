@@ -27,7 +27,6 @@
 #include "src/osupport.cpp"
 #include "src/output_manager.cpp"
 #include "src/output_manager_db.cpp"
-#include "src/output_manager_params.cpp"
 #include "src/output_manager_print.cpp"
 #include "src/output_manager_to_string.cpp"
 #include "src/parser.cpp"

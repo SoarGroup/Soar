@@ -13,15 +13,13 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "agent.h"
+#include "debug.h"
+#include "misc.h"
+#include "output_manager.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
-#include "agent.h"
-#include "misc.h"
 #include "soar_instance.h"
-#include "output_manager.h"
-#include "output_manager_params.h"
-#include "debug.h"
 
 using namespace cli;
 using namespace sml;
@@ -34,7 +32,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     size_t numArgs = 0;
     std::ostringstream tempString;
     std::string err, sub_command;
-    
+
     if (!argv)
     {
         Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
@@ -53,25 +51,15 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 40);
         PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 40);
         PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 40);
-        PrintCLIMessage_Section("Trace Output", 40);
-        PrintCLIMessage_Item("db_mode:", l_OutputManager->m_params->db_mode, 40);
-        PrintCLIMessage_Item("callback_mode:", l_OutputManager->m_params->callback_mode, 40);
-        PrintCLIMessage_Item("stdout_mode:", l_OutputManager->m_params->stdout_mode, 40);
-        PrintCLIMessage_Item("file_mode:", l_OutputManager->m_params->file_mode, 40);
-        PrintCLIMessage_Section("Debug Output", 40);
-        PrintCLIMessage_Item("db_dbg_mode:", l_OutputManager->m_params->db_dbg_mode, 40);
-        PrintCLIMessage_Item("callback_dbg_mode:", l_OutputManager->m_params->callback_dbg_mode, 40);
-        PrintCLIMessage_Item("stdout_dbg_mode:", l_OutputManager->m_params->stdout_dbg_mode, 40);
-        PrintCLIMessage_Item("file_dbg_mode:", l_OutputManager->m_params->file_dbg_mode, 40);
         PrintCLIMessage("");
-        
+
         result = true;
         goto print_syntax;
     }
-    
+
     numArgs = argv->size() - 1;
     sub_command = argv->front();
-    
+
     if (numArgs == 1)
     {
         if (sub_command[0] == 'g')
@@ -114,7 +102,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         {
             std::string parameter_name = argv->at(1);
             std::string parameter_value = argv->at(2);
-            
+
             soar_module::param* my_param = thisAgent->debug_params->get(parameter_name.c_str());
             if (!my_param)
             {
@@ -130,9 +118,9 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 SetError(tempString.str().c_str());
                 goto print_syntax;
             }
-            
+
             bool result = my_param->set_string(parameter_value.c_str());
-            
+
             if (!result)
             {
                 SetError("Debug| Could not set parameter!");
@@ -172,7 +160,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             SetError(tempString.str().c_str());
             goto print_syntax;
         }
-        
+
         return result;
     }
     else if (numArgs == 0)
@@ -188,14 +176,14 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             SetError(tempString.str().c_str());
             goto print_syntax;
         }
-        
+
         return result;
     }
-    
+
     tempString.str("");
     tempString << "Debug| Invalid number of parameters (" << numArgs << ") to command " << sub_command << ".";
     SetError(tempString.str().c_str());
-    
+
 print_syntax:
 
     PrintCLIMessage("\nSyntax: Debug [command]");
@@ -230,8 +218,8 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 //        {'u', "update",            cli::OPTARG_NONE},
 //        {0, 0, cli::OPTARG_NONE}
 //    };
-		
+
     cli::Cli::RunBitset options(0);
     DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
-    
+
 }
