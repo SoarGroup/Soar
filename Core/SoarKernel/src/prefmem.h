@@ -172,7 +172,7 @@ typedef struct preference_struct
 extern preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
                                    const soar_module::identity_triple o_ids = soar_module::identity_triple(0, 0, 0),
                                    const soar_module::rhs_triple rhs_funcs = soar_module::rhs_triple(NULL, NULL, NULL));
-extern preference* copy_preference(agent* thisAgent, preference* pPref);
+extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
 inline void preference_add_ref(preference* p) { (p)->reference_count++;}
 inline void preference_remove_ref(agent* thisAgent, preference* p) {(p)->reference_count--; if ((p)->reference_count == 0) { possibly_deallocate_preference_and_clones(thisAgent, p);}}

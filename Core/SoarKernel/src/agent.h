@@ -192,6 +192,8 @@ typedef struct EXPORT agent_struct
     Explanation_Based_Chunker*  ebChunker;
     Memory_Manager*             memoryManager;
     Output_Manager*             outputManager;
+    Explanation_Logger*         explanationLogger;
+
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at
@@ -233,6 +235,7 @@ typedef struct EXPORT agent_struct
     Symbol*             item_count_symbol; // SBW 5/07
     Symbol*             non_numeric_count_symbol; // NLD 11/11
 
+    Symbol*             fake_instantiation_symbol;
 
     /* RPM 9/06 begin */
     Symbol*             input_link_symbol;

@@ -116,7 +116,9 @@ preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* att
           value or referent .isa_goal or .isa_impasse; */
 }
 
-preference* copy_preference(agent* thisAgent, preference* pPref)
+/* This function just copies the elements of a preferences we need
+ * for the EBC explanation mechanism */
+preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 {
     preference* p;
 
@@ -141,15 +143,16 @@ preference* copy_preference(agent* thisAgent, preference* pPref)
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
 
 
-    /*Not sure if we want to copy these */
-    p->in_tm = pPref->in_tm;
-    p->on_goal_list = pPref->on_goal_list;
-    p->reference_count = pPref->reference_count;
-    p->slot = pPref->slot;
-    p->total_preferences_for_candidate = pPref->total_preferences_for_candidate;
-    p->rl_contribution = pPref->rl_contribution;
-    p->rl_rho = pPref->rl_rho;
-    p->wma_o_set = pPref->wma_o_set;
+    /* Don't want this information or have the other things cleaned up*/
+    p->inst = NULL;
+    p->in_tm = false;
+    p->on_goal_list = false;
+    p->reference_count = 0;
+    p->slot = NULL;
+    p->total_preferences_for_candidate = 1;
+    p->rl_contribution = false;
+    p->rl_rho = 0;
+    p->wma_o_set = NULL;
 
     /* Don't want to copy links to other preferences */
     p->next_clone = NULL;
@@ -190,11 +193,13 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         remove_from_dll(pref->inst->match_goal->id->preferences_from_goal,
                         pref, all_of_goal_next, all_of_goal_prev);
 
-    /* --- remove it from the list of pref's from that instantiation --- */
-    remove_from_dll(pref->inst->preferences_generated, pref,
-                    inst_next, inst_prev);
-    possibly_deallocate_instantiation(thisAgent, pref->inst);
-
+    if (pref->inst)
+    {
+        /* --- remove it from the list of pref's from that instantiation --- */
+        remove_from_dll(pref->inst->preferences_generated, pref,
+            inst_next, inst_prev);
+        possibly_deallocate_instantiation(thisAgent, pref->inst);
+    }
     /* --- dereference component symbols --- */
     symbol_remove_ref(thisAgent, pref->id);
     symbol_remove_ref(thisAgent, pref->attr);

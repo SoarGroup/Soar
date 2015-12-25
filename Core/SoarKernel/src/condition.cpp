@@ -70,6 +70,7 @@ extern void init_condition(condition* cond)
 {
     cond->next = cond->prev = cond->counterpart = NIL;
     cond->bt.trace = NIL;
+    cond->bt.wme_ = NIL;
     cond->bt.CDPS = NIL;
     cond->data.tests.id_test = NIL;
     cond->data.tests.attr_test = NIL;

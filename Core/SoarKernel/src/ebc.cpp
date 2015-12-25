@@ -28,7 +28,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
-    explanationLogger = new Explanation_Logger(thisAgent);
 
     /* Initialize instantiation and identity ID counters */
     inst_id_counter = 0;
@@ -78,7 +77,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 
 void Explanation_Based_Chunker::reinit()
 {
-    explanationLogger->re_init();
+    thisAgent->explanationLogger->re_init();
 
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();

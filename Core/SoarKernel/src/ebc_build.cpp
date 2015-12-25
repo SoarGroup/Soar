@@ -711,7 +711,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     condition*  saved_justification_top = 0;
     condition*  saved_justification_bottom = 0;
     uint64_t chunk_new_i_id = 0;
-    uint64_t explainChunkID = 0;
+    chunk_record* explainChunkRecord = NULL;
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -793,7 +793,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     positive_potentials = NIL;
     locals = NIL;
 
-    explanationLogger->set_backtrace_number(backtrace_number);
+    thisAgent->explanationLogger->set_backtrace_number(backtrace_number);
 
     dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     /* --- backtrace through the instantiation that produced each result --- */
@@ -837,7 +837,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     free_list(thisAgent, positive_potentials);
 
-    explainChunkID = explanationLogger->add_chunk_record(inst);
+    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record(inst);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
     chunk_new_i_id = get_new_inst_id();

@@ -36,6 +36,8 @@ typedef struct identity_struct identity_info;
 #define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
 #if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+    /* Settings used when debugging.  Prints straight to stdout. */
+
     /* These determine whether we print identity information when printing tests in debug statements */
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity true;
@@ -51,7 +53,9 @@ typedef struct identity_struct identity_info;
     #define OM_Init_callback_dbg_mode off
     #define OM_Init_stdout_dbg_mode   on
 #else
-/* These determine whether we print identity information when printing tests in debug statements */
+    /* Settings for normal Soar operation */
+
+    /* These determine whether we print identity information when printing tests in debug statements */
     #define OM_Default_print_actual true;
     #define OM_Default_print_identity false;
 

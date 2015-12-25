@@ -43,20 +43,40 @@ namespace soar_module
 
 class Output_Manager;
 
-typedef struct action_record_struct {
-    preference*     instantiated_pref;
-    preference*     original_pref;          // Only used when building explain records
-    action*         variablized_action;
-    u_int64_t       actionID;
-} action_record;
+class action_record {
 
-typedef struct condition_record_struct {
-    condition*                  variablized_cond;
-    condition*                  instantiated_cond;
-    soar_module::symbol_triple* matched_wme;
-    action_record*              parent_action;
-    u_int64_t                   conditionID;
-} condition_record;
+        friend class Explanation_Logger;
+
+    public:
+        action_record(agent* myAgent, preference* pPref, uint64_t pActionID);
+        ~action_record();
+        preference*     original_pref;          // Only used when building explain records
+        uint64_t get_actionID() { return actionID; };
+
+    private:
+        agent* thisAgent;
+        preference*     instantiated_pref;
+        action*         variablized_action;
+        uint64_t       actionID;
+} ;
+
+class condition_record{
+
+        friend class Explanation_Logger;
+
+    public:
+        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
+        ~condition_record();
+        uint64_t get_conditionID() { return conditionID; };
+
+    private:
+        agent* thisAgent;
+        condition*                  variablized_cond;
+        condition*                  instantiated_cond;
+        soar_module::symbol_triple* matched_wme;
+        action_record*              parent_action;
+        uint64_t                   conditionID;
+} ;
 
 //#ifdef USE_MEM_POOL_ALLOCATORS
 //#include "soar_module.h"
@@ -72,32 +92,58 @@ typedef std::list< condition_record* > condition_record_list;
 typedef std::list< action_record* > action_record_list;
 typedef std::list< uint64_t > id_list;
 
-typedef struct instantiation_record_struct {
-    Symbol*                 production_name;
-    condition_record_list*  conditions;
-    action_record_list*     actions;
-} instantiation_record;
+class instantiation_record {
 
-typedef struct chunk_record_struct {
-    std::string             name;
-    condition_record_list*  conditions;
-    action_record_list*     actions;
-    std::string             identity_set_mapping_explanation;
-    instantiation_record*   baseInstantiation;
-    u_int64_t               chunkID;
-} chunk_record;
+        friend class Explanation_Logger;
+
+    public:
+        instantiation_record(agent* myAgent, instantiation* pInst);
+        ~instantiation_record();
+        uint64_t get_instantiationID() { return instantiationID; };
+
+        action_record* find_rhs_action(preference* pPref);
+
+    private:
+        agent* thisAgent;
+        Symbol*                 production_name;
+        condition_record_list*  conditions;
+        action_record_list*     actions;
+        uint64_t                instantiationID;
+} ;
+
+class chunk_record {
+
+        friend class Explanation_Logger;
+
+    public:
+        chunk_record(agent* myAgent, instantiation* pBaseInstantiation, uint64_t pChunkID);
+        ~chunk_record();
+
+    private:
+        agent* thisAgent;
+        std::string             name;
+        condition_record_list*  conditions;
+        action_record_list*     actions;
+        std::string             identity_set_mapping_explanation;
+        instantiation_record*   baseInstantiation;
+        uint64_t               chunkID;
+} ;
 
 class Explanation_Logger
 {
+        friend class instantiation_record;
+
     public:
 
-        void re_init();
+        void                    re_init();
+        void                    clear_explanations();
 
-        uint64_t add_chunk_record(instantiation* pbaseInstantiation);
-        void     set_chunk_name(uint64_t pC_ID, Symbol* pNameSym);
-        void     set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
+        void                    set_chunk_name(uint64_t pC_ID, Symbol* pNameSym);
+        void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
-        instantiation_record* add_instantiation(instantiation* pInst);
+        chunk_record*           add_chunk_record(instantiation* pbaseInstantiation);
+        instantiation_record*   add_instantiation(instantiation* pInst);
+        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -109,13 +155,12 @@ class Explanation_Logger
 
         tc_number               backtrace_number;
 
+        void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
-        void                    delete_condition(condition_record* lCondRecord);
         condition_record*       add_condition(condition* pCond);
         action_record*          add_result(preference* pPref);
         uint64_t                add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord);
         uint64_t                add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord);
-        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
 
         /* Statistics on learning performed so far */
         uint64_t            chunks_attempted_count;
@@ -127,10 +172,10 @@ class Explanation_Logger
         uint64_t            action_id_count;
 
         /* These maps store all of the records the logger keeps */
-        std::unordered_map< uint64_t, chunk_record* >* chunks;
-        std::unordered_map< uint64_t, instantiation_record* >* instantiations;
-        std::unordered_map< uint64_t, condition_record* >* conditions;
-        std::unordered_map< uint64_t, action_record* >* actions;
+        std::unordered_map< uint64_t, chunk_record* >*          chunks;
+        std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
+        std::unordered_map< uint64_t, condition_record* >*      conditions;
+        std::unordered_map< uint64_t, action_record* >*         actions;
 };
 
 #endif /* EBC_EXPLAIN_H_ */

@@ -168,7 +168,6 @@ class Explanation_Based_Chunker
 
         agent*              thisAgent;
         Output_Manager*     outputManager;
-        Explanation_Logger* explanationLogger;
 
         /* Statistics on learning performed so far */
         uint64_t            chunk_count;

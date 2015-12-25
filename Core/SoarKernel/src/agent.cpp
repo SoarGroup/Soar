@@ -25,6 +25,7 @@
 #include "decide.h"
 #include "decision_manipulation.h"
 #include "ebc.h"
+#include "ebc_explain.h"
 #include "episodic_memory.h"
 #include "exploration.h"
 #include "gsysparam.h"
@@ -289,6 +290,7 @@ agent* create_soar_agent(char* agent_name)                                      
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
     thisAgent->ebChunker = new Explanation_Based_Chunker(thisAgent);
+    thisAgent->explanationLogger = new Explanation_Logger(thisAgent);
     thisAgent->outputManager = &Output_Manager::Get_OM();
 
     /* Initializing all the timer structures */
@@ -548,8 +550,9 @@ void destroy_soar_agent(agent* delete_agent)
 
     dprint_identifiers(DT_ID_LEAKING);
 
-    // delete unique varname lookup table
+    // MToDo | I feel like these should be deleted earlier
     delete delete_agent->ebChunker;
+    delete delete_agent->explanationLogger;
 
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)

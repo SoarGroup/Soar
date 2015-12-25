@@ -20,7 +20,7 @@
 #define SOARDEBUG_H
 
 /* Comment the following line out to completely compile out debug statements */
-#define DEBUG_OUTPUT_ON
+//#define DEBUG_OUTPUT_ON
 
 #include "kernel.h"
 #include "soar_db.h"

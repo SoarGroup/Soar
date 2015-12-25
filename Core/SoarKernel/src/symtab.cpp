@@ -951,6 +951,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->s_context_variable = make_variable(thisAgent, "<s>");
     thisAgent->o_context_variable = make_variable(thisAgent, "<o>");
 
+    thisAgent->fake_instantiation_symbol = make_str_constant(thisAgent, "Fake Instantiation");
     thisAgent->input_link_symbol = make_str_constant(thisAgent, "input-link");
     thisAgent->output_link_symbol = make_str_constant(thisAgent, "output-link");
 
@@ -1060,6 +1061,8 @@ void release_predefined_symbols(agent* thisAgent)
 
     release_helper(thisAgent, &(thisAgent->item_count_symbol));
     release_helper(thisAgent, &(thisAgent->non_numeric_count_symbol));
+
+    release_helper(thisAgent, &(thisAgent->fake_instantiation_symbol));
 
     release_helper(thisAgent, &(thisAgent->input_link_symbol));
     release_helper(thisAgent, &(thisAgent->output_link_symbol));
