@@ -79,7 +79,7 @@ typedef struct condition_struct
 {
     byte type;
     bool already_in_tc;                    /* used only by cond_is_in_tc stuff */
-    bool test_for_acceptable_preference;   /* for positive, negative cond's only */
+    bool test_for_acceptable_preference;   /* for pos/neg conds only. Not NCCs */
     struct condition_struct* next, *prev;
 
     union condition_main_data_union
@@ -89,12 +89,13 @@ typedef struct condition_struct
             test id_test;
             test attr_test;
             test value_test;
-        } tests;                           /* for positive, negative cond's only */
-        ncc_info ncc;                        /* for ncc's only */
+        } tests;                          /* for positive, negative cond's only */
+        ncc_info ncc;                     /* for negative conjunctive conds only */
     } data;
-    bt_info bt;            /* for top-level positive cond's: used for BT and by the rete */
-    reorder_info reorder;  /* used only during reordering */
-    struct condition_struct* counterpart;
+    bt_info bt;                           /* backtrace info for top-level positive cond's:
+                                             used by chunking and the rete */
+    reorder_info reorder;                 /* used only during reordering */
+    struct condition_struct* counterpart; /* only used during chunking */
 } condition;
 
 /* ------------------------ */

@@ -22,6 +22,7 @@
 #include "decide.h"
 #include "episodic_memory.h"
 #include "ebc.h"
+#include "ebc_explain.h"
 #include "io_soar.h"
 #include "output_manager.h"
 #include "print.h"
@@ -455,6 +456,7 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->epmem_stats->reset();
     thisAgent->smem_stats->reset();
     thisAgent->dyn_counters->clear();
+    thisAgent->explanationLogger->re_init();
     thisAgent->ebChunker->reinit();
 
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
