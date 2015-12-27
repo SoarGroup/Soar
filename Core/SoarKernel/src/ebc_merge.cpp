@@ -5,14 +5,16 @@
  *      Author: mazzin
  */
 
-#include <ebc.h>
+#include "ebc.h"
+
 #include "agent.h"
-#include "instantiations.h"
-#include "condition.h"
 #include "assert.h"
-#include "test.h"
-#include "print.h"
+#include "condition.h"
 #include "debug.h"
+#include "ebc_explain.h"
+#include "instantiations.h"
+#include "print.h"
+#include "test.h"
 
 void Explanation_Based_Chunker::clear_merge_map()
 {
@@ -25,6 +27,7 @@ void Explanation_Based_Chunker::merge_values_in_conds(condition* pDestCond, cond
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.attr_test), pSrcCond->data.tests.attr_test);
     dprint(DT_MERGE, "...merging conditions in value element...\n");
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
+    thisAgent->explanationLogger->increment_stat_merged_conditions();
 }
 
 condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)

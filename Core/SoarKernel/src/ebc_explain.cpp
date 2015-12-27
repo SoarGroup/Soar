@@ -34,6 +34,30 @@ void Explanation_Logger::initialize_counters()
     condition_id_count = 1;
     action_id_count = 1;
 
+    total_recorded.chunks = 0;
+    total_recorded.instantiations = 0;
+    total_recorded.instantiations_referenced = 0;
+    total_recorded.instantiations_skipped = 0;
+    total_recorded.conditions = 0;
+    total_recorded.actions = 0;
+
+    stats.duplicates = 0;
+    stats.unorderable = 0;
+    stats.justification_did_not_match = 0;
+    stats.chunk_did_not_match = 0;
+    stats.no_grounds = 0;
+    stats.max_chunks = 0;
+    stats.succeeded = 0;
+    stats.tested_local_negation = 0;
+    stats.merged_conditions = 0;
+    stats.chunks_attempted = 0;
+    stats.justifications_attempted = 0;
+    stats.justifications = 0;
+    stats.instantations_backtraced = 0;
+    stats.seen_instantations_backtraced = 0;
+    stats.constraints_attached = 0;
+    stats.constraints_collected = 0;
+
 }
 void Explanation_Logger::clear_explanations()
 {
@@ -98,6 +122,8 @@ chunk_record* Explanation_Logger::add_chunk_record(instantiation* pBaseInstantia
     chunk_record* lChunkRecord = new chunk_record(thisAgent, pBaseInstantiation, chunk_id_count++);
     (*chunks)[lChunkRecord->chunkID] = lChunkRecord;
 
+    total_recorded.chunks++;
+
     return lChunkRecord;
 }
 
@@ -106,6 +132,9 @@ condition_record* Explanation_Logger::add_condition(condition* pCond)
     dprint(DT_EXPLAIN, "   Adding condition: %l\n", pCond);
     condition_record* lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++);
     (*conditions)[lCondRecord->conditionID] = lCondRecord;
+
+    total_recorded.conditions++;
+
     return lCondRecord;
 }
 
@@ -113,6 +142,8 @@ condition_record* Explanation_Logger::add_condition(condition* pCond)
 uint64_t Explanation_Logger::add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord)
 {
     dprint(DT_EXPLAIN, "   Adding condition to chunk c%u: %l", pChunkRecord->chunkID, pCond);
+
+    total_recorded.conditions++;
 
     return 0;
 }
@@ -124,6 +155,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     if (lInstRecord)
     {
         dprint(DT_EXPLAIN, "Found existing instantiation record for %y (ri%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+        total_recorded.instantiations_referenced++;
         return lInstRecord;
     }
 
@@ -131,8 +163,8 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     lInstRecord = new instantiation_record(thisAgent, pInst);
     (*instantiations)[pInst->i_id] = lInstRecord;
 
-
-    dprint(DT_EXPLAIN, "Returning new explanation instantiation record i%u\n", pInst->i_id);
+    dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (ri%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+    total_recorded.instantiations++;
     return lInstRecord;
 }
 
@@ -141,12 +173,18 @@ action_record* Explanation_Logger::add_result(preference* pPref)
     dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, action_id_count++);
     (*actions)[lActionRecord->actionID] = lActionRecord;
+
+    total_recorded.actions++;
+
     return lActionRecord;
 }
 
 uint64_t Explanation_Logger::add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord)
 {
     dprint(DT_EXPLAIN, "   Adding result to chunk c%u: %a %p", pChunkRecord->chunkID, pAction, pPref);
+
+    total_recorded.actions++;
+
     return 0;
 }
 
@@ -177,6 +215,7 @@ action_record* Explanation_Logger::get_action_for_instantiation(preference* pPre
      * we can use that to determine if this instantiation needs to be added. */
     if (pInst->backtrace_number != backtrace_number)
     {
+        total_recorded.instantiations_skipped++;
         return NULL;
     }
 

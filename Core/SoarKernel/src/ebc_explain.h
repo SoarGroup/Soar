@@ -129,6 +129,34 @@ class chunk_record {
         uint64_t               chunkID;
 } ;
 
+typedef struct tr_stats_struct {
+        uint64_t            chunks;
+        uint64_t            instantiations;
+        uint64_t            instantiations_referenced;
+        uint64_t            instantiations_skipped;
+        uint64_t            conditions;
+        uint64_t            actions;
+} tr_stats;
+
+typedef struct chunking_stats_struct {
+        uint64_t            duplicates;
+        uint64_t            unorderable;
+        uint64_t            justification_did_not_match;
+        uint64_t            chunk_did_not_match;
+        uint64_t            no_grounds;
+        uint64_t            max_chunks;
+        uint64_t            succeeded;
+        uint64_t            tested_local_negation;
+        uint64_t            merged_conditions;
+        uint64_t            chunks_attempted;
+        uint64_t            justifications_attempted;
+        uint64_t            justifications;
+        uint64_t            instantations_backtraced;
+        uint64_t            seen_instantations_backtraced;
+        uint64_t            constraints_attached;
+        uint64_t            constraints_collected;
+} chunking_stats;
+
 class Explanation_Logger
 {
         friend class instantiation_record;
@@ -144,6 +172,24 @@ class Explanation_Logger
         chunk_record*           add_chunk_record(instantiation* pbaseInstantiation);
         instantiation_record*   add_instantiation(instantiation* pInst);
         action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
+
+        void increment_stat_duplicates() { stats.duplicates++; };
+        void increment_stat_unorderable() { stats.unorderable++; };
+        void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
+        void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
+        void increment_stat_no_grounds() { stats.no_grounds++; };
+        void increment_stat_max_chunks() { stats.max_chunks++; };
+        void increment_stat_succeeded() { stats.succeeded++; };
+        void increment_stat_tested_local_negation() { stats.tested_local_negation++; };
+        void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; };
+        void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
+        void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
+        void increment_stat_justifications() { stats.justifications++; };
+        void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; };
+        void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; };
+        void increment_stat_constraints_attached() { stats.constraints_attached++; };
+        void increment_stat_constraints_collected() { stats.constraints_collected++; };
+
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -170,6 +216,9 @@ class Explanation_Logger
         uint64_t            chunk_id_count;
         uint64_t            condition_id_count;
         uint64_t            action_id_count;
+
+        tr_stats            total_recorded;
+        chunking_stats      stats;
 
         /* These maps store all of the records the logger keeps */
         std::unordered_map< uint64_t, chunk_record* >*          chunks;

@@ -486,9 +486,9 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists(
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
-            }
-            else
-            {
+        }
+        else
+        {
             /* --- not in TC, so discard the condition --- */
 
             if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
@@ -501,7 +501,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists(
                 report_local_negation(cc->cond);    // in backtrace.cpp
                 *reliable = false;
             }
-
+            thisAgent->explanationLogger->increment_stat_tested_local_negation();
             thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
         }
     }
@@ -858,6 +858,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         prod_type = CHUNK_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
+        thisAgent->explanationLogger->increment_stat_chunks_attempted();
     }
     else
     {
@@ -865,6 +866,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+        thisAgent->explanationLogger->increment_stat_justifications_attempted();
     }
 
     if (print_name)
@@ -893,6 +895,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             xml_generate_warning(thisAgent, "         needs to positively test at least one item in the superstate.");
         }
 
+        thisAgent->explanationLogger->increment_stat_no_grounds();
+
         goto chunking_abort;
     }
 
@@ -904,6 +908,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
         }
         max_chunks_reached = true;
+        thisAgent->explanationLogger->increment_stat_max_chunks();
 
         goto chunking_abort;
     }
@@ -1039,6 +1044,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 //        thisAgent->stop_soar = true;
 //        thisAgent->system_halted = true;
 //        thisAgent->reason_for_stopping = "Could not re-order chunk.";
+
+        thisAgent->explanationLogger->increment_stat_unorderable();
+
         goto chunking_abort;
     }
 
@@ -1071,14 +1079,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: %s\n",
-           ((rete_addition_result == DUPLICATE_PRODUCTION) ? "Duplicate production!" :
-            (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) ? "Refracted instantiation did not match!" :
-            (rete_addition_result == REFRACTED_INST_MATCHED) ? "Refracted instantiation matched." :
-            (rete_addition_result == NO_REFRACTED_INST) ? "No refracted instantiation given." : "INVALID RETE RETURN TYPE!"));
-
-    /* MToDo | Might need to remove explain structures if this rule addition failed */
-
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, vrblz_top);
     vrblz_top = NULL;
@@ -1090,23 +1090,35 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         print_production(thisAgent, prod, false);
         xml_end_tag(thisAgent, kTagLearning);
     }
-
-    if (rete_addition_result == DUPLICATE_PRODUCTION)
+    if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
+        thisAgent->explanationLogger->increment_stat_succeeded();
+        if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
+            thisAgent->explanationLogger->increment_stat_justifications();
+        }
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
+
+    } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
+        thisAgent->explanationLogger->increment_stat_duplicates();
         excise_production(thisAgent, prod, false);
-    }
-    else if ((prod_type == JUSTIFICATION_PRODUCTION_TYPE)
-             && (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH))
-    {
-        excise_production(thisAgent, prod, false);
-    }
-
-    if (rete_addition_result != REFRACTED_INST_MATCHED)
-    {
-        /* --- It didn't match or was a duplicate production, so tell the firer it didn't
-         *     match, so it'll only assert the o-supported preferences --- */
-
         chunk_inst->in_ms = false;
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
+    } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
+        if (prod_type == JUSTIFICATION_PRODUCTION_TYPE)
+        {
+            thisAgent->explanationLogger->increment_stat_justification_did_not_match();
+            excise_production(thisAgent, prod, false);
+        } else {
+            thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
+            /* MToDo | Why don't we excise the chunk here like we do non-matching
+             * justifications? It doesn't seem like either case of non-matching rule
+             * should be possible unless a chunking or gds problem has occured. */
+        }
+        chunk_inst->in_ms = false;
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
+    } else {
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
+        assert(false);
     }
 
     /* --- assert the preferences --- */
@@ -1128,6 +1140,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         set_learning_for_instantiation(chunk_inst);
         build_chunk_or_justification(chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
+    } else {
+        thisAgent->explanationLogger->increment_stat_max_chunks();
     }
 
     return;

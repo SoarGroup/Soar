@@ -23,6 +23,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
+#include "ebc_explain.h"
 #include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"
@@ -260,10 +261,12 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
+        thisAgent->explanationLogger->increment_stat_seen_instantations_backtraced();
         dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
     inst->backtrace_number = backtrace_number;
+    thisAgent->explanationLogger->increment_stat_instantations_backtraced();
 
     if (!inst->reliable)
     {
