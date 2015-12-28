@@ -190,16 +190,29 @@ class Explanation_Logger
         void increment_stat_constraints_attached() { stats.constraints_attached++; };
         void increment_stat_constraints_collected() { stats.constraints_collected++; };
 
+        void explain_chunking_summary();
+        void explain_stats();
+        void print_chunk_list();
+        bool explain_rule(const std::string* pStringParameter);
+        bool current_discussed_chunk_exists();
+        void explain_instantiation();
+        void explain_dependency_analysis();
+        void explain_identity_sets();
+        void explain_constraints_enforced();
+
+        void should_explain_rule(bool pEnable);
+        void should_explain_all(bool pEnable);
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
 
     private:
 
-        agent* thisAgent;
-        Output_Manager* outputManager;
+        agent*                  thisAgent;
+        Output_Manager*         outputManager;
 
         tc_number               backtrace_number;
+        chunk_record*           current_discussed_chunk;
 
         void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
@@ -208,15 +221,12 @@ class Explanation_Logger
         uint64_t                add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord);
         uint64_t                add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord);
 
-        /* Statistics on learning performed so far */
-        uint64_t            chunks_attempted_count;
-        uint64_t            duplicate_chunks_count;
-        uint64_t            merge_count;
-
-        uint64_t            chunk_id_count;
+        /* ID Counters */
         uint64_t            condition_id_count;
+        uint64_t            chunk_id_count;
         uint64_t            action_id_count;
 
+        /* Statistics on learning performed so far */
         tr_stats            total_recorded;
         chunking_stats      stats;
 

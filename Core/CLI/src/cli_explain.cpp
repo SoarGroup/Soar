@@ -26,127 +26,84 @@
 using namespace cli;
 using namespace sml;
 
-void ExplainList(agent* thisAgent)
+bool is_explain_id(const std::string* pStringParameter)
 {
-
+    return false;
 }
 
-bool Explain(agent* thisAgent, const char* pProduction, int mode)
-{
-    // mode == -1 full
-    // mode == 0 name
-    // mode > 0 condition
-
-    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, const_cast<char*>(pProduction));
-
-    if (lexeme.type != STR_CONSTANT_LEXEME)
-    {
-        return false; // invalid production
-    }
-
-//    switch (mode)
-//    {
-//        case -1: // full
-//        {
-//            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
-//            if (chunk)
-//            {
-//                explain_trace_chunk(thisAgent, chunk);
-//            }
-//        }
-//        break;
-//        case 0:
-//        {
-//            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
-//            if (!chunk)
-//            {
-//                return false;
-//            }
-//
-//            /* First print out the production in "normal" form */
-//            print(thisAgent,  "(sp %s\n  ", chunk->name);
-//            print_condition_list(thisAgent, chunk->conds, 2, false);
-//            print(thisAgent,  "\n-->\n   ");
-//            print_action_list(thisAgent, chunk->actions, 3, false);
-//            print(thisAgent,  ")\n\n");
-//
-//            /* Then list each condition and the associated "ground" WME */
-//            int i = 0;
-//            condition* ground = chunk->all_grounds;
-//
-//            for (condition* cond = chunk->conds; cond != NIL; cond = cond->next)
-//            {
-//                i++;
-//                print(thisAgent,  " %2d : ", i);
-//                print_condition(thisAgent, cond);
-//
-//                while (get_printer_output_column(thisAgent) < COLUMNS_PER_LINE - 40)
-//                {
-//                    print(thisAgent,  " ");
-//                }
-//
-//                print(thisAgent,  " Ground :");
-//                print_condition(thisAgent, ground);
-//                print(thisAgent,  "\n");
-//                ground = ground->next;
-//            }
-//        }
-//        break;
-//        default:
-//        {
-//            explain_chunk_str* chunk = find_chunk(thisAgent, thisAgent->explain_chunk_list, lexeme.string());
-//            if (!chunk)
-//            {
-//                return false;
-//            }
-//
-//            condition* ground = find_ground(thisAgent, chunk, mode);
-//            if (!ground)
-//            {
-//                return false;
-//            }
-//
-//            explain_trace(thisAgent, lexeme.string(), chunk->backtrace, ground);
-//        }
-//        break;
-//    }
-    return true;
-}
-
-bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* pObject)
+bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* pStringParameter, const std::string* pStringParameter2)
 {
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    if (options.test(EXPLAIN_ENABLE))
+    bool lReturn_Value = false;
+
+    if (options.test(EXPLAIN_ALL))
     {
-        print(thisAgent, "Explanations enabled.\n");
-        return true;
-    }
-    if (options.test(EXPLAIN_DISABLE))
-    {
-        print(thisAgent, "Explanations disabled.\n");
-        return true;
-    }
-    if (!pObject)
-    {
-        // No arguments
-        ExplainList(thisAgent);
+        thisAgent->explanationLogger->should_explain_all(true);
+        print(thisAgent, "Will monitoring all chunks created.\n");
         return true;
     }
 
-    if (options.test(EXPLAIN_DEPENDENCY))
+    if (options.test(EXPLAIN_SPECIFIC))
     {
-        print(thisAgent, "Printing dependency analysis for chunk...\n");
+        thisAgent->explanationLogger->should_explain_all(false);
+        print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
+        return true;
+    }
+
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS)))
+    {
+        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]'.");
+        return false;
+    }
+
+    if (options.test(EXPLAIN_BACKTRACE))
+    {
+            PrintCLIMessage_Header("Dependency Analysis", 40);
+            thisAgent->explanationLogger->explain_dependency_analysis();
     }
     if (options.test(EXPLAIN_CONSTRAINTS))
     {
-        print(thisAgent, "Printing floating constraints for chunk...\n");
+            PrintCLIMessage_Header("Constraints enforced during problem-solving", 40);
+            thisAgent->explanationLogger->explain_constraints_enforced();
     }
     if (options.test(EXPLAIN_IDENTITY_SETS))
     {
-        print(thisAgent, "Printing identity set mappings for chunk...\n");
+            PrintCLIMessage_Header("Identity set assignments", 40);
+            thisAgent->explanationLogger->explain_identity_sets();
+    }
+    if (options.test(EXPLAIN_STATS))
+    {
+            thisAgent->explanationLogger->explain_stats();
+    }
+    if (options.test(EXPLAIN_TIME))
+    {
+            print(thisAgent, "Not yet implemented.  Will allow you to explain all chunks created in a time interval specified in decision cycles.\n");
+            return true;
     }
 
-    return Explain(thisAgent, pObject->c_str(), 1);
+    if (!options.any())
+    {
+        if (pStringParameter->empty())
+        {
+            thisAgent->explanationLogger->explain_chunking_summary();
+            return true;
+        } else if (pStringParameter2->empty()) {
+            print(thisAgent, "Attempting to explain chunk/rule.\n");
+            return thisAgent->explanationLogger->explain_rule(pStringParameter);
+        } else {
+            print(thisAgent, "Attempting to explain condition/instantiation.\n");
+            return thisAgent->explanationLogger->explain_rule(pStringParameter);
+        }
+    } else {
+        if (pStringParameter->empty())
+        {
+            /* One of the -- options above was executed */
+            return true;
+        } else {
+            print(thisAgent, "Those options cannot take additional arguments.  Ignoring.\n");
+            return true;
+        }
+    }
 }
 

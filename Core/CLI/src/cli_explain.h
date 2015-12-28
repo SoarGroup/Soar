@@ -30,7 +30,8 @@ namespace cli
             virtual const char* GetSyntax() const
             {
                 return "Syntax: explain [--enable | --disable | --on | --off]\n"
-                       "        explain [options] [chunk name | object-id]";
+                       "        explain [chunk name | rule name]"
+                       "        explain [instantiation | condition] [id]\n";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -38,13 +39,13 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'d', "disable",       OPTARG_NONE},
-                    {'d', "off",           OPTARG_NONE},
-                    {'e', "enable",        OPTARG_NONE},
-                    {'e', "on",            OPTARG_NONE},
+                    {'a', "all",           OPTARG_NONE},
                     {'b', "backtrace",     OPTARG_NONE},
                     {'c', "constraints",   OPTARG_NONE},
                     {'i', "identity",      OPTARG_NONE},
+                    {'s', "specific",      OPTARG_NONE},
+                    {'t', "time",          OPTARG_REQUIRED},
+                    {'?', "stats",         OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -60,19 +61,22 @@ namespace cli
                     {
                         break;
                     }
-
                     switch (opt.GetOption())
                     {
-                        case 'e':
-                            options.set(Cli::EXPLAIN_ENABLE);
+                        case 'a':
+                            options.set(Cli::EXPLAIN_ALL);
                             break;
 
-                        case 'd':
-                            options.set(Cli::EXPLAIN_DISABLE);
+                        case 's':
+                            options.set(Cli::EXPLAIN_SPECIFIC);
+                            break;
+
+                        case 't':
+                            options.set(Cli::EXPLAIN_TIME);
                             break;
 
                         case 'b':
-                            options.set(Cli::EXPLAIN_DEPENDENCY);
+                            options.set(Cli::EXPLAIN_BACKTRACE);
                             break;
 
                         case 'c':
@@ -82,34 +86,48 @@ namespace cli
                         case 'i':
                             options.set(Cli::EXPLAIN_IDENTITY_SETS);
                             break;
+                        case '?':
+                            options.set(Cli::EXPLAIN_STATS);
+                            break;
                     }
+                }
+                int NonOptionArguments = opt.GetNonOptionArguments();
+                if (options.test(Cli::EXPLAIN_TIME) && (opt.GetNonOptionArguments() != 1) && opt.GetOptionArgument().empty())
+                {
+                    return cli.SetError("Please specify the interval's start and end times.");
+                }
+                if ((options.count() != 1) &&
+                    (options.test(Cli::EXPLAIN_ALL) ||
+                     options.test(Cli::EXPLAIN_SPECIFIC) ||
+                     options.test(Cli::EXPLAIN_TIME)))
+                {
+                    return cli.SetError("The explain command options --all --specific and --time cannot be used with other options.");
                 }
 
-                std::string arg;
-                for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
+                std::string arg, arg2;
+                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
+                size_t num_args = argv.size() - start_arg_position;
+                if (num_args > 2)
                 {
-                    if (!arg.empty() && ((argv.size() - i) > 1))
-                    {
-                        arg.push_back(' ');
-                    }
-                    arg.append(argv[i]);
+                    return cli.SetError("The explain command cannot take that many arguments.");
                 }
-                if (arg.empty())
+                if (num_args > 0)
                 {
-                    if (options.test(Cli::EXPLAIN_DEPENDENCY))
-                    {
-                        return cli.SetError("Please specify the name of chunk for which you want to see the dependency analysis.");
-                    }
-                    if (options.test(Cli::EXPLAIN_CONSTRAINTS))
-                    {
-                        return cli.SetError("Please specify the name of chunk for which you want to see the constraint list.");
-                    }
-                    if (options.test(Cli::EXPLAIN_IDENTITY_SETS))
-                    {
-                        return cli.SetError("Please specify the name of chunk for which you want to see the identity set mappings.");
-                    }
+                    arg = argv[start_arg_position];
                 }
-                return cli.DoExplain(options, &arg);
+                if (num_args > 1)
+                {
+                    arg2 = argv[start_arg_position+1];
+                }
+//                for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
+//                {
+//                    if (!arg.empty() && ((argv.size() - i) > 1))
+//                    {
+//                        arg.push_back(' ');
+//                    }
+//                    arg.append(argv[i]);
+//                }
+                return cli.DoExplain(options, &arg, &arg2);
             }
 
         private:

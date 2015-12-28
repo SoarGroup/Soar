@@ -26,10 +26,9 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
 
 void Explanation_Logger::initialize_counters()
 {
-    /* Initialize instantiation and identity ID counters */
-    chunks_attempted_count = 0;
-    duplicate_chunks_count = 0;
-    merge_count = 0;
+
+    current_discussed_chunk = NULL;
+
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;

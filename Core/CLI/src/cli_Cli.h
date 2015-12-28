@@ -162,11 +162,13 @@ namespace cli
 
             enum eExplainOptions
             {
-                EXPLAIN_ENABLE,
-                EXPLAIN_DISABLE,
-                EXPLAIN_DEPENDENCY,
+                EXPLAIN_ALL,
+                EXPLAIN_SPECIFIC,
                 EXPLAIN_CONSTRAINTS,
+                EXPLAIN_BACKTRACE,
                 EXPLAIN_IDENTITY_SETS,
+                EXPLAIN_STATS,
+                EXPLAIN_TIME,
                 EXPLAIN_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
@@ -178,7 +180,7 @@ namespace cli
              *        0 for production name, -1 for full,
              *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoExplain(ExplainBitset options, const std::string* pObject = 0) = 0;
+            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2) = 0;
 
             /* These enums moved here because we re-used for fc options*/
             enum ePrintOptions
