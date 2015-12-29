@@ -353,7 +353,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
                                     "         Soar will erase the semantic memory database.\n");
-        }
+                }
 
             }
             if (!strcmp(pAttr->c_str(), "spreading-type"))
@@ -363,9 +363,26 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     if (strcmp(pVal->c_str(), "actr") && strcmp(pVal->c_str(), "ppr"))
                     {
-                        assert(false); //This shouldn't happen while I'm testing.
+                        return SetError("Invalid semantic memory parameter.  Spreading type must be actr or ppr.");
+                        //assert(false); //This shouldn't happen while I'm testing.
                     }
                 }
+            }
+            if (!(strcmp(pAttr->c_str(), "spreading-baseline") &&
+                strcmp(pAttr->c_str(), "spreading-type") &&
+                strcmp(pAttr->c_str(), "spreading-direction") &&
+                strcmp(pAttr->c_str(), "spreading-normalization") &&
+                strcmp(pAttr->c_str(), "spreading-depth-limit") &&
+                strcmp(pAttr->c_str(), "spreading-limit") &&
+                strcmp(pAttr->c_str(), "spreading-time") &&
+                strcmp(pAttr->c_str(), "spreading-crawl-time") &&
+                strcmp(pAttr->c_str(), "spreading-model") &&
+                strcmp(pAttr->c_str(), "spreading-traversal") &&
+                strcmp(pAttr->c_str(), "spreading-loop-avoidance") &&
+                strcmp(pAttr->c_str(), "number-trajectories") &&
+                strcmp(pAttr->c_str(), "continue-probability")) && thisAgent->smem_params->spreading->get_value() == on)
+            {
+                return SetError("Spreading activation parameters cannot be changes once spreading activation has been turned on..");
             }
             if (!strcmp(pAttr->c_str(), "spreading"))
             {
@@ -373,18 +390,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                   /* if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
-                    {
-                        smem_calc_spread_trajectory_actr(thisAgent);
-                    }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
-                    {
-                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
-                    }
-                    else if ((thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr
-                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
-                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
-                    {*/
+
                     if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
                     {
                         if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
@@ -403,6 +409,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                             }
                         }
                     }
+                }
+                else
+                {
+                    return SetError("Spreading activation has undefined behavior when turned off.");
                 }
             }
         }
