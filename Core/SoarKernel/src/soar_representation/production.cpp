@@ -19,24 +19,23 @@
 
 #include <stdlib.h>
 
-#include "production.h"
-#include "condition.h"
 #include "mem.h"
 #include "kernel.h"
 #include "print.h"
-#include "agent.h"
-#include "rhs.h"
 #include "reorder.h"
 #include "init_soar.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
-#include "test.h"
 #include "debug.h"
 #include <ctype.h>
 #include <ebc.h>
-#include <soar_data_structures/instantiation.h>
-#include <soar_data_structures/symbol.h>
-
+#include <soar_representation/agent.h>
+#include <soar_representation/condition.h>
+#include <soar_representation/instantiation.h>
+#include <soar_representation/production.h>
+#include <soar_representation/rhs.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/test.h>
 #include "ebc.h"
 
 void init_production_utilities(agent* thisAgent)

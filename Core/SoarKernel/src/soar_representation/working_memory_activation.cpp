@@ -12,9 +12,9 @@
  * =======================================================================
  */
 
-#include <soar_data_structures/working_memory_activation.h>
-#include "agent.h"
-#include "condition.h"
+#include <soar_representation/agent.h>
+#include <soar_representation/condition.h>
+#include <soar_representation/working_memory_activation.h>
 #include "decide.h"
 #include "instantiations.h"
 #include "misc.h"

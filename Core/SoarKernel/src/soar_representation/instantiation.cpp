@@ -24,12 +24,16 @@
  * =======================================================================
  */
 
-#include <soar_data_structures/working_memory_activation.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/condition.h>
+#include <soar_representation/production.h>
+#include <soar_representation/rhs.h>
+#include <soar_representation/rhs_functions.h>
+#include <soar_representation/working_memory_activation.h>
+
 #include "kernel.h"
 #include "recmem.h"
 
-#include "agent.h"
-#include "condition.h"
 #include "consistency.h"
 #include "debug.h"
 #include "decide.h"
@@ -40,11 +44,8 @@
 #include "osupport.h"
 #include "prefmem.h"
 #include "print.h"
-#include "production.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "soar_module.h"
 #include "soar_TraceNames.h"
 #include "symtab.h"

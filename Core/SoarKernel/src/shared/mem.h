@@ -126,7 +126,6 @@
 #define MEM_H
 
 #include "kernel.h"
-#include "portability.h"
 
 #include <stdio.h>  // Needed for FILE token below
 #include <string.h>     // Needed for strlen, etc. below

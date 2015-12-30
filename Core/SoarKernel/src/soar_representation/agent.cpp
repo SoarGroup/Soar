@@ -18,7 +18,11 @@
  */
 
 
-#include "agent.h"
+#include <io_link.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/production.h>
+#include <soar_representation/rhs.h>
+#include <soar_representation/rhs_functions.h>
 #include "callback.h"
 #include "debug/debug.h"
 #include "decide.h"
@@ -30,18 +34,14 @@
 #include "gsysparam.h"
 #include "init_soar.h"
 #include "instantiations.h"
-#include "io_soar.h"
 #include "lexer.h"
 #include "mem.h"
 #include "memory_manager.h"
 #include "output_manager/output_manager.h"
 #include "print.h"
-#include "production.h"
 #include "recmem.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
-#include "rhs_functions.h"
-#include "rhs.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
 #include "soar_module.h"

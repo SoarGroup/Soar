@@ -11,6 +11,8 @@
 /////////////////////////////////////////////////////////////////
 
 // NOTE: Requires that portability.h be loaded first
+#include <io_link.h>
+
 #include "ebc.h"
 #include "portability.h"
 
@@ -28,7 +30,6 @@
 #include "decide.h"
 #include "recmem.h"
 #include "symtab.h"
-#include "io_soar.h"
 #include "wmem.h"
 #ifndef NO_SVS
 #include "svs_interface.h"

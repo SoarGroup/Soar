@@ -42,7 +42,6 @@
 
 #include <stdlib.h>
 
-#include "io_soar.h"
 #include "callback.h"
 #include "agent.h"
 #include "print.h"
@@ -61,6 +60,7 @@
 #include <ctype.h>
 
 #include <assert.h>
+#include <io_link.h>
 
 using namespace soar_TraceNames;
 

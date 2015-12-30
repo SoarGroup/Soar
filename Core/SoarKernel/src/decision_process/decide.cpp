@@ -1,3 +1,4 @@
+#include <io_link.h>
 #include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
@@ -35,7 +36,6 @@
 #include "rete.h"
 #include "trace.h"
 #include "tempmem.h"
-#include "io_soar.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 

@@ -36,9 +36,10 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+#include <soar_representation/production.h>
+
 #include "enums.h"
 #include "soar_module.h"
-#include "production.h"
 
 typedef uint64_t tc_number;
 typedef signed short goal_stack_level;

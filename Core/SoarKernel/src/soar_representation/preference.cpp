@@ -1,7 +1,9 @@
-#include <soar_data_structures/instantiation.h>
-#include <soar_data_structures/preference.h>
-#include <soar_data_structures/symbol.h>
-#include <soar_data_structures/working_memory.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/instantiation.h>
+#include <soar_representation/preference.h>
+#include <soar_representation/rhs.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/working_memory.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -16,10 +18,8 @@
 #include <stdlib.h>
 #include "mem.h"
 #include "kernel.h"
-#include "agent.h"
 #include "debug.h"
 #include "recmem.h"
-#include "rhs.h"
 #include "tempmem.h"
 #include "decide.h"
 #include "print.h"

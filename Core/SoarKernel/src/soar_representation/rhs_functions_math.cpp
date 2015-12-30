@@ -16,18 +16,18 @@
 
 #include <stdlib.h>
 
-#include "rhs_functions_math.h"
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
 #include "lexer.h"
 #include "soar_rand.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "decide.h"
 #include <math.h>
-#include <soar_data_structures/symbol.h>
-#include <soar_data_structures/working_memory.h>
+#include <soar_representation/rhs.h>
+#include <soar_representation/rhs_functions.h>
+#include <soar_representation/rhs_functions_math.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/working_memory.h>
 
 
 

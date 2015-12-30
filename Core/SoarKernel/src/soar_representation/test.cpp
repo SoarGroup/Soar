@@ -10,20 +10,20 @@
  * =======================================================================
  */
 #include "kernel.h"
-#include "test.h"
-
 #include "agent.h"
-#include "condition.h"
 #include "debug.h"
 #include "ebc.h"
 #include "output_manager.h"
 #include "print.h"
 #include "rete.h"
 #include <assert.h>
-#include <soar_data_structures/instantiation.h>
-#include <soar_data_structures/preference.h>
-#include <soar_data_structures/symbol.h>
-#include <soar_data_structures/working_memory.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/condition.h>
+#include <soar_representation/instantiation.h>
+#include <soar_representation/preference.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/test.h>
+#include <soar_representation/working_memory.h>
 
 /* =================================================================
 

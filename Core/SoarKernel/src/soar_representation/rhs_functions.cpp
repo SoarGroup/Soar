@@ -1,5 +1,11 @@
-#include <soar_data_structures/symbol.h>
-#include <soar_data_structures/working_memory.h>
+#include <io_link.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/production.h>
+#include <soar_representation/rhs_functions.h>
+#include <soar_representation/rhs_functions_math.h>
+#include <soar_representation/rhs_functions_math.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/working_memory.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -39,17 +45,11 @@
 
 #include <stdlib.h>
 
-#include "rhs_functions.h"
-#include "rhs_functions_math.h"
 #include "kernel.h"
 #include "print.h"
 #include "mem.h"
 #include "init_soar.h"
 #include "gsysparam.h"
-#include "agent.h"
-#include "production.h"
-#include "rhs_functions_math.h"
-#include "io_soar.h"
 #include "recmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"

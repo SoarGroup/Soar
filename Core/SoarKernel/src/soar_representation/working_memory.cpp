@@ -1,8 +1,10 @@
 #include <ebc.h>
-#include <soar_data_structures/slot.h>
-#include <soar_data_structures/symbol.h>
-#include <soar_data_structures/working_memory.h>
-#include <soar_data_structures/working_memory_activation.h>
+#include <io_link.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/slot.h>
+#include <soar_representation/symbol.h>
+#include <soar_representation/working_memory.h>
+#include <soar_representation/working_memory_activation.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -23,9 +25,7 @@
 #include <stdlib.h>
 
 #include "kernel.h"
-#include "agent.h"
 #include "decide.h"
-#include "io_soar.h"
 #include "rete.h"
 #include "print.h"
 #include "xml.h"

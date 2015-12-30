@@ -1,3 +1,4 @@
+#include <io_link.cpp>
 #include "src/agent.cpp"
 #include "src/callback.cpp"
 #include "src/condition.cpp"
@@ -21,7 +22,6 @@
 #include "src/explain_print.cpp"
 #include "src/exploration.cpp"
 #include "src/init_soar.cpp"
-#include "src/io_soar.cpp"
 #include "src/lexer.cpp"
 #include "src/mem.cpp"
 #include "src/memory_manager.cpp"

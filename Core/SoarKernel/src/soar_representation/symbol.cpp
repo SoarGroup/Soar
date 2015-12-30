@@ -29,15 +29,15 @@
 
 #include "mem.h"
 #include "kernel.h"
-#include "agent.h"
-#include "production.h"
 #include "init_soar.h"
 #include "print.h"
 #include "xml.h"
 #include "output_manager.h"
 #include "debug.h"
 #include <ctype.h>
-#include <soar_data_structures/symbol.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/production.h>
+#include <soar_representation/symbol.h>
 
 /* -------------------------------------------------------------------
                            Hash Functions

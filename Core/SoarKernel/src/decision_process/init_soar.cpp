@@ -15,6 +15,7 @@
  */
 
 #include <explain.h>
+#include <io_link.h>
 #include "init_soar.h"
 
 #include "agent.h"
@@ -23,7 +24,6 @@
 #include "decide.h"
 #include "episodic_memory.h"
 #include "ebc.h"
-#include "io_soar.h"
 #include "output_manager.h"
 #include "print.h"
 #include "production.h"

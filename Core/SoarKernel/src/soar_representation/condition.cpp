@@ -1,3 +1,6 @@
+#include <soar_representation/agent.h>
+#include <soar_representation/condition.h>
+#include <soar_representation/test.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -17,10 +20,7 @@
  * =======================================================================
  */
 
-#include "condition.h"
 #include "debug.h"
-#include "test.h"
-#include "agent.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).

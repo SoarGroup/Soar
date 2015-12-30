@@ -1,5 +1,6 @@
-#include <soar_data_structures/slot.h>
-#include <soar_data_structures/symbol.h>
+#include <soar_representation/agent.h>
+#include <soar_representation/slot.h>
+#include <soar_representation/symbol.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -22,7 +23,6 @@
 
 #include "kernel.h"
 #include "mem.h"
-#include "agent.h"
 #include "prefmem.h"
 #include "decide.h"
 #include "debug.h"
