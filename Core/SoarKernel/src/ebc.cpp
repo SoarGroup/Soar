@@ -49,8 +49,8 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     m_learning_on_for_instantiation = m_learning_on;
 
     backtrace_number                   = 0;
-    chunk_count                        = 1;
-    justification_count                = 1;
+    chunk_count                        = 0;
+    justification_count                = 0;
     strcpy(chunk_name_prefix, "chunk"); /* ajc (5/14/02) */
     grounds_tc                         = 0;
     locals_tc                          = 0;
@@ -165,7 +165,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             return (generate_new_str_constant(
                         thisAgent,
                         chunk_name_prefix,
-                        &chunk_count));
+                        &(++chunk_count)));
         }
         case longFormat:
         {
@@ -217,7 +217,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             {
                 lImpasseName = "unknownimpasse";
             }
-            lName << chunk_name_prefix << "-" << chunk_count++ << "*" <<
+            lName << chunk_name_prefix << "-" << ++chunk_count << "*" <<
                   thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
 
             break;
@@ -229,7 +229,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             lImpasseName.erase();
             lName << chunk_name_prefix;
 
-            chunk_count++;
+            ++chunk_count;
             if (goal)
             {
                 impasse_type = type_of_existing_impasse(thisAgent, goal);
