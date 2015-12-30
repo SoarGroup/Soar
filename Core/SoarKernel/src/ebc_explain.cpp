@@ -6,6 +6,7 @@
 #include "instantiations.h"
 #include "prefmem.h"
 #include "production.h"
+#include "rhs.h"
 #include "output_manager.h"
 #include "wmem.h"
 
@@ -18,7 +19,7 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     initialize_counters();
 
     /* Create data structures used for EBC */
-    chunks = new std::unordered_map< uint64_t, chunk_record* >();
+    chunks = new std::unordered_map< Symbol*, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     conditions = new std::unordered_map< uint64_t, condition_record* >();
     actions = new std::unordered_map< uint64_t, action_record* >();
@@ -61,7 +62,7 @@ void Explanation_Logger::initialize_counters()
 void Explanation_Logger::clear_explanations()
 {
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
-    for (std::unordered_map< uint64_t, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
 //        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
@@ -97,6 +98,7 @@ Explanation_Logger::~Explanation_Logger()
 {
     dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
 
+    current_recording_chunk = NULL;
     clear_explanations();
 
     delete chunks;
@@ -111,24 +113,63 @@ void Explanation_Logger::re_init()
     dprint(DT_EXPLAIN, "Re-intializing explanation logger.\n");
     clear_explanations();
     initialize_counters();
+    current_recording_chunk = NULL;
     dprint(DT_EXPLAIN, "Done re-intializing explanation logger.\n");
 
 }
 
 chunk_record* Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
 {
-    dprint(DT_EXPLAIN, "Adding chunk record for %y (ri%u)\n", (pBaseInstantiation->prod ? pBaseInstantiation->prod->name : thisAgent->fake_instantiation_symbol), pBaseInstantiation->i_id);
+    dprint(DT_EXPLAIN, "Adding chunk record for %y (i%u)\n", (pBaseInstantiation->prod ? pBaseInstantiation->prod->name : thisAgent->fake_instantiation_symbol), pBaseInstantiation->i_id);
     chunk_record* lChunkRecord = new chunk_record(thisAgent, pBaseInstantiation, chunk_id_count++);
-    (*chunks)[lChunkRecord->chunkID] = lChunkRecord;
+
+    current_recording_chunk = lChunkRecord;
 
     total_recorded.chunks++;
 
     return lChunkRecord;
 }
 
+void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results)
+{
+    name = pName;
+    symbol_add_ref(thisAgent, name);
+
+    conditions         = new condition_record_list;
+    actions            = new action_record_list;
+
+    /* Create condition and action records */
+    condition_record* new_cond_record;
+    for (condition* cond = lhs; cond != NIL; cond = cond->next)
+    {
+        new_cond_record = thisAgent->explanationLogger->add_condition(cond);
+        conditions->push_front(new_cond_record);
+    }
+
+    dprint(DT_EXPLAIN, "   -->\n");
+
+    action_record* new_action_record;
+    preference* pref;
+    action* lAction;
+    for (pref = results, lAction= rhs; (pref != NIL) && (lAction != NIL); pref = pref->next_result, lAction = lAction->next)
+    {
+        new_action_record = thisAgent->explanationLogger->add_result(pref, lAction);
+        actions->push_front(new_action_record);
+    }
+}
+
+void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results)
+{
+    dprint(DT_EXPLAIN, "Recording chunk/justification contents for %s c%u\n", pName, current_recording_chunk->chunkID);
+
+    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results);
+    (*chunks)[pName] = current_recording_chunk;
+
+}
+
 condition_record* Explanation_Logger::add_condition(condition* pCond)
 {
-    dprint(DT_EXPLAIN, "   Adding condition: %l\n", pCond);
+    dprint(DT_EXPLAIN, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++);
     (*conditions)[lCondRecord->conditionID] = lCondRecord;
 
@@ -137,54 +178,35 @@ condition_record* Explanation_Logger::add_condition(condition* pCond)
     return lCondRecord;
 }
 
-
-uint64_t Explanation_Logger::add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord)
-{
-    dprint(DT_EXPLAIN, "   Adding condition to chunk c%u: %l", pChunkRecord->chunkID, pCond);
-
-    total_recorded.conditions++;
-
-    return 0;
-}
-
 instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst)
 {
     instantiation_record* lInstRecord;
     lInstRecord = get_instantiation(pInst);
     if (lInstRecord)
     {
-        dprint(DT_EXPLAIN, "Found existing instantiation record for %y (ri%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+        dprint(DT_EXPLAIN, "Found existing instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
         total_recorded.instantiations_referenced++;
         return lInstRecord;
     }
 
-    dprint(DT_EXPLAIN, "Adding new instantiation record for %y (ri%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+    dprint(DT_EXPLAIN, "Adding new instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
     lInstRecord = new instantiation_record(thisAgent, pInst);
     (*instantiations)[pInst->i_id] = lInstRecord;
 
-    dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (ri%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+    dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
     total_recorded.instantiations++;
     return lInstRecord;
 }
 
-action_record* Explanation_Logger::add_result(preference* pPref)
+action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
 {
     dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
-    action_record* lActionRecord = new action_record(thisAgent, pPref, action_id_count++);
+    action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count++);
     (*actions)[lActionRecord->actionID] = lActionRecord;
 
     total_recorded.actions++;
 
     return lActionRecord;
-}
-
-uint64_t Explanation_Logger::add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord)
-{
-    dprint(DT_EXPLAIN, "   Adding result to chunk c%u: %a %p", pChunkRecord->chunkID, pAction, pPref);
-
-    total_recorded.actions++;
-
-    return 0;
 }
 
 instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst)
@@ -226,14 +248,17 @@ action_record* Explanation_Logger::get_action_for_instantiation(preference* pPre
     return 0;
 }
 
-action_record::action_record(agent* myAgent, preference* pPref, uint64_t pActionID)
+action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
     thisAgent = myAgent;
     actionID = pActionID;
     instantiated_pref = shallow_copy_preference(thisAgent, pPref);
     original_pref = pPref;
-    variablized_action = NULL;
-    dprint(DT_EXPLAIN, "Created chunk record c%u\n", pActionID);
+    if (pAction)
+    {
+        variablized_action = copy_action(thisAgent, pAction);
+    }
+    dprint(DT_EXPLAIN, "Created action record a%u for pref %p (%r ^%r %r)\naction %a", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
 }
 
 action_record::~action_record()
@@ -246,6 +271,7 @@ action_record::~action_record()
 chunk_record::chunk_record(agent* myAgent, instantiation* pBaseInstantiation, uint64_t pChunkID)
 {
     thisAgent           = myAgent;
+    name                = NULL;
     conditions          = new condition_record_list;
     actions             = new action_record_list;
     chunkID             = pChunkID;
@@ -256,6 +282,10 @@ chunk_record::chunk_record(agent* myAgent, instantiation* pBaseInstantiation, ui
 chunk_record::~chunk_record()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
+    if (name)
+    {
+        symbol_remove_ref(thisAgent, name);
+    }
     delete conditions;
     delete actions;
 }
@@ -305,17 +335,17 @@ condition_record::~condition_record()
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
-    thisAgent = myAgent;
-    instantiationID = pInst->i_id;
-    dprint(DT_EXPLAIN, "Created instantiation record c%u\n", pInst->i_id);
-    production_name    = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
+    thisAgent           = myAgent;
+    instantiationID     = pInst->i_id;
+    conditions          = new condition_record_list;
+    actions             = new action_record_list;
+    production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
     if (pInst->prod)
     {
         symbol_add_ref(thisAgent, pInst->prod->name);
     }
-    conditions         = new condition_record_list;
-    actions            = new action_record_list;
 
+    dprint(DT_EXPLAIN, "Created instantiation record c%u\n", pInst->i_id);
     /* Create condition and action records */
     condition_record* new_cond_record;
     for (condition* cond = pInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)

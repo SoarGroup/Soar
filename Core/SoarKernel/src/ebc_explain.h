@@ -48,7 +48,7 @@ class action_record {
         friend class Explanation_Logger;
 
     public:
-        action_record(agent* myAgent, preference* pPref, uint64_t pActionID);
+        action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);
         ~action_record();
         preference*     original_pref;          // Only used when building explain records
         uint64_t get_actionID() { return actionID; };
@@ -99,8 +99,8 @@ class instantiation_record {
     public:
         instantiation_record(agent* myAgent, instantiation* pInst);
         ~instantiation_record();
-        uint64_t get_instantiationID() { return instantiationID; };
 
+        uint64_t get_instantiationID() { return instantiationID; };
         action_record* find_rhs_action(preference* pPref);
 
     private:
@@ -119,14 +119,16 @@ class chunk_record {
         chunk_record(agent* myAgent, instantiation* pBaseInstantiation, uint64_t pChunkID);
         ~chunk_record();
 
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results);
+
     private:
-        agent* thisAgent;
-        std::string             name;
+        agent*                  thisAgent;
+        Symbol*                 name;
         condition_record_list*  conditions;
         action_record_list*     actions;
         std::string             identity_set_mapping_explanation;
         instantiation_record*   baseInstantiation;
-        uint64_t               chunkID;
+        uint64_t                chunkID;
 } ;
 
 typedef struct tr_stats_struct {
@@ -160,6 +162,8 @@ typedef struct chunking_stats_struct {
 class Explanation_Logger
 {
         friend class instantiation_record;
+        friend class chunk_record;
+        friend class condition_record;
 
     public:
 
@@ -170,8 +174,9 @@ class Explanation_Logger
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
         chunk_record*           add_chunk_record(instantiation* pbaseInstantiation);
+        void                    cancel_chunk_record();
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results);
         instantiation_record*   add_instantiation(instantiation* pInst);
-        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
 
         void increment_stat_duplicates() { stats.duplicates++; };
         void increment_stat_unorderable() { stats.unorderable++; };
@@ -194,6 +199,7 @@ class Explanation_Logger
         void explain_stats();
         void print_chunk_list();
         bool explain_rule(const std::string* pStringParameter);
+        bool explain_item(const std::string* pStringParameter, const std::string* pStringParameter2);
         bool current_discussed_chunk_exists();
         void explain_instantiation();
         void explain_dependency_analysis();
@@ -213,13 +219,14 @@ class Explanation_Logger
 
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
+        chunk_record*           current_recording_chunk;
+
 
         void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
+        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
         condition_record*       add_condition(condition* pCond);
-        action_record*          add_result(preference* pPref);
-        uint64_t                add_condition_to_chunk_record(condition* pCond, chunk_record* pChunkRecord);
-        uint64_t                add_result_to_chunk_record(action* pAction, preference* pPref, chunk_record* pChunkRecord);
+        action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         /* ID Counters */
         uint64_t            condition_id_count;
@@ -231,7 +238,7 @@ class Explanation_Logger
         chunking_stats      stats;
 
         /* These maps store all of the records the logger keeps */
-        std::unordered_map< uint64_t, chunk_record* >*          chunks;
+        std::unordered_map< Symbol*, chunk_record* >*           chunks;
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      conditions;
         std::unordered_map< uint64_t, action_record* >*         actions;

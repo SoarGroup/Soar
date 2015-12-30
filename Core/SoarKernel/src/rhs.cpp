@@ -328,6 +328,29 @@ action* make_action(agent* thisAgent)
     return new_action;
 }
 
+action* copy_action(agent* thisAgent, action* pAction)
+{
+    action* new_action;
+    thisAgent->memoryManager->allocate_with_pool(MP_action,  &new_action);
+    new_action->type = pAction->type;
+    new_action->preference_type = pAction->preference_type;
+    new_action->support = pAction->support;
+    if (pAction->type == FUNCALL_ACTION)
+    {
+        new_action->value = copy_rhs_value(thisAgent, pAction->value);
+    }
+    else
+    {
+        new_action->id = copy_rhs_value(thisAgent, pAction->id);
+        new_action->attr = copy_rhs_value(thisAgent, pAction->attr);
+        new_action->value = copy_rhs_value(thisAgent, pAction->value);
+        if (preference_is_binary(pAction->preference_type))
+        {
+            new_action->referent = copy_rhs_value(thisAgent, pAction->referent);
+        }
+    }
+    return new_action;
+}
 /* -------------------------------------------------------------------
              Reconstructing the RHS Actions of a Production
 

@@ -213,6 +213,8 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 
 /* -- Functions to create RHS -- */
 extern action* make_action(agent* thisAgent);
+extern action* copy_action(agent* thisAgent, action* pAction);
+
 extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
 extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
 

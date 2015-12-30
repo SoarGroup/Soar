@@ -119,14 +119,6 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
-//                for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
-//                {
-//                    if (!arg.empty() && ((argv.size() - i) > 1))
-//                    {
-//                        arg.push_back(' ');
-//                    }
-//                    arg.append(argv[i]);
-//                }
                 return cli.DoExplain(options, &arg, &arg2);
             }
 

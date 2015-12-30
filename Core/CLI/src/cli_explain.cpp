@@ -93,7 +93,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
             return thisAgent->explanationLogger->explain_rule(pStringParameter);
         } else {
             print(thisAgent, "Attempting to explain condition/instantiation.\n");
-            return thisAgent->explanationLogger->explain_rule(pStringParameter);
+            return thisAgent->explanationLogger->explain_item(pStringParameter, pStringParameter2);
         }
     } else {
         if (pStringParameter->empty())

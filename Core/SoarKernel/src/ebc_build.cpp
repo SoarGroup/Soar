@@ -727,6 +727,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     /* --- if no preference is above the match goal level, exit --- */
+    /* MToDo | This seems redundant given what get_results_for_instantiation does.  Is it faster
+     *         and worth it because most calls won't have results, little less extra results? */
     for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         if (pref->id->id->level < inst->match_goal_level)
@@ -750,6 +752,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         goto chunking_abort;
     }
+
+    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record(inst);
 
     dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
         (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
@@ -836,8 +840,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 
     free_list(thisAgent, positive_potentials);
-
-    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record(inst);
 
     /* --- backtracing done; collect the grounds into the chunk --- */
     chunk_new_i_id = get_new_inst_id();
@@ -1093,6 +1095,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         thisAgent->explanationLogger->increment_stat_succeeded();
+        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results);
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationLogger->increment_stat_justifications();
         }
@@ -1110,6 +1113,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             excise_production(thisAgent, prod, false);
         } else {
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
+            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results);
+            assert(false);
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
              * should be possible unless a chunking or gds problem has occured. */

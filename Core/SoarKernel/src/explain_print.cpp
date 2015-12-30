@@ -45,6 +45,7 @@ void Explanation_Logger::explain_stats() {
 
 void Explanation_Logger::print_chunk_list() {}
 bool Explanation_Logger::explain_rule(const std::string* pStringParameter) {return false;}
+bool Explanation_Logger::explain_item(const std::string* pStringParameter, const std::string* pStringParameter2) {return false;}
 bool Explanation_Logger::current_discussed_chunk_exists() {return false;}
 void Explanation_Logger::explain_instantiation() {}
 void Explanation_Logger::explain_dependency_analysis() {}
