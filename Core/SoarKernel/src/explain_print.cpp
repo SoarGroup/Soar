@@ -1,5 +1,4 @@
-#include "ebc_explain.h"
-
+#include <explain.h>
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"

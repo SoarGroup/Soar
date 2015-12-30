@@ -5,10 +5,10 @@
  *      Author: mazzin
  */
 
+#include <explain.h>
 #include "ebc.h"
 
 #include "agent.h"
-#include "ebc_explain.h"
 #include "instantiations.h"
 #include "assert.h"
 #include "test.h"

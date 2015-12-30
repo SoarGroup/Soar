@@ -1,3 +1,4 @@
+#include <explain.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -23,7 +24,6 @@
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
-#include "ebc_explain.h"
 #include "instantiations.h"
 #include "kernel.h"
 #include "mem.h"

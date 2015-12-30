@@ -18,6 +18,7 @@
  */
 
 
+#include <explain.h>
 #include "agent.h"
 
 #include "callback.h"
@@ -25,7 +26,6 @@
 #include "decide.h"
 #include "decision_manipulation.h"
 #include "ebc.h"
-#include "ebc_explain.h"
 #include "episodic_memory.h"
 #include "exploration.h"
 #include "gsysparam.h"

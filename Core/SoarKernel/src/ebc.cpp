@@ -5,12 +5,12 @@
  *      Author: mazzin
  */
 
+#include <explain.h>
 #include "ebc.h"
 #include "agent.h"
 #include "assert.h"
 #include "debug.h"
 #include "decide.h"
-#include "ebc_explain.h"
 #include "instantiations.h"
 #include "prefmem.h"
 #include "print.h"

@@ -18,7 +18,6 @@
 #include "agent.h"
 #include "debug.h"
 #include "decide.h"
-#include "ebc_explain.h"
 #include "init_soar.h"
 #include "instantiations.h"
 #include "production.h"
@@ -38,6 +37,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <explain.h>
 
 using namespace soar_TraceNames;
 

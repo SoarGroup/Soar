@@ -5,13 +5,13 @@
  *      Author: mazzin
  */
 
+#include <explain.h>
 #include "ebc.h"
 
 #include "agent.h"
 #include "assert.h"
 #include "condition.h"
 #include "debug.h"
-#include "ebc_explain.h"
 #include "instantiations.h"
 #include "print.h"
 #include "test.h"

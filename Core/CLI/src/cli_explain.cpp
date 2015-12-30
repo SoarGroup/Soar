@@ -6,6 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include <explain.h>
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
@@ -19,7 +20,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "ebc_explain.h"
 #include "misc.h"
 #include "print.h"
 

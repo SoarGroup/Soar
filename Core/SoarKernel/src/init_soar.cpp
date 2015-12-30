@@ -14,6 +14,7 @@
  * =======================================================================
  */
 
+#include <explain.h>
 #include "init_soar.h"
 
 #include "agent.h"
@@ -22,7 +23,6 @@
 #include "decide.h"
 #include "episodic_memory.h"
 #include "ebc.h"
-#include "ebc_explain.h"
 #include "io_soar.h"
 #include "output_manager.h"
 #include "print.h"
