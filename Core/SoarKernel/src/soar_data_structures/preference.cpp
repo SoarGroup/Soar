@@ -1,3 +1,7 @@
+#include <soar_data_structures/instantiation.h>
+#include <soar_data_structures/preference.h>
+#include <soar_data_structures/symbol.h>
+#include <soar_data_structures/working_memory.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -10,20 +14,15 @@
    ====================================================================== */
 
 #include <stdlib.h>
-#include "prefmem.h"
-
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
 #include "debug.h"
-#include "instantiations.h"
-#include "symtab.h"
 #include "recmem.h"
 #include "rhs.h"
 #include "tempmem.h"
 #include "decide.h"
 #include "print.h"
-#include "wmem.h"
 
 /* Note that these must be in the same order as the #define variables
  * in gdatastructs.h */

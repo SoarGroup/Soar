@@ -26,9 +26,7 @@
 #include "print.h"
 #include "agent.h"
 #include "rhs.h"
-#include "instantiations.h"
 #include "reorder.h"
-#include "symtab.h"
 #include "init_soar.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
@@ -36,6 +34,9 @@
 #include "debug.h"
 #include <ctype.h>
 #include <ebc.h>
+#include <soar_data_structures/instantiation.h>
+#include <soar_data_structures/symbol.h>
+
 #include "ebc.h"
 
 void init_production_utilities(agent* thisAgent)

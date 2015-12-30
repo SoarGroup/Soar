@@ -12,8 +12,7 @@
  * =======================================================================
  */
 
-#include "wma.h"
-
+#include <soar_data_structures/working_memory_activation.h>
 #include "agent.h"
 #include "condition.h"
 #include "decide.h"

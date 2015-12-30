@@ -1,3 +1,5 @@
+#include <soar_data_structures/symbol.h>
+#include <soar_data_structures/working_memory.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -42,7 +44,6 @@
 #include "kernel.h"
 #include "print.h"
 #include "mem.h"
-#include "symtab.h"
 #include "init_soar.h"
 #include "gsysparam.h"
 #include "agent.h"
@@ -50,8 +51,6 @@
 #include "rhs_functions_math.h"
 #include "io_soar.h"
 #include "recmem.h"
-#include "wmem.h"
-
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "decide.h"

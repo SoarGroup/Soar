@@ -24,6 +24,7 @@
  * =======================================================================
  */
 
+#include <soar_data_structures/working_memory_activation.h>
 #include "kernel.h"
 #include "recmem.h"
 
@@ -48,7 +49,6 @@
 #include "soar_TraceNames.h"
 #include "symtab.h"
 #include "tempmem.h"
-#include "wma.h"
 #include "wmem.h"
 #include "xml.h"
 

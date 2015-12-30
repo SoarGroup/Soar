@@ -17,7 +17,6 @@
 #include <stdlib.h>
 
 #include "rhs_functions_math.h"
-#include "symtab.h"
 #include "kernel.h"
 #include "mem.h"
 #include "print.h"
@@ -26,8 +25,9 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "decide.h"
-#include "wmem.h"
 #include <math.h>
+#include <soar_data_structures/symbol.h>
+#include <soar_data_structures/working_memory.h>
 
 
 

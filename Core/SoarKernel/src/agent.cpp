@@ -18,15 +18,14 @@
  */
 
 
-#include <explain.h>
 #include "agent.h"
-
 #include "callback.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "decide.h"
 #include "decision_manipulation.h"
-#include "ebc.h"
+#include "explanation_based_chunking/ebc.h"
 #include "episodic_memory.h"
+#include "explain/explain.h"
 #include "exploration.h"
 #include "gsysparam.h"
 #include "init_soar.h"
@@ -35,7 +34,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "memory_manager.h"
-#include "output_manager.h"
+#include "output_manager/output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "recmem.h"

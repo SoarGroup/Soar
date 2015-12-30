@@ -1,3 +1,5 @@
+#include <soar_data_structures/slot.h>
+#include <soar_data_structures/symbol.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -18,10 +20,7 @@
 
 #include <stdlib.h>
 
-#include "tempmem.h"
 #include "kernel.h"
-#include "symtab.h"
-
 #include "mem.h"
 #include "agent.h"
 #include "prefmem.h"

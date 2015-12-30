@@ -27,7 +27,6 @@
 
 #include <stdlib.h>
 
-#include "symtab.h"
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
@@ -38,6 +37,7 @@
 #include "output_manager.h"
 #include "debug.h"
 #include <ctype.h>
+#include <soar_data_structures/symbol.h>
 
 /* -------------------------------------------------------------------
                            Hash Functions

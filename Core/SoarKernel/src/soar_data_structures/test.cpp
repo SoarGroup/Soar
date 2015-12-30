@@ -16,15 +16,14 @@
 #include "condition.h"
 #include "debug.h"
 #include "ebc.h"
-#include "instantiations.h"
 #include "output_manager.h"
-#include "prefmem.h"
 #include "print.h"
 #include "rete.h"
-#include "symtab.h"
-#include "wmem.h"
-
 #include <assert.h>
+#include <soar_data_structures/instantiation.h>
+#include <soar_data_structures/preference.h>
+#include <soar_data_structures/symbol.h>
+#include <soar_data_structures/working_memory.h>
 
 /* =================================================================
 

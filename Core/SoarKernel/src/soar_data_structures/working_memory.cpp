@@ -1,4 +1,8 @@
 #include <ebc.h>
+#include <soar_data_structures/slot.h>
+#include <soar_data_structures/symbol.h>
+#include <soar_data_structures/working_memory.h>
+#include <soar_data_structures/working_memory_activation.h>
 #include "portability.h"
 
 /*************************************************************************
@@ -18,18 +22,14 @@
 
 #include <stdlib.h>
 
-#include "wmem.h"
 #include "kernel.h"
 #include "agent.h"
-#include "symtab.h"
 #include "decide.h"
 #include "io_soar.h"
 #include "rete.h"
 #include "print.h"
-#include "tempmem.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-#include "wma.h"
 #include "episodic_memory.h"
 #include "debug.h"
 
