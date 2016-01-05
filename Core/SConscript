@@ -2,14 +2,19 @@ import sys, os
 import subprocess as sub
 import itertools as itl
 import fnmatch
+Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 
+# This function is not used, but could be handy if we need to add a list
+# of files of a certain type from an irregular folder structure. Newer versions
+# of python have this functionality built in.  We are currently limited to 2.7
 
 def recursive_glob(treeroot, pattern):
-    results = []
-    for base, dirs, files in os.walk(treeroot):
-        goodfiles = fnmatch.filter(files, pattern)
-        results.extend(os.path.join(base, f) for f in goodfiles)
-    return results
+	results = []
+	for base, dirs, files in os.walk(treeroot):
+		goodfiles = fnmatch.filter(files, pattern)
+		results.extend(env.File(os.path.join(base, f)) for f in goodfiles)
+	return results
+# 	('SoarKernel/SoarKernel.cxx',       recursive_glob(kernel_env.Dir('SoarKernel/src').abspath(), '*.cpp')),    # Kernel
    
 def CheckSWIG(env):
 	if not env.WhereIs('swig'):
@@ -26,7 +31,6 @@ def CheckSWIG(env):
 	print 'swig version 1.3.31 or higher is required'
 	return False
 
-Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 kernel_env = env.Clone()
 
 # Windows DLLs need to get linked to dependencies, whereas Linux and Mac shared objects do not
@@ -35,10 +39,11 @@ if os.name == 'nt':
 else:
 	kernel_env['LIBS'] = []
 
-# Added -v verbose setting for debugging link errors.  May not generally want
 if sys.platform == 'darwin':
 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
-	kernel_env.Append(LINKFLAGS = ['-install_name', install_name, '-v'])
+	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
+# Add -v verbose setting for debugging link errors.  May not generally want
+# 	kernel_env.Append(LINKFLAGS = ['-v'])
 
 if env['SCU']:
 	scu = 0
@@ -46,19 +51,20 @@ else:
 	scu = 1
 
 srcs = [
-    # SCU source                        Non-SCU source
-	('shared/shared.cxx',               Glob('shared/*.cpp')),            # shared
-	('SoarKernel/SoarKernel.cxx',       recursive_glob('SoarKernel/src', '*.cpp')),    # Kernel
-	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), # sqlite
-	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     # KernelSML
-	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     # ClientSML
-	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), # ConnectionSML
-	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    # ElementXML
-#    ('KernelSML/KernelSML.cxx',         ['KernelSML/KernelSML.cxx']),     # KernelSML
-#    ('ClientSML/ClientSML.cxx',         ['ClientSML/ClientSML.cxx']),     # ClientSML
-#    ('ConnectionSML/ConnectionSML.cxx', ['ConnectionSML/ConnectionSML.cxx']), # ConnectionSML
-#    ('ElementXML/ElementXML.cxx',       ['ElementXML/ElementXML.cxx']),    # ElementXML
-	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           # CLI
+	# SCU source                        Non-SCU source
+	('shared/shared.cxx',               Glob('shared/*.cpp')),            		# shared
+	('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*/*.cpp')),    	# Kernel
+	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), 		# sqlite
+# 	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     		# KernelSML
+# 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     		# ClientSML
+# 	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), 		# ConnectionSML
+# 	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    		# ElementXML
+	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
+	('KernelSML/KernelSML.cxx',         ['KernelSML/KernelSML.cxx']),     		# KernelSML
+	('ClientSML/ClientSML.cxx',         ['ClientSML/ClientSML.cxx']),     		# ClientSML
+	('ConnectionSML/ConnectionSML.cxx', ['ConnectionSML/ConnectionSML.cxx']), 	# ConnectionSML
+	('ElementXML/ElementXML.cxx',       ['ElementXML/ElementXML.cxx']),    		# ElementXML
+# 	('CLI/CommandLineInterface.cxx',    ['CLI/CommandLineInterface.cxx']), 		# CLI
 ]
 
 # print 'Soar compiler settings'
