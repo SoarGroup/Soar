@@ -9,7 +9,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 

@@ -22,17 +22,17 @@
 
 #include "kernel.h"
 
-#include "callback.h"
-#include "episodic_memory.h"
-#include "exploration.h"
-#include "gsysparam.h"
 #include "init_soar.h"
-#include "mem.h"
-#include "memory_manager.h"
+#include "episodic_memory.h"
+#include "callback.h"
+#include "exploration.h"
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
+#include "gsysparam.h"
+#include "mem.h"
+#include "memory_manager.h"
 #include "soar_module.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 
 #include <string>
 #include <map>

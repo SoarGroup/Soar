@@ -1,12 +1,4 @@
-#include <io_link.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/production.h>
-#include <soar_representation/rhs_functions.h>
-#include <soar_representation/rhs_functions_math.h>
-#include <soar_representation/rhs_functions_math.h>
-#include <soar_representation/symbol.h>
-#include <soar_representation/working_memory.h>
-#include "portability.h"
+
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
@@ -43,19 +35,26 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
-
 #include "kernel.h"
+#include "init_soar.h"
+#include "decide.h"
 #include "print.h"
 #include "mem.h"
-#include "init_soar.h"
 #include "gsysparam.h"
-#include "recmem.h"
 #include "xml.h"
+#include "io_link.h"
 #include "soar_TraceNames.h"
-#include "decide.h"
+#include "agent.h"
+#include "instantiation.h"
+#include "production.h"
+#include "rhs_functions.h"
+#include "rhs_functions_math.h"
+#include "rhs_functions_math.h"
+#include "symbol.h"
+#include "working_memory.h"
 
 #include <map>
+#include <stdlib.h>
 #include <string>
 #include <time.h>
 #include <chrono>

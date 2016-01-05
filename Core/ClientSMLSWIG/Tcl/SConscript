@@ -73,7 +73,8 @@ else:
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')
 include_dirs = [ clone.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
-
+shared_include_dir = clone.Dir('#Core/SoarKernel/src/shared/')
+include_dirs.append(shared_include_dir)
 # files
 swig_tcl_wrapper_cpp = clone.File('Tcl_sml_ClientInterface_wrap.cpp')
 swig_tcl_interface = clone.File('Tcl_sml_ClientInterface.i')

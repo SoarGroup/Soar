@@ -1,4 +1,4 @@
-#include <io_link.h>
+#include "io_link.h"
 #include "portability.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
@@ -22,20 +22,20 @@
 
 #include "decide.h"
 
-#include "instantiations.h"
+#include "instantiation.h"
 #include "mem.h"
 #include "kernel.h"
 #include "agent.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "init_soar.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "production.h"
 #include "condition.h"
 #include "print.h"
 #include "rete.h"
 #include "trace.h"
-#include "tempmem.h"
+#include "slot.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 
@@ -44,7 +44,7 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 #include "misc.h"
 
 #include "episodic_memory.h"
@@ -53,7 +53,7 @@
 #include "svs_interface.h"
 #endif
 #include "test.h"
-#include <ebc.h>
+#include "ebc.h"
 #include "debug.h"
 #include <cmath>
 

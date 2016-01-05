@@ -18,8 +18,8 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "decide.h"
 
 #include "print.h"

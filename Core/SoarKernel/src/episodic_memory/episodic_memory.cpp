@@ -1,4 +1,4 @@
-#include <ebc.h>
+#include "ebc.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -27,12 +27,12 @@
 #include "semantic_memory.h"
 
 #include "agent.h"
-#include "prefmem.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "preference.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "print.h"
 #include "xml.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "decide.h"
 #include "debug.h"
 

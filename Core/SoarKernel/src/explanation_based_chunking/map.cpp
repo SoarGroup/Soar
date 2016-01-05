@@ -5,12 +5,12 @@
  *      Author: mazzin
  */
 
-#include <ebc.h>
+#include "ebc.h"
 #include "agent.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "assert.h"
 #include "test.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "print.h"
 #include "debug.h"
 

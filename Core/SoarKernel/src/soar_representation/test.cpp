@@ -17,13 +17,13 @@
 #include "print.h"
 #include "rete.h"
 #include <assert.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/condition.h>
-#include <soar_representation/instantiation.h>
-#include <soar_representation/preference.h>
-#include <soar_representation/symbol.h>
-#include <soar_representation/test.h>
-#include <soar_representation/working_memory.h>
+#include "agent.h"
+#include "condition.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "symbol.h"
+#include "test.h"
+#include "working_memory.h"
 
 /* =================================================================
 

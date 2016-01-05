@@ -9,11 +9,11 @@
 #define CLI_EXPLAIN_H_
 
 #include "cli_Parser.h"
-#include "misc.h"
 #include "cli_Options.h"
+#include "cli_Cli.h"
+#include "misc.h"
 #include "kernel.h"
 #include "sml_Events.h"
-#include "cli_Cli.h"
 
 namespace cli
 {

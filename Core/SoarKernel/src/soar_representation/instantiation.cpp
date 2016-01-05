@@ -24,36 +24,35 @@
  * =======================================================================
  */
 
-#include <soar_representation/agent.h>
-#include <soar_representation/condition.h>
-#include <soar_representation/production.h>
-#include <soar_representation/rhs.h>
-#include <soar_representation/rhs_functions.h>
-#include <soar_representation/working_memory_activation.h>
-
 #include "kernel.h"
-#include "recmem.h"
-
-#include "consistency.h"
-#include "debug.h"
-#include "decide.h"
-#include "ebc.h"
-#include "instantiations.h"
-#include "mem.h"
-#include "misc.h"
-#include "osupport.h"
-#include "prefmem.h"
-#include "print.h"
-#include "reinforcement_learning.h"
-#include "rete.h"
-#include "soar_module.h"
-#include "soar_TraceNames.h"
-#include "symtab.h"
-#include "tempmem.h"
-#include "wmem.h"
-#include "xml.h"
 
 #include "assert.h"
+#include "debug.h"
+#include "consistency.h"
+#include "decide.h"
+#include "osupport.h"
+#include "rete.h"
+#include "ebc.h"
+#include "misc.h"
+#include "mem.h"
+#include "print.h"
+#include "reinforcement_learning.h"
+#include "soar_module.h"
+#include "xml.h"
+#include "agent.h"
+#include "condition.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "production.h"
+#include "rhs.h"
+#include "rhs_functions.h"
+#include "instantiation.h"
+#include "slot.h"
+#include "symbol.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
+#include "soar_TraceNames.h"
+
 #include <stdlib.h>
 #include <string> // SBW 8/4/08
 #include <list>

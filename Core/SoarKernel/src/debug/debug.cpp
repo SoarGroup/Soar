@@ -12,7 +12,7 @@
 
 ------------------------------------------------------------------ */
 
-#include <ebc.h>
+#include "ebc.h"
 #include "debug.h"
 #include "agent.h"
 #include "test.h"
@@ -22,7 +22,7 @@
 #include "soar_instance.h"
 #include "print.h"
 #include "output_manager.h"
-#include "wmem.h"
+#include "working_memory.h"
 
 #include <string>
 #include <iostream>

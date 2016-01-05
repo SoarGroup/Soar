@@ -25,7 +25,7 @@
 
 #include "kernel.h"
 #include "misc.h"
-#include "symtab.h"
+#include "symbol.h"
 //#include "mem.h"
 #include "memory_manager.h"
 

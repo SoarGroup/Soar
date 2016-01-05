@@ -1,4 +1,4 @@
-#include <explain.h>
+#include "explain.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -24,19 +24,19 @@
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "kernel.h"
 #include "mem.h"
 #include "memory_manager.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "recmem.h"
+#include "instantiation.h"
 #include "soar_module.h"
 #include "soar_TraceNames.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "test.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #include <stdlib.h>

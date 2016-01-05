@@ -23,11 +23,11 @@
 #include "soar_rand.h"
 #include "decide.h"
 #include <math.h>
-#include <soar_representation/rhs.h>
-#include <soar_representation/rhs_functions.h>
-#include <soar_representation/rhs_functions_math.h>
-#include <soar_representation/symbol.h>
-#include <soar_representation/working_memory.h>
+#include "rhs.h"
+#include "rhs_functions.h"
+#include "rhs_functions_math.h"
+#include "symbol.h"
+#include "working_memory.h"
 
 
 
@@ -45,7 +45,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     double f = 0;
     Symbol* arg;
     cons* c;
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -57,7 +57,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
             return NIL;
         }
     }
-    
+
     i = 0;
     float_found = false;
     while (args)
@@ -109,7 +109,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     double f = 0;
     Symbol* arg;
     cons* c;
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -121,7 +121,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
             return NIL;
         }
     }
-    
+
     i = 1;
     float_found = false;
     while (args)
@@ -175,13 +175,13 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     int64_t i = 0;   /* For gcc -Wall */
     cons* c;
     bool float_found;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: '-' function called with no arguments\n");
         return NIL;
     }
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -193,7 +193,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
             return NIL;
         }
     }
-    
+
     if (! args->rest)
     {
         /* --- only one argument --- */
@@ -204,7 +204,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         }
         return make_float_constant(thisAgent, - arg->fc->value);
     }
-    
+
     /* --- two or more arguments --- */
     arg = static_cast<symbol_struct*>(args->first);
     float_found = false;
@@ -244,7 +244,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
             }
         }
     }
-    
+
     if (float_found)
     {
         return make_float_constant(thisAgent, f);
@@ -266,13 +266,13 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     Symbol* arg;
     double f;
     cons* c;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: '/' function called with no arguments\n");
         return NIL;
     }
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -284,7 +284,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             return NIL;
         }
     }
-    
+
     if (! args->rest)
     {
         /* --- only one argument --- */
@@ -304,7 +304,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
         return NIL;
     }
-    
+
     /* --- two or more arguments --- */
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -355,10 +355,10 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
-    
+
     arg1 = static_cast<symbol_struct*>(args->first);
     arg2 = static_cast<symbol_struct*>(args->rest->first);
-    
+
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-integer (%y) passed to div function\n",
@@ -371,13 +371,13 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
                            arg2);
         return NIL;
     }
-    
+
     if (arg2->ic->value == 0)
     {
         print(thisAgent, "Error: attempt to divide ('div') by zero.\n");
         return NIL;
     }
-    
+
     return make_int_constant(thisAgent, arg1->ic->value / arg2->ic->value);
     /* Warning: ANSI doesn't say precisely what happens if one or both of the
        two args is negative. */
@@ -388,9 +388,9 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     Symbol* arg1;
     slot* s;
     wme* w;
-    
+
     arg1 = static_cast<symbol_struct*>(args->first);
-    
+
     if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
@@ -442,10 +442,10 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
-    
+
     arg1 = static_cast<symbol_struct*>(args->first);
     arg2 = static_cast<symbol_struct*>(args->rest->first);
-    
+
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-integer (%y) passed to mod function\n",
@@ -458,13 +458,13 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
                            arg2);
         return NIL;
     }
-    
+
     if (arg2->ic->value == 0)
     {
         print(thisAgent, "Error: attempt to divide ('mod') by zero.\n");
         return NIL;
     }
-    
+
     return make_int_constant(thisAgent, arg1->ic->value % arg2->ic->value);
     /* Warning:  ANSI guarantees this does the right thing if both args are
        positive.  If one or both is negative, it only guarantees that
@@ -474,7 +474,7 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 /* --------------------------------------------------------------------
                                 Min
 
-   Takes any number of int_constant or float_constant arguments, 
+   Takes any number of int_constant or float_constant arguments,
    and returns the minimum value in the list
 -------------------------------------------------------------------- */
 
@@ -486,7 +486,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     double min_f = 0;
     Symbol* arg;
     cons* c;
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -498,7 +498,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
             return NIL;
         }
     }
-    
+
     float_found = false;
     while (args)
     {
@@ -550,9 +550,9 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 }
 
 /* --------------------------------------------------------------------
-                               Max 
+                               Max
 
-   Takes any number of int_constant or float_constant arguments, 
+   Takes any number of int_constant or float_constant arguments,
    and returns the maximum value in the list
 -------------------------------------------------------------------- */
 
@@ -564,7 +564,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     double max_f = 0;
     Symbol* arg;
     cons* c;
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -576,7 +576,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
             return NIL;
         }
     }
-    
+
     float_found = false;
     while (args)
     {
@@ -636,13 +636,13 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg;
     double  arg_value;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'sin' function called with no arguments\n");
         return NIL;
     }
-    
+
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -657,7 +657,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         print_with_symbols(thisAgent, "Error: 'sin' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
-    
+
     return make_float_constant(thisAgent, sin(arg_value));
 }
 
@@ -671,13 +671,13 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg;
     double  arg_value;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'cos' function called with no arguments\n");
         return NIL;
     }
-    
+
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -705,13 +705,13 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 {
     Symbol* arg;
     double  arg_value;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'sqrt' function called with no arguments\n");
         return NIL;
     }
-    
+
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -742,13 +742,13 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     cons* c;
     double  numer_value,
             denom_value;
-            
+
     if (!args)
     {
         print(thisAgent, "Error: 'atan2' function called with no arguments\n");
         return NIL;
     }
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<symbol_struct*>(c->first);
@@ -760,13 +760,13 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
             return NIL;
         }
     }
-    
+
     if (!args->rest)
     {
         print(thisAgent, "Error: 'atan2' function called with only one argument\n");
         return NIL;
     }
-    
+
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -776,7 +776,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     {
         numer_value = static_cast<double>(arg->ic->value) ;
     }
-    
+
     c = args->rest;
     if (c->rest)
     {
@@ -792,7 +792,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     {
         denom_value = static_cast<double>(arg->ic->value) ;
     }
-    
+
     return make_float_constant(thisAgent, atan2(numer_value, denom_value));
 }
 
@@ -806,13 +806,13 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg,
             *return_value;
-            
+
     if (!args)
     {
         print(thisAgent, "Error: 'abs' function called with no arguments\n");
         return NIL;
     }
-    
+
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -842,19 +842,19 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* sym;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'int' function called with no arguments.\n");
         return NIL;
     }
-    
+
     if (args->rest)
     {
         print(thisAgent, "Error: 'int' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
@@ -871,7 +871,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     else if (sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE)
     {
         int64_t int_val;
-        
+
         errno = 0;
         int_val = strtol(sym->to_string(false, NIL, 0), NULL, 10);
         if (errno)
@@ -893,7 +893,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         modf(sym->fc->value, &int_part);
         return make_int_constant(thisAgent, static_cast<int64_t>(int_part));
     }
-    
+
     print(thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
           sym);
     return NIL;
@@ -911,19 +911,19 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* sym;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'float' function called with no arguments.\n");
         return NIL;
     }
-    
+
     if (args->rest)
     {
         print(thisAgent, "Error: 'float' takes exactly 1 argument.\n");
         return NIL;
     }
-    
+
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
@@ -940,7 +940,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     else if (sym->symbol_type == STR_CONSTANT_SYMBOL_TYPE)
     {
         double float_val;
-        
+
         errno = 0;
         float_val = strtod(sym->to_string(false, NULL, 0), NULL);
         if (errno)
@@ -960,7 +960,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     {
         return make_float_constant(thisAgent, static_cast<double>(sym->ic->value));
     }
-    
+
     print(thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
           sym);
     return NIL;
@@ -989,7 +989,7 @@ int64_t normalize_heading_int(int64_t n)
     {
         n -= 360;
     }
-    
+
     return n;
 }
 
@@ -1008,14 +1008,14 @@ double normalize_heading_float(double n)
     {
         n -= 360.0;
     }
-    
+
     return n;
 }
 
 int64_t round_off_heading_int(int64_t n, int64_t m)
 {
     int64_t unbounded_rounded;
-    
+
     /* need to round the first (i_n) to the nearest second (i_m) */
     if (n < 0)
     {
@@ -1025,7 +1025,7 @@ int64_t round_off_heading_int(int64_t n, int64_t m)
     {
         unbounded_rounded = m * ((n + (m / 2L)) / m);
     }
-    
+
     return unbounded_rounded;
 }
 
@@ -1034,29 +1034,29 @@ double round_off_heading_float(double n, double m)
     double n_10, m_10, unbounded_rounded;
     double ip;
     double ip2;
-    
+
     /* OK.  Both n and m can have tenths, so multiply by 10 and treat
        as integers */
     modf((n * 10.0), &ip);
     n_10 = ip;
     modf((m * 10.0), &ip);
     m_10 = ip;
-    
+
     if (n_10 < 0.0)
     {
-    
+
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 - ip2) / m_10), &ip);
         unbounded_rounded = (m_10 * ip);
     }
     else
     {
-    
+
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 + ip2) / m_10), &ip);
         unbounded_rounded = (m_10 * ip);
     }
-    
+
     /* Divide by 10 to get tenths back and return */
     return unbounded_rounded / 10.0;
 }
@@ -1068,20 +1068,20 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     int64_t i_m = 0;
     cons* c;
     bool float_found = false;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
         return NIL;
     }
-    
+
     if (!args->rest)
     {
         /* --- only one argument --- */
         print(thisAgent, "Error: 'round_off_heading' function called with only one argument.\n");
         return NIL;
     }
-    
+
     /* --- two or more arguments --- */
     arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -1092,7 +1092,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     {
         n = arg->fc->value;
     }
-    
+
     c = args->rest;
     if (c->rest)
     {
@@ -1110,7 +1110,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
         float_found = true;
         f_m = arg->fc->value;
     }
-    
+
     /* Now, deal with the arguments based on type and return result */
     if (float_found)
     {
@@ -1120,7 +1120,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     {
         return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int(static_cast<int64_t>(n) , i_m)));
     }
-    
+
 }
 
 /* code for round_off_heading */
@@ -1137,20 +1137,20 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     int64_t i_m = 0;
     cons* c;
     bool float_found = false;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'round_off' function called with no arguments\n");
         return NIL;
     }
-    
+
     if (!args->rest)
     {
         /* --- only one argument --- */
         print(thisAgent, "Error: 'round_off' function called with only one argument.\n");
         return NIL;
     }
-    
+
     /* --- two or more arguments --- */
     arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -1161,7 +1161,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     {
         n = arg->fc->value;
     }
-    
+
     c = args->rest;
     if (c->rest)
     {
@@ -1179,7 +1179,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
         float_found = true;
         f_m = arg->fc->value;
     }
-    
+
     /* Now, deal with the arguments based on type and return result */
     if (float_found)
     {
@@ -1224,7 +1224,7 @@ void vec2_norm(double v[3], double r[3], int abort)
 double convert_to_soar_angle(double heading_in_rads)
 {
     double heading;
-    
+
     /* Not only correct, but more efficient! */
     heading = heading_in_rads - PI_OVER_TWO;
     if (heading < 0.0)
@@ -1236,23 +1236,23 @@ double convert_to_soar_angle(double heading_in_rads)
     {
         heading -= TWO_PI;
     }
-    
+
     return heading;
 }
 
 void hrl_xydof_to_heading(double xydof[3], double* output)
 {
     double heading_in_rads;
-    
+
     heading_in_rads = convert_to_soar_angle(atan2(xydof[Y], xydof[X]));
-    
+
     (*output) = heading_in_rads;
 }
 
 int64_t air_soar_round_off_angle(int64_t n, int64_t m)
 {
     int64_t unbounded_rounded, bounded_rounded;
-    
+
     /* need to round the first (n) to the nearest second (m) */
     if (n < 0)
     {
@@ -1262,9 +1262,9 @@ int64_t air_soar_round_off_angle(int64_t n, int64_t m)
     {
         unbounded_rounded = m * ((n + (m / 2L)) / m);
     }
-    
+
     /* we need to make sure that -180 < value <= 180. */
-    
+
     // FIXME replace this code with the much faster mod2pi in ed olson's linalg library
     bounded_rounded = (unbounded_rounded % 360);
     if (bounded_rounded > 180)
@@ -1275,7 +1275,7 @@ int64_t air_soar_round_off_angle(int64_t n, int64_t m)
     {
         bounded_rounded += 360;
     }
-    
+
     return bounded_rounded;
 }
 
@@ -1293,19 +1293,19 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
 {
     double plane_pos[3], waypoint_pos[3], dir[3];
     double heading;
-    
+
     plane_pos[0] = static_cast<double>(current_x) ;
     plane_pos[1] = static_cast<double>(current_y) ;
     plane_pos[2] = 0;
-    
+
     waypoint_pos[0] = static_cast<double>(x) ;
     waypoint_pos[1] = static_cast<double>(y) ;
     waypoint_pos[2] = 0;
-    
+
     vector_from_to_position(plane_pos, waypoint_pos, dir);
     vec2_norm(dir, dir, false);
     hrl_xydof_to_heading(dir, &heading);
-    
+
     return convert(bracket_rad_to_deg(heading));
 }
 
@@ -1322,13 +1322,13 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
     int64_t waypoint_x, waypoint_y;
     int count;
     cons* c;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'compute-heading' function called with no arguments\n");
         return NIL;
     }
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
@@ -1339,9 +1339,9 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
             return NIL;
         }
     }
-    
+
     count = 1;
-    
+
     for (c = args->rest; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
@@ -1356,25 +1356,25 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
             count++;
         }
     }
-    
+
     if (count != 4)
     {
         print(thisAgent, "Error: 'compute-heading' takes exactly 4 arguments.\n");
         return NIL;
     }
-    
+
     arg = static_cast<Symbol*>(args->first);
     current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
-    
+
     arg = static_cast<Symbol*>(args->rest->first);
     current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
-    
+
     arg = static_cast<Symbol*>(args->rest->rest->first);
     waypoint_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
-    
+
     arg = static_cast<Symbol*>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
-    
+
     return make_int_constant(thisAgent, heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
 }
 
@@ -1391,13 +1391,13 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
     double waypoint_x, waypoint_y;
     int count;
     cons* c;
-    
+
     if (!args)
     {
         print(thisAgent, "Error: 'compute-range' function called with no arguments\n");
         return NIL;
     }
-    
+
     for (c = args; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
@@ -1408,9 +1408,9 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
             return NIL;
         }
     }
-    
+
     count = 1;
-    
+
     for (c = args->rest; c != NIL; c = c->rest)
     {
         arg = static_cast<Symbol*>(c->first);
@@ -1425,25 +1425,25 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
             count++;
         }
     }
-    
+
     if (count != 4)
     {
         print(thisAgent, "Error: 'compute-range' takes exactly 4 arguments.\n");
         return NIL;
     }
-    
+
     arg = static_cast<Symbol*>(args->first);
     current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
-    
+
     arg = static_cast<Symbol*>(args->rest->first);
     current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
-    
+
     arg = static_cast<Symbol*>(args->rest->rest->first);
     waypoint_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
-    
+
     arg = static_cast<Symbol*>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
-    
+
     return make_int_constant(thisAgent, static_cast<int64_t>(sqrt((current_x - waypoint_x)
                              * (current_x - waypoint_x)
                              + (current_y - waypoint_y)
@@ -1486,7 +1486,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
             // possibly warn? when can this happen?
         }
     }
-    
+
     if (n > 0)
     {
         return make_float_constant(thisAgent, SoarRand(n));
@@ -1530,7 +1530,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
             // possibly warn? when can this happen?
         }
     }
-    
+
     if (n > 0)
     {
         return make_int_constant(thisAgent, static_cast<int64_t>(SoarRandInt(static_cast<uint32_t>(n))));
@@ -1548,7 +1548,7 @@ uint64_t _dice_binom(uint64_t n, uint64_t m)
 {
     uint64_t* b = new uint64_t[static_cast<size_t>(n + 1)];
     uint64_t i, j, ret;
-    
+
     b[0] = 1;
     for (i = 1; i <= n; ++i)
     {
@@ -1560,7 +1560,7 @@ uint64_t _dice_binom(uint64_t n, uint64_t m)
     }
     ret = b[m];
     delete[] b;
-    
+
     return ret;
 }
 
@@ -1579,7 +1579,7 @@ double _dice_prob_exact(int64_t dice, int64_t sides, int64_t count)
     {
         return 0;
     }
-    
+
     // if there are no dice, probability is zero unless count is also zero
     if (dice == 0)
     {
@@ -1587,23 +1587,23 @@ double _dice_prob_exact(int64_t dice, int64_t sides, int64_t count)
         {
             return 1;
         }
-        
+
         return 0;
     }
-    
+
     if (count > dice)
     {
         return 0;
     }
-    
+
     double p1kd = pow(static_cast< double >(sides), static_cast< double >(count));
     double p2nkn = pow(static_cast< double >(sides - 1), static_cast< double >(dice - count));
     double p2nkd = pow(static_cast< double >(sides), static_cast< double >(dice - count));
-    
+
     double result = static_cast< double >(_dice_binom(static_cast< uint64_t >(dice), static_cast< uint64_t >(count)));
     result *= (static_cast< double >(1.0) / p1kd);
     result *= (p2nkn / p2nkd);
-    
+
     return result;
 }
 
@@ -1622,13 +1622,13 @@ double _dice_prob_atleast(int64_t dice, int64_t sides, int64_t count)
     {
         return 0;
     }
-    
+
     double result = 0.0;
     for (int64_t i = 0; (count + i <= dice); ++i)
     {
         result += _dice_prob_exact(dice, sides, count + i);
     }
-    
+
     return result;
 }
 
@@ -1639,14 +1639,14 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     int64_t dice;
     int64_t sides;
     int64_t count;
-    
+
     enum pred_type { eq, ne, lt, gt, le, ge, bad };
     pred_type pred = bad;
-    
+
     // parse + validate
     {
         Symbol* temp_sym;
-        
+
         // dice
         temp_sym = static_cast< Symbol* >(args->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -1656,7 +1656,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             return NIL;
         }
         dice = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
-        
+
         // sides
         temp_sym = static_cast< Symbol* >(args->rest->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -1666,7 +1666,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             return NIL;
         }
         sides = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
-        
+
         // count
         temp_sym = static_cast< Symbol* >(args->rest->rest->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
@@ -1676,7 +1676,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             return NIL;
         }
         count = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
-        
+
         // pred
         temp_sym = static_cast< Symbol* >(args->rest->rest->rest->first);
         if (temp_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
@@ -1714,7 +1714,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             return NIL;
         }
     }
-    
+
     double ret = 0;
     if (pred == eq)
     {
@@ -1798,7 +1798,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             ret = _dice_zero_tolerance(_dice_prob_atleast(dice, sides, count));
         }
     }
-    
+
     return make_float_constant(thisAgent, ret);
 }
 
@@ -1832,7 +1832,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "max"), max_rhs_function_code,
                      -1, true, false, 0);
 
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "sin"),
                      sin_rhs_function_code,
                      1,
@@ -1868,32 +1868,32 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
                      1,
                      true,
                      false, 0);
-                     
+
     /* voigtjr 6/12/2007: added these built in functions on laird's request
     these are straight out of the <8.6 kernel */
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "round-off-heading"),
                      round_off_heading_air_rhs_function_code, 2, true, false, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "round-off"),
                      round_off_air_rhs_function_code, 2, true, false, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-heading"),
                      compute_heading_rhs_function_code, 4, true, false, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-range"),
                      compute_range_rhs_function_code, 4, true, false, 0);
-                     
+
     // NLD: 11/11 (ditto voigtjr's motivation above)
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-dice-probability"),
                      dice_prob_rhs_function_code, 4, true, false, 0);
-                     
+
     // Bug 800: implement rhs rand functions
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "rand-int"),
                      rand_int_rhs_function_code, -1, true, false, 0);
-                     
+
     add_rhs_function(thisAgent, make_str_constant(thisAgent, "rand-float"),
                      rand_float_rhs_function_code, -1, true, false, 0);
-                     
+
 }
 
 void remove_built_in_rhs_math_functions(agent* thisAgent)
@@ -1916,17 +1916,17 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "abs"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "int"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "float"));
-    
+
     /* voigtjr 6/12/2007: added these built in functions on laird's request
     these are straight out of the <8.6 kernel */
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "round-off-heading"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "round-off"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-heading"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-range"));
-    
+
     // NLD: 11/11
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-dice-probability"));
-    
+
     // Bug 800: implement rand
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "rand-int"));
     remove_rhs_function(thisAgent, find_str_constant(thisAgent, "rand-float"));

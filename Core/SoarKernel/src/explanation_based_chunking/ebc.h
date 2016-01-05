@@ -18,35 +18,9 @@
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
 #define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
 
-typedef char* rhs_value;
-typedef signed short goal_stack_level;
-typedef struct action_struct action;
-typedef struct agent_struct agent;
-typedef struct chunk_cond_struct chunk_cond;
-typedef struct condition_struct condition;
-typedef struct instantiation_struct instantiation;
-typedef struct preference_struct preference;
-typedef struct symbol_struct Symbol;
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct node_varnames_struct node_varnames;
-typedef unsigned short rete_node_level;
-typedef uint64_t tc_number;
-typedef struct cons_struct cons;
-typedef cons list;
 
 tc_number get_new_tc_number(agent* thisAgent);
-class Output_Manager;
-class Explanation_Logger;
 
-namespace soar_module
-{
-    typedef struct symbol_triple_struct symbol_triple;
-    typedef struct identity_triple_struct identity_triple;
-    typedef struct rhs_triple_struct rhs_triple;
-}
 
 typedef struct constraint_struct
 {

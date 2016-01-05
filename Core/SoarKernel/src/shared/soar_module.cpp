@@ -20,16 +20,16 @@
 #include "debug.h"
 #include "decide.h"
 #include "ebc.h"
-#include "instantiations.h"
-#include "tempmem.h"
+#include "instantiation.h"
+#include "slot.h"
 #include "mem.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "print.h"
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "xml.h"
-#include "wma.h"
-#include "wmem.h"
+#include "working_memory_activation.h"
+#include "working_memory.h"
 
 namespace soar_module
 {

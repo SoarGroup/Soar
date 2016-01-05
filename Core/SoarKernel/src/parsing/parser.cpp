@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 #include "parser.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "kernel.h"
 #include "condition.h"
 #include "production.h"

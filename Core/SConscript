@@ -1,7 +1,16 @@
 import sys, os
 import subprocess as sub
 import itertools as itl
+import fnmatch
 
+
+def recursive_glob(treeroot, pattern):
+    results = []
+    for base, dirs, files in os.walk(treeroot):
+        goodfiles = fnmatch.filter(files, pattern)
+        results.extend(os.path.join(base, f) for f in goodfiles)
+    return results
+   
 def CheckSWIG(env):
 	if not env.WhereIs('swig'):
 		return False
@@ -38,7 +47,7 @@ else:
 srcs = [
     # SCU source                        Non-SCU source
 	('shared/shared.cxx',               Glob('shared/*.cpp')),            # shared
-	('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),    # Kernel
+	('SoarKernel/SoarKernel.cxx',       recursive_glob('SoarKernel/src', '*.cpp')),    # Kernel
 	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), # sqlite
 	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     # KernelSML
 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     # ClientSML

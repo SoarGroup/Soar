@@ -8,10 +8,10 @@
 #ifndef SOARINSTANCE_H_
 #define SOARINSTANCE_H_
 
-#include "portability.h"
-#include <unordered_map>
+#include "kernel.h"
 #include "Export.h"
-#include "enums.h"
+
+#include <unordered_map>
 
 namespace sml
 {

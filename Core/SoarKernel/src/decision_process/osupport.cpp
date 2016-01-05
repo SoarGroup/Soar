@@ -26,22 +26,22 @@
 #include <stdlib.h>
 
 #include "osupport.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "symbol.h"
+#include "working_memory.h"
 
 #include "agent.h"
 #include "kernel.h"
 #include "production.h"
 #include "condition.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "rhs.h"
 #include "print.h"
-#include "reorder.h"
+#include "production_reorder.h"
 #include "rete.h"
 #include "xml.h"
 #include "decide.h"
 #include "test.h"
-#include "prefmem.h"
+#include "preference.h"
 
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines

@@ -8,11 +8,9 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#include "enums.h"
 #include "portability.h"
-
-typedef struct agent_struct agent;
-extern void print(agent* thisAgent, const char* format, ...);
+#include "enums.h"
+#include "forward.h"
 
 /* Uncomment this to get common compile settings for release version of Soar */
 //#define SOAR_RELEASE_VERSION

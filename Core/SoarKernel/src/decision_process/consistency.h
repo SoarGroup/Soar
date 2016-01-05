@@ -16,12 +16,7 @@
 #ifndef CONSISTENCY_H
 #define CONSISTENCY_H
 
-typedef signed short goal_stack_level;
-typedef struct slot_struct slot;
-typedef struct wme_struct wme;
-typedef struct agent_struct agent;
-typedef struct ms_change_struct ms_change;
-typedef struct symbol_struct Symbol;
+#include "forward.h"
 
 /* For information on the consistency check routines */
 /* #define DEBUG_CONSISTENCY_CHECK    */

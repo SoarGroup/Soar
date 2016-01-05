@@ -1,12 +1,12 @@
-#include <explain.h>
+#include "debug.h"
+#include "explain.h"
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
-#include "instantiations.h"
-#include "prefmem.h"
+#include "instantiation.h"
+#include "preference.h"
 #include "production.h"
+#include "working_memory.h"
 #include "output_manager.h"
-#include "wmem.h"
 
 void Explanation_Logger::explain_chunking_summary() {
     outputManager->printa_sf(thisAgent, "%fEBC Explainer Summary\n\n");

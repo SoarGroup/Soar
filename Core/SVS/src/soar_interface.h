@@ -6,7 +6,7 @@
 #include <sstream>
 #include <vector>
 #include "portability.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "mat.h"
 
 #include "Export.h"

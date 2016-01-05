@@ -31,8 +31,8 @@
 #include "reinforcement_learning.h"
 #include "misc.h"
 
-#include "instantiations.h"
-#include "prefmem.h"
+#include "instantiation.h"
+#include "preference.h"
 #include "decide.h"
 
 using namespace soar_TraceNames;
