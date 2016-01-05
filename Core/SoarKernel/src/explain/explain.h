@@ -170,10 +170,10 @@ class Explanation_Logger
         void                    re_init();
         void                    clear_explanations();
 
-        void                    set_chunk_name(uint64_t pC_ID, Symbol* pNameSym);
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
         chunk_record*           add_chunk_record(instantiation* pbaseInstantiation);
+        chunk_record*           get_chunk_record(Symbol* pChunkName);
         void                    cancel_chunk_record();
         void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results);
         instantiation_record*   add_instantiation(instantiation* pInst);

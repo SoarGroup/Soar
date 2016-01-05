@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -7,37 +5,32 @@
 
 /*************************************************************************
  *
- *  file:  symtab.cpp
+ *  file:  sybol.cpp
  *
  * =======================================================================
  *
  *                 Symbol Table Routines
  *
- * Soar 6 uses five kinds of symbols:  symbolic constants, integer
+ * Soar uses five kinds of symbols:  symbolic constants, integer
  * constants, floating-point constants, identifiers, and variables.
  * We use five resizable hash tables, one for each kind of symbol.
- *
- *   "symbol" is typedef-ed as a union of the five kinds of symbol
- *  structures.  Some fields common to all symbols are accessed via
- *  sym->field_name; fields particular to a certain kind of
- *  symbol are accessed via sym->var->field_name_on_variables, etc.
  *
  * =======================================================================
  */
 
-#include <stdlib.h>
-
-#include "mem.h"
-#include "kernel.h"
-#include "init_soar.h"
-#include "print.h"
-#include "xml.h"
-#include "output_manager.h"
-#include "debug.h"
-#include <ctype.h>
-#include "agent.h"
-#include "production.h"
 #include "symbol.h"
+
+#include "agent.h"
+#include "debug.h"
+#include "init_soar.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "xml.h"
+
+#include <ctype.h>
+#include <stdlib.h>
 
 /* -------------------------------------------------------------------
                            Hash Functions

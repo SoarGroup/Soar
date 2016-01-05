@@ -35,9 +35,10 @@ if os.name == 'nt':
 else:
 	kernel_env['LIBS'] = []
 
+# Added -v verbose setting for debugging link errors.  May not generally want
 if sys.platform == 'darwin':
 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
-	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
+	kernel_env.Append(LINKFLAGS = ['-install_name', install_name, '-v'])
 
 if env['SCU']:
 	scu = 0
@@ -53,6 +54,10 @@ srcs = [
 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     # ClientSML
 	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), # ConnectionSML
 	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    # ElementXML
+#    ('KernelSML/KernelSML.cxx',         ['KernelSML/KernelSML.cxx']),     # KernelSML
+#    ('ClientSML/ClientSML.cxx',         ['ClientSML/ClientSML.cxx']),     # ClientSML
+#    ('ConnectionSML/ConnectionSML.cxx', ['ConnectionSML/ConnectionSML.cxx']), # ConnectionSML
+#    ('ElementXML/ElementXML.cxx',       ['ElementXML/ElementXML.cxx']),    # ElementXML
 	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           # CLI
 ]
 

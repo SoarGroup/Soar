@@ -64,6 +64,7 @@ void Explanation_Logger::clear_explanations()
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
 //        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
+        symbol_remove_ref(thisAgent, it->first);
         delete it->second;
     }
     chunks->clear();
@@ -163,7 +164,7 @@ void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, ac
 
     current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results);
     (*chunks)[pName] = current_recording_chunk;
-
+    symbol_add_ref(thisAgent, pName);
 }
 
 condition_record* Explanation_Logger::add_condition(condition* pCond)
@@ -208,6 +209,23 @@ action_record* Explanation_Logger::add_result(preference* pPref, action* pAction
     return lActionRecord;
 }
 
+chunk_record* Explanation_Logger::get_chunk_record(Symbol* pChunkName)
+{
+    assert(pChunkName);
+
+    std::unordered_map< Symbol *, chunk_record* >::iterator iter_chunk;
+
+    dprint(DT_EXPLAIN, "...Looking  for chunk %y...", pChunkName);
+    iter_chunk = chunks->find(pChunkName);
+    if (iter_chunk != chunks->end())
+    {
+        dprint(DT_EXPLAIN, "...found chunk record.\n");
+        return(iter_chunk->second);
+    }
+    dprint(DT_EXPLAIN, "...not found..\n");
+    return NULL;
+}
+
 instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst)
 {
     assert(pInst);
@@ -216,7 +234,6 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
     std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
 
     dprint(DT_EXPLAIN, "...Looking  for instantiation id %u...", pInst->i_id);
-
     iter_inst = instantiations->find(pInst->i_id);
     if (iter_inst != instantiations->end())
     {
