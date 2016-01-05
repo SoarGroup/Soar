@@ -10,18 +10,18 @@
  * =======================================================================
  */
 #include <assert.h>
-#include <ebc.h>
+#include "ebc.h"
 #include "test.h"
 #include "debug.h"
 #include "kernel.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "agent.h"
 #include "print.h"
 #include "rete.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "output_manager.h"
-#include "wmem.h"
-#include "prefmem.h"
+#include "working_memory.h"
+#include "preference.h"
 #include "condition.h"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,

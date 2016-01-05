@@ -12,16 +12,16 @@
  * =======================================================================
  */
 
-#include <soar_representation/agent.h>
-#include <soar_representation/condition.h>
-#include <soar_representation/working_memory_activation.h>
+#include "agent.h"
+#include "condition.h"
+#include "working_memory_activation.h"
 #include "decide.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "misc.h"
 #include "rete.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "print.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #include <set>

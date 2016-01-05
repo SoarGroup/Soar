@@ -14,8 +14,8 @@
  * =======================================================================
  */
 
-#include <explain.h>
-#include <io_link.h>
+#include "explain.h"
+#include "io_link.h"
 #include "init_soar.h"
 
 #include "agent.h"
@@ -27,15 +27,15 @@
 #include "output_manager.h"
 #include "print.h"
 #include "production.h"
-#include "recmem.h"
+#include "instantiation.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "semantic_memory.h"
 #include "soar_rand.h"
 #include "stats.h"
-#include "symtab.h"
-#include "wma.h"
-#include "wmem.h"
+#include "symbol.h"
+#include "working_memory_activation.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #ifndef NO_SVS

@@ -15,29 +15,28 @@
 
 #include "ebc.h"
 
-#include "agent.h"
 #include "debug.h"
 #include "decide.h"
 #include "init_soar.h"
-#include "instantiations.h"
-#include "production.h"
-#include "condition.h"
-#include "rhs.h"
-#include "prefmem.h"
-#include "print.h"
-#include "recmem.h"
 #include "rete.h"
-#include "symtab.h"
-#include "soar_TraceNames.h"
-#include "test.h"
-#include "wma.h"
-#include "wmem.h"
+#include "explain.h"
+#include "print.h"
 #include "xml.h"
+#include "agent.h"
+#include "condition.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "production.h"
+#include "rhs.h"
+#include "symbol.h"
+#include "test.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
+#include "soar_TraceNames.h"
 
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
-#include <explain.h>
 
 using namespace soar_TraceNames;
 

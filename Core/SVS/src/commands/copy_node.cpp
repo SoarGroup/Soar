@@ -24,7 +24,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "command_table.h"
 
 using namespace std;

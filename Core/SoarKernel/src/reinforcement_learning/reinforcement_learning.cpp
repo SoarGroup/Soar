@@ -1,4 +1,4 @@
-#include <ebc.h>
+#include "ebc.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -25,16 +25,16 @@
 #include "reinforcement_learning.h"
 #include "production.h"
 #include "rhs.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "rete.h"
-#include "wmem.h"
-#include "tempmem.h"
+#include "working_memory.h"
+#include "slot.h"
 #include "print.h"
 #include "xml.h"
 #include "test.h"
-#include "recmem.h"
+#include "instantiation.h"
 #include "decide.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "condition.h"
 #include "debug.h"
 

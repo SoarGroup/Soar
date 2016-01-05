@@ -5,15 +5,15 @@
  *      Author: mazzin
  */
 
-#include <ebc.h>
+#include "ebc.h"
 #include "agent.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "condition.h"
-#include "prefmem.h"
+#include "preference.h"
 #include "assert.h"
 #include "test.h"
 #include "print.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "rhs.h"
 #include "debug.h"
 

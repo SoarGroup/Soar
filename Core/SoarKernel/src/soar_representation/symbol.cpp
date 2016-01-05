@@ -35,9 +35,9 @@
 #include "output_manager.h"
 #include "debug.h"
 #include <ctype.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/production.h>
-#include <soar_representation/symbol.h>
+#include "agent.h"
+#include "production.h"
+#include "symbol.h"
 
 /* -------------------------------------------------------------------
                            Hash Functions

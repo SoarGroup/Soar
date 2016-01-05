@@ -16,18 +16,18 @@
 
 #include "semantic_memory.h"
 #include "agent.h"
-#include "prefmem.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "preference.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "print.h"
 #include "xml.h"
 #include "lexer.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "condition.h"
 #include "rhs.h"
 #include "decide.h"
 #include "test.h"
-#include "tempmem.h"
+#include "slot.h"
 #include "debug.h"
 
 #include <list>
@@ -35,7 +35,7 @@
 #include <queue>
 #include <utility>
 #include <ctype.h>
-#include <ebc.h>
+#include "ebc.h"
 #include <fstream>
 #include <algorithm>
 

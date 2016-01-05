@@ -11,7 +11,7 @@
 #include "misc.h"
 #include "stats.h"
 
-#include "wmem.h"
+#include "working_memory.h"
 #include "print.h"
 #include "xml.h"
 

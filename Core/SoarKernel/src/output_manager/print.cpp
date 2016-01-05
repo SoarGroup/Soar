@@ -12,22 +12,21 @@
 
 ------------------------------------------------------------------ */
 
-#include <ebc.h>
-#include "rhs.h"
-#include "print.h"
-#include "agent.h"
-#include "instantiations.h"
 #include "rete.h"
-#include "reorder.h"
+#include "ebc.h"
+#include "output_manager.h"
+#include "soar_instance.h"
+#include "agent.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "print.h"
+#include "production_reorder.h"
 #include "rhs.h"
 #include "rhs_functions.h"
-#include "output_manager.h"
-#include "prefmem.h"
-#include "wmem.h"
-#include "soar_instance.h"
 #include "test.h"
-#include <iostream>
+#include "working_memory.h"
 
+#include <iostream>
 #include <cstdarg>
 
 void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)

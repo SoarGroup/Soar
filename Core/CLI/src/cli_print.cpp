@@ -8,23 +8,19 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
-
-#include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
+#include "sml_Names.h"
+#include "sml_Utils.h"
 
 #include "agent.h"
-
-#include "sml_KernelSML.h"
-#include "sml_AgentSML.h"
 #include "gsysparam.h"
 #include "xml.h"
 #include "print.h"
 #include "trace.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "rhs.h"
 #include "decide.h"
 #include "output_manager.h"

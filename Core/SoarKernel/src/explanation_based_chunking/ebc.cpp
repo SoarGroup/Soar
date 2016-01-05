@@ -5,19 +5,19 @@
  *      Author: mazzin
  */
 
-#include <explain.h>
-#include "ebc.h"
-#include "agent.h"
 #include "assert.h"
 #include "debug.h"
 #include "decide.h"
-#include "instantiations.h"
-#include "prefmem.h"
+#include "explain.h"
+#include "ebc.h"
 #include "print.h"
-#include "rhs.h"
 #include "soar_instance.h"
-#include "test.h"
 #include "xml.h"
+#include "agent.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "rhs.h"
+#include "test.h"
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);

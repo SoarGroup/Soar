@@ -1,10 +1,10 @@
-#include <ebc.h>
-#include <io_link.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/slot.h>
-#include <soar_representation/symbol.h>
-#include <soar_representation/working_memory.h>
-#include <soar_representation/working_memory_activation.h>
+#include "ebc.h"
+#include "io_link.h"
+#include "agent.h"
+#include "slot.h"
+#include "symbol.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
 #include "portability.h"
 
 /*************************************************************************

@@ -10,11 +10,11 @@
  *               Utility Routines for Actions and RHS Values
  *
  * ================================================================= */
-#include <ebc.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/production.h>
-#include <soar_representation/rhs.h>
-#include <soar_representation/test.h>
+#include "ebc.h"
+#include "agent.h"
+#include "production.h"
+#include "rhs.h"
+#include "test.h"
 #include "portability.h"
 #include <stdlib.h>
 

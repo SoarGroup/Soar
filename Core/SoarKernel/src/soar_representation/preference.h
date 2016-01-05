@@ -38,7 +38,7 @@
 #define PREFMEM_H
 
 #include "kernel.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 
 typedef unsigned char byte;
 typedef struct agent_struct agent;

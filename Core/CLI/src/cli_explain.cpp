@@ -6,7 +6,6 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <explain.h>
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
@@ -17,9 +16,9 @@
 #include "sml_Names.h"
 #include "sml_Utils.h"
 
-
 #include "agent.h"
 #include "condition.h"
+#include "explain.h"
 #include "misc.h"
 #include "print.h"
 

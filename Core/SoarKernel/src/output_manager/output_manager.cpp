@@ -12,10 +12,10 @@
 
 #include "output_manager.h"
 
-#include "agent.h"
-#include "callback.h"
 #include "debug.h"
+#include "callback.h"
 #include "print.h"
+#include "agent.h"
 
 AgentOutput_Info::AgentOutput_Info()
 {

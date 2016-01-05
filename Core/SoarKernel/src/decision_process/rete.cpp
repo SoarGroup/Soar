@@ -95,7 +95,7 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "init_soar.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "lexer.h"
 #include "mem.h"
 #include "output_manager.h"
@@ -106,9 +106,9 @@
 #include "rhs.h"
 #include "semantic_memory.h"
 #include "soar_TraceNames.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "test.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #include <sstream>

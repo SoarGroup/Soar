@@ -18,37 +18,37 @@
  */
 
 
-#include <io_link.h>
-#include <soar_representation/agent.h>
-#include <soar_representation/production.h>
-#include <soar_representation/rhs.h>
-#include <soar_representation/rhs_functions.h>
+#include "io_link.h"
+#include "agent.h"
+#include "production.h"
+#include "rhs.h"
+#include "rhs_functions.h"
 #include "callback.h"
-#include "debug/debug.h"
+#include "debug.h"
 #include "decide.h"
 #include "decision_manipulation.h"
-#include "explanation_based_chunking/ebc.h"
+#include "ebc.h"
 #include "episodic_memory.h"
-#include "explain/explain.h"
+#include "explain.h"
 #include "exploration.h"
 #include "gsysparam.h"
 #include "init_soar.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "lexer.h"
 #include "mem.h"
 #include "memory_manager.h"
-#include "output_manager/output_manager.h"
+#include "output_manager.h"
 #include "print.h"
-#include "recmem.h"
+#include "instantiation.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
 #include "soar_module.h"
 #include "stats.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "trace.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 #include "xml.h"
 
 #ifndef NO_SVS

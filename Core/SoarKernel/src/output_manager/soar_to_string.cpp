@@ -12,19 +12,19 @@
 
 ------------------------------------------------------------------ */
 
-#include <ebc.h>
+#include "ebc.h"
 #include "rhs.h"
 #include "print.h"
 #include "agent.h"
 #include "condition.h"
-#include "instantiations.h"
+#include "instantiation.h"
 #include "rete.h"
-#include "reorder.h"
+#include "production_reorder.h"
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "output_manager.h"
-#include "prefmem.h"
-#include "wmem.h"
+#include "preference.h"
+#include "working_memory.h"
 #include "soar_instance.h"
 #include "test.h"
 

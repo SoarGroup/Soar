@@ -34,7 +34,7 @@
 #include "XMLTrace.h"
 #include "ElementXML.h"
 #include "print.h"
-#include "wmem.h"
+#include "working_memory.h"
 
 #include "assert.h"
 

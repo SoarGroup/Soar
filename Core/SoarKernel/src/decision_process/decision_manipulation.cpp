@@ -21,7 +21,7 @@
 
 #include "decide.h"
 #include "misc.h"
-#include "prefmem.h"
+#include "preference.h"
 
 /***************************************************************************
  * Function     : select_init

@@ -4,8 +4,8 @@
 #include <assert.h>
 #include "portability.h"
 #include "soar_module.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "print.h"
 #include "soar_interface.h"
 #include "decide.h"

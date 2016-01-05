@@ -47,20 +47,20 @@
 #include "print.h"
 #include "init_soar.h"
 
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "decide.h"
 #include "production.h"
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 
-#include "wma.h"
+#include "working_memory_activation.h"
 
 #include <ctype.h>
 
 #include <assert.h>
-#include <io_link.h>
+#include "io_link.h"
 
 using namespace soar_TraceNames;
 

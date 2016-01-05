@@ -36,7 +36,7 @@
 #ifndef WMEM_H
 #define WMEM_H
 
-#include <soar_representation/production.h>
+#include "production.h"
 
 #include "enums.h"
 #include "soar_module.h"

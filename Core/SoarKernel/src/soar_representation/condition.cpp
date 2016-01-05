@@ -1,6 +1,6 @@
-#include <soar_representation/agent.h>
-#include <soar_representation/condition.h>
-#include <soar_representation/test.h>
+#include "agent.h"
+#include "condition.h"
+#include "test.h"
 #include "portability.h"
 
 /*************************************************************************

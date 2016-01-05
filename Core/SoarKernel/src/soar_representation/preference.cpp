@@ -1,9 +1,9 @@
-#include <soar_representation/agent.h>
-#include <soar_representation/instantiation.h>
-#include <soar_representation/preference.h>
-#include <soar_representation/rhs.h>
-#include <soar_representation/symbol.h>
-#include <soar_representation/working_memory.h>
+#include "agent.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "rhs.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "portability.h"
 
 /*************************************************************************
@@ -19,8 +19,8 @@
 #include "mem.h"
 #include "kernel.h"
 #include "debug.h"
-#include "recmem.h"
-#include "tempmem.h"
+#include "instantiation.h"
+#include "slot.h"
 #include "decide.h"
 #include "print.h"
 

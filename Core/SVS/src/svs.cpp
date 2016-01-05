@@ -18,7 +18,7 @@
 #include "command_table.h"
 #include "drawer.h"
 
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 

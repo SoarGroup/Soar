@@ -31,13 +31,13 @@
 #include "agent.h"
 #include "print.h"
 #include "decide.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "production.h"
 #include "init_soar.h"
 #include "rete.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "xml.h"
-#include "prefmem.h"
+#include "preference.h"
 
 void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
 {
