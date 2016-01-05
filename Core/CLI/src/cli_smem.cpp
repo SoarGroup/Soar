@@ -7,18 +7,27 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "portability.h"
-
-#include "cli_CommandLineInterface.h"
-
-#include "cli_Commands.h"
-
-#include "sml_Names.h"
-#include "sml_AgentSML.h"
-
-#include "semantic_memory.h"
-#include "agent.h"
-#include "misc.h"
+#include <cli_Cli.h>
+#include <cli_CommandLineInterface.h>
+#include <enums.h>
+#include <episodic_memory.h>
+#include <kernel.h>
+#include <lexer.h>
+#include <misc.h>
+#include <semantic_memory.h>
+#include <sml_AgentSML.h>
+#include <soar_db.h>
+#include <soar_module.h>
+#include <string.h>
+//#include "agent.h"
+//#include "cli_Commands.h"
+//#include "portability.h"
+//#include "sml_Names.h"
+#include <bitset>
+#include <iosfwd>
+#include <ostream>
+#include <sstream>
+#include <string>
 
 using namespace cli;
 using namespace sml;
@@ -327,7 +336,34 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             return SetError("Invalid setting for SMem parameter.");
         }
-
+        if (!(strcmp(pAttr->c_str(), "spreading-baseline") &&
+            strcmp(pAttr->c_str(), "spreading-type") &&
+            strcmp(pAttr->c_str(), "spreading-direction") &&
+            strcmp(pAttr->c_str(), "spreading-normalization") &&
+            strcmp(pAttr->c_str(), "spreading-depth-limit") &&
+            strcmp(pAttr->c_str(), "spreading-limit") &&
+            strcmp(pAttr->c_str(), "spreading-time") &&
+            strcmp(pAttr->c_str(), "spreading-model") &&
+            strcmp(pAttr->c_str(), "spreading-traversal") &&
+            strcmp(pAttr->c_str(), "spreading-loop-avoidance") &&
+            strcmp(pAttr->c_str(), "number-trajectories") &&
+            strcmp(pAttr->c_str(), "continue-probability")) && thisAgent->smem_params->spreading->get_value() == on)
+        {
+            return SetError("Some spreading activation parameters cannot be changed once spreading activation has been turned on.");
+        }
+        if (!strcmp(pAttr->c_str(), "spreading-crawl-time") && !strcmp(pVal->c_str(), "precalculate"))
+        {
+            if (thisAgent->smem_params->spreading->get_value() == on)
+            {
+                thisAgent->smem_params->spreading_crawl_time->set_value(smem_param_container::on_demand);
+                return SetError("Spreading-crawl-time should not be changed to precalculate if spreading is already on.");
+            }
+            else
+            {
+                PrintCLIMessage("If spreading is turned on while precalculate is on,\n"
+                        "a large batch calculation for spreading activation will occur.");
+            }
+        }
         smem_param_container::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
         bool result = my_param->set_string(pVal->c_str());
 
@@ -368,22 +404,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     }
                 }
             }
-            if (!(strcmp(pAttr->c_str(), "spreading-baseline") &&
-                strcmp(pAttr->c_str(), "spreading-type") &&
-                strcmp(pAttr->c_str(), "spreading-direction") &&
-                strcmp(pAttr->c_str(), "spreading-normalization") &&
-                strcmp(pAttr->c_str(), "spreading-depth-limit") &&
-                strcmp(pAttr->c_str(), "spreading-limit") &&
-                strcmp(pAttr->c_str(), "spreading-time") &&
-                strcmp(pAttr->c_str(), "spreading-crawl-time") &&
-                strcmp(pAttr->c_str(), "spreading-model") &&
-                strcmp(pAttr->c_str(), "spreading-traversal") &&
-                strcmp(pAttr->c_str(), "spreading-loop-avoidance") &&
-                strcmp(pAttr->c_str(), "number-trajectories") &&
-                strcmp(pAttr->c_str(), "continue-probability")) && thisAgent->smem_params->spreading->get_value() == on)
-            {
-                return SetError("Spreading activation parameters cannot be changes once spreading activation has been turned on..");
-            }
             if (!strcmp(pAttr->c_str(), "spreading"))
             {
                 if (thisAgent->smem_params->spreading->get_value() == on)
@@ -412,7 +432,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 }
                 else
                 {
-                    return SetError("Spreading activation has undefined behavior when turned off.");
+                    return SetError("Spreading activation has undefined behavior when turned off.\n"
+                            "If you wish to reset spreading activation,\n"
+                            "type 'smem --reset spreading-activation'. Then, you can then change\n"
+                            "the spreading activation parameters and turn it back on afterwards.");
                 }
             }
         }
