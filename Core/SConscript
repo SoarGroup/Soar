@@ -51,21 +51,27 @@ else:
 	scu = 1
 
 srcs = [
-	# SCU source                        Non-SCU source
+	# SCU source                        NO_SCU source
 	('shared/shared.cxx',               Glob('shared/*.cpp')),            		# shared
-	('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*/*.cpp')),    	# Kernel
 	('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']), 		# sqlite
-# 	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     		# KernelSML
-# 	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     		# ClientSML
-# 	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), 		# ConnectionSML
-# 	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    		# ElementXML
-	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
-	('KernelSML/KernelSML.cxx',         ['KernelSML/KernelSML.cxx']),     		# KernelSML
-	('ClientSML/ClientSML.cxx',         ['ClientSML/ClientSML.cxx']),     		# ClientSML
-	('ConnectionSML/ConnectionSML.cxx', ['ConnectionSML/ConnectionSML.cxx']), 	# ConnectionSML
-	('ElementXML/ElementXML.cxx',       ['ElementXML/ElementXML.cxx']),    		# ElementXML
-# 	('CLI/CommandLineInterface.cxx',    ['CLI/CommandLineInterface.cxx']), 		# CLI
+	('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),     		# KernelSML
+	('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),     		# ClientSML
+	('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')), 		# ConnectionSML
+	('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),    		# ElementXML
+# 	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
 ]
+
+print 'srcs start: ', srcs
+if env['NO_SCU_KERNEL']:
+	srcs.append([Glob('SoarKernel/src/*/*.cpp'),	Glob('SoarKernel/src/*/*.cpp')])
+else:
+	srcs.append(['SoarKernel/SoarKernel.cxx',		Glob('SoarKernel/src/*/*.cpp')])
+if env['NO_SCU_CLI']:
+	srcs.append([Glob('CLI/src/*.cpp'),				Glob('CLI/src/*.cpp')])
+else:
+	srcs.append(['CLI/CommandLineInterface.cxx',	Glob('CLI/src/*.cpp')])
+print 'srcs end: ', srcs
+	
 
 # print 'Soar compiler settings'
 # print 'CXXFlags ', kernel_env.Dump('CXXFLAGS')

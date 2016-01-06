@@ -12,7 +12,7 @@ scu_src = ['Prototype-UnitTesting.cxx']
 # scu_src = [env.File('Prototype-UnitTesting.cxx')]
 
 clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('kernel/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
-clone.Append(LINKFLAGS = ['-v'])
+# clone.Append(LINKFLAGS = ['-v'])
 
 srcdirs = ['kernel/*', 'kernel', 'SoarHelpers', 'TestHarness']
 src = []
