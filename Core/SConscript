@@ -61,7 +61,6 @@ srcs = [
 # 	('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),           		# CLI
 ]
 
-print 'srcs start: ', srcs
 if env['NO_SCU_KERNEL']:
 	srcs.append([Glob('SoarKernel/src/*/*.cpp'),	Glob('SoarKernel/src/*/*.cpp')])
 else:
@@ -70,7 +69,6 @@ if env['NO_SCU_CLI']:
 	srcs.append([Glob('CLI/src/*.cpp'),				Glob('CLI/src/*.cpp')])
 else:
 	srcs.append(['CLI/CommandLineInterface.cxx',	Glob('CLI/src/*.cpp')])
-print 'srcs end: ', srcs
 	
 
 # print 'Soar compiler settings'

@@ -166,6 +166,8 @@ class Explanation_Logger
         friend class condition_record;
 
     public:
+        bool                    get_enabled() { return enabled; }
+        void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
 
         void                    re_init();
         void                    clear_explanations();
@@ -217,6 +219,7 @@ class Explanation_Logger
         agent*                  thisAgent;
         Output_Manager*         outputManager;
 
+        bool                    enabled;
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;

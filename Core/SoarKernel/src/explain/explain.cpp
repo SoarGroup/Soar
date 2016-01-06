@@ -16,6 +16,8 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     outputManager = &Output_Manager::Get_OM();
 
     initialize_counters();
+//    enabled = false;
+    enabled = true;
 
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();

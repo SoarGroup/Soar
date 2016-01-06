@@ -9,7 +9,25 @@
 #include "output_manager.h"
 
 void Explanation_Logger::explain_chunking_summary() {
-    outputManager->printa_sf(thisAgent, "%fEBC Explainer Summary\n\n");
+    outputManager->printa_sf(thisAgent, "Watch all chunk formations                 %s\n", (enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Watching specific chunk formations         %s\n", (enabled ? "Yes" : "No"));
+
+    outputManager->printa_sf(thisAgent, "\nRules watched (%u):\n\n", thisAgent->ebChunker->get_chunk_count());
+
+    outputManager->printa_sf(thisAgent, "\nCurrent chunk being discussed              %s ",
+        (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
+    if (current_discussed_chunk)
+    {
+        outputManager->printa_sf(thisAgent, "(c%u)", current_discussed_chunk->chunkID);
+    }
+
+    outputManager->printa_sf(thisAgent, "\n\nChunks available for discussion (%u):\n", thisAgent->ebChunker->get_chunk_count());
+    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    {
+        outputManager->printa_sf(thisAgent, "   Chunk %u:  %y\n", it->second->chunkID, it->first);
+    }
+
+    outputManager->printa_sf(thisAgent, "\nType 'explain [chunk-name]' to discuss the formation of that chunk.\n");
 }
 
 void Explanation_Logger::explain_stats() {
