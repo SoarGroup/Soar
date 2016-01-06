@@ -123,6 +123,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     timers->add_mapping(soar_module::timer::one, "one");
     timers->add_mapping(soar_module::timer::two, "two");
     timers->add_mapping(soar_module::timer::three, "three");
+    timers->add_mapping(soar_module::timer::four, "four");
     add(timers);
     
     // page_size
@@ -469,57 +470,57 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     //These timers are meant to give more fine-grained details on exactly what is slow.
     spontaneous_retrieval = new smem_timer("spontaneous_retrieval", thisAgent, soar_module::timer::three);
     add(spontaneous_retrieval);
-    spontaneous_retrieval_1 = new smem_timer("spontaneous_retrieval_1", thisAgent, soar_module::timer::three);
+    spontaneous_retrieval_1 = new smem_timer("spontaneous_retrieval_1", thisAgent, soar_module::timer::four);
     add(spontaneous_retrieval_1);
-    spontaneous_retrieval_2 = new smem_timer("spontaneous_retrieval_2", thisAgent, soar_module::timer::three);
+    spontaneous_retrieval_2 = new smem_timer("spontaneous_retrieval_2", thisAgent, soar_module::timer::four);
     add(spontaneous_retrieval_2);
 
     //Extra and temporary timers for testing spreading activation efficiency
-    spreading_fix_1 = new smem_timer("spreading_fix_1", thisAgent, soar_module::timer::three);
+    spreading_fix_1 = new smem_timer("spreading_fix_1", thisAgent, soar_module::timer::four);
     add(spreading_fix_1);
-    spreading_fix_1_1 = new smem_timer("spreading_fix_1_1", thisAgent, soar_module::timer::three);
+    spreading_fix_1_1 = new smem_timer("spreading_fix_1_1", thisAgent, soar_module::timer::four);
     add(spreading_fix_1_1);
-    spreading_fix_1_1_1 = new smem_timer("spreading_fix_1_1_1", thisAgent, soar_module::timer::three);
+    spreading_fix_1_1_1 = new smem_timer("spreading_fix_1_1_1", thisAgent, soar_module::timer::four);
     add(spreading_fix_1_1_1);
-    spreading_fix_1_1_2 = new smem_timer("spreading_fix_1_1_2", thisAgent, soar_module::timer::three);
+    spreading_fix_1_1_2 = new smem_timer("spreading_fix_1_1_2", thisAgent, soar_module::timer::four);
     add(spreading_fix_1_1_2);
-    spreading_fix_1_2 = new smem_timer("spreading_fix_1_2", thisAgent, soar_module::timer::three);
+    spreading_fix_1_2 = new smem_timer("spreading_fix_1_2", thisAgent, soar_module::timer::four);
     add(spreading_fix_1_2);
 
-    spreading_fix_2 = new smem_timer("spreading_fix_2", thisAgent, soar_module::timer::three);
+    spreading_fix_2 = new smem_timer("spreading_fix_2", thisAgent, soar_module::timer::four);
     add(spreading_fix_2);
 
-    spreading_calc_1 = new smem_timer("spreading_calc_1", thisAgent, soar_module::timer::three);
+    spreading_calc_1 = new smem_timer("spreading_calc_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_1);
 
-    spreading_calc_2 = new smem_timer("spreading_calc_2", thisAgent, soar_module::timer::three);
+    spreading_calc_2 = new smem_timer("spreading_calc_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2);
-    spreading_calc_2_1 = new smem_timer("spreading_calc_2_1", thisAgent, soar_module::timer::three);
+    spreading_calc_2_1 = new smem_timer("spreading_calc_2_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_1);
-    spreading_calc_2_2 = new smem_timer("spreading_calc_2_2", thisAgent, soar_module::timer::three);
+    spreading_calc_2_2 = new smem_timer("spreading_calc_2_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2);
-    spreading_calc_2_2_1 = new smem_timer("spreading_calc_2_2_1", thisAgent, soar_module::timer::three);
+    spreading_calc_2_2_1 = new smem_timer("spreading_calc_2_2_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_1);
-    spreading_calc_2_2_2 = new smem_timer("spreading_calc_2_2_2", thisAgent, soar_module::timer::three);
+    spreading_calc_2_2_2 = new smem_timer("spreading_calc_2_2_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_2);
-    spreading_calc_2_2_3 = new smem_timer("spreading_calc_2_2_3", thisAgent, soar_module::timer::three);
+    spreading_calc_2_2_3 = new smem_timer("spreading_calc_2_2_3", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_3);
 
-    spreading_store_1 = new smem_timer("spreading_store_1", thisAgent, soar_module::timer::three);
+    spreading_store_1 = new smem_timer("spreading_store_1", thisAgent, soar_module::timer::four);
     add(spreading_store_1);
-    spreading_store_2 = new smem_timer("spreading_store_2", thisAgent, soar_module::timer::three);
+    spreading_store_2 = new smem_timer("spreading_store_2", thisAgent, soar_module::timer::four);
     add(spreading_store_2);
-    spreading_store_3 = new smem_timer("spreading_store_3", thisAgent, soar_module::timer::three);
+    spreading_store_3 = new smem_timer("spreading_store_3", thisAgent, soar_module::timer::four);
     add(spreading_store_3);
-    spreading_store_3_1 = new smem_timer("spreading_store_3_1", thisAgent, soar_module::timer::three);
+    spreading_store_3_1 = new smem_timer("spreading_store_3_1", thisAgent, soar_module::timer::four);
     add(spreading_store_3_1);
-    spreading_store_3_2 = new smem_timer("spreading_store_3_2", thisAgent, soar_module::timer::three);
+    spreading_store_3_2 = new smem_timer("spreading_store_3_2", thisAgent, soar_module::timer::four);
     add(spreading_store_3_2);
-    spreading_store_3_2_1 = new smem_timer("spreading_store_3_2_1", thisAgent, soar_module::timer::three);
+    spreading_store_3_2_1 = new smem_timer("spreading_store_3_2_1", thisAgent, soar_module::timer::four);
     add(spreading_store_3_2_1);
-    spreading_store_3_2_2 = new smem_timer("spreading_store_3_2_2", thisAgent, soar_module::timer::three);
+    spreading_store_3_2_2 = new smem_timer("spreading_store_3_2_2", thisAgent, soar_module::timer::four);
     add(spreading_store_3_2_2);
-    spreading_store_4 = new smem_timer("spreading_store_4", thisAgent, soar_module::timer::three);
+    spreading_store_4 = new smem_timer("spreading_store_4", thisAgent, soar_module::timer::four);
     add(spreading_store_4);
 }
 

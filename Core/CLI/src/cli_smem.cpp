@@ -353,12 +353,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         if (!strcmp(pAttr->c_str(), "spreading-crawl-time") && !strcmp(pVal->c_str(), "precalculate"))
         {
-            if (thisAgent->smem_params->spreading->get_value() == on)
-            {
-                thisAgent->smem_params->spreading_crawl_time->set_value(smem_param_container::on_demand);
-                return SetError("Spreading-crawl-time should not be changed to precalculate if spreading is already on.");
-            }
-            else
+            if (thisAgent->smem_params->spreading->get_value() != on)
             {
                 PrintCLIMessage("If spreading is turned on while precalculate is on,\n"
                         "a large batch calculation for spreading activation will occur.");
