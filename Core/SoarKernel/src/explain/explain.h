@@ -197,16 +197,18 @@ class Explanation_Logger
         void increment_stat_constraints_attached() { stats.constraints_attached++; };
         void increment_stat_constraints_collected() { stats.constraints_collected++; };
 
-        void explain_chunking_summary();
-        void explain_stats();
-        void print_chunk_list();
-        bool explain_rule(const std::string* pStringParameter);
-        bool explain_item(const std::string* pStringParameter, const std::string* pStringParameter2);
         bool current_discussed_chunk_exists();
-        void explain_instantiation();
-        void explain_dependency_analysis();
-        void explain_identity_sets();
-        void explain_constraints_enforced();
+        bool watch_rule(const std::string* pStringParameter);
+        bool explain_chunk(const std::string* pStringParameter);
+        bool explain_item(const std::string* pStringParameter, const std::string* pStringParameter2);
+        void explain_summary();
+        void explain_stats();
+        void explain_chunk_stats();
+        void print_all_watched_rules();
+        void print_all_chunks();
+        void print_dependency_analysis();
+        void print_identity_set_explanation();
+        void print_constraints_enforced();
 
         void should_explain_rule(bool pEnable);
         void should_explain_all(bool pEnable);
@@ -224,12 +226,20 @@ class Explanation_Logger
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
 
-
         void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
         action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
         condition_record*       add_condition(condition* pCond);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
+
+        void                    print_chunk_explanation();
+        void                    print_condition_explanation(uint64_t pCondID);
+        void                    print_instantiation_explanation(uint64_t pInstID);
+
+        void                    print_chunk_list(short pNumToPrint = 0);
+        void                    print_rules_watched(short pNumToPrint = 0);
+        bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
+        bool                    toggle_production_watch(production* pProduction);
 
         /* ID Counters */
         uint64_t            condition_id_count;

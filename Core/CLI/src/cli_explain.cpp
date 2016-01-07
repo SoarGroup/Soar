@@ -36,44 +36,18 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     bool lReturn_Value = false;
 
+    /* Handle options that enable/disable recording of chunk formation */
     if (options.test(EXPLAIN_ALL))
     {
-        thisAgent->explanationLogger->should_explain_all(true);
-        print(thisAgent, "Will monitoring all chunks created.\n");
+        thisAgent->explanationLogger->set_enabled(true);
+        print(thisAgent, "Will monitor all chunks created.\n");
         return true;
     }
-
-    if (options.test(EXPLAIN_SPECIFIC))
+    if (options.test(EXPLAIN_ONLY_SPECIFIC))
     {
-        thisAgent->explanationLogger->should_explain_all(false);
+        thisAgent->explanationLogger->set_enabled(false);
         print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
         return true;
-    }
-
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS)))
-    {
-        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]'.");
-        return false;
-    }
-
-    if (options.test(EXPLAIN_BACKTRACE))
-    {
-            PrintCLIMessage_Header("Dependency Analysis", 40);
-            thisAgent->explanationLogger->explain_dependency_analysis();
-    }
-    if (options.test(EXPLAIN_CONSTRAINTS))
-    {
-            PrintCLIMessage_Header("Constraints enforced during problem-solving", 40);
-            thisAgent->explanationLogger->explain_constraints_enforced();
-    }
-    if (options.test(EXPLAIN_IDENTITY_SETS))
-    {
-            PrintCLIMessage_Header("Identity set assignments", 40);
-            thisAgent->explanationLogger->explain_identity_sets();
-    }
-    if (options.test(EXPLAIN_STATS))
-    {
-            thisAgent->explanationLogger->explain_stats();
     }
     if (options.test(EXPLAIN_TIME))
     {
@@ -81,28 +55,76 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
             return true;
     }
 
+    /* Handle options that required a currently discussed chunk/justification */
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS)))
+    {
+        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]'.");
+        return false;
+    }
+    else
+    {
+        if (options.test(EXPLAIN_BACKTRACE))
+        {
+            thisAgent->explanationLogger->print_dependency_analysis();
+        }
+        if (options.test(EXPLAIN_CONSTRAINTS))
+        {
+            thisAgent->explanationLogger->print_constraints_enforced();
+        }
+        if (options.test(EXPLAIN_IDENTITY_SETS))
+        {
+            thisAgent->explanationLogger->print_identity_set_explanation();
+        }
+        if (options.test(EXPLAIN_STATS))
+        {
+            thisAgent->explanationLogger->explain_chunk_stats();
+        }
+    }
+
+    /* Handle global stats command*/
+    if (options.test(EXPLAIN_GLOBAL_STATS))
+    {
+        thisAgent->explanationLogger->explain_stats();
+        return true;
+    }
+
+    /* Handle global stats command*/
+    if (options.test(EXPLAIN_LIST_ALL))
+    {
+        thisAgent->explanationLogger->print_all_chunks();
+        return true;
+    }
+
+    /* Handle global stats command*/
+    if (options.test(EXPLAIN_WATCH))
+    {
+        if (pStringParameter->empty())
+        {
+            thisAgent->explanationLogger->print_all_watched_rules();
+        } else {
+            return thisAgent->explanationLogger->watch_rule(pStringParameter);
+        }
+    }
+
+    /* Handle non-option explain commands for rules and Soar data structures */
     if (!options.any())
     {
         if (pStringParameter->empty())
         {
-            thisAgent->explanationLogger->explain_chunking_summary();
+            thisAgent->explanationLogger->explain_summary();
             return true;
         } else if (pStringParameter2->empty()) {
-            print(thisAgent, "Attempting to explain chunk/rule.\n");
-            return thisAgent->explanationLogger->explain_rule(pStringParameter);
+            return thisAgent->explanationLogger->explain_chunk(pStringParameter);
         } else {
-            print(thisAgent, "Attempting to explain condition/instantiation.\n");
             return thisAgent->explanationLogger->explain_item(pStringParameter, pStringParameter2);
         }
     } else {
-        if (pStringParameter->empty())
+        if (!pStringParameter->empty())
         {
-            /* One of the -- options above was executed */
-            return true;
-        } else {
             print(thisAgent, "Those options cannot take additional arguments.  Ignoring.\n");
-            return true;
+            return false;
         }
     }
+    return false;
 }
 

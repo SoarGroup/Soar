@@ -750,29 +750,29 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         options.set(PRINT_TEMPLATE);
     }
 
-    if (options.test(PRINT_CHUNKS))
-    {
-        print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
-    }
     if (options.test(PRINT_DEFAULTS))
     {
         print_productions_of_type(thisAgent, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
-    }
-    if (options.test(PRINT_JUSTIFICATIONS))
-    {
-        print_productions_of_type(thisAgent, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
     }
     if (options.test(PRINT_USER))
     {
         print_productions_of_type(thisAgent, intern, filename, full, USER_PRODUCTION_TYPE);
     }
+    if (options.test(PRINT_TEMPLATE))
+    {
+        print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+    }
     if (options.test(PRINT_RL))
     {
         print_rl_rules(thisAgent, intern, filename, full);
     }
-    if (options.test(PRINT_TEMPLATE))
+    if (options.test(PRINT_JUSTIFICATIONS))
     {
-        print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+    }
+    if (options.test(PRINT_CHUNKS))
+    {
+        print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
     }
 
     return true;

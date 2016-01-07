@@ -90,20 +90,21 @@ typedef struct production_struct
 {
     Symbol* name;
     char* original_rule_name;
-    char* documentation;        /* pointer to memory block, or NIL */
-    char* filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
+    char* documentation;                            /* pointer to memory block, or NIL */
+    char* filename;                                 /* name of source file, or NIL. */
     uint64_t reference_count;
-    uint64_t firing_count;             /* how many times it's fired */
-    struct production_struct* next, *prev;  /* used for dll */
+    uint64_t firing_count;
+    struct production_struct* next, *prev;
     byte type;
     byte declared_support;
-    bool trace_firings;                     /* used by pwatch */
-    struct rete_node_struct* p_node;        /* NIL if it's not in the rete */
-    action* action_list;                    /* RHS actions */
-    ::list* rhs_unbound_variables;            /* RHS vars not bound on LHS */
-    struct instantiation_struct* instantiations; /* dll of inst's in MS */
-    int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
-    byte interrupt;                         /* SW: 7.31.03 */
+    bool trace_firings;                             /* used by pwatch */
+    struct rete_node_struct* p_node;                /* NIL if it's not in the rete */
+    action* action_list;                            /* RHS actions */
+    ::list* rhs_unbound_variables;                  /* RHS vars not bound on LHS */
+    struct instantiation_struct* instantiations;    /* dll of inst's in MS */
+    int OPERAND_which_assert_list;
+    byte interrupt;
+    bool explain_its_chunks;
 
     struct
     {

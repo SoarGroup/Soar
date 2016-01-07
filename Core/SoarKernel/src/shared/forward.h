@@ -22,6 +22,7 @@ typedef struct instantiation_struct instantiation;
 typedef struct ms_change_struct ms_change;
 typedef struct node_varnames_struct node_varnames;
 typedef struct preference_struct preference;
+typedef struct production_struct production;
 typedef struct rete_node_struct rete_node;
 typedef struct slot_struct slot;
 typedef struct symbol_struct Symbol;

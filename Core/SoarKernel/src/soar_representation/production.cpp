@@ -583,6 +583,7 @@ production* make_production(agent* thisAgent,
     p->rhs_unbound_variables = NIL; /* the Rete fills this in */
     p->instantiations = NIL;
     p->interrupt = false;
+    p->explain_its_chunks = false;
 
     // Soar-RL stuff
     p->rl_update_count = 0.0;

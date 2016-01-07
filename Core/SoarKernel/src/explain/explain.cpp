@@ -6,6 +6,7 @@
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
+#include "Symbol.h"
 #include "output_manager.h"
 #include "working_memory.h"
 
@@ -412,4 +413,78 @@ action_record* instantiation_record::find_rhs_action(preference* pPref)
             dprint(DT_EXPLAIN, "      %p\n", (*iter)->original_pref);
     }
     return NULL;
+}
+
+bool Explanation_Logger::toggle_production_watch(production* pProduction)
+{
+    if (pProduction->explain_its_chunks)
+    {
+        pProduction->explain_its_chunks = false;
+        outputManager->printa_sf(thisAgent, "Will no longer watch any chunks formed by rule %y.\n", pProduction->name);
+    } else {
+        pProduction->explain_its_chunks = true;
+        outputManager->printa_sf(thisAgent, "Now watching any chunks formed by rule %y.\n", pProduction->name);
+    }
+    return true;
+}
+
+bool Explanation_Logger::watch_rule(const std::string* pStringParameter)
+{
+    Symbol* sym;
+
+    sym = find_str_constant(thisAgent, pStringParameter->c_str());
+    if (sym && (sym->sc->production))
+    {
+        toggle_production_watch(sym->sc->production);
+        return true;
+    }
+
+    outputManager->printa_sf(thisAgent, "Could not find a rule named %s to watch.\nType 'print' to see a list of all rules.\n", pStringParameter->c_str());
+    return false;
+}
+
+bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
+{
+    Symbol* sym;
+
+    sym = find_str_constant(thisAgent, pStringParameter->c_str());
+    if (sym && sym->sc->production)
+    {
+        /* Print chunk record if we can find it */
+        chunk_record* lFoundChunk = get_chunk_record(sym);
+        if (lFoundChunk)
+        {
+            current_discussed_chunk = lFoundChunk;
+            print_chunk_explanation();
+            return true;
+        }
+
+        outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+        return false;
+    }
+
+    /* String has never been seen by Soar or is not a rule name */
+    outputManager->printa_sf(thisAgent, "Could not find a chunk named %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+    return false;
+
+}
+
+bool Explanation_Logger::explain_item(const std::string* pStringParameter, const std::string* pStringParameter2)
+{
+    return false;
+}
+
+
+bool Explanation_Logger::current_discussed_chunk_exists()
+{
+    return current_discussed_chunk;
+}
+
+
+void Explanation_Logger::should_explain_rule(bool pEnable)
+{
+}
+
+void Explanation_Logger::should_explain_all(bool pEnable)
+{
 }
