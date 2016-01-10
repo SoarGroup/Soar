@@ -118,7 +118,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pCopyShallow)
 {
     condition* New;
 
@@ -129,12 +129,17 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
     init_condition(New);
     New->type = cond->type;
-    New->counterpart = cond->counterpart;
-
+    if (!pCopyShallow)
+    {
+        New->counterpart = cond->counterpart;
+    }
     switch (cond->type)
     {
         case POSITIVE_CONDITION:
-            New->bt = cond->bt;
+            if (!pCopyShallow)
+            {
+                New->bt = cond->bt;
+            }
         /* ... and fall through to next case */
         case NEGATIVE_CONDITION:
             New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
@@ -144,7 +149,7 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts);
+                                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, pCopyShallow);
             break;
     }
     return New;
@@ -160,14 +165,14 @@ void copy_condition_list(agent* thisAgent,
                          condition** dest_top,
                          condition** dest_bottom,
                          bool pUnify_variablization_identity,
-                         bool pStripLiteralConjuncts)
+                         bool pStripLiteralConjuncts, bool pCopyShallow)
 {
     condition* New, *prev;
 
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pCopyShallow);
         if (prev)
         {
             prev->next = New;

@@ -43,8 +43,8 @@ namespace soar_module
 
 class Output_Manager;
 
-class action_record {
-
+class action_record
+{
         friend class Explanation_Logger;
 
     public:
@@ -60,14 +60,17 @@ class action_record {
         uint64_t       actionID;
 } ;
 
-class condition_record{
+class instantiation_record;
 
+class condition_record
+{
         friend class Explanation_Logger;
 
     public:
         condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
         ~condition_record();
         uint64_t get_conditionID() { return conditionID; };
+        void                        connect_to_action();
 
     private:
         agent* thisAgent;
@@ -75,7 +78,9 @@ class condition_record{
         condition*                  instantiated_cond;
         soar_module::symbol_triple* matched_wme;
         action_record*              parent_action;
-        uint64_t                   conditionID;
+        instantiation_record*       parent_instantiation;
+        preference*                 cached_pref;
+        uint64_t                    conditionID;
 } ;
 
 //#ifdef USE_MEM_POOL_ALLOCATORS
@@ -92,16 +97,17 @@ typedef std::list< condition_record* > condition_record_list;
 typedef std::list< action_record* > action_record_list;
 typedef std::list< uint64_t > id_list;
 
-class instantiation_record {
-
+class instantiation_record
+{
         friend class Explanation_Logger;
 
     public:
         instantiation_record(agent* myAgent, instantiation* pInst);
         ~instantiation_record();
 
-        uint64_t get_instantiationID() { return instantiationID; };
-        action_record* find_rhs_action(preference* pPref);
+        uint64_t                get_instantiationID() { return instantiationID; };
+        void                    record_instantiation_contents(instantiation* pInst);
+        action_record*          find_rhs_action(preference* pPref);
 
     private:
         agent* thisAgent;
@@ -111,15 +117,15 @@ class instantiation_record {
         uint64_t                instantiationID;
 } ;
 
-class chunk_record {
-
+class chunk_record
+{
         friend class Explanation_Logger;
 
     public:
-        chunk_record(agent* myAgent, instantiation* pBaseInstantiation, uint64_t pChunkID);
+        chunk_record(agent* myAgent, uint64_t pChunkID);
         ~chunk_record();
 
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results);
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation);
 
     private:
         agent*                  thisAgent;
@@ -174,10 +180,10 @@ class Explanation_Logger
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
-        chunk_record*           add_chunk_record(instantiation* pbaseInstantiation);
+        chunk_record*           add_chunk_record();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
         void                    cancel_chunk_record();
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results);
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation);
         instantiation_record*   add_instantiation(instantiation* pInst);
 
         void increment_stat_duplicates() { stats.duplicates++; };
@@ -210,9 +216,6 @@ class Explanation_Logger
         void print_identity_set_explanation();
         void print_constraints_enforced();
 
-        void should_explain_rule(bool pEnable);
-        void should_explain_all(bool pEnable);
-
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
 
@@ -228,13 +231,14 @@ class Explanation_Logger
 
         void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
-        action_record*          get_action_for_instantiation(preference* pPref, instantiation* pInst);
         condition_record*       add_condition(condition* pCond);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         void                    print_chunk_explanation();
         void                    print_condition_explanation(uint64_t pCondID);
         void                    print_instantiation_explanation(uint64_t pInstID);
+
+        void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
 
         void                    print_chunk_list(short pNumToPrint = 0);
         void                    print_rules_watched(short pNumToPrint = 0);

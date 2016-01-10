@@ -121,19 +121,17 @@ void Explanation_Logger::re_init()
 
 }
 
-chunk_record* Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
+chunk_record* Explanation_Logger::add_chunk_record()
 {
-    dprint(DT_EXPLAIN, "Adding chunk record for %y (i%u)\n", (pBaseInstantiation->prod ? pBaseInstantiation->prod->name : thisAgent->fake_instantiation_symbol), pBaseInstantiation->i_id);
-    chunk_record* lChunkRecord = new chunk_record(thisAgent, pBaseInstantiation, chunk_id_count++);
+    chunk_record* lChunkRecord = new chunk_record(thisAgent, chunk_id_count++);
 
     current_recording_chunk = lChunkRecord;
-
     total_recorded.chunks++;
 
     return lChunkRecord;
 }
 
-void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results)
+void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation)
 {
     name = pName;
     symbol_add_ref(thisAgent, name);
@@ -141,6 +139,7 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
     conditions         = new condition_record_list;
     actions            = new action_record_list;
 
+    dprint(DT_EXPLAIN, "Recording conditions...\n");
     /* Create condition and action records */
     condition_record* new_cond_record;
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
@@ -149,7 +148,7 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
         conditions->push_front(new_cond_record);
     }
 
-    dprint(DT_EXPLAIN, "   -->\n");
+    dprint(DT_EXPLAIN, "Recording actions...\n");
 
     action_record* new_action_record;
     preference* pref;
@@ -159,13 +158,26 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
         new_action_record = thisAgent->explanationLogger->add_result(pref, lAction);
         actions->push_front(new_action_record);
     }
+
+    dprint(DT_EXPLAIN, "Recording base instantiation...\n");
+    /* Might be needed in the case when none of the base instantiation conditions are in the chunk */
+    baseInstantiation = thisAgent->explanationLogger->add_instantiation(pBaseInstantiation);
+
+    dprint(DT_EXPLAIN, "Connecting conditions...\n");
+    /* Now that instantiations in backtrace are guaranteed to be recorded, connect
+     * each condition to the appropriate parent instantiation action record */
+    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+    {
+        (*it)->connect_to_action();
+    }
+
 }
 
-void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results)
+void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation)
 {
-    dprint(DT_EXPLAIN, "Recording chunk/justification contents for %s c%u\n", pName, current_recording_chunk->chunkID);
+    dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
 
-    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results);
+    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation);
     (*chunks)[pName] = current_recording_chunk;
     symbol_add_ref(thisAgent, pName);
 }
@@ -183,22 +195,40 @@ condition_record* Explanation_Logger::add_condition(condition* pCond)
 
 instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst)
 {
-    instantiation_record* lInstRecord;
-    lInstRecord = get_instantiation(pInst);
-    if (lInstRecord)
+    if (pInst->explain_status == explain_unrecorded)
     {
-        dprint(DT_EXPLAIN, "Found existing instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-        total_recorded.instantiations_referenced++;
-        return lInstRecord;
+        if (pInst->backtrace_number == backtrace_number)
+        {
+            /* Should not already be recorded */
+            assert(!get_instantiation(pInst));
+
+            /* Set status flag to recording to handle recursive addition */
+            pInst->explain_status = explain_recording;
+            instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
+            (*instantiations)[pInst->i_id] = lInstRecord;
+            lInstRecord->record_instantiation_contents(pInst);
+            total_recorded.instantiations++;
+            pInst->explain_status = explain_recorded;
+
+            dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+            return lInstRecord;
+        } else {
+            /* Instantiations have their backtrace_number marked as the dependency analysis
+             * is performed, so we can use that to determine if this instantiation needs to
+             * be added. */
+            dprint(DT_EXPLAIN, "Backtrace number does not match (%d != %d).  Did not create instantiation record for %y (i%u).\n",
+                pInst->backtrace_number, backtrace_number, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+            return NULL;
+        }
+    } else if (pInst->explain_status == explain_recording) {
+        dprint(DT_EXPLAIN, "Currently recording instantiation record for %y (i%u) in a parent call.  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+    } else if (pInst->explain_status == explain_recorded) {
+        dprint(DT_EXPLAIN, "Already recorded instantiation record for %y (i%u).  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+    } else if (pInst->explain_status == explain_connected) {
+        dprint(DT_EXPLAIN, "Already recorded and connected instantiation record for %y (i%u).  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
     }
-
-    dprint(DT_EXPLAIN, "Adding new instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-    lInstRecord = new instantiation_record(thisAgent, pInst);
-    (*instantiations)[pInst->i_id] = lInstRecord;
-
-    dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-    total_recorded.instantiations++;
-    return lInstRecord;
+    total_recorded.instantiations_skipped++;
+    return get_instantiation(pInst);
 }
 
 action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
@@ -246,26 +276,6 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
     dprint(DT_EXPLAIN, "...not found..\n");
     return NULL;
 }
-action_record* Explanation_Logger::get_action_for_instantiation(preference* pPref, instantiation* pInst)
-{
-    assert(pInst); // Just to see if this can happen normally.
-    if (!pInst) return NULL;
-
-    /* Instantiations backtrace_number are marked as dependency analysis is performed, so
-     * we can use that to determine if this instantiation needs to be added. */
-    if (pInst->backtrace_number != backtrace_number)
-    {
-        total_recorded.instantiations_skipped++;
-        return NULL;
-    }
-
-    /* Find instantiation record */
-    instantiation_record* lInstRecord = add_instantiation(pInst);
-
-    /* Find action record that matches this preference */
-    assert(lInstRecord);
-    return 0;
-}
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
@@ -287,15 +297,15 @@ action_record::~action_record()
 //    deallocate_action_list(thisAgent, variablized_action);
 }
 
-chunk_record::chunk_record(agent* myAgent, instantiation* pBaseInstantiation, uint64_t pChunkID)
+chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {
     thisAgent           = myAgent;
     name                = NULL;
     conditions          = new condition_record_list;
     actions             = new action_record_list;
     chunkID             = pChunkID;
-    baseInstantiation   = thisAgent->explanationLogger->add_instantiation(pBaseInstantiation);
-    dprint(DT_EXPLAIN, "Created chunk record c%u\n", chunkID);
+    baseInstantiation   = NULL;
+    dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 
 chunk_record::~chunk_record()
@@ -309,19 +319,27 @@ chunk_record::~chunk_record()
     delete actions;
 }
 
+void condition_record::connect_to_action()
+{
+    if (parent_instantiation)
+    {
+        assert(cached_pref);
+        parent_action = parent_instantiation->find_rhs_action(cached_pref);
+        assert(parent_action);
+        cached_pref = NULL;
+    }
+}
+
 condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
-    instantiated_cond = copy_condition(thisAgent, pCond, false, false);
-    variablized_cond = copy_condition(thisAgent, pCond, false, false);
+    instantiated_cond = copy_condition(thisAgent, pCond, false, false, true);
+    variablized_cond = copy_condition(thisAgent, pCond, false, false, true);
     //substitute_explanation_variables(variablized_cond);
     if (pCond->bt.wme_)
     {
-        matched_wme = new soar_module::symbol_triple;
-        matched_wme->id = pCond->bt.wme_->id;
-        matched_wme->attr = pCond->bt.wme_->attr;
-        matched_wme->value = pCond->bt.wme_->value;
+        matched_wme = new soar_module::symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
         symbol_add_ref(thisAgent, matched_wme->id);
         symbol_add_ref(thisAgent, matched_wme->attr);
         symbol_add_ref(thisAgent, matched_wme->value);
@@ -330,9 +348,19 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     }
     if (pCond->bt.trace)
     {
-        parent_action = thisAgent->explanationLogger->get_action_for_instantiation(pCond->bt.trace, pCond->bt.trace->inst);
-    } else {
+        parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst);
         parent_action = NULL;
+        /* If this rule was bt through, it will have a parent instantiation recorded.  If so, we
+         * cache the pref to make it easier to connect this condition to the action that created
+         * the preference later. */
+        if (parent_instantiation)
+        {
+            cached_pref = pCond->bt.trace;
+        }
+    } else {
+        parent_instantiation = NULL;
+        parent_action = NULL;
+        cached_pref = NULL;
     }
 }
 
@@ -359,12 +387,29 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     conditions          = new condition_record_list;
     actions             = new action_record_list;
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
+
     if (pInst->prod)
     {
         symbol_add_ref(thisAgent, pInst->prod->name);
     }
 
-    dprint(DT_EXPLAIN, "Created instantiation record c%u\n", pInst->i_id);
+}
+
+instantiation_record::~instantiation_record()
+{
+    dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
+    if (production_name)
+    {
+        symbol_remove_ref(thisAgent, production_name);
+    }
+    delete conditions;
+    delete actions;
+}
+
+void instantiation_record::record_instantiation_contents(instantiation* pInst)
+{
+    dprint(DT_EXPLAIN, "Recording instantiation contents for c%u (%y)\n", pInst->i_id, production_name);
+
     /* Create condition and action records */
     condition_record* new_cond_record;
     for (condition* cond = pInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
@@ -382,18 +427,6 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
         actions->push_front(new_action_record);
     }
 }
-
-instantiation_record::~instantiation_record()
-{
-    dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
-    if (production_name)
-    {
-        symbol_remove_ref(thisAgent, production_name);
-    }
-    delete conditions;
-    delete actions;
-}
-
 action_record* instantiation_record::find_rhs_action(preference* pPref)
 {
     action_record_list::iterator iter;
@@ -478,13 +511,4 @@ bool Explanation_Logger::explain_item(const std::string* pStringParameter, const
 bool Explanation_Logger::current_discussed_chunk_exists()
 {
     return current_discussed_chunk;
-}
-
-
-void Explanation_Logger::should_explain_rule(bool pEnable)
-{
-}
-
-void Explanation_Logger::should_explain_all(bool pEnable)
-{
 }

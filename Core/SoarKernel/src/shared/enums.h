@@ -57,6 +57,19 @@ enum TraceMode
     num_trace_modes
 };
 
+enum EBCTraceType {
+    ebc_chunk,
+    ebc_match,
+    ebc_explanation,
+    ebc_original
+};
+
+enum EBCExplainStatus {
+    explain_unrecorded,
+    explain_recording,
+    explain_recorded,
+    explain_connected
+};
 enum MemoryPoolType
 {
 MP_float_constant,

@@ -752,7 +752,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         goto chunking_abort;
     }
 
-    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record(inst);
+    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record();
 
     dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
         (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
@@ -939,9 +939,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     rhs = variablize_results_into_actions(results, variablize);
     dprint_header(DT_VARIABLIZATION_MANAGER, PrintAfter, "Done variablizing RHS results.\n");
 
-    dprint(DT_CONSTRAINTS, "- Instantiated conds before add_goal_test\n%1", inst_top);
-    dprint(DT_CONSTRAINTS, "- Variablized conds before add_goal_test\n%1", vrblz_top);
-
     add_goal_or_impasse_tests(inst_top, vrblz_top);
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
@@ -1080,10 +1077,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
 
-    /* --- deallocate chunks conds and variablized conditions --- */
-    deallocate_condition_list(thisAgent, vrblz_top);
-    vrblz_top = NULL;
-
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
         print(thisAgent, "\n");
@@ -1094,7 +1087,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         thisAgent->explanationLogger->increment_stat_succeeded();
-        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results);
+        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, inst);
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationLogger->increment_stat_justifications();
         }
@@ -1112,7 +1105,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             excise_production(thisAgent, prod, false);
         } else {
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
-            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results);
+            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, inst);
             assert(false);
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
@@ -1124,6 +1117,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
         assert(false);
     }
+
+    /* --- deallocate chunks conds and variablized conditions --- */
+    deallocate_condition_list(thisAgent, vrblz_top);
+    vrblz_top = NULL;
 
     /* --- assert the preferences --- */
     chunk_inst->next = (*custom_inst_list);

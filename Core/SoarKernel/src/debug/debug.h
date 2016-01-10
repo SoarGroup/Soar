@@ -33,7 +33,7 @@ typedef struct trace_mode_info_struct trace_mode_info;
 
 /* ----------------------------------------------------------------------------
  * Comment the following line out to completely compile out debug statements */
-//#define DEBUG_OUTPUT_ON
+#define DEBUG_OUTPUT_ON
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 /* --------------------------------------------------------------------------*/

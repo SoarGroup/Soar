@@ -265,6 +265,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
+    dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, (inst->prod ? inst->prod->name : NULL), backtrace_number);
     inst->backtrace_number = backtrace_number;
     thisAgent->explanationLogger->increment_stat_instantations_backtraced();
 

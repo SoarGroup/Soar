@@ -61,7 +61,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EPMEM_CMD].enabled =                   true;
     //
     //    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
-        mode_info[DT_MILESTONES].enabled =                  true;
+//        mode_info[DT_MILESTONES].enabled =                  true;
     //
     //    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
     //    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;

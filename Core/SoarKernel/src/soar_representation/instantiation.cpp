@@ -864,7 +864,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->reliable = true;
     inst->in_ms = true;
     inst->i_id = thisAgent->ebChunker->get_new_inst_id();
-
+    inst->explain_status = explain_unrecorded;
     inst->GDS_evaluated_already = false;
 
     dprint_header(DT_MILESTONES, PrintBefore,

@@ -8,9 +8,106 @@
 #include "working_memory.h"
 #include "output_manager.h"
 
+void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRecord)
+{
+    if (!current_discussed_chunk->conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+    }
+    else
+    {
+        for (condition_record_list::iterator it = current_discussed_chunk->conditions->begin(); it != current_discussed_chunk->conditions->end(); it++)
+        {
+//            condition* c1 = (*it)->instantiated_cond;
+//            condition* c2 = (*it)->variablized_cond;
+//            Symbol* s1 = (*it)->matched_wme->id;
+//            Symbol* s2 = (*it)->matched_wme->attr;
+//            Symbol* s3 = (*it)->matched_wme->value;
+//            condition_record* c3 = (*it);
+            if (pType == ebc_chunk)
+            {
+                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", (*it)->conditionID, (*it)->variablized_cond,
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+
+            } else if (pType == ebc_explanation)
+            {
+                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", (*it)->conditionID, (*it)->instantiated_cond,
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+
+            } else if (pType == ebc_match)
+            {
+                outputManager->printa_sf(thisAgent, "c%u: (%y ^%y %y)   from rule %s (i%u)\n",
+                    (*it)->conditionID, (*it)->matched_wme->id, (*it)->matched_wme->attr, (*it)->matched_wme->value,
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+
+            } else if (pType == ebc_original)
+            {
+            } else {
+                assert(false);
+            }
+        }
+    }
+    outputManager->printa(thisAgent, "-->\n");
+
+    if (!current_discussed_chunk->actions->empty())
+    {
+        outputManager->printa(thisAgent, "No actions on right-hand-side\n");
+    }
+    else
+    {
+        for (action_record_list::iterator it = current_discussed_chunk->actions->begin(); it != current_discussed_chunk->actions->end(); it++)
+        {
+            if (pType == ebc_chunk)
+            {
+                outputManager->printa_sf(thisAgent, "a%u: %a\n",
+                     (*it)->actionID, (*it)->variablized_action);
+
+            } else if (pType == ebc_explanation)
+            {
+                outputManager->printa_sf(thisAgent, "a%u: %p\n",
+                     (*it)->actionID, (*it)->original_pref);
+
+            } else if (pType == ebc_match)
+            {
+                outputManager->printa_sf(thisAgent, "a%u: %p\n",
+                     (*it)->actionID, (*it)->instantiated_pref);
+            } else if (pType == ebc_original)
+            {
+            } else {
+                assert(false);
+            }
+        }
+    }
+}
+
+void Explanation_Logger::print_chunk_explanation()
+{
+    assert(current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "How %y (c%u) was learned:\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
+
+    outputManager->printa_sf(thisAgent, "(1) Rule %y fired creating a result    ('explain instantiation %u')\n",
+        current_discussed_chunk->baseInstantiation->production_name, current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa_sf(thisAgent, "(2) Conditions of i%u and CDPS are backtraced through ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa_sf(thisAgent, "(3) EBC algorithm produces the following chunk:\n\n");
+    outputManager->printa_sf(thisAgent, "Chunk:\nsp {%y\n", current_discussed_chunk->name);
+    print_chunk(ebc_chunk, current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "}\nExplanation trace:\nsp {%y\n", current_discussed_chunk->name);
+    print_chunk(ebc_explanation, current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "}\nWorking memory trace:\n");
+    print_chunk(ebc_match, current_discussed_chunk);
+    outputManager->printa(thisAgent, "\nThe following commands now apply to this chunk:\n");
+    outputManager->printa(thisAgent, "* 'explain --backtrace':      Explain problem-solving backtrace\n");
+    outputManager->printa(thisAgent, "* 'explain --identity':       Explain identity propagation that led to variables chosen\n");
+    outputManager->printa(thisAgent, "* 'explain --constraints':    Explain constraints required by problem-solving\n");
+    outputManager->printa(thisAgent, "* 'explain --stats':          Print statistics for this chunk\n");
+}
+
 void Explanation_Logger::explain_summary()
 {
-    outputManager->printa_sf(thisAgent, "%fExplainer Settings:\n-------------------\n");
+    outputManager->printa_sf(thisAgent, "%f-------------------\nExplainer Settings:\n-------------------\n");
     outputManager->printa_sf(thisAgent, "Watch all chunk formations                 %s\n", (enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Watching specific chunk formations         %s\n", (enabled ? "No" :  "Yes"));
 
@@ -18,12 +115,12 @@ void Explanation_Logger::explain_summary()
     if (!enabled)
     {
         /* Print last 10 rules watched*/
-        outputManager->printa(thisAgent, "\nRules watched:\n--------------\n");
+        outputManager->printa(thisAgent, "--------------\nRules watched:\n--------------\n");
         print_rules_watched(10);
         /* When we add time interval option, print it here */
     }
 
-    outputManager->printa(thisAgent, "\nChunks available for discussion:\n--------------------------------\n");
+    outputManager->printa(thisAgent, "--------------------------------\nChunks available for discussion:\n--------------------------------\n");
     print_chunk_list(10);
 
     /* Print current chunk and last 10 chunks formed */
@@ -40,21 +137,21 @@ void Explanation_Logger::explain_summary()
 
 void Explanation_Logger::print_all_watched_rules()
 {
-    outputManager->printa(thisAgent, "\nRules watched:\n\n");
+    outputManager->printa(thisAgent, "--------------\nRules watched:\n--------------\n");
     print_rules_watched(0);
 }
 
 
 void Explanation_Logger::print_all_chunks()
 {
-    outputManager->printa(thisAgent, "\nChunks available for discussion:\n\n");
+    outputManager->printa(thisAgent, "--------------------------------\nChunks available for discussion:\n--------------------------------\n");
     print_chunk_list(0);
 }
 
 void Explanation_Logger::explain_stats()
 {
-    outputManager->printa_sf(thisAgent, "-------------------------\n");
-    outputManager->printa_sf(thisAgent, "%fEBC Executions Statistics\n");
+    outputManager->printa_sf(thisAgent, "%f-------------------------\n");
+    outputManager->printa_sf(thisAgent, "EBC Executions Statistics\n");
     outputManager->printa_sf(thisAgent, "-------------------------\n");
     outputManager->printa_sf(thisAgent, "Number of chunks                           %u\n", thisAgent->ebChunker->get_chunk_count());
     outputManager->printa_sf(thisAgent, "Chunks attempted                           %u\n", stats.chunks_attempted);
@@ -196,12 +293,6 @@ void Explanation_Logger::print_rules_watched(short pNumToPrint)
     {
         outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain --watch' to see the other %d rules.\n", pNumToPrint, lNumLeftToPrint);
     }
-}
-
-void Explanation_Logger::print_chunk_explanation()
-{
-    assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing explanation of chunk %y.\n", current_discussed_chunk->name);
 }
 
 void Explanation_Logger::print_instantiation_explanation(uint64_t pInstID)
