@@ -67,7 +67,7 @@ class condition_record
         friend class Explanation_Logger;
 
     public:
-        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
+        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere);
         ~condition_record();
         uint64_t get_conditionID() { return conditionID; };
         void                        connect_to_action();
@@ -106,7 +106,7 @@ class instantiation_record
         ~instantiation_record();
 
         uint64_t                get_instantiationID() { return instantiationID; };
-        void                    record_instantiation_contents(instantiation* pInst);
+        void                    record_instantiation_contents(instantiation* pInst, bool pStopHere);
         action_record*          find_rhs_action(preference* pPref);
 
     private:
@@ -125,7 +125,7 @@ class chunk_record
         chunk_record(agent* myAgent, uint64_t pChunkID);
         ~chunk_record();
 
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation);
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
 
     private:
         agent*                  thisAgent;
@@ -231,7 +231,7 @@ class Explanation_Logger
 
         void                    initialize_counters();
         instantiation_record*   get_instantiation(instantiation* pInst);
-        condition_record*       add_condition(condition* pCond);
+        condition_record*       add_condition(condition* pCond, bool pStopHere);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         void                    print_chunk_explanation();

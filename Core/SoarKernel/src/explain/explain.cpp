@@ -131,7 +131,7 @@ chunk_record* Explanation_Logger::add_chunk_record()
     return lChunkRecord;
 }
 
-void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation)
+void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
 {
     name = pName;
     symbol_add_ref(thisAgent, name);
@@ -142,9 +142,11 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
     dprint(DT_EXPLAIN, "Recording conditions...\n");
     /* Create condition and action records */
     condition_record* new_cond_record;
+    bool has_backtrace_num = false;
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
-        new_cond_record = thisAgent->explanationLogger->add_condition(cond);
+        has_backtrace_num = (cond->bt.trace && cond->bt.trace->inst && (cond->bt.trace->inst->backtrace_number == pBacktraceNumber));
+        new_cond_record = thisAgent->explanationLogger->add_condition(cond, has_backtrace_num);
         conditions->push_front(new_cond_record);
     }
 
@@ -177,15 +179,15 @@ void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, ac
 {
     dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
 
-    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation);
+    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation, backtrace_number);
     (*chunks)[pName] = current_recording_chunk;
     symbol_add_ref(thisAgent, pName);
 }
 
-condition_record* Explanation_Logger::add_condition(condition* pCond)
+condition_record* Explanation_Logger::add_condition(condition* pCond, bool pStopHere)
 {
-    dprint(DT_EXPLAIN, "   Creating condition: %l\n", pCond);
-    condition_record* lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++);
+    dprint(DT_EXPLAIN, "   Creating %s condition: %l\n", (!pStopHere ? "new" : "new terminal"), pCond);
+    condition_record* lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++, pStopHere);
     (*conditions)[lCondRecord->conditionID] = lCondRecord;
 
     total_recorded.conditions++;
@@ -197,29 +199,31 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
 {
     if (pInst->explain_status == explain_unrecorded)
     {
+        bool lIsTerminalInstantiation = false;
         if (pInst->backtrace_number == backtrace_number)
         {
             /* Should not already be recorded */
             assert(!get_instantiation(pInst));
-
-            /* Set status flag to recording to handle recursive addition */
-            pInst->explain_status = explain_recording;
-            instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
-            (*instantiations)[pInst->i_id] = lInstRecord;
-            lInstRecord->record_instantiation_contents(pInst);
-            total_recorded.instantiations++;
-            pInst->explain_status = explain_recorded;
-
-            dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-            return lInstRecord;
+            lIsTerminalInstantiation = false;
         } else {
             /* Instantiations have their backtrace_number marked as the dependency analysis
              * is performed, so we can use that to determine if this instantiation needs to
              * be added. */
-            dprint(DT_EXPLAIN, "Backtrace number does not match (%d != %d).  Did not create instantiation record for %y (i%u).\n",
+            dprint(DT_EXPLAIN, "Backtrace number does not match (%d != %d).  Creating terminal instantiation record for %y (i%u).\n",
                 pInst->backtrace_number, backtrace_number, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-            return NULL;
+            lIsTerminalInstantiation = true;
         }
+
+        /* Set status flag to recording to handle recursive addition */
+        pInst->explain_status = explain_recording;
+        instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
+        (*instantiations)[pInst->i_id] = lInstRecord;
+        lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation);
+        total_recorded.instantiations++;
+        pInst->explain_status = explain_recorded;
+
+        dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+        return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
         dprint(DT_EXPLAIN, "Currently recording instantiation record for %y (i%u) in a parent call.  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
     } else if (pInst->explain_status == explain_recorded) {
@@ -327,10 +331,13 @@ void condition_record::connect_to_action()
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
         cached_pref = NULL;
+        dprint(DT_EXPLAIN, "Linked condition.\n");
+    } else {
+        dprint(DT_EXPLAIN, "Did not link condition.\n");
     }
 }
 
-condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID)
+condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -346,22 +353,17 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     } else {
         matched_wme = NULL;
     }
-    if (pCond->bt.trace)
+    if (!pStopHere && pCond->bt.trace)
     {
         parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst);
-        parent_action = NULL;
-        /* If this rule was bt through, it will have a parent instantiation recorded.  If so, we
-         * cache the pref to make it easier to connect this condition to the action that created
+        /* Cache the pref to make it easier to connect this condition to the action that created
          * the preference later. */
-        if (parent_instantiation)
-        {
-            cached_pref = pCond->bt.trace;
-        }
+        cached_pref = parent_instantiation ? pCond->bt.trace : NULL;
     } else {
         parent_instantiation = NULL;
-        parent_action = NULL;
         cached_pref = NULL;
     }
+    parent_action = NULL;
 }
 
 condition_record::~condition_record()
@@ -406,7 +408,7 @@ instantiation_record::~instantiation_record()
     delete actions;
 }
 
-void instantiation_record::record_instantiation_contents(instantiation* pInst)
+void instantiation_record::record_instantiation_contents(instantiation* pInst, bool pStopHere)
 {
     dprint(DT_EXPLAIN, "Recording instantiation contents for c%u (%y)\n", pInst->i_id, production_name);
 
@@ -414,7 +416,7 @@ void instantiation_record::record_instantiation_contents(instantiation* pInst)
     condition_record* new_cond_record;
     for (condition* cond = pInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        new_cond_record = thisAgent->explanationLogger->add_condition(cond);
+        new_cond_record = thisAgent->explanationLogger->add_condition(cond, pStopHere);
         conditions->push_front(new_cond_record);
     }
 
