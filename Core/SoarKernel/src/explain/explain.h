@@ -206,7 +206,7 @@ class Explanation_Logger
         bool current_discussed_chunk_exists();
         bool watch_rule(const std::string* pStringParameter);
         bool explain_chunk(const std::string* pStringParameter);
-        bool explain_item(const std::string* pStringParameter, const std::string* pStringParameter2);
+        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void explain_summary();
         void explain_stats();
         void explain_chunk_stats();
@@ -235,8 +235,10 @@ class Explanation_Logger
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         void                    print_chunk_explanation();
+        bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
+        bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         void                    print_condition_explanation(uint64_t pCondID);
-        void                    print_instantiation_explanation(uint64_t pInstID);
+        void                    print_instantiation_explanation(instantiation_record* pInstRecord);
 
         void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
 
@@ -256,6 +258,7 @@ class Explanation_Logger
 
         /* These maps store all of the records the logger keeps */
         std::unordered_map< Symbol*, chunk_record* >*           chunks;
+        std::unordered_map< uint64_t, chunk_record* >*          chunks_by_ID;
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;

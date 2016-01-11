@@ -19,6 +19,10 @@
 #ifndef SOARDEBUG_H
 #define SOARDEBUG_H
 
+/* ----------------------------------------------------------------------------
+ * Comment the following line out to completely compile out debug statements */
+//#define DEBUG_OUTPUT_ON
+
 #include "kernel.h"
 #include "soar_db.h"
 #include "soar_module.h"
@@ -30,10 +34,6 @@
 typedef struct test_struct test_info;
 typedef test_info* test;
 typedef struct trace_mode_info_struct trace_mode_info;
-
-/* ----------------------------------------------------------------------------
- * Comment the following line out to completely compile out debug statements */
-#define DEBUG_OUTPUT_ON
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 /* --------------------------------------------------------------------------*/

@@ -22,6 +22,7 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
 
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
+    chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
@@ -71,6 +72,7 @@ void Explanation_Logger::clear_explanations()
         delete it->second;
     }
     chunks->clear();
+    chunks_by_ID->clear();
 
     dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
@@ -105,6 +107,7 @@ Explanation_Logger::~Explanation_Logger()
     clear_explanations();
 
     delete chunks;
+    delete chunks_by_ID;
     delete all_conditions;
     delete all_actions;
     delete instantiations;
@@ -180,6 +183,7 @@ void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, ac
 
     current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation, backtrace_number);
     chunks->insert({pName, current_recording_chunk});
+    chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
 
     symbol_add_ref(thisAgent, pName);
 }
@@ -501,10 +505,65 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
     return false;
 
 }
-
-bool Explanation_Logger::explain_item(const std::string* pStringParameter, const std::string* pStringParameter2)
+bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
 {
-    return false;
+    std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
+
+    iter_chunk = chunks_by_ID->find(pChunkID);
+    if (iter_chunk == chunks_by_ID->end())
+    {
+        outputManager->printa_sf(thisAgent, "Could not find a chunk with ID %u.\n", pChunkID);
+        return false;
+    }
+
+    current_discussed_chunk = iter_chunk->second;
+    print_chunk_explanation();
+    return true;
+}
+
+bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID)
+{
+    std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
+
+    iter_inst = instantiations->find(pInstID);
+    if (iter_inst == instantiations->end())
+    {
+        outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
+        return false;
+    }
+
+    print_instantiation_explanation(iter_inst->second);
+    return true;
+}
+
+bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+{
+    /* First argument must be an object type.  Current valid types are 'chunk',
+     * and 'instantiation' */
+    bool lSuccess = false;
+    uint64_t lObjectID = 0;
+    char lFirstChar = pObjectTypeString->at(0);
+    if (lFirstChar == 'c')
+    {
+        if (!from_string(lObjectID, pObjectIDString->c_str()))
+        {
+            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
+        }
+        lSuccess = print_chunk_explanation_for_id(lObjectID);
+    } else if (lFirstChar == 'i')
+    {
+        if (!from_string(lObjectID, pObjectIDString->c_str()))
+        {
+            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
+        }
+        lSuccess = print_instantiation_explanation_for_id(lObjectID);
+    } else
+    {
+        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
+        return false;
+    }
+
+    return lSuccess;
 }
 
 

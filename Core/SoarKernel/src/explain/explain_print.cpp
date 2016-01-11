@@ -8,6 +8,61 @@
 #include "working_memory.h"
 #include "output_manager.h"
 
+void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
+{
+    outputManager->printa_sf(thisAgent, "Instantiation # %u   (match of rule %y)\n\n",
+        pInstRecord->instantiationID, pInstRecord->production_name);
+
+    if (pInstRecord->conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+    }
+    else
+    {
+        condition_record* lCond;
+        for (condition_record_list::iterator it = pInstRecord->conditions->begin(); it != pInstRecord->conditions->end(); it++)
+        {
+            lCond = (*it);
+//                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->variablized_cond,
+//                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+//                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
+
+                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->instantiated_cond,
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
+
+//                outputManager->printa_sf(thisAgent, "c%u: (%y ^%y %y)   from rule %s (i%u)\n",
+//                    lCond->conditionID, lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value,
+//                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+//                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
+
+        }
+    }
+    outputManager->printa(thisAgent, "-->\n");
+
+    if (pInstRecord->actions->empty())
+    {
+        outputManager->printa(thisAgent, "No actions on right-hand-side\n");
+    }
+    else
+    {
+        action_record* lAction;
+        for (action_record_list::iterator it = pInstRecord->actions->begin(); it != pInstRecord->actions->end(); it++)
+        {
+            lAction = (*it);
+//                outputManager->printa_sf(thisAgent, "a%u: %a\n",
+//                     lAction->actionID, lAction->variablized_action);
+
+                outputManager->printa_sf(thisAgent, "a%u: %p\n",
+                     lAction->actionID, lAction->instantiated_pref);
+
+//                outputManager->printa_sf(thisAgent, "a%u: %p\n",
+//                     lAction->actionID, lAction->instantiated_pref);
+        }
+    }
+}
+
+
 void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk->conditions->empty())
@@ -293,16 +348,10 @@ void Explanation_Logger::print_rules_watched(short pNumToPrint)
     }
 }
 
-void Explanation_Logger::print_instantiation_explanation(uint64_t pInstID)
-{
-    assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing explanation of instantiation %u in references to chunk %y.\n", pInstID, current_discussed_chunk->name);
-}
-
 void Explanation_Logger::print_condition_explanation(uint64_t pCondID)
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing explanation of condition %u in references to chunk %y.\n", pCondID, current_discussed_chunk->name);
+    outputManager->printa_sf(thisAgent, "Printing explanation of condition %u in relation to chunk %y.\n", pCondID, current_discussed_chunk->name);
 }
 
 void Explanation_Logger::print_dependency_analysis()
