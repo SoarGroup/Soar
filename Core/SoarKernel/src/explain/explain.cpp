@@ -23,8 +23,8 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
-    conditions = new std::unordered_map< uint64_t, condition_record* >();
-    actions = new std::unordered_map< uint64_t, action_record* >();
+    all_conditions = new std::unordered_map< uint64_t, condition_record* >();
+    all_actions = new std::unordered_map< uint64_t, action_record* >();
 }
 
 void Explanation_Logger::initialize_counters()
@@ -81,20 +81,20 @@ void Explanation_Logger::clear_explanations()
     instantiations->clear();
 
     dprint(DT_EXPLAIN, "Explanation logger clearing condition records...\n");
-    for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*conditions).begin(); it != (*conditions).end(); ++it)
+    for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
 //        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
-    conditions->clear();
+    all_conditions->clear();
 
     dprint(DT_EXPLAIN, "Explanation logger clearing action records...\n");
-    for (std::unordered_map< uint64_t, action_record* >::iterator it = (*actions).begin(); it != (*actions).end(); ++it)
+    for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
 //        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
-    actions->clear();
+    all_actions->clear();
 }
 
 Explanation_Logger::~Explanation_Logger()
@@ -105,8 +105,8 @@ Explanation_Logger::~Explanation_Logger()
     clear_explanations();
 
     delete chunks;
-    delete conditions;
-    delete actions;
+    delete all_conditions;
+    delete all_actions;
     delete instantiations;
 
 }
@@ -172,7 +172,6 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
     {
         (*it)->connect_to_action();
     }
-
 }
 
 void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation)
@@ -180,7 +179,8 @@ void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, ac
     dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
 
     current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation, backtrace_number);
-    (*chunks)[pName] = current_recording_chunk;
+    chunks->insert({pName, current_recording_chunk});
+
     symbol_add_ref(thisAgent, pName);
 }
 
@@ -188,8 +188,7 @@ condition_record* Explanation_Logger::add_condition(condition* pCond, bool pStop
 {
     dprint(DT_EXPLAIN, "   Creating %s condition: %l\n", (!pStopHere ? "new" : "new terminal"), pCond);
     condition_record* lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++, pStopHere);
-    (*conditions)[lCondRecord->conditionID] = lCondRecord;
-
+    all_conditions->insert({lCondRecord->conditionID, lCondRecord});
     total_recorded.conditions++;
 
     return lCondRecord;
@@ -217,11 +216,10 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         /* Set status flag to recording to handle recursive addition */
         pInst->explain_status = explain_recording;
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
-        (*instantiations)[pInst->i_id] = lInstRecord;
+        instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation);
         total_recorded.instantiations++;
         pInst->explain_status = explain_recorded;
-
         dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
         return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
@@ -239,7 +237,7 @@ action_record* Explanation_Logger::add_result(preference* pPref, action* pAction
 {
     dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count++);
-    (*actions)[lActionRecord->actionID] = lActionRecord;
+    all_actions->insert({lActionRecord->actionID, lActionRecord});
 
     total_recorded.actions++;
 

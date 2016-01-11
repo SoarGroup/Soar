@@ -10,38 +10,34 @@
 
 void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRecord)
 {
-    if (!current_discussed_chunk->conditions->empty())
+    if (current_discussed_chunk->conditions->empty())
     {
         outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
     }
     else
     {
+        condition_record* lCond;
         for (condition_record_list::iterator it = current_discussed_chunk->conditions->begin(); it != current_discussed_chunk->conditions->end(); it++)
         {
-//            condition* c1 = (*it)->instantiated_cond;
-//            condition* c2 = (*it)->variablized_cond;
-//            Symbol* s1 = (*it)->matched_wme->id;
-//            Symbol* s2 = (*it)->matched_wme->attr;
-//            Symbol* s3 = (*it)->matched_wme->value;
-//            condition_record* c3 = (*it);
+            lCond = (*it);
             if (pType == ebc_chunk)
             {
-                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", (*it)->conditionID, (*it)->variablized_cond,
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->variablized_cond,
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
 
             } else if (pType == ebc_explanation)
             {
-                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", (*it)->conditionID, (*it)->instantiated_cond,
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->instantiated_cond,
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
 
             } else if (pType == ebc_match)
             {
                 outputManager->printa_sf(thisAgent, "c%u: (%y ^%y %y)   from rule %s (i%u)\n",
-                    (*it)->conditionID, (*it)->matched_wme->id, (*it)->matched_wme->attr, (*it)->matched_wme->value,
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->production_name->sc->name  : "Architecture"),
-                    ((*it)->parent_instantiation ? (*it)->parent_instantiation->instantiationID : 0));
+                    lCond->conditionID, lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value,
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
+                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
 
             } else if (pType == ebc_original)
             {
@@ -52,28 +48,30 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
     }
     outputManager->printa(thisAgent, "-->\n");
 
-    if (!current_discussed_chunk->actions->empty())
+    if (current_discussed_chunk->actions->empty())
     {
         outputManager->printa(thisAgent, "No actions on right-hand-side\n");
     }
     else
     {
+        action_record* lAction;
         for (action_record_list::iterator it = current_discussed_chunk->actions->begin(); it != current_discussed_chunk->actions->end(); it++)
         {
+            lAction = (*it);
             if (pType == ebc_chunk)
             {
                 outputManager->printa_sf(thisAgent, "a%u: %a\n",
-                     (*it)->actionID, (*it)->variablized_action);
+                     lAction->actionID, lAction->variablized_action);
 
             } else if (pType == ebc_explanation)
             {
                 outputManager->printa_sf(thisAgent, "a%u: %p\n",
-                     (*it)->actionID, (*it)->original_pref);
+                     lAction->actionID, lAction->instantiated_pref);
 
             } else if (pType == ebc_match)
             {
                 outputManager->printa_sf(thisAgent, "a%u: %p\n",
-                     (*it)->actionID, (*it)->instantiated_pref);
+                     lAction->actionID, lAction->instantiated_pref);
             } else if (pType == ebc_original)
             {
             } else {
@@ -86,17 +84,17 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
 void Explanation_Logger::print_chunk_explanation()
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "How %y (c%u) was learned:\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
+    outputManager->printa_sf(thisAgent, "How %y (c%u) was learned:\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
-    outputManager->printa_sf(thisAgent, "(1) Rule %y fired creating a result    ('explain instantiation %u')\n",
+    outputManager->printa_sf(thisAgent, "   (1) Rule %y matched, fired and created a result    ('explain instantiation %u')\n",
         current_discussed_chunk->baseInstantiation->production_name, current_discussed_chunk->baseInstantiation->instantiationID);
-    outputManager->printa_sf(thisAgent, "(2) Conditions of i%u and CDPS are backtraced through ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
-    outputManager->printa_sf(thisAgent, "(3) EBC algorithm produces the following chunk:\n\n");
-    outputManager->printa_sf(thisAgent, "Chunk:\nsp {%y\n", current_discussed_chunk->name);
-    print_chunk(ebc_chunk, current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "}\nExplanation trace:\nsp {%y\n", current_discussed_chunk->name);
+    outputManager->printa_sf(thisAgent, "   (2) Conditions of i%u and CDPS are backtraced through ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa_sf(thisAgent, "   (3) EBC algorithm used backtrace to produce the following chunk:\n\n");
+    outputManager->printa_sf(thisAgent, "sp {%y\n", current_discussed_chunk->name);
+//    print_chunk(ebc_chunk, current_discussed_chunk);
+//    outputManager->printa_sf(thisAgent, "}\nExplanation trace:\nsp {%y\n", current_discussed_chunk->name);
     print_chunk(ebc_explanation, current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "}\nWorking memory trace:\n");
+    outputManager->printa_sf(thisAgent, "}\n\nWorking memory trace:\n");
     print_chunk(ebc_match, current_discussed_chunk);
     outputManager->printa(thisAgent, "\nThe following commands now apply to this chunk:\n");
     outputManager->printa(thisAgent, "* 'explain --backtrace':      Explain problem-solving backtrace\n");

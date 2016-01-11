@@ -257,8 +257,8 @@ class Explanation_Logger
         /* These maps store all of the records the logger keeps */
         std::unordered_map< Symbol*, chunk_record* >*           chunks;
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
-        std::unordered_map< uint64_t, condition_record* >*      conditions;
-        std::unordered_map< uint64_t, action_record* >*         actions;
+        std::unordered_map< uint64_t, condition_record* >*      all_conditions;
+        std::unordered_map< uint64_t, action_record* >*         all_actions;
 };
 
 #endif /* EBC_EXPLAIN_H_ */
