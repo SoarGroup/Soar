@@ -174,7 +174,7 @@ void Explanation_Logger::explain_summary()
 {
     outputManager->printa_sf(thisAgent, "%f-------------------\nExplainer Settings:\n-------------------\n");
     outputManager->printa_sf(thisAgent, "Watch all chunk formations                 %s\n", (enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Watching specific chunk formations         %s\n", (enabled ? "No" :  "Yes"));
+    outputManager->printa_sf(thisAgent, "Number of specific rules watched           %d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!enabled)

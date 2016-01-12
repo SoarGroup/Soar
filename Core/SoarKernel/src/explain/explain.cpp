@@ -17,8 +17,9 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     outputManager = &Output_Manager::Get_OM();
 
     initialize_counters();
-//    enabled = false;
-    enabled = true;
+    enabled = false;
+//    enabled = true;
+    num_rules_watched = 0;
 
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
@@ -104,6 +105,7 @@ Explanation_Logger::~Explanation_Logger()
     dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
 
     current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
     clear_explanations();
 
     delete chunks;
@@ -120,18 +122,28 @@ void Explanation_Logger::re_init()
     clear_explanations();
     initialize_counters();
     current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
     dprint(DT_EXPLAIN, "Done re-intializing explanation logger.\n");
 
 }
 
-chunk_record* Explanation_Logger::add_chunk_record()
+void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
 {
-    chunk_record* lChunkRecord = new chunk_record(thisAgent, chunk_id_count++);
+    bool lShouldRecord = false;
+    if ((!enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
+    {
+        dprint(DT_EXPLAIN, "Explainer ignoring this chunk because it is not being watched.\n");
+        current_recording_chunk = NULL;
+        return;
+    }
 
-    current_recording_chunk = lChunkRecord;
+    current_recording_chunk = new chunk_record(thisAgent, chunk_id_count++);
     total_recorded.chunks++;
+}
 
-    return lChunkRecord;
+void Explanation_Logger::end_chunk_record()
+{
+    current_recording_chunk = NULL;
 }
 
 void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
@@ -183,13 +195,17 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
 
 void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
 {
-    dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
+    if (current_recording_chunk)
+    {
+        dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
+        current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
+        chunks->insert({pName, current_recording_chunk});
+        chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
 
-    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
-    chunks->insert({pName, current_recording_chunk});
-    chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
-
-    symbol_add_ref(thisAgent, pName);
+        symbol_add_ref(thisAgent, pName);
+    } else {
+        dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pName);
+    }
 }
 
 condition_record* Explanation_Logger::add_condition(condition* pCond, bool pStopHere)
@@ -461,10 +477,12 @@ bool Explanation_Logger::toggle_production_watch(production* pProduction)
     if (pProduction->explain_its_chunks)
     {
         pProduction->explain_its_chunks = false;
-        outputManager->printa_sf(thisAgent, "Will no longer watch any chunks formed by rule %y.\n", pProduction->name);
+        --num_rules_watched;
+        outputManager->printa_sf(thisAgent, "Will no longer watch any chunks formed by rule '%y'.\n", pProduction->name);
     } else {
         pProduction->explain_its_chunks = true;
-        outputManager->printa_sf(thisAgent, "Now watching any chunks formed by rule %y.\n", pProduction->name);
+        ++num_rules_watched;
+        outputManager->printa_sf(thisAgent, "Now watching any chunks formed by rule '%y'.\n", pProduction->name);
     }
     return true;
 }

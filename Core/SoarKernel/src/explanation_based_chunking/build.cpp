@@ -676,6 +676,7 @@ void Explanation_Based_Chunker::make_clones_of_results(preference* results,
 
 void Explanation_Based_Chunker::chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top)
 {
+    thisAgent->explanationLogger->end_chunk_record();
     if (vrblz_top)
     {
         deallocate_condition_list(thisAgent, (*vrblz_top));
@@ -712,7 +713,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     condition*  saved_justification_top = 0;
     condition*  saved_justification_bottom = 0;
     uint64_t chunk_new_i_id = 0;
-    chunk_record* explainChunkRecord = NULL;
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -773,7 +773,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
 #ifdef BUILD_WITH_EXPLAINER
-    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record();
+    thisAgent->explanationLogger->add_chunk_record(inst);
 #endif
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */

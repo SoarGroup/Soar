@@ -183,10 +183,10 @@ class Explanation_Logger
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
-        chunk_record*           add_chunk_record();
-        chunk_record*           get_chunk_record(Symbol* pChunkName);
-        void                    cancel_chunk_record();
+        void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation);
+        void                    cancel_chunk_record();
+        void                    end_chunk_record();
 
         instantiation_record*   add_instantiation(instantiation* pInst);
 
@@ -229,27 +229,31 @@ class Explanation_Logger
         Output_Manager*         outputManager;
 
         bool                    enabled;
+        int                     num_rules_watched;
+        bool                    shouldRecord() { return (enabled || current_recording_chunk); }
+
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
 
         void                    initialize_counters();
+        chunk_record*           get_chunk_record(Symbol* pChunkName);
         instantiation_record*   get_instantiation(instantiation* pInst);
         condition_record*       add_condition(condition* pCond, bool pStopHere);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
-        void                    print_chunk_explanation();
-        bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
-        bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
-        void                    print_condition_explanation(uint64_t pCondID);
-        void                    print_instantiation_explanation(instantiation_record* pInstRecord);
-
-        void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
+        bool                    toggle_production_watch(production* pProduction);
 
         void                    print_chunk_list(short pNumToPrint = 0);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
-        bool                    toggle_production_watch(production* pProduction);
+
+        void                    print_chunk_explanation();
+        bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
+        void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
+        void                    print_instantiation_explanation(instantiation_record* pInstRecord);
+        bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
+        void                    print_condition_explanation(uint64_t pCondID);
 
         /* ID Counters */
         uint64_t            condition_id_count;
