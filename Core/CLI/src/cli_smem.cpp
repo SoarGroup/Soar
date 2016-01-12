@@ -460,6 +460,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             std::string spread_output_string = s_spread_output_string.str();
             PrintCLIMessage_Justify("Spread Size:",spread_output_string.c_str(), 40);
             thisAgent->smem_stmts->calc_spread_size_debug_cmd->reinitialize();
+            thisAgent->smem_stmts->trajectory_size_debug_cmd->execute();
+            uint64_t number_fingerprint_elements = thisAgent->smem_stmts->trajectory_size_debug_cmd->column_int(0);
+            std::ostringstream s_trajectory_output_string;
+            s_trajectory_output_string << number_fingerprint_elements;
+            std::string trajectory_output_string = s_trajectory_output_string.str();
+            PrintCLIMessage_Justify("Fingerprint Entries:",trajectory_output_string.c_str(), 40);
+            thisAgent->smem_stmts->trajectory_size_debug_cmd->reinitialize();
         }
         else
         {

@@ -988,6 +988,11 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
     add(trajectory_invalidate_edge);
 
+    //gets the size of the current fingerprint table.
+    trajectory_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_likelihood_trajectories");
+    add(trajectory_size_debug_cmd);
+
+
     //
 
     //take away spread precalculated values for some lti
