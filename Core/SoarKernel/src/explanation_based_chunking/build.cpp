@@ -752,10 +752,24 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         goto chunking_abort;
     }
 
-    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record();
-
     dprint_header(DT_MILESTONES, PrintBoth, "chunk_instantiation() called for instance of rule %s (id=%u)\n",
         (inst->prod ? inst->prod->name->sc->name : "fake instantiation"), inst->i_id);
+
+    /* --- If we're over MAX_CHUNKS, abort chunk --- */
+    if (chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
+    {
+        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+        {
+            print(thisAgent, "Warning: reached max-chunks! Halting system.\n");
+            xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
+        }
+        max_chunks_reached = true;
+        thisAgent->explanationLogger->increment_stat_max_chunks();
+
+        goto chunking_abort;
+    }
+
+    explainChunkRecord = thisAgent->explanationLogger->add_chunk_record();
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -840,17 +854,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     free_list(thisAgent, positive_potentials);
 
-    /* --- backtracing done; collect the grounds into the chunk --- */
-    chunk_new_i_id = get_new_inst_id();
-    {
-        tc_number tc_for_grounds;
-        tc_for_grounds = get_new_tc_number(thisAgent);
-        create_initial_chunk_condition_lists(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
-    }
-
+    /* Determine if we create a justification or variablize and create a chunk */
     variablize = learning_is_on_for_instantiation() && reliable;
 
-    /* --- get symbol for name of new chunk or justification --- */
+    /* Generate a new symbol for the name of the new chunk or justification */
     if (variablize)
     {
         chunks_this_d_cycle++;
@@ -883,7 +890,14 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
 
-    /* --- if there aren't any grounds, exit --- */
+    /* --- Collect the grounds into the chunk condition lists --- */
+    chunk_new_i_id = get_new_inst_id();
+    {
+        tc_number tc_for_grounds;
+        tc_for_grounds = get_new_tc_number(thisAgent);
+        create_initial_chunk_condition_lists(&inst_top, &inst_bottom, &vrblz_top, tc_for_grounds, &reliable);
+    }
+    /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
     if (!inst_top)
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
@@ -901,21 +915,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         goto chunking_abort;
     }
 
-    if (chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
-    {
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
-        {
-            print(thisAgent, "Warning: reached max-chunks! Halting system.\n");
-            xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
-        }
-        max_chunks_reached = true;
-        thisAgent->explanationLogger->increment_stat_max_chunks();
 
-        goto chunking_abort;
-    }
+    dprint(DT_PRINT_INSTANTIATIONS, "Chunk_instantiation instantiated conditions from backtrace:\n%6", inst_top, results);
+    dprint(DT_BUILD_CHUNK_CONDS, "Counterparts conditions for variablization:\n%6", vrblz_top, results);
 
-    dprint(DT_BUILD_CHUNK_CONDS, "chunk_instantiation instantiated conditions from backtrace: \n%6", inst_top, results);
-    dprint(DT_BUILD_CHUNK_CONDS, "chunk_instantiation variablizing following conditions from backtrace: \n%6", vrblz_top, results);
     if (variablize)
     {
         /* Save conditions and results in case we need to make a justification because chunking fails */
@@ -1087,7 +1090,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         thisAgent->explanationLogger->increment_stat_succeeded();
-        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, inst);
+        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationLogger->increment_stat_justifications();
         }
@@ -1105,7 +1108,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             excise_production(thisAgent, prod, false);
         } else {
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
-            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, inst);
+            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
             assert(false);
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule

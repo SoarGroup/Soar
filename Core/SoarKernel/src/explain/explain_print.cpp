@@ -60,6 +60,9 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
 //                     lAction->actionID, lAction->instantiated_pref);
         }
     }
+    outputManager->printa(thisAgent, "\nAdd the following to show additional information for any chunk or instantiation explanation:\n");
+    outputManager->printa(thisAgent, "* 'explain [-e | --explanation-trace':      Print corresponding explanation trace structure\n");
+    outputManager->printa(thisAgent, "* 'explain [-i | --identity':               Print showing underlying identity values\n");
 }
 
 
@@ -77,23 +80,24 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
             lCond = (*it);
             if (pType == ebc_chunk)
             {
-                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->variablized_cond,
+                thisAgent->outputManager->set_print_test_format(true, false);
+                outputManager->printa_sf(thisAgent, "   %l   c%u originally from rule %s (i%u)\n", lCond->variablized_cond, lCond->conditionID,
                     (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
                     (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-
+                thisAgent->outputManager->clear_print_test_format();
             } else if (pType == ebc_explanation)
             {
-                outputManager->printa_sf(thisAgent, "c%u: %l   from rule %s (i%u)\n", lCond->conditionID, lCond->instantiated_cond,
+                thisAgent->outputManager->set_print_test_format(false, true);
+                outputManager->printa_sf(thisAgent, "   %l   c%u originally from rule %s (i%u)\n", lCond->instantiated_cond, lCond->conditionID,
                     (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
                     (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-
+                thisAgent->outputManager->clear_print_test_format();
             } else if (pType == ebc_match)
             {
-                outputManager->printa_sf(thisAgent, "c%u: (%y ^%y %y)   from rule %s (i%u)\n",
-                    lCond->conditionID, lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value,
+                outputManager->printa_sf(thisAgent, "   (%y ^%y %y)   matched condition c%u in rule %s (i%u)\n",
+                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, lCond->conditionID,
                     (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
                     (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-
             } else if (pType == ebc_original)
             {
             } else {
@@ -115,18 +119,24 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
             lAction = (*it);
             if (pType == ebc_chunk)
             {
-                outputManager->printa_sf(thisAgent, "a%u: %a\n",
-                     lAction->actionID, lAction->variablized_action);
-
+//                outputManager->printa_sf(thisAgent, "   %a              a%u\n",
+//                     lAction->variablized_action, lAction->actionID);
+                thisAgent->outputManager->set_print_test_format(false, true);
+                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                     lAction->instantiated_pref, lAction->actionID);
+                thisAgent->outputManager->clear_print_test_format();
             } else if (pType == ebc_explanation)
             {
-                outputManager->printa_sf(thisAgent, "a%u: %p\n",
-                     lAction->actionID, lAction->instantiated_pref);
-
+                thisAgent->outputManager->set_print_test_format(false, true);
+                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                     lAction->instantiated_pref, lAction->actionID);
+                thisAgent->outputManager->clear_print_test_format();
             } else if (pType == ebc_match)
             {
-                outputManager->printa_sf(thisAgent, "a%u: %p\n",
-                     lAction->actionID, lAction->instantiated_pref);
+                thisAgent->outputManager->set_print_test_format(true, false);
+                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                     lAction->instantiated_pref, lAction->actionID);
+                thisAgent->outputManager->clear_print_test_format();
             } else if (pType == ebc_original)
             {
             } else {
@@ -139,23 +149,25 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
 void Explanation_Logger::print_chunk_explanation()
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "How %y (c%u) was learned:\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
+    outputManager->printa_sf(thisAgent, "Explanation of the formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
-    outputManager->printa_sf(thisAgent, "   (1) Rule %y matched, fired and created a result    ('explain instantiation %u')\n",
-        current_discussed_chunk->baseInstantiation->production_name, current_discussed_chunk->baseInstantiation->instantiationID);
-    outputManager->printa_sf(thisAgent, "   (2) Conditions of i%u and CDPS are backtraced through ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
-    outputManager->printa_sf(thisAgent, "   (3) EBC algorithm used backtrace to produce the following chunk:\n\n");
+    outputManager->printa_sf(thisAgent, "   (1) At t?, rule '%y'(i%u) matched, fired and created a result    ('explain instantiation %u')\n",
+        current_discussed_chunk->baseInstantiation->production_name, current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa_sf(thisAgent, "   (2) Conditions of i%u and CDPS are backtraced through            ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa(thisAgent, "   (3) EBC magic happens to produce the following chunk:\n\n");
     outputManager->printa_sf(thisAgent, "sp {%y\n", current_discussed_chunk->name);
 //    print_chunk(ebc_chunk, current_discussed_chunk);
 //    outputManager->printa_sf(thisAgent, "}\nExplanation trace:\nsp {%y\n", current_discussed_chunk->name);
-    print_chunk(ebc_explanation, current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "}\n\nWorking memory trace:\n");
+    print_chunk(ebc_chunk, current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "}\n\nWorking memory trace:\n\n");
     print_chunk(ebc_match, current_discussed_chunk);
     outputManager->printa(thisAgent, "\nThe following commands now apply to this chunk:\n");
-    outputManager->printa(thisAgent, "* 'explain --backtrace':      Explain problem-solving backtrace\n");
-    outputManager->printa(thisAgent, "* 'explain --identity':       Explain identity propagation that led to variables chosen\n");
-    outputManager->printa(thisAgent, "* 'explain --constraints':    Explain constraints required by problem-solving\n");
-    outputManager->printa(thisAgent, "* 'explain --stats':          Print statistics for this chunk\n");
+    outputManager->printa(thisAgent, "* 'explain [-b | --backtrace]':              Explain problem-solving backtrace\n");
+    outputManager->printa(thisAgent, "* 'explain [-c | --constraints]':            Explain constraints required by problem-solving\n");
+    outputManager->printa_sf(thisAgent, "* 'explain [-s | --stats]':                  Print statistics for %y\n", current_discussed_chunk->name);
+    outputManager->printa(thisAgent, "\nAdd the following to show additional information for any chunk or instantiation explanation:\n");
+    outputManager->printa(thisAgent, "* 'explain [-e | --explanation-trace]':      Print corresponding explanation trace structure\n");
+    outputManager->printa(thisAgent, "* 'explain [-i | --identity]':               Print showing underlying identity values\n");
 }
 
 void Explanation_Logger::explain_summary()
@@ -363,11 +375,28 @@ void Explanation_Logger::print_dependency_analysis()
 void Explanation_Logger::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing identity set assignments of chunk %y.\n", current_discussed_chunk->name);
+    id_to_id_map_type* identity_mappings = current_discussed_chunk->identity_set_mappings;
+    if (identity_mappings->size() == 0)
+    {
+        outputManager->printa_sf(thisAgent, "This chunk had no identity to identity set assignments.\n");
+        return;
+    }
+
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------\n"
+                                        "Variable identities --> Identity sets --> Chunk variables\n"
+                                        "---------------------------------------------------------\n", current_discussed_chunk->name);
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+
+    for (iter = identity_mappings->begin(); iter != identity_mappings->end(); ++iter)
+    {
+        outputManager->printa_sf(thisAgent, "o%u(%y)  --> o%u(%y)  -->\n",
+            iter->first, thisAgent->ebChunker->get_ovar_for_o_id(iter->first),
+            iter->second, thisAgent->ebChunker->get_ovar_for_o_id(iter->second));
+    }
 }
 
 void Explanation_Logger::print_constraints_enforced()
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing constraints enforced during formation of chunk %y.\n", current_discussed_chunk->name);
+    outputManager->printa_sf(thisAgent, "Constraints enforced during formation of chunk %y.\n\nNot yet implemented.\n", current_discussed_chunk->name);
 }

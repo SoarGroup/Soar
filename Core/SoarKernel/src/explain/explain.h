@@ -43,6 +43,23 @@ namespace soar_module
 
 class Output_Manager;
 
+class condition_record;
+class action_record;
+//#ifdef USE_MEM_POOL_ALLOCATORS
+//#include "soar_module.h"
+//typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > > condition_record_list;
+//typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > > action_record_list;
+//typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > > id_list;
+//#else
+//typedef std::list< condition_record* > condition_record_list;
+//typedef std::list< action_record* > action_record_list;
+//typedef std::list< uint64_t > id_list;
+//#endif
+typedef std::list< condition_record* >                      condition_record_list;
+typedef std::list< action_record* >                         action_record_list;
+typedef std::list< uint64_t >                               id_list;
+typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
+
 class action_record
 {
         friend class Explanation_Logger;
@@ -58,7 +75,7 @@ class action_record
         preference*     instantiated_pref;
         action*         variablized_action;
         uint64_t       actionID;
-} ;
+};
 
 class instantiation_record;
 
@@ -81,21 +98,7 @@ class condition_record
         instantiation_record*       parent_instantiation;
         preference*                 cached_pref;
         uint64_t                    conditionID;
-} ;
-
-//#ifdef USE_MEM_POOL_ALLOCATORS
-//#include "soar_module.h"
-//typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > > condition_record_list;
-//typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > > action_record_list;
-//typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > > id_list;
-//#else
-//typedef std::list< condition_record* > condition_record_list;
-//typedef std::list< action_record* > action_record_list;
-//typedef std::list< uint64_t > id_list;
-//#endif
-typedef std::list< condition_record* > condition_record_list;
-typedef std::list< action_record* > action_record_list;
-typedef std::list< uint64_t > id_list;
+};
 
 class instantiation_record
 {
@@ -115,7 +118,7 @@ class instantiation_record
         condition_record_list*  conditions;
         action_record_list*     actions;
         uint64_t                instantiationID;
-} ;
+};
 
 class chunk_record
 {
@@ -125,17 +128,17 @@ class chunk_record
         chunk_record(agent* myAgent, uint64_t pChunkID);
         ~chunk_record();
 
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
 
     private:
         agent*                  thisAgent;
         Symbol*                 name;
         condition_record_list*  conditions;
         action_record_list*     actions;
-        std::string             identity_set_mapping_explanation;
+        id_to_id_map_type*      identity_set_mappings;
         instantiation_record*   baseInstantiation;
         uint64_t                chunkID;
-} ;
+};
 
 typedef struct tr_stats_struct {
         uint64_t            chunks;
@@ -183,7 +186,8 @@ class Explanation_Logger
         chunk_record*           add_chunk_record();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
         void                    cancel_chunk_record();
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation);
+        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation);
+
         instantiation_record*   add_instantiation(instantiation* pInst);
 
         void increment_stat_duplicates() { stats.duplicates++; };

@@ -134,7 +134,7 @@ chunk_record* Explanation_Logger::add_chunk_record()
     return lChunkRecord;
 }
 
-void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
+void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
 {
     name = pName;
     symbol_add_ref(thisAgent, name);
@@ -175,13 +175,17 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
     {
         (*it)->connect_to_action();
     }
+
+    identity_set_mappings = new id_to_id_map_type();
+    (*identity_set_mappings) = (*pIdentitySetMappings);
+
 }
 
-void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, instantiation* pBaseInstantiation)
+void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
 {
     dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
 
-    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pBaseInstantiation, backtrace_number);
+    current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
     chunks->insert({pName, current_recording_chunk});
     chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
 
@@ -254,14 +258,14 @@ chunk_record* Explanation_Logger::get_chunk_record(Symbol* pChunkName)
 
     std::unordered_map< Symbol *, chunk_record* >::iterator iter_chunk;
 
-    dprint(DT_EXPLAIN, "...Looking  for chunk %y...", pChunkName);
+//    dprint(DT_EXPLAIN, "...Looking  for chunk %y...", pChunkName);
     iter_chunk = chunks->find(pChunkName);
     if (iter_chunk != chunks->end())
     {
-        dprint(DT_EXPLAIN, "...found chunk record.\n");
+//        dprint(DT_EXPLAIN, "...found chunk record.\n");
         return(iter_chunk->second);
     }
-    dprint(DT_EXPLAIN, "...not found..\n");
+//    dprint(DT_EXPLAIN, "...not found..\n");
     return NULL;
 }
 
@@ -272,14 +276,14 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
     /* See if we already have an instantiation record */
     std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
 
-    dprint(DT_EXPLAIN, "...Looking  for instantiation id %u...", pInst->i_id);
+//    dprint(DT_EXPLAIN, "...Looking  for instantiation id %u...", pInst->i_id);
     iter_inst = instantiations->find(pInst->i_id);
     if (iter_inst != instantiations->end())
     {
-        dprint(DT_EXPLAIN, "...found existing ebc logger record.\n");
+//        dprint(DT_EXPLAIN, "...found existing ebc logger record.\n");
         return(iter_inst->second);
     }
-    dprint(DT_EXPLAIN, "...not found..\n");
+//    dprint(DT_EXPLAIN, "...not found..\n");
     return NULL;
 }
 
@@ -333,9 +337,9 @@ void condition_record::connect_to_action()
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
         cached_pref = NULL;
-        dprint(DT_EXPLAIN, "Linked condition.\n");
+        dprint(DT_EXPLAIN, "Linked condition %l.\n", instantiated_cond);
     } else {
-        dprint(DT_EXPLAIN, "Did not link condition.\n");
+        dprint(DT_EXPLAIN, "Did not link condition %l.\n", instantiated_cond);
     }
 }
 
@@ -435,12 +439,12 @@ action_record* instantiation_record::find_rhs_action(preference* pPref)
 {
     action_record_list::iterator iter;
 
-    dprint(DT_EXPLAIN, "...Looking  for preference action %p...", pPref);
+//    dprint(DT_EXPLAIN, "...Looking  for preference action %p...", pPref);
     for (iter = actions->begin(); iter != actions->end(); ++iter)
     {
         if ((*iter)->original_pref == pPref)
         {
-            dprint(DT_EXPLAIN, "...found action! %u.\n", (*iter)->get_actionID());
+            dprint(DT_EXPLAIN, "...found RHS action a%u for condition preference %p.\n", (*iter)->get_actionID(), pPref);
         }
         return (*iter);
     }
