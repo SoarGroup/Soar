@@ -261,14 +261,17 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
+        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_seen_instantations_backtraced();
+        #endif
         dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
     dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, (inst->prod ? inst->prod->name : NULL), backtrace_number);
     inst->backtrace_number = backtrace_number;
+    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->increment_stat_instantations_backtraced();
-
+    #endif
     if (!inst->reliable)
     {
         *reliable = false;

@@ -500,7 +500,9 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists(
                 report_local_negation(cc->cond);    // in backtrace.cpp
                 *reliable = false;
             }
+#ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_tested_local_negation();
+#endif
             thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
         }
     }
@@ -764,12 +766,15 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
         }
         max_chunks_reached = true;
+#ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_max_chunks();
-
+#endif
         goto chunking_abort;
     }
 
+#ifdef BUILD_WITH_EXPLAINER
     explainChunkRecord = thisAgent->explanationLogger->add_chunk_record();
+#endif
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -810,7 +815,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     positive_potentials = NIL;
     locals = NIL;
 
+#ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->set_backtrace_number(backtrace_number);
+#endif
 
     dprint(DT_BACKTRACE, "Backtracing through instantiations that produced result preferences...\n%6\n", NULL, results);
     /* --- backtrace through the instantiation that produced each result --- */
@@ -854,42 +861,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     free_list(thisAgent, positive_potentials);
 
-    /* Determine if we create a justification or variablize and create a chunk */
-    variablize = learning_is_on_for_instantiation() && reliable;
-
-    /* Generate a new symbol for the name of the new chunk or justification */
-    if (variablize)
-    {
-        chunks_this_d_cycle++;
-        prod_name = generate_chunk_name(inst);
-
-        prod_type = CHUNK_PRODUCTION_TYPE;
-        print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
-        print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
-        thisAgent->explanationLogger->increment_stat_chunks_attempted();
-    }
-    else
-    {
-        prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
-        prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-        print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-        print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-        thisAgent->explanationLogger->increment_stat_justifications_attempted();
-    }
-
-    if (print_name)
-    {
-        start_fresh_line(thisAgent);
-        print_with_symbols(thisAgent, "Building rule %y\n", prod_name);
-
-        xml_begin_tag(thisAgent, kTagLearning);
-        xml_begin_tag(thisAgent, kTagProduction);
-        xml_att_val(thisAgent, kProduction_Name, prod_name);
-        xml_end_tag(thisAgent, kTagProduction);
-        xml_end_tag(thisAgent, kTagLearning);
-    }
-    dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
-
     /* --- Collect the grounds into the chunk condition lists --- */
     chunk_new_i_id = get_new_inst_id();
     {
@@ -909,12 +880,51 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             xml_generate_warning(thisAgent, "         the results created by this substate. To avoid this issue, the agent");
             xml_generate_warning(thisAgent, "         needs to positively test at least one item in the superstate.");
         }
-
+#ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_no_grounds();
-
+#endif
         goto chunking_abort;
     }
 
+    /* Determine if we create a justification or variablize and create a chunk */
+    variablize = learning_is_on_for_instantiation() && reliable;
+
+    /* Generate a new symbol for the name of the new chunk or justification */
+    if (variablize)
+    {
+        chunks_this_d_cycle++;
+        prod_name = generate_chunk_name(inst);
+
+        prod_type = CHUNK_PRODUCTION_TYPE;
+        print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+        print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
+#ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationLogger->increment_stat_chunks_attempted();
+#endif
+    }
+    else
+    {
+        prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+        prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+        print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+#ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationLogger->increment_stat_justifications_attempted();
+#endif
+    }
+
+    if (print_name)
+    {
+        start_fresh_line(thisAgent);
+        print_with_symbols(thisAgent, "Building rule %y\n", prod_name);
+
+        xml_begin_tag(thisAgent, kTagLearning);
+        xml_begin_tag(thisAgent, kTagProduction);
+        xml_att_val(thisAgent, kProduction_Name, prod_name);
+        xml_end_tag(thisAgent, kTagProduction);
+        xml_end_tag(thisAgent, kTagLearning);
+    }
+    dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", prod_name);
 
     dprint(DT_PRINT_INSTANTIATIONS, "Chunk_instantiation instantiated conditions from backtrace:\n%6", inst_top, results);
     dprint(DT_BUILD_CHUNK_CONDS, "Counterparts conditions for variablization:\n%6", vrblz_top, results);
@@ -1045,9 +1055,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 //        thisAgent->stop_soar = true;
 //        thisAgent->system_halted = true;
 //        thisAgent->reason_for_stopping = "Could not re-order chunk.";
-
+#ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_unorderable();
-
+#endif
         goto chunking_abort;
     }
 
@@ -1089,27 +1099,37 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
+        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_succeeded();
         thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
+        #endif
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
+            #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_justifications();
+            #endif
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
 
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
+        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_duplicates();
+        #endif
         excise_production(thisAgent, prod, false);
         chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
+            #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_justification_did_not_match();
+            #endif
             excise_production(thisAgent, prod, false);
         } else {
+            #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
             thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
-            assert(false);
+            #endif
+assert(false);
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
              * should be possible unless a chunking or gds problem has occured. */
@@ -1145,7 +1165,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         build_chunk_or_justification(chunk_inst, custom_inst_list);
         dprint(DT_MILESTONES, "Chunk instantiation called from chunk instantiation for i%u DONE.\n", chunk_new_i_id);
     } else {
+        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_max_chunks();
+        #endif
     }
 
     return;

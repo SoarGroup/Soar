@@ -68,7 +68,9 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
                 new_constraint->constraint_test = ctest;
                 dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
                 constraints->push_back(new_constraint);
+                #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationLogger->increment_stat_constraints_collected();
+                #endif
                 break;
             default:
                 break;
@@ -229,7 +231,9 @@ void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRela
             assert(false);
             add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test);
         }
+        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_constraints_attached();
+        #endif
         return;
     }
     dprint(DT_CONSTRAINTS, "Did not find attachment point!\n");

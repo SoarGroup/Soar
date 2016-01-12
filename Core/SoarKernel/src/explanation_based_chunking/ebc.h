@@ -18,6 +18,7 @@
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
 #define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
 
+//#define BUILD_WITH_EXPLAINER
 
 tc_number get_new_tc_number(agent* thisAgent);
 
