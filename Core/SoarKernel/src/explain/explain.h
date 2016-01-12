@@ -209,6 +209,8 @@ class Explanation_Logger
 
         bool current_discussed_chunk_exists();
         bool watch_rule(const std::string* pStringParameter);
+        bool toggle_production_watch(production* pProduction);
+
         bool explain_chunk(const std::string* pStringParameter);
         bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void explain_summary();
@@ -241,8 +243,6 @@ class Explanation_Logger
         instantiation_record*   get_instantiation(instantiation* pInst);
         condition_record*       add_condition(condition* pCond, bool pStopHere);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
-
-        bool                    toggle_production_watch(production* pProduction);
 
         void                    print_chunk_list(short pNumToPrint = 0);
         void                    print_rules_watched(short pNumToPrint = 0);

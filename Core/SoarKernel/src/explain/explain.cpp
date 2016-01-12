@@ -478,11 +478,11 @@ bool Explanation_Logger::toggle_production_watch(production* pProduction)
     {
         pProduction->explain_its_chunks = false;
         --num_rules_watched;
-        outputManager->printa_sf(thisAgent, "Will no longer watch any chunks formed by rule '%y'.\n", pProduction->name);
+        outputManager->printa_sf(thisAgent, "No longer watching any chunks formed by rule '%y'\n", pProduction->name);
     } else {
         pProduction->explain_its_chunks = true;
         ++num_rules_watched;
-        outputManager->printa_sf(thisAgent, "Now watching any chunks formed by rule '%y'.\n", pProduction->name);
+        outputManager->printa_sf(thisAgent, "%fNow watching any chunks formed by rule '%y'\n", pProduction->name);
     }
     return true;
 }

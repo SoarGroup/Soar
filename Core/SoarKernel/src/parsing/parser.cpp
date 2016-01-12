@@ -31,6 +31,7 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "agent.h"
+#include "explain.h"
 #include "init_soar.h"
 #include "print.h"
 #include "rete.h"
@@ -2246,11 +2247,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     lexer.set_allow_ids(false);
     lexer.get_lexeme();
 
-    // voigtjr: added to parameter list so that CLI can ignore the error
-    // of a duplicate production with a different name
-    //byte rete_addition_result;
-    bool rhs_okay;
-    bool interrupt_on_match;
+    bool rhs_okay, interrupt_on_match, explain_chunks;
 
     reset_placeholder_variable_generator(thisAgent);
 
@@ -2324,6 +2321,12 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         if (!strcmp(lexer.current_lexeme.string(), ":interrupt"))
         {
             interrupt_on_match = true;
+            lexer.get_lexeme();
+            continue;
+        }
+        if (!strcmp(lexer.current_lexeme.string(), ":explain-chunks"))
+        {
+            explain_chunks = true;
             lexer.get_lexeme();
             continue;
         }
@@ -2417,6 +2420,11 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     p->documentation = documentation;
     p->declared_support = declared_support;
     p->interrupt = interrupt_on_match;
+    if (explain_chunks) {
+        thisAgent->explanationLogger->toggle_production_watch(p);
+    } else {
+        p->explain_its_chunks = false;
+    }
     *rete_addition_result = add_production_to_rete(thisAgent, p, lhs_top, NIL, true);
     deallocate_condition_list(thisAgent, lhs_top);
 
