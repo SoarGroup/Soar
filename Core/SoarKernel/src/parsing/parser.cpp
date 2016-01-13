@@ -2425,7 +2425,8 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     } else {
         p->explain_its_chunks = false;
     }
-    *rete_addition_result = add_production_to_rete(thisAgent, p, lhs_top, NIL, true);
+    production* duplicate_rule = NULL;
+    *rete_addition_result = add_production_to_rete(thisAgent, p, lhs_top, NIL, true, duplicate_rule);
     deallocate_condition_list(thisAgent, lhs_top);
 
     if (*rete_addition_result == DUPLICATE_PRODUCTION)

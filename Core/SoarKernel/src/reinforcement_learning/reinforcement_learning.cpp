@@ -678,7 +678,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             }
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
-            if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, true) == DUPLICATE_PRODUCTION)
+            production* duplicate_rule = NULL;
+            if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, duplicate_rule, true) == DUPLICATE_PRODUCTION)
             {
                 excise_production(thisAgent, new_production, false);
                 rl_revert_template_id(thisAgent);

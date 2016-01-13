@@ -331,6 +331,14 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     actions             = new action_record_list;
     chunkID             = pChunkID;
     baseInstantiation   = NULL;
+    stats.constraints_attached = 0;
+    stats.constraints_collected = 0;
+    stats.duplicates = 0;
+    stats.instantations_backtraced = 0;
+    stats.merged_conditions = 0;
+    stats.seen_instantations_backtraced = 0;
+    stats.tested_local_negation = false;
+
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 
@@ -593,3 +601,15 @@ bool Explanation_Logger::current_discussed_chunk_exists()
 {
     return current_discussed_chunk;
 }
+
+void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
+{
+    assert(duplicate_rule);
+    stats.duplicates++;
+    dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
+    chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
+    if (lChunkRecord)
+    {
+        lChunkRecord->stats.duplicates++;
+    }
+};

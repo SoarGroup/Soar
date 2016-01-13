@@ -60,6 +60,44 @@ typedef std::list< action_record* >                         action_record_list;
 typedef std::list< uint64_t >                               id_list;
 typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
 
+typedef struct tr_stats_struct {
+        uint64_t            chunks;
+        uint64_t            instantiations;
+        uint64_t            instantiations_referenced;
+        uint64_t            instantiations_skipped;
+        uint64_t            conditions;
+        uint64_t            actions;
+} tr_stats;
+
+typedef struct chunking_stats_struct {
+        uint64_t            duplicates;
+        uint64_t            unorderable;
+        uint64_t            justification_did_not_match;
+        uint64_t            chunk_did_not_match;
+        uint64_t            no_grounds;
+        uint64_t            max_chunks;
+        uint64_t            succeeded;
+        uint64_t            tested_local_negation;
+        uint64_t            merged_conditions;
+        uint64_t            chunks_attempted;
+        uint64_t            justifications_attempted;
+        uint64_t            justifications;
+        uint64_t            instantations_backtraced;
+        uint64_t            seen_instantations_backtraced;
+        uint64_t            constraints_attached;
+        uint64_t            constraints_collected;
+} chunking_stats;
+
+typedef struct chunk_stats_struct {
+        uint64_t            duplicates;
+        bool                tested_local_negation;
+        uint64_t            merged_conditions;
+        uint64_t            instantations_backtraced;
+        uint64_t            seen_instantations_backtraced;
+        uint64_t            constraints_attached;
+        uint64_t            constraints_collected;
+} chunk_stats;
+
 class action_record
 {
         friend class Explanation_Logger;
@@ -138,35 +176,8 @@ class chunk_record
         id_to_id_map_type*      identity_set_mappings;
         instantiation_record*   baseInstantiation;
         uint64_t                chunkID;
+        chunk_stats             stats;
 };
-
-typedef struct tr_stats_struct {
-        uint64_t            chunks;
-        uint64_t            instantiations;
-        uint64_t            instantiations_referenced;
-        uint64_t            instantiations_skipped;
-        uint64_t            conditions;
-        uint64_t            actions;
-} tr_stats;
-
-typedef struct chunking_stats_struct {
-        uint64_t            duplicates;
-        uint64_t            unorderable;
-        uint64_t            justification_did_not_match;
-        uint64_t            chunk_did_not_match;
-        uint64_t            no_grounds;
-        uint64_t            max_chunks;
-        uint64_t            succeeded;
-        uint64_t            tested_local_negation;
-        uint64_t            merged_conditions;
-        uint64_t            chunks_attempted;
-        uint64_t            justifications_attempted;
-        uint64_t            justifications;
-        uint64_t            instantations_backtraced;
-        uint64_t            seen_instantations_backtraced;
-        uint64_t            constraints_attached;
-        uint64_t            constraints_collected;
-} chunking_stats;
 
 class Explanation_Logger
 {
@@ -190,7 +201,7 @@ class Explanation_Logger
 
         instantiation_record*   add_instantiation(instantiation* pInst);
 
-        void increment_stat_duplicates() { stats.duplicates++; };
+        void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_unorderable() { stats.unorderable++; };
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };

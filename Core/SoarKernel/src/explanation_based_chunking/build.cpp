@@ -713,6 +713,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     condition*  saved_justification_top = 0;
     condition*  saved_justification_bottom = 0;
     uint64_t chunk_new_i_id = 0;
+    production* duplicate_rule = NULL;
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1088,7 +1089,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);
     dprint(DT_VARIABLIZATION_MANAGER, "Saved instantiation with constraints: \n%5", inst_top, chunk_inst->preferences_generated);
 
-    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name);
+    rete_addition_result = add_production_to_rete(thisAgent, prod, vrblz_top, chunk_inst, print_name, duplicate_rule);
 
     if (print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
@@ -1112,7 +1113,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_duplicates();
+        thisAgent->explanationLogger->increment_stat_duplicates(duplicate_rule);
         #endif
         excise_production(thisAgent, prod, false);
         chunk_inst->in_ms = false;
@@ -1129,10 +1130,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
             thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
             #endif
-assert(false);
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
-             * should be possible unless a chunking or gds problem has occured. */
+             * should be possible unless a chunking or gds problem has occurred.
+             * Can we even get here?  Let's see.*/
+            assert(false);
         }
         chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");

@@ -406,7 +406,7 @@ extern bool get_next_nil_goal_retraction(agent* thisAgent, struct instantiation_
 #define DUPLICATE_PRODUCTION 3           /* the prod. was a duplicate */
 extern byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                                    instantiation* refracted_inst,
-                                   bool warn_on_duplicates, bool ignore_rhs = false);
+                                   bool warn_on_duplicates, production* &duplicate_rule, bool ignore_rhs = false);
 extern void excise_production_from_rete(agent* thisAgent, production* p);
 
 extern void add_wme_to_rete(agent* thisAgent, wme* w);

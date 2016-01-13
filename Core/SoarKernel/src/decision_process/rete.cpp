@@ -3891,7 +3891,7 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
    BUGBUG should we check for duplicate justifications?
 --------------------------------------------------------------------- */
 
-byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top, instantiation* refracted_inst, bool warn_on_duplicates, bool ignore_rhs)
+byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top, instantiation* refracted_inst, bool warn_on_duplicates, production* &duplicate_rule, bool ignore_rhs)
 {
     rete_node* bottom_node, *p_node;
     rete_node_level bottom_depth;
@@ -3943,6 +3943,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             continue;
         }
         /* --- duplicate production found --- */
+        duplicate_rule = p_node->b.p.prod;
         if (warn_on_duplicates)
         {
             std::stringstream output;
