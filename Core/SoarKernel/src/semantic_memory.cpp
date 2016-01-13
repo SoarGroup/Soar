@@ -989,7 +989,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(trajectory_invalidate_edge);
 
     //gets the size of the current fingerprint table.
-    trajectory_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_likelihood_trajectories");
+    trajectory_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_likelihood_trajectories WHERE lti1!=0");
     add(trajectory_size_debug_cmd);
 
 
