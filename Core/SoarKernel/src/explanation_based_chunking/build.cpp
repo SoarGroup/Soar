@@ -1140,6 +1140,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
+        /* Don't think this can happen either */
         assert(false);
     }
 

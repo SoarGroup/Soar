@@ -2282,6 +2282,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     declared_support = UNDECLARED_SUPPORT;
     prod_type = USER_PRODUCTION_TYPE;
     interrupt_on_match = false;
+    explain_chunks = false;
     while (true)
     {
         if (lexer.current_lexeme.type != STR_CONSTANT_LEXEME)
