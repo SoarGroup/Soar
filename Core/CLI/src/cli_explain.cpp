@@ -56,9 +56,9 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     }
 
     /* Handle options that required a currently discussed chunk/justification */
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS)))
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
     {
-        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]'.");
+        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
     }
     else
@@ -84,7 +84,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     /* Handle global stats command*/
     if (options.test(EXPLAIN_GLOBAL_STATS))
     {
-        thisAgent->explanationLogger->explain_stats();
+        thisAgent->explanationLogger->print_explainer_stats();
         return true;
     }
 

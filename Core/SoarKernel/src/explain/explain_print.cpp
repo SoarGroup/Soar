@@ -213,26 +213,26 @@ void Explanation_Logger::print_all_chunks()
     print_chunk_list(0);
 }
 
-void Explanation_Logger::explain_stats()
+void Explanation_Logger::print_explainer_stats()
 {
     outputManager->printa_sf(thisAgent, "%f-------------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Executions Statistics\n");
     outputManager->printa_sf(thisAgent, "-------------------------\n");
-    outputManager->printa_sf(thisAgent, "Number of chunks                           %u\n", thisAgent->ebChunker->get_chunk_count());
+    outputManager->printa_sf(thisAgent, "Chunks                                     %u\n", thisAgent->ebChunker->get_chunk_count());
     outputManager->printa_sf(thisAgent, "Chunks attempted                           %u\n", stats.chunks_attempted);
     outputManager->printa_sf(thisAgent, "Chunks successfully built                  %u\n", stats.succeeded);
 
-    outputManager->printa_sf(thisAgent, "\nNumber of justifications                   %u\n", thisAgent->ebChunker->get_justification_count());
+    outputManager->printa_sf(thisAgent, "\nJustifications                             %u\n", thisAgent->ebChunker->get_justification_count());
     outputManager->printa_sf(thisAgent, "Justifications attempted                   %u\n", stats.justifications_attempted);
     outputManager->printa_sf(thisAgent, "Justifications successfully built          %u\n", stats.justifications);
 
-    outputManager->printa_sf(thisAgent, "\nTotal instantiations built                 %u\n", thisAgent->ebChunker->get_instantiation_count());
-    outputManager->printa_sf(thisAgent, "Total instantiations backtraced through    %u\n", stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Total instantiations already visited       %u\n", stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "\nInstantiations built                       %u\n", thisAgent->ebChunker->get_instantiation_count());
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %u\n", stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %u\n", stats.seen_instantations_backtraced);
 
-    outputManager->printa_sf(thisAgent, "\nNumber of conditions merged                %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Number of constraints attached             %u\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Number of constraints collected            %u\n", stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "\nConditions merged                        %u\n", stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Constraints collected                      %u\n", stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "Constraints attached                       %u\n", stats.constraints_attached);
 
     outputManager->printa_sf(thisAgent, "----------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Failure Statistics\n");
@@ -259,29 +259,21 @@ void Explanation_Logger::explain_stats()
 
 void Explanation_Logger::explain_chunk_stats() {
 
-    outputManager->printa_sf(thisAgent, "%f-------------------------\n");
-    outputManager->printa_sf(thisAgent, "EBC Executions Statistics\n");
-    outputManager->printa_sf(thisAgent, "-------------------------\n");
-    outputManager->printa_sf(thisAgent, "Number of conditions                     %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Number of actions                        %u\n", stats.merged_conditions);
+    assert(current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "%fStatistics for '%y' (c%u):\n\n",                            current_discussed_chunk->name, current_discussed_chunk->chunkID);
+    outputManager->printa_sf(thisAgent, "Number of conditions                       %u\n",        current_discussed_chunk->conditions->size());
+    outputManager->printa_sf(thisAgent, "Number of actions                          %u\n",        current_discussed_chunk->actions->size());
+    outputManager->printa_sf(thisAgent, "Base instantiation                         i%u\n",       current_discussed_chunk->baseInstantiation->instantiationID);
+    outputManager->printa_sf(thisAgent, "Base instantiation matched rule            %y\n",        current_discussed_chunk->baseInstantiation->production_name);
+    outputManager->printa_sf(thisAgent, "\nInstantiations backtraced through          %u\n",    current_discussed_chunk->stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %u\n",      current_discussed_chunk->stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Conditions merged                          %u\n",      current_discussed_chunk->stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Constraints collected                      %u\n",      current_discussed_chunk->stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "Constraints attached                       %u\n",      current_discussed_chunk->stats.constraints_attached);
 
-    outputManager->printa_sf(thisAgent, "\nTotal instantiations backtraced through    %u\n", stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Total instantiations already visited       %u\n", stats.seen_instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Number of conditions merged                %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Number of constraints attached             %u\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Number of constraints collected            %u\n", stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "\nDuplicates chunks later created  %u\n", current_discussed_chunk->stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Tested negation in local substate          %s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
 
-    outputManager->printa_sf(thisAgent, "\nNumber of times created (duplicates)       %u\n", stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Chunk tested local negation                %u\n", stats.tested_local_negation);
-
-    outputManager->printa_sf(thisAgent, "------------------------\n");
-    outputManager->printa_sf(thisAgent, "EBC Explainer Statistics\n");
-    outputManager->printa_sf(thisAgent, "------------------------\n");
-    outputManager->printa_sf(thisAgent, "New instantiation records added            %u\n", total_recorded.instantiations);
-    outputManager->printa_sf(thisAgent, "New actions records added                  %u\n", total_recorded.actions);
-    outputManager->printa_sf(thisAgent, "New condition records added                %u\n", total_recorded.conditions);
-    outputManager->printa_sf(thisAgent, "Instantiation references in conditions     %u\n", total_recorded.instantiations_referenced);
-    outputManager->printa_sf(thisAgent, "Instantiations skipped                     %u\n", total_recorded.instantiations_skipped);
 }
 
 void Explanation_Logger::print_chunk_list(short pNumToPrint)

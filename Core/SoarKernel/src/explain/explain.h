@@ -208,15 +208,15 @@ class Explanation_Logger
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_succeeded() { stats.succeeded++; };
-        void increment_stat_tested_local_negation() { stats.tested_local_negation++; };
-        void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; };
+        void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
+        void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
         void increment_stat_justifications() { stats.justifications++; };
-        void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; };
-        void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; };
-        void increment_stat_constraints_attached() { stats.constraints_attached++; };
-        void increment_stat_constraints_collected() { stats.constraints_collected++; };
+        void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
+        void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
+        void increment_stat_constraints_attached() { stats.constraints_attached++; if (current_recording_chunk) current_recording_chunk->stats.constraints_attached++; };
+        void increment_stat_constraints_collected() { stats.constraints_collected++; if (current_recording_chunk) current_recording_chunk->stats.constraints_collected++; };
 
         bool current_discussed_chunk_exists();
         bool watch_rule(const std::string* pStringParameter);
@@ -225,7 +225,7 @@ class Explanation_Logger
         bool explain_chunk(const std::string* pStringParameter);
         bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void explain_summary();
-        void explain_stats();
+        void print_explainer_stats();
         void explain_chunk_stats();
         void print_all_watched_rules();
         void print_all_chunks();
