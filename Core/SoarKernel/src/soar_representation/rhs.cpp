@@ -335,6 +335,7 @@ action* copy_action(agent* thisAgent, action* pAction)
     new_action->type = pAction->type;
     new_action->preference_type = pAction->preference_type;
     new_action->support = pAction->support;
+    new_action->next = NULL;
     if (pAction->type == FUNCALL_ACTION)
     {
         new_action->value = copy_rhs_value(thisAgent, pAction->value);

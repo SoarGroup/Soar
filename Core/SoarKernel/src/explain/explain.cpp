@@ -312,6 +312,8 @@ action_record::action_record(agent* myAgent, preference* pPref, action* pAction,
     if (pAction)
     {
         variablized_action = copy_action(thisAgent, pAction);
+    } else {
+        variablized_action = NULL;
     }
     dprint(DT_EXPLAIN, "Created action record a%u for pref %p (%r ^%r %r)\naction %a", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
 }
@@ -320,7 +322,7 @@ action_record::~action_record()
 {
     dprint(DT_EXPLAIN, "Deleting action record a%u for: %p\n", actionID, instantiated_pref);
     deallocate_preference(thisAgent, instantiated_pref);
-//    deallocate_action_list(thisAgent, variablized_action);
+    deallocate_action_list(thisAgent, variablized_action);
 }
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
@@ -373,7 +375,6 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     conditionID = pCondID;
     instantiated_cond = copy_condition(thisAgent, pCond, false, false, true);
     variablized_cond = copy_condition(thisAgent, pCond, false, false, true);
-    //substitute_explanation_variables(variablized_cond);
     if (pCond->bt.wme_)
     {
         matched_wme = new soar_module::symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);

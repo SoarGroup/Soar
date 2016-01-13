@@ -420,6 +420,11 @@ agent* create_soar_agent(char* agent_name)                                      
 */
 void destroy_soar_agent(agent* delete_agent)
 {
+
+    delete delete_agent->ebChunker;
+    delete delete_agent->explanationLogger;
+    dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
+
     // cleanup exploration
     for (int i = 0; i < EXPLORATION_PARAMS; i++)
     {
@@ -549,9 +554,9 @@ void destroy_soar_agent(agent* delete_agent)
 
     dprint_identifiers(DT_ID_LEAKING);
 
-    // MToDo | I feel like these should be deleted earlier
-    delete delete_agent->ebChunker;
-    delete delete_agent->explanationLogger;
+//    // MToDo | I feel like these should be deleted earlier
+//    delete delete_agent->ebChunker;
+//    delete delete_agent->explanationLogger;
 
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)

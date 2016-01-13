@@ -44,6 +44,8 @@
 #include <map>
 #include <sstream>
 
+//#define DEBUG_TRACE_REFCOUNT_FOR "S1"
+
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;
 typedef int64_t epmem_node_id;
@@ -474,7 +476,8 @@ extern double get_number_from_symbol(Symbol* sym);
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 #include <string>
-extern std::string get_refcount_stacktrace_string(const char* prefix);
+#include <iostream>
+extern std::string get_stacktrace(const char* prefix);
 #endif
 
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
@@ -497,14 +500,14 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x)
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
-        std::string caller_string = get_refcount_stacktrace_string("add_ref");
-        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        std::string caller_string = get_stacktrace("add_ref");
+//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        std::cout << "++ | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
     }
 #endif
 
     (x)->reference_count++;
 }
-
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
 #define symbol_remove_ref(thisAgent, sym) \
     ({debug_store_refcount(sym, false); \
@@ -518,7 +521,8 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
     //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
 #else
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
+//    dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
+//    std::cout << "REMOVE-REF " << x->to_string() << "->" <<  ((x)->reference_count - 1) << "\n";
 #endif
 //    assert((x)->reference_count > 0);
     (x)->reference_count--;
@@ -527,8 +531,9 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
     std::string strName(x->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
-        std::string caller_string = get_refcount_stacktrace_string("remove_ref");
+        std::string caller_string = get_stacktrace("remove_ref");
         //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        std::cout << "-- | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
     }
 #endif
 
@@ -536,38 +541,6 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
     {
         deallocate_symbol(thisAgent, x);
     }
-}
-
-/* -- To avoid possible refcount bugs in the future, all symbol creation functions will by default increase
- *    the refcount.  Code that doesn't need that initial refcount must consciously take another step to
- *    reverse that initial count by using this function. -- */
-
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-#define symbol_remove_ref_no_deallocate(thisAgent, sym) \
-    ({debug_store_refcount(sym, false); \
-        symbol_remove_ref_no_deallocate_func(thisAgent, sym);})
-
-inline void symbol_remove_ref_no_deallocate_func(agent* thisAgent, Symbol* x)
-#else
-inline void symbol_remove_ref_no_deallocate(agent* thisAgent, Symbol* x)
-#endif
-{
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
-#else
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF UNNECESSARY %y -> %u\n", x, (x)->reference_count - 1);
-#endif
-
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
-    std::string strName(x->to_string());
-    if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-    {
-        std::string caller_string = get_refcount_stacktrace_string("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
-    }
-#endif
-//    assert((x)->reference_count > 0);
-    (x)->reference_count--;
 }
 
 /* -----------------------------------------------------------------

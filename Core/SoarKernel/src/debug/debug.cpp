@@ -50,9 +50,9 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
 
     //    mode_info[DT_ID_LEAKING].enabled =                  true;
     //    mode_info[DT_DEALLOCATES].enabled =                 true;
-    //    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
+//        mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
     //    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
-    //    mode_info[DT_REFCOUNT_REMS].enabled =               true;
+//        mode_info[DT_REFCOUNT_REMS].enabled =               true;
     //
     //    mode_info[DT_SOAR_INSTANCE].enabled =               true;
     //    mode_info[DT_CLI_LIBRARIES].enabled =               true;
@@ -80,7 +80,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
     //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
     //    mode_info[DT_RHS_VALUE].enabled =                   true;
-        mode_info[DT_EXPLAIN].enabled =                     true;
+//        mode_info[DT_EXPLAIN].enabled =                     true;
     //
     //    mode_info[DT_WME_CHANGES].enabled =                 true;
     //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;

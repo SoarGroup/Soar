@@ -55,8 +55,6 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
      * in a piece of code being debugged.  You can set this variable to the name
      * of the symbol and call check_symbol or check_symbol_in_test to break there */
     //#define DEBUG_CHECK_SYMBOL "topfoo-copy"
-    //#define DEBUG_TRACE_REFCOUNT_FOR "R7"
-
     //extern sqlite_database  *db_err_epmem_db, *db_err_smem_db;
 
     #define dprint(mode, format, ...) Output_Manager::Get_OM().debug_print_sf (mode, format , ##__VA_ARGS__)

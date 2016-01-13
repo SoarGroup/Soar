@@ -456,8 +456,8 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->epmem_stats->reset();
     thisAgent->smem_stats->reset();
     thisAgent->dyn_counters->clear();
-    thisAgent->explanationLogger->re_init();
     thisAgent->ebChunker->reinit();
+    thisAgent->explanationLogger->re_init();
 
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
     thisAgent->FIRING_TYPE = IE_PRODS;
