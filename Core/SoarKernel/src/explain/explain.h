@@ -130,11 +130,7 @@ class condition_record
 
     private:
         agent* thisAgent;
-        soar_module::test_triple        variablized_tests;
-        soar_module::test_triple        instantiated_tests;
-        soar_module::test_triple        explanation_tests;
-        condition*                      variablized_cond;
-        condition*                      instantiated_cond;
+        soar_module::test_triple        condition_tests;
         soar_module::symbol_triple*     matched_wme;
         action_record*                  parent_action;
         instantiation_record*           parent_instantiation;

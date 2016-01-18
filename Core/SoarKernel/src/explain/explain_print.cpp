@@ -10,25 +10,26 @@
 
 void Explanation_Logger::print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord)
 {
+    if (pType == ebc_actual_trace)
+    {
+        outputManager->printa_sf(thisAgent, "Instantiation # %u   (match of rule %y)\n\n",
+            pInstRecord->instantiationID, pInstRecord->production_name);
+    } else if (pType == ebc_explanation_trace)
+    {
+        outputManager->set_column_indent(60);
+        outputManager->printa_sf(thisAgent, "Explanation Trace:     %-Variable Identity IDs\n\n");
+    }
     print_condition_list(pType, pInstRecord->conditions);
-    outputManager->printa(thisAgent, "-->\n");
+    outputManager->printa(thisAgent, "   -->\n");
     print_action_list(pType, pInstRecord->actions);
 }
 
 
 void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
 {
-    outputManager->printa_sf(thisAgent, "Instantiation # %u   (match of rule %y)\n\n",
-        pInstRecord->instantiationID, pInstRecord->production_name);
-    outputManager->printa(thisAgent, "Variablized:\n");
-    print_instantiation(ebc_chunk, pInstRecord);
-    outputManager->printa(thisAgent, "Instantiated:\n");
-    print_instantiation(ebc_explanation, pInstRecord);
-
-    outputManager->set_column_indent(45);
-    outputManager->printa(thisAgent, "\nAdd the following to show additional information for any chunk or instantiation explanation:\n");
-    outputManager->printa_sf(thisAgent, "* 'explain [-e | --explanation-trace': %-Print corresponding explanation trace structure\n");
-    outputManager->printa_sf(thisAgent, "* 'explain [-i | --identity':          %-Print showing underlying identity values\n");
+    print_instantiation(ebc_actual_trace, pInstRecord);
+    outputManager->printa(thisAgent, "\n");
+    print_instantiation(ebc_explanation_trace, pInstRecord);
 }
 
 void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords)
@@ -44,43 +45,32 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
         for (condition_record_list::iterator it = pCondRecords->begin(); it != pCondRecords->end(); it++)
         {
             lCond = (*it);
-            if (pType == ebc_chunk)
+            if (pType == ebc_actual_trace)
             {
-//                thisAgent->outputManager->set_print_test_format(true, false);
-//                outputManager->printa_sf(thisAgent, "   %l   c%u originally from rule %s (i%u)\n", lCond->variablized_cond, lCond->conditionID,
-//                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
-//                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
                 outputManager->printa_sf(thisAgent, "   (%t ^%t %t)    %-c%u *originally from rule %s (i%u)\n",
-                    lCond->variablized_tests.id, lCond->variablized_tests.attr, lCond->variablized_tests.value, lCond->conditionID,
+                    lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value, lCond->conditionID,
                     (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
                     (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-               thisAgent->outputManager->clear_print_test_format();
-            } else if (pType == ebc_explanation)
+//                outputManager->printa_sf(thisAgent, "   (%o ^%o %o)    %-(%g ^%g %g)\n",
+//                    lCond->variablized_tests.id, lCond->variablized_tests.attr, lCond->variablized_tests.value,
+//                    lCond->variablized_tests.id, lCond->variablized_tests.attr, lCond->variablized_tests.value);
+            } else if (pType == ebc_explanation_trace)
             {
-//                thisAgent->outputManager->set_print_test_format(false, true);
-//                outputManager->printa_sf(thisAgent, "   %l   c%u originally from rule %s (i%u)\n", lCond->instantiated_cond, lCond->conditionID,
-//                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
-//                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-                outputManager->printa_sf(thisAgent, "   (%g ^%g %g)    %-c%u *originally from rule %s (i%u)\n",
-                    lCond->instantiated_tests.id, lCond->instantiated_tests.attr, lCond->instantiated_tests.value, lCond->conditionID,
-                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
-                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-                thisAgent->outputManager->clear_print_test_format();
-            } else if (pType == ebc_match)
+                outputManager->printa_sf(thisAgent, "   (%o ^%o %o)    %-(%g ^%g %g)\n",
+                    lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value,
+                    lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
+//                outputManager->printa_sf(thisAgent, "   (%o ^%o %o)    %-(%g ^%g %g)\n",
+//                    lCond->instantiated_tests.id, lCond->instantiated_tests.attr, lCond->instantiated_tests.value,
+//                    lCond->instantiated_tests.id, lCond->instantiated_tests.attr, lCond->instantiated_tests.value);
+            } else if (pType == ebc_match_trace)
             {
-                outputManager->printa_sf(thisAgent, "   (%y ^%y %y)    %-matched condition c%u in rule %s (i%u)\n",
-                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, lCond->conditionID,
-                    (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
-                    (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
-            } else if (pType == ebc_original)
-            {
-            } else {
-                assert(false);
+                outputManager->printa_sf(thisAgent, "   (%y ^%y %y)\n",
+                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value);
             }
         }
     }
-
 }
+
 void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_list* pActionRecords)
 {
     if (pActionRecords->empty())
@@ -93,30 +83,26 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
         {
             lAction = (*it);
-            if (pType == ebc_chunk)
+            if (pType == ebc_actual_trace)
             {
 //                outputManager->printa_sf(thisAgent, "   %a              a%u\n",
 //                     lAction->variablized_action, lAction->actionID);
                 thisAgent->outputManager->set_print_test_format(false, true);
-                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                outputManager->printa_sf(thisAgent, "   %p\n",
                      lAction->instantiated_pref, lAction->actionID);
                 thisAgent->outputManager->clear_print_test_format();
-            } else if (pType == ebc_explanation)
+            } else if (pType == ebc_explanation_trace)
             {
                 thisAgent->outputManager->set_print_test_format(false, true);
-                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                outputManager->printa_sf(thisAgent, "   %p\n",
                      lAction->instantiated_pref, lAction->actionID);
                 thisAgent->outputManager->clear_print_test_format();
-            } else if (pType == ebc_match)
+            } else if (pType == ebc_match_trace)
             {
                 thisAgent->outputManager->set_print_test_format(true, false);
-                outputManager->printa_sf(thisAgent, "   %p              a%u\n",
+                outputManager->printa_sf(thisAgent, "   %p\n",
                      lAction->instantiated_pref, lAction->actionID);
                 thisAgent->outputManager->clear_print_test_format();
-            } else if (pType == ebc_original)
-            {
-            } else {
-                assert(false);
             }
         }
     }
@@ -124,9 +110,25 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
 
 void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRecord)
 {
+    if (pType == ebc_actual_trace)
+    {
+        outputManager->printa_sf(thisAgent, "sp {%y\n", current_discussed_chunk->name);
+    } else if (pType == ebc_explanation_trace)
+    {
+        outputManager->set_column_indent(60);
+        outputManager->printa_sf(thisAgent, "Explanation Trace:     %-Variable Identity IDs\n\n");
+    } else if (pType == ebc_match_trace)
+    {
+        outputManager->printa_sf(thisAgent, "Working Memory trace:\n\n");
+    }
     print_condition_list(pType, pChunkRecord->conditions);
-    outputManager->printa(thisAgent, "-->\n");
+    outputManager->printa(thisAgent, "   -->\n");
     print_action_list(pType, pChunkRecord->actions);
+    if (pType == ebc_actual_trace)
+     {
+         outputManager->printa(thisAgent, "}\n");
+     }
+
 }
 
 void Explanation_Logger::print_chunk_explanation()
@@ -136,24 +138,21 @@ void Explanation_Logger::print_chunk_explanation()
 
     outputManager->printa_sf(thisAgent, "   (1) At t?, rule '%y'(i%u) matched, fired and created a result    ('explain instantiation %u')\n",
         current_discussed_chunk->baseInstantiation->production_name, current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->instantiationID);
+//    print_instantiation(ebc_chunk, current_discussed_chunk->baseInstantiation);
+
     outputManager->printa_sf(thisAgent, "   (2) Conditions of i%u and CDPS are backtraced through            ('explain --backtrace')\n",  current_discussed_chunk->baseInstantiation->instantiationID);
     outputManager->printa(thisAgent, "   (3) EBC magic happens to produce the following chunk:\n\n");
-    outputManager->printa_sf(thisAgent, "sp {%y\n", current_discussed_chunk->name);
-//    print_chunk(ebc_chunk, current_discussed_chunk);
-//    outputManager->printa_sf(thisAgent, "}\nExplanation trace:\nsp {%y\n", current_discussed_chunk->name);
-    outputManager->printa(thisAgent, "Variablized:\n");
-    print_chunk(ebc_chunk, current_discussed_chunk);
-    outputManager->printa(thisAgent, "Instantiated:\n");
-    print_chunk(ebc_explanation, current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "}\n\nWorking memory trace:\n\n");
-    print_chunk(ebc_match, current_discussed_chunk);
+
+    print_chunk(ebc_actual_trace, current_discussed_chunk);
+    outputManager->printa(thisAgent, "\n");
+    print_chunk(ebc_explanation_trace, current_discussed_chunk);
+    outputManager->printa(thisAgent, "\n");
+    print_chunk(ebc_match_trace, current_discussed_chunk);
+
     outputManager->printa(thisAgent, "\nThe following commands now apply to this chunk:\n");
-    outputManager->printa(thisAgent, "* 'explain [-b | --backtrace]':              Explain problem-solving backtrace\n");
-    outputManager->printa(thisAgent, "* 'explain [-c | --constraints]':            Explain constraints required by problem-solving\n");
-    outputManager->printa_sf(thisAgent, "* 'explain [-s | --stats]':                  Print statistics for %y\n", current_discussed_chunk->name);
-    outputManager->printa(thisAgent, "\nAdd the following to show additional information for any chunk or instantiation explanation:\n");
-    outputManager->printa(thisAgent, "* 'explain [-e | --explanation-trace]':      Print corresponding explanation trace structure\n");
-    outputManager->printa(thisAgent, "* 'explain [-i | --identity]':               Print showing underlying identity values\n");
+    outputManager->printa(thisAgent, "* explain [-b | --backtrace]:              Explain problem-solving backtrace\n");
+    outputManager->printa(thisAgent, "* explain [-c | --constraints]:            Explain constraints required by problem-solving\n");
+    outputManager->printa_sf(thisAgent, "* explain [-s | --stats]:                  Print statistics for %y\n", current_discussed_chunk->name);
 }
 
 void Explanation_Logger::explain_summary()
@@ -257,7 +256,7 @@ void Explanation_Logger::explain_chunk_stats() {
     outputManager->printa_sf(thisAgent, "Constraints collected                      %u\n",      current_discussed_chunk->stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                       %u\n",      current_discussed_chunk->stats.constraints_attached);
 
-    outputManager->printa_sf(thisAgent, "\nDuplicates chunks later created  %u\n", current_discussed_chunk->stats.duplicates);
+    outputManager->printa_sf(thisAgent, "\nDuplicates chunks later created          %u\n", current_discussed_chunk->stats.duplicates);
     outputManager->printa_sf(thisAgent, "Tested negation in local substate          %s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
 
 }

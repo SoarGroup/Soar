@@ -353,16 +353,16 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                             {
                                 if (t->identity)
                                 {
-                                    test_to_string(t, destString);
-                                    destString += " [o";
+//                                    destString += "i";
+                                    if (t->type != EQUALITY_TEST)
+                                    {
+                                        destString += test_type_to_string_brief(t->type);
+                                    }
+                                    destString += "<";
                                     destString += std::to_string(t->identity);
-                                    destString += ' ';
-                                    sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
-                                    if (sym) destString += sym->to_string(true); else destString += '#';
-                                    destString += ']';
+                                    destString += ">";
                                 } else {
                                     test_to_string(t, destString);
-                                    destString += " [o0]";
                                 }
                             } else {
                                 destString += "{ ";
@@ -370,18 +370,17 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 {
                                     ct = static_cast<test>(c->first);
                                     assert(ct);
-                                    if (t->identity)
+                                    if (ct->identity)
                                     {
-                                        test_to_string(t, destString);
-                                        destString += " [o";
-                                        destString += std::to_string(t->identity);
-                                        destString += ' ';
-                                        sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
-                                        if (sym) destString += sym->to_string(true); else destString += '#';
-                                        destString += ']';
+                                        if (ct->type != EQUALITY_TEST)
+                                        {
+                                            destString += test_type_to_string_brief(ct->type);
+                                        }
+                                        destString += "<";
+                                        destString += std::to_string(ct->identity);
+                                        destString += ">";
                                     } else {
-                                        test_to_string(t, destString);
-                                        destString += " [o0]";
+                                        test_to_string(ct, destString);
                                     }
                                     destString += ' ';
                                 }
@@ -392,7 +391,51 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         }
                     }
                     break;
-
+                    case 'o':
+                    {
+                        test t = va_arg(args, test);
+                        test ct = NULL;
+                        if (t)
+                        {
+                            if (t->type != CONJUNCTIVE_TEST)
+                            {
+                                if (t->identity)
+                                {
+                                    if (t->type != EQUALITY_TEST)
+                                    {
+                                        destString += test_type_to_string_brief(t->type);
+                                    }
+                                    sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
+                                    if (sym) destString += sym->to_string(true); else destString += '#';
+                                } else {
+                                    test_to_string(t, destString);
+                                }
+                            } else {
+                                destString += "{ ";
+                                for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
+                                {
+                                    ct = static_cast<test>(c->first);
+                                    assert(ct);
+                                    if (ct->identity)
+                                    {
+                                        if (ct->type != EQUALITY_TEST)
+                                        {
+                                            destString += test_type_to_string_brief(ct->type);
+                                        }
+                                        sym = thisAgent->ebChunker->get_ovar_for_o_id(ct->identity);
+                                        if (sym) destString += sym->to_string(true); else destString += '#';
+                                    } else {
+                                        test_to_string(ct, destString);
+                                    }
+                                    destString += ' ';
+                                }
+                                destString += '}';
+                            }
+                        } else {
+                            destString += '#';
+                        }
+                    }
+                    break;
                     case 'l':
                     {
                         condition* lc = va_arg(args, condition*);

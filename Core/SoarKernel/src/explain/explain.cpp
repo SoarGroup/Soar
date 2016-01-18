@@ -401,22 +401,9 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     conditionID = pCondID;
     type = pCond->type;
 
-//    instantiated_cond = copy_condition(thisAgent, pCond, false, false, true);
-//    variablized_cond = copy_condition(thisAgent, pCond, false, false, true);
-
-    variablized_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
-    variablized_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
-    variablized_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-    if (pCond->counterpart)
-    { /* Must be a chunk */
-        instantiated_tests.id = copy_test(thisAgent, pCond->counterpart->data.tests.id_test);
-        instantiated_tests.attr = copy_test(thisAgent, pCond->counterpart->data.tests.attr_test);
-        instantiated_tests.value = copy_test(thisAgent, pCond->counterpart->data.tests.value_test);
-    } else {
-        instantiated_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
-        instantiated_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
-        instantiated_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-    }
+    condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
+    condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
+    condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
 
     if (pCond->bt.wme_)
     {
@@ -443,14 +430,9 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
 condition_record::~condition_record()
 {
     dprint(DT_EXPLAIN, "Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, instantiated_tests.id, instantiated_tests.attr, instantiated_tests.value);
-//    deallocate_condition(thisAgent, instantiated_cond);
-//    deallocate_condition(thisAgent, variablized_cond);
-    deallocate_test(thisAgent, variablized_tests.id);
-    deallocate_test(thisAgent, variablized_tests.attr);
-    deallocate_test(thisAgent, variablized_tests.value);
-    deallocate_test(thisAgent, instantiated_tests.id);
-    deallocate_test(thisAgent, instantiated_tests.attr);
-    deallocate_test(thisAgent, instantiated_tests.value);
+    deallocate_test(thisAgent, condition_tests.id);
+    deallocate_test(thisAgent, condition_tests.attr);
+    deallocate_test(thisAgent, condition_tests.value);
     if (matched_wme)
     {
         dprint(DT_EXPLAIN, "Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
