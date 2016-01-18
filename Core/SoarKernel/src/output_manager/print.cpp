@@ -555,8 +555,19 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case '%': {
+                    case '%':
+                    {
                         destString += '%';
+                    }
+                    break;
+
+                    case '-':
+                    {
+                        if (destString.length() < m_column_indent) {
+                            destString.append( (m_column_indent - destString.length()), ' ');
+                        } else {
+                            destString += ' ';
+                        }
                     }
                     break;
 

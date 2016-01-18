@@ -1588,7 +1588,7 @@ bool is_preference_lexeme(enum lexer_token_type test_lexeme)
       lexeme here
 ----------------------------------------------------------------- */
 
-byte parse_preference_specifier_without_referent(agent* thisAgent, Lexer* lexer)
+PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lexer* lexer)
 {
     switch (lexer->current_lexeme.type)
     {
@@ -1718,7 +1718,7 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
     action* a;
     action* prev_a;
     rhs_value referent;
-    byte preference_type;
+    PreferenceType preference_type;
     bool saw_plus_sign;
 
     /* --- Note: this routine is set up so if there's not preference type
@@ -1816,7 +1816,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
     action* a;
     action* prev_a;
     rhs_value referent;
-    byte preference_type;
+    PreferenceType preference_type;
     bool saw_plus_sign;
 
     /* JC ADDED: for printint */
@@ -2235,13 +2235,13 @@ action* destructively_reverse_action_list(action* a)
 ================================================================= */
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result)
 {
-    Symbol* name;
-    char* documentation;
-    condition* lhs, *lhs_top, *lhs_bottom;
-    action* rhs;
-    production* p;
-    byte declared_support;
-    byte prod_type;
+    Symbol*         name;
+    char*           documentation;
+    condition       *lhs, *lhs_top, *lhs_bottom;
+    action*         rhs;
+    production*     p;
+    SupportType     declared_support;
+    ProductionType  prod_type;
 
     Lexer lexer(thisAgent, prod_string);
     lexer.set_allow_ids(false);

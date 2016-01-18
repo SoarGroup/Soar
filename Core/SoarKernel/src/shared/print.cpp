@@ -804,6 +804,9 @@ void print_production(agent* thisAgent, production* p, bool internal)
             inline_print_string(thisAgent, "   :template\n");
             xml_att_val(thisAgent, kProductionType, kProductionTypeTemplate);
             break;
+        case NUM_PRODUCTION_TYPES:
+            assert(false);
+            break;
     }
 
     if (p->declared_support == DECLARED_O_SUPPORT)

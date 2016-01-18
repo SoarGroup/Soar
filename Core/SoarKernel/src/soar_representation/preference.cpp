@@ -60,7 +60,7 @@ const char* preference_name[] =
    and are optional/have default nil values.
 ---------------------------------------------------------------------- */
 
-preference* make_preference(agent* thisAgent, byte type, Symbol* id, Symbol* attr,
+preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
                             const soar_module::identity_triple o_ids,
                             const soar_module::rhs_triple rhs_funcs)

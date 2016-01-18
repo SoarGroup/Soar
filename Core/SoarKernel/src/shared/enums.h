@@ -183,6 +183,7 @@ enum ni_mode
 
 enum TestType
 {
+    UNINITIALIZED_TEST = 0,
     NOT_EQUAL_TEST = 1,          /* various relational tests */
     LESS_TEST = 2,
     GREATER_TEST = 3,
@@ -204,13 +205,16 @@ enum TestType
       Types of Productions
 ------------------------------- */
 
-#define USER_PRODUCTION_TYPE 0
-#define DEFAULT_PRODUCTION_TYPE 1
-#define CHUNK_PRODUCTION_TYPE 2
-#define JUSTIFICATION_PRODUCTION_TYPE 3
-#define TEMPLATE_PRODUCTION_TYPE 4
+enum ProductionType
+{
+    USER_PRODUCTION_TYPE,
+    DEFAULT_PRODUCTION_TYPE,
+    CHUNK_PRODUCTION_TYPE,
+    JUSTIFICATION_PRODUCTION_TYPE,
+    TEMPLATE_PRODUCTION_TYPE,
+    NUM_PRODUCTION_TYPES
+};
 
-#define NUM_PRODUCTION_TYPES 5
 // Soar-RL assumes that the production types start at 0 and go to (NUM_PRODUCTION_TYPES-1) sequentially
 
 /* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
@@ -225,23 +229,24 @@ enum TestType
    can be fixed in rete.cpp, but for now, we're just keeping the preference
    types.  There is no code that actually uses them any more, though.*/
 
-
-#define ACCEPTABLE_PREFERENCE_TYPE 0
-#define REQUIRE_PREFERENCE_TYPE 1
-#define REJECT_PREFERENCE_TYPE 2
-#define PROHIBIT_PREFERENCE_TYPE 3
-#define RECONSIDER_PREFERENCE_TYPE 4
-#define UNARY_INDIFFERENT_PREFERENCE_TYPE 5
-#define UNARY_PARALLEL_PREFERENCE_TYPE 6
-#define BEST_PREFERENCE_TYPE 7
-#define WORST_PREFERENCE_TYPE 8
-#define BINARY_INDIFFERENT_PREFERENCE_TYPE 9
-#define BINARY_PARALLEL_PREFERENCE_TYPE 10
-#define BETTER_PREFERENCE_TYPE 11
-#define WORSE_PREFERENCE_TYPE 12
-#define NUMERIC_INDIFFERENT_PREFERENCE_TYPE 13
-
-#define NUM_PREFERENCE_TYPES 14
+enum PreferenceType
+{
+    ACCEPTABLE_PREFERENCE_TYPE = 0,
+    REQUIRE_PREFERENCE_TYPE = 1,
+    REJECT_PREFERENCE_TYPE = 2,
+    PROHIBIT_PREFERENCE_TYPE = 3,
+    RECONSIDER_PREFERENCE_TYPE = 4,
+    UNARY_INDIFFERENT_PREFERENCE_TYPE = 5,
+    UNARY_PARALLEL_PREFERENCE_TYPE = 6,
+    BEST_PREFERENCE_TYPE = 7,
+    WORST_PREFERENCE_TYPE = 8,
+    BINARY_INDIFFERENT_PREFERENCE_TYPE = 9,
+    BINARY_PARALLEL_PREFERENCE_TYPE = 10,
+    BETTER_PREFERENCE_TYPE = 11,
+    WORSE_PREFERENCE_TYPE = 12,
+    NUMERIC_INDIFFERENT_PREFERENCE_TYPE = 13,
+    NUM_PREFERENCE_TYPES = 14,
+};
 
 inline bool preference_is_unary(byte p)
 {
@@ -256,13 +261,25 @@ extern const char* preference_name[NUM_PREFERENCE_TYPES];
 
 
 /* --- types of conditions --- */
-#define POSITIVE_CONDITION 0
-#define NEGATIVE_CONDITION 1
-#define CONJUNCTIVE_NEGATION_CONDITION 2
+enum ConditionType {
+    POSITIVE_CONDITION,
+    NEGATIVE_CONDITION,
+    CONJUNCTIVE_NEGATION_CONDITION
+};
 
-#define UNDECLARED_SUPPORT 0
-#define DECLARED_O_SUPPORT 1
-#define DECLARED_I_SUPPORT 2
+enum ActionType {
+    MAKE_ACTION = 0,
+    FUNCALL_ACTION = 1,
+};
+
+enum SupportType {
+    UNKNOWN_SUPPORT = 0,
+    O_SUPPORT = 1,
+    I_SUPPORT = 2,
+    UNDECLARED_SUPPORT = 0,
+    DECLARED_O_SUPPORT = 1,
+    DECLARED_I_SUPPORT = 2,
+};
 
 #define PE_PRODS 0
 #define IE_PRODS 1

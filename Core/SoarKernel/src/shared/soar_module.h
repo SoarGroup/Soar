@@ -42,34 +42,9 @@ namespace soar_module
     /////////////////////////////////////////////////////////////
 
     typedef std::set< wme* > wme_set;
-
-    typedef struct symbol_triple_struct
-    {
-        Symbol* id;
-        Symbol* attr;
-        Symbol* value;
-
-        symbol_triple_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-    } symbol_triple;
     typedef std::list< symbol_triple* > symbol_triple_list;
-
-    typedef struct identity_triple_struct
-    {
-        uint64_t id;
-        uint64_t attr;
-        uint64_t value;
-
-        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0): id(new_id), attr(new_attr), value(new_value) {}
-    } identity_triple;
-
-    typedef struct rhs_triple_struct
-    {
-            rhs_value id;
-            rhs_value attr;
-            rhs_value value;
-
-            rhs_triple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-    } rhs_triple;
+    typedef std::list< test_triple* > test_triple_list;
+    typedef std::list< test_triple* > test_triple_list;
 
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);

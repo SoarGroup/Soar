@@ -702,7 +702,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     production* prod;
     instantiation* chunk_inst;
     Symbol* prod_name=NULL;
-    byte prod_type;
+    ProductionType prod_type;
     bool print_name, print_prod;
     byte rete_addition_result;
     condition* inst_top = NULL, * inst_bottom = NULL;

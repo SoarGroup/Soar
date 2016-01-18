@@ -7547,9 +7547,9 @@ action* reteload_rhs_action(agent* thisAgent, FILE* f)
     action* a;
 
     a = make_action(thisAgent);
-    a->type = reteload_one_byte(f);
-    a->preference_type = reteload_one_byte(f);
-    a->support = reteload_one_byte(f);
+    a->type = static_cast<ActionType>(reteload_one_byte(f));
+    a->preference_type = static_cast<PreferenceType>(reteload_one_byte(f));
+    a->support = static_cast<SupportType>(reteload_one_byte(f));
     if (a->type == FUNCALL_ACTION)
     {
         a->value = reteload_rhs_value(thisAgent, f);
@@ -8027,8 +8027,8 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             {
                 prod->documentation = NIL;
             }
-            prod->type = reteload_one_byte(f);
-            prod->declared_support = reteload_one_byte(f);
+            prod->type = static_cast<ProductionType>(reteload_one_byte(f));
+            prod->declared_support = static_cast<SupportType>(reteload_one_byte(f));
             prod->action_list = reteload_action_list(thisAgent, f);
 
             count = reteload_eight_bytes(f);

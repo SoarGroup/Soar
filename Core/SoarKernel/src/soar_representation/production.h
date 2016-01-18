@@ -58,8 +58,10 @@
 #ifndef PRODUCTION_H
 #define PRODUCTION_H
 
-#include "portability.h"
 #include "kernel.h"
+#include <map>
+#include <set>
+
 
 typedef char* rhs_value;
 typedef unsigned char byte;
@@ -76,36 +78,29 @@ typedef signed short goal_stack_level;
 typedef struct test_struct test_info;
 typedef test_info* test;
 
-#include <map>
-#include <set>
-
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
 
-
-
-
-
 typedef struct production_struct
 {
-    Symbol* name;
-    char* original_rule_name;
-    char* documentation;                            /* pointer to memory block, or NIL */
-    char* filename;                                 /* name of source file, or NIL. */
-    uint64_t reference_count;
-    uint64_t firing_count;
-    struct production_struct* next, *prev;
-    byte type;
-    byte declared_support;
-    bool trace_firings;                             /* used by pwatch */
-    struct rete_node_struct* p_node;                /* NIL if it's not in the rete */
-    action* action_list;                            /* RHS actions */
-    ::list* rhs_unbound_variables;                  /* RHS vars not bound on LHS */
-    struct instantiation_struct* instantiations;    /* dll of inst's in MS */
-    int OPERAND_which_assert_list;
-    byte interrupt;
-    bool explain_its_chunks;
+    ProductionType                  type;
+    Symbol*                         name;
+    struct rete_node_struct*        p_node;                     /* NIL if it's not in the rete */
+    char*                           original_rule_name;
+    char*                           documentation;              /* pointer to memory block, or NIL */
+    char*                           filename;                   /* name of source file, or NIL. */
+    SupportType                     declared_support;
+    action*                         action_list;                /* RHS actions */
+    ::list*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
+    int                             OPERAND_which_assert_list;
+    bool                            trace_firings;              /* used by pwatch */
+    bool                            explain_its_chunks;
+    uint64_t                        reference_count;
+    uint64_t                        firing_count;
+    struct instantiation_struct*    instantiations;             /* dll of inst's in MS */
+    struct production_struct        *next, *prev;
 
+    byte                            interrupt;
     struct
     {
         bool interrupt_break : 1;
@@ -247,14 +242,14 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
 
-extern production* make_production(agent* thisAgent,
-                            byte type,
-                            Symbol* name,
-                            char* original_rule_name,
-                            condition** lhs_top,
-                            action** rhs_top,
-                            bool reorder_nccs,
-                            preference* results = NULL);
+extern production* make_production(agent*           thisAgent,
+                                   ProductionType   type,
+                                   Symbol*          name,
+                                   char*            original_rule_name,
+                                   condition**      lhs_top,
+                                   action**         rhs_top,
+                                   bool             reorder_nccs,
+                                   preference*      results = NULL);
 
 extern void deallocate_production(agent* thisAgent, production* prod);
 extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);

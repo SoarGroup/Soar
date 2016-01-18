@@ -34,12 +34,13 @@ typedef unsigned short rete_node_level;
 typedef uint64_t tc_number;
 typedef struct cons_struct cons;
 typedef cons list;
-namespace soar_module
-{
-    typedef struct symbol_triple_struct symbol_triple;
-    typedef struct identity_triple_struct identity_triple;
-    typedef struct rhs_triple_struct rhs_triple;
-}
+//namespace soar_module
+//{
+//    typedef struct symbol_triple_struct symbol_triple;
+//    typedef struct test_triple_struct test_triple;
+//    typedef struct identity_triple_struct identity_triple;
+//    typedef struct rhs_triple_struct rhs_triple;
+//}
 
 class Output_Manager;
 
@@ -122,20 +123,24 @@ class condition_record
         friend class Explanation_Logger;
 
     public:
-        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere);
+        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth);
         ~condition_record();
         uint64_t get_conditionID() { return conditionID; };
         void                        connect_to_action();
 
     private:
         agent* thisAgent;
-        condition*                  variablized_cond;
-        condition*                  instantiated_cond;
-        soar_module::symbol_triple* matched_wme;
-        action_record*              parent_action;
-        instantiation_record*       parent_instantiation;
-        preference*                 cached_pref;
-        uint64_t                    conditionID;
+        soar_module::test_triple        variablized_tests;
+        soar_module::test_triple        instantiated_tests;
+        soar_module::test_triple        explanation_tests;
+        condition*                      variablized_cond;
+        condition*                      instantiated_cond;
+        soar_module::symbol_triple*     matched_wme;
+        action_record*                  parent_action;
+        instantiation_record*           parent_instantiation;
+        preference*                     cached_pref;
+        uint64_t                        conditionID;
+        byte                            type;
 };
 
 class instantiation_record
@@ -147,7 +152,7 @@ class instantiation_record
         ~instantiation_record();
 
         uint64_t                get_instantiationID() { return instantiationID; };
-        void                    record_instantiation_contents(instantiation* pInst, bool pStopHere);
+        void                    record_instantiation_contents(instantiation* pInst, bool pStopHere, uint64_t bt_depth);
         action_record*          find_rhs_action(preference* pPref);
 
     private:
@@ -199,7 +204,7 @@ class Explanation_Logger
         void                    cancel_chunk_record();
         void                    end_chunk_record();
 
-        instantiation_record*   add_instantiation(instantiation* pInst);
+        instantiation_record*   add_instantiation(instantiation* pInst, uint64_t bt_depth);
 
         void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_unorderable() { stats.unorderable++; };
@@ -252,18 +257,21 @@ class Explanation_Logger
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
         instantiation_record*   get_instantiation(instantiation* pInst);
-        condition_record*       add_condition(condition* pCond, bool pStopHere);
+        void                    add_condition(condition_record_list* pCondList, condition* pCond, bool pStopHere, uint64_t bt_depth, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         void                    print_chunk_list(short pNumToPrint = 0);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
+        void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords);
+        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
+        void                    print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord);
         void                    print_condition_explanation(uint64_t pCondID);
 
         /* ID Counters */

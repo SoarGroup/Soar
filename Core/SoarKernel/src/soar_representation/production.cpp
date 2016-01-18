@@ -492,7 +492,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
 ********************************************************************* */
 
 production* make_production(agent* thisAgent,
-                            byte type,
+                            ProductionType type,
                             Symbol* name,
                             char* original_rule_name,
                             condition** lhs_top,

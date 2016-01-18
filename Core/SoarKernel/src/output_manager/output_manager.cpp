@@ -91,6 +91,7 @@ Output_Manager::Output_Manager()
     m_pre_string = strdup("          ");
     m_post_string = NULL;
     next_output_string = 0;
+    m_column_indent = 0;
 
     initialize_debug_trace(mode_info);
     #if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
@@ -174,7 +175,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
                 if (pSoarAgent->output_settings->stdout_mode)
                 {
                     global_printer_output_column = 1;
-            }
+                }
             } else if (stdout_mode)
             {
                 global_printer_output_column = 1;
@@ -186,14 +187,14 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             {
                 pSoarAgent->output_settings->printer_output_column++;
                 if (pSoarAgent->output_settings->stdout_mode)
+                {
+                    global_printer_output_column++;
+                }
+            } else if (stdout_mode)
             {
                 global_printer_output_column++;
             }
-            } else if (stdout_mode)
-    {
-                global_printer_output_column++;
         }
-    }
     }
 }
 

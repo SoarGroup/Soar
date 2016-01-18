@@ -80,7 +80,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
     //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
     //    mode_info[DT_RHS_VALUE].enabled =                   true;
-//        mode_info[DT_EXPLAIN].enabled =                     true;
+        mode_info[DT_EXPLAIN].enabled =                     true;
     //
     //    mode_info[DT_WME_CHANGES].enabled =                 true;
     //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;

@@ -181,6 +181,7 @@ class Output_Manager
         bool m_print_actual, m_print_identity;
         bool m_print_actual_effective, m_print_identity_effective;
         char* m_pre_string, *m_post_string;
+        int  m_column_indent;
 
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
          *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
@@ -322,7 +323,8 @@ class Output_Manager
         void clear_dprint_test_format(TraceMode mode) {
             if (is_debug_mode_enabled(mode)) clear_print_test_format();
         }
-
+        void set_column_indent(int pColumnNum) { m_column_indent = pColumnNum; }
+        void reset_column_indent() { m_column_indent = 0; }
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);
 
@@ -350,6 +352,7 @@ class Output_Manager
  *       %d   short
  *       %s   string
  *       %f   fresh line (adds newline if not at column 1)
+ *       %m   coluMn
  *
  *       %a   action
  *       %l   condition

@@ -140,11 +140,11 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
     }
     else if (t->type == GOAL_ID_TEST)
     {
-        destString += "[ISA GOAL]";
+        destString += "state";
     }
     else if (t->type == IMPASSE_ID_TEST)
     {
-        destString += "[ISA IMPASSE]";
+        destString += "impasse";
     } else {
         destString += "[INVALID TEST!!!]";
     }

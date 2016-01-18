@@ -76,25 +76,18 @@ typedef rhs_info* rhs_symbol;
         referent field of the preference.
 ------------------------------------------------------------------- */
 
-#define MAKE_ACTION 0
-#define FUNCALL_ACTION 1
-
-#define UNKNOWN_SUPPORT 0
-#define O_SUPPORT 1
-#define I_SUPPORT 2
-
 /* -- RHS Action struct == */
 typedef struct action_struct
 {
-    struct action_struct* next;
-    byte type;
-    byte preference_type;
-    byte support;
-    bool already_in_tc;  /* used only by compile-time o-support calcs */
-    rhs_value id;
-    rhs_value attr;
-    rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */
-    rhs_value referent;
+    ActionType              type;
+    PreferenceType          preference_type;
+    rhs_value               id;
+    rhs_value               attr;
+    rhs_value               value;   /* for FUNCALL_ACTION's, this holds the funcall */
+    rhs_value               referent;
+    SupportType             support;
+    bool                    already_in_tc;  /* used only by compile-time o-support calcs */
+    struct action_struct*   next;
 } action;
 
 /* -- Used by cli_productionfind.cpp and related functions -- */
