@@ -88,10 +88,44 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 tempString << "Debug | Invalid value: " << mode;
                 SetError(tempString.str().c_str());
                 goto print_syntax;
-    }
+            }
             else
             {
                 debug_test(debug_type);
+                return true;
+            }
+        }
+        else if (sub_command[0] == 'e')
+        {
+            std::string mode = argv->at(1);
+            int debug_type;
+            if (!from_string(debug_type, mode))
+            {
+                tempString.str("");
+                tempString << "Debug | Invalid value: " << mode;
+                SetError(tempString.str().c_str());
+                goto print_syntax;
+            }
+            else
+            {
+                debug_trace_set(debug_type, true);
+                return true;
+            }
+        }
+        else if (sub_command[0] == 'd')
+        {
+            std::string mode = argv->at(1);
+            int debug_type;
+            if (!from_string(debug_type, mode))
+            {
+                tempString.str("");
+                tempString << "Debug | Invalid value: " << mode;
+                SetError(tempString.str().c_str());
+                goto print_syntax;
+            }
+            else
+            {
+                debug_trace_set(debug_type, true);
                 return true;
             }
         }

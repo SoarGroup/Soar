@@ -421,8 +421,8 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    delete delete_agent->ebChunker;
     delete delete_agent->explanationLogger;
+    delete delete_agent->ebChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
 
     // cleanup exploration

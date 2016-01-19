@@ -20,7 +20,9 @@
 #define SOARDEBUG_H
 
 /* ----------------------------------------------------------------------------
- * Comment the following line out to completely compile out debug statements */
+ * Comment the following line out to start with settings that are equivalent to
+ * standard Soar printing.  To completely compile out debug statements, make
+ * sure SOAR_RELEASE_VERSION is defined in kernel.h */
 //#define DEBUG_OUTPUT_ON
 
 #include "kernel.h"
@@ -49,7 +51,11 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
     fprintf(stderr, "Query: %s\n", query);
     }
 #endif
-#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+//#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
+    /* Not checking DEBUG_OUTPUT_ON anymore so that dprint is defined and we can turn debug output on
+     * and off at runtime.  Downside is that we can have debug printing secretly slowing things down
+     * if people forget to define SOAR_RELEASE_VERSION is defined in kernel.h */
+#if !defined(SOAR_RELEASE_VERSION)
 
     /* Sometimes it's useful to break when a single, hardcoded ID is encountered
      * in a piece of code being debugged.  You can set this variable to the name
@@ -128,6 +134,7 @@ extern void debug_store_refcount(Symbol* sym, bool isAdd);
 extern void debug_destroy_for_refcount(agent* delete_agent);
 
 extern void debug_test(int type = 1);
+extern void debug_trace_set(int dt_num, bool pEnable);
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 extern bool check_symbol(agent* thisAgent, Symbol* sym, const char* message = "ChkSym | ");

@@ -50,9 +50,9 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
 
     //    mode_info[DT_ID_LEAKING].enabled =                  true;
     //    mode_info[DT_DEALLOCATES].enabled =                 true;
-//        mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
+    //    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
     //    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
-//        mode_info[DT_REFCOUNT_REMS].enabled =               true;
+    //    mode_info[DT_REFCOUNT_REMS].enabled =               true;
     //
     //    mode_info[DT_SOAR_INSTANCE].enabled =               true;
     //    mode_info[DT_CLI_LIBRARIES].enabled =               true;
@@ -61,7 +61,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EPMEM_CMD].enabled =                   true;
     //
     //    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
-//        mode_info[DT_MILESTONES].enabled =                  true;
+    //    mode_info[DT_MILESTONES].enabled =                  true;
     //
     //    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
     //    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
@@ -80,7 +80,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
     //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
     //    mode_info[DT_RHS_VALUE].enabled =                   true;
-        mode_info[DT_EXPLAIN].enabled =                     true;
+    //    mode_info[DT_EXPLAIN].enabled =                     true;
     //
     //    mode_info[DT_WME_CHANGES].enabled =                 true;
     //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
@@ -292,6 +292,22 @@ std::string get_stacktrace(const char* prefix)
 }
 #endif
 
+void debug_trace_set(int dt_num, bool pEnable)
+{
+    if (dt_num < num_trace_modes)
+    {
+        if (dt_num == 0)
+        {
+             Output_Manager::Get_OM().set_output_params_global(true);
+             thisAgent->output_settings->set_output_params_agent(true);
+             print(thisAgent, "Debug output enabled.\n");
+             dprint(DT_DEBUG, "Test debug statement.\n");
+             return;
+        }
+        Output_Manager::Get_OM().set_output_mode(dt_num, pEnable);
+    }
+}
+
 void debug_test(int type)
 {
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
@@ -306,6 +322,7 @@ void debug_test(int type)
             Output_Manager::Get_OM().set_output_params_global(true);
             thisAgent->output_settings->set_output_params_agent(true);
             print(thisAgent, "Debug output enabled.\n");
+            dprint(DT_DEBUG, "Test debug statement.\n");
             break;
         case 2:
             Output_Manager::Get_OM().set_output_params_global(false);

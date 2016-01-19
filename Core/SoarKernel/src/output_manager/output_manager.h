@@ -220,6 +220,7 @@ class Output_Manager
 
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
+        void set_output_mode(int modeIndex, bool pEnabled);
 
         bool is_debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
 

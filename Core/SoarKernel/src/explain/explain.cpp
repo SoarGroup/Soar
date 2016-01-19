@@ -389,9 +389,9 @@ void condition_record::connect_to_action()
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
         cached_pref = NULL;
-        dprint(DT_EXPLAIN, "Linked condition (%t ^%t %t).\n", instantiated_tests.id, instantiated_tests.attr, instantiated_tests.value);
+        dprint(DT_EXPLAIN, "Linked condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
     } else {
-        dprint(DT_EXPLAIN, "Did not link condition (%t ^%t %t).\n", instantiated_tests.id, instantiated_tests.attr, instantiated_tests.value);
+        dprint(DT_EXPLAIN, "Did not link condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
     }
 }
 
@@ -429,7 +429,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
 
 condition_record::~condition_record()
 {
-    dprint(DT_EXPLAIN, "Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, instantiated_tests.id, instantiated_tests.attr, instantiated_tests.value);
+    dprint(DT_EXPLAIN, "Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
