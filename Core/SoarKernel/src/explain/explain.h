@@ -225,9 +225,9 @@ class Explanation_Logger
 
         bool explain_chunk(const std::string* pStringParameter);
         bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
-        void explain_summary();
+        void print_explain_summary();
         void print_explainer_stats();
-        void explain_chunk_stats();
+        void print_chunk_stats();
         void print_all_watched_rules();
         void print_all_chunks();
         void print_dependency_analysis();
