@@ -102,10 +102,6 @@ namespace cli
                             options.set(Cli::EXPLAIN_STATS);
                             break;
 
-                        case 't':
-                            options.set(Cli::EXPLAIN_TIME);
-                            break;
-
                         case 'w':
                             options.set(Cli::EXPLAIN_WATCH);
                             lWatchArgument = opt.GetOptionArgument();
@@ -122,12 +118,11 @@ namespace cli
                 }
                 if (options.test(Cli::EXPLAIN_ALL) ||
                     options.test(Cli::EXPLAIN_ONLY_SPECIFIC) ||
-                    options.test(Cli::EXPLAIN_LIST_ALL) ||
-                    options.test(Cli::EXPLAIN_TIME))
+                    options.test(Cli::EXPLAIN_LIST_ALL))
                 {
                     if ((options.count() != 1) || (num_args > 0))
                     {
-                        return cli.SetError("The explain options --all, --only-specific, --time and --list cannot be used with other options.");
+                        return cli.SetError("The explain options --all, --only-specific and --list cannot be used with other options.");
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }
@@ -140,15 +135,6 @@ namespace cli
                     if (num_args > 0)
                     {
                         return cli.SetError("The explain options --backtrace, --constraints, --stats and --identity cannot take additional arguments.");
-                    }
-                    return cli.DoExplain(options, &arg, &arg2);
-                }
-
-                if (options.test(Cli::EXPLAIN_TIME))
-                {
-                    if ((opt.GetNonOptionArguments() != 1) || opt.GetOptionArgument().empty())
-                    {
-                        return cli.SetError("Please specify the interval's start and end times.");
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }

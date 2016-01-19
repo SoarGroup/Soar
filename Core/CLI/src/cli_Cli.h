@@ -170,7 +170,6 @@ namespace cli
                 EXPLAIN_IDENTITY_SETS,
                 EXPLAIN_LIST_ALL,
                 EXPLAIN_GLOBAL_STATS,
-                EXPLAIN_TIME,
                 EXPLAIN_WATCH,
                 EXPLAIN_NUM_OPTIONS, // must be last
             };

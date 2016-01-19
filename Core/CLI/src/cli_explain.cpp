@@ -49,12 +49,6 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
         return true;
     }
-    if (options.test(EXPLAIN_TIME))
-    {
-            print(thisAgent, "Not yet implemented.  Will allow you to explain all chunks created in a time interval specified in decision cycles.\n");
-            return true;
-    }
-
     /* Handle options that required a currently discussed chunk/justification */
     if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
     {
@@ -77,7 +71,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         }
         if (options.test(EXPLAIN_STATS))
         {
-            thisAgent->explanationLogger->explain_chunk_stats();
+            thisAgent->explanationLogger->print_chunk_stats();
         }
     }
 
@@ -111,7 +105,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     {
         if (pStringParameter->empty())
         {
-            thisAgent->explanationLogger->explain_summary();
+            thisAgent->explanationLogger->print_explain_summary();
             return true;
         } else if (pStringParameter2->empty()) {
             return thisAgent->explanationLogger->explain_chunk(pStringParameter);
