@@ -249,8 +249,10 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
 void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list pargs)
 {
     Symbol* sym;
-    char ch=0;
-	int i=0;
+    test t, ct;
+    char ch = 0;
+    char* ch2 = 0;
+	int next_column, indent_amount, next_position, i=0;
 	size_t m;
     std::string sf = format;
 
@@ -299,7 +301,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                 {
                     case 's':
                     {
-                        char *ch2 = va_arg(args, char *);
+                        ch2 = va_arg(args, char *);
                         if (ch2)
                         {
                             destString += ch2;
@@ -333,7 +335,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 't':
                     {
-                        test t = va_arg(args, test);
+                        t = va_arg(args, test);
                         if (t)
                         {
                             test_to_string(t, destString);
@@ -345,15 +347,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'g':
                     {
-                        test t = va_arg(args, test);
-                        test ct = NULL;
+                        t = va_arg(args, test);
+                        ct = NULL;
                         if (t)
                         {
                             if (t->type != CONJUNCTIVE_TEST)
                             {
                                 if (t->identity)
                                 {
-//                                    destString += "i";
                                     if (t->type != EQUALITY_TEST)
                                     {
                                         destString += test_type_to_string_brief(t->type);
@@ -393,8 +394,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     break;
                     case 'o':
                     {
-                        test t = va_arg(args, test);
-                        test ct = NULL;
+                        t = va_arg(args, test);
+                        ct = NULL;
                         if (t)
                         {
                             if (t->type != CONJUNCTIVE_TEST)
@@ -514,7 +515,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'd':
                     {
-						int argument = va_arg(args, int);
+                        int argument = va_arg(args, int);
                         destString += std::to_string(argument);
                     }
                     break;
@@ -606,10 +607,17 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case '-':
                     {
-                        if (destString.length() < m_column_indent) {
-                            destString.append( (m_column_indent - destString.length()), ' ');
-                        } else {
-                            destString += ' ';
+                        indent_amount = 0;
+                        next_position = (this->get_printer_output_column(thisAgent) + destString.length());
+                        for (next_column = 0; next_column < MAX_COLUMNS; next_column++)
+                        {
+                            if (next_position < m_column_indent[next_column]) {
+                                indent_amount = (m_column_indent[next_column] - next_position);
+                                break;
+                            }
+                        }
+                        if (indent_amount > 0) {
+                            destString.append(indent_amount , ' ');
                         }
                     }
                     break;

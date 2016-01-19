@@ -29,6 +29,7 @@ typedef char varnames;
 typedef struct node_varnames_struct node_varnames;
 typedef struct identity_struct identity_info;
 
+#define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
@@ -181,7 +182,7 @@ class Output_Manager
         bool m_print_actual, m_print_identity;
         bool m_print_actual_effective, m_print_identity_effective;
         char* m_pre_string, *m_post_string;
-        int  m_column_indent;
+        int  m_column_indent[MAX_COLUMNS];
 
         /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
          *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
@@ -323,8 +324,12 @@ class Output_Manager
         void clear_dprint_test_format(TraceMode mode) {
             if (is_debug_mode_enabled(mode)) clear_print_test_format();
         }
-        void set_column_indent(int pColumnNum) { m_column_indent = pColumnNum; }
-        void reset_column_indent() { m_column_indent = 0; }
+        void set_column_indent(int pColumnIndex, int pColumnNum) {
+            if (pColumnIndex >= MAX_COLUMNS) return;
+            m_column_indent[pColumnIndex] = pColumnNum; }
+
+        void reset_column_indents() { for (int i=0; i<MAX_COLUMNS; i++) m_column_indent[i] = 0; }
+
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);
 
