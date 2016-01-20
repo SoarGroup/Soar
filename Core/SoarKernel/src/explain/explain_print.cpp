@@ -24,7 +24,7 @@ void Explanation_Logger::print_instantiation(EBCTraceType pType, instantiation_r
     }
     print_condition_list(pType, pInstRecord->conditions, pInstRecord->original_production);
     outputManager->printa(thisAgent, "   -->\n");
-    print_action_list(pType, pInstRecord->actions);
+    print_action_list(pType, pInstRecord->actions, pInstRecord->original_production);
 }
 
 
@@ -48,11 +48,12 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
         int lConditionCount = 0;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
         action* rhs;
-        test id_test_without_goal_test = NULL;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_column_indent(0, 7);
         outputManager->set_column_indent(1, 60);
+        thisAgent->outputManager->set_print_test_format(true, false);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
          * because we don't want to cache all explanation trace's symbols every time we create an instantiation.
@@ -69,7 +70,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
             } else {
                 currentNegativeCond = NULL;
             }
-
+            thisAgent->outputManager->set_print_test_format(false, true);
         }
         for (condition_record_list::iterator it = pCondRecords->begin(); it != pCondRecords->end(); it++)
         {
@@ -109,10 +110,11 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
                     print_cond = current_cond;
                 }
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, print_cond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
+                id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
                 outputManager->printa_sf(thisAgent, "%d:%-(%o%s^%o %o)    %-(%g%s^%g %g)\n",
-                    lConditionCount, print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                    lConditionCount, id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
-                    lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     lCond->condition_tests.attr, lCond->condition_tests.value);
                 if (currentNegativeCond)
                 {
@@ -148,7 +150,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
     }
 }
 
-void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_list* pActionRecords)
+void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_list* pActionRecords, production* pOriginalRule)
 {
     if (pActionRecords->empty())
     {
@@ -157,35 +159,42 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
     else
     {
         action_record* lAction;
+        condition* top, *bottom;
+        action* rhs;
         int lActionCount = 0;
         outputManager->set_column_indent(0, 7);
         outputManager->set_column_indent(1, 60);
+        thisAgent->outputManager->set_print_indents("");
+        thisAgent->outputManager->set_print_test_format(true, false);
+        if (pType == ebc_explanation_trace)
+        {
+            p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
+        }
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
         {
             lAction = (*it);
             ++lActionCount;
             if (pType == ebc_actual_trace)
             {
-//                outputManager->printa_sf(thisAgent, "%d:%-%a              a%u\n",
-//                     lAction->variablized_action, lAction->actionID);
-                thisAgent->outputManager->set_print_test_format(false, true);
-                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount,
-                     lAction->instantiated_pref, lAction->actionID);
-                thisAgent->outputManager->clear_print_test_format();
+                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else if (pType == ebc_explanation_trace)
             {
+                thisAgent->outputManager->set_print_test_format(true, false);
+                outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
                 thisAgent->outputManager->set_print_test_format(false, true);
-                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount,
-                     lAction->instantiated_pref, lAction->actionID);
-                thisAgent->outputManager->clear_print_test_format();
+                outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+                rhs = rhs->next;
             } else if (pType == ebc_match_trace)
             {
-                thisAgent->outputManager->set_print_test_format(true, false);
-                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount,
-                     lAction->instantiated_pref, lAction->actionID);
-                thisAgent->outputManager->clear_print_test_format();
+                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             }
         }
+        if (pType == ebc_explanation_trace)
+        {
+            deallocate_condition_list(thisAgent, top);
+            deallocate_action_list(thisAgent, rhs);
+        }
+        thisAgent->outputManager->clear_print_test_format();
     }
 }
 
@@ -204,7 +213,12 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
     }
     print_condition_list(pType, pChunkRecord->conditions, pChunkRecord->original_production);
     outputManager->printa(thisAgent, "      -->\n");
-    print_action_list(pType, pChunkRecord->actions);
+
+    /* For chunks, actual rhs is same as explanation trace */
+    if (pType != ebc_match_trace) {
+        pType  = ebc_explanation_trace;
+    }
+    print_action_list(pType, pChunkRecord->actions, pChunkRecord->original_production);
     if (pType == ebc_actual_trace)
      {
          outputManager->printa(thisAgent, "}\n");

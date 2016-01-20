@@ -231,11 +231,13 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
                 destString += rsym->referent->to_string(true);
             } else {
                 destString += '#';
-            }        }
+            }
+        }
         if (m_print_identity_effective) {
-            sprinta_sf(thisAgent, destString, " [%y/o%u]",
-                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
-                rsym->o_id);
+//            sprinta_sf(thisAgent, destString, " [%y/o%u]",
+//                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
+//                rsym->o_id);
+            sprinta_sf(thisAgent, destString, "<%u>", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -244,8 +246,8 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         if (tok && w)
         {
             sym = get_symbol_from_rete_loc(
-                      rhs_value_to_reteloc_levels_up(rv),
-                      rhs_value_to_reteloc_field_num(rv), tok, w);
+                rhs_value_to_reteloc_levels_up(rv),
+                rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
                 destString += sym->to_string(true);
@@ -287,7 +289,7 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     if (a->type == FUNCALL_ACTION)
     {
         if (m_pre_string) destString += m_pre_string;
-        destString += "(funcall ";
+        destString += "(rhs_function ";
         rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
         destString += ')';
     } else {
@@ -326,20 +328,37 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     assert(thisAgent && pref);
     if (m_print_actual_effective)
     {
-        sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c %y%s", pref->id, pref->attr, pref->value,
-            preference_to_char(pref->type),
-            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
-            (pref->o_supported) ? " :O " : NULL);
+        sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c", pref->id, pref->attr, pref->value, preference_to_char(pref->type));
+        if (preference_is_binary(pref->type))
+        {
+            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+        }
     }
     if (m_print_identity_effective)
     {
-        sprinta_sf(thisAgent, destString, "%s(%y/o%u %y/o%u %y/o%u) %c %y%s", (m_print_actual_effective) ? ", " : "",
-            thisAgent->ebChunker->get_ovar_for_o_id(pref->o_ids.id), pref->o_ids.id,
-            thisAgent->ebChunker->get_ovar_for_o_id(pref->o_ids.attr), pref->o_ids.attr,
-            thisAgent->ebChunker->get_ovar_for_o_id(pref->o_ids.value), pref->o_ids.value,
-            preference_to_char(pref->type),
-            (m_print_actual_effective && preference_is_binary(pref->type)) ? pref->referent : NULL,
-            (pref->o_supported) ? " :O " : NULL);
+        std::string lID, lAttr, lValue;
+        if (pref->o_ids.id) {
+            lID = "<" + std::to_string(pref->o_ids.id) + ">";
+        } else {
+            lID = pref->id->to_string();
+        }
+        if (pref->o_ids.attr) {
+            lAttr = "<" + std::to_string(pref->o_ids.attr) + ">";
+        } else {
+            lAttr = pref->attr->to_string();
+        }
+        if (pref->o_ids.value) {
+            lValue = "<" + std::to_string(pref->o_ids.value) + ">";
+        } else {
+            lValue = pref->value->to_string();
+        }
+        sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
+            lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));
+
+        if (preference_is_binary(pref->type))
+        {
+            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+        }
     }
 }
 

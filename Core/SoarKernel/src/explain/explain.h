@@ -263,7 +263,7 @@ class Explanation_Logger
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
         void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule);
-        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords);
+        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords, production* pOriginalRule);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);

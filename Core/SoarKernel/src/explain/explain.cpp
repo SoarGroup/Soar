@@ -489,7 +489,7 @@ void instantiation_record::record_instantiation_contents(instantiation* pInst, b
     dprint(DT_EXPLAIN, "   -->\n");
 
     action_record* new_action_record;
-    for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->next_result)
+    for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         new_action_record = thisAgent->explanationLogger->add_result(pref);
         actions->push_front(new_action_record);
