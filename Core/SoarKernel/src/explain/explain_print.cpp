@@ -5,6 +5,9 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "production.h"
+#include "rete.h"
+#include "rhs.h"
+#include "test.h"
 #include "working_memory.h"
 #include "output_manager.h"
 
@@ -19,7 +22,7 @@ void Explanation_Logger::print_instantiation(EBCTraceType pType, instantiation_r
     {
         outputManager->printa_sf(thisAgent, "Explanation Trace: %-Variable Identity IDs\n\n");
     }
-    print_condition_list(pType, pInstRecord->conditions);
+    print_condition_list(pType, pInstRecord->conditions, pInstRecord->original_production);
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(pType, pInstRecord->actions);
 }
@@ -32,7 +35,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
     print_instantiation(ebc_explanation_trace, pInstRecord);
 }
 
-void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords)
+void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule)
 {
     if (pCondRecords->empty())
     {
@@ -40,11 +43,34 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
     }
     else
     {
-        outputManager->set_column_indent(0, 7);
-        outputManager->set_column_indent(1, 60);
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
+        condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
+        action* rhs;
+        test id_test_without_goal_test = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        outputManager->set_column_indent(0, 7);
+        outputManager->set_column_indent(1, 60);
+
+        /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
+         * because we don't want to cache all explanation trace's symbols every time we create an instantiation.
+         * We used to and it's very inefficient.  We also can't use the ebChunker's lookup table because that
+         * is only for debugging and does not get built for releases. */
+
+        if (pType == ebc_explanation_trace)
+        {
+            p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
+            current_cond = top;
+            if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+            {
+                currentNegativeCond = current_cond->data.ncc.top;
+            } else {
+                currentNegativeCond = NULL;
+            }
+
+        }
         for (condition_record_list::iterator it = pCondRecords->begin(); it != pCondRecords->end(); it++)
         {
             lCond = (*it);
@@ -65,18 +91,40 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
             }
             if (pType == ebc_actual_trace)
             {
+                id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+
                 outputManager->printa_sf(thisAgent, "%d:%-(%t%s^%t %t)    %-c%u *originally from rule %s (i%u)\n",
-                    lConditionCount, lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                    lConditionCount, id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     lCond->condition_tests.attr, lCond->condition_tests.value, lCond->conditionID,
                     (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Architecture"),
                     (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0));
             } else if (pType == ebc_explanation_trace)
             {
+
+                /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */
+                if (currentNegativeCond)
+                {
+                    print_cond = currentNegativeCond;
+                } else {
+                    print_cond = current_cond;
+                }
+                id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, print_cond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
                 outputManager->printa_sf(thisAgent, "%d:%-(%o%s^%o %o)    %-(%g%s^%g %g)\n",
-                    lConditionCount, lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                    lCond->condition_tests.attr, lCond->condition_tests.value,
+                    lConditionCount, print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                    print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
                     lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     lCond->condition_tests.attr, lCond->condition_tests.value);
+                if (currentNegativeCond)
+                {
+                    currentNegativeCond = currentNegativeCond->next;
+                } else {
+                    current_cond = current_cond->next;
+                }
+                if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
+                {
+                    currentNegativeCond = current_cond->data.ncc.top;
+                }
+
             } else if (pType == ebc_match_trace)
             {
                 if (lCond->matched_wme)
@@ -91,6 +139,11 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
         if (lInNegativeConditions)
         {
             outputManager->printa(thisAgent, "}\n");
+        }
+        if (pType == ebc_explanation_trace)
+        {
+            deallocate_condition_list(thisAgent, top);
+            deallocate_action_list(thisAgent, rhs);
         }
     }
 }
@@ -149,7 +202,7 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
     {
         outputManager->printa_sf(thisAgent, "Working Memory trace:\n\n");
     }
-    print_condition_list(pType, pChunkRecord->conditions);
+    print_condition_list(pType, pChunkRecord->conditions, pChunkRecord->original_production);
     outputManager->printa(thisAgent, "      -->\n");
     print_action_list(pType, pChunkRecord->actions);
     if (pType == ebc_actual_trace)

@@ -149,11 +149,19 @@ void Explanation_Logger::end_chunk_record()
     current_recording_chunk = NULL;
 }
 
-void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
+void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
 {
-    name = pName;
-    symbol_add_ref(thisAgent, name);
-
+    original_production = pProduction;
+    if (pProduction)
+    {
+        name = pProduction->name;
+        symbol_add_ref(thisAgent, name);
+        production_add_ref(original_production);
+    } else {
+        name = NULL;
+        original_production = NULL;
+        assert(false);
+    }
     conditions         = new condition_record_list;
     actions            = new action_record_list;
 
@@ -194,18 +202,18 @@ void chunk_record::record_chunk_contents(Symbol* pName, condition* lhs, action* 
 
 }
 
-void Explanation_Logger::record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
+void Explanation_Logger::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
 {
     if (current_recording_chunk)
     {
-        dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pName, current_recording_chunk->chunkID, backtrace_number);
-        current_recording_chunk->record_chunk_contents(pName, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
-        chunks->insert({pName, current_recording_chunk});
+        dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pProduction->name, current_recording_chunk->chunkID, backtrace_number);
+        current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
+        chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
 
-        symbol_add_ref(thisAgent, pName);
+        symbol_add_ref(thisAgent, pProduction->name);
     } else {
-        dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pName);
+        dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
     }
 }
 
@@ -359,6 +367,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     actions             = new action_record_list;
     chunkID             = pChunkID;
     baseInstantiation   = NULL;
+    original_production = NULL;
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
     stats.duplicates = 0;
@@ -373,10 +382,8 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 chunk_record::~chunk_record()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
-    if (name)
-    {
-        symbol_remove_ref(thisAgent, name);
-    }
+    symbol_remove_ref(thisAgent, name);
+    production_remove_ref(thisAgent, original_production);
     delete conditions;
     delete actions;
 }
@@ -450,22 +457,21 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     instantiationID     = pInst->i_id;
     conditions          = new condition_record_list;
     actions             = new action_record_list;
+    original_production = pInst->prod;
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
 
     if (pInst->prod)
     {
         symbol_add_ref(thisAgent, pInst->prod->name);
+        production_add_ref(original_production);
     }
-
 }
 
 instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
-    if (production_name)
-    {
-        symbol_remove_ref(thisAgent, production_name);
-    }
+    if (production_name) symbol_remove_ref(thisAgent, production_name);
+    if (original_production) production_remove_ref(thisAgent, original_production);
     delete conditions;
     delete actions;
 }

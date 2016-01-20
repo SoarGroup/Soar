@@ -154,6 +154,7 @@ class instantiation_record
     private:
         agent* thisAgent;
         Symbol*                 production_name;
+        production*             original_production;
         condition_record_list*  conditions;
         action_record_list*     actions;
         uint64_t                instantiationID;
@@ -167,11 +168,12 @@ class chunk_record
         chunk_record(agent* myAgent, uint64_t pChunkID);
         ~chunk_record();
 
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
 
     private:
         agent*                  thisAgent;
         Symbol*                 name;
+        production*             original_production;
         condition_record_list*  conditions;
         action_record_list*     actions;
         id_to_id_map_type*      identity_set_mappings;
@@ -196,7 +198,7 @@ class Explanation_Logger
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
-        void                    record_chunk_contents(Symbol* pName, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
 
@@ -260,7 +262,7 @@ class Explanation_Logger
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
-        void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords);
+        void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule);
         void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);

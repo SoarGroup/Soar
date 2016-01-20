@@ -1102,7 +1102,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_succeeded();
-        thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
+        thisAgent->explanationLogger->record_chunk_contents(prod, vrblz_top, rhs, results, unification_map, inst);
         #endif
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             #ifdef BUILD_WITH_EXPLAINER
@@ -1128,7 +1128,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         } else {
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
-            thisAgent->explanationLogger->record_chunk_contents(prod->name, vrblz_top, rhs, results, unification_map, inst);
+            thisAgent->explanationLogger->record_chunk_contents(prod, vrblz_top, rhs, results, unification_map, inst);
             #endif
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule

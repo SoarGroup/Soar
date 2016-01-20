@@ -294,6 +294,11 @@ std::string get_stacktrace(const char* prefix)
 
 void debug_trace_set(int dt_num, bool pEnable)
 {
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (!thisAgent)
+    {
+        return;
+    }
     if (dt_num < num_trace_modes)
     {
         if (dt_num == 0)
