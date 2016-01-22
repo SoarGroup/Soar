@@ -2557,16 +2557,18 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));*/
 
         // activation_value=? spreading value = ? WHERE lti=?
+        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
+        double modified_spread = (spread==0) ? (0) : (log(spread)-log(offset));
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_activation+spread);
+        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_activation+modified_spread);
         thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
         // only if augmentation count is less than threshold do we associate with edges
         if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
         {
             // activation_value=? WHERE lti=?
-            thisAgent->smem_stmts->act_set->bind_double(1, new_activation+spread);
+            thisAgent->smem_stmts->act_set->bind_double(1, new_activation+modified_spread);
             thisAgent->smem_stmts->act_set->bind_int(2, lti);
             thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
         }
@@ -2791,28 +2793,28 @@ void smem_calc_spread(agent* thisAgent)
                         raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
                     }//There is some offset value so that we aren't going to compare to negative infinity (log(0)).
                     //It could be thought of as an overall confidence in spreading itself.
-                    offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
-                    additional = (log(raw_prob)-log(offset));
+                    offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
+                    //additional = (log(raw_prob)-log(offset));
                 }
-                spread-=additional;//Now, we've adjusted the activation according to this new addition.
+                spread-=raw_prob;//additional;//Now, we've adjusted the activation according to this new addition.
                 thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
                 thisAgent->smem_stmts->act_lti_child_ct_get->execute();
 
                 uint64_t num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
 
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
-
+                double modified_spread = (spread==0) ? (0) : (log(spread)-log(offset));
                 //This is the same sort of activation updating one would have to do with base-level.
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
                 {
-                    thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+spread);
+                    thisAgent->smem_stmts->act_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0)+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
 
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, thisAgent->smem_stmts->act_lti_get->column_double(0));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_double(3, spread+thisAgent->smem_stmts->act_lti_get->column_double(0));
+                thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+thisAgent->smem_stmts->act_lti_get->column_double(0));
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
 
@@ -3011,8 +3013,9 @@ void smem_calc_spread(agent* thisAgent)
                 {
                     raw_prob = (((double)(calc_spread->column_double(2)))/(calc_spread->column_double(1)));
                 }
-                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
-                additional = (log(raw_prob)-log(offset));
+                //offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_double(1));
+                offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
+                additional = raw_prob;//(log(raw_prob)-log(offset));
             }
             ////////////////////////////////////////////////////////////////////////////
             thisAgent->smem_timers->spreading_calc_2_1->stop();
@@ -3041,13 +3044,14 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_1->stop();
                 ////////////////////////////////////////////////////////////////////////////
+                double modified_spread = (log(spread)-log(offset));
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_2->start();
                 ////////////////////////////////////////////////////////////////////////////
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) // ** This is costly.
                 {//The cost is from having to update several indexes that use the activation value.
                     //These indexes are on the entire graph structure of smem. (smem_augmentations)
-                    thisAgent->smem_stmts->act_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base))+spread);
+                    thisAgent->smem_stmts->act_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base))+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
@@ -3059,7 +3063,7 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_double(3, spread+ ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
                 ////////////////////////////////////////////////////////////////////////////
