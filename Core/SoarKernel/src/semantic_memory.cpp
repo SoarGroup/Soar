@@ -2803,7 +2803,7 @@ void smem_calc_spread(agent* thisAgent)
                 uint64_t num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
 
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
-                double modified_spread = (spread==0) ? (0) : (log(spread)-log(offset));
+                double modified_spread = ((spread < offset) || (spread < 0)) ? (0) : (log(spread)-log(offset));
                 //This is the same sort of activation updating one would have to do with base-level.
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
                 {
