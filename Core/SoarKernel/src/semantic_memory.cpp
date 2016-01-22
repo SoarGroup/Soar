@@ -2530,7 +2530,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         // Adding a bunch of stuff for spreading here.
         thisAgent->smem_stmts->act_lti_get->bind_int(1,lti);
         thisAgent->smem_stmts->act_lti_get->execute();
-        if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood)
+        if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on)
         {
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
         }
