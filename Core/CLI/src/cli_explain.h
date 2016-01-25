@@ -31,10 +31,9 @@ namespace cli
             {
                 return "Syntax: explain [--all | --only-specific ]\n"
                        "        explain --watch [rule name]"
-                       "        explain --time <start> <end>"
                        "        explain [chunk name]"
-                       "        explain [--backtrace | --constraints | --global-stats | --identity | --stats ]"
-                       "        explain [instantiation | condition] [id number]\n";
+                       "        explain [--dependency-analysis | --constraints | --global-stats | --identity | --stats ]"
+                       "        explain [instantiation | condition | chunk] [id number]\n";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -42,17 +41,17 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'a', "all",           OPTARG_NONE},
-                    {'b', "backtrace",     OPTARG_NONE},
-                    {'c', "constraints",   OPTARG_NONE},
-                    {'g', "global-stats",  OPTARG_NONE},
-                    {'i', "identity",      OPTARG_NONE},
-                    {'l', "list",          OPTARG_NONE},
-                    {'o', "only-specific", OPTARG_NONE},
-                    {'s', "stats",         OPTARG_NONE},
-                    {'t', "time",          OPTARG_REQUIRED},
-                    {'w', "watch",         OPTARG_OPTIONAL},
-                    {0, 0, OPTARG_NONE}
+                    {'a', "all",                    OPTARG_NONE},
+                    {'c', "constraints",            OPTARG_NONE},
+                    {'d', "dependency-analysis",    OPTARG_NONE},
+                    {'g', "global-stats",           OPTARG_NONE},
+                    {'i', "identity",               OPTARG_NONE},
+                    {'l', "list",                   OPTARG_NONE},
+                    {'o', "only-specific",          OPTARG_NONE},
+                    {'s', "stats",                  OPTARG_NONE},
+                    {'t', "time",                   OPTARG_REQUIRED},
+                    {'w', "watch",                  OPTARG_OPTIONAL},
+                    {0, 0,                          OPTARG_NONE}
                 };
 
                 Cli::ExplainBitset options(0);
@@ -74,12 +73,12 @@ namespace cli
                             options.set(Cli::EXPLAIN_ALL);
                             break;
 
-                        case 'b':
-                            options.set(Cli::EXPLAIN_BACKTRACE);
-                            break;
-
                         case 'c':
                             options.set(Cli::EXPLAIN_CONSTRAINTS);
+                            break;
+
+                        case 'd':
+                            options.set(Cli::EXPLAIN_DEPENDENCY);
                             break;
 
                         case 'g':
@@ -127,14 +126,14 @@ namespace cli
                     return cli.DoExplain(options, &arg, &arg2);
                 }
 
-                if (options.test(Cli::EXPLAIN_BACKTRACE) ||
+                if (options.test(Cli::EXPLAIN_DEPENDENCY) ||
                     options.test(Cli::EXPLAIN_CONSTRAINTS) ||
                     options.test(Cli::EXPLAIN_STATS) ||
                     options.test(Cli::EXPLAIN_IDENTITY_SETS))
                 {
                     if (num_args > 0)
                     {
-                        return cli.SetError("The explain options --backtrace, --constraints, --stats and --identity cannot take additional arguments.");
+                        return cli.SetError("The explain options --dependency-analysis, --constraints, --stats and --identity cannot take additional arguments.");
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }

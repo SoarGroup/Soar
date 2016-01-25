@@ -111,9 +111,9 @@ class action_record
 
     private:
         agent* thisAgent;
-        preference*     instantiated_pref;
-        action*         variablized_action;
-        uint64_t       actionID;
+        preference*             instantiated_pref;
+        action*                 variablized_action;
+        uint64_t                actionID;
 };
 
 class instantiation_record;
@@ -130,6 +130,7 @@ class condition_record
 
     private:
         agent* thisAgent;
+        goal_stack_level                wme_level_at_firing;
         soar_module::test_triple        condition_tests;
         soar_module::symbol_triple*     matched_wme;
         action_record*                  parent_action;
@@ -155,6 +156,8 @@ class instantiation_record
         agent* thisAgent;
         Symbol*                 production_name;
         production*             original_production;
+        goal_stack_level        match_level;
+
         condition_record_list*  conditions;
         action_record_list*     actions;
         uint64_t                instantiationID;
@@ -262,8 +265,8 @@ class Explanation_Logger
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
-        void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule);
-        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords, production* pOriginalRule);
+        void                    print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule, goal_stack_level pMatch_level = 0);
+        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords, production* pOriginalRule, bool pPrintIdentity = true);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);

@@ -166,7 +166,7 @@ namespace cli
                 EXPLAIN_ONLY_SPECIFIC,
                 EXPLAIN_STATS,
                 EXPLAIN_CONSTRAINTS,
-                EXPLAIN_BACKTRACE,
+                EXPLAIN_DEPENDENCY,
                 EXPLAIN_IDENTITY_SETS,
                 EXPLAIN_LIST_ALL,
                 EXPLAIN_GLOBAL_STATS,

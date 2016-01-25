@@ -339,10 +339,10 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
-    thisAgent = myAgent;
-    actionID = pActionID;
-    instantiated_pref = shallow_copy_preference(thisAgent, pPref);
-    original_pref = pPref;
+    thisAgent               = myAgent;
+    actionID                = pActionID;
+    instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
+    original_pref           = pPref;
     if (pAction)
     {
         variablized_action = copy_action(thisAgent, pAction);
@@ -358,6 +358,7 @@ action_record::~action_record()
     deallocate_preference(thisAgent, instantiated_pref);
     deallocate_action_list(thisAgent, variablized_action);
 }
+
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {
@@ -421,6 +422,14 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     } else {
         matched_wme = NULL;
     }
+    if (pCond->bt.level)
+    {
+        wme_level_at_firing = pCond->bt.level;
+    } else {
+        assert (condition_tests.id->eq_test->data.referent->id->level);
+        wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
+        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+    }
     if (!pStopHere && pCond->bt.trace)
     {
         parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
@@ -455,6 +464,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
     thisAgent           = myAgent;
     instantiationID     = pInst->i_id;
+    match_level         = pInst->match_goal_level;
     conditions          = new condition_record_list;
     actions             = new action_record_list;
     original_production = pInst->prod;

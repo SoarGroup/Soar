@@ -50,14 +50,14 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_BACKTRACE) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_DEPENDENCY) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
     {
         print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
     }
     else
     {
-        if (options.test(EXPLAIN_BACKTRACE))
+        if (options.test(EXPLAIN_DEPENDENCY))
         {
             thisAgent->explanationLogger->print_dependency_analysis();
         }
@@ -67,6 +67,9 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         }
         if (options.test(EXPLAIN_IDENTITY_SETS))
         {
+            print(thisAgent, "-------------------------------------\n"
+                             "Variable identities --> Identity sets\n"
+                             "-------------------------------------\n");
             thisAgent->explanationLogger->print_identity_set_explanation();
         }
         if (options.test(EXPLAIN_STATS))
