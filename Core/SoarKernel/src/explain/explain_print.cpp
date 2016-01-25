@@ -33,20 +33,20 @@ void Explanation_Logger::print_dependency_analysis()
     outputManager->printa(thisAgent,    "   (6) Generalized constraints from (5) are added and final chunk conditions are\n"
                                         "       polished by pruning unnecessary tests and merging appropriate conditions.\n\n");
 
-    outputManager->set_column_indent(0, 55);
-    outputManager->set_column_indent(1, 65);
-    outputManager->set_column_indent(2, 75);
-    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Chunk %-CondID %-Instantiation that created matched WME\n\n",
+    outputManager->set_column_indent(0, 60);
+    outputManager->set_column_indent(1, 70);
+    outputManager->set_column_indent(2, 80);
+    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Source%-Chunk %-Instantiation that created matched WME\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
 
-    print_condition_list(ebc_actual_trace, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
+    print_condition_list(ebc_actual_trace, false, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(ebc_actual_trace, current_discussed_chunk->baseInstantiation->actions, current_discussed_chunk->baseInstantiation->original_production);
 
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Explanation Trace: %-Using variable identity IDs\n\n");
 
-    print_condition_list(ebc_explanation_trace, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
+    print_condition_list(ebc_explanation_trace, false, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(ebc_explanation_trace, current_discussed_chunk->baseInstantiation->actions, current_discussed_chunk->baseInstantiation->original_production);
 
@@ -57,7 +57,7 @@ void Explanation_Logger::print_dependency_analysis()
 
 void Explanation_Logger::print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord)
 {
-    print_condition_list(pType, pInstRecord->conditions, pInstRecord->original_production, pInstRecord->match_level);
+    print_condition_list(pType, false, pInstRecord->conditions, pInstRecord->original_production, pInstRecord->match_level);
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(pType, pInstRecord->actions, pInstRecord->original_production);
 }
@@ -65,21 +65,21 @@ void Explanation_Logger::print_instantiation(EBCTraceType pType, instantiation_r
 
 void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
 {
-    outputManager->set_column_indent(0, 55);
-    outputManager->set_column_indent(1, 65);
-    outputManager->set_column_indent(2, 75);
-    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)%-Relevant%-ID%-Instantiation that created WME\n\n\n",
+    outputManager->set_column_indent(0, 60);
+    outputManager->set_column_indent(1, 70);
+    outputManager->set_column_indent(2, 80);
+    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)%-Source%-Chunk%-Instantiation that created WME\n\n",
         pInstRecord->instantiationID, pInstRecord->production_name);
     print_instantiation(ebc_actual_trace, pInstRecord);
     outputManager->printa(thisAgent, "\n");
-    outputManager->set_column_indent(0,65);
+    outputManager->set_column_indent(0,60);
     outputManager->printa_sf(thisAgent, "Explanation Trace: %-Using variable identity IDs\n\n");
     print_instantiation(ebc_explanation_trace, pInstRecord);
     outputManager->printa_sf(thisAgent, "\nIdentity to identity set mappings:\n\n");
     print_identity_set_explanation();
 }
 
-void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_record_list* pCondRecords, production* pOriginalRule, goal_stack_level pMatch_level)
+void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk, condition_record_list* pCondRecords, production* pOriginalRule, goal_stack_level pMatch_level)
 {
     if (pCondRecords->empty())
     {
@@ -96,9 +96,9 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
         bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_column_indent(0, 7);
-        outputManager->set_column_indent(1, 55);
-        outputManager->set_column_indent(2, 65);
-        outputManager->set_column_indent(3, 75);
+        outputManager->set_column_indent(1, 60);
+        outputManager->set_column_indent(2, 70);
+        outputManager->set_column_indent(3, 80);
         thisAgent->outputManager->set_print_test_format(true, false);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
@@ -145,19 +145,23 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
             {
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
 
-                outputManager->printa_sf(thisAgent, "%d:%-(%t%s^%t %t)%-%s",
+                outputManager->printa_sf(thisAgent, "%d:%-(%t%s^%t %t)",
                     lConditionCount, id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                    lCond->condition_tests.attr, lCond->condition_tests.value,
-                    ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : " ")
-                    );
-                if (lCond->parent_instantiation)
+                    lCond->condition_tests.attr, lCond->condition_tests.value);
+                if (pForChunk)
                 {
-                    outputManager->printa_sf(thisAgent, "%-c%u %-i%u (%s)\n", lCond->conditionID,
-                        (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
-                        (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
-                } else
-                {
-                    outputManager->printa_sf(thisAgent, "%-%-Soar Architecture\n");
+                    outputManager->printa_sf(thisAgent, "%-%u\n", lCond->conditionID);
+                } else {
+                    outputManager->printa_sf(thisAgent, "%-Rule%-%s", ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : "Local"));
+                    if (lCond->parent_instantiation)
+                    {
+                        outputManager->printa_sf(thisAgent, "%-i%u (%s)\n",
+                            (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
+                            (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
+                    } else
+                    {
+                        outputManager->printa_sf(thisAgent, "%-Soar Architecture\n");
+                    }
                 }
             } else if (pType == ebc_explanation_trace)
             {
@@ -171,7 +175,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
                 }
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, print_cond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
                 id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-                outputManager->printa_sf(thisAgent, "%d:%-(%o%s^%o %o)    %-%-(%g%s^%g %g)\n",
+                outputManager->printa_sf(thisAgent, "%d:%-(%o%s^%o %o)    %-(%g%s^%g %g)\n",
                     lConditionCount, id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
                     id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
@@ -191,10 +195,25 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
             {
                 if (lCond->matched_wme)
                 {
-                outputManager->printa_sf(thisAgent, "%d:%-(%y ^%y %y)\n",
-                    lConditionCount, lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value);
+                    outputManager->printa_sf(thisAgent, "%d:%-(%y ^%y %y)",
+                        lConditionCount, lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value);
                 } else {
                     outputManager->printa_sf(thisAgent, "%d:%-(Negative condition.  No matched WME.)\n", lConditionCount);
+                }
+                if (pForChunk)
+                {
+                    if (lCond->parent_instantiation)
+                    {
+                        outputManager->printa_sf(thisAgent, "%-i%u (%s)\n",
+                            (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
+                            (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
+                    } else
+                    {
+                        outputManager->printa_sf(thisAgent, "%-Soar Architecture\n");
+                    }
+
+                } else {
+                    outputManager->printa(thisAgent, "\n");
                 }
             }
         }
@@ -223,8 +242,8 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
         action* rhs;
         int lActionCount = 0;
         outputManager->set_column_indent(0, 7);
-        outputManager->set_column_indent(1, 65);
-        outputManager->set_column_indent(2, 75);
+        outputManager->set_column_indent(1, 60);
+        outputManager->set_column_indent(2, 70);
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
         if (pType == ebc_explanation_trace)
@@ -273,18 +292,18 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
 {
     if (pType == ebc_actual_trace)
     {
-        outputManager->set_column_indent(0, 65);
-        outputManager->set_column_indent(1, 75);
-        outputManager->printa_sf(thisAgent, "sp {%y %-CondID%-Instantiation that created matched WME\n\n", current_discussed_chunk->name);
+        outputManager->set_column_indent(0, 60);
+        outputManager->set_column_indent(1, 70);
+        outputManager->printa_sf(thisAgent, "sp {%y %-Condition ID\n\n", current_discussed_chunk->name);
     } else if (pType == ebc_explanation_trace)
     {
-        outputManager->set_column_indent(0, 65);
+        outputManager->set_column_indent(0, 60);
         outputManager->printa_sf(thisAgent, "Explanation Trace:     %-Using variable identity set IDs\n\n");
     } else if (pType == ebc_match_trace)
     {
-        outputManager->printa_sf(thisAgent, "Working Memory trace:\n\n");
+        outputManager->printa_sf(thisAgent, "Working Memory trace: %-Instantiation that created matched WME\n\n");
     }
-    print_condition_list(pType, pChunkRecord->conditions, pChunkRecord->original_production);
+    print_condition_list(pType, true, pChunkRecord->conditions, pChunkRecord->original_production);
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
@@ -309,7 +328,7 @@ void Explanation_Logger::print_chunk_explanation()
 
     outputManager->printa_sf(thisAgent, "\nIdentity to identity set mappings:\n\n");
     print_identity_set_explanation();
-    outputManager->set_column_indent(0, 65);
+    outputManager->set_column_indent(0, 60);
     outputManager->printa(thisAgent, "\nThe following commands now apply to this chunk:\n\n");
     outputManager->printa_sf(thisAgent, "   explain [-d | --dependency-analysis]%-Explain backtrace of problem-solving\n");
     outputManager->printa_sf(thisAgent, "   explain [-c | --constraints]%-Explain constraints required by problem-solving\n");
