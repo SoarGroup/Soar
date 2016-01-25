@@ -1102,6 +1102,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_succeeded();
+        assert(prod);
         thisAgent->explanationLogger->record_chunk_contents(prod, vrblz_top, rhs, results, unification_map, inst);
         #endif
         if (prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
@@ -1128,6 +1129,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         } else {
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
+            assert(prod);
             thisAgent->explanationLogger->record_chunk_contents(prod, vrblz_top, rhs, results, unification_map, inst);
             #endif
             /* MToDo | Why don't we excise the chunk here like we do non-matching

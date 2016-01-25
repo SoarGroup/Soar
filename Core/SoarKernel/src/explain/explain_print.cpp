@@ -62,6 +62,11 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, condition_reco
 
         if (pType == ebc_explanation_trace)
         {
+            if (!pOriginalRule->p_node)
+            {
+                outputManager->printa_sf(thisAgent, "Original rule conditions no longer in RETE\n");
+                return;
+            }
             p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
             current_cond = top;
             if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -168,6 +173,11 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
         thisAgent->outputManager->set_print_test_format(true, false);
         if (pType == ebc_explanation_trace)
         {
+            if (!pOriginalRule->p_node)
+            {
+                outputManager->printa_sf(thisAgent, "Original rule actions no longer in RETE\n");
+                return;
+            }
             p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
         }
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)

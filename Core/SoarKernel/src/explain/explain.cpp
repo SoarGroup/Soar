@@ -151,11 +151,11 @@ void Explanation_Logger::end_chunk_record()
 
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
 {
-    original_production = pProduction;
     if (pProduction)
     {
         name = pProduction->name;
         symbol_add_ref(thisAgent, name);
+        original_production = pProduction;
         production_add_ref(original_production);
     } else {
         name = NULL;
