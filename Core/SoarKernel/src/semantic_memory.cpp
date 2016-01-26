@@ -2569,7 +2569,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             new_base = new_activation;
         }
         double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
-        double modified_spread = (spread==0) ? (0) : (log(spread)-log(offset));
+        double modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
         thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base+modified_spread);
@@ -2835,7 +2835,7 @@ void smem_calc_spread(agent* thisAgent)
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
 
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<uint64_t>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
@@ -3095,7 +3095,7 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3->start();
                 ////////////////////////////////////////////////////////////////////////////
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==0) ? (SMEM_ACT_LOW):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
