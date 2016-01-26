@@ -3053,6 +3053,7 @@ void smem_calc_spread(agent* thisAgent)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = thisAgent->smem_params->base_decay->get_value();
                     new_base = pow(static_cast<double>(thisAgent->smem_max_cycle),static_cast<double>(-decay));
+                    new_base = log(new_base/(1+new_base));
                 }
                 else
                 {
