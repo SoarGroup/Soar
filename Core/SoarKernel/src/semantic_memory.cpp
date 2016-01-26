@@ -2525,6 +2525,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 
     // always associate activation with lti
     double spread = 0;
+    double new_base;
     double additional;
     {
         // Adding a bunch of stuff for spreading here.
@@ -2557,18 +2558,28 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));*/
 
         // activation_value=? spreading value = ? WHERE lti=?
+        if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation) == 0)
+        {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
+            double decay = thisAgent->smem_params->base_decay->get_value();
+            new_base = pow(static_cast<double>(thisAgent->smem_max_cycle),static_cast<double>(-decay));
+            new_base = log(new_base/(1+new_base));
+        }
+        else
+        {
+            new_base = new_activation;
+        }
         double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
         double modified_spread = (spread==0) ? (0) : (log(spread)-log(offset));
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_activation+modified_spread);
+        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base+modified_spread);
         thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
         // only if augmentation count is less than threshold do we associate with edges
         if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
         {
             // activation_value=? WHERE lti=?
-            thisAgent->smem_stmts->act_set->bind_double(1, new_activation+modified_spread);
+            thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
             thisAgent->smem_stmts->act_set->bind_int(2, lti);
             thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
         }
@@ -2578,7 +2589,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     thisAgent->smem_timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
     
-    return new_activation+spread;
+    return new_base+spread;
 }
 
 /*
@@ -2807,7 +2818,7 @@ void smem_calc_spread(agent* thisAgent)
                 //This is the same sort of activation updating one would have to do with base-level.
                 double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
                 double new_base;
-                if (prev_base==SMEM_ACT_LOW || prev_base == 0)
+                if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = thisAgent->smem_params->base_decay->get_value();
                     new_base = pow(static_cast<double>(thisAgent->smem_max_cycle),static_cast<double>(-decay));
@@ -2824,7 +2835,7 @@ void smem_calc_spread(agent* thisAgent)
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
 
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<uint64_t>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
@@ -3061,7 +3072,7 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_timers->spreading_calc_2_2_2->start();
                 ////////////////////////////////////////////////////////////////////////////
                 double new_base;
-                if (prev_base==SMEM_ACT_LOW || prev_base == 0)
+                if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = thisAgent->smem_params->base_decay->get_value();
                     new_base = pow(static_cast<double>(thisAgent->smem_max_cycle),static_cast<double>(-decay));
@@ -3084,7 +3095,7 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3->start();
                 ////////////////////////////////////////////////////////////////////////////
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
