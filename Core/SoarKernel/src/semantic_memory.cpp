@@ -3048,10 +3048,20 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_2->start();
                 ////////////////////////////////////////////////////////////////////////////
+                double new_base;
+                if (prev_base==SMEM_ACT_LOW)
+                {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
+                    double decay = thisAgent->smem_params->base_decay->get_value();
+                    new_base = pow(static_cast<double>(thisAgent->smem_max_cycle),static_cast<double>(-decay));
+                }
+                else
+                {
+                    new_base = prev_base;
+                }
                 if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) // ** This is costly.
                 {//The cost is from having to update several indexes that use the activation value.
                     //These indexes are on the entire graph structure of smem. (smem_augmentations)
-                    thisAgent->smem_stmts->act_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base))+modified_spread);
+                    thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
                 }
@@ -3063,7 +3073,7 @@ void smem_calc_spread(agent* thisAgent)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ ((prev_base==SMEM_ACT_LOW) ? (0.0):(prev_base)));
+                thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
                 ////////////////////////////////////////////////////////////////////////////
