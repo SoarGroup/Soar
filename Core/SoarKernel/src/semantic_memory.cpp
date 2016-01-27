@@ -4817,7 +4817,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
             {
                 thisAgent->smem_stmts->act_lti_get->bind_int(1, q->column_int(0));
                 thisAgent->smem_stmts->act_lti_get->execute();
-                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->smem_stmts->act_lti_get->column_double(0)+thisAgent->smem_stmts->act_lti_get->column_double(1), q->column_int(0)));
+                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->smem_stmts->act_lti_get->column_double(2), q->column_int(0)));
                 thisAgent->smem_stmts->act_lti_get->reinitialize();
                 
                 more_rows = (q->execute() == soar_module::row);
