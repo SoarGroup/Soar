@@ -2484,7 +2484,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->lti_access_set->bind_double(1, (prev_access_n + (add_access) ? (touches) : (0)));
         //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
         thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
-        thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
+        thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? ((add_access) ? (time_now) : (0)) : (prev_access_1)));
         thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
         thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
     }
