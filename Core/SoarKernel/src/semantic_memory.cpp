@@ -921,7 +921,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     // Adding statements needed to support prohibits.
 
-    prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=?,dirty=1 WHERE lti_id=?");
+    prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=1,dirty=1 WHERE lti_id=?");
     add(prohibit_set);
 
     prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
