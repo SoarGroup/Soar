@@ -933,6 +933,9 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     prohibit_reset = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=0,dirty=0 WHERE lti_id=?");
     add(prohibit_reset);
 
+    prohibit_clean = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=1,dirty=0 WHERE lti_id=?");
+    add(prohibit_clean);
+
     prohibit_remove = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_prohibited WHERE lti_id=?");
     add(prohibit_remove);
 
@@ -2390,8 +2393,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         */
         thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
         prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
-        thisAgent->smem_stmts->prohibit_check->reinitialize();
+        bool dirty = false;
         if (prohibited)
+        {
+            dirty = thisAgent->smem_stmts->prohibit_check->column_int(1)==1;
+        }
+        thisAgent->smem_stmts->prohibit_check->reinitialize();
+        if (prohibited && dirty)
         {//Just need to flip the bit here.
             //Find the number of touches from the most recent activation. We are removing that many.
             thisAgent->smem_stmts->history_get->bind_int(1, lti);
@@ -2439,6 +2447,31 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     }
     else
     {
+        /* If we are not adding an access, we need to remove the old history so that recalculation takes into account the prohibit having occurred.
+         * The big difference is that we'll have to leave it prohibited, just not dirty any more. Only an access removes the prohibit.
+         */
+        thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
+        prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
+        bool dirty = false;
+        if (prohibited)
+        {
+            dirty = thisAgent->smem_stmts->prohibit_check->column_int(1)==1;
+        }
+        thisAgent->smem_stmts->prohibit_check->reinitialize();
+        if (prohibited && dirty)
+        {//Just need to flip the bit here.
+            //Find the number of touches from the most recent activation. We are removing that many.
+            thisAgent->smem_stmts->history_get->bind_int(1, lti);
+            thisAgent->smem_stmts->history_get->execute();
+            prev_access_n-=thisAgent->smem_stmts->history_get->column_double(10);
+            thisAgent->smem_stmts->history_get->reinitialize();
+            //remove the history
+            thisAgent->smem_stmts->history_remove->bind_int(1,(lti));
+            thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->prohibit_clean->bind_int(1,lti);
+            thisAgent->smem_stmts->prohibit_clean->execute(soar_module::op_reinit);
+        }
+
         time_now = thisAgent->smem_max_cycle;
         
         thisAgent->smem_stats->act_updates->set_value(thisAgent->smem_stats->act_updates->get_value() + 1);
