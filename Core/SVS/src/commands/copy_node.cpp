@@ -25,7 +25,7 @@
 #include "scene.h"
 #include "sgnode_algs.h"
 #include "soar_interface.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "command_table.h"
 
 using namespace std;

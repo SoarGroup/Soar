@@ -1,7 +1,7 @@
 #include "filter_table.h"
 #include "scene.h"
 #include "filter.h"
-#include "symtab.h"
+#include "symbol.h"
 #include <iostream>
 #include <iomanip>
 

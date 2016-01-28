@@ -21,7 +21,7 @@
 #include "gsysparam.h"
 #include "rete.h"
 #include "sml_AgentSML.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "production.h"
 
 using namespace cli;

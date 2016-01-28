@@ -17,7 +17,7 @@
 #include "sml_AgentSML.h"
 
 #include "sml_KernelSML.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace cli;
 using namespace sml;
