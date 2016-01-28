@@ -425,9 +425,13 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     if (pCond->bt.level)
     {
         wme_level_at_firing = pCond->bt.level;
-    } else {
+    } else if (condition_tests.id->eq_test->data.referent->is_identifier())
+    {
         assert (condition_tests.id->eq_test->data.referent->id->level);
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
+        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+    } else {
+        wme_level_at_firing = 0;
         dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
     }
     if (!pStopHere && pCond->bt.trace)
@@ -612,6 +616,39 @@ bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID
     return true;
 }
 
+bool Explanation_Logger::print_condition_explanation_for_id(uint64_t pConditionID)
+{
+    std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
+    soar_module::identity_triple lWatchIdentities;
+
+    iter_inst = all_conditions->find(pConditionID);
+    if (iter_inst == all_conditions->end())
+    {
+        outputManager->printa_sf(thisAgent, "Could not find a condition with ID %u.\n", pConditionID);
+        return false;
+    } else
+    {
+        if ((iter_inst->second->condition_tests.id->eq_test->identity == current_explained_ids.id) &&
+            (iter_inst->second->condition_tests.attr->eq_test->identity == current_explained_ids.attr) &&
+            (iter_inst->second->condition_tests.value->eq_test->identity == current_explained_ids.value))
+        {
+            current_explained_ids.id = 0;
+            current_explained_ids.attr = 0;
+            current_explained_ids.value = 0;
+            outputManager->printa_sf(thisAgent, "No longer highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
+                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
+        } else
+        {
+            current_explained_ids.id = iter_inst->second->condition_tests.id->eq_test->identity;
+            current_explained_ids.attr = iter_inst->second->condition_tests.attr->eq_test->identity;
+            current_explained_ids.value = iter_inst->second->condition_tests.value->eq_test->identity;
+            outputManager->printa_sf(thisAgent, "Highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
+                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
+        }
+    }
+    return true;
+}
+
 bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
 {
     /* First argument must be an object type.  Current valid types are 'chunk',
@@ -633,6 +670,13 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
             outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
         }
         lSuccess = print_instantiation_explanation_for_id(lObjectID);
+    } else if (lFirstChar == 'l')
+    {
+        if (!from_string(lObjectID, pObjectIDString->c_str()))
+        {
+            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
+        }
+        lSuccess = print_condition_explanation_for_id(lObjectID);
     } else
     {
         outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());

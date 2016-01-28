@@ -254,6 +254,7 @@ class Explanation_Logger
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
+        soar_module::identity_triple    current_explained_ids;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
@@ -272,8 +273,11 @@ class Explanation_Logger
         void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
+        bool                    print_condition_explanation_for_id(uint64_t pInstID);
         void                    print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord);
         void                    print_condition_explanation(uint64_t pCondID);
+
+        bool                    is_condition_related(condition_record* pCondRecord);
 
         /* ID Counters */
         uint64_t            condition_id_count;

@@ -359,9 +359,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string_brief(t->type);
                                     }
-                                    destString += "<";
+                                    destString += "[";
                                     destString += std::to_string(t->identity);
-                                    destString += ">";
+                                    destString += "]";
                                 } else {
                                     test_to_string(t, destString);
                                 }
@@ -377,9 +377,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         {
                                             destString += test_type_to_string_brief(ct->type);
                                         }
-                                        destString += "<";
+                                        destString += "[";
                                         destString += std::to_string(ct->identity);
-                                        destString += ">";
+                                        destString += "]";
                                     } else {
                                         test_to_string(ct, destString);
                                     }
