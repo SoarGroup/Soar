@@ -2569,26 +2569,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
         }
         thisAgent->smem_stmts->act_lti_get->reinitialize();
-        /*soar_module::sqlite_statement* calc_spread = new soar_module::sqlite_statement(thisAgent->smem_db,
-                "SELECT num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_id = ?");
-        calc_spread->prepare();
-        calc_spread->bind_int(1,lti);
-        double additional_num = 0;
-        double additional_denom = 0; //initially named "additional_demon" (soar needs more demons)
-        while (calc_spread->execute() == soar_module::row && calc_spread->column_int(1))
-        {
-            ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
-            double raw_prob = (((double)(calc_spread->column_int(1)))/calc_spread->column_int(0));
-            double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(0));
-            additional = (log(raw_prob/(1-raw_prob)))-log(offset/(1-offset));
-            spread+=additional;//(additional>0 ? additional: 0);
-            //additional_num+=calc_spread->column_int(1);
-            //additional_denom+=calc_spread->column_int(0);
-        }//The modified calculation here is as if we had actually calculated the personalized pagerank vector from the entire context.
-        delete calc_spread;*/
-        /*double raw_prob = additional_num/additional_denom;
-        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/additional_denom;
-        spread = log(raw_prob/(1.0-raw_prob))-log(offset/(1.0-offset));*/
+
 
         // activation_value=? spreading value = ? WHERE lti=?
         if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation) == 0)
