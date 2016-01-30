@@ -2557,6 +2557,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 
     // always associate activation with lti
     double spread = 0;
+    double modified_spread = 0;
     double new_base;
     double additional;
     {
@@ -2601,7 +2602,8 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             new_base = new_activation;
         }
         double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
-        double modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
+        modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
+        spread = (spread < offset) ? (0) : (spread);
         thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
         thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
         thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base+modified_spread);
@@ -2621,7 +2623,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     thisAgent->smem_timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
     
-    return new_base+spread;
+    return new_base+modified_spread;
 }
 
 /*
