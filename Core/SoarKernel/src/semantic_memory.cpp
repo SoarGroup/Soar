@@ -2849,6 +2849,7 @@ void smem_calc_spread(agent* thisAgent)
 
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
                 double modified_spread = ((spread < offset) || (spread < 0)) ? (0) : (log(spread)-log(offset));
+                spread = (spread < offset) ? (0) : (spread);
                 //This is the same sort of activation updating one would have to do with base-level.
                 double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
                 double new_base;
