@@ -38,8 +38,6 @@
 #include <cstring>
 #include <ctype.h>
 
-#define REJECT_UNCONNECTED false
-
 using namespace soar_TraceNames;
 
 /* =====================================================================
@@ -959,7 +957,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, REJECT_UNCONNECTED);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
     if (!prod && variablize)
     {
         /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
@@ -1010,7 +1008,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
         dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, REJECT_UNCONNECTED);
+        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
         if (prod)
         {
             dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");

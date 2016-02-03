@@ -878,9 +878,8 @@ list* collect_root_variables(agent* thisAgent,
                     "   version of Soar.\n");
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
-
+                *ungrounded_found = true;
             }
-            *ungrounded_found = true;
         }
     }
 
@@ -1506,7 +1505,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool from_chunking)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
 {
     tc_number tc;
     list* roots;
@@ -1516,10 +1515,10 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
     bool ungrounded_found = false;
     roots = collect_root_variables(thisAgent, *lhs_top, tc, true, &ungrounded_found);
 
-    if (from_chunking && ungrounded_found)
+    if (ungrounded_found)
     {
-        print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "        We're debugging aborting when there are ungrounded identifier elements.\n");
+        print(thisAgent,  "Error:  In production %s,\n", thisAgent->name_of_production_being_reordered);
+        print(thisAgent,  "        There are conditions with identifiers not linked to a goal state.\n");
         return false;
     }
 

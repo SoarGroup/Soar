@@ -2393,7 +2393,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
 
-    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true, NULL, false);
+    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true, NULL);
     if (!p)
     {
         if (documentation)

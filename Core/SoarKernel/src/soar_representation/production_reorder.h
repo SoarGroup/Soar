@@ -29,7 +29,7 @@ typedef struct saved_test_struct
 } saved_test;
 
 extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc);
-extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool from_chunking = false);
+extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs);
 extern void init_reorderer(agent* thisAgent);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */

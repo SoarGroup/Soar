@@ -332,7 +332,7 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = find_identifier(thisAgent, 'V', 30);
+            Symbol *sym = find_identifier(thisAgent, 'S', 4);
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
