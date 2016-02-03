@@ -436,6 +436,10 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     }
     if (!pStopHere && pCond->bt.trace)
     {
+          /* Crude way to print dependency tree */
+//        Output_Manager::Get_OM().set_column_indent(0, (bt_depth * 3));
+//        dprint(DT_REV_BT, "%-%u\n", pCond->bt.trace->inst->i_id);
+
         parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
         /* Cache the pref to make it easier to connect this condition to the action that created
          * the preference later. */

@@ -3,17 +3,6 @@
 
 #include "kernel.h"
 
-typedef unsigned char byte;
-typedef struct condition_struct condition;
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct cons_struct cons;
-typedef cons list;
-typedef struct wme_struct wme;
-typedef struct preference_struct preference;
-typedef signed short goal_stack_level;
-typedef uint64_t tc_number;
-
 /* -------------------------------------------------------------------
                              Conditions
 

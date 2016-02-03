@@ -89,8 +89,6 @@ using namespace soar_TraceNames;
 // Add everything
 void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
-//    cons* c;
-
     if ((cond)->bt.wme_->grounds_tc != grounds_tc)
     {
         (cond)->bt.wme_->grounds_tc = grounds_tc;

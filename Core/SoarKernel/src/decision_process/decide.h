@@ -28,30 +28,10 @@
 #define DECIDE_H
 
 #include "kernel.h"
+#include "soar_module.h"
+
 #include <set>
 #include <map>
-
-typedef unsigned char byte;
-typedef struct symbol_struct Symbol;
-typedef struct wme_struct wme;
-typedef struct slot_struct slot;
-typedef struct instantiation_struct instantiation;
-typedef struct preference_struct preference;
-typedef struct cons_struct cons;
-typedef cons list;
-typedef struct dl_cons_struct dl_cons;
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-#include "soar_module.h"
-template <class T>
-class SoarMemoryPoolAllocator;
-
-typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
-typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
-#else
-typedef std::set< wme* > wma_pooled_wme_set;
-typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
-#endif
 
 /* ------------------------------------------------------------------------
            Goal Dependency Set

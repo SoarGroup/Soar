@@ -63,8 +63,8 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
 {
     tc_number tc;
     stack< Symbol*> to_process;
-    wme_list childs;
-    wme_list::iterator i;
+    wme_vector childs;
+    wme_vector::iterator i;
     Symbol* parent, *v;
     uint64_t tt;
     string attr;
@@ -107,8 +107,8 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
 
 bool command::get_str_param(const string& name, string& val)
 {
-    wme_list children;
-    wme_list::iterator i;
+    wme_vector children;
+    wme_vector::iterator i;
     string attr, v;
     
     si->get_child_wmes(root, children);

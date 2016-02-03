@@ -38,6 +38,8 @@
 #include <cstring>
 #include <ctype.h>
 
+#define REJECT_UNCONNECTED false
+
 using namespace soar_TraceNames;
 
 /* =====================================================================
@@ -957,8 +959,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, true);
+    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, REJECT_UNCONNECTED);
     if (!prod && variablize)
     {
         /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
@@ -1009,10 +1010,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
         dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, true);
+        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL, REJECT_UNCONNECTED);
         if (prod)
         {
             dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
+            /* MToDo | Make this an option to interrrupt when an explanation is made*/
+//            thisAgent->stop_soar = true;
         }
     }
     /* Note that there cannot be a GOTO chunk_abort between creation of these saved conditions above and here */
@@ -1188,3 +1191,31 @@ chunking_abort:
 #endif
 #endif
 }
+
+
+void Explanation_Based_Chunker::generate_conditions_to_ground_lti(Symbol* pUnconnected_LTI)
+{
+    sym_grounding_path_list ids_to_walk;
+
+    dprint(DT_GROUND_LTI, "generate_conditions_to_ground_lti called for %y.\n", pUnconnected_LTI);
+    Symbol* lIdSym;
+    sym_grounding_path* lPath;
+
+    ground_lti_tc = get_new_tc_number(thisAgent);
+    lPath = new sym_grounding_path(pUnconnected_LTI);
+
+    ids_to_walk.push_back(lPath);
+
+    while (!ids_to_walk.empty())
+    {
+        lPath = ids_to_walk.front();
+        ids_to_walk.pop_front();
+        lIdSym = lPath->topSym;
+
+        /* --- mark id so we don't walk it twice --- */
+        lIdSym->tc_num = ground_lti_tc;
+
+        dprint(DT_GROUND_LTI, "Adding input wme's for %y.\n", lIdSym);
+    }
+}
+

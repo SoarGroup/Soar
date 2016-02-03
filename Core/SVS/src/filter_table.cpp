@@ -187,8 +187,8 @@ Example input:
 */
 filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
 {
-    wme_list children, params;
-    wme_list::iterator i;
+    wme_vector children, params;
+    wme_vector::iterator i;
     string pname, ftype, itype;
     filter_input* input;
     bool fail;

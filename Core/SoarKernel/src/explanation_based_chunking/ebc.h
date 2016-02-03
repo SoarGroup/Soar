@@ -9,6 +9,7 @@
 #define EBC_MANAGER_H_
 
 #include "kernel.h"
+
 #include <list>
 #include <set>
 #include <unordered_map>
@@ -21,7 +22,6 @@
 #define BUILD_WITH_EXPLAINER
 
 tc_number get_new_tc_number(agent* thisAgent);
-
 
 typedef struct constraint_struct
 {
@@ -141,6 +141,9 @@ class Explanation_Based_Chunker
         /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
+        /* MToDo | Make private after debugging */
+        void generate_conditions_to_ground_lti(Symbol* pUnconnected_LTI);
+
     private:
 
         agent*              thisAgent;
@@ -163,6 +166,7 @@ class Explanation_Based_Chunker
         tc_number           locals_tc;
         tc_number           potentials_tc;
         tc_number           backtrace_number;
+        tc_number           ground_lti_tc;
         bool                quiescence_t_flag;
 
         /* Variables used by result building methods */

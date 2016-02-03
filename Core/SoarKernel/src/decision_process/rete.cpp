@@ -433,6 +433,7 @@ inline void new_left_token(token* New, rete_node* current_node,
     (New)->w = (parent_wme);
     if (parent_wme) insert_at_head_of_dll((parent_wme)->tokens, (New),
                                               next_from_wme, prev_from_wme);
+
 }
 
 /* Note: (most) tokens are stored in hash table thisAgent->left_ht */
@@ -1911,6 +1912,7 @@ void update_node_with_matches_from_above(agent* thisAgent, rete_node* child)
     right_mem* rm;
     token* tok;
 
+    //dprint(DT_RETE_PNODE_ADD, "update_node_with_matches_from_above called with child node %d\n", child->node_id);
     if (bnode_is_bottom_of_split_mp(child->node_type))
     {
         char msg[BUFFER_MSG_SIZE];
@@ -3900,6 +3902,10 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     action* a;
     byte production_addition_result;
 
+    //dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
+    //dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
+    //dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
+
     /* --- build the network for all the conditions --- */
     build_network_for_condition_list(thisAgent, lhs_top, 1, thisAgent->dummy_top_node,
                                      &bottom_node, &bottom_depth, &vars_bound);
@@ -5195,6 +5201,7 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     rete_test* rt;
     bool failed_a_test;
 
+    //dprint(DT_RETE_PNODE_ADD, "mp_node_left_addition called with node %d, token %u, and wme %w\n", node->node_id, tok, w);
     activation_entry_sanity_check();
     left_node_activation(node, true);
 
@@ -5460,6 +5467,11 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
     rete_test* rt;
     bool failed_a_test;
     rete_node* child;
+    //static uint64_t callcount = 0;
+    //uint64_t lastcallcount = 0;
+
+    //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition called for %u time with node %d and wme %w\n", ++callcount, node->node_id, w);
+    //lastcallcount = callcount;
 
     activation_entry_sanity_check();
     right_node_activation(node, true);
@@ -5477,9 +5489,22 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
 
     referent = w->id;
     hv = node->node_id ^ referent->hash_id;
+    //uint64_t childcount = 0;
+
+    //dprint(DT_RETE_PNODE_ADD, "Starting token list we're iterating through: ");
+    //for (tok = left_ht_bucket(thisAgent, hv); tok != NIL; tok = tok->a.ht.next_in_bucket)
+    //{
+    //    childcount++;
+    //    dprint(DT_RETE_PNODE_ADD, "%u: %w", tok, tok->w);
+    //}
+    //dprint(DT_RETE_PNODE_ADD, "\nnum children: %u\n", childcount);
+    //childcount = 0;
 
     for (tok = left_ht_bucket(thisAgent, hv); tok != NIL; tok = tok->a.ht.next_in_bucket)
     {
+        //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition checking token %u, (#%u) for node %d \n", tok, ++childcount, node->node_id);
+        //dprint(DT_RETE_PNODE_ADD, "tok: %u, next: %u\n", tok, tok->a.ht.next_in_bucket);
+
         if (tok->node != node)
         {
             continue;
@@ -5507,8 +5532,10 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         {
             (*(left_addition_routines[child->node_type]))(thisAgent, child, tok, w);
         }
+        //dprint(DT_RETE_PNODE_ADD, "left_addition done.  end of loop.  tok: %u, next: %u\n", tok, tok->a.ht.next_in_bucket);
     }
     activation_exit_sanity_check();
+    //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition finished for %u time with node %d and wme %w\n", ++callcount, node->node_id, w);
 }
 
 void unhashed_mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
@@ -6001,6 +6028,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* RCHONG: end 10.11 */
 
+    //dprint(DT_RETE_PNODE_ADD, "p_node_left_addition called with node %d, token %u, and wme %w\n", node->node_id, tok, w);
     activation_entry_sanity_check();
     left_node_activation(node, true);
 
@@ -6433,6 +6461,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     insert_at_head_of_dll(node->b.p.tentative_assertions, msc,
                           next_of_node, prev_of_node);
     activation_exit_sanity_check();
+    //dprint(DT_RETE_PNODE_ADD, "p_node_left_addition finished for node %d, token %u, and wme %w\n", node->node_id, tok, w);
+
 }
 
 /* ----------------------------------------------------------------------

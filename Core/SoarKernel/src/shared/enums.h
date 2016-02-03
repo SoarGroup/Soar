@@ -54,6 +54,9 @@ enum TraceMode
     DT_EBC_CLEANUP = 33,
     DT_UNKNOWN_LEVEL = 34,
     DT_EXPLAIN = 35,
+    DT_REV_BT = 36,
+    DT_RETE_PNODE_ADD = 37,
+    DT_GROUND_LTI = 38,
     num_trace_modes
 };
 

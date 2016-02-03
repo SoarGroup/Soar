@@ -1,7 +1,3 @@
-#include "io_link.h"
-#include "portability.h"
-#include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -22,55 +18,44 @@
 
 #include "decide.h"
 
+#include "agent.h"
+#include "assert.h"
+#include "condition.h"
+#include "debug.h"
+#include "decision_manipulation.h"
+#include "ebc.h"
+#include "episodic_memory.h"
+#include "exploration.h"
+#include "init_soar.h"
+#include "io_link.h"
 #include "instantiation.h"
 #include "mem.h"
-#include "kernel.h"
-#include "agent.h"
-#include "symbol.h"
-#include "working_memory.h"
-#include "init_soar.h"
-#include "preference.h"
-#include "production.h"
-#include "condition.h"
-#include "print.h"
-#include "rete.h"
-#include "trace.h"
-#include "slot.h"
-#include "xml.h"
-#include "soar_TraceNames.h"
-
-#include "soar_module.h"
-
-#include "exploration.h"
-#include "reinforcement_learning.h"
-#include "decision_manipulation.h"
-#include "working_memory_activation.h"
 #include "misc.h"
-
-#include "episodic_memory.h"
+#include "preference.h"
+#include "print.h"
+#include "production.h"
+#include "reinforcement_learning.h"
+#include "rete.h"
 #include "semantic_memory.h"
+#include "slot.h"
+#include "soar_module.h"
+#include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
+#include "soar_TraceNames.h"
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif
+#include "symbol.h"
 #include "test.h"
-#include "ebc.h"
-#include "debug.h"
+#include "trace.h"
+#include "working_memory_activation.h"
+#include "working_memory.h"
+#include "xml.h"
+
 #include <cmath>
-
-#include "assert.h"
-
 #include <algorithm>
 #include <list>
 
-typedef struct ms_change_struct ms_change;
-
 using namespace soar_TraceNames;
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
-#else
-typedef std::list< Symbol* > symbol_list;
-#endif
 
 void print_candidates(agent* thisAgent, preference* candidates)
 {

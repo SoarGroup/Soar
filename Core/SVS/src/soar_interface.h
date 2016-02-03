@@ -16,7 +16,7 @@ extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
 extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
 extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
 
-typedef std::vector<wme*> wme_list;
+typedef std::vector<wme*> wme_vector;
 
 class soar_interface;
 
@@ -56,7 +56,7 @@ class soar_interface
         wme*         make_wme(Symbol* id, Symbol* attr, const T& val);
         
         void         remove_wme(wme* w);
-        bool         get_child_wmes(Symbol* id, wme_list& childs);
+        bool         get_child_wmes(Symbol* id, wme_vector& childs);
         bool         find_child_wme(Symbol* id, const std::string& attr, wme*& w);
         
         template<class T>

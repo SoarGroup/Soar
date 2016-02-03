@@ -86,7 +86,7 @@ void soar_interface::remove_wme(wme* w)
     soar_module::remove_module_wme(thisAgent, w);
 }
 
-bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
+bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
 {
     slot* s;
     wme* w;

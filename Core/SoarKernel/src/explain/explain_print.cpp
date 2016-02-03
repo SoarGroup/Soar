@@ -76,7 +76,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
     outputManager->printa_sf(thisAgent, "Explanation Trace: %-Using variable identity IDs\n\n");
     print_instantiation(ebc_explanation_trace, pInstRecord);
     outputManager->printa_sf(thisAgent, "\nIdentity to identity set mappings:\n\n");
-    print_identity_set_explanation();
+//    print_identity_set_explanation();
 }
 
 bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
@@ -117,7 +117,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
 
         if (pType == ebc_explanation_trace)
         {
-            if (!pOriginalRule->p_node)
+            if (!pOriginalRule || !pOriginalRule->p_node)
             {
                 outputManager->printa_sf(thisAgent, "Original rule conditions no longer in RETE\n");
                 return;
@@ -262,7 +262,7 @@ void Explanation_Logger::print_action_list(EBCTraceType pType, action_record_lis
         thisAgent->outputManager->set_print_test_format(true, false);
         if (pType == ebc_explanation_trace)
         {
-            if (!pOriginalRule->p_node)
+            if (!pOriginalRule || !pOriginalRule->p_node)
             {
                 outputManager->printa_sf(thisAgent, "Original rule actions no longer in RETE\n");
                 return;

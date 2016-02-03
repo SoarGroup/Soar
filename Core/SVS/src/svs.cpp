@@ -259,8 +259,8 @@ void svs_state::update_cmd_results(bool early)
 
 void svs_state::process_cmds()
 {
-    wme_list all;
-    wme_list::iterator all_it;
+    wme_vector all;
+    wme_vector::iterator all_it;
     si->get_child_wmes(cmd_link, all);
     
     command_set live_commands;

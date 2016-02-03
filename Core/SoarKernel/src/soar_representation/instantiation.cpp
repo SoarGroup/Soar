@@ -1461,6 +1461,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     if (prod->type == JUSTIFICATION_PRODUCTION_TYPE
             && prod->reference_count > 1)
     {
+        /* MToDo | May want to not excise if justification that has an explanation */
         excise_production(thisAgent, prod, false);
     }
     else if (prod->type == CHUNK_PRODUCTION_TYPE)

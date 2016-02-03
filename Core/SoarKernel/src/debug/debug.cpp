@@ -81,11 +81,14 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
     //    mode_info[DT_RHS_VALUE].enabled =                   true;
     //    mode_info[DT_EXPLAIN].enabled =                     true;
+    //    mode_info[DT_REV_BT].enabled =                      true;
     //
     //    mode_info[DT_WME_CHANGES].enabled =                 true;
     //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
     //    mode_info[DT_LINKS].enabled =                       true;
     //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
+    //    mode_info[DT_RETE_PNODE_ADD].enabled =              true;
+        mode_info[DT_GROUND_LTI].enabled =                  true;
     }
 }
 
@@ -132,6 +135,10 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
+    mode_info[DT_REV_BT].prefix =                       strdup("RevBT   | ");
+    mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
+    mode_info[DT_GROUND_LTI].prefix =                   strdup("Grnd LTI| ");
+
 
 #ifdef DEBUG_OUTPUT_ON
     debug_set_mode_info(mode_info, true);
@@ -324,15 +331,19 @@ void debug_test(int type)
     switch (type)
     {
         case 1:
-            Output_Manager::Get_OM().set_output_params_global(true);
-            thisAgent->output_settings->set_output_params_agent(true);
-            print(thisAgent, "Debug output enabled.\n");
-            dprint(DT_DEBUG, "Test debug statement.\n");
+        {
+            Symbol *sym = find_identifier(thisAgent, 'V', 30);
+            if (sym)
+            {
+                dprint(DT_DEBUG, "%y found.\n", sym);
+                thisAgent->ebChunker->generate_conditions_to_ground_lti(sym);
+            } else {
+                dprint(DT_DEBUG, "Could not find symbol.\n");
+            }
             break;
+        }
         case 2:
-            Output_Manager::Get_OM().set_output_params_global(false);
-            thisAgent->output_settings->set_output_params_agent(false);
-            print(thisAgent, "Debug output disabled.\n");
+            dprint(DT_DEBUG, "%8");
             break;
         case 3:
         {
