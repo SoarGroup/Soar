@@ -290,6 +290,7 @@ class Explanation_Based_Chunker
         void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
+        void walk_and_find_lti(Symbol* root, Symbol* targetLTI);
 
         /* Clean-up methods */
         void clear_merge_map();
