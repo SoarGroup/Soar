@@ -2393,8 +2393,9 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     for (lhs_bottom = lhs; lhs_bottom->next != NIL; lhs_bottom = lhs_bottom->next);
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
 
-    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true, NULL);
-    if (!p)
+    thisAgent->name_of_production_being_reordered = name->sc->name;
+    EBCFailureType failure_type = reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true);
+    if (failure_type != ebc_success)
     {
         if (documentation)
         {
@@ -2407,6 +2408,8 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         deallocate_action_list(thisAgent, rhs);
         return NIL;
     }
+
+    p = make_production(thisAgent, prod_type, name, name->sc->name, &lhs_top, &rhs, true, NULL);
 
     if (prod_type == TEMPLATE_PRODUCTION_TYPE)
     {

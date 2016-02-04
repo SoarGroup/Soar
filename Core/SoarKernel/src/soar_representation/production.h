@@ -241,15 +241,15 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
     say.  Normally deallocate_production() should be invoked only via
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
+extern EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
+                                                       condition**   lhs_top,
+                                                       action**      rhs_top,
+                                                       bool          reorder_nccs);
 
-extern production* make_production(agent* thisAgent,
-                                   ProductionType   type,
-                            Symbol* name,
-                            char* original_rule_name,
-                            condition** lhs_top,
-                            action** rhs_top,
-                            bool reorder_nccs,
-                            preference* results);
+extern production* make_production(agent* thisAgent, ProductionType type,
+                                   Symbol* name, char* original_rule_name,
+                                   condition** lhs_top, action** rhs_top,
+                                   bool reorder_nccs, preference* results);
 
 extern void deallocate_production(agent* thisAgent, production* prod);
 extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);

@@ -13,6 +13,7 @@
 ------------------------------------------------------------------ */
 
 #include "ebc.h"
+#include "condition.h"
 #include "debug.h"
 #include "agent.h"
 #include "test.h"
@@ -336,7 +337,10 @@ void debug_test(int type)
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
-                thisAgent->ebChunker->generate_conditions_to_ground_lti(sym);
+                condition* dummy;
+                thisAgent->memoryManager->allocate_with_pool(MP_condition, &dummy);
+                init_condition(dummy);
+                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");
             }

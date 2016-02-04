@@ -657,6 +657,10 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             action* new_action = thisAgent->ebChunker->make_variablized_rl_action(id, attr, value, referent);
 
             // make new production
+            thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
+            EBCFailureType failure_type = reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false);
+            assert(failure_type == ebc_success);
+
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
             thisAgent->ebChunker->clear_variablization_maps();

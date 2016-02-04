@@ -491,42 +491,53 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
     the production_remove_ref() macro.
 ********************************************************************* */
 
-production* make_production(agent* thisAgent,
-                            ProductionType type,
-                            Symbol* name,
-                            char* original_rule_name,
-                            condition** lhs_top,
-                            action** rhs_top,
-                            bool reorder_nccs,
-                            preference* results)
+/* Before calling make_production, caller is responsible for using this
+ * function to make sure the production is valid.  This was separated out
+ * so EBC can first try to fix unconnected conditions before creating
+ * the production. */
+
+EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
+                                                condition**   lhs_top,
+                                                action**      rhs_top,
+                                                bool          reorder_nccs)
+{
+    tc_number tc;
+
+    reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
+    tc = get_new_tc_number(thisAgent);
+    add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
+
+    if (! reorder_action_list(thisAgent, rhs_top, tc))
+    {
+        return ebc_failed_reordering_rhs;
+    }
+    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs))
+    {
+        return ebc_failed_unconnected_conditions;
+    }
+
+    if (!smem_valid_production(*lhs_top, *rhs_top))
+    {
+        print(thisAgent,  "Ungrounded LTI in production.  Not creating production.\n");
+        return ebc_failed_ungrounded_lti;
+    }
+    return ebc_success;
+}
+
+production* make_production(agent*          thisAgent,
+                            ProductionType  type,
+                            Symbol*         name,
+                            char*           original_rule_name,
+                            condition**     lhs_top,
+                            action**        rhs_top,
+                            bool            reorder_nccs,
+                            preference*     results)
 {
     production* p;
-    tc_number tc;
     action* a;
-
-    thisAgent->name_of_production_being_reordered = name->sc->name;
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
-        tc = get_new_tc_number(thisAgent);
-        add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
-
-        if (! reorder_action_list(thisAgent, rhs_top, tc))
-        {
-            return NIL;
-        }
-        if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs))
-        {
-            return NIL;
-        }
-
-        if (!smem_valid_production(*lhs_top, *rhs_top))
-        {
-            print(thisAgent,  "Ungrounded LTI in production.  Not creating production.\n");
-            return NIL;
-        }
-
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
         calculate_compile_time_o_support(*lhs_top, *rhs_top);
 #ifdef DEBUG_CT_OSUPPORT

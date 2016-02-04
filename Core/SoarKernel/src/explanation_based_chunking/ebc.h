@@ -9,6 +9,7 @@
 #define EBC_MANAGER_H_
 
 #include "kernel.h"
+#include "soar_module.h"
 
 #include <list>
 #include <set>
@@ -142,7 +143,7 @@ class Explanation_Based_Chunker
         void clear_variablization_maps();
 
         /* MToDo | Make private after debugging */
-        void generate_conditions_to_ground_lti(Symbol* pUnconnected_LTI);
+        void generate_conditions_to_ground_lti(condition** pCondList, Symbol* pUnconnected_LTI);
 
     private:
 
@@ -207,28 +208,29 @@ class Explanation_Based_Chunker
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
         /* Explanation/identity generation methods */
-        void add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
-        void add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
-        void add_explanation_to_RL_condition(rete_node* node, condition* cond,
-            wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+        void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
+        void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
+        void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
+                                                        wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
 
         /* Chunk building methods */
-        void add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
-        void add_pref_to_results(preference* pref);
-        void add_results_for_id(Symbol* id);
-        void add_results_if_needed(Symbol* sym);
-        bool add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
-        void create_initial_chunk_condition_lists(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
-        action* copy_action_list(action* actions);
-        void chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top);
-        void create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
-        preference* get_results_for_instantiation(instantiation* inst);
-        Symbol* generate_chunk_name(instantiation* inst);
-        void init_chunk_cond_set(chunk_cond_set* set);
-        chunk_cond* make_chunk_cond_for_negated_condition(condition* cond);
-        void make_clones_of_results(preference* results, instantiation* chunk_inst);
-        void remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
-        void reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
+        Symbol*         generate_chunk_name(instantiation* inst);
+        preference*     get_results_for_instantiation(instantiation* inst);
+        void            add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
+        void            add_pref_to_results(preference* pref);
+        void            add_results_for_id(Symbol* id);
+        void            add_results_if_needed(Symbol* sym);
+        action*         copy_action_list(action* actions);
+        void            init_chunk_cond_set(chunk_cond_set* set);
+        void            create_initial_chunk_condition_lists(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
+        chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
+        void            make_clones_of_results(preference* results, instantiation* chunk_inst);
+        void            create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
+        void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
+        void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
+        bool            reorder_and_validate_chunk(ProductionType type, condition** lhs_top, action** rhs_top, bool reorder_nccs);
+        void            clean_up (Symbol** prod_name, condition** vrblz_top);
 
         /* Dependency analysis methods */
         void add_to_grounds(condition* cond);
@@ -290,7 +292,7 @@ class Explanation_Based_Chunker
         void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition* get_previously_seen_cond(condition* pCond);
-        void walk_and_find_lti(Symbol* root, Symbol* targetLTI);
+        wme_list* walk_and_find_lti(Symbol* root, Symbol* targetLTI);
 
         /* Clean-up methods */
         void clear_merge_map();

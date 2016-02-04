@@ -663,34 +663,29 @@ void Explanation_Based_Chunker::make_clones_of_results(preference* results,
 }
 
 
-/* ====================================================================
+/* Before calling make_production, caller is responsible for using this
+ * function to make sure the production is valid.  This was separated out
+ * so EBC can try to fix unconnected conditions caused by LTI being at a
+ * higher level. */
 
-                        Chunk Instantiation
-
-   This the main chunking routine.  It takes an instantiation, and a
-   flag "variablize"--if false, the chunk will not be
-   variablized.  (If true, it may still not be variablized, due to
-   chunk-free-problem-spaces, ^quiescence t, etc.)
-==================================================================== */
-
-void Explanation_Based_Chunker::chunk_instantiation_cleanup (Symbol** prod_name, condition** vrblz_top)
+bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   type,
+                                                           condition**      lhs_top,
+                                                           action**         rhs_top,
+                                                           bool             reorder_nccs)
 {
-    thisAgent->explanationLogger->end_chunk_record();
-    if (vrblz_top)
+    /* This is called for justifications even though it does nothing because in the future
+     * we might want to fix a justification that has conditions unconnected to
+     * a state.  Chunks that have such variablized conditions seem to be able to
+     * corrupt the rete, but we don't know if justifications can as well.  While we
+     * could ground those conditions like we do with chunks to be safe, we're not doing
+     * that right now because it will introduce a high computational cost that may
+     * not be necessary.*/
+
+    if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        deallocate_condition_list(thisAgent, (*vrblz_top));
-        (*vrblz_top) = NULL;
+        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs);
     }
-    if (*prod_name)
-    {
-        dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", *prod_name);
-        symbol_remove_ref(thisAgent, *prod_name);
-        *prod_name = NULL;
-    }
-    clear_variablization_maps();
-    clear_cached_constraints();
-    clear_o_id_substitution_map();
-    clear_attachment_map();
+    return true;
 }
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
@@ -708,6 +703,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     condition* vrblz_top = NULL;
     bool reliable = true;
     bool variablize;
+    bool lChunkValidated = false;
     inst_top = vrblz_top = NULL;
     condition*  saved_justification_top = 0;
     condition*  saved_justification_bottom = 0;
@@ -956,64 +952,111 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-    prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
-    if (!prod && variablize)
+
+    thisAgent->name_of_production_being_reordered = prod_name->sc->name;
+    lChunkValidated = reorder_and_validate_chunk(prod_type, &vrblz_top, &rhs, false);
+
+    if (!lChunkValidated)
     {
-        /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
-        dprint(DT_VARIABLIZATION_MANAGER, "Could not create production for variablized rule.  Attempting to create justification instead... \n");
-        print_with_symbols(thisAgent, "\nCould not create production for variablized rule:\n\nsp {%y\n", prod_name);
-        print_condition_list(thisAgent, vrblz_top, 4, false);
-        print(thisAgent, "\n  -->\n");
-        print_action_list(thisAgent, rhs, 4, false);
-        print(thisAgent, "\n}\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-        print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-        print(thisAgent, "through the local state.\n");
-        xml_generate_warning(thisAgent, "\nCould not create production for variablized rule.\n...creating justification instead.\n");
-        xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-        xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-        xml_generate_warning(thisAgent, "through the local state.\n\n");
-
-        symbol_remove_ref(thisAgent, prod_name);
-        prod_name = NULL;
-        prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
-        prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-        print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-        print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-
-        deallocate_condition_list(thisAgent, vrblz_top);
-        vrblz_top = saved_justification_top;
-        saved_justification_top = saved_justification_bottom = NULL;
-
-        deallocate_condition_list(thisAgent, inst_top);
-        inst_top = inst_bottom = NULL;
-
-        deallocate_action_list(thisAgent, rhs);
-        rhs = NULL;
-
-        create_instantiated_counterparts(vrblz_top, &inst_top, &inst_bottom);
-
-        dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
-        rhs = variablize_results_into_actions(results, false);
-
-        add_goal_or_impasse_tests(inst_top, vrblz_top);
-
-        print_with_symbols(thisAgent, "\nCreating justification instead:\n\nsp {%y\n", prod_name);
-        print_condition_list(thisAgent, vrblz_top, 4, false);
-        print(thisAgent, "\n  -->\n");
-        print_action_list(thisAgent, rhs, 4, false);
-        print(thisAgent, "\n}\n\n");
-
-        dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
-        dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
-        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
-        if (prod)
+        if (variablize)
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
-            /* MToDo | Make this an option to interrrupt when an explanation is made*/
-//            thisAgent->stop_soar = true;
+            /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
+            dprint(DT_VARIABLIZATION_MANAGER, "Could not create production for variablized rule.  Attempting to create justification instead... \n");
+            print_with_symbols(thisAgent, "\nCould not create production for variablized rule:\n\nsp {%y\n", prod_name);
+            print_condition_list(thisAgent, vrblz_top, 4, false);
+            print(thisAgent, "\n  -->\n");
+            print_action_list(thisAgent, rhs, 4, false);
+            print(thisAgent, "\n}\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+            print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+            print(thisAgent, "through the local state.\n");
+            xml_generate_warning(thisAgent, "\nCould not create production for variablized rule.\n...creating justification instead.\n");
+            xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+            xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+            xml_generate_warning(thisAgent, "through the local state.\n\n");
+
+            symbol_remove_ref(thisAgent, prod_name);
+            prod_name = NULL;
+            prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+            prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+            print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+            print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+
+            deallocate_condition_list(thisAgent, vrblz_top);
+            vrblz_top = saved_justification_top;
+            saved_justification_top = saved_justification_bottom = NULL;
+
+            deallocate_condition_list(thisAgent, inst_top);
+            inst_top = inst_bottom = NULL;
+
+            deallocate_action_list(thisAgent, rhs);
+            rhs = NULL;
+
+            create_instantiated_counterparts(vrblz_top, &inst_top, &inst_bottom);
+
+            dprint_header(DT_VARIABLIZATION_MANAGER, PrintBefore, "Creating RHS actions from results...\n");
+            rhs = variablize_results_into_actions(results, false);
+
+            add_goal_or_impasse_tests(inst_top, vrblz_top);
+
+            print_with_symbols(thisAgent, "\nCreating justification instead:\n\nsp {%y\n", prod_name);
+            print_condition_list(thisAgent, vrblz_top, 4, false);
+            print(thisAgent, "\n  -->\n");
+            print_action_list(thisAgent, rhs, 4, false);
+            print(thisAgent, "\n}\n\n");
+
+            dprint(DT_CONSTRAINTS, "- Instantiated conds after add_goal_test\n%5", inst_top, NULL);
+            dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
+            prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
+            if (prod)
+            {
+                dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
+                /* MToDo | Make this an option to interrrupt when an explanation is made*/
+                //            thisAgent->stop_soar = true;
+            }
+        } else {
+            print(thisAgent, "\nUnable to reorder this chunk:\n  ");
+            print_condition_list(thisAgent, vrblz_top, 2, false);
+            print(thisAgent, "\n  -->\n   ");
+            print_action_list(thisAgent, rhs, 3, false);
+            print(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+            print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+            print(thisAgent, "through the local state.\n");
+            xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
+            xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
+            xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
+            xml_generate_warning(thisAgent, "through the local state.\n");
+
+            deallocate_condition_list(thisAgent, vrblz_top);
+            vrblz_top = NULL;
+            deallocate_condition_list(thisAgent, inst_top);
+            inst_top = NULL;
+            deallocate_action_list(thisAgent, rhs);
+            rhs = NULL;
+            /* Prior to 11/10/15, Soar would halt if it could not create the
+             * production.  We're not sure if the conditions that would cause it to
+             * crash previously can still occur, but we have cases now with chunks
+             * formed from retrievals that we don't want Soar to stop on.  So far, we have
+             * not had any issues with rejecting this chunk but allowing Soar to continue.
+             * We do now create a justification instead in that ugly code prior to this
+             * that re-does the final steps of chunk creation without variablizaiton.
+             *
+             * Previous comment:  // We cannot proceed, the GDS will crash in
+             * decide.cpp:decide_non_context_slot */
+            //        thisAgent->stop_soar = true;
+            //        thisAgent->system_halted = true;
+            //        thisAgent->reason_for_stopping = "Could not re-order chunk.";
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationLogger->increment_stat_unorderable();
+            #endif
+            goto chunking_abort;
+
         }
+    } else {
+        prod = make_production(thisAgent, prod_type, prod_name, (inst->prod ? inst->prod->name->sc->name : prod_name->sc->name), &vrblz_top, &rhs, false, NULL);
     }
     /* Note that there cannot be a GOTO chunk_abort between creation of these saved conditions above and here */
     if (saved_justification_top)
@@ -1021,47 +1064,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         deallocate_condition_list(thisAgent, saved_justification_top);
         saved_justification_top = saved_justification_bottom = NULL;
     }
-    if (!prod)
-    {
-        print(thisAgent, "\nUnable to reorder this chunk:\n  ");
-        print_condition_list(thisAgent, vrblz_top, 2, false);
-        print(thisAgent, "\n  -->\n   ");
-        print_action_list(thisAgent, rhs, 3, false);
-        print(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        print(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-        print(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-        print(thisAgent, "through the local state.\n");
-        xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
-        xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-        xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-        xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-        xml_generate_warning(thisAgent, "through the local state.\n");
-
-        deallocate_condition_list(thisAgent, vrblz_top);
-        vrblz_top = NULL;
-        deallocate_condition_list(thisAgent, inst_top);
-        inst_top = NULL;
-        deallocate_action_list(thisAgent, rhs);
-        rhs = NULL;
-        /* Prior to 11/10/15, Soar would halt if it could not create the
-         * production.  We're not sure if the conditions that would cause it to
-         * crash previously can still occur, but we have cases now with chunks
-         * formed from retrievals that we don't want Soar to stop on.  So far, we have
-         * not had any issues with rejecting this chunk but allowing Soar to continue.
-         * We do now create a justification instead in that ugly code prior to this
-         * that re-does the final steps of chunk creation without variablizaiton.
-         *
-         * Previous comment:  // We cannot proceed, the GDS will crash in
-         * decide.cpp:decide_non_context_slot */
-//        thisAgent->stop_soar = true;
-//        thisAgent->system_halted = true;
-//        thisAgent->reason_for_stopping = "Could not re-order chunk.";
-#ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_unorderable();
-#endif
-        goto chunking_abort;
-    }
-
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     prod_name = NULL;
 
@@ -1153,7 +1155,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = chunk_inst;
 
-    chunk_instantiation_cleanup(&prod_name, &(vrblz_top));
+    clean_up(&prod_name, &(vrblz_top));
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -1178,7 +1180,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
 chunking_abort:
     {
-        chunk_instantiation_cleanup(&prod_name, &(vrblz_top));
+        clean_up(&prod_name, &(vrblz_top));
     }
 
 #ifndef NO_TIMING_STUFF
@@ -1188,3 +1190,25 @@ chunking_abort:
 #endif
 #endif
 }
+
+
+void Explanation_Based_Chunker::clean_up (Symbol** prod_name, condition** vrblz_top)
+{
+    thisAgent->explanationLogger->end_chunk_record();
+    if (vrblz_top)
+    {
+        deallocate_condition_list(thisAgent, (*vrblz_top));
+        (*vrblz_top) = NULL;
+    }
+    if (*prod_name)
+    {
+        dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", *prod_name);
+        symbol_remove_ref(thisAgent, *prod_name);
+        *prod_name = NULL;
+    }
+    clear_variablization_maps();
+    clear_cached_constraints();
+    clear_o_id_substitution_map();
+    clear_attachment_map();
+}
+
