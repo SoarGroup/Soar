@@ -11,6 +11,7 @@
 #include "src/explain/explain.cpp"
 #include "src/explanation_based_chunking/backtrace.cpp"
 #include "src/explanation_based_chunking/build.cpp"
+#include "src/explanation_based_chunking/connect_conditions.cpp"
 #include "src/explanation_based_chunking/constraints.cpp"
 #include "src/explanation_based_chunking/ebc.cpp"
 #include "src/explanation_based_chunking/explanation_trace.cpp"

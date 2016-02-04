@@ -4,7 +4,7 @@
  *************************************************************************/
 
 /* ---------------------------------------------------------------------
-                               tempmem.h
+                               slot.h
 
    Find_slot() looks for an existing slot for a given id/attr pair, and
    returns it if found.  If no such slot exists, it returns NIL.
@@ -30,8 +30,32 @@
 #define TEMPMEM_H
 
 typedef struct symbol_struct Symbol;
-typedef struct slot_struct slot;
 typedef struct agent_struct agent;
+
+typedef struct slot_struct
+{
+    struct slot_struct* next, *prev;  /* dll of slots for this id */
+    Symbol* id;                       /* id, attr of the slot */
+    Symbol* attr;
+    wme* wmes;                        /* dll of wmes in the slot */
+    wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
+    preference* all_preferences;      /* dll of all pref's in the slot */
+    preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
+    ::list* CDPS;                     /* list of prefs in the CDPS to backtrace through */
+    Symbol* impasse_id;               /* NIL if slot is not impassed */
+    bool isa_context_slot;
+    byte impasse_type;
+    bool marked_for_possible_removal;
+    dl_cons* changed;   /* for non-context slots: points to the corresponding
+                         dl_cons in changed_slots;  for context slots: just
+                         zero/nonzero flag indicating slot changed */
+    dl_cons* acceptable_preference_changed; /* for context slots: either zero,
+                                             or points to dl_cons if the slot
+                                             has changed + or ! pref's */
+
+    wma_sym_reference_map* wma_val_references;
+
+} slot;
 
 extern slot* find_slot(Symbol* id, Symbol* attr);
 extern slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr);

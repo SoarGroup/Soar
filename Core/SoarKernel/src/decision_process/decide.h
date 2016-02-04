@@ -29,6 +29,7 @@
 
 #include "kernel.h"
 #include "soar_module.h"
+#include "slot.h"
 
 #include <set>
 #include <map>
@@ -125,31 +126,6 @@ typedef struct gds_struct
         if no acceptable or require preference in this slot has changed;
         if one has changed, it points to a dl_cons.
 ------------------------------------------------------------------------ */
-
-typedef struct slot_struct
-{
-    struct slot_struct* next, *prev;  /* dll of slots for this id */
-    Symbol* id;                       /* id, attr of the slot */
-    Symbol* attr;
-    wme* wmes;                        /* dll of wmes in the slot */
-    wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
-    preference* all_preferences;      /* dll of all pref's in the slot */
-    preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
-    ::list* CDPS;                     /* list of prefs in the CDPS to backtrace through */
-    Symbol* impasse_id;               /* NIL if slot is not impassed */
-    bool isa_context_slot;
-    byte impasse_type;
-    bool marked_for_possible_removal;
-    dl_cons* changed;   /* for non-context slots: points to the corresponding
-                         dl_cons in changed_slots;  for context slots: just
-                         zero/nonzero flag indicating slot changed */
-    dl_cons* acceptable_preference_changed; /* for context slots: either zero,
-                                             or points to dl_cons if the slot
-                                             has changed + or ! pref's */
-
-    wma_sym_reference_map* wma_val_references;
-
-} slot;
 
 extern void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
 extern void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);

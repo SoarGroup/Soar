@@ -1755,22 +1755,12 @@ namespace soar_module
 
 }
 
+class sym_grounding_path;
+
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list<condition*, soar_module::soar_memory_pool_allocator<condition*> > condition_list;
 typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
 typedef std::list<wme*, soar_module::soar_memory_pool_allocator<wme*> > wme_list;
-typedef struct sym_grounding_path_struct {
-        Symbol*     topSym;
-        wme_list*   wme_path;
-        sym_grounding_path_struct(Symbol* new_root, wme_list* new_path= NULL) {
-            topSym = new_root;
-            wme_path = new wme_list();
-            if (new_path)
-            {
-                (*wme_path) = (*new_path);
-            }
-        }
-} sym_grounding_path;
 typedef std::list<sym_grounding_path*, soar_module::soar_memory_pool_allocator<sym_grounding_path*> > sym_grounding_path_list;
 
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
@@ -1779,18 +1769,6 @@ typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_mem
 typedef std::list< condition* > condition_list;
 typedef std::list< Symbol* > symbol_list;
 typedef std::list< wme* > wme_list;
-typedef struct sym_grounding_path_struct {
-        Symbol*     topSym;
-        wme_list*   wme_path;
-        sym_grounding_path_struct(Symbol* new_root, wme_list* new_path= NULL) {
-            topSym = new_root;
-            wme_path = new wme_list();
-            if (new_path)
-            {
-                wme_path += new_path;
-            }
-        }
-} sym_grounding_path;
 typedef std::list< sym_grounding_path* > sym_grounding_path_list;
 
 typedef std::set< wme* > wma_pooled_wme_set;
