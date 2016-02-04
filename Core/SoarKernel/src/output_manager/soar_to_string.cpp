@@ -183,7 +183,7 @@ void Output_Manager::condition_to_string(agent* thisAgent, condition* cond, std:
     }
     else
     {
-        sprinta_sf(thisAgent, destString, "-{\n%c2}", cond->data.ncc.top);
+        sprinta_sf(thisAgent, destString, "-{\n%1}", cond->data.ncc.top);
     }
     return;
 }

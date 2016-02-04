@@ -684,6 +684,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   type
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
         EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs);
+        return (lFailureType == ebc_success);
     }
     return true;
 }
