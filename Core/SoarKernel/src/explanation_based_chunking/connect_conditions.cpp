@@ -28,8 +28,7 @@ wme_list* Explanation_Based_Chunker::walk_and_find_lti(Symbol* root, Symbol* tar
 
         if (!final_path) /* We keep iterating after we find the final path, so that  */
         {                /* we can delete the rest of the sym_grounding_path objects */
-
-            dprint(DT_GROUND_LTI, "Adding IDs from slots of %y to walk list to find %y...\n", lCurrentPath->get_root(), targetLTI);
+//            dprint(DT_GROUND_LTI, "Adding IDs from slots of %y to walk list to find %y...\n", lCurrentPath->get_root(), targetLTI);
             for (slot* s = lCurrentPath->get_root()->id->slots; s != NIL; s = s->next)
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)

@@ -856,32 +856,6 @@ list* collect_root_variables(agent* thisAgent,
                     assert(ungrounded_syms);
                     ungrounded_syms->push_back(static_cast<Symbol*>(c->first));
                 }
-                print(thisAgent,  "\nWarning for production \"%s\":\n",
-                      thisAgent->name_of_production_being_reordered);
-                print_with_symbols(thisAgent,
-                    "   On the LHS of production, the symbol %y is not linked to any goal or \n"
-                    "   impasse, either directly in a condition or indirectly through other \n"
-                    "   conditions.\n\n"
-                    "   Note: Soar does not consider the attribute element of a condition when \n"
-                    "   determining whether a symbol is connected to a goal or impasse.  Using Soar\n"
-                    "   identifiers as attributes may work but is not fully supported in the current\n"
-                    "   version of Soar.\n", static_cast<Symbol*>(c->first));
-
-                // XML geneneration
-                growable_string gs = make_blank_growable_string(thisAgent);
-                add_to_growable_string(thisAgent, &gs, "Warning for production \"");
-                add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-                add_to_growable_string(thisAgent, &gs, "\":\n   On the LHS of production, the symbol ");
-                add_to_growable_string(thisAgent, &gs, static_cast<Symbol*>(c->first)->to_string(true));
-                add_to_growable_string(thisAgent, &gs, " is not linked to any goal or \n"
-                    "   impasse, either directly in a condition or indirectly through other \n"
-                    "   conditions.\n\n"
-                    "   Note: Soar does not consider the attribute element of a condition when \n"
-                    "   determining whether a symbol is connected to a goal or impasse.  Using Soar\n"
-                    "   identifiers as attributes may work but is not fully supported in the current\n"
-                    "   version of Soar.\n");
-                xml_generate_warning(thisAgent, text_of_growable_string(gs));
-                free_growable_string(thisAgent, gs);
             }
         }
     }
@@ -1512,10 +1486,41 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
     /* don't mark any variables, since nothing is bound outside the LHS */
     roots = collect_root_variables(thisAgent, *lhs_top, tc, true, collect_ungroundeds, ungrounded_syms);
 
-    if (ungrounded_syms)
+    if (ungrounded_syms && ungrounded_syms->size() > 0)
     {
-        print(thisAgent,  "Error:  In production %s,\n", thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "        There are conditions with identifiers not linked to a goal state.\n");
+        print(thisAgent,
+            "\nWarning:  In rule %s,\n", thisAgent->name_of_production_being_reordered);
+        print(thisAgent,
+            "          The following identifiers are not connected to any goal state or \n"
+            "          impasse, either directly in a condition or indirectly through other\n"
+            "          conditions:");
+        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++) {
+            print_with_symbols(thisAgent, " %y", (*it));
+        }
+        print_with_symbols(thisAgent,
+            "\n\n   Note:  While this may not be occurring in this case, Soar does not\n"
+                "          consider the attribute element when determining whether one\n"
+                "          condition is connected to another. Using  Soar identifiers as\n"
+                "          attributes may work but is not fully supported.\n\n");
+
+        // XML geneneration
+        growable_string gs = make_blank_growable_string(thisAgent);
+        add_to_growable_string(thisAgent, &gs, "Warning:  In rule ");
+        add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+        add_to_growable_string(thisAgent, &gs,
+            ",\n          The following identifiers are not connected to any goal state or \n"
+            "          impasse, either directly in a condition or indirectly through other\n"
+            "          conditions:");
+        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++) {
+            add_to_growable_string(thisAgent, &gs, (*it)->to_string(true));
+            add_to_growable_string(thisAgent, &gs, " ");
+        }
+        add_to_growable_string(thisAgent, &gs, "\n\n   Note:  While this may not be occurring in this case, Soar does not\n"
+            "          consider the attribute element when determining whether one\n"
+            "          condition is connected to another. Using  Soar identifiers as\n"
+            "          attributes may work but is not fully supported.\n\n");
+        xml_generate_warning(thisAgent, text_of_growable_string(gs));
+        free_growable_string(thisAgent, gs);
         return false;
     }
 
