@@ -2,9 +2,11 @@
 #include "ebc.h"
 
 #include "agent.h"
+#include "condition.h"
 #include "connect_conditions.h"
 #include "debug.h"
 #include "slot.h"
+#include "test.h"
 #include "working_memory.h"
 
 wme_list* Explanation_Based_Chunker::walk_and_find_lti(Symbol* root, Symbol* targetLTI)
@@ -61,15 +63,34 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pC
 {
     dprint(DT_GROUND_LTI, "Finding path to connect LTI %y to a goal state.\n", pUnconnected_LTI);
 
+    /* The re-orderer returns a list of variables that aren't connected, so we
+     * need to find a condition that uses it, so that we can get the LTI and
+     * identity information we need to generate connecting conditions */
+    test ltiEqTest = NULL, ltiMatchEqTest = NULL;
+    for (condition* cond = (*pCondList); cond != NIL; cond = cond->next)
+    {
+        if (cond->type != POSITIVE_CONDITION)
+        {
+            continue;
+        }
+        if (cond->data.tests.id_test->eq_test->data.referent == pUnconnected_LTI)
+        {
+            ltiEqTest = cond->data.tests.id_test->eq_test;
+            ltiMatchEqTest = cond->counterpart->data.tests.id_test->eq_test;
+            break;
+        }
+    }
+    assert(ltiEqTest);
+
     ground_lti_tc = get_new_tc_number(thisAgent);
 
     Symbol* g = thisAgent->top_goal;
-    while (g->id->level < pUnconnected_LTI->id->level)
+    while (g->id->level < ltiMatchEqTest->data.referent->id->level)
     {
         g = g->id->lower_goal;
     }
 
-    wme_list* l_WMEPath = walk_and_find_lti(g, pUnconnected_LTI);
+    wme_list* l_WMEPath = walk_and_find_lti(g, ltiMatchEqTest->data.referent);
 
     for (auto it = l_WMEPath->rbegin(); it != l_WMEPath->rend(); it++) {
         dprint(DT_GROUND_LTI, "      (%y ^%y %y)\n", (*it)->id, (*it)->attr, (*it)->value);

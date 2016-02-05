@@ -798,7 +798,8 @@ list* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
-                             bool* ungrounded_found)
+                             bool collect_ungroundeds,
+                             symbol_list* ungrounded_syms)
 {
 
     list* new_vars_from_value_slot;
@@ -806,8 +807,6 @@ list* collect_root_variables(agent* thisAgent,
     cons* c;
     condition* cond;
     bool found_goal_impasse_test;
-
-    *ungrounded_found = false;
 
     /* --- find everthing that's in the value slot of some condition --- */
     new_vars_from_value_slot = NIL;
@@ -852,6 +851,11 @@ list* collect_root_variables(agent* thisAgent,
             }
             if (! found_goal_impasse_test)
             {
+                if (collect_ungroundeds)
+                {
+                    assert(ungrounded_syms);
+                    ungrounded_syms->push_back(static_cast<Symbol*>(c->first));
+                }
                 print(thisAgent,  "\nWarning for production \"%s\":\n",
                       thisAgent->name_of_production_being_reordered);
                 print_with_symbols(thisAgent,
@@ -878,7 +882,6 @@ list* collect_root_variables(agent* thisAgent,
                     "   version of Soar.\n");
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
-                *ungrounded_found = true;
             }
         }
     }
@@ -1270,13 +1273,8 @@ void reorder_simplified_conditions(agent* thisAgent,
         {
             dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
             list* ncc_roots;
-            bool ungrounded_found = false;
-            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top,
-                                               bound_vars_tc_number, true, &ungrounded_found);
-            reorder_condition_list(thisAgent, &(chosen->data.ncc.top),
-                                   ncc_roots,
-                                   bound_vars_tc_number,
-                                   reorder_nccs);
+            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number, true);
+            reorder_condition_list(thisAgent, &(chosen->data.ncc.top), ncc_roots, bound_vars_tc_number, reorder_nccs);
             free_list(thisAgent, ncc_roots);
         }
 
@@ -1505,17 +1503,16 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool collect_ungroundeds, symbol_list* ungrounded_syms)
 {
     tc_number tc;
     list* roots;
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    bool ungrounded_found = false;
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, &ungrounded_found);
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, collect_ungroundeds, ungrounded_syms);
 
-    if (ungrounded_found)
+    if (ungrounded_syms)
     {
         print(thisAgent,  "Error:  In production %s,\n", thisAgent->name_of_production_being_reordered);
         print(thisAgent,  "        There are conditions with identifiers not linked to a goal state.\n");
@@ -1550,7 +1547,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs)
     if (!roots)
     {
         print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "        The LHS has no roots.\n");
+        print(thisAgent,  "        None of the conditions reference a state.\n");
         /* hmmm... most people aren't going to understand this error message */
         return false;
     }

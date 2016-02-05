@@ -499,7 +499,9 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
 EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                                 condition**   lhs_top,
                                                 action**      rhs_top,
-                                                bool          reorder_nccs)
+                                                bool          reorder_nccs,
+                                                bool          collect_ungroundeds,
+                                                symbol_list*  ungrounded_syms)
 {
     tc_number tc;
 
@@ -511,7 +513,7 @@ EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     {
         return ebc_failed_reordering_rhs;
     }
-    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs))
+    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, collect_ungroundeds, ungrounded_syms))
     {
         return ebc_failed_unconnected_conditions;
     }

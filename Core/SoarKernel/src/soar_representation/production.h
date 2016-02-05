@@ -59,6 +59,7 @@
 #define PRODUCTION_H
 
 #include "kernel.h"
+#include "soar_module.h"
 #include <map>
 #include <set>
 
@@ -244,7 +245,9 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 extern EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                                        condition**   lhs_top,
                                                        action**      rhs_top,
-                                                       bool          reorder_nccs);
+                                                       bool          reorder_nccs,
+                                                       bool          collect_ungroundeds = false,
+                                                       symbol_list*  ungrounded_syms = NULL);
 
 extern production* make_production(agent* thisAgent, ProductionType type,
                                    Symbol* name, char* original_rule_name,

@@ -683,7 +683,17 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   type
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs);
+        symbol_list* unconnected_syms = new symbol_list();
+
+        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs, true, unconnected_syms);
+
+        if (lFailureType == ebc_failed_unconnected_conditions)
+        {
+            for (auto it = unconnected_syms->begin(); it != unconnected_syms->end(); it++) {
+                generate_conditions_to_ground_lti(lhs_top, (*it));
+            }
+        }
+        delete unconnected_syms;
         return (lFailureType == ebc_success);
     }
     return true;
