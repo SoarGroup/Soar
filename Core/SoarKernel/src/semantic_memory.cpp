@@ -633,8 +633,9 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
     add_structure("CREATE UNIQUE INDEX smem_lti_id_letter_num ON smem_lti (lti_id, soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
-    add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)");
-    add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)");
+    add_structure("CREATE INDEX smem_lti_act ON smem_lti (lti_id, activation_value)");
+    //add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)"); -- will instead be added and removed if/when spontaneous retrieval is turned on or off.
+    //add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)"); not needed, i think... was only for spontaneous, which I think can now be handled exclusively with smem_lti
     add_structure("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)");
     add_structure("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
     add_structure("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
@@ -816,13 +817,13 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     //
     
-    web_attr_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? ORDER BY activation_value DESC");
+    web_attr_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END as activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations w WHERE attribute_s_id=? LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id = smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
     add(web_attr_all);
     
-    web_const_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value DESC");
+    web_const_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END AS activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id=smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
     add(web_const_all);
     
-    web_lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value DESC");
+    web_lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END AS activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id=smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
     add(web_lti_all);
     
     //
@@ -1078,7 +1079,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(vis_value_lti);
 
     //Now adding what's needed for spontaneous //INSERT OR IGNORE INTO smem_constants_store (smem_act_max
-    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT lti_id, soar_letter, soar_number FROM smem_lti WHERE lti_id IN (SELECT DISTINCT lti_id FROM (SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_augmentations WHERE activation_value < 9223372036854775807 ORDER BY activation_value DESC LIMIT ?) UNION SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT ?) ) ORDER BY activation_value DESC LIMIT ?)");
+    lti_get_high_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT lti_id, soar_letter, soar_number FROM smem_lti ORDER BY activation_value DESC LIMIT ?");//WHERE lti_id IN (SELECT DISTINCT lti_id FROM (SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_augmentations WHERE activation_value < 9223372036854775807 ORDER BY activation_value DESC LIMIT ?) UNION SELECT * FROM (SELECT DISTINCT lti_id, activation_value FROM smem_lti ORDER BY activation_value DESC LIMIT ?) ) ORDER BY activation_value DESC LIMIT ?)");
     add(lti_get_high_act);
 }
 
@@ -2844,7 +2845,7 @@ void smem_calc_spread(agent* thisAgent)
                 {
                     new_base = prev_base;
                 }
-                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on)
                 {
                     thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
@@ -3098,7 +3099,7 @@ void smem_calc_spread(agent* thisAgent)
                 {
                     new_base = prev_base;
                 }
-                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) // ** This is costly.
+                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on) // ** This is costly.
                 {//The cost is from having to update several indexes that use the activation value.
                     //These indexes are on the entire graph structure of smem. (smem_augmentations)
                     thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
@@ -7088,8 +7089,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 q = thisAgent->smem_stmts->lti_get_high_act;
                 uint64_t limit_to_retrieve = thisAgent->smem_in_wmem->size()+1;
                 q->bind_int(1,limit_to_retrieve);
-                q->bind_int(2,limit_to_retrieve);
-                q->bind_int(3,limit_to_retrieve);
+                //q->bind_int(2,limit_to_retrieve);
+                //q->bind_int(3,limit_to_retrieve);
                 while ( q->execute() == soar_module::row )
                 {
                     smem_lti_id spontaneous_result = static_cast<smem_lti_id>(q->column_int(0));

@@ -336,6 +336,26 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             return SetError("Invalid setting for SMem parameter.");
         }
+        if (!strcmp(pAttr->c_str(), "spontaneous-retrieval"))
+        {
+            if (thisAgent->smem_params->spontaneous_retrieval->get_value() == on)
+            {
+                soar_module::sqlite_statement* lti_back_index_create = new soar_module::sqlite_statement(thisAgent->smem_db,
+                    "CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)");
+                lti_back_index_create->execute(soar_module::op_reinit);
+                delete lti_back_index_create;
+                PrintCLIMessage("If spontaneous retrieval is on, there is a large cost during activation updates.\n"
+                    "If you want to avoid this cost, turn it back off.");
+            }
+            else
+            {
+                soar_module::sqlite_statement* lti_back_index_create = new soar_module::sqlite_statement(thisAgent->smem_db,
+                    "DROP INDEX smem_lti_act");
+                lti_back_index_create->execute(soar_module::op_reinit);
+                delete lti_back_index_create;
+            }
+        }
+        
         if (!(strcmp(pAttr->c_str(), "spreading-baseline") &&
             strcmp(pAttr->c_str(), "spreading-type") &&
             strcmp(pAttr->c_str(), "spreading-direction") &&
