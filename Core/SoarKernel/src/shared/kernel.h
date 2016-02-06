@@ -13,7 +13,7 @@
 #include "forward.h"
 
 /* Uncomment this to get common compile settings for release version of Soar */
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 /* Experimental setting that forces Soar to consider the attribute element
  * of a wme/pref when incrementing/decrementing link counts, which are use
@@ -64,7 +64,7 @@
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
-//        #define USE_MEM_POOL_ALLOCATORS 1
+        #define USE_MEM_POOL_ALLOCATORS 1
     #endif
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */

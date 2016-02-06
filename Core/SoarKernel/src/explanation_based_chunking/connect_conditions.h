@@ -2,7 +2,7 @@
 #define CONNECT_CONDITIONS_H_
 
 #include "kernel.h"
-#include "soar_module.h"
+#include "stl_typedefs.h"
 
 class sym_grounding_path
 {

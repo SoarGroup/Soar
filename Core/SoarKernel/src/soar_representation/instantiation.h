@@ -8,6 +8,9 @@
 #ifndef INSTANTIATIONS_H
 #define INSTANTIATIONS_H
 
+#include "kernel.h"
+#include "stl_typedefs.h"
+
 /* TEMPORARY HACK (Ideally this should be doable through
    the external kernel interface but for now using a
    couple of global STL lists to get this information
@@ -34,52 +37,51 @@ typedef struct pi_struct
 typedef char* rhs_value;
 typedef struct instantiation_struct
 {
-    struct production_struct* prod; /* used full name of struct because
-                                     a forward declaration is needed -ajc (5/1/02) */
-    struct instantiation_struct* next, *prev; /* dll of inst's from same prod */
-    struct token_struct* rete_token;       /* used by Rete for retractions */
-    wme* rete_wme;                         /* ditto */
+    struct production_struct* prod;             /* used full name of struct because
+                                                   a forward declaration is needed -ajc (5/1/02) */
+    struct instantiation_struct* next, *prev;   /* dll of inst's from same prod */
+    struct token_struct* rete_token;            /* used by Rete for retractions */
+    wme* rete_wme;                              /* ditto */
     condition* top_of_instantiated_conditions;
     condition* bottom_of_instantiated_conditions;
-    preference* preferences_generated;    /* header for dll of prefs */
-    Symbol* match_goal;                   /* symbol, or NIL if none */
-    goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+    preference* preferences_generated;          /* header for dll of prefs */
+    Symbol* match_goal;                         /* symbol, or NIL if none */
+    goal_stack_level match_goal_level;          /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool reliable;
-    bool in_ms;  /* true iff this inst. is still in the match set */
+    bool in_ms;                                 /* true iff this inst. is still in the match set */
     tc_number backtrace_number;
     bool GDS_evaluated_already;
-    uint64_t i_id;       /* Used by ebChunker to generate instantiation-specific ids */
+    uint64_t i_id;                              /* id number used by EBC */
     EBCExplainStatus explain_status;
 } instantiation;
 
 /* A dll of instantiations that will be used to determine the gds through
    a backtracing-style procedure, evaluate_gds in decide.cpp */
 
+void init_instantiation_pool(agent* thisAgent);
+
+goal_stack_level get_match_goal(condition* top_cond);
+preference* find_clone_for_level(preference* p, goal_stack_level level);
 
 
-extern void init_firer(agent* thisAgent);
-extern void do_preference_phase(agent* thisAgent);
+void create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
+instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
+void retract_instantiation(agent* thisAgent, instantiation* inst);
+void deallocate_instantiation(agent* thisAgent, instantiation* inst);
 
-extern preference* find_clone_for_level(preference* p, goal_stack_level level);
-extern void fill_in_new_instantiation_stuff(agent* thisAgent, instantiation* inst,
-        bool need_to_do_support_calculations, instantiation* original_inst);
-
-extern void build_CDPS(agent* thisAgent, instantiation* inst);
-
-extern void deallocate_instantiation(agent* thisAgent, instantiation* inst);
+void init_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
+void build_CDPS(agent* thisAgent, instantiation* inst);
+Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
 inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
-    if ((!(inst)->preferences_generated) &&
-            (!(inst)->in_ms))
+    if ((!(inst)->preferences_generated) && (!(inst)->in_ms))
     {
         deallocate_instantiation(thisAgent, inst);
     }
 }
 
-extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
-extern goal_stack_level get_match_goal(condition* top_cond);
 
 /* -------------------------------------------------------------------
                               Instantiations

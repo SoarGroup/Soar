@@ -12,17 +12,19 @@
 
 ------------------------------------------------------------------ */
 
-#include "rete.h"
-#include "ebc.h"
 #include "output_manager.h"
-#include "soar_instance.h"
+
 #include "agent.h"
+#include "callback.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
 #include "production_reorder.h"
+#include "rete.h"
 #include "rhs.h"
 #include "rhs_functions.h"
+#include "soar_instance.h"
 #include "test.h"
 #include "working_memory.h"
 

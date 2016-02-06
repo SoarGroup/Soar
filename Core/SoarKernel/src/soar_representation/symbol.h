@@ -36,9 +36,10 @@
 #define SYMTAB_H
 
 #include "kernel.h"
+
 #include "Export.h"
-#include "soar_TraceNames.h"
 #include "mem.h"
+#include "soar_TraceNames.h"
 
 #include <assert.h>
 #include <map>

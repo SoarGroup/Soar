@@ -13,16 +13,16 @@
 #ifndef EPISODIC_MEMORY_H
 #define EPISODIC_MEMORY_H
 
-#include "portability.h"
+#include "kernel.h"
+
+#include "soar_module.h"
+#include "soar_db.h"
 
 #include <map>
 #include <list>
 #include <stack>
 #include <set>
 #include <queue>
-
-#include "soar_module.h"
-#include "soar_db.h"
 
 //////////////////////////////////////////////////////////
 // EpMem Constants

@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  consistency.cpp
@@ -25,9 +18,8 @@
  *
  */
 
-#include <stdlib.h>
-
 #include "consistency.h"
+
 #include "agent.h"
 #include "print.h"
 #include "decide.h"
@@ -35,9 +27,12 @@
 #include "production.h"
 #include "init_soar.h"
 #include "rete.h"
+#include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
 #include "preference.h"
+
+#include <stdlib.h>
 
 void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
 {

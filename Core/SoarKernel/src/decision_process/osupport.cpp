@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  osupport.cpp
@@ -23,25 +16,24 @@
              O Support calculation routines.
    ========================================================================= */
 
-#include <stdlib.h>
-
 #include "osupport.h"
-#include "symbol.h"
-#include "working_memory.h"
 
 #include "agent.h"
-#include "kernel.h"
-#include "production.h"
 #include "condition.h"
+#include "decide.h"
 #include "instantiation.h"
-#include "rhs.h"
+#include "preference.h"
 #include "print.h"
+#include "production.h"
 #include "production_reorder.h"
 #include "rete.h"
-#include "xml.h"
-#include "decide.h"
+#include "rhs.h"
+#include "slot.h"
+#include "symbol.h"
 #include "test.h"
-#include "preference.h"
+#include "working_memory.h"
+#include "xml.h"
+#include <stdlib.h>
 
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines

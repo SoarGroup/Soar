@@ -12,30 +12,31 @@
  * =======================================================================
  */
 
-#include "kernel.h"
-
 #include "semantic_memory.h"
+
 #include "agent.h"
+#include "condition.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
+#include "instantiation.h"
+#include "lexer.h"
+#include "rhs.h"
+#include "semantic_memory_math_queries.h"
+#include "test.h"
 #include "preference.h"
+#include "print.h"
+#include "slot.h"
 #include "symbol.h"
 #include "working_memory.h"
-#include "print.h"
+#include "working_memory_activation.h"
 #include "xml.h"
-#include "lexer.h"
-#include "instantiation.h"
-#include "condition.h"
-#include "rhs.h"
-#include "decide.h"
-#include "test.h"
-#include "slot.h"
-#include "debug.h"
 
 #include <list>
 #include <map>
 #include <queue>
 #include <utility>
 #include <ctype.h>
-#include "ebc.h"
 #include <fstream>
 #include <algorithm>
 
@@ -757,14 +758,14 @@ smem_wme_list* smem_get_direct_augs_of_id(Symbol* id, tc_number tc = NIL)
     return return_val;
 }
 
-inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, bool meta)
+inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
     {
         return;
     }
 
-    instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
     for (preference* pref = inst->preferences_generated; pref;)
     {
         // add the preference to temporary memory
@@ -853,15 +854,15 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soa
     }
 }
 
-inline void smem_process_buffered_wmes(agent* thisAgent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes)
+inline void smem_process_buffered_wmes(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
     _smem_process_buffered_wme_list(thisAgent, state, cue_wmes, meta_wmes, true);
     _smem_process_buffered_wme_list(thisAgent, state, cue_wmes, retrieval_wmes, false);
 }
 
-inline void smem_buffer_add_wme(agent* thisAgent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
+inline void smem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
-    my_list.push_back(new soar_module::symbol_triple(id, attr, value));
+    my_list.push_back(new symbol_triple(id, attr, value));
 
     symbol_add_ref(thisAgent, id);
     symbol_add_ref(thisAgent, attr);
@@ -2118,7 +2119,7 @@ void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
+void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->start();
@@ -2547,7 +2548,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
+smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -4170,9 +4171,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     else
     {
         smem_lti_set* prohibit = new smem_lti_set;
-        soar_module::wme_set cue_wmes;
-        soar_module::symbol_triple_list meta_wmes;
-        soar_module::symbol_triple_list retrieval_wmes;
+        wme_set cue_wmes;
+        symbol_triple_list meta_wmes;
+        symbol_triple_list retrieval_wmes;
         (*result_message) = new std::string();
 
         std::list<smem_lti_id> match_ids;
@@ -4291,8 +4292,8 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
         (*err_msg)->append("Error: No LTI found for that letter and number.\n");
     }
 
-    soar_module::symbol_triple_list retrieval_wmes;
-    soar_module::symbol_triple_list meta_wmes;
+    symbol_triple_list retrieval_wmes;
+    symbol_triple_list meta_wmes;
 
     if (good_command && lti_id != NIL)
     {
@@ -4309,7 +4310,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
             smem_install_memory(thisAgent, NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
 
             //First, we'll create the slot_map according to retrieval_wmes, then we'll remove what we encounter during parsing.
-            soar_module::symbol_triple_list::iterator triple_ptr_iter;
+            symbol_triple_list::iterator triple_ptr_iter;
             smem_slot* temp_slot;
             for (triple_ptr_iter = retrieval_wmes.begin(); triple_ptr_iter != retrieval_wmes.end(); triple_ptr_iter++)
             {
@@ -4557,7 +4558,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
             delete attributes->second;
         }
 
-        soar_module::symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
+        symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
         for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
             symbol_remove_ref(thisAgent, (*triple_iterator)->id);
@@ -4589,9 +4590,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     smem_wme_list* cmds;
     smem_wme_list::iterator w_p;
 
-    soar_module::symbol_triple_list meta_wmes;
-    soar_module::symbol_triple_list retrieval_wmes;
-    soar_module::wme_set cue_wmes;
+    symbol_triple_list meta_wmes;
+    symbol_triple_list retrieval_wmes;
+    wme_set cue_wmes;
 
     Symbol* query;
     Symbol* negquery;
@@ -4940,7 +4941,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                 // clear cache
                 {
-                    soar_module::symbol_triple_list::iterator mw_it;
+                    symbol_triple_list::iterator mw_it;
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {

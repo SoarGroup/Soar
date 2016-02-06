@@ -15,10 +15,11 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <string>
+#include "kernel.h"
+
 #include "stdint.h"
 
-typedef struct agent_struct agent;
+#include <string>
 
 /**
  * Types of tokens read by the lexer

@@ -1,86 +1,11 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
-/* -------------------------------------------------------------------
-                            production.h
-
-   Fields in a production:
-
-      name:  points to the name of the production (a symbol)
-
-      documentation:  points to a string (a memory_block_for_string) giving
-        user-provided documentation about the production, or NIL if the
-        user didn't give any documentation for it.
-
-      reference_count:  (see below)
-
-      firing_count:  the number of times this production has ever fired
-        since it was created.  (Note that this is not reset by an init-soar.)
-
-      next, prev:  used for a doubly-linked list of productions of the same
-        type (see below).  The list header is all_productions_of_type[].
-
-      type: the type of the production:  USER_PRODUCTION_TYPE,
-        DEFAULT_PRODUCTION_TYPE, CHUNK_PRODUCTION_TYPE, or
-        JUSTIFICATION_PRODUCTION_TYPE.
-
-      declared_support:  indicates whether the production was declared
-        :o-support or :i-support.  This field is either UNDECLARED_SUPPORT,
-        DECLARED_O_SUPPORT, or DECLARED_I_SUPPORT.
-
-      trace_firings:  true iff a (pwatch) has been set on this production.
-
-      p_node:  If the production is currently in the Rete, this points to
-        the corresponding p_node in the Rete.  If the production is not in
-        the Rete, this field is NIL.
-
-      action_list:  singly-linked list of the RHS actions of the production.
-
-      rhs_unbound_variables:  A (consed) list of variables used on the RHS
-        that aren't bound on the LHS, in the order of their indices (for
-        rhs_values).  For chunks, this is NIL, since we discard chunk
-        variable names.
-
-      instantiations:  header for a doubly-linked list of the instantiations
-        of this production that are currently in the match set (i.e.,
-        Rete-supported).
-
-      OPERAND_which_assert_list: (need comment info from REW or RCHONG)
-
-   Reference counts on productions:
-      +1 if it's in production memory (i.e., hasn't been excised)
-      +1 for each existing instantiation pointing to it
-   We deallocate a production if its reference_count goes to 0.
-------------------------------------------------------------------- */
-
 #ifndef PRODUCTION_H
 #define PRODUCTION_H
 
 #include "kernel.h"
-#include "soar_module.h"
+#include "stl_typedefs.h"
+
 #include <map>
 #include <set>
-
-
-typedef char* rhs_value;
-typedef unsigned char byte;
-typedef uint64_t tc_number;
-typedef struct action_struct action;
-typedef struct condition_struct condition;
-typedef struct cons_struct cons;
-typedef struct agent_struct agent;
-typedef cons list;
-typedef struct symbol_struct Symbol;
-typedef struct wme_struct wme;
-typedef struct preference_struct preference;
-typedef signed short goal_stack_level;
-typedef struct test_struct test_info;
-typedef test_info* test;
-
-typedef std::map< Symbol*, Symbol* > rl_symbol_map;
-typedef std::set< rl_symbol_map > rl_symbol_map_set;
 
 typedef struct production_struct
 {
@@ -277,3 +202,54 @@ inline void production_remove_ref(agent* thisAgent, production* p)
 }
 
 #endif
+/* -------------------------------------------------------------------
+                            production.h
+
+   Fields in a production:
+
+      name:  points to the name of the production (a symbol)
+
+      documentation:  points to a string (a memory_block_for_string) giving
+        user-provided documentation about the production, or NIL if the
+        user didn't give any documentation for it.
+
+      reference_count:  (see below)
+
+      firing_count:  the number of times this production has ever fired
+        since it was created.  (Note that this is not reset by an init-soar.)
+
+      next, prev:  used for a doubly-linked list of productions of the same
+        type (see below).  The list header is all_productions_of_type[].
+
+      type: the type of the production:  USER_PRODUCTION_TYPE,
+        DEFAULT_PRODUCTION_TYPE, CHUNK_PRODUCTION_TYPE, or
+        JUSTIFICATION_PRODUCTION_TYPE.
+
+      declared_support:  indicates whether the production was declared
+        :o-support or :i-support.  This field is either UNDECLARED_SUPPORT,
+        DECLARED_O_SUPPORT, or DECLARED_I_SUPPORT.
+
+      trace_firings:  true iff a (pwatch) has been set on this production.
+
+      p_node:  If the production is currently in the Rete, this points to
+        the corresponding p_node in the Rete.  If the production is not in
+        the Rete, this field is NIL.
+
+      action_list:  singly-linked list of the RHS actions of the production.
+
+      rhs_unbound_variables:  A (consed) list of variables used on the RHS
+        that aren't bound on the LHS, in the order of their indices (for
+        rhs_values).  For chunks, this is NIL, since we discard chunk
+        variable names.
+
+      instantiations:  header for a doubly-linked list of the instantiations
+        of this production that are currently in the match set (i.e.,
+        Rete-supported).
+
+      OPERAND_which_assert_list: (need comment info from REW or RCHONG)
+
+   Reference counts on productions:
+      +1 if it's in production memory (i.e., hasn't been excised)
+      +1 for each existing instantiation pointing to it
+   We deallocate a production if its reference_count goes to 0.
+------------------------------------------------------------------- */

@@ -31,6 +31,7 @@
 #define MEMPOOL_MANAGER_H_
 
 #include "kernel.h"
+
 #include <stdio.h>  // Needed for FILE token below
 #include <string.h>     // Needed for strlen, etc. below
 #include <string>
@@ -40,17 +41,6 @@
 #include <strings.h>
 #include <stdlib.h> // malloc
 #endif // !_WIN32
-
-class Soar_Instance;
-
-namespace sml
-{
-    class Kernel;
-}
-namespace cli
-{
-    class CommandLineInterface;
-}
 
 #define MAX_POOL_NAME_LENGTH 15
 #define MISCELLANEOUS_MEM_USAGE  0

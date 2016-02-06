@@ -29,8 +29,8 @@
 #ifndef TEMPMEM_H
 #define TEMPMEM_H
 
-typedef struct symbol_struct Symbol;
-typedef struct agent_struct agent;
+#include "kernel.h"
+#include "stl_typedefs.h"
 
 typedef struct slot_struct
 {

@@ -415,7 +415,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
 
     if (pCond->bt.wme_)
     {
-        matched_wme = new soar_module::symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
+        matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
         symbol_add_ref(thisAgent, matched_wme->id);
         symbol_add_ref(thisAgent, matched_wme->attr);
         symbol_add_ref(thisAgent, matched_wme->value);
@@ -623,7 +623,7 @@ bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID
 bool Explanation_Logger::print_condition_explanation_for_id(uint64_t pConditionID)
 {
     std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    soar_module::identity_triple lWatchIdentities;
+    identity_triple lWatchIdentities;
 
     iter_inst = all_conditions->find(pConditionID);
     if (iter_inst == all_conditions->end())

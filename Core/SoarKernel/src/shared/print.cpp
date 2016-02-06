@@ -13,10 +13,10 @@
  * =======================================================================
  */
 
-#include "kernel.h"
 #include "print.h"
 
 #include "agent.h"
+#include "callback.h"
 #include "condition.h"
 #include "init_soar.h"
 #include "instantiation.h"
@@ -30,6 +30,7 @@
 #include "soar_TraceNames.h"
 #include "test.h"
 #include "working_memory.h"
+#include "working_memory_activation.h"
 #include "xml.h"
 
 #include <stdlib.h>

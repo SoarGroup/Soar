@@ -1,31 +1,24 @@
-#include "agent.h"
-#include "slot.h"
-#include "symbol.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
- *  file:  tempmem.cpp
+ *  file:  slot.cpp
  *
  * =======================================================================
  *
- *             Temporary Memory and Slot routines
+ *             Slot routines
  *
  * =======================================================================
  */
 
-#include <stdlib.h>
+#include "slot.h"
 
-#include "kernel.h"
+#include "agent.h"
+#include "debug.h"
+#include "decide.h"
 #include "mem.h"
 #include "preference.h"
-#include "decide.h"
-#include "debug.h"
+#include "symbol.h"
+
+#include <stdlib.h>
 
 /* **********************************************************************
 

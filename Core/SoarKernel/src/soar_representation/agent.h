@@ -22,17 +22,12 @@
 
 #include "kernel.h"
 
-#include "init_soar.h"
 #include "episodic_memory.h"
-#include "callback.h"
-#include "exploration.h"
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
 #include "gsysparam.h"
 #include "mem.h"
 #include "memory_manager.h"
-#include "soar_module.h"
-#include "working_memory_activation.h"
 
 #include <string>
 #include <map>
@@ -47,37 +42,6 @@ typedef void* xml_handle;
 #define UPDATE_LINKS_NORMALLY 0
 #define UPDATE_DISCONNECTED_IDS_LIST 1
 #define JUST_UPDATE_COUNT 2
-
-
-typedef struct symbol_struct Symbol;
-typedef struct hash_table_struct hash_table;
-typedef struct wme_struct wme;
-typedef struct memory_pool_struct memory_pool;
-typedef struct production_struct production;
-typedef struct preference_struct preference;
-typedef struct pi_struct parent_inst;
-typedef struct backtrace_struct backtrace_str;
-typedef struct explain_chunk_struct explain_chunk_str;
-typedef struct io_wme_struct io_wme;
-typedef struct multi_attributes_struct multi_attribute;
-typedef struct rhs_function_struct rhs_function;
-typedef struct select_info_struct select_info;
-class AgentOutput_Info;
-class debug_param_container;
-class Output_Manager;
-class Explanation_Based_Chunker;
-class Memory_Manager;
-
-/* This typedef makes soar_callback_array equivalent to an array of list
-   pointers. Since it was used only one time, it has been commented out
-   here and spelled out completely in that particular instance -ajc
-   (5/3/02)
-*/
-//typedef list * soar_callback_array[NUMBER_OF_CALLBACKS];
-
-typedef signed short goal_stack_level;
-
-/* AGR 564 begins */
 
 /* !!!!!!!!!!!!!!!!  here's the agent structure !!!!!!!!!!!!!!!!!!!!!!!!*/
 /*----------------------------------------------------------------------*/

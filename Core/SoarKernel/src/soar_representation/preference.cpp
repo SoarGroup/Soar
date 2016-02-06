@@ -1,28 +1,23 @@
-#include "agent.h"
-#include "instantiation.h"
 #include "preference.h"
+
+#include "agent.h"
+#include "debug.h"
+#include "decide.h"
+#include "instantiation.h"
+#include "mem.h"
+#include "print.h"
 #include "rhs.h"
+#include "slot.h"
 #include "symbol.h"
 #include "working_memory.h"
-#include "portability.h"
+#include "working_memory_activation.h"
 
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
+#include <stdlib.h>
 
 /* ======================================================================
         Preference Memory routines
    ====================================================================== */
 
-#include <stdlib.h>
-#include "mem.h"
-#include "kernel.h"
-#include "debug.h"
-#include "instantiation.h"
-#include "slot.h"
-#include "decide.h"
-#include "print.h"
 
 /* Note that these must be in the same order as the #define variables
  * in gdatastructs.h */
@@ -62,8 +57,8 @@ const char* preference_name[] =
 
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
-                            const soar_module::identity_triple o_ids,
-                            const soar_module::rhs_triple rhs_funcs)
+                            const identity_triple o_ids,
+                            const rhs_triple rhs_funcs)
 {
     preference* p;
 

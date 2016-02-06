@@ -20,11 +20,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lexer.h"
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
+#include "kernel.h"
 
 extern void init_parser(void);
 extern condition* parse_lhs(agent* thisAgent, soar::Lexer* lexer);

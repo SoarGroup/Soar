@@ -9,27 +9,27 @@
  *
  * =======================================================================
  */
-#include <assert.h>
 #include "ebc.h"
-#include "test.h"
-#include "debug.h"
-#include "kernel.h"
-#include "symbol.h"
+
 #include "agent.h"
-#include "print.h"
-#include "rete.h"
+#include "condition.h"
+#include "debug.h"
 #include "instantiation.h"
 #include "output_manager.h"
-#include "working_memory.h"
 #include "preference.h"
-#include "condition.h"
+#include "print.h"
+#include "rete.h"
+#include "symbol.h"
+#include "test.h"
+#include "working_memory.h"
+
+#include <assert.h>
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,
                                        rete_node_level levels_up)
 {
-//    Symbol* temp;
-	test t = 0;//, New = 0;
+    test t = 0;
 
     t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
@@ -39,16 +39,6 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
         t);
 }
 
-
-/* ----------------------------------------------------------------------
-                 add_additional_tests_and_originals
-
-   These two functions create an explanation trace for used by EBC.
-   It does this by annotating individual tests with variablization identity
-   information and adding any additional in the original rule that was
-   fired to the appropriate tests.
-
----------------------------------------------------------------------- */
 void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
     condition* cond,
     wme* w,

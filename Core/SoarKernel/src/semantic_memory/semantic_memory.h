@@ -13,7 +13,10 @@
 #ifndef SEMANTIC_MEMORY_H
 #define SEMANTIC_MEMORY_H
 
-#include "portability.h"
+#include "kernel.h"
+
+#include "soar_module.h"
+#include "soar_db.h"
 
 #include <stack>
 #include <set>
@@ -21,10 +24,7 @@
 #include <vector>
 #include <queue>
 
-#include "soar_module.h"
-#include "soar_db.h"
-
-#include "semantic_memory_math_queries.h"
+class MathQuery;
 
 //////////////////////////////////////////////////////////
 // SMem Experimentation
@@ -50,7 +50,7 @@ class smem_param_container: public soar_module::param_container
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
         enum opt_choices { opt_safety, opt_speed };
-        
+
         enum merge_choices { merge_none, merge_add };
         enum act_choices { act_recency, act_frequency, act_base };
 
@@ -87,7 +87,7 @@ class smem_path_param: public soar_module::string_param
 {
     protected:
         agent* thisAgent;
-        
+
     public:
         smem_path_param(const char* new_name, const char* new_value, soar_module::predicate<const char*>* new_val_pred, soar_module::predicate<const char*>* new_prot_pred, agent* new_agent);
         virtual void set_value(const char* new_value);

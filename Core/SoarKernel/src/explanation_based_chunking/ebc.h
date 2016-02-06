@@ -9,7 +9,7 @@
 #define EBC_MANAGER_H_
 
 #include "kernel.h"
-#include "soar_module.h"
+#include "stl_typedefs.h"
 
 #include <list>
 #include <set>
@@ -142,9 +142,6 @@ class Explanation_Based_Chunker
         /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
-        /* MToDo | Make private after debugging */
-        void generate_conditions_to_ground_lti(condition** pCondList, Symbol* pUnconnected_LTI);
-
     private:
 
         agent*              thisAgent;
@@ -229,7 +226,7 @@ class Explanation_Based_Chunker
         void            create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        bool            reorder_and_validate_chunk(ProductionType type, condition** lhs_top, action** rhs_top, bool reorder_nccs);
+        bool            reorder_and_validate_chunk(ProductionType pProdType, uint64_t pInstID, condition** lhs_top, action** rhs_top, condition** inst_top, bool reorder_nccs);
         void            clean_up (Symbol** prod_name, condition** vrblz_top);
 
         /* Dependency analysis methods */
@@ -245,8 +242,8 @@ class Explanation_Based_Chunker
                 condition* trace_cond,
                 bool* reliable,
                 int indent,
-                const soar_module::identity_triple o_ids_to_replace,
-                const soar_module::rhs_triple rhs_funcs);
+                const identity_triple o_ids_to_replace,
+                const rhs_triple rhs_funcs);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
@@ -256,8 +253,8 @@ class Explanation_Based_Chunker
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
         void unify_backtraced_conditions(condition* parent_cond,
-            const soar_module::identity_triple o_ids_to_replace,
-            const soar_module::rhs_triple rhs_funcs);
+        const identity_triple o_ids_to_replace,
+        const rhs_triple rhs_funcs);
         void literalize_RHS_function_args(const rhs_value rv);
         void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
@@ -289,10 +286,14 @@ class Explanation_Based_Chunker
         Symbol* get_variablization_for_sti(Symbol* index_sym);
 
         /* Condition polishing methods */
-        void remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
-        void merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
-        condition* get_previously_seen_cond(condition* pCond);
-        wme_list* walk_and_find_lti(Symbol* root, Symbol* targetLTI);
+        void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
+        void        merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
+        condition*  get_previously_seen_cond(condition* pCond);
+
+        /* Condition to state connecting methods */
+        wme_list*   find_wmes_to_ground_lti(Symbol* targetLTI);
+        void        generate_conditions_to_ground_lti(condition** pCondList, condition** pInstCondList, symbol_list* pUnconnected_LTIs, uint64_t pInstID);
+        condition*  find_lti_that_matched_var(condition* pCondList, Symbol* pUnconnected_LTI);
 
         /* Clean-up methods */
         void clear_merge_map();

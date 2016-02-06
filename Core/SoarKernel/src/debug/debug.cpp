@@ -340,7 +340,7 @@ void debug_test(int type)
                 condition* dummy;
                 thisAgent->memoryManager->allocate_with_pool(MP_condition, &dummy);
                 init_condition(dummy);
-                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
+//                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");
             }

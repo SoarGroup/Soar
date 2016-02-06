@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  production.cpp
@@ -17,26 +10,25 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
+#include "production.h"
 
-#include "mem.h"
-#include "kernel.h"
-#include "print.h"
-#include "production_reorder.h"
-#include "init_soar.h"
-#include "rete.h"
-#include "reinforcement_learning.h"
-#include "debug.h"
-#include <ctype.h>
-#include "ebc.h"
 #include "agent.h"
 #include "condition.h"
+#include "debug.h"
+#include "ebc.h"
+#include "init_soar.h"
 #include "instantiation.h"
-#include "production.h"
+#include "mem.h"
+#include "print.h"
+#include "production_reorder.h"
+#include "rete.h"
+#include "reinforcement_learning.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
-#include "ebc.h"
+
+#include <ctype.h>
+#include <stdlib.h>
 
 void init_production_utilities(agent* thisAgent)
 {
@@ -47,8 +39,6 @@ void init_production_utilities(agent* thisAgent)
     thisAgent->memoryManager->init_memory_pool(MP_rhs_symbol, sizeof(rhs_info), "rhs symbol");
     init_reorderer(thisAgent);
 }
-
-
 
 /* *********************************************************************
 

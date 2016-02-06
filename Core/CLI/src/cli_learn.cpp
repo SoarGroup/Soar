@@ -20,6 +20,7 @@
 #include "gsysparam.h"
 #include "agent.h"
 #include "print.h"
+#include "ebc.h"
 
 using namespace cli;
 using namespace sml;

@@ -57,22 +57,6 @@
 #include <stdio.h>  // Needed for FILE token below
 #include "kernel.h"
 
-typedef signed short goal_stack_level;
-typedef byte wme_trace_type;
-typedef byte ms_trace_type;
-typedef struct instantiation_struct instantiation;
-typedef struct production_struct production;
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
-typedef struct cons_struct cons;
-typedef char varnames;
-typedef cons list;
-typedef struct test_struct test_info;
-typedef test_info* test;
 extern void abort_with_fatal_error_noagent(const char* msg);
 
 inline varnames* one_var_to_varnames(Symbol* x)

@@ -9,57 +9,14 @@
 #define EBC_EXPLAIN_H_
 
 #include "kernel.h"
+#include "stl_typedefs.h"
+
 #include <list>
 #include <set>
 #include <unordered_map>
 #include <list>
 #include <cstdlib>
 #include <string>
-
-typedef char* rhs_value;
-typedef signed short goal_stack_level;
-typedef struct action_struct action;
-typedef struct agent_struct agent;
-typedef struct chunk_cond_struct chunk_cond;
-typedef struct condition_struct condition;
-typedef struct instantiation_struct instantiation;
-typedef struct preference_struct preference;
-typedef struct symbol_struct Symbol;
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct node_varnames_struct node_varnames;
-typedef unsigned short rete_node_level;
-typedef uint64_t tc_number;
-typedef struct cons_struct cons;
-typedef cons list;
-//namespace soar_module
-//{
-//    typedef struct symbol_triple_struct symbol_triple;
-//    typedef struct test_triple_struct test_triple;
-//    typedef struct identity_triple_struct identity_triple;
-//    typedef struct rhs_triple_struct rhs_triple;
-//}
-
-class Output_Manager;
-
-class condition_record;
-class action_record;
-//#ifdef USE_MEM_POOL_ALLOCATORS
-//#include "soar_module.h"
-//typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > > condition_record_list;
-//typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > > action_record_list;
-//typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > > id_list;
-//#else
-//typedef std::list< condition_record* > condition_record_list;
-//typedef std::list< action_record* > action_record_list;
-//typedef std::list< uint64_t > id_list;
-//#endif
-typedef std::list< condition_record* >                      condition_record_list;
-typedef std::list< action_record* >                         action_record_list;
-typedef std::list< uint64_t >                               id_list;
-typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
 
 typedef struct tr_stats_struct {
         uint64_t            chunks;
@@ -131,8 +88,8 @@ class condition_record
     private:
         agent* thisAgent;
         goal_stack_level                wme_level_at_firing;
-        soar_module::test_triple        condition_tests;
-        soar_module::symbol_triple*     matched_wme;
+        test_triple                     condition_tests;
+        symbol_triple*                  matched_wme;
         action_record*                  parent_action;
         instantiation_record*           parent_instantiation;
         preference*                     cached_pref;
@@ -254,7 +211,7 @@ class Explanation_Logger
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
-        soar_module::identity_triple    current_explained_ids;
+        identity_triple    current_explained_ids;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);

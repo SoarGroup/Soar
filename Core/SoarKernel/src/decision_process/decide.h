@@ -28,8 +28,6 @@
 #define DECIDE_H
 
 #include "kernel.h"
-#include "soar_module.h"
-#include "slot.h"
 
 #include <set>
 #include <map>
@@ -173,6 +171,7 @@ extern void init_decider(agent* thisAgent);
 extern void do_buffered_wm_and_ownership_changes(agent* thisAgent);
 extern void do_working_memory_phase(agent* thisAgent);
 extern void do_decision_phase(agent* thisAgent, bool predict = false);
+extern void do_preference_phase(agent* thisAgent);
 extern void create_top_goal(agent* thisAgent);
 extern void clear_goal_stack(agent* thisAgent);
 extern void print_lowest_slot_in_context_stack(agent* thisAgent);

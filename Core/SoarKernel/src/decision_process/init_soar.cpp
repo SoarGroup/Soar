@@ -31,6 +31,7 @@
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "semantic_memory.h"
+#include "slot.h"
 #include "soar_rand.h"
 #include "stats.h"
 #include "symbol.h"

@@ -15,10 +15,11 @@
 #ifndef STATS_H
 #define STATS_H
 
+#include "kernel.h"
+#include "soar_db.h"
+
 #include <list>
 #include <map>
-
-#include "soar_db.h"
 
 #ifdef REAL_TIME_BEHAVIOR
 /* RMJ */
@@ -34,11 +35,11 @@ class stats_statement_container: public soar_module::sqlite_statement_container
 {
     public:
         soar_module::sqlite_statement* insert;
-        
+
         soar_module::sqlite_statement* cache5;
         soar_module::sqlite_statement* cache20;
         soar_module::sqlite_statement* cache100;
-        
+
         soar_module::sqlite_statement* sel_dc_inc;
         soar_module::sqlite_statement* sel_dc_dec;
         soar_module::sqlite_statement* sel_time_inc;
@@ -47,7 +48,7 @@ class stats_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* sel_wm_changes_dec;
         soar_module::sqlite_statement* sel_firing_count_inc;
         soar_module::sqlite_statement* sel_firing_count_dec;
-        
+
         stats_statement_container(agent* new_agent);
 };
 

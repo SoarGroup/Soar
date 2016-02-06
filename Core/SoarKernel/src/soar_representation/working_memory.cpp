@@ -1,37 +1,20 @@
-#include "ebc.h"
-#include "io_link.h"
-#include "agent.h"
-#include "slot.h"
-#include "symbol.h"
 #include "working_memory.h"
+
+#include "agent.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
+#include "episodic_memory.h"
+#include "io_link.h"
+#include "print.h"
+#include "rete.h"
+#include "slot.h"
+#include "soar_TraceNames.h"
+#include "symbol.h"
 #include "working_memory_activation.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
-/*************************************************************************
- *
- *  file:  wmem.cpp
- *
- * =======================================================================
- *  These are the working memory management routines and utility functions
- *  for Soar working memory elements.
- * =======================================================================
- */
+#include "xml.h"
 
 #include <stdlib.h>
-
-#include "kernel.h"
-#include "decide.h"
-#include "rete.h"
-#include "print.h"
-#include "xml.h"
-#include "soar_TraceNames.h"
-#include "episodic_memory.h"
-#include "debug.h"
 
 using namespace soar_TraceNames;
 

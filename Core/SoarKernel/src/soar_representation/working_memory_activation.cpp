@@ -12,15 +12,17 @@
  * =======================================================================
  */
 
+#include "working_memory_activation.h"
+
 #include "agent.h"
 #include "condition.h"
-#include "working_memory_activation.h"
 #include "decide.h"
 #include "instantiation.h"
 #include "misc.h"
 #include "rete.h"
 #include "preference.h"
 #include "print.h"
+#include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
 

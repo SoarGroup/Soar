@@ -11,17 +11,7 @@
 #ifndef REORDER_H
 #define REORDER_H
 
-#include "soar_module.h"
-
-typedef uint64_t tc_number;
-typedef struct cons_struct cons;
-typedef struct agent_struct agent;
-typedef struct action_struct action;
-typedef struct condition_struct condition;
-typedef cons list;
-typedef struct symbol_struct Symbol;
-typedef struct test_struct test_info;
-typedef test_info* test;
+#include "kernel.h"
 
 typedef struct saved_test_struct
 {

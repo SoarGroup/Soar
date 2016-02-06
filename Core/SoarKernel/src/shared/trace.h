@@ -39,14 +39,12 @@
 #ifndef TRACE_H
 #define TRACE_H
 
+#include "kernel.h"
+
 /* trace format type restrictions */
 #define FOR_ANYTHING_TF 0          /* format applies to any object */
 #define FOR_STATES_TF 1            /* format applies only to states */
 #define FOR_OPERATORS_TF 2         /* format applies only to operators */
-
-
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
 
 extern void init_tracing(agent* thisAgent);
 extern bool add_trace_format(agent* thisAgent, bool stack_trace, int type_restriction,

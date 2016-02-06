@@ -1,8 +1,3 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /* =======================================================================
                                  xml.h
  * =======================================================================
@@ -25,9 +20,7 @@
 #ifndef SOAR_XML_H
 #define SOAR_XML_H
 
-typedef struct agent_struct agent;
-typedef struct wme_struct wme;
-typedef struct symbol_struct Symbol;
+#include "kernel.h"
 
 void xml_create(agent* pAgent);
 void xml_reset(agent* pAgent);

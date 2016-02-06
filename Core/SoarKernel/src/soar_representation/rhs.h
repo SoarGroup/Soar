@@ -1,4 +1,3 @@
-#include "portability.h"
 /* -------------------------------------------------------------------
                               rhs.h
                       Right-Hand-Side Values
@@ -28,15 +27,7 @@
 #define RHS_H
 
 #include "kernel.h"
-#include "debug.h"
-
-/* -- Forward declarations -- */
-typedef struct condition_struct condition;
-typedef struct cons_struct cons;
-typedef cons list;
-typedef struct symbol_struct Symbol;
-typedef unsigned short rete_node_level;
-typedef uint64_t tc_number;
+#include "mem.h"
 
 typedef char* rhs_value;
 typedef struct rhs_struct

@@ -26,6 +26,7 @@
 #ifndef IO_H
 #define IO_H
 
+#include "kernel.h"
 #include "callback.h"
 
 typedef unsigned char byte;

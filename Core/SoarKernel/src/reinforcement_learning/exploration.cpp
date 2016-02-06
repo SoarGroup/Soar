@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  exploration.cpp
@@ -16,24 +9,25 @@
 
 #include "exploration.h"
 
+#include "agent.h"
+#include "soar_rand.h"
+#include "xml.h"
+#include "print.h"
+#include "slot.h"
+#include "soar_TraceNames.h"
+#include "gsysparam.h"
+#include "reinforcement_learning.h"
+#include "misc.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "decide.h"
+
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
 #include <list>
 #include <limits>
 
-#include "agent.h"
-#include "soar_rand.h"
-#include "xml.h"
-#include "print.h"
-#include "soar_TraceNames.h"
-#include "gsysparam.h"
-#include "reinforcement_learning.h"
-#include "misc.h"
-
-#include "instantiation.h"
-#include "preference.h"
-#include "decide.h"
 
 using namespace soar_TraceNames;
 
@@ -80,7 +74,7 @@ const int exploration_convert_policy(const char* policy_name)
     {
         return USER_SELECT_SOFTMAX;
     }
-    
+
     return 0;
 }
 
@@ -110,7 +104,7 @@ const char* exploration_convert_policy(const int policy)
     {
         return "softmax";
     }
-    
+
     return NULL;
 }
 
@@ -120,12 +114,12 @@ const char* exploration_convert_policy(const int policy)
 bool exploration_set_policy(agent* thisAgent, const char* policy_name)
 {
     const int policy = exploration_convert_policy(policy_name);
-    
+
     if (policy)
     {
         return exploration_set_policy(thisAgent, policy);
     }
-    
+
     return false;
 }
 
@@ -136,7 +130,7 @@ bool exploration_set_policy(agent* thisAgent, const int policy)
         set_sysparam(thisAgent, USER_SELECT_MODE_SYSPARAM, policy);
         return true;
     }
-    
+
     return false;
 }
 
@@ -161,7 +155,7 @@ exploration_parameter* exploration_add_parameter(double value, bool (*val_func)(
     newbie->val_func = val_func;
     newbie->rates[ EXPLORATION_REDUCTION_EXPONENTIAL ] = 1;
     newbie->rates[ EXPLORATION_REDUCTION_LINEAR ] = 0;
-    
+
     return newbie;
 }
 
@@ -175,7 +169,7 @@ const int exploration_convert_parameter(agent* thisAgent, const char* name)
         {
             return i;
         }
-        
+
     return EXPLORATION_PARAMS;
 }
 
@@ -207,7 +201,7 @@ double exploration_get_parameter_value(agent* thisAgent, const char* parameter)
     {
         return 0;
     }
-    
+
     return thisAgent->exploration_params[ param ]->value;
 }
 
@@ -217,7 +211,7 @@ double exploration_get_parameter_value(agent* thisAgent, const int parameter)
     {
         return thisAgent->exploration_params[ parameter ]->value;
     }
-    
+
     return 0;
 }
 
@@ -247,7 +241,7 @@ bool exploration_valid_parameter_value(agent* thisAgent, const char* name, doubl
     {
         return false;
     }
-    
+
     return thisAgent->exploration_params[ param ]->val_func(value);
 }
 
@@ -257,7 +251,7 @@ bool exploration_valid_parameter_value(agent* thisAgent, const int parameter, do
     {
         return thisAgent->exploration_params[ parameter ]->val_func(value);
     }
-    
+
     return false;
 }
 
@@ -271,9 +265,9 @@ bool exploration_set_parameter_value(agent* thisAgent, const char* name, double 
     {
         return false;
     }
-    
+
     thisAgent->exploration_params[ param ]->value = value;
-    
+
     return true;
 }
 
@@ -304,7 +298,7 @@ bool exploration_get_auto_update(agent* thisAgent)
 bool exploration_set_auto_update(agent* thisAgent, bool setting)
 {
     thisAgent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = setting ? true : false;
-    
+
     return true;
 }
 
@@ -319,20 +313,20 @@ void exploration_update_parameters(agent* thisAgent)
         {
             const int reduction_policy = exploration_get_reduction_policy(thisAgent, i);
             const double reduction_rate = exploration_get_reduction_rate(thisAgent, i, reduction_policy);
-            
+
             if (reduction_policy == EXPLORATION_REDUCTION_EXPONENTIAL)
             {
                 if (reduction_rate != 1)
                 {
                     const double current_value = exploration_get_parameter_value(thisAgent, i);
-                    
+
                     exploration_set_parameter_value(thisAgent, i, current_value * reduction_rate);
                 }
             }
             else if (reduction_policy == EXPLORATION_REDUCTION_LINEAR)
             {
                 const double current_value = exploration_get_parameter_value(thisAgent, i);
-                
+
                 if (current_value > 0 && reduction_rate != 0.0)
                 {
                     exploration_set_parameter_value(thisAgent, i, (current_value - reduction_rate > 0) ? (current_value - reduction_rate) : 0);
@@ -355,7 +349,7 @@ const int exploration_convert_reduction_policy(const char* policy_name)
     {
         return EXPLORATION_REDUCTION_LINEAR;
     }
-    
+
     return EXPLORATION_REDUCTIONS;
 }
 
@@ -369,7 +363,7 @@ const char* exploration_convert_reduction_policy(const int policy)
     {
         return "linear";
     }
-    
+
     return NULL;
 }
 
@@ -383,7 +377,7 @@ const int exploration_get_reduction_policy(agent* thisAgent, const char* paramet
     {
         return EXPLORATION_REDUCTIONS;
     }
-    
+
     return thisAgent->exploration_params[ param ]->reduction_policy;
 }
 
@@ -427,15 +421,15 @@ bool exploration_set_reduction_policy(agent* thisAgent, const char* parameter, c
     {
         return false;
     }
-    
+
     const int policy = exploration_convert_reduction_policy(policy_name);
     if (policy == EXPLORATION_REDUCTIONS)
     {
         return false;
     }
-    
+
     thisAgent->exploration_params[ param ]->reduction_policy = policy;
-    
+
     return true;
 }
 
@@ -447,7 +441,7 @@ bool exploration_set_reduction_policy(agent* thisAgent, const int parameter, con
         thisAgent->exploration_params[ parameter ]->reduction_policy = policy;
         return true;
     }
-    
+
     return false;
 }
 
@@ -461,13 +455,13 @@ bool exploration_valid_reduction_rate(agent* thisAgent, const char* parameter, c
     {
         return false;
     }
-    
+
     const int policy = exploration_convert_reduction_policy(policy_name);
     if (policy == EXPLORATION_REDUCTIONS)
     {
         return false;
     }
-    
+
     return exploration_valid_reduction_rate(thisAgent, param, policy, reduction_rate);
 }
 
@@ -477,21 +471,21 @@ bool exploration_valid_reduction_rate(agent* thisAgent, const int parameter, con
     {
         return false;
     }
-    
+
     switch (policy)
     {
         case EXPLORATION_REDUCTION_EXPONENTIAL:
             return exploration_valid_exponential(reduction_rate);
             break;
-            
+
         case EXPLORATION_REDUCTION_LINEAR:
             return exploration_valid_linear(reduction_rate);
             break;
-            
+
         default:
             break;
     }
-    
+
     return false;
 }
 
@@ -521,13 +515,13 @@ double exploration_get_reduction_rate(agent* thisAgent, const char* parameter, c
     {
         return 0;
     }
-    
+
     const int policy = exploration_convert_reduction_policy(policy_name);
     if (policy == EXPLORATION_REDUCTIONS)
     {
         return 0;
     }
-    
+
     return exploration_get_reduction_rate(thisAgent, param, policy);
 }
 
@@ -538,7 +532,7 @@ double exploration_get_reduction_rate(agent* thisAgent, const int parameter, con
     {
         return thisAgent->exploration_params[ parameter ]->rates[ policy ];
     }
-    
+
     return 0;
 }
 
@@ -552,13 +546,13 @@ bool exploration_set_reduction_rate(agent* thisAgent, const char* parameter, con
     {
         return false;
     }
-    
+
     const int policy = exploration_convert_reduction_policy(policy_name);
     if (policy == EXPLORATION_REDUCTIONS)
     {
         return false;
     }
-    
+
     return exploration_set_reduction_rate(thisAgent, param, policy, reduction_rate);
 }
 
@@ -571,7 +565,7 @@ bool exploration_set_reduction_rate(agent* thisAgent, const int parameter, const
         thisAgent->exploration_params[ parameter ]->rates[ policy ] = reduction_rate;
         return true;
     }
-    
+
     return false;
 }
 
@@ -582,21 +576,21 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
 {
     const int exploration_policy = exploration_get_policy(thisAgent);
     preference* return_val = NULL;
-    
+
     const bool my_rl_enabled = rl_enabled(thisAgent);
-    
+
     const rl_param_container::learning_choices my_learning_policy = my_rl_enabled ? thisAgent->rl_params->learning_policy->get_value() : rl_param_container::q;
-    
+
     // get preference values for each candidate
     // see soar_ecPrintPreferences
     for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
         exploration_compute_value_of_candidate(thisAgent, cand, s);
     }
-    
+
     double top_value = candidates->numeric_value;
     bool top_rl = candidates->rl_contribution;
-    
+
     // should find highest valued candidate in q-learning
     if (my_rl_enabled && (my_learning_policy & rl_param_container::off_policy))
     {
@@ -631,34 +625,34 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
             }
         }
     }
-    
+
     switch (exploration_policy)
     {
         case USER_SELECT_FIRST:
             return_val = candidates;
             break;
-            
+
         case USER_SELECT_LAST:
             for (return_val = candidates; return_val->next_candidate; return_val = return_val->next_candidate);
             break;
-            
+
         case USER_SELECT_RANDOM:
             return_val = exploration_randomly_select(candidates);
             break;
-            
+
         case USER_SELECT_SOFTMAX:
             return_val = exploration_probabilistically_select(candidates);
             break;
-            
+
         case USER_SELECT_E_GREEDY:
             return_val = exploration_epsilon_greedy_select(thisAgent, candidates);
             break;
-            
+
         case USER_SELECT_BOLTZMANN:
             return_val = exploration_boltzmann_select(thisAgent, candidates);
             break;
     }
-    
+
     // should perform update here for chosen candidate in sarsa
     if (my_rl_enabled)
     {
@@ -674,7 +668,7 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
         if (my_learning_policy & rl_param_container::off_policy)
         {
             rl_perform_update(thisAgent, top_value, top_rl, s->id);
-            
+
             if (my_learning_policy == rl_param_container::q && return_val->numeric_value != top_value)
             {
                 rl_watkins_clear(thisAgent, s->id);
@@ -685,7 +679,7 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
             rl_perform_update(thisAgent, return_val->numeric_value, return_val->rl_contribution, s->id);
         }
     }
-    
+
     return return_val;
 }
 
@@ -695,22 +689,22 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
 double exploration_probability_according_to_policy(agent* thisAgent, slot* s, preference* candidates, preference* selection)
 {
     const int exploration_policy = exploration_get_policy(thisAgent);
-    
+
     // get preference values for each candidate
     // see soar_ecPrintPreferences
     for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
         exploration_compute_value_of_candidate(thisAgent, cand, s);
     }
-    
+
     switch (exploration_policy)
     {
         case USER_SELECT_FIRST:
             return candidates == selection ? 1.0f : 0.0f;
-            
+
         case USER_SELECT_LAST:
             return selection->next_candidate ? 0.0f : 1.0f;
-            
+
         case USER_SELECT_RANDOM:
         {
             unsigned int cand_count = 0;
@@ -720,7 +714,7 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
             }
             return 1.0 / cand_count;
         }
-        
+
         case USER_SELECT_SOFTMAX:
         {
             unsigned int cand_count = 0;
@@ -733,7 +727,7 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
                     total_probability += cand->numeric_value;
                 }
             }
-            
+
             if (total_probability > 0)
             {
                 if (selection->numeric_value > 0)
@@ -750,11 +744,11 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
                 return 1.0 / cand_count;
             }
         }
-        
+
         case USER_SELECT_E_GREEDY:
         {
             const double epsilon = exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON);
-            
+
             double top_value = candidates->numeric_value;
             unsigned int top_count = 0;
             unsigned int cand_count = 0;
@@ -771,7 +765,7 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
                     ++top_count;
                 }
             }
-            
+
             double retval = epsilon / cand_count;
             if (selection->numeric_value == top_value)
             {
@@ -779,11 +773,11 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
             }
             return retval;
         }
-        
+
         case USER_SELECT_BOLTZMANN:
         {
             const double t = exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_TEMPERATURE);
-            
+
             double maxq = candidates->numeric_value;
             for (preference* cand = candidates->next_candidate; cand; cand = cand->next_candidate)
             {
@@ -792,7 +786,7 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
                     maxq = cand->numeric_value;
                 }
             }
-            
+
             double exptotal = 0.0;
             double expselection = 0.0;
             for (preference* cand = candidates; cand; cand = cand->next_candidate)
@@ -805,10 +799,10 @@ double exploration_probability_according_to_policy(agent* thisAgent, slot* s, pr
                     expselection = v;
                 }
             }
-            
+
             return expselection / exptotal;
         }
-        
+
         default:
             abort();
             return 0.0;
@@ -831,13 +825,13 @@ preference* exploration_randomly_select(preference* candidates, const bool &upda
             cand->rl_rho /= 1.0 / cand_count;
         }
     }
-    
+
     preference* cand = candidates;
     for (uint32_t chosen_num = SoarRandInt(cand_count - 1); chosen_num; --chosen_num)
     {
         cand = cand->next_candidate;
     }
-    
+
     return cand;
 }
 
@@ -847,7 +841,7 @@ preference* exploration_randomly_select(preference* candidates, const bool &upda
 preference* exploration_probabilistically_select(preference* candidates)
 {
     // IF THIS FUNCTION CHANGES, SEE soar_ecPrintPreferences
-    
+
     // count up positive numbers
     double total_probability = 0.0;
     for (const preference* cand = candidates; cand; cand = cand->next_candidate)
@@ -855,7 +849,7 @@ preference* exploration_probabilistically_select(preference* candidates)
         {
             total_probability += cand->numeric_value;
         }
-        
+
     // if nothing positive, resort to random
     if (total_probability == 0.0)
     {
@@ -876,7 +870,7 @@ preference* exploration_probabilistically_select(preference* candidates)
 
     // choose a random preference within the distribution
     const double selected_probability = total_probability * SoarRand();
-    
+
     // select the candidate based upon the chosen preference
     double current_sum = 0.0;
     for (preference* cand = candidates; cand; cand = cand->next_candidate)
@@ -890,7 +884,7 @@ preference* exploration_probabilistically_select(preference* candidates)
             }
         }
     }
-    
+
     return NIL;
 }
 
@@ -920,7 +914,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
     double t = exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_TEMPERATURE);
     double maxq;
     preference* c;
-    
+
     maxq = candidates->numeric_value;
     for (c = candidates->next_candidate; c; c = c->next_candidate)
     {
@@ -929,11 +923,11 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
             maxq = c->numeric_value;
         }
     }
-    
+
     double exptotal = 0.0;
     std::list<double> expvals;
     std::list<double>::iterator i;
-    
+
     for (c = candidates; c; c = c->next_candidate)
     {
         // equivalent to exp((c->numeric_value / t) - (maxq / t)) but safer against overflow
@@ -946,7 +940,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
     {
         c->rl_rho /= *i / exptotal;
     }
-    
+
     // output trace information
     if (thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ])
     {
@@ -963,10 +957,10 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
             xml_end_tag(thisAgent, kTagCandidate);
         }
     }
-    
+
     double r = SoarRand(exptotal);
     double sum = 0.0;
-    
+
     for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, i++)
     {
         sum += *i;
@@ -975,7 +969,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
             return c;
         }
     }
-    
+
     return NIL;
 }
 
@@ -985,7 +979,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
 preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* candidates)
 {
     const double epsilon = exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON);
-    
+
     if (thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ])
     {
         for (const preference* cand = candidates; cand; cand = cand->next_candidate)
@@ -999,7 +993,7 @@ preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* cand
             xml_end_tag(thisAgent, kTagCandidate);
         }
     }
-    
+
     preference *cand;
     if (SoarRand() < epsilon)
     {
@@ -1031,7 +1025,7 @@ preference* exploration_get_highest_q_value_pref(preference* candidates)
     preference* top_cand = candidates;
     double top_value = candidates->numeric_value;
     int num_max_cand = 0;
-    
+
     for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
         if (cand->numeric_value > top_value)
@@ -1045,7 +1039,7 @@ preference* exploration_get_highest_q_value_pref(preference* candidates)
             ++num_max_cand;
         }
     }
-    
+
     if (num_max_cand == 1)
     {
         return top_cand;
@@ -1057,18 +1051,18 @@ preference* exploration_get_highest_q_value_pref(preference* candidates)
         {
             cand = cand->next_candidate;
         }
-        
+
         // if operators tied for highest Q-value, select among tied set at random
         for (uint32_t chosen_num = SoarRandInt(num_max_cand - 1); chosen_num; --chosen_num)
         {
             cand = cand->next_candidate;
-            
+
             while (cand->numeric_value != top_value)
             {
                 cand = cand->next_candidate;
             }
         }
-        
+
         return cand;
     }
 }
@@ -1082,12 +1076,12 @@ void exploration_compute_value_of_candidate(agent* thisAgent, preference* cand, 
     {
         return;
     }
-    
+
     // initialize candidate values
     cand->total_preferences_for_candidate = 0;
     cand->numeric_value = 0;
     cand->rl_contribution = false;
-    
+
     // all numeric indifferents
     for (preference* pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
     {
@@ -1095,14 +1089,14 @@ void exploration_compute_value_of_candidate(agent* thisAgent, preference* cand, 
         {
             cand->total_preferences_for_candidate += 1;
             cand->numeric_value += get_number_from_symbol(pref->referent);
-            
+
             if (pref->inst->prod->rl_rule)
             {
                 cand->rl_contribution = true;
             }
         }
     }
-    
+
     // all binary indifferents
     for (preference* pref = s->preferences[ BINARY_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
     {
@@ -1112,14 +1106,14 @@ void exploration_compute_value_of_candidate(agent* thisAgent, preference* cand, 
             cand->numeric_value += get_number_from_symbol(pref->referent);
         }
     }
-    
+
     // if no contributors, provide default
     if (!cand->total_preferences_for_candidate)
     {
         cand->numeric_value = default_value;
         cand->total_preferences_for_candidate = 1;
     }
-    
+
     // accomodate average mode
     if (thisAgent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG)
     {

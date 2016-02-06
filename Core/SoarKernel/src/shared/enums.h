@@ -60,6 +60,20 @@ enum TraceMode
     num_trace_modes
 };
 
+enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
+                    GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT
+                  };
+
+enum top_level_phase { INPUT_PHASE = 0,
+                       PROPOSE_PHASE,
+                       DECISION_PHASE,
+                       APPLY_PHASE,
+                       OUTPUT_PHASE,
+                       PREFERENCE_PHASE,
+                       WM_PHASE,
+                       NUM_PHASE_TYPES
+                     };
+
 enum EBCTraceType {
     ebc_actual_trace,
     ebc_match_trace,
@@ -291,6 +305,62 @@ enum SupportType {
     DECLARED_I_SUPPORT = 2,
 };
 
+enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_names
+{
+    NO_CALLBACK,                      /* Used for missing callback */
+    AFTER_INIT_AGENT_CALLBACK,
+    BEFORE_INIT_SOAR_CALLBACK,
+    AFTER_INIT_SOAR_CALLBACK,
+    AFTER_HALT_SOAR_CALLBACK,
+    BEFORE_ELABORATION_CALLBACK,
+    AFTER_ELABORATION_CALLBACK,
+    BEFORE_DECISION_CYCLE_CALLBACK,
+    AFTER_DECISION_CYCLE_CALLBACK,
+    BEFORE_INPUT_PHASE_CALLBACK,
+    INPUT_PHASE_CALLBACK,
+    AFTER_INPUT_PHASE_CALLBACK,
+    BEFORE_PREFERENCE_PHASE_CALLBACK,
+    AFTER_PREFERENCE_PHASE_CALLBACK,
+    BEFORE_WM_PHASE_CALLBACK,
+    AFTER_WM_PHASE_CALLBACK,
+    BEFORE_OUTPUT_PHASE_CALLBACK,
+    OUTPUT_PHASE_CALLBACK,
+    AFTER_OUTPUT_PHASE_CALLBACK,
+    BEFORE_DECISION_PHASE_CALLBACK,
+    AFTER_DECISION_PHASE_CALLBACK,
+    BEFORE_PROPOSE_PHASE_CALLBACK,
+    AFTER_PROPOSE_PHASE_CALLBACK,
+    BEFORE_APPLY_PHASE_CALLBACK,
+    AFTER_APPLY_PHASE_CALLBACK,
+    WM_CHANGES_CALLBACK,
+    CREATE_NEW_CONTEXT_CALLBACK,
+    POP_CONTEXT_STACK_CALLBACK,
+    CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
+    REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
+    PRODUCTION_JUST_ADDED_CALLBACK,
+    PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK,
+    AFTER_INTERRUPT_CALLBACK,
+    AFTER_HALTED_CALLBACK,
+    BEFORE_RUN_STARTS_CALLBACK,
+    AFTER_RUN_ENDS_CALLBACK,
+    BEFORE_RUNNING_CALLBACK,
+    AFTER_RUNNING_CALLBACK,
+    FIRING_CALLBACK,
+    RETRACTION_CALLBACK,
+    SYSTEM_PARAMETER_CHANGED_CALLBACK,
+    MAX_MEMORY_USAGE_CALLBACK,
+    XML_GENERATION_CALLBACK,
+    PRINT_CALLBACK,
+    LOG_CALLBACK,
+    INPUT_WME_GARBAGE_COLLECTED_CALLBACK,
+    NUMBER_OF_CALLBACKS               /* Not actually a callback   */
+    /* type.  Used to indicate   */
+    /* list size and MUST ALWAYS */
+    /* BE LAST.                  */
+} ;
+
+#define NUMBER_OF_MONITORABLE_CALLBACKS (NUMBER_OF_CALLBACKS - 2)
+
 #define PE_PRODS 0
 #define IE_PRODS 1
 #define NO_SAVED_PRODS -1
@@ -340,5 +410,17 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define USER_SELECT_RANDOM    5   /* pick one at random */
 #define USER_SELECT_SOFTMAX   6   /* pick one at random, probabalistically biased by numeric preferences */
 #define USER_SELECT_INVALID   7   /* should be 1+ last item, used for validity checking */
+
+/* -------------------------------
+      Exploration constants
+------------------------------- */
+#define EXPLORATION_REDUCTION_EXPONENTIAL   0
+#define EXPLORATION_REDUCTION_LINEAR        1
+#define EXPLORATION_REDUCTIONS              2 // set as greatest reduction + 1
+
+#define EXPLORATION_PARAM_EPSILON           0
+#define EXPLORATION_PARAM_TEMPERATURE       1
+#define EXPLORATION_PARAMS                  2 // set as greatest param + 1
+
 
 #endif /* ENUMS_H_ */

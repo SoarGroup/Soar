@@ -16,10 +16,9 @@
 
 #include "kernel.h"
 
-//#include "mem.h"
-#include "memory_manager.h"
 #include "misc.h"
 #include "symbol.h"
+#include "stl_typedefs.h"
 
 #include <map>
 #include <string>
@@ -37,14 +36,9 @@ namespace soar_module
     // Utility functions
     /////////////////////////////////////////////////////////////
 
-    typedef std::set< wme* > wme_set;
-    typedef std::list< symbol_triple* > symbol_triple_list;
-    typedef std::list< test_triple* > test_triple_list;
-    typedef std::list< test_triple* > test_triple_list;
 
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);
-    instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
 
     ///////////////////////////////////////////////////////////////////////////
     // Predicates
@@ -952,128 +946,6 @@ namespace soar_module
 
 
     ///////////////////////////////////////////////////////////////////////////
-    // Memory Pool Allocators
-    ///////////////////////////////////////////////////////////////////////////
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-
-    template <class T>
-    class soar_memory_pool_allocator
-    {
-        public:
-            typedef T           value_type;
-            typedef size_t      size_type;
-            typedef ptrdiff_t   difference_type;
-
-            typedef T*          pointer;
-            typedef const T*    const_pointer;
-
-            typedef T&          reference;
-            typedef const T&    const_reference;
-
-        public:
-            soar_memory_pool_allocator() : mem_pool(NULL), memory_manager(NULL)
-            {
-                memory_manager = &(Memory_Manager::Get_MPM());
-                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
-            }
-
-            soar_memory_pool_allocator(agent* new_agent): mem_pool(NULL), memory_manager(NULL)
-            {
-                // useful for debugging
-                // std::string temp_this( typeid( value_type ).name() );
-                memory_manager = &(Memory_Manager::Get_MPM());
-                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
-            }
-
-            soar_memory_pool_allocator(const soar_memory_pool_allocator& obj): mem_pool(NULL), memory_manager(NULL)
-            {
-                // useful for debugging
-                // std::string temp_this( typeid( value_type ).name() );
-                memory_manager = &(Memory_Manager::Get_MPM());
-                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
-            }
-
-            template <class _other>
-            soar_memory_pool_allocator(const soar_memory_pool_allocator<_other>& other): mem_pool(NULL), memory_manager(NULL)
-            {
-                // useful for debugging
-                // std::string temp_this( typeid( T ).name() );
-                // std::string temp_other( typeid( _other ).name() );
-                    memory_manager = &(Memory_Manager::Get_MPM());
-                    mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
-            }
-
-            pointer allocate(size_type
-#ifndef NDEBUG
-                             n
-#endif
-                             , const void* = 0)
-            {
-                assert(n == 1);
-                assert(mem_pool && memory_manager);
-                pointer t;
-                memory_manager->allocate_with_pool_ptr(mem_pool, &t);
-                assert(t);
-                return t;
-            }
-
-            void deallocate(void* p, size_type
-#ifndef NDEBUG
-                            n
-#endif
-                           )
-            {
-                assert(n == 1);
-                assert(memory_manager && mem_pool);
-                if (p)
-                {
-                    memory_manager->free_with_pool_ptr(mem_pool, p);
-                }
-            }
-
-            void construct(pointer p, const_reference val)
-            {
-                new(p) T(val);
-            }
-
-            void destroy(pointer p)
-            {
-                p->~T();
-            }
-
-            size_type max_size() const
-            {
-                return static_cast< size_type >(-1);
-            }
-
-            const_pointer address(const_reference r) const
-            {
-                return &r;
-            }
-
-            pointer address(reference r) const
-            {
-                return &r;
-            }
-
-            template <class U>
-            struct rebind
-            {
-                typedef soar_memory_pool_allocator<U> other;
-            };
-
-
-        private:
-            agent* thisAgent;
-            Memory_Manager* memory_manager;
-            memory_pool* mem_pool;
-
-    };
-
-#endif
-
-    ///////////////////////////////////////////////////////////////////////////
     // Object Store Management
     //
     // Model:
@@ -1754,25 +1626,4 @@ namespace soar_module
     };
 
 }
-
-class sym_grounding_path;
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list<condition*, soar_module::soar_memory_pool_allocator<condition*> > condition_list;
-typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
-typedef std::list<wme*, soar_module::soar_memory_pool_allocator<wme*> > wme_list;
-typedef std::list<sym_grounding_path*, soar_module::soar_memory_pool_allocator<sym_grounding_path*> > sym_grounding_path_list;
-
-typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
-typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
-#else
-typedef std::list< condition* > condition_list;
-typedef std::list< Symbol* > symbol_list;
-typedef std::list< wme* > wme_list;
-typedef std::list< sym_grounding_path* > sym_grounding_path_list;
-
-typedef std::set< wme* > wma_pooled_wme_set;
-typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
-#endif
-
 #endif

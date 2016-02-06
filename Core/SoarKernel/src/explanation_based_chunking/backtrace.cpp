@@ -1,11 +1,3 @@
-#include "explain.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  backtrace.cpp
@@ -24,15 +16,14 @@
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
+#include "explain.h"
 #include "instantiation.h"
-#include "kernel.h"
 #include "mem.h"
 #include "memory_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
 #include "instantiation.h"
-#include "soar_module.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
 #include "test.h"
@@ -201,8 +192,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                                      condition* trace_cond,
                                      bool* reliable,
                                      int indent,
-                                     const soar_module::identity_triple o_ids_to_replace,
-                                     const soar_module::rhs_triple rhs_funcs)
+                                     const identity_triple o_ids_to_replace,
+                                     const rhs_triple rhs_funcs)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */

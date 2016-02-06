@@ -1,8 +1,3 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /* =======================================================================
                                 wmem.h
 
@@ -36,95 +31,17 @@
 #ifndef WMEM_H
 #define WMEM_H
 
-#include "production.h"
+#include "kernel.h"
 
-#include "enums.h"
-#include "soar_module.h"
+void reset_wme_timetags(agent* thisAgent);
+wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
+void add_wme_to_wm(agent* thisAgent, wme* w);
+void remove_wme_from_wm(agent* thisAgent, wme* w);
+void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap = false);
+void do_buffered_wm_changes(agent* thisAgent);
 
-typedef uint64_t tc_number;
-typedef signed short goal_stack_level;
-typedef struct wme_struct wme;
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
-typedef unsigned short rete_node_level;
-
-typedef struct wma_decay_element_struct wma_decay_element;
-
-typedef int64_t epmem_node_id;
-typedef uint64_t epmem_hash_id;
-typedef uint64_t epmem_time_id;
-
-extern void reset_wme_timetags(agent* thisAgent);
-extern wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
-extern void add_wme_to_wm(agent* thisAgent, wme* w);
-extern void remove_wme_from_wm(agent* thisAgent, wme* w);
-extern void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap = false);
-extern void do_buffered_wm_changes(agent* thisAgent);
-
-extern void deallocate_wme(agent* thisAgent, wme* w);
-extern Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
-
-/* ------------------------------------------------------------------------
-                      Working Memory Elements (WMEs)
-
-   Fields in a WME:
-
-      id, attr, value:  points to symbols for the wme fields
-
-      acceptable:  true iff this is an acceptable pref. wme
-
-      timetag:  timetag of the wme
-
-      reference count:  (see below)
-
-      rete_next, rete_prev:  pointers in the doubly-linked list of all
-         wmes currently known to the rete (header is all_wmes_in_rete)
-         (this equals WM except while WM is being changed)
-
-      right_mems:  header of a doubly-linked list of right memory entries
-         (in one or more alpha memories containing the wme).  This is used
-         only by the Rete, as part of list-based remove.
-
-      tokens:  header of a doubly-linked list of tokens in the Rete.
-         This is used only by the Rete, as part of list-based remove.
-
-      next, prev:  pointers in a doubly-linked list of wmes.
-         Depending on the wme type, the header of this DLL is:
-           - slot.wmes (for ordinary wmes)
-           - slot.acceptable_preference_wmes (for acceptable pref. wmes)
-           - id.impasse_wmes (for architecture-created goal/impasse wmes)
-           - id.input_wmes (for Soar I/O wmes)
-
-      preference:  points to the preference supporting the wme.  For I/O
-         wmes and (most) architecture-created wmes, this is NIL.
-
-      output_link:  this is used only for top-state output links.
-         It points to an output_link structure used by the I/O routines.
-
-      grounds_tc, potentials_tc, locals_tc:  used by the chunker to indicate
-         whether this wme is in the grounds, potentials, and/or locals sets
-
-      chunker_bt_pref: used by the chunker; set to cond->bt.trace when
-         a wme is added to either the potentials or locals set
-
-      These are the additions to the WME structure that will be used
-         to track dependencies for goals.  Each working memory element
-     now includes a pointer  to a gds_struct (defined below) and
-     pointers to other WMEs on the same GDS.
-
-      gds: the goal dependency set the wme is in
-      gds_next, gds_prev:  used for dll of all wmes in gds
-
-      If a particular working memory element is not dependent for any goal,
-     then the values for these pointers will all be NIL. If a WME is
-     dependent for more than one goal, then it will point to the GDS
-     of the highest goal.
-
-   Reference counts on wmes:
-      +1 if the wme is currently in WM
-      +1 for each instantiation condition that points to it (bt.wme)
-   We deallocate a wme when its reference count goes to 0.
------------------------------------------------------------------------- */
+void deallocate_wme(agent* thisAgent, wme* w);
+Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
 
 typedef struct wme_struct
 {
@@ -195,4 +112,65 @@ inline Symbol* get_wme_element(wme* w, WME_Field f)
     return NULL;
 }
 
+/* ------------------------------------------------------------------------
+                      Working Memory Elements (WMEs)
+
+   Fields in a WME:
+
+      id, attr, value:  points to symbols for the wme fields
+
+      acceptable:  true iff this is an acceptable pref. wme
+
+      timetag:  timetag of the wme
+
+      reference count:  (see below)
+
+      rete_next, rete_prev:  pointers in the doubly-linked list of all
+         wmes currently known to the rete (header is all_wmes_in_rete)
+         (this equals WM except while WM is being changed)
+
+      right_mems:  header of a doubly-linked list of right memory entries
+         (in one or more alpha memories containing the wme).  This is used
+         only by the Rete, as part of list-based remove.
+
+      tokens:  header of a doubly-linked list of tokens in the Rete.
+         This is used only by the Rete, as part of list-based remove.
+
+      next, prev:  pointers in a doubly-linked list of wmes.
+         Depending on the wme type, the header of this DLL is:
+           - slot.wmes (for ordinary wmes)
+           - slot.acceptable_preference_wmes (for acceptable pref. wmes)
+           - id.impasse_wmes (for architecture-created goal/impasse wmes)
+           - id.input_wmes (for Soar I/O wmes)
+
+      preference:  points to the preference supporting the wme.  For I/O
+         wmes and (most) architecture-created wmes, this is NIL.
+
+      output_link:  this is used only for top-state output links.
+         It points to an output_link structure used by the I/O routines.
+
+      grounds_tc, potentials_tc, locals_tc:  used by the chunker to indicate
+         whether this wme is in the grounds, potentials, and/or locals sets
+
+      chunker_bt_pref: used by the chunker; set to cond->bt.trace when
+         a wme is added to either the potentials or locals set
+
+      These are the additions to the WME structure that will be used
+         to track dependencies for goals.  Each working memory element
+     now includes a pointer  to a gds_struct (defined below) and
+     pointers to other WMEs on the same GDS.
+
+      gds: the goal dependency set the wme is in
+      gds_next, gds_prev:  used for dll of all wmes in gds
+
+      If a particular working memory element is not dependent for any goal,
+     then the values for these pointers will all be NIL. If a WME is
+     dependent for more than one goal, then it will point to the GDS
+     of the highest goal.
+
+   Reference counts on wmes:
+      +1 if the wme is currently in WM
+      +1 for each instantiation condition that points to it (bt.wme)
+   We deallocate a wme when its reference count goes to 0.
+------------------------------------------------------------------------ */
 #endif

@@ -1,11 +1,3 @@
-#include "ebc.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*------------------------------------------------------------------
                        episodic_memory.cpp
 
@@ -15,6 +7,22 @@
 
 ------------------------------------------------------------------ */
 
+#include "episodic_memory.h"
+
+#include "agent.h"
+#include "decide.h"
+#include "debug.h"
+#include "ebc.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "semantic_memory.h"
+#include "slot.h"
+#include "symbol.h"
+#include "print.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
+#include "xml.h"
+
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -23,18 +31,6 @@
 #include <set>
 #include <climits>
 
-#include "episodic_memory.h"
-#include "semantic_memory.h"
-
-#include "agent.h"
-#include "preference.h"
-#include "symbol.h"
-#include "working_memory.h"
-#include "print.h"
-#include "xml.h"
-#include "instantiation.h"
-#include "decide.h"
-#include "debug.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -1322,14 +1318,14 @@ epmem_wme_list* epmem_get_augs_of_id(Symbol* id, tc_number tc)
     return return_val;
 }
 
-inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes)
+inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes)
 {
     if (my_list.empty())
     {
         return;
     }
 
-    instantiation* inst = soar_module::make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
 
     for (preference* pref = inst->preferences_generated; pref;)
     {
@@ -1411,15 +1407,15 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, so
     }
 }
 
-inline void epmem_process_buffered_wmes(agent* thisAgent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes)
+inline void epmem_process_buffered_wmes(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
     _epmem_process_buffered_wme_list(thisAgent, state, cue_wmes, meta_wmes, state->id->epmem_info->epmem_wmes);
     _epmem_process_buffered_wme_list(thisAgent, state, cue_wmes, retrieval_wmes, NULL);
 }
 
-inline void epmem_buffer_add_wme(agent* thisAgent, soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
+inline void epmem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
-    my_list.push_back(new soar_module::symbol_triple(id, attr, value));
+    my_list.push_back(new symbol_triple(id, attr, value));
 
     symbol_add_ref(thisAgent, id);
     symbol_add_ref(thisAgent, attr);
@@ -3344,7 +3340,7 @@ bool epmem_valid_episode(agent* thisAgent, epmem_time_id memory_id)
     return return_val;
 }
 
-inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id child_n_id, bool val_is_short_term, char val_letter, uint64_t val_num, epmem_id_mapping* id_record, soar_module::symbol_triple_list& retrieval_wmes)
+inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id child_n_id, bool val_is_short_term, char val_letter, uint64_t val_num, epmem_id_mapping* id_record, symbol_triple_list& retrieval_wmes)
 {
     std::map< epmem_node_id, std::pair< Symbol*, bool > >::iterator id_p = ids->find(child_n_id);
     bool existing_identifier = (id_p != ids->end());
@@ -3412,7 +3408,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
  *                a mapping of identifiers that should be recorded
  *                during reconstruction.
  **************************************************************************/
-void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_id, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping* id_record = NULL)
+void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_id, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, epmem_id_mapping* id_record = NULL)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->epmem_timers->ncb_retrieval->start();
@@ -3979,7 +3975,7 @@ bool epmem_gm_mcv_comparator(const epmem_literal* a, const epmem_literal* b)
     return (a->matches.size() < b->matches.size());
 }
 
-epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* thisAgent)
+epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, int query_type, std::set<Symbol*>& visiting, wme_set& cue_wmes, agent* thisAgent)
 {
     // if the value is being visited, this is part of a loop; return NULL
     // remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
@@ -4544,7 +4540,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
     return false;
 }
 
-void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Symbol* neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level = 3)
+void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Symbol* neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, int level = 3)
 {
     // a query must contain a positive cue
     if (pos_query == NULL)
@@ -5731,7 +5727,7 @@ bool epmem_consider_new_episode(agent* thisAgent)
     return new_memory;
 }
 
-void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, soar_module::wme_set& cue_wmes)
+void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, wme_set& cue_wmes)
 {
     cue_wmes.clear();
 
@@ -5911,9 +5907,9 @@ void epmem_respond_to_cmd(agent* thisAgent)
     epmem_wme_list* cmds;
     epmem_wme_list::iterator w_p;
 
-    soar_module::wme_set cue_wmes;
-    soar_module::symbol_triple_list meta_wmes;
-    soar_module::symbol_triple_list retrieval_wmes;
+    wme_set cue_wmes;
+    symbol_triple_list meta_wmes;
+    symbol_triple_list retrieval_wmes;
 
     epmem_time_id retrieve;
     Symbol* next;
@@ -6092,7 +6088,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
                 // clear cache
                 {
                     dprint(DT_EPMEM_CMD, "--- ...clearing buffer cache.\n");
-                    soar_module::symbol_triple_list::iterator mw_it;
+                    symbol_triple_list::iterator mw_it;
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {

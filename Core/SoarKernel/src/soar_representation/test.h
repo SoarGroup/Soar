@@ -1,4 +1,3 @@
-#include "portability.h"
 /* -------------------------------------------------------------------
                               test.h
 
@@ -19,20 +18,6 @@
 
 #include "kernel.h"
 
-/* -- Forward declarations --- */
-typedef struct node_varnames_struct node_varnames;
-typedef struct condition_struct condition;
-typedef struct wme_struct wme;
-typedef struct rete_node_struct rete_node;
-typedef struct rete_test_struct rete_test;
-typedef char varnames;
-typedef unsigned short rete_node_level;
-typedef struct cons_struct cons;
-typedef cons list;
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
-typedef signed short goal_stack_level;
-typedef uint64_t tc_number;
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
 /* -- test_info stores information about a test.  If nil, the test is

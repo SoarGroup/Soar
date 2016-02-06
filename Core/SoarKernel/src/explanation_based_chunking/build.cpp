@@ -14,24 +14,26 @@
  */
 
 #include "ebc.h"
-#include "debug.h"
-#include "decide.h"
-#include "init_soar.h"
-#include "rete.h"
-#include "explain.h"
-#include "print.h"
-#include "xml.h"
+
 #include "agent.h"
 #include "condition.h"
+#include "debug.h"
+#include "decide.h"
+#include "explain.h"
+#include "init_soar.h"
 #include "instantiation.h"
 #include "preference.h"
+#include "print.h"
 #include "production.h"
+#include "rete.h"
 #include "rhs.h"
+#include "soar_TraceNames.h"
+#include "slot.h"
 #include "symbol.h"
 #include "test.h"
 #include "working_memory.h"
 #include "working_memory_activation.h"
-#include "soar_TraceNames.h"
+#include "xml.h"
 
 #include <stdlib.h>
 #include <cstring>
@@ -662,43 +664,6 @@ void Explanation_Based_Chunker::make_clones_of_results(preference* results,
     }
 }
 
-
-/* Before calling make_production, caller is responsible for using this
- * function to make sure the production is valid.  This was separated out
- * so EBC can try to fix unconnected conditions caused by LTI being at a
- * higher level. */
-
-bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   type,
-                                                           condition**      lhs_top,
-                                                           action**         rhs_top,
-                                                           bool             reorder_nccs)
-{
-    /* This is called for justifications even though it does nothing because in the future
-     * we might want to fix a justification that has conditions unconnected to
-     * a state.  Chunks that have such variablized conditions seem to be able to
-     * corrupt the rete, but we don't know if justifications can as well.  While we
-     * could ground those conditions like we do with chunks to be safe, we're not doing
-     * that right now because it will introduce a high computational cost that may
-     * not be necessary.*/
-
-    if (type != JUSTIFICATION_PRODUCTION_TYPE)
-    {
-        symbol_list* unconnected_syms = new symbol_list();
-
-        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs, true, unconnected_syms);
-
-        if (lFailureType == ebc_failed_unconnected_conditions)
-        {
-            for (auto it = unconnected_syms->begin(); it != unconnected_syms->end(); it++) {
-                generate_conditions_to_ground_lti(lhs_top, (*it));
-            }
-        }
-        delete unconnected_syms;
-        return (lFailureType == ebc_success);
-    }
-    return true;
-}
-
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
     goal_stack_level grounds_level;
@@ -965,7 +930,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "chunk instantiation created variablized rule: \n%1-->\n%2", vrblz_top, rhs);
 
     thisAgent->name_of_production_being_reordered = prod_name->sc->name;
-    lChunkValidated = reorder_and_validate_chunk(prod_type, &vrblz_top, &rhs, false);
+    lChunkValidated = reorder_and_validate_chunk(prod_type, chunk_new_i_id, &vrblz_top, &rhs, &inst_top, false);
 
     if (!lChunkValidated)
     {
@@ -1095,7 +1060,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         chunk_inst->in_ms = true;  /* set true for now, we'll find out later... */
 
         make_clones_of_results(results, chunk_inst);
-        fill_in_new_instantiation_stuff(thisAgent, chunk_inst, true, inst);
+        init_instantiation(thisAgent, chunk_inst, true, inst);
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation: \n%5", chunk_inst->top_of_instantiated_conditions, chunk_inst->preferences_generated);

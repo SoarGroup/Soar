@@ -20,6 +20,21 @@
  * =======================================================================
  */
 
+#ifndef SOAR_RAND_H
+#define SOAR_RAND_H
+
+// Not thread safe (unless auto-initialization is avoided and each thread has
+// its own MTRand object)
+#include "kernel.h"
+#include "Export.h"
+
+#include <iostream>
+#include <limits.h>
+#include <stdio.h>
+#include <time.h>
+#include <math.h>
+
+
 // Mersenne Twister random number generator -- a C++ class MTRand
 // Based on code by Makoto Matsumoto, Takuji Nishimura, and Shawn Cokus
 // Richard J. Wagner  v1.0  15 May 2003  rjwagner@writeme.com
@@ -75,44 +90,31 @@
 // It would be nice to CC: rjwagner@writeme.com and Cokus@math.washington.edu
 // when you write.
 
-#ifndef SOAR_RAND_H
-#define SOAR_RAND_H
-
-// Not thread safe (unless auto-initialization is avoided and each thread has
-// its own MTRand object)
-
-#include <iostream>
-#include <limits.h>
-#include <stdio.h>
-#include <time.h>
-#include <math.h>
-#include "Export.h"
-
 class MTRand
 {
         // Data
     public:
         enum { N = 624 };       // length of state vector
         enum { SAVE = N + 1 };  // length of array for save()
-        
+
     protected:
         enum { M = 397 };  // period parameter
-        
+
         uint32_t state[N]; // internal state
         uint32_t* pNext;   // next value to get from state
         int left;          // number of values left before reload needed
-        
-        
+
+
         //Methods
     public:
         MTRand(const uint32_t& oneSeed);    // initialize with a simple uint32
         MTRand(uint32_t* const bigSeed, uint32_t const seedLength = N);    // or an array
         MTRand();  // auto-initialize with /dev/urandom or time() and clock()
-        
+
         // Do NOT use for CRYPTOGRAPHY without securely hashing several returned
         // values together, otherwise the generator state can be learned after
         // reading 624 consecutive values.
-        
+
         // Access to 32-bit random numbers
         double rand();                          // real number in [0,1]
         double rand(const double& n);           // real number in [0,n]
@@ -126,24 +128,24 @@ class MTRand
         {
             return rand();    // same as rand()
         }
-        
+
         // Access to 53-bit random numbers (capacity of IEEE double precision)
         double rand53();  // real number in [0,1)
-        
+
         // Access to nonuniform random number distributions
         double randNorm(const double& mean = 0.0, const double& stddeviation = 0.0);
-        
+
         // Re-seeding functions with same behavior as initializers
         void seed(const uint32_t oneSeed);
         void seed(uint32_t* const bigSeed, const uint32_t seedLength = N);
         void seed();
-        
+
         // Saving and loading generator state
         void save(uint32_t* saveArray) const;    // to array of size SAVE
         void load(uint32_t* const loadArray);    // from such array
         friend std::ostream& operator<<(std::ostream& os, const MTRand& mtrand);
         friend std::istream& operator>>(std::istream& is, MTRand& mtrand);
-        
+
     protected:
         void initialize(const uint32_t oneSeed);
         void reload();
@@ -174,7 +176,7 @@ class MTRand
 #ifdef _MSC_VER
 #pragma warning( pop ) // return warning settings to what they were
 #endif
-        
+
         static uint32_t hash(time_t t, clock_t c);
 };
 
@@ -243,13 +245,13 @@ inline uint32_t MTRand::randInt()
 {
     // Pull a 32-bit integer from the generator state
     // Every other access function simply transforms the numbers extracted here
-    
+
     if (left == 0)
     {
         reload();
     }
     --left;
-    
+
     uint32_t s1;
     s1 = *pNext++;
     s1 ^= (s1 >> 11);
@@ -268,7 +270,7 @@ inline uint32_t MTRand::randInt(const uint32_t& n)
     used |= used >> 4;
     used |= used >> 8;
     used |= used >> 16;
-    
+
     // Draw numbers until one is found in [0,n]
     uint32_t i;
     do
@@ -340,7 +342,7 @@ inline void MTRand::seed()
 {
     // Seed the generator with an array from /dev/urandom if available
     // Otherwise use a hash of time() and clock() values
-    
+
     // First try getting an array from /dev/urandom
     FILE* urandom = fopen("/dev/urandom", "rb");
     if (urandom)
@@ -361,7 +363,7 @@ inline void MTRand::seed()
             return;
         }
     }
-    
+
     // Was not successful, so use time() and clock() instead
     seed(hash(time(NULL), clock()));
 }
@@ -400,7 +402,7 @@ inline void MTRand::reload()
         *p = twist(p[M - N], p[0], p[1]);
     }
     *p = twist(p[M - N], p[0], state[0]);
-    
+
     left = N, pNext = state;
 }
 
@@ -410,9 +412,9 @@ inline uint32_t MTRand::hash(time_t t, clock_t c)
     // Get a uint32 from t and c
     // Better than uint32(x) in case x is floating point in [0,1]
     // Based on code by Lawrence Kirby (fred@genesis.demon.co.uk)
-    
+
     static uint32_t differ = 0;  // guarantee time-based seeds will change
-    
+
     uint32_t h1 = 0;
     unsigned char* p = (unsigned char*) &t;
     for (size_t i = 0; i < sizeof(t); ++i)

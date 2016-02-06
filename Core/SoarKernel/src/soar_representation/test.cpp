@@ -1,29 +1,26 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /* =======================================================================
  *                    Test Utilities
  * This file contains various utility routines for tests.
  *
  * =======================================================================
  */
-#include "kernel.h"
+
+#include "test.h"
+
 #include "agent.h"
+#include "condition.h"
 #include "debug.h"
 #include "ebc.h"
 #include "output_manager.h"
-#include "print.h"
-#include "rete.h"
-#include <assert.h>
-#include "agent.h"
-#include "condition.h"
+#include "init_soar.h"
 #include "instantiation.h"
 #include "preference.h"
+#include "print.h"
+#include "rete.h"
 #include "symbol.h"
-#include "test.h"
 #include "working_memory.h"
+
+#include <assert.h>
 
 /* =================================================================
 

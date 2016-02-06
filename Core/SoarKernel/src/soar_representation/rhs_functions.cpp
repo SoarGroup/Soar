@@ -35,23 +35,23 @@
  * =======================================================================
  */
 
-#include "kernel.h"
-#include "init_soar.h"
-#include "decide.h"
-#include "print.h"
-#include "mem.h"
-#include "gsysparam.h"
-#include "xml.h"
-#include "io_link.h"
-#include "soar_TraceNames.h"
+#include "rhs_functions.h"
+
 #include "agent.h"
+#include "decide.h"
+#include "ebc.h"
+#include "gsysparam.h"
+#include "init_soar.h"
+#include "io_link.h"
+#include "mem.h"
+#include "print.h"
 #include "instantiation.h"
 #include "production.h"
-#include "rhs_functions.h"
-#include "rhs_functions_math.h"
-#include "rhs_functions_math.h"
+#include "slot.h"
+#include "soar_TraceNames.h"
 #include "symbol.h"
 #include "working_memory.h"
+#include "xml.h"
 
 #include <map>
 #include <stdlib.h>

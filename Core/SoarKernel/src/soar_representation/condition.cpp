@@ -1,12 +1,3 @@
-#include "agent.h"
-#include "condition.h"
-#include "test.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
 
 /*************************************************************************
  *
@@ -20,7 +11,12 @@
  * =======================================================================
  */
 
+#include "condition.h"
+
+#include "agent.h"
+#include "init_soar.h"
 #include "debug.h"
+#include "test.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).

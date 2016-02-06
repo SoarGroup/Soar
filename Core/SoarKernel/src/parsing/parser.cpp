@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  parser.cpp
@@ -20,11 +13,11 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
 
 #include "parser.h"
+
+#include "debug.h"
 #include "symbol.h"
-#include "kernel.h"
 #include "condition.h"
 #include "production.h"
 #include "mem.h"
@@ -39,9 +32,9 @@
 #include "reinforcement_learning.h"
 #include "semantic_memory.h"
 #include "test.h"
-#include "debug.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 using soar::Lexer;
 using soar::Lexeme;

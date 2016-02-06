@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  rhs_functions_math.cpp
@@ -14,21 +7,20 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
+#include "rhs.h"
 
-#include "kernel.h"
+#include "decide.h"
+#include "lexer.h"
 #include "mem.h"
 #include "print.h"
-#include "lexer.h"
-#include "soar_rand.h"
-#include "decide.h"
-#include <math.h>
-#include "rhs.h"
 #include "rhs_functions.h"
-#include "rhs_functions_math.h"
+#include "soar_rand.h"
+#include "slot.h"
 #include "symbol.h"
 #include "working_memory.h"
 
+#include <math.h>
+#include <stdlib.h>
 
 
 /* --------------------------------------------------------------------

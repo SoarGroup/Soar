@@ -76,7 +76,7 @@ void init_soar_agent(agent* thisAgent)
     init_production_utilities(thisAgent);
     init_built_in_rhs_functions(thisAgent);
     init_rete(thisAgent);
-    init_firer(thisAgent);
+    init_instantiation_pool(thisAgent);
     init_decider(thisAgent);
     init_soar_io(thisAgent);
     init_tracing(thisAgent);

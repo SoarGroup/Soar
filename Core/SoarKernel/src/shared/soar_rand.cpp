@@ -1,5 +1,3 @@
-#include "portability.h"
-
 #include "soar_rand.h"
 
 static MTRand gSoarRand;

@@ -41,12 +41,11 @@
  * - rlyeh ~~ listening to Long Distance Calling / Metulsky Curse Revisited
  */
 
-#include "kernel.h"
+#include "debug_stacktrace.h"
 
 #ifdef DEBUG_MAC_STACKTRACE
 #ifndef WIN32
 
-#include "debug_stacktrace.h"
 #include <cassert>
 #include <cstddef>
 #include <cstdio>

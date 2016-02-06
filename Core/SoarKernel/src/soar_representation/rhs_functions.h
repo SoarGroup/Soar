@@ -31,13 +31,8 @@
 #ifndef RHS_FUNCTIONS_H
 #define RHS_FUNCTIONS_H
 
+#include "kernel.h"
 #include "Export.h"
-
-typedef unsigned char byte;
-typedef struct agent_struct agent;
-typedef struct cons_struct cons;
-typedef cons list;
-typedef struct symbol_struct Symbol;
 
 typedef Symbol* ((*rhs_function_routine)(agent* thisAgent, ::list* args, void* user_data));
 
@@ -63,5 +58,8 @@ extern EXPORT void remove_rhs_function(agent* thisAgent, Symbol* name);
 extern EXPORT rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name);
 extern EXPORT void init_built_in_rhs_functions(agent* thisAgent);
 extern EXPORT void remove_built_in_rhs_functions(agent* thisAgent);
+
+extern void init_built_in_rhs_math_functions(agent* thisAgent);
+extern void remove_built_in_rhs_math_functions(agent* thisAgent);
 
 #endif

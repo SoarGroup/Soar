@@ -21,6 +21,7 @@
 #include "agent.h"
 #include "assert.h"
 #include "condition.h"
+#include "consistency.h"
 #include "debug.h"
 #include "decision_manipulation.h"
 #include "ebc.h"
@@ -36,6 +37,7 @@
 #include "production.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
+#include "rhs.h"
 #include "semantic_memory.h"
 #include "slot.h"
 #include "soar_module.h"
@@ -2173,7 +2175,7 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
-                           soar_module::identity_triple(
+                           identity_triple(
                                thisAgent->ebChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
                                0,
                                cond->data.tests.value_test->identity));
@@ -3449,6 +3451,490 @@ void do_buffered_wm_and_ownership_changes(agent* thisAgent)
     do_buffered_link_changes(thisAgent);
     do_buffered_wm_changes(thisAgent);
     remove_garbage_slots(thisAgent);
+}
+
+
+/* -----------------------------------------------------------------------
+ Do Preference Phase
+
+ This routine is called from the top level to run the preference phase.
+
+ Preference phase follows this sequence:
+
+ (1) Productions are fired for new matches.  As productions are fired,
+ their instantiations are stored on the list newly_created_instantiations,
+ linked via the "next" fields in the instantiation structure.  No
+ preferences are actually asserted yet.
+
+ (2) Instantiations are retracted; their preferences are retracted.
+
+ (3) Preferences (except o-rejects) from newly_created_instantiations
+ are asserted, and these instantiations are removed from the
+ newly_created_instantiations list and moved over to the per-production
+ lists of instantiations of that production.
+
+ (4) Finally, o-rejects are processed.
+
+ Note: Using the O_REJECTS_FIRST flag, step (4) becomes step (2b)
+ ----------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------
+ Assert New Preferences
+
+ This routine scans through newly_created_instantiations, asserting
+ each preference generated except for o-rejects.  It also removes
+ each instantiation from newly_created_instantiations, linking each
+ onto the list of instantiations for that particular production.
+ O-rejects are buffered and handled after everything else.
+
+ Note that some instantiations on newly_created_instantiations are not
+ in the match set--for the initial instantiations of chunks/justifications,
+ if they don't match WM, we have to assert the o-supported preferences
+ and throw away the rest.
+ ----------------------------------------------------------------------- */
+
+void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
+{
+    instantiation* inst, *next_inst;
+    preference* pref, *next_pref;
+    preference* o_rejects;
+
+    o_rejects = NIL;
+
+    /* REW: begin 09.15.96 */
+    if (thisAgent->soar_verbose_flag == true)
+    {
+        printf("\n   in assert_new_preferences:");
+        xml_generate_verbose(thisAgent, "in assert_new_preferences:");
+    }
+    /* REW: end   09.15.96 */
+
+#ifdef O_REJECTS_FIRST
+    {
+
+        //slot *s;
+        //preference *p, *next_p;
+
+        /* Do an initial loop to process o-rejects, then re-loop
+         to process normal preferences.
+         */
+        for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
+                    next_inst)
+        {
+            next_inst = inst->next;
+
+            for (pref = inst->preferences_generated; pref != NIL; pref =
+                        next_pref)
+            {
+                next_pref = pref->inst_next;
+                if ((pref->type == REJECT_PREFERENCE_TYPE)
+                        && (pref->o_supported))
+                {
+                    /* --- o-reject: just put it in the buffer for later --- */
+                    pref->next = o_rejects;
+                    o_rejects = pref;
+                }
+            }
+        }
+
+        if (o_rejects)
+            process_o_rejects_and_deallocate_them(thisAgent, o_rejects,
+                                                  bufdeallo);
+
+        //               s = find_slot(pref->id, pref->attr);
+        //               if (s) {
+        //                   /* --- remove all pref's in the slot that have the same value --- */
+        //                   p = s->all_preferences;
+        //                   while (p) {
+        //                       next_p = p->all_of_slot_next;
+        //                       if (p->value == pref->value)
+        //                           remove_preference_from_tm(thisAgent, p);
+        //                       p = next_p;
+        //                   }
+        //               }
+        ////preference_remove_ref (thisAgent, pref);
+        //           }
+        //       }
+        //   }
+
+    }
+#endif
+
+    for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
+                next_inst)
+    {
+        next_inst = inst->next;
+        if (inst->in_ms)
+        {
+            insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
+        }
+
+        /* REW: begin 09.15.96 */
+        if (thisAgent->soar_verbose_flag == true)
+        {
+            print_with_symbols(thisAgent,
+                               "\n      asserting instantiation: %y\n", inst->prod->name);
+            char buf[256];
+            SNPRINTF(buf, 254, "asserting instantiation: %s",
+                     inst->prod->name->to_string(true));
+            xml_generate_verbose(thisAgent, buf);
+        }
+        /* REW: end   09.15.96 */
+
+        for (pref = inst->preferences_generated; pref != NIL; pref =
+                    next_pref)
+        {
+            next_pref = pref->inst_next;
+            if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
+            {
+#ifndef O_REJECTS_FIRST
+                /* --- o-reject: just put it in the buffer for later --- */
+                pref->next = o_rejects;
+                o_rejects = pref;
+#endif
+
+                /* REW: begin 09.15.96 */
+                /* No knowledge retrieval necessary in Operand2 */
+                /* REW: end   09.15.96 */
+
+            }
+            else if (inst->in_ms || pref->o_supported)
+            {
+                /* --- normal case --- */
+                if (add_preference_to_tm(thisAgent, pref))
+                {
+                    /* REW: begin 09.15.96 */
+                    /* No knowledge retrieval necessary in Operand2 */
+                    /* REW: end   09.15.96 */
+
+                    if (wma_enabled(thisAgent))
+                    {
+                        wma_activate_wmes_in_pref(thisAgent, pref);
+                    }
+                }
+                else
+                {
+                    // NLD: the preference was o-supported, at
+                    // the top state, and was asserting an acceptable
+                    // preference for a WME that was already
+                    // o-supported. hence unnecessary.
+
+                    preference_add_ref(pref);
+                    preference_remove_ref(thisAgent, pref);
+                }
+            }
+            else
+            {
+                /* --- inst. is refracted chunk, and pref. is not o-supported:
+                 remove the preference --- */
+
+                /* --- first splice it out of the clones list--otherwise we might
+                 accidentally deallocate some clone that happens to have refcount==0
+                 just because it hasn't been asserted yet --- */
+
+                if (pref->next_clone)
+                {
+                    pref->next_clone->prev_clone = pref->prev_clone;
+                }
+                if (pref->prev_clone)
+                {
+                    pref->prev_clone->next_clone = pref->next_clone;
+                }
+                pref->next_clone = pref->prev_clone = NIL;
+
+                /* --- now add then remove ref--this should result in deallocation */
+                preference_add_ref(pref);
+                preference_remove_ref(thisAgent, pref);
+            }
+        }
+    }
+#ifndef O_REJECTS_FIRST
+    if (o_rejects)
+    {
+        process_o_rejects_and_deallocate_them(thisAgent, o_rejects, bufdeallo);
+    }
+#endif
+}
+
+/**
+ * New waterfall model:
+ * Returns true if the function create_instantiation should run for this production.
+ * Used to delay firing of matches in the inner preference loop.
+ */
+bool shouldCreateInstantiation(agent* thisAgent, production* prod,
+                               struct token_struct* tok, wme* w)
+{
+    if (thisAgent->active_level == thisAgent->highest_active_level)
+    {
+        return true;
+    }
+
+    if (prod->type == TEMPLATE_PRODUCTION_TYPE)
+    {
+        return true;
+    }
+
+    // Scan RHS identifiers for their levels, don't fire those at or higher than the change level
+    action* a = NIL;
+    for (a = prod->action_list; a != NIL; a = a->next)
+    {
+        if (a->type == FUNCALL_ACTION)
+        {
+            continue;
+        }
+
+        // skip unbound variables
+        if (rhs_value_is_unboundvar(a->id))
+        {
+            continue;
+        }
+
+        // try to make a symbol
+        Symbol* sym = NIL;
+        if (rhs_value_is_symbol(a->id))
+        {
+            sym = rhs_value_to_symbol(a->id);
+        }
+        else
+        {
+            if (rhs_value_is_reteloc(a->id))
+            {
+                sym = get_symbol_from_rete_loc(
+                          rhs_value_to_reteloc_levels_up(a->id),
+                          rhs_value_to_reteloc_field_num(a->id), tok, w);
+            }
+        }
+        assert(sym != NIL);
+
+        // check level for legal change
+        if (sym->id->level <= thisAgent->change_level)
+        {
+            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            {
+                print_with_symbols(thisAgent,
+                                   "*** Waterfall: aborting firing because (%y * *)", sym);
+                print(thisAgent,
+                      " level %d is on or higher (lower int) than change level %d\n",
+                      sym->id->level, thisAgent->change_level);
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+void do_preference_phase(agent* thisAgent)
+{
+    instantiation* inst = 0;
+
+    /* AGR 617/634:  These are 2 bug reports that report the same problem,
+     namely that when 2 chunk firings happen in succession, there is an
+     extra newline printed out.  The simple fix is to monitor
+     get_printer_output_column and see if it's at the beginning of a line
+     or not when we're ready to print a newline.  94.11.14 */
+    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    {
+        if (thisAgent->current_phase == APPLY_PHASE)   /* it's always IE for PROPOSE */
+        {
+            xml_begin_tag(thisAgent, kTagSubphase);
+            xml_att_val(thisAgent, kPhase_Name,
+                        kSubphaseName_FiringProductions);
+            switch (thisAgent->FIRING_TYPE)
+            {
+                case PE_PRODS:
+                    print(thisAgent,
+                          "\t--- Firing Productions (PE) For State At Depth %d ---\n",
+                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                    xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
+                    break;
+                case IE_PRODS:
+                    print(thisAgent,
+                          "\t--- Firing Productions (IE) For State At Depth %d ---\n",
+                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                    xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
+                    break;
+            }
+            std::string levelString;
+            to_string(thisAgent->active_level, levelString);
+            xml_att_val(thisAgent, kPhase_LevelNum, levelString.c_str()); // SBW 8/4/2008: active_level for XML output mode
+            xml_end_tag(thisAgent, kTagSubphase);
+        }
+    }
+
+    if (wma_enabled(thisAgent))
+    {
+        wma_activate_wmes_tested_in_prods(thisAgent);
+    }
+
+    /* New waterfall model: */
+    // Save previous active level for usage on next elaboration cycle.
+    thisAgent->highest_active_level = thisAgent->active_level;
+    thisAgent->highest_active_goal = thisAgent->active_goal;
+
+    thisAgent->change_level = thisAgent->highest_active_level;
+    thisAgent->next_change_level = thisAgent->highest_active_level;
+
+    // Temporary list to buffer deallocation of some preferences until
+    // the inner elaboration loop is over.
+#ifdef USE_MEM_POOL_ALLOCATORS
+    pref_buffer_list bufdeallo = pref_buffer_list(
+                                     soar_module::soar_memory_pool_allocator<preference*>(thisAgent));
+#else
+    pref_buffer_list bufdeallo;
+#endif
+
+    // inner elaboration cycle
+    for (;;)
+    {
+        thisAgent->change_level = thisAgent->next_change_level;
+
+        if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+        {
+            print(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
+                  thisAgent->active_level);
+            if (thisAgent->active_goal)
+            {
+                print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal);
+            }
+            print(thisAgent,  " ---\n");
+        }
+
+        thisAgent->newly_created_instantiations = NIL;
+
+        bool assertionsExist = false;
+        production* prod = 0;
+        struct token_struct* tok = 0;
+        wme* w = 0;
+        bool once = true;
+        while (postpone_assertion(thisAgent, &prod, &tok, &w))
+        {
+            assertionsExist = true;
+
+            if (thisAgent->ebChunker->max_chunks_reached)
+            {
+                consume_last_postponed_assertion(thisAgent);
+                thisAgent->system_halted = true;
+                soar_invoke_callbacks(thisAgent, AFTER_HALT_SOAR_CALLBACK, 0);
+                return;
+            }
+
+            if (prod->type == JUSTIFICATION_PRODUCTION_TYPE)
+            {
+                consume_last_postponed_assertion(thisAgent);
+
+                // don't fire justifications
+                continue;
+            }
+
+            if (shouldCreateInstantiation(thisAgent, prod, tok, w))
+            {
+                once = false;
+                consume_last_postponed_assertion(thisAgent);
+                create_instantiation(thisAgent, prod, tok, w);
+            }
+        }
+
+        // New waterfall model: something fired or is pending to fire at this level,
+        // so this active level becomes the next change level.
+        if (assertionsExist)
+        {
+            if (thisAgent->active_level > thisAgent->next_change_level)
+            {
+                thisAgent->next_change_level = thisAgent->active_level;
+            }
+        }
+
+        // New waterfall model: push unfired matches back on to the assertion lists
+        restore_postponed_assertions(thisAgent);
+
+        assert_new_preferences(thisAgent, bufdeallo);
+
+        // Update accounting
+        thisAgent->inner_e_cycle_count++;
+
+        if (thisAgent->active_goal == NIL)
+        {
+            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            {
+                print(thisAgent,
+                      " inner elaboration loop doesn't have active goal.\n");
+            }
+            break;
+        }
+
+        if (thisAgent->active_goal->id->lower_goal == NIL)
+        {
+            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            {
+                print(thisAgent,  " inner elaboration loop at bottom goal.\n");
+            }
+            break;
+        }
+
+        if (thisAgent->current_phase == APPLY_PHASE)
+        {
+            thisAgent->active_goal = highest_active_goal_apply(thisAgent,
+                                     thisAgent->active_goal->id->lower_goal, true);
+        }
+        else
+        {
+            assert(thisAgent->current_phase == PROPOSE_PHASE);
+            thisAgent->active_goal = highest_active_goal_propose(thisAgent,
+                                     thisAgent->active_goal->id->lower_goal, true);
+        }
+
+        if (thisAgent->active_goal != NIL)
+        {
+            thisAgent->active_level = thisAgent->active_goal->id->level;
+        }
+        else
+        {
+            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            {
+                print(thisAgent,
+                      " inner elaboration loop finished but not at quiescence.\n");
+            }
+            break;
+        }
+    } // end inner elaboration loop
+
+    // Deallocate preferences delayed during inner elaboration loop.
+    for (pref_buffer_list::iterator iter = bufdeallo.begin();
+            iter != bufdeallo.end(); ++iter)
+    {
+        preference_remove_ref(thisAgent, *iter);
+    }
+
+    // Restore previous active level
+    thisAgent->active_level = thisAgent->highest_active_level;
+    thisAgent->active_goal = thisAgent->highest_active_goal;
+    /* End new waterfall model */
+
+    while (get_next_retraction(thisAgent, &inst))
+    {
+        retract_instantiation(thisAgent, inst);
+    }
+
+    /* REW: begin 08.20.97 */
+    /*  In Waterfall, if there are nil goal retractions, then we want to
+     retract them as well, even though they are not associated with any
+     particular goal (because their goal has been deleted). The
+     functionality of this separate routine could have been easily
+     combined in get_next_retraction but I wanted to highlight the
+     distinction between regualr retractions (those that can be
+     mapped onto a goal) and nil goal retractions that require a
+     special data strucutre (because they don't appear on any goal)
+     REW.  */
+
+    if (thisAgent->nil_goal_retractions)
+    {
+        while (get_next_nil_goal_retraction(thisAgent, &inst))
+        {
+            retract_instantiation(thisAgent, inst);
+        }
+    }
+    /* REW: end   08.20.97 */
+
 }
 
 void do_working_memory_phase(agent* thisAgent)

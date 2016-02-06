@@ -1,8 +1,33 @@
+#include "rete.h"
 
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
+#include "agent.h"
+#include "assert.h"
+#include "callback.h"
+#include "condition.h"
+#include "debug.h"
+#include "decide.h"
+#include "ebc.h"
+#include "episodic_memory.h"
+#include "init_soar.h"
+#include "instantiation.h"
+#include "lexer.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "reinforcement_learning.h"
+#include "rhs_functions.h"
+#include "rhs.h"
+#include "semantic_memory.h"
+#include "slot.h"
+#include "soar_TraceNames.h"
+#include "symbol.h"
+#include "test.h"
+#include "working_memory.h"
+#include "xml.h"
+
+#include <sstream>
+#include <stdlib.h>
 
 /*************************************************************************
  *
@@ -84,35 +109,6 @@
    19:  Rete Initialization
 
 ====================================================================== */
-
-#include "rete.h"
-
-#include "agent.h"
-#include "assert.h"
-#include "condition.h"
-#include "debug.h"
-#include "decide.h"
-#include "ebc.h"
-#include "episodic_memory.h"
-#include "init_soar.h"
-#include "instantiation.h"
-#include "lexer.h"
-#include "mem.h"
-#include "output_manager.h"
-#include "print.h"
-#include "production.h"
-#include "reinforcement_learning.h"
-#include "rhs_functions.h"
-#include "rhs.h"
-#include "semantic_memory.h"
-#include "soar_TraceNames.h"
-#include "symbol.h"
-#include "test.h"
-#include "working_memory.h"
-#include "xml.h"
-
-#include <sstream>
-#include <stdlib.h>
 
 /* ----------- handle inter-switch dependencies ----------- */
 

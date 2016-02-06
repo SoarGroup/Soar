@@ -14,20 +14,10 @@
 #define OUTPUT_MANAGER_H_
 
 #include "kernel.h"
+
 #include "debug.h"
 #include "lexer.h"
 #include "soar_db.h"
-
-typedef char* rhs_value;
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-typedef struct production_struct production;
-typedef struct saved_test_struct saved_test;
-typedef char varnames;
-typedef struct node_varnames_struct node_varnames;
-typedef struct identity_struct identity_info;
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000
@@ -41,20 +31,6 @@ typedef struct trace_mode_info_struct
         char* prefix;
         bool enabled;
 } trace_mode_info;
-
-namespace sml
-{
-    class Kernel;
-    class Agent;
-}
-
-namespace cli
-{
-    class CommandLineInterface;
-}
-
-class Soar_Instance;
-class Output_Manager;
 
 inline size_t om_strncpy(char* s1, const char* s2, size_t n, size_t num_chars) {
     if ( n > 0) {

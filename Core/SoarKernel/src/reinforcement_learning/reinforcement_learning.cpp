@@ -1,11 +1,3 @@
-#include "ebc.h"
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  reinforcement_learning.cpp
@@ -15,13 +7,8 @@
  * =======================================================================
  */
 
-#include <cstdlib>
-#include <cmath>
-#include <vector>
-#include <fstream>
-#include <sstream>
-
 #include "agent.h"
+#include "ebc.h"
 #include "reinforcement_learning.h"
 #include "production.h"
 #include "rhs.h"
@@ -38,7 +25,11 @@
 #include "condition.h"
 #include "debug.h"
 
-extern Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
+#include <cstdlib>
+#include <cmath>
+#include <vector>
+#include <fstream>
+#include <sstream>
 
 /////////////////////////////////////////////////////
 // Parameters

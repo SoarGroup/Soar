@@ -14,12 +14,11 @@
  *
  * =======================================================================
  */
-#include "kernel.h"
+#include "production.h"
+#include "production_reorder.h"
 
 #include "agent.h"
 #include "condition.h"
-#include "production.h"
-#include "production_reorder.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
@@ -1489,7 +1488,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
     if (ungrounded_syms && ungrounded_syms->size() > 0)
     {
         print(thisAgent,
-            "\nWarning:  In rule %s,\n", thisAgent->name_of_production_being_reordered);
+            "\n\nWarning:  In rule %s,\n", thisAgent->name_of_production_being_reordered);
         print(thisAgent,
             "          The following identifiers are not connected to any goal state or \n"
             "          impasse, either directly in a condition or indirectly through other\n"
@@ -1505,7 +1504,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
 
         // XML geneneration
         growable_string gs = make_blank_growable_string(thisAgent);
-        add_to_growable_string(thisAgent, &gs, "Warning:  In rule ");
+        add_to_growable_string(thisAgent, &gs, "\nWarning:  In rule ");
         add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
         add_to_growable_string(thisAgent, &gs,
             ",\n          The following identifiers are not connected to any goal state or \n"

@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  mem.cpp
@@ -17,16 +10,15 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
 
 #include "mem.h"
+
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"
 
 #include <assert.h>
-
-
+#include <stdlib.h>
 
 /* ====================================================================
 

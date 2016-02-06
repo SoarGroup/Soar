@@ -13,21 +13,7 @@
 #ifndef EXPLORATION_H
 #define EXPLORATION_H
 
-typedef struct agent_struct agent;
-typedef struct slot_struct slot;
-typedef struct preference_struct preference;
-
-
-//////////////////////////////////////////////////////////
-// Exploration constants
-//////////////////////////////////////////////////////////
-#define EXPLORATION_REDUCTION_EXPONENTIAL   0
-#define EXPLORATION_REDUCTION_LINEAR        1
-#define EXPLORATION_REDUCTIONS              2 // set as greatest reduction + 1
-
-#define EXPLORATION_PARAM_EPSILON           0
-#define EXPLORATION_PARAM_TEMPERATURE       1
-#define EXPLORATION_PARAMS                  2 // set as greatest param + 1
+#include "kernel.h"
 
 //////////////////////////////////////////////////////////
 // Exploration Types

@@ -1,5 +1,3 @@
-#include "portability.h"
-
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
@@ -21,12 +19,10 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
-
 #include "trace.h"
+
 #include "mem.h"
 #include "production.h"
-#include "kernel.h"
 #include "lexer.h"
 #include "symbol.h"
 #include "agent.h"
@@ -40,6 +36,7 @@
 #include "output_manager.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 using namespace soar_TraceNames;
 

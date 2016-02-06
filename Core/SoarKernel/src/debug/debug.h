@@ -26,16 +26,13 @@
 //#define DEBUG_OUTPUT_ON
 
 #include "kernel.h"
+
 #include "soar_db.h"
 #include "soar_module.h"
 #include "Export.h"
 #include "output_manager.h"
 
 #include <string>
-
-typedef struct test_struct test_info;
-typedef test_info* test;
-typedef struct trace_mode_info_struct trace_mode_info;
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 /* --------------------------------------------------------------------------*/

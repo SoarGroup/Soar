@@ -10,71 +10,88 @@
 
 typedef struct action_struct action;
 typedef struct agent_struct agent;
+typedef struct backtrace_struct backtrace_str;
 typedef unsigned char byte;
 typedef struct chunk_cond_struct chunk_cond;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct dl_cons_struct dl_cons;
+typedef int64_t epmem_node_id;
+typedef uint64_t epmem_hash_id;
+typedef uint64_t epmem_time_id;
+typedef struct exploration_parameter_struct exploration_parameter;
 typedef signed short goal_stack_level;
+typedef struct hash_table_struct hash_table;
 typedef struct instantiation_struct instantiation;
+typedef struct io_wme_struct io_wme;
+typedef struct memory_pool_struct memory_pool;
 typedef struct ms_change_struct ms_change;
+typedef byte ms_trace_type;
+typedef struct multi_attributes_struct multi_attribute;
 typedef struct node_varnames_struct node_varnames;
+typedef struct pi_struct parent_inst;
 typedef struct preference_struct preference;
 typedef struct production_struct production;
 typedef struct rete_node_struct rete_node;
 typedef unsigned short rete_node_level;
+typedef struct rete_test_struct rete_test;
+typedef struct rhs_function_struct rhs_function;
 typedef char* rhs_value;
+typedef struct saved_test_struct saved_test;
+typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
 typedef struct symbol_struct Symbol;
 typedef uint64_t tc_number;
 typedef struct test_struct test_info;
 typedef test_info* test;
+typedef struct trace_mode_info_struct trace_mode_info;
+typedef char varnames;
+typedef uint64_t wma_d_cycle;
+typedef struct wma_decay_element_struct wma_decay_element;
+typedef uint64_t wma_reference;
 typedef struct wme_struct wme;
+typedef byte wme_trace_type;
 
 class Output_Manager;
 class Explanation_Logger;
+class Soar_Instance;
+class AgentOutput_Info;
+class debug_param_container;
+class Output_Manager;
+class Explanation_Based_Chunker;
+class Memory_Manager;
+class wma_param_container;
+class wma_stat_container;
+class wma_timer_container;
+class rl_param_container;
+class epmem_param_container;
+class epmem_stat_container;
+class epmem_timer_container;
+class epmem_common_statement_container;
+class epmem_graph_statement_container;
+class rl_stat_container;
 
-namespace soar_module
+namespace sml
 {
-    typedef struct symbol_triple_struct
-    {
-        Symbol* id;
-        Symbol* attr;
-        Symbol* value;
+    class Kernel;
+    class Agent;
+}
 
-        symbol_triple_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-    } symbol_triple;
+namespace soar_module {
+    class sqlite_database;
+}
+namespace soar {
+    class Lexer;
+    class Lexeme;
+}
 
-    typedef struct test_triple_struct
-    {
-        test id;
-        test attr;
-        test value;
+namespace cli
+{
+    class CommandLineInterface;
 
-        test_triple_struct(test new_id = NULL, test new_attr = NULL, test new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-    } test_triple;
-
-    typedef struct identity_triple_struct
-    {
-        uint64_t id;
-        uint64_t attr;
-        uint64_t value;
-
-        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0): id(new_id), attr(new_attr), value(new_value) {}
-    } identity_triple;
-
-    typedef struct rhs_triple_struct
-    {
-            rhs_value id;
-            rhs_value attr;
-            rhs_value value;
-
-            rhs_triple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-    } rhs_triple;
 }
 
 extern void print(agent* thisAgent, const char* format, ...);
-
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

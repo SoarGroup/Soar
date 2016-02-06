@@ -10,17 +10,16 @@
  *               Utility Routines for Actions and RHS Values
  *
  * ================================================================= */
-#include "ebc.h"
-#include "agent.h"
-#include "production.h"
 #include "rhs.h"
-#include "test.h"
-#include "portability.h"
-#include <stdlib.h>
 
-#include "kernel.h"
-#include "print.h"
+#include "agent.h"
 #include "debug.h"
+#include "ebc.h"
+#include "print.h"
+#include "production.h"
+#include "test.h"
+
+#include <stdlib.h>
 
 test var_test_bound_in_reconstructed_conds(
     agent* thisAgent,

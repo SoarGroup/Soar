@@ -16,7 +16,7 @@
 #ifndef CONSISTENCY_H
 #define CONSISTENCY_H
 
-#include "forward.h"
+#include "kernel.h"
 
 /* For information on the consistency check routines */
 /* #define DEBUG_CONSISTENCY_CHECK    */

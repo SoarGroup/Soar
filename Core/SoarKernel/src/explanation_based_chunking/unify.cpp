@@ -312,8 +312,8 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 }
 
 void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
-                                                         const soar_module::identity_triple o_ids_to_replace,
-                                                         const soar_module::rhs_triple rhs_funcs)
+                                                         const identity_triple o_ids_to_replace,
+                                                         const rhs_triple rhs_funcs)
 {
     if (!m_learning_on) return;
     test lId = 0, lAttr = 0, lValue = 0;

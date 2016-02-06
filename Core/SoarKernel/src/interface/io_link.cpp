@@ -1,10 +1,3 @@
-#include "portability.h"
-
-/*************************************************************************
- * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*************************************************************************
  *
  *  file:  io.cpp
@@ -31,41 +24,29 @@
  * =======================================================================
  */
 
+#include "io_link.h"
 
-/* ==================================================================
-                         I/O Code for Soar 6
-
-         General Soar I/O System Routines, and Text I/O Routines
-
-   See comments in soarkernel.h for more information.
-   ================================================================== */
-
-#include <stdlib.h>
-
-#include "callback.h"
 #include "agent.h"
-#include "print.h"
-#include "init_soar.h"
-
-#include "working_memory.h"
-#include "symbol.h"
+#include "callback.h"
 #include "decide.h"
-#include "production.h"
+#include "init_soar.h"
 #include "lexer.h"
-#include "xml.h"
+#include "print.h"
+#include "production.h"
+#include "slot.h"
 #include "soar_TraceNames.h"
-
+#include "symbol.h"
+#include "working_memory.h"
 #include "working_memory_activation.h"
-
-#include <ctype.h>
+#include "xml.h"
 
 #include <assert.h>
-#include "io_link.h"
+#include <ctype.h>
+#include <stdlib.h>
 
 using namespace soar_TraceNames;
 
-
-extern void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
+void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
 
 /* ====================================================================
                   Adding New Input and Output Functions

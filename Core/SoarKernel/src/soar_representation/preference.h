@@ -38,13 +38,7 @@
 #define PREFMEM_H
 
 #include "kernel.h"
-#include "working_memory_activation.h"
-
-typedef unsigned char byte;
-typedef struct agent_struct agent;
-typedef struct preference_struct preference;
-typedef struct symbol_struct Symbol;
-typedef char* rhs_value;
+#include "stl_typedefs.h"
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
@@ -138,8 +132,8 @@ typedef struct preference_struct
      *    used by the chunker to match up rhs symbols with the correct
      *    lhs one, since the instantiated value is not sufficient. -- */
 
-    soar_module::identity_triple    o_ids;
-    soar_module::rhs_triple         rhs_funcs;
+    identity_triple    o_ids;
+    rhs_triple         rhs_funcs;
 
     struct slot_struct*             slot;
 
@@ -170,8 +164,8 @@ typedef struct preference_struct
 } preference;
 
 extern preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const soar_module::identity_triple o_ids = soar_module::identity_triple(0, 0, 0),
-                                   const soar_module::rhs_triple rhs_funcs = soar_module::rhs_triple(NULL, NULL, NULL));
+                                   const identity_triple o_ids = identity_triple(0, 0, 0),
+                                   const rhs_triple rhs_funcs = rhs_triple(NULL, NULL, NULL));
 extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
 inline void preference_add_ref(preference* p) { (p)->reference_count++;}
