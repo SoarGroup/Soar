@@ -492,6 +492,24 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
 
     spreading_calc_1 = new smem_timer("spreading_calc_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_1);
+    spreading_calc_1_1 = new smem_timer("spreading_calc_1_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_1);
+    spreading_calc_1_2 = new smem_timer("spreading_calc_1_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_2);
+    spreading_calc_1_3 = new smem_timer("spreading_calc_1_3", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3);
+    spreading_calc_1_3_1 = new smem_timer("spreading_calc_1_3_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3_1);
+    spreading_calc_1_3_2 = new smem_timer("spreading_calc_1_3_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3_2);
+    spreading_calc_1_3_3 = new smem_timer("spreading_calc_1_3_3", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3_3);
+    spreading_calc_1_3_4 = new smem_timer("spreading_calc_1_3_4", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3_4);
+    spreading_calc_1_3_5 = new smem_timer("spreading_calc_1_3_5", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_3_5);
+    spreading_calc_1_4 = new smem_timer("spreading_calc_1_4", thisAgent, soar_module::timer::four);
+    add(spreading_calc_1_4);
 
     spreading_calc_2 = new smem_timer("spreading_calc_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2);
@@ -650,7 +668,7 @@ void smem_statement_container::create_indices()
      * The indices below are all for spreading.
      * */
     //This is to find the trajectories starting from a given LTI.
-    //add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
+    add_structure("CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
     //Keep track of invalid trajectories.
     //add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
     //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
@@ -676,8 +694,8 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
     add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
     add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
-    add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");
+    //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
+    add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source,lti_id,num_appearances,num_appearances_i_j)");
     add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
@@ -817,13 +835,13 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     
     //
     
-    web_attr_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END as activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations w WHERE attribute_s_id=? LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id = smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
+    web_attr_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id1, CASE WHEN activation_value IS NULL THEN activation_value_aug ELSE activation_value END as activation_val FROM ((SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? ORDER BY activation_value_aug DESC) LEFT OUTER JOIN smem_lti ON lti_id1 = smem_lti.lti_id AND activation_value_aug != smem_lti.activation_value) ORDER BY activation_val DESC");
     add(web_attr_all);
     
-    web_const_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END AS activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id=smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
+    web_const_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id1, CASE WHEN activation_value IS NULL THEN activation_value_aug ELSE activation_value END AS activation_val FROM ((SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value_aug DESC) LEFT OUTER JOIN smem_lti ON lti_id1=smem_lti.lti_id AND activation_value_aug != smem_lti.activation_value) ORDER BY activation_val DESC");
     add(web_const_all);
     
-    web_lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, CASE WHEN activation_value_lti IS NULL THEN activation_value_aug ELSE activation_value_lti END AS activation_val FROM (SELECT lti_id, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? LEFT OUTER JOIN SELECT lti_id, activation_value AS activation_value_lti FROM smem_lti ON smem_augmentations.lti_id=smem_lti.lti_id AND activation_value_aug != activation_value_lti) ORDER BY activation_val DESC");
+    web_lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id1, CASE WHEN activation_value IS NULL THEN activation_value_aug ELSE activation_value END AS activation_val FROM ((SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value_aug DESC) LEFT OUTER JOIN smem_lti ON lti_id1=smem_lti.lti_id AND activation_value_aug != smem_lti.activation_value) ORDER BY activation_val DESC");
     add(web_lti_all);
     
     //
@@ -1636,7 +1654,7 @@ void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id,
      * current path that has been traversed. As such, I need a queue of lists.
      */
     // Start with the given lti_id
-
+    bool ever_added = false;
     smem_lti_id current_lti;
     uint64_t depth_limit = (uint64_t) thisAgent->smem_params->spreading_depth_limit->get_value();
     uint64_t limit = (uint64_t) thisAgent->smem_params->spreading_limit->get_value();
@@ -1706,6 +1724,7 @@ void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id,
                     thisAgent->smem_stmts->trajectory_add->bind_int(++depth, 0);
                 }
                 thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
+                ever_added = true;
                 ++count;
 
                 //If there's room for more, we add it so that we can continue building.
@@ -1731,6 +1750,22 @@ void trajectory_construction_deterministic(agent* thisAgent, smem_lti_id lti_id,
     {
         delete ((lti_traversal_queue.front()));
         lti_traversal_queue.pop();
+    }
+    if (!ever_added)
+    {
+        thisAgent->smem_stmts->trajectory_add->bind_int(1,lti_id);
+        thisAgent->smem_stmts->trajectory_add->bind_int(2,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(3,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(4,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(5,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(6,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(7,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(8,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(9,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(10,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(11,0);
+        thisAgent->smem_stmts->trajectory_add->bind_int(12,1);
+        thisAgent->smem_stmts->trajectory_add->execute(soar_module::op_reinit);
     }
 }
 
@@ -1865,11 +1900,11 @@ void trajectory_construction_actr(agent* thisAgent, std::list<smem_lti_id>& traj
 void smem_delete_trajectory_indices(agent* thisAgent)
 {
     soar_module::sqlite_statement* trajectory_index_delete;
-//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-//            "DROP INDEX trajectory_lti");
-//    trajectory_index_delete->prepare();
-//    trajectory_index_delete->execute(soar_module::op_reinit);
-//    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "DROP INDEX trajectory_lti");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
 //    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
 //            "DROP INDEX trajectory_valid");
 //    trajectory_index_delete->prepare();
@@ -1980,11 +2015,11 @@ void smem_delete_trajectory_indices(agent* thisAgent)
 void smem_create_trajectory_indices(agent* thisAgent)
 {
     soar_module::sqlite_statement* trajectory_index_delete;
-//    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-//            "CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
-//    trajectory_index_delete->prepare();
-//    trajectory_index_delete->execute(soar_module::op_reinit);
-//    delete trajectory_index_delete;
+    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
+            "CREATE INDEX trajectory_lti ON smem_likelihood_trajectories (lti_id,valid_bit)");
+    trajectory_index_delete->prepare();
+    trajectory_index_delete->execute(soar_module::op_reinit);
+    delete trajectory_index_delete;
 //    trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
 //            "CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
 //    trajectory_index_delete->prepare();
@@ -2795,6 +2830,9 @@ void smem_calc_spread(agent* thisAgent)
             while (calc_spread->execute() == soar_module::row && calc_spread->column_double(2))
             {// Here, I need to get the previous activation of the lti_id in question and update that.
                 //First, I need to get the existing info for this lti_id.
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_1->start();
+    ////////////////////////////////////////////////////////////////////////////
                 lti_id = calc_spread->column_int(0);
 
                 thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
@@ -2859,6 +2897,9 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
 
                 thisAgent->smem_stmts->act_lti_get->reinitialize();
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
             }
             calc_spread->reinitialize();
 
@@ -2870,7 +2911,9 @@ void smem_calc_spread(agent* thisAgent)
 
         }
     }
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_2->start();
+    ////////////////////////////////////////////////////////////////////////////
 
     //Now, delete old entries.
     /*soar_module::sqlite_statement* delete_old_context = new soar_module::sqlite_statement(thisAgent->smem_db,
@@ -2911,10 +2954,15 @@ void smem_calc_spread(agent* thisAgent)
         add_new_context->execute(soar_module::op_reinit);
     }
     //delete add_new_context;
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
     //num_appearances is number of things inside the fingerprint of lti_j.
     //num_appearances_i_j is number of times i occurs in fingerprint of lti_j.
     //I may need to make some walks here.
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
     {
         //One can put off doing the spreading traversal until it is needed. That's what !=precalculate means.
@@ -2924,17 +2972,33 @@ void smem_calc_spread(agent* thisAgent)
         {//One can do random walks or one can simulate them by doing a breadth-first traversal with coefficients. This is the latter.
             for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
             {//We keep track of old walks. If we haven't changed smem, no need to recalculate.
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_1->start();
+    ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->trajectory_check_invalid->bind_int(1,*it);
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
                 bool was_invalid = (thisAgent->smem_stmts->trajectory_check_invalid->execute() == soar_module::row);
+                    assert(!was_invalid);
                 //If the previous trajectory is no longer valid because of a change to memory or we don't have a trajectory, we might need to remove
                 //the old one.
-                if (was_invalid || thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row)
+                bool no_trajectory = thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row;
+                    assert(!no_trajectory);
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
+                if (was_invalid || no_trajectory)
                 {
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_2->start();
+    ////////////////////////////////////////////////////////////////////////////
                     trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
                     //We also need to make a new one.
-                
+                ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_3->start();
+    ////////////////////////////////////////////////////////////////////////////
                     if (was_invalid)
                     {
                         thisAgent->smem_stmts->likelihood_cond_count_remove->bind_int(1,(*it));
@@ -2942,7 +3006,12 @@ void smem_calc_spread(agent* thisAgent)
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*it));
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
                     }
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_4->start();
+    ////////////////////////////////////////////////////////////////////////////
                     double p1 = thisAgent->smem_params->continue_probability->get_value();
                     for (int i = 1; i < 11; i++)
                     {
@@ -2951,9 +3020,17 @@ void smem_calc_spread(agent* thisAgent)
                         p1 = p1 * p1;
                     }
                     thisAgent->smem_stmts->likelihood_cond_count_insert_deterministic->execute(soar_module::op_reinit);
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_5->start();
+    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_5->stop();
+    ////////////////////////////////////////////////////////////////////////////
                 }
                 thisAgent->smem_stmts->trajectory_check_invalid->reinitialize();
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
@@ -2963,29 +3040,52 @@ void smem_calc_spread(agent* thisAgent)
         {//Random walks can be handled a little differently.
             for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
             {//We keep track of old walks. If we havent changed smem, no need to recalculate.
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_1->start();
+    ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
                 count = 0;
                 while(thisAgent->smem_stmts->trajectory_get->execute() == soar_module::row)
                 {
                     count++;
                 }
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
                 if (count < thisAgent->smem_params->number_trajectories->get_value())
                 {//Instead of needing to recalculate the whole thing, we can just do the random walks that were actually invalidated,
                     //which could perhaps be faster.
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_2->start();
+    ////////////////////////////////////////////////////////////////////////////
                     for (int i = 0; i < thisAgent->smem_params->number_trajectories->get_value()-count; ++i)
                     {
                         std::list<smem_lti_id> trajectory;
                         trajectory.push_back(*it);
                         trajectory_construction(thisAgent,trajectory,lti_trajectories,thisAgent->smem_params->spreading_depth_limit->get_value());
                     }
-                
+                ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_3->start();
+    ////////////////////////////////////////////////////////////////////////////
                     for (int i = 1; i < 11; i++)
                     {
                         thisAgent->smem_stmts->likelihood_cond_count_insert->bind_int(i,(*it));
                     }
                     thisAgent->smem_stmts->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_4->start();
+    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->bind_int(1,(*it));
                     thisAgent->smem_stmts->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
                 }
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
             }
@@ -2996,7 +3096,12 @@ void smem_calc_spread(agent* thisAgent)
         }
     }
     soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
-
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_4->start();
+    ////////////////////////////////////////////////////////////////////////////
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {//Now we add the walks/traversals we've done.
         add_fingerprint->bind_int(1,(*it));
@@ -3008,6 +3113,9 @@ void smem_calc_spread(agent* thisAgent)
         //This is not the default behavior.
         thisAgent->smem_max_cycle++;
     }
+////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_1_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_1->stop();
     ////////////////////////////////////////////////////////////////////////////
