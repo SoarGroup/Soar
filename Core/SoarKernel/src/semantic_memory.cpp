@@ -2978,11 +2978,11 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_stmts->trajectory_check_invalid->bind_int(1,*it);
                 thisAgent->smem_stmts->trajectory_get->bind_int(1,*it);
                 bool was_invalid = (thisAgent->smem_stmts->trajectory_check_invalid->execute() == soar_module::row);
-                    assert(!was_invalid);
+                    //assert(!was_invalid);
                 //If the previous trajectory is no longer valid because of a change to memory or we don't have a trajectory, we might need to remove
                 //the old one.
                 bool no_trajectory = thisAgent->smem_stmts->trajectory_get->execute() != soar_module::row;
-                    assert(!no_trajectory);
+                    //assert(!no_trajectory);
 ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_1_3_1->stop();
     ////////////////////////////////////////////////////////////////////////////
