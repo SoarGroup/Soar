@@ -319,6 +319,10 @@ class Output_Manager
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
 
+        /* A single function to print all pre-formatted Soar error messages.  Added
+         * to make other code cleaner and easier to parse */
+        void display_soar_error(agent* thisAgent, SoarError pErrorType, int64_t pSysParam = 0);
+
         /* -- Should be moved elsewhere -- */
         void debug_find_and_print_sym(char* find_string);
         char* NULL_SYM_STR;

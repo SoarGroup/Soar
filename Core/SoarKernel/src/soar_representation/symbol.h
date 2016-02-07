@@ -434,40 +434,40 @@ inline strSymbol*    strSym(Symbol* sym)
 
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
-extern void init_symbol_tables(agent* thisAgent);
-extern void create_predefined_symbols(agent* thisAgent);
-extern void release_predefined_symbols(agent* thisAgent);
-extern void print_internal_symbols(agent* thisAgent);
+void init_symbol_tables(agent* thisAgent);
+void create_predefined_symbols(agent* thisAgent);
+void release_predefined_symbols(agent* thisAgent);
+void print_internal_symbols(agent* thisAgent);
 
 #ifndef SOAR_RELEASE_VERSION
-    extern void debug_store_refcount(Symbol* sym, bool isAdd);
+    void debug_store_refcount(Symbol* sym, bool isAdd);
 #endif
 
-extern EXPORT Symbol* make_variable(agent* thisAgent, const char* name);
-extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
-extern EXPORT Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
+EXPORT Symbol* make_variable(agent* thisAgent, const char* name);
+EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
+EXPORT Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
 extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
 
-extern EXPORT void deallocate_symbol(agent* thisAgent, Symbol* sym);
-extern EXPORT void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons* sym_list);
+EXPORT void deallocate_symbol(agent* thisAgent, Symbol*& sym);
+EXPORT void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons*& sym_list);
 ::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
 
-extern EXPORT Symbol* find_variable(agent* thisAgent, const char* name);
-extern EXPORT Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
-extern EXPORT Symbol* find_str_constant(agent* thisAgent, const char* name);
-extern EXPORT Symbol* find_int_constant(agent* thisAgent, int64_t value);
-extern EXPORT Symbol* find_float_constant(agent* thisAgent, double value);
+EXPORT Symbol* find_variable(agent* thisAgent, const char* name);
+EXPORT Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
+EXPORT Symbol* find_str_constant(agent* thisAgent, const char* name);
+EXPORT Symbol* find_int_constant(agent* thisAgent, int64_t value);
+EXPORT Symbol* find_float_constant(agent* thisAgent, double value);
 
-extern bool reset_id_counters(agent* thisAgent);
-extern void reset_id_and_variable_tc_numbers(agent* thisAgent);
-extern void reset_variable_gensym_numbers(agent* thisAgent);
+bool reset_id_counters(agent* thisAgent);
+void reset_id_and_variable_tc_numbers(agent* thisAgent);
+void reset_variable_gensym_numbers(agent* thisAgent);
 
 char first_letter_from_symbol(Symbol* sym);
 
 /* -- This function returns a numeric value from a symbol -- */
-extern double get_number_from_symbol(Symbol* sym);
+double get_number_from_symbol(Symbol* sym);
 
 /* -- Reference count functions for symbols
  *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
@@ -478,7 +478,7 @@ extern double get_number_from_symbol(Symbol* sym);
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 #include <string>
 #include <iostream>
-extern std::string get_stacktrace(const char* prefix);
+std::string get_stacktrace(const char* prefix);
 #endif
 
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY

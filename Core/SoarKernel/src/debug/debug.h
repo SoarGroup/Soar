@@ -90,7 +90,6 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
     #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->ebChunker->print_o_id_to_ovar_debug_map (mode)
 
 #else
-
     #define dprint(mode, format, ...) ((void)0)
     #define dprint_set_indents(mode, ...) ((void)0)
     #define dprint_set_default_test_format(mode, ...) ((void)0)

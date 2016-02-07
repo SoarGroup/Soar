@@ -74,6 +74,13 @@ enum top_level_phase { INPUT_PHASE = 0,
                        NUM_PHASE_TYPES
                      };
 
+enum SoarError {
+    ebc_error_max_chunks,
+    ebc_error_invalid_chunk,
+    ebc_error_invalid_justification,
+    ebc_error_no_conditions,
+};
+
 enum EBCTraceType {
     ebc_actual_trace,
     ebc_match_trace,

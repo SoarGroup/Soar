@@ -111,7 +111,7 @@ inline void add_cond_to_lists(condition** c, condition** prev, condition** first
     *prev = *c;
 }
 
-void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pCondList, condition** pInstCondList, symbol_list* pUnconnected_LTIs, uint64_t pInstID)
+void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* pUnconnected_LTIs, uint64_t pInstID)
 {
 
     test ltiEqTest = NULL, ltiMatchEqTest = NULL;
@@ -124,7 +124,7 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pC
     /* Generate connecting wme's for each unconnected LTI and add to a set */
     for (auto it = pUnconnected_LTIs->begin(); it != pUnconnected_LTIs->end(); it++)
     {
-        lCond = find_lti_that_matched_var(*pCondList, (*it));
+        lCond = find_lti_that_matched_var(m_vrblz_top, (*it));
         ltiEqTest = lCond->data.tests.id_test->eq_test;
         ltiMatchEqTest = lCond->counterpart->data.tests.id_test->eq_test;
         wme_list* l_WMEPath = find_wmes_to_ground_lti(ltiMatchEqTest->data.referent);
@@ -137,7 +137,7 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pC
     }
 
     /* Create conditions based on set of wme's compiled */
-    condition* new_cond, *new_inst_cond, *prev_cond = *pCondList, *first_cond = *pCondList;
+    condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
     while (prev_cond->next != NULL)
         prev_cond = prev_cond->next;
 
@@ -211,10 +211,13 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pC
         first_cond->next = NIL;
     }
 
-    *pCondList = first_cond;
-    *pInstCondList = first_cond->counterpart;
+    m_vrblz_top = first_cond;
+    m_inst_top = first_cond->counterpart;
+    prev_cond = m_inst_top;
+    while (prev_cond->next != NULL) prev_cond = prev_cond->next;
+    m_inst_bottom = prev_cond;
 
-    dprint(DT_GROUND_LTI, "Final conditions: \n%1\n%1", *pCondList, *pInstCondList);
+    dprint(DT_GROUND_LTI, "Final conditions: \n%1\n%1", m_vrblz_top, m_inst_top);
 }
 
 
@@ -224,9 +227,7 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(condition** pC
 
 bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   pProdType,
                                                            uint64_t         pInstID,
-                                                           condition**      lhs_top,
                                                            action**         rhs_top,
-                                                           condition**      inst_top,
                                                            bool             reorder_nccs)
 {
     /* This is called for justifications even though it does nothing because in the future
@@ -241,12 +242,12 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   pPro
     {
         symbol_list* unconnected_syms = new symbol_list();
 
-        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, lhs_top, rhs_top, reorder_nccs, true, unconnected_syms);
+        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, rhs_top, reorder_nccs, true, unconnected_syms);
 
         if (lFailureType == ebc_failed_unconnected_conditions)
         {
-            generate_conditions_to_ground_lti(lhs_top, inst_top, unconnected_syms, pInstID);
-            return reorder_and_validate_chunk(pProdType, pInstID, lhs_top, rhs_top, inst_top, reorder_nccs);
+            generate_conditions_to_ground_lti(unconnected_syms, pInstID);
+            return reorder_and_validate_chunk(pProdType, pInstID, rhs_top, reorder_nccs);
         }
         delete unconnected_syms;
         return (lFailureType == ebc_success);

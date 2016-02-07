@@ -29,10 +29,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
-    /* Initialize instantiation and identity ID counters */
-    inst_id_counter = 0;
-    ovar_id_counter = 0;
-
     /* Create data structures used for EBC */
     sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
     o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
@@ -49,19 +45,10 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     m_learning_on_for_instantiation = m_learning_on;
 
     chunkNameFormat = ruleFormat;
-
-    backtrace_number                   = 0;
-    chunk_count                        = 0;
-    justification_count                = 0;
-    strcpy(chunk_name_prefix, "chunk"); /* ajc (5/14/02) */
-    grounds_tc                         = 0;
-    locals_tc                          = 0;
-    potentials_tc                      = 0;
-
     max_chunks_reached = false;
-    chunk_free_problem_spaces          = NIL;
-    chunky_problem_spaces              = NIL;
+    strcpy(chunk_name_prefix, "chunk");
 
+    reinit();
 }
 
 Explanation_Based_Chunker::~Explanation_Based_Chunker()
@@ -81,8 +68,31 @@ void Explanation_Based_Chunker::reinit()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
+
+    /* Initialize instantiation and identity ID counters */
     inst_id_counter = 0;
     ovar_id_counter = 0;
+
+    backtrace_number                   = 0;
+    chunk_count                        = 0;
+    justification_count                = 0;
+    grounds_tc                         = 0;
+    locals_tc                          = 0;
+    potentials_tc                      = 0;
+
+    m_results_match_goal_level  = 0;
+    m_results_tc                = 0;
+    m_reliable                  = false;
+    m_inst          = NULL;
+    m_results       = NULL;
+    m_extra_results = NULL;
+    m_inst_top      = NULL;
+    m_inst_bottom   = NULL;
+    m_vrblz_top     = NULL;
+
+    chunk_free_problem_spaces          = NIL;
+    chunky_problem_spaces              = NIL;
+
     chunk_free_problem_spaces          = NIL;
     chunky_problem_spaces              = NIL;
 }
@@ -164,10 +174,11 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
     {
         case numberedFormat:
         {
+            increment_counter(chunk_count);
             return (generate_new_str_constant(
                         thisAgent,
                         chunk_name_prefix,
-                        &(++chunk_count)));
+                        &(chunk_count)));
         }
         case longFormat:
         {
@@ -219,7 +230,8 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             {
                 lImpasseName = "unknownimpasse";
             }
-            lName << chunk_name_prefix << "-" << ++chunk_count << "*" <<
+            increment_counter(chunk_count);
+            lName << chunk_name_prefix << "-" << chunk_count << "*" <<
                   thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
 
             break;
@@ -231,7 +243,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             lImpasseName.erase();
             lName << chunk_name_prefix;
 
-            ++chunk_count;
+            increment_counter(chunk_count);
             if (goal)
             {
                 impasse_type = type_of_existing_impasse(thisAgent, goal);

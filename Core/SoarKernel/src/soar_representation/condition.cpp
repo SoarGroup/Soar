@@ -22,7 +22,7 @@
    Deallocates a condition list (including any NCC's and tests in it).
 ---------------------------------------------------------------- */
 
-void deallocate_condition(agent* thisAgent, condition* cond)
+void deallocate_condition(agent* thisAgent, condition*& cond)
 {
     dprint(DT_DEALLOCATES, "Deallocating condition %l\n", cond);
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -36,10 +36,11 @@ void deallocate_condition(agent* thisAgent, condition* cond)
         deallocate_test(thisAgent, cond->data.tests.value_test);
     }
     thisAgent->memoryManager->free_with_pool(MP_condition, cond);
+    cond = NULL;
 }
 
 void deallocate_condition_list(agent* thisAgent,
-                               condition* cond_list)
+                               condition*& cond_list)
 {
     condition* c;
 
@@ -60,6 +61,7 @@ void deallocate_condition_list(agent* thisAgent,
         }
         thisAgent->memoryManager->free_with_pool(MP_condition, c);
     }
+    cond_list = NULL;
 }
 
 extern void init_condition(condition* cond)

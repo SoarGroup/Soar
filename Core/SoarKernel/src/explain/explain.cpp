@@ -224,13 +224,14 @@ void Explanation_Logger::add_condition(condition_record_list* pCondList, conditi
 
     if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count++, pStopHere, bt_depth);
+        increment_counter(condition_id_count);
+        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count, pStopHere, bt_depth);
         if (pMakeNegative)
         {
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;
         }
         all_conditions->insert({lCondRecord->conditionID, lCondRecord});
-        total_recorded.conditions++;
+        increment_counter(total_recorded.conditions);
         pCondList->push_back(lCondRecord);
     }
     else
@@ -276,7 +277,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation, bt_depth);
-        total_recorded.instantiations++;
+        increment_counter(total_recorded.instantiations);
         pInst->explain_status = explain_recorded;
         dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
         return lInstRecord;
@@ -287,17 +288,18 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     } else if (pInst->explain_status == explain_connected) {
         dprint(DT_EXPLAIN, "Already recorded and connected instantiation record for %y (i%u).  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
     }
-    total_recorded.instantiations_skipped++;
+    increment_counter(total_recorded.instantiations_skipped);
     return get_instantiation(pInst);
 }
 
 action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
 {
     dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
-    action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count++);
+    increment_counter(action_id_count);
+    action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
     all_actions->insert({lActionRecord->actionID, lActionRecord});
 
-    total_recorded.actions++;
+    increment_counter(total_recorded.actions);
 
     return lActionRecord;
 }
@@ -699,11 +701,11 @@ bool Explanation_Logger::current_discussed_chunk_exists()
 void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
 {
     assert(duplicate_rule);
-    stats.duplicates++;
+    increment_counter(stats.duplicates);
     dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
     chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
     if (lChunkRecord)
     {
-        lChunkRecord->stats.duplicates++;
+        increment_counter(lChunkRecord->stats.duplicates);
     }
 };

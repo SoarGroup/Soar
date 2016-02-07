@@ -92,10 +92,10 @@ typedef struct condition_struct
 /* ------------------------ */
 
 /* --- Deallocates a condition (including any NCC's and tests in it). */
-void deallocate_condition(agent* thisAgent, condition* cond);
+void deallocate_condition(agent* thisAgent, condition*& cond);
 
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
-extern void deallocate_condition_list(agent* thisAgent, condition* cond_list);
+extern void deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
 /* --- Initializes substructures of the given condition to default values. --- */
 extern void init_condition(condition* cond);

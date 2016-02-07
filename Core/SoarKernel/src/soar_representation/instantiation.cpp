@@ -1079,6 +1079,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- build chunks/justifications if necessary --- */
     thisAgent->ebChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
 
+    thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod->name, inst->i_id);
@@ -1099,7 +1100,7 @@ void create_instantiation(agent* thisAgent, production* prod,
  via the possibly_deallocate_instantiation() macro.
  ----------------------------------------------------------------------- */
 
-void deallocate_instantiation(agent* thisAgent, instantiation* inst)
+void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 {
     condition* cond;
 
@@ -1130,7 +1131,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
 
         level = inst->match_goal_level;
+
+        /* The following cleans up some structures used by explanation-based learning.  Note that
+         * clean up of  the inst/ovar to identity map moved to end of instantiation and chunk
+         * creation functions.  I don't think they're needed after that and could build up when
+         * we have a long sequence of persistent instantiations firing. The following function
+         * cleans up the identity->rule variable mapping that are only used for debugging in a
+         * non-release build. */
         thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
         {
@@ -1299,6 +1308,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation* inst)
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
+    inst = NULL;
 }
 
 /* -----------------------------------------------------------------------
@@ -1497,6 +1507,9 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
             prev_cond = cond;
         }
     }
+
+    /* Might not be needed yet, but could be if we add identity information to fake instantiation */
+    thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
 
     return inst;
 }
