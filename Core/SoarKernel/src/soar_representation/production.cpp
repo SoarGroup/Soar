@@ -508,11 +508,6 @@ EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         return ebc_failed_unconnected_conditions;
     }
 
-    if (!smem_valid_production(*lhs_top, *rhs_top))
-    {
-        print(thisAgent,  "Ungrounded LTI in production.  Not creating production.\n");
-        return ebc_failed_ungrounded_lti;
-    }
     return ebc_success;
 }
 

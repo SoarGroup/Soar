@@ -83,8 +83,7 @@ enum EBCTraceType {
 enum EBCFailureType {
     ebc_success,
     ebc_failed_reordering_rhs,
-    ebc_failed_unconnected_conditions,
-    ebc_failed_ungrounded_lti
+    ebc_failed_unconnected_conditions
 };
 
 enum EBCExplainStatus {
