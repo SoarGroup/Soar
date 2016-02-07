@@ -26,10 +26,11 @@ class condition_record;
 class action_record;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    typedef std::list<condition*, soar_module::soar_memory_pool_allocator<condition*> > condition_list;
+    typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > condition_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_set;
-    typedef std::list<wme*, soar_module::soar_memory_pool_allocator<wme*> > wme_list;
+//    typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > > wme_list;
+    typedef std::list< wme* > wme_list;
     typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wme_set;
     typedef std::list<sym_grounding_path*, soar_module::soar_memory_pool_allocator<sym_grounding_path*> > sym_grounding_path_list;
 
