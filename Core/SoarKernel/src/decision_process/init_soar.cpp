@@ -556,29 +556,6 @@ void do_one_top_level_phase(agent* thisAgent)
         return;
     }
 
-    smem_attach(thisAgent);
-
-    /*
-     *  This code was commented by SoarTech with the addition of gSKI
-     *  because gSKI requires the existence of a ^state and ^io link
-     *  before the first Run cmd is issued.
-     *  But what if we uncommented this code anyway, then if ever
-     *  gSKI isn't wrapped around the kernel, this code will
-     *  execute and create the links.  KJC 4/05
-     *
-     * if (! thisAgent->top_goal)
-     * {
-     *  create_top_goal(thisAgent);
-     *  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
-     *    {
-     *      print_string (thisAgent, "\n");
-     *      print_lowest_slot_in_context_stack (thisAgent);
-     *    }
-     *  thisAgent->current_phase = INPUT_PHASE;
-     *    thisAgent->d_cycle_count++;
-     * }
-     */
-
     switch (thisAgent->current_phase)
     {
 
