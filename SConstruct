@@ -36,7 +36,7 @@ print "   kernel cli sml_java debugger headers"
 print "Settings available:"
 print "   --opt, --static, --out, --build, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
-print "   --no-svs"
+print "   --no-svs --no-kernel-scu --no-cli-scu"
 print "================================================================================"
 
 def execute(cmd):
@@ -130,39 +130,22 @@ def InstallDLLs(env):
 
 Export('InstallDir')
 
-AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
-    help='Use argument as the C compiler.')
-
-AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
-    help='Use argument as the C++ compiler.')
-
+AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER', help='Use argument as the C compiler.')
+AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER', help='Use argument as the C++ compiler.')
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
-
 AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1, help='Linker flags')
-
 AddOption('--no-default-flags', action='store_false', dest='defflags', default=True, help="Don't pass any default flags to the compiler or linker")
-
-AddOption('--no-scu', action='store_false', dest='scu', default=True,
-    help='Don\'t build using single compilation units.')
-AddOption('--scu', action='store_true', dest='scu', default=True,
-    help='Build using single compilation units.')
-
-AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR',
-    help='Directory to install binaries. Defaults to "out".')
-
-AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR',
-    help='Directory to store intermediate (object) files. Defaults to "build".')
-
+AddOption('--no-scu', action='store_false', dest='scu', default=True, help='Don\'t build using single compilation units.')
+AddOption('--no-scu-kernel', action='store_true', dest='no_scu_kernel', default=False, help='Never build kernel in a single compilation unit.')
+AddOption('--no-scu-cli', action='store_true', dest='no_scu_cli', default=False, help='Never build CLI in a single compilation unit.')
+AddOption('--scu', action='store_true', dest='scu', default=True, help='Build using single compilation units.')
+AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR', help='Directory to install binaries. Defaults to "out".')
+AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
-
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
-
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
-
 AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
-
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
-
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
 msvc_version = "12.0"
@@ -176,6 +159,8 @@ env = Environment(
     MSVC_VERSION=msvc_version,
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
+    NO_SCU_KERNEL=GetOption('no_scu_kernel'),
+	NO_SCU_CLI=GetOption('no_scu_cli'),
     BUILD_DIR=GetOption('build-dir'),
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     SOAR_VERSION=SOAR_VERSION,
@@ -267,7 +252,18 @@ env.Replace(
     CPPPATH=[
         '#Core/shared',
         '#Core/pcre',
-        '#Core/SoarKernel/src',
+        '#Core/SoarKernel/src/debug',
+        '#Core/SoarKernel/src/decision_process',
+        '#Core/SoarKernel/src/episodic_memory',
+        '#Core/SoarKernel/src/explain',
+        '#Core/SoarKernel/src/explanation_based_chunking',
+        '#Core/SoarKernel/src/interface',
+        '#Core/SoarKernel/src/output_manager',
+        '#Core/SoarKernel/src/parsing',
+        '#Core/SoarKernel/src/reinforcement_learning',
+        '#Core/SoarKernel/src/semantic_memory',
+        '#Core/SoarKernel/src/shared',
+        '#Core/SoarKernel/src/soar_representation',
         '#Core/ElementXML/src',
         '#Core/KernelSML/src',
         '#Core/ConnectionSML/src',

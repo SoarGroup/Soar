@@ -160,15 +160,29 @@ namespace cli
              */
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
 
+            enum eExplainOptions
+            {
+                EXPLAIN_ALL,
+                EXPLAIN_ONLY_SPECIFIC,
+                EXPLAIN_STATS,
+                EXPLAIN_CONSTRAINTS,
+                EXPLAIN_DEPENDENCY,
+                EXPLAIN_IDENTITY_SETS,
+                EXPLAIN_LIST_ALL,
+                EXPLAIN_GLOBAL_STATS,
+                EXPLAIN_WATCH,
+                EXPLAIN_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
             /**
-             * @brief explain-backtraces command
+             * @brief explain command
              * @param pProduction Pointer to involved production. Pass 0 (null) for
              *        query
              * @param condition A number representing the condition number to explain,
              *        0 for production name, -1 for full,
              *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0) = 0;
+            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2) = 0;
 
             /* These enums moved here because we re-used for fc options*/
             enum ePrintOptions
@@ -537,12 +551,6 @@ namespace cli
              *         at a finer grain than the run-size parameter.
              */
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
-
-            /**
-             * @brief save-backtraces command
-             * @param setting The new setting, pass 0 (null) for query
-             */
-            virtual bool DoSaveBacktraces(bool* pSetting = 0) = 0;
 
             /**
              * @brief select command

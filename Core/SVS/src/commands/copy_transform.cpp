@@ -22,7 +22,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "command_table.h"
 #include "sgnode_algs.h"
 
@@ -37,12 +37,12 @@ class copy_transform_command : public command
             si = state->get_svs()->get_soar_interface();
             scn = state->get_scene();
         }
-        
+
         string description()
         {
             return string("copy-node");
         }
-        
+
         bool update_sub()
         {
             if (first)
@@ -56,13 +56,13 @@ class copy_transform_command : public command
             }
             return true;
         }
-        
-        
+
+
         bool early()
         {
             return false;
         }
-        
+
         bool parse()
         {
             // source <id>
@@ -73,7 +73,7 @@ class copy_transform_command : public command
                 set_status("must specify a source");
                 return false;
             }
-            
+
             source_node = scn->get_node(source_id);
             if (!source_node)
             {
@@ -89,7 +89,7 @@ class copy_transform_command : public command
                 set_status("must specify a destination");
                 return false;
             }
-            
+
             dest_node = scn->get_node(dest_id);
             if (!dest_node)
             {
@@ -100,11 +100,11 @@ class copy_transform_command : public command
 						// position << yes no >>
 						// Whether to copy the position transform
 						string pos_str;
-						if(si->get_const_attr(root, "position", pos_str) && 
+						if(si->get_const_attr(root, "position", pos_str) &&
 								(pos_str == "yes" || pos_str == "true")){
 							copy_pos = true;
-						} 
-						else 
+						}
+						else
 						{
 							copy_pos = false;
 						}
@@ -112,24 +112,24 @@ class copy_transform_command : public command
 						// rotation << yes no >>
 						// Whether to copy the rotation transform
 						string rot_str;
-						if(si->get_const_attr(root, "rotation", rot_str) && 
+						if(si->get_const_attr(root, "rotation", rot_str) &&
 								(rot_str == "yes" || rot_str == "true")){
 							copy_rot = true;
-						} 
-						else 
+						}
+						else
 						{
 							copy_rot = false;
 						}
-            
+
 						// scale << yes no >>
 						// Whether to copy the scale transform
 						string scl_str;
-						if(si->get_const_attr(root, "scale", scl_str) && 
+						if(si->get_const_attr(root, "scale", scl_str) &&
 								(scl_str == "yes" || scl_str == "true"))
 						{
 							copy_scl = true;
 						}
-						else 
+						else
 						{
 							copy_scl = false;
 						}
@@ -141,10 +141,10 @@ class copy_transform_command : public command
 								(adjust_str == "yes" || adjust_str == "true")){
 							adjust = true;
 						}
-            
+
             return true;
         }
-        
+
         bool copy_transform()
         {
 						if(copy_pos)
@@ -163,17 +163,17 @@ class copy_transform_command : public command
 						{
 							adjust_sgnode_size(dest_node, scn);
 						}
-            
+
             set_status("success");
             return true;
         }
-        
+
     private:
         Symbol*         root;
         scene*          scn;
         soar_interface* si;
         bool first;
-        
+
         sgnode* source_node;
 				sgnode* dest_node;
 				bool copy_pos;
