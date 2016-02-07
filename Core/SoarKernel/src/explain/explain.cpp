@@ -6,7 +6,7 @@
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
-#include "Symbol.h"
+#include "symbol.h"
 #include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
