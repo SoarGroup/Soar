@@ -32,7 +32,7 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
         if (m_RawOutput)
         {
             m_Result << "Using " ;
-            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format())
+            switch (thisAgent->ebChunker->Get_Chunk_Name_Format())
             {
                 case numberedFormat:
                     m_Result << "numbered chunk naming format.";
@@ -47,18 +47,18 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
         }
         else
         {
-            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (thisAgent->ebChunker->Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
         }
         return true;
     }
 
     if (pChunkFormat)
     {
-        Soar_Instance::Get_Soar_Instance().Set_Chunk_Name_Format(*pChunkFormat);
+        thisAgent->ebChunker->Set_Chunk_Name_Format(*pChunkFormat);
         if (m_RawOutput)
         {
             m_Result << "Using " ;
-            switch (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format())
+            switch (thisAgent->ebChunker->Get_Chunk_Name_Format())
             {
                 case numberedFormat:
                     m_Result << "numbered chunk naming format.";
@@ -73,7 +73,7 @@ bool CommandLineInterface::DoChunkNameFormat(const chunkNameFormats* pChunkForma
         }
         else
         {
-            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, (thisAgent->ebChunker->Get_Chunk_Name_Format() == longFormat) ? sml_Names::kTrue : sml_Names::kFalse);
         }
     }
 

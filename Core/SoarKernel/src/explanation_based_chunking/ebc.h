@@ -81,6 +81,10 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
+        /* For the cli learn command */
+        chunkNameFormats    Get_Chunk_Name_Format() {return chunkNameFormat;};
+        void                Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
+
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
         void build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list);
@@ -142,6 +146,7 @@ class Explanation_Based_Chunker
         /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
+
     private:
 
         agent*              thisAgent;
@@ -199,6 +204,7 @@ class Explanation_Based_Chunker
 
         bool m_learning_on_for_instantiation;
         bool m_learning_on;
+        chunkNameFormats chunkNameFormat;
 
         tc_number tc_num_found;
 
@@ -209,7 +215,6 @@ class Explanation_Based_Chunker
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
                                                         wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-
         /* Chunk building methods */
         Symbol*         generate_chunk_name(instantiation* inst);
         preference*     get_results_for_instantiation(instantiation* inst);

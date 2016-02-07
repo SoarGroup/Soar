@@ -17,8 +17,7 @@
 #include "agent.h"
 
 Soar_Instance::Soar_Instance() :
-    m_Kernel(NULL),
-    chunkNameFormat(ruleFormat)
+    m_Kernel(NULL)
 {
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();

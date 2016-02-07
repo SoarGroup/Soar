@@ -48,6 +48,8 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
     m_learning_on_for_instantiation = m_learning_on;
 
+    chunkNameFormat = ruleFormat;
+
     backtrace_number                   = 0;
     chunk_count                        = 0;
     justification_count                = 0;
@@ -147,7 +149,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
     std::string lImpasseName;
     std::stringstream lName;
 
-    chunkNameFormats chunkNameFormat = Soar_Instance::Get_Soar_Instance().Get_Chunk_Name_Format();
+    chunkNameFormats chunkNameFormat = Get_Chunk_Name_Format();
 
     lowest_result_level = thisAgent->top_goal->id->level;
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
