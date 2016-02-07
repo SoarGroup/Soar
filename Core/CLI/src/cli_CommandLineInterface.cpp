@@ -23,6 +23,7 @@
 #include "KernelHeaders.h"
 
 #include "agent.h"
+#include "slot.h"
 #include "xml.h"
 #include "lexer.h"
 

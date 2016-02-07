@@ -26,6 +26,7 @@
 #include "parser.h"
 #include "soar_TraceNames.h"
 #include "sml_AgentSML.h"
+#include "slot.h"
 
 using namespace cli;
 using namespace sml;
