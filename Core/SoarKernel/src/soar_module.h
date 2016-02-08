@@ -1173,13 +1173,13 @@ namespace soar_module
 			typedef soar_memory_pool_allocator<U> other;
 		};
 
+		soar_memory_pool_allocator() {}
 
 	private:
 		agent* my_agent;
 		memory_pool* mem_pool;
 		size_type size;
 
-		soar_memory_pool_allocator() {}
 
 	};
 
