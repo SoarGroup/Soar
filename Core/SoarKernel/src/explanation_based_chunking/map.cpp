@@ -108,13 +108,13 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
 
 }
 
-void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)
+void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 {
     assert(m_learning_on || rulesym_to_identity_map->size() == 0);
     assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
     if (!m_learning_on) return;
 
-    dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
+    dprint(DT_EBC_CLEANUP, "Cleaning up after creating instantiation %u\n", pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
 
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
@@ -134,7 +134,31 @@ void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t 
 #endif
     rulesym_to_identity_map->erase(pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
+    dprint(DT_EBC_CLEANUP, "Done cleaning up after creating instantiation %u\n-------\n", pI_id);
+}
+
+void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)
+{
+#ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    assert(m_learning_on || rulesym_to_identity_map->size() == 0);
+    assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
+    if (!m_learning_on) return;
+    dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
+//    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+
+    std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
+    std::unordered_map< Symbol*, uint64_t >::iterator iter_inst;
+    iter_sym = rulesym_to_identity_map->find(pI_id);
+    if (iter_sym != rulesym_to_identity_map->end())
+    {
+        for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
+        {
+            o_id_to_ovar_debug_map->erase(iter_inst->second);
+        }
+    }
+//    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
     dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
+#endif
 }
 
 uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
@@ -146,7 +170,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
     existing_o_id = get_existing_o_id(orig_var, pI_id);
     if (!existing_o_id)
     {
-        ++ovar_id_counter;
+        increment_counter(ovar_id_counter);
         (*rulesym_to_identity_map)[pI_id][orig_var] = ovar_id_counter;
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
         (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;

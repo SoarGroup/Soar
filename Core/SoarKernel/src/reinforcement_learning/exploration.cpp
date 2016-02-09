@@ -862,9 +862,9 @@ preference* exploration_probabilistically_select(preference* candidates)
             cand->rl_rho /= cand->numeric_value / total_probability;
         else {
             if(cand->rl_rho > 0)
-                cand->rl_rho = std::numeric_limits<double>::max();
+                cand->rl_rho = (std::numeric_limits<double>::max)();
             else if(cand->rl_rho < 0)
-                cand->rl_rho = -std::numeric_limits<double>::max();
+                cand->rl_rho = -(std::numeric_limits<double>::max)();
         }
     }
 

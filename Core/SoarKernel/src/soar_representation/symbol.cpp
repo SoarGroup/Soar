@@ -542,7 +542,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 
 ------------------------------------------------------------------- */
 
-void deallocate_symbol(agent* thisAgent, Symbol* sym)
+void deallocate_symbol(agent* thisAgent, Symbol*& sym)
 {
 
 //    dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
@@ -579,6 +579,7 @@ void deallocate_symbol(agent* thisAgent, Symbol* sym)
             abort_with_fatal_error(thisAgent, msg);
         }
     }
+    sym = NULL;
 }
 
 /* -------------------------------------------------------------------
@@ -869,8 +870,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
    Frees a list of symbols, decrementing their reference counts.
 ---------------------------------------------------------------- */
 
-void deallocate_symbol_list_removing_references(agent* thisAgent,
-        list* sym_list)
+void deallocate_symbol_list_removing_references(agent* thisAgent, list*& sym_list)
 {
     cons* c;
 
@@ -885,6 +885,7 @@ void deallocate_symbol_list_removing_references(agent* thisAgent,
 #endif
         free_cons(thisAgent, c);
     }
+    sym_list = NULL;
 }
 
 /* -----------------------------------------------------------------

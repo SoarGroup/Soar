@@ -69,9 +69,6 @@ class EXPORT Soar_Instance
 
         void CLI_Debug_Print(const char* text);
 
-        chunkNameFormats Get_Chunk_Name_Format() {return chunkNameFormat;};
-        void Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
-
     private:
 
         Soar_Instance();
@@ -87,7 +84,6 @@ class EXPORT Soar_Instance
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
 
-        chunkNameFormats chunkNameFormat;
         sml::AgentSML* Get_Agent_Info(char* pAgentName);
         void Print_Agent_Table();
 

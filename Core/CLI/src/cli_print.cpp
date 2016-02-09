@@ -19,6 +19,7 @@
 #include "gsysparam.h"
 #include "xml.h"
 #include "print.h"
+#include "slot.h"
 #include "trace.h"
 #include "working_memory.h"
 #include "rhs.h"

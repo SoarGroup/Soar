@@ -190,7 +190,6 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
-                                     bool* reliable,
                                      int indent,
                                      const identity_triple o_ids_to_replace,
                                      const rhs_triple rhs_funcs)
@@ -263,7 +262,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     #endif
     if (!inst->reliable)
     {
-        *reliable = false;
+        m_reliable = false;
     }
 
     /* --- mark transitive closure of each higher goal id that was tested in
@@ -476,7 +475,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
    there are no more locals to BT.
 --------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level, bool* reliable)
+void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 {
 
     /* mvp 5-17-94 */
@@ -510,7 +509,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level, boo
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -526,7 +525,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level, boo
                     }
                     /* This used to pass in cond instead of NULL, but I think CDPS prefs are
                      * essentially like results in this context, which get NULL in that parameter */
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, 6, p->o_ids, p->rhs_funcs);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -556,13 +555,11 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level, boo
         Symbol* thisValue = cond->data.tests.value_test->eq_test->data.referent;
         if (thisID->id->isa_goal)
         {
-            if ((thisAttr ==
-                    thisAgent->quiescence_symbol) &&
-                    (thisValue ==
-                     thisAgent->t_symbol) &&
-                    (! cond->test_for_acceptable_preference))
+            if ((thisAttr == thisAgent->quiescence_symbol) &&
+                (thisValue == thisAgent->t_symbol) &&
+                (! cond->test_for_acceptable_preference))
             {
-                *reliable = false;
+                m_reliable = false;
             }
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -709,7 +706,7 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
    if anything was BT'd; false if nothing changed.
 --------------------------------------------------------------- */
 
-bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level grounds_level, bool* reliable)
+bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level grounds_level)
 {
 
     /* mvp 5-17-94 */
@@ -780,7 +777,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level gro
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
-        backtrace_through_instantiation(bt_pref->inst, grounds_level, potential, reliable, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+        backtrace_through_instantiation(bt_pref->inst, grounds_level, potential, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
 
         if (potential->bt.CDPS)
         {
@@ -796,7 +793,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level gro
 
                 /* This used to pass in potential instead of NULL, but I think CDPS prefs are
                  * essentially like results in this context, which get NULL in that parameter */
-                backtrace_through_instantiation(p->inst, grounds_level, NULL, reliable, 6, p->o_ids, p->rhs_funcs);
+                backtrace_through_instantiation(p->inst, grounds_level, NULL, 6, p->o_ids, p->rhs_funcs);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

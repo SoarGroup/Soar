@@ -18,7 +18,7 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-
+#include "exploration.h"
 #include "print.h"
 #include "slot.h"
 #include "trace.h"

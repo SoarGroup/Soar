@@ -50,8 +50,8 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
         mode_info[DT_DEBUG].enabled =                       true;
 
     //    mode_info[DT_ID_LEAKING].enabled =                  true;
-    //    mode_info[DT_DEALLOCATES].enabled =                 true;
-    //    mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
+//        mode_info[DT_DEALLOCATES].enabled =                 true;
+//        mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
     //    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
     //    mode_info[DT_REFCOUNT_REMS].enabled =               true;
     //
@@ -61,11 +61,11 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_GDS].enabled =                         true;
     //    mode_info[DT_EPMEM_CMD].enabled =                   true;
     //
-    //    mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
-    //    mode_info[DT_MILESTONES].enabled =                  true;
+//        mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
+//        mode_info[DT_MILESTONES].enabled =                  true;
     //
     //    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
-    //    mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
+//        mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
     //    mode_info[DT_VM_MAPS].enabled =                     true;
     //    mode_info[DT_BACKTRACE].enabled =                   true;
     //    mode_info[DT_IDENTITY_PROP].enabled =               true;
@@ -89,7 +89,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_LINKS].enabled =                       true;
     //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
     //    mode_info[DT_RETE_PNODE_ADD].enabled =              true;
-        mode_info[DT_GROUND_LTI].enabled =                  true;
+//        mode_info[DT_GROUND_LTI].enabled =                  true;
     }
 }
 

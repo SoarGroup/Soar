@@ -2219,6 +2219,8 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
 #endif
     cond->bt.level = ap_wme->id->id->level;
 
+    thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+
     /* --- return the fake preference --- */
     return pref;
 }

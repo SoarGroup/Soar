@@ -67,7 +67,7 @@ preference* find_clone_for_level(preference* p, goal_stack_level level);
 void create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
 instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
 void retract_instantiation(agent* thisAgent, instantiation* inst);
-void deallocate_instantiation(agent* thisAgent, instantiation* inst);
+void deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
 void init_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
 void build_CDPS(agent* thisAgent, instantiation* inst);

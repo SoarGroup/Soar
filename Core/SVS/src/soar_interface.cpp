@@ -9,6 +9,7 @@
 #include "print.h"
 #include "soar_interface.h"
 #include "decide.h"
+#include "slot.h"
 
 tc_number get_new_tc_number(agent* thisAgent);
 

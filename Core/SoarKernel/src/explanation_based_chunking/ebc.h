@@ -81,6 +81,10 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
+        /* For the cli learn command */
+        chunkNameFormats    Get_Chunk_Name_Format() {return chunkNameFormat;};
+        void                Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
+
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
         void build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list);
@@ -90,7 +94,7 @@ class Explanation_Based_Chunker
         void add_explanation_to_condition(rete_node* node, condition* cond,
                                           wme* w, node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
-        uint64_t get_new_inst_id() { return (++inst_id_counter); };
+        uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_instantiation_count() { return inst_id_counter; };
         uint64_t get_justification_count() { return justification_count; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
@@ -138,9 +142,11 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
+        void cleanup_for_instantiation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
+
 
     private:
 
@@ -168,10 +174,24 @@ class Explanation_Based_Chunker
         bool                quiescence_t_flag;
 
         /* Variables used by result building methods */
-        preference*         results;
-        goal_stack_level    results_match_goal_level;
-        tc_number           results_tc_number;
-        preference*         extra_result_prefs_from_instantiation;
+        instantiation*      m_inst;
+        preference*         m_results;
+        goal_stack_level    m_results_match_goal_level;
+        uint64_t            m_chunk_new_i_id;
+        tc_number           m_results_tc;
+        preference*         m_extra_results;
+        bool                m_reliable;
+        condition*          m_inst_top;
+        condition*          m_inst_bottom;
+        condition*          m_vrblz_top;
+        action*             m_rhs;
+        production*         m_prod;
+        instantiation*      m_chunk_inst;
+        Symbol*             m_prod_name;
+        condition*          m_saved_justification_top;
+        condition*          m_saved_justification_bottom;
+        ProductionType      m_prod_type;
+        bool                m_should_print_name, m_should_print_prod;
 
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
@@ -199,6 +219,7 @@ class Explanation_Based_Chunker
 
         bool m_learning_on_for_instantiation;
         bool m_learning_on;
+        chunkNameFormats chunkNameFormat;
 
         tc_number tc_num_found;
 
@@ -209,38 +230,44 @@ class Explanation_Based_Chunker
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
                                                         wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
-
         /* Chunk building methods */
         Symbol*         generate_chunk_name(instantiation* inst);
-        preference*     get_results_for_instantiation(instantiation* inst);
-        void            add_goal_or_impasse_tests(condition* inst_top, condition* vrblz_top);
+        void            set_up_rule_name(bool pForChunk);
+        bool            can_learn_from_instantiation();
+        void            get_results_for_instantiation();
+        void            add_goal_or_impasse_tests();
         void            add_pref_to_results(preference* pref);
         void            add_results_for_id(Symbol* id);
         void            add_results_if_needed(Symbol* sym);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
-        void            create_initial_chunk_condition_lists(condition** inst_top, condition** inst_bottom, condition** vrblz_top, tc_number tc_to_use, bool* reliable);
+        void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
-        void            make_clones_of_results(preference* results, instantiation* chunk_inst);
-        void            create_instantiated_counterparts(condition* vrblz_top, condition** inst_top, condition** inst_bottom);
+        void            make_clones_of_results();
+        void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        bool            reorder_and_validate_chunk(ProductionType pProdType, uint64_t pInstID, condition** lhs_top, action** rhs_top, condition** inst_top, bool reorder_nccs);
-        void            clean_up (Symbol** prod_name, condition** vrblz_top);
+        bool            reorder_and_validate_chunk();
+        void            deallocate_failed_chunk();
+        void            abort();
+        void            clean_up();
+        void            save_conditions_for_reversal();
+        void            revert_chunk_to_instantiation();
+        void            add_chunk_to_rete();
 
         /* Dependency analysis methods */
+        void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
         void add_to_potentials(condition* cond);
         void add_to_locals(condition* cond);
-        void trace_locals(goal_stack_level grounds_level, bool* reliable);
+        void trace_locals(goal_stack_level grounds_level);
         void trace_grounded_potentials();
-        bool trace_ungrounded_potentials(goal_stack_level grounds_level, bool* reliable);
+        bool trace_ungrounded_potentials(goal_stack_level grounds_level);
         void backtrace_through_instantiation(
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
-                bool* reliable,
                 int indent,
                 const identity_triple o_ids_to_replace,
                 const rhs_triple rhs_funcs);
@@ -261,7 +288,7 @@ class Explanation_Based_Chunker
 
         /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
-        void add_additional_constraints(condition* cond);
+        void add_additional_constraints();
         bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
         void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
@@ -292,7 +319,7 @@ class Explanation_Based_Chunker
 
         /* Condition to state connecting methods */
         wme_list*   find_wmes_to_ground_lti(Symbol* targetLTI);
-        void        generate_conditions_to_ground_lti(condition** pCondList, condition** pInstCondList, symbol_list* pUnconnected_LTIs, uint64_t pInstID);
+        void        generate_conditions_to_ground_lti(symbol_list* pUnconnected_LTIs, uint64_t pInstID);
         condition*  find_lti_that_matched_var(condition* pCondList, Symbol* pUnconnected_LTI);
 
         /* Clean-up methods */

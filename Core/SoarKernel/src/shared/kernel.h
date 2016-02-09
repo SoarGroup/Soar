@@ -48,7 +48,7 @@
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-    //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
@@ -62,7 +62,7 @@
     //#define DEBUG_GDS_HIGH
 
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-    #define MEM_POOLS_ENABLED 1
+//    #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
     #endif
@@ -114,6 +114,8 @@ typedef unsigned char byte;
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
 //#define REAL_TIME_BEHAVIOR
 //#define ATTENTION_LAPSE
+
+#define increment_counter(counter) counter++; if (counter == 0) counter = 1;
 
 /* --------------- Explanation of directives that alter Soar behavior ----------------
  *
