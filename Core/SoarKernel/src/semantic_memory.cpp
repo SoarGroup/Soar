@@ -446,19 +446,19 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     
     ncb_retrieval = new smem_timer("smem_ncb_retrieval", thisAgent, soar_module::timer::two);
     add(ncb_retrieval);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_1", thisAgent, soar_module::timer::four);
+    ncb_retrieval_1 = new smem_timer("smem_ncb_retrieval_1", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_1);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_1_1", thisAgent, soar_module::timer::four);
+    ncb_retrieval_1_1 = new smem_timer("smem_ncb_retrieval_1_1", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_1_1);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_2", thisAgent, soar_module::timer::four);
+    ncb_retrieval_2 = new smem_timer("smem_ncb_retrieval_2", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_2);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_3", thisAgent, soar_module::timer::four);
+    ncb_retrieval_3 = new smem_timer("smem_ncb_retrieval_3", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_3);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4", thisAgent, soar_module::timer::four);
+    ncb_retrieval_4 = new smem_timer("smem_ncb_retrieval_4", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_4);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4_1", thisAgent, soar_module::timer::four);
+    ncb_retrieval_4_1 = new smem_timer("smem_ncb_retrieval_4_1", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_4_1);
-    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4_2", thisAgent, soar_module::timer::four);
+    ncb_retrieval_4_2 = new smem_timer("smem_ncb_retrieval_4_2", thisAgent, soar_module::timer::four);
     add(ncb_retrieval_4_2);
 
 
