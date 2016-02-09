@@ -1001,7 +1001,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     prohibit_remove = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_prohibited WHERE lti_id=?");
     add(prohibit_remove);
 
-    history_remove = new soar_module::sqlite_statement(new_db, "UPDATE smem_activation_history SET t1=t2,t2=t3,t3=t4,t4=t5,t5=t6,t6=t7,t7=t8,t8=t9,t9=t10,t10=0,touch1=touch2,touch2=touch3,touch3=touch4,touch4=touch5,touch5=touch6,touch6=touch7,touch7=touch8,touch8=touch9,touch9=touch10,touch10=0"); //add something like "only use 9/10 when prohibited"
+    history_remove = new soar_module::sqlite_statement(new_db, "UPDATE smem_activation_history SET t1=t2,t2=t3,t3=t4,t4=t5,t5=t6,t6=t7,t7=t8,t8=t9,t9=t10,t10=0,touch1=touch2,touch2=touch3,touch3=touch4,touch4=touch5,touch5=touch6,touch6=touch7,touch7=touch8,touch8=touch9,touch9=touch10,touch10=0 WHERE lti_id=?"); //add something like "only use 9/10 when prohibited"
     add(history_remove);
 
     //
@@ -2499,7 +2499,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_timers->act_2_2->start();
         ////////////////////////////////////////////////////////////////////////////
 
-        if (prohibited && dirty)
+        if (prohibited && dirty)// costly
         {//Just need to flip the bit here.
             //Find the number of touches from the most recent activation. We are removing that many.
             thisAgent->smem_stmts->history_get->bind_int(1, lti);
@@ -2756,7 +2756,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         ////////////////////////////////////////////////////////////////////////////
 
         // only if augmentation count is less than threshold do we associate with edges
-        if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+        if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) //costly
         {
             // activation_value=? WHERE lti=?
             thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
