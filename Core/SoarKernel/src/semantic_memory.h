@@ -227,10 +227,18 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* act;
         soar_module::timer* act_1;
         soar_module::timer* act_2;
+        soar_module::timer* act_2_1;
+        soar_module::timer* act_2_2;
+        soar_module::timer* act_2_3;
+        soar_module::timer* act_2_4;
         soar_module::timer* act_3;
         soar_module::timer* act_4;
         soar_module::timer* act_5;
         soar_module::timer* act_6;
+        soar_module::timer* act_6_1;
+        soar_module::timer* act_6_2;
+        soar_module::timer* act_6_3;
+        soar_module::timer* act_6_4;
         soar_module::timer* spreading_act;
         soar_module::timer* spontaneous_retrieval;
         soar_module::timer* spontaneous_retrieval_1;

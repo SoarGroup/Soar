@@ -482,6 +482,14 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(act_1);
     act_2 = new smem_timer("three_activation_2", thisAgent, soar_module::timer::four);
     add(act_2);
+    act_2_1 = new smem_timer("three_activation_2_1", thisAgent, soar_module::timer::four);
+    add(act_2_1);
+    act_2_2 = new smem_timer("three_activation_2_2", thisAgent, soar_module::timer::four);
+    add(act_2_2);
+    act_2_3 = new smem_timer("three_activation_2_3", thisAgent, soar_module::timer::four);
+    add(act_2_3);
+    act_2_4 = new smem_timer("three_activation_2_4", thisAgent, soar_module::timer::four);
+    add(act_2_4);
     act_3 = new smem_timer("three_activation_3", thisAgent, soar_module::timer::four);
     add(act_3);
     act_4 = new smem_timer("three_activation_4", thisAgent, soar_module::timer::four);
@@ -490,6 +498,14 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(act_5);
     act_6 = new smem_timer("three_activation_6", thisAgent, soar_module::timer::four);
     add(act_6);
+    act_6_1 = new smem_timer("three_activation_6_1", thisAgent, soar_module::timer::four);
+    add(act_6_1);
+    act_6_2 = new smem_timer("three_activation_6_2", thisAgent, soar_module::timer::four);
+    add(act_6_2);
+    act_6_3 = new smem_timer("three_activation_6_3", thisAgent, soar_module::timer::four);
+    add(act_6_3);
+    act_6_4 = new smem_timer("three_activation_6_4", thisAgent, soar_module::timer::four);
+    add(act_6_4);
 
     spreading_act = new smem_timer("spreading_activation", thisAgent, soar_module::timer::three);
     add(spreading_act);
@@ -2463,6 +2479,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         * all I need to do is flip the prohibit bit and the normal activation history updating behavior
         * should take care of things. There is one exception. The number of touches should remain the same instead of being incremented.
         */
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_1->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         thisAgent->smem_stmts->prohibit_check->bind_int(1,lti);
         prohibited = thisAgent->smem_stmts->prohibit_check->execute()==soar_module::row;
         bool dirty = false;
@@ -2471,6 +2491,14 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             dirty = thisAgent->smem_stmts->prohibit_check->column_int(1)==1;
         }
         thisAgent->smem_stmts->prohibit_check->reinitialize();
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_1->start();
+        ////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_2->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         if (prohibited && dirty)
         {//Just need to flip the bit here.
             //Find the number of touches from the most recent activation. We are removing that many.
@@ -2484,6 +2512,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             thisAgent->smem_stmts->prohibit_reset->bind_int(1,lti);
             thisAgent->smem_stmts->prohibit_reset->execute(soar_module::op_reinit);
         }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
 
 
         if ((thisAgent->smem_params->activation_mode->get_value() == smem_param_container::act_base) &&
@@ -2519,6 +2550,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     }
     else
     {
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_3->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         /* If we are not adding an access, we need to remove the old history so that recalculation takes into account the prohibit having occurred.
          * The big difference is that we'll have to leave it prohibited, just not dirty any more. Only an access removes the prohibit.
          */
@@ -2530,6 +2565,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             dirty = thisAgent->smem_stmts->prohibit_check->column_int(1)==1;
         }
         thisAgent->smem_stmts->prohibit_check->reinitialize();
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_3->stop();
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_4->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         if (prohibited && dirty)
         {//Just need to flip the bit here.
             //Find the number of touches from the most recent activation. We are removing that many.
@@ -2543,6 +2585,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             thisAgent->smem_stmts->prohibit_clean->bind_int(1,lti);
             thisAgent->smem_stmts->prohibit_clean->execute(soar_module::op_reinit);
         }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_2_4->stop();
+        ////////////////////////////////////////////////////////////////////////////
 
         time_now = thisAgent->smem_max_cycle;
         
@@ -2657,6 +2702,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     double new_base;
     double additional;
     {
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_1->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         // Adding a bunch of stuff for spreading here.
         thisAgent->smem_stmts->act_lti_get->bind_int(1,lti);
         thisAgent->smem_stmts->act_lti_get->execute();
@@ -2665,7 +2714,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
         }
         thisAgent->smem_stmts->act_lti_get->reinitialize();
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_1->stop();
+        ////////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_2->start();
+        ////////////////////////////////////////////////////////////////////////////
 
         // activation_value=? spreading value = ? WHERE lti=?
         if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation) == 0)
@@ -2678,6 +2733,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         {
             new_base = new_activation;
         }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_3->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
         modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
         spread = (spread < offset) ? (0) : (spread);
@@ -2686,6 +2748,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base+modified_spread);
         thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
         thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_3->stop();
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_4->start();
+        ////////////////////////////////////////////////////////////////////////////
+
         // only if augmentation count is less than threshold do we associate with edges
         if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
         {
@@ -2694,6 +2763,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             thisAgent->smem_stmts->act_set->bind_int(2, lti);
             thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
         }
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->act_6_4->stop();
+        ////////////////////////////////////////////////////////////////////////////
+
     }
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->act_6->stop();
