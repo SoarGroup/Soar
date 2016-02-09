@@ -69,32 +69,32 @@ void Explanation_Based_Chunker::reinit()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
 
-    /* Initialize instantiation and identity ID counters */
-    inst_id_counter = 0;
-    ovar_id_counter = 0;
-
-    backtrace_number                   = 0;
-    chunk_count                        = 0;
-    justification_count                = 0;
-    grounds_tc                         = 0;
-    locals_tc                          = 0;
-    potentials_tc                      = 0;
-
-    m_results_match_goal_level  = 0;
-    m_results_tc                = 0;
-    m_reliable                  = false;
-    m_inst          = NULL;
-    m_results       = NULL;
-    m_extra_results = NULL;
-    m_inst_top      = NULL;
-    m_inst_bottom   = NULL;
-    m_vrblz_top     = NULL;
-
-    chunk_free_problem_spaces          = NIL;
-    chunky_problem_spaces              = NIL;
-
-    chunk_free_problem_spaces          = NIL;
-    chunky_problem_spaces              = NIL;
+    inst_id_counter                     = 0;
+    m_chunk_new_i_id                    = 0;
+    ovar_id_counter                     = 0;
+    backtrace_number                    = 0;
+    chunk_count                         = 0;
+    justification_count                 = 0;
+    grounds_tc                          = 0;
+    locals_tc                           = 0;
+    potentials_tc                       = 0;
+    m_results_match_goal_level          = 0;
+    m_results_tc                        = 0;
+    m_reliable                          = false;
+    m_inst                              = NULL;
+    m_results                           = NULL;
+    m_extra_results                     = NULL;
+    m_inst_top                          = NULL;
+    m_inst_bottom                       = NULL;
+    m_vrblz_top                         = NULL;
+    m_rhs                               = NULL;
+    m_prod                              = NULL;
+    m_chunk_inst                        = NULL;
+    m_prod_name                         = NULL;
+    m_saved_justification_top           = NULL;
+    m_saved_justification_bottom        = NULL;
+    chunk_free_problem_spaces           = NIL;
+    chunky_problem_spaces               = NIL;
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)

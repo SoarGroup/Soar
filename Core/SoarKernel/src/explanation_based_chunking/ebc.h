@@ -177,12 +177,21 @@ class Explanation_Based_Chunker
         instantiation*      m_inst;
         preference*         m_results;
         goal_stack_level    m_results_match_goal_level;
+        uint64_t            m_chunk_new_i_id;
         tc_number           m_results_tc;
         preference*         m_extra_results;
         bool                m_reliable;
         condition*          m_inst_top;
         condition*          m_inst_bottom;
         condition*          m_vrblz_top;
+        action*             m_rhs;
+        production*         m_prod;
+        instantiation*      m_chunk_inst;
+        Symbol*             m_prod_name;
+        condition*          m_saved_justification_top;
+        condition*          m_saved_justification_bottom;
+        ProductionType      m_prod_type;
+        bool                m_should_print_name, m_should_print_prod;
 
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
@@ -223,6 +232,7 @@ class Explanation_Based_Chunker
                                                         wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
         Symbol*         generate_chunk_name(instantiation* inst);
+        void            set_up_rule_name(bool pForChunk);
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
@@ -231,15 +241,20 @@ class Explanation_Based_Chunker
         void            add_results_if_needed(Symbol* sym);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
-        void            create_initial_chunk_condition_lists(tc_number tc_to_use);
+        void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
-        void            make_clones_of_results(preference* results, instantiation* chunk_inst);
+        void            make_clones_of_results();
         void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        bool            reorder_and_validate_chunk(ProductionType pProdType, uint64_t pInstID, action** rhs_top, bool reorder_nccs);
-        void            clean_up (Symbol** prod_name);
+        bool            reorder_and_validate_chunk();
+        void            deallocate_failed_chunk();
+        void            abort();
+        void            clean_up();
+        void            save_conditions_for_reversal();
+        void            revert_chunk_to_instantiation();
+        void            add_chunk_to_rete();
 
         /* Dependency analysis methods */
         void perform_dependency_analysis();

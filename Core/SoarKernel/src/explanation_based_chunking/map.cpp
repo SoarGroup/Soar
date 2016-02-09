@@ -114,7 +114,7 @@ void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
     assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
     if (!m_learning_on) return;
 
-    dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
+    dprint(DT_EBC_CLEANUP, "Cleaning up after creating instantiation %u\n", pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
 
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
@@ -134,7 +134,7 @@ void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 #endif
     rulesym_to_identity_map->erase(pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
-    dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
+    dprint(DT_EBC_CLEANUP, "Done cleaning up after creating instantiation %u\n-------\n", pI_id);
 }
 
 void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)

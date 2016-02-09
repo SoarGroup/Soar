@@ -225,10 +225,7 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
  * the production is valid.  This was separated out so EBC can try to fix
  * unconnected conditions caused by LTI being at a higher level. */
 
-bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   pProdType,
-                                                           uint64_t         pInstID,
-                                                           action**         rhs_top,
-                                                           bool             reorder_nccs)
+bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     /* This is called for justifications even though it does nothing because in the future
      * we might want to fix a justification that has conditions unconnected to
@@ -238,16 +235,16 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk(ProductionType   pPro
      * that right now because it will introduce a high computational cost that may
      * not be necessary.*/
 
-    if (pProdType != JUSTIFICATION_PRODUCTION_TYPE)
+    if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
         symbol_list* unconnected_syms = new symbol_list();
 
-        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, rhs_top, reorder_nccs, true, unconnected_syms);
+        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
 
         if (lFailureType == ebc_failed_unconnected_conditions)
         {
-            generate_conditions_to_ground_lti(unconnected_syms, pInstID);
-            return reorder_and_validate_chunk(pProdType, pInstID, rhs_top, reorder_nccs);
+            generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
+            return reorder_and_validate_chunk();
         }
         delete unconnected_syms;
         return (lFailureType == ebc_success);
