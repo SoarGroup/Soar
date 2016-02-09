@@ -446,7 +446,22 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     
     ncb_retrieval = new smem_timer("smem_ncb_retrieval", thisAgent, soar_module::timer::two);
     add(ncb_retrieval);
-    
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_1", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_1);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_1_1", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_1_1);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_2", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_2);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_3", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_3);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_4);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4_1", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_4_1);
+    ncb_retrieval = new smem_timer("smem_ncb_retrieval_4_2", thisAgent, soar_module::timer::four);
+    add(ncb_retrieval_4_2);
+
+
     query = new smem_timer("smem_query", thisAgent, soar_module::timer::two);
     add(query);
     
@@ -4300,7 +4315,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->start();
     ////////////////////////////////////////////////////////////////////////////
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_1->start();
+    ////////////////////////////////////////////////////////////////////////////
     // get the ^result header for this state
     Symbol* result_header = NULL;
     if (install_type == wm_install)
@@ -4316,21 +4333,35 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         
         q->bind_int(1, lti_id);
         q->execute();
-        
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->ncb_retrieval_1_1->start();
+        ////////////////////////////////////////////////////////////////////////////
         lti = smem_lti_soar_make(thisAgent, lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
-        
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->ncb_retrieval_1_1->stop();
+        ////////////////////////////////////////////////////////////////////////////
         q->reinitialize();
         
         lti_created_here = true;
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
     // activate lti
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_2->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (activate_lti)
     {
         smem_lti_activate(thisAgent, lti_id, true);
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
     // point retrieved to lti
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_3->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (install_type == wm_install)
     {
         if (spontaneous)//The logic for the below if-statements assumes that one doesn't use depth and spontaneous retrieval at the same time.
@@ -4350,6 +4381,12 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             }
         }
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_4->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (lti_created_here)
     {
         // if the identifier was created above we need to
@@ -4383,6 +4420,9 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         
         while (expand_q->execute() == soar_module::row)
         {
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->ncb_retrieval_4_1->start();
+            ////////////////////////////////////////////////////////////////////////////
             // make the identifier symbol irrespective of value type
             attr_sym = smem_reverse_hash(thisAgent, static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
             
@@ -4407,12 +4447,18 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             // (thus an extra ref count is set before adding a wme)
             symbol_remove_ref(thisAgent, attr_sym);
             symbol_remove_ref(thisAgent, value_sym);
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->ncb_retrieval_4_1->stop();
+            ////////////////////////////////////////////////////////////////////////////
         }
         expand_q->reinitialize();
         
         //Attempt to find children for the case of depth.
         std::set<Symbol*>::iterator iterator;
         std::set<Symbol*>::iterator end = children.end();
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->ncb_retrieval_4_2->start();
+        ////////////////////////////////////////////////////////////////////////////
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
             if (visited->find((*iterator)->id->smem_lti) == visited->end())
@@ -4421,13 +4467,17 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
                 smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
-
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->ncb_retrieval_4_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
     }
     if (triggered)
     {
         delete visited;
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->ncb_retrieval_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
