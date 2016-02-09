@@ -225,6 +225,12 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* init;
         soar_module::timer* hash;
         soar_module::timer* act;
+        soar_module::timer* act_1;
+        soar_module::timer* act_2;
+        soar_module::timer* act_3;
+        soar_module::timer* act_4;
+        soar_module::timer* act_5;
+        soar_module::timer* act_6;
         soar_module::timer* spreading_act;
         soar_module::timer* spontaneous_retrieval;
         soar_module::timer* spontaneous_retrieval_1;

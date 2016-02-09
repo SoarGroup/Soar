@@ -478,6 +478,18 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
 
     act = new smem_timer("three_activation", thisAgent, soar_module::timer::three);
     add(act);
+    act_1 = new smem_timer("three_activation_1", thisAgent, soar_module::timer::four);
+    add(act_1);
+    act_2 = new smem_timer("three_activation_2", thisAgent, soar_module::timer::four);
+    add(act_2);
+    act_3 = new smem_timer("three_activation_3", thisAgent, soar_module::timer::four);
+    add(act_3);
+    act_4 = new smem_timer("three_activation_4", thisAgent, soar_module::timer::four);
+    add(act_4);
+    act_5 = new smem_timer("three_activation_5", thisAgent, soar_module::timer::four);
+    add(act_5);
+    act_6 = new smem_timer("three_activation_6", thisAgent, soar_module::timer::four);
+    add(act_6);
 
     spreading_act = new smem_timer("spreading_activation", thisAgent, soar_module::timer::three);
     add(spreading_act);
@@ -2414,6 +2426,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     double prev_access_n = 0;
     uint64_t prev_access_t = 0;
     uint64_t prev_access_1 = 0;
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_1->start();
+    ////////////////////////////////////////////////////////////////////////////
 
     // get old (potentially useful below)
     {
@@ -2426,6 +2441,12 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 
         thisAgent->smem_stmts->lti_access_get->reinitialize();
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act2->start();
+    ////////////////////////////////////////////////////////////////////////////
 
     if (add_access)
     {
@@ -2527,7 +2548,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         
         thisAgent->smem_stats->act_updates->set_value(thisAgent->smem_stats->act_updates->get_value() + 1);
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_3->start();
+    ////////////////////////////////////////////////////////////////////////////
 
     // set new
     //if (add_access)
@@ -2539,7 +2566,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
         thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_4->start();
+    ////////////////////////////////////////////////////////////////////////////
     
     // get new activation value (depends upon bias)
     double new_activation = 0.0;
@@ -2592,7 +2625,13 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             new_activation = smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);//smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (touches) : (0)), prev_access_1);
         }
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_4->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_5->start();
+    ////////////////////////////////////////////////////////////////////////////
+
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
@@ -2603,8 +2642,14 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         
         thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
     }
-    
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_5->start();
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_6->start();
+    ////////////////////////////////////////////////////////////////////////////
+
 
     // always associate activation with lti
     double spread = 0;
@@ -2650,7 +2695,10 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
             thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
         }
     }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->act_6->stop();
+    ////////////////////////////////////////////////////////////////////////////
+
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
