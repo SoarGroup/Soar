@@ -694,9 +694,9 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
     add_structure("CREATE UNIQUE INDEX smem_lti_id_letter_num ON smem_lti (lti_id, soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
-    add_structure("CREATE INDEX smem_lti_act_base ON smem_lti (lti_id, activation_base_level)");
-    add_structure("CREATE INDEX smem_lti_act_spread ON smem_lti (lti_id, activation_spread)");
-    add_structure("CREATE INDEX smem_lti_act ON smem_lti (lti_id, activation_value)");
+    //add_structure("CREATE INDEX smem_lti_act_base ON smem_lti (lti_id, activation_base_level)");
+    //add_structure("CREATE INDEX smem_lti_act_spread ON smem_lti (lti_id, activation_spread)");
+    //add_structure("CREATE INDEX smem_lti_act ON smem_lti (lti_id, activation_value)");
     //add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)"); -- will instead be added and removed if/when spontaneous retrieval is turned on or off.
     //add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)"); not needed, i think... was only for spontaneous, which I think can now be handled exclusively with smem_lti
     add_structure("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)");
