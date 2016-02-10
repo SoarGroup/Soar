@@ -694,6 +694,8 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
     add_structure("CREATE UNIQUE INDEX smem_lti_id_letter_num ON smem_lti (lti_id, soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+    add_structure("CREATE INDEX smem_lti_act_base ON smem_lti (lti_id, activation_base_level)");
+    add_structure("CREATE INDEX smem_lti_act_spread ON smem_lti (lti_id, activation_spread)");
     add_structure("CREATE INDEX smem_lti_act ON smem_lti (lti_id, activation_value)");
     //add_structure("CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)"); -- will instead be added and removed if/when spontaneous retrieval is turned on or off.
     //add_structure("CREATE INDEX smem_augmentations_act ON smem_augmentations (activation_value, lti_id)"); not needed, i think... was only for spontaneous, which I think can now be handled exclusively with smem_lti
@@ -2967,7 +2969,7 @@ void smem_calc_spread(agent* thisAgent)
             {// Here, I need to get the previous activation of the lti_id in question and update that.
                 //First, I need to get the existing info for this lti_id.
 ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->spreading_calc_1_1->start();
+    thisAgent->smem_timers->spreading_calc_1_1->start();//costly
     ////////////////////////////////////////////////////////////////////////////
                 lti_id = calc_spread->column_int(0);
 
@@ -3236,10 +3238,10 @@ void smem_calc_spread(agent* thisAgent)
     thisAgent->smem_timers->spreading_calc_1_3->stop();
     ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->spreading_calc_1_4->start();
+    thisAgent->smem_timers->spreading_calc_1_4->start();//costly
     ////////////////////////////////////////////////////////////////////////////
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
-    {//Now we add the walks/traversals we've done.
+    {//Now we add the walks/traversals we've done. //can imagine doing this as a batch process through a join on a list of the additions if need be.
         add_fingerprint->bind_int(1,(*it));
         add_fingerprint->execute(soar_module::op_reinit);
     }
@@ -3256,7 +3258,7 @@ void smem_calc_spread(agent* thisAgent)
     thisAgent->smem_timers->spreading_calc_1->stop();
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->spreading_calc_2->start();
+    thisAgent->smem_timers->spreading_calc_2->start();//somewhere not covered by one of the subtimers - costly
     ////////////////////////////////////////////////////////////////////////////
     for(smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {//We need to calculate the spread (having already done the walks/traversals) from each new lti in working memory.
@@ -3354,7 +3356,7 @@ void smem_calc_spread(agent* thisAgent)
                 thisAgent->smem_timers->spreading_calc_2_2_2->stop();
                 ////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////
-                thisAgent->smem_timers->spreading_calc_2_2_3->start();
+                thisAgent->smem_timers->spreading_calc_2_2_3->start();//costly
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
