@@ -2721,7 +2721,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         // Adding a bunch of stuff for spreading here.
         bool already_in_spread_table = false;
         smem_lti_unordered_map* spreaded_to = thisAgent->smem_spreaded_to;
-        if ((thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on) && spreaded_to->find(lti_id) != spreaded_to->end())
+        if ((thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on) && spreaded_to->find(lti) != spreaded_to->end())
         {
             already_in_spread_table = true;
             thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,lti);
