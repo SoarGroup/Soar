@@ -2719,13 +2719,16 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         ////////////////////////////////////////////////////////////////////////////
 
         // Adding a bunch of stuff for spreading here.
-        thisAgent->smem_stmts->act_lti_get->bind_int(1,lti);
-        thisAgent->smem_stmts->act_lti_get->execute();
-        if (thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on)
+        bool already_in_spread_table = false;
+        smem_lti_unordered_map* spreaded_to = thisAgent->smem_spreaded_to;
+        if ((thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on) && spreaded_to->find(lti_id) != spreaded_to->end())
         {
-            spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+            already_in_spread_table = true;
+            thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,lti);
+            thisAgent->smem_stmts->act_lti_fake_get->execute();
+            spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
+            thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
         }
-        thisAgent->smem_stmts->act_lti_get->reinitialize();
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->act_6_1->stop();
         ////////////////////////////////////////////////////////////////////////////
@@ -2751,15 +2754,26 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->act_6_3->start();
         ////////////////////////////////////////////////////////////////////////////
+        if (already_in_spread_table)
+        {
+            double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
+            modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
+            spread = (spread < offset) ? (0) : (spread);
 
-        double offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
-        modified_spread = (spread==0 || spread < offset) ? (0) : (log(spread)-log(offset));
-        spread = (spread < offset) ? (0) : (spread);
-        thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
-        thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-        thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base+modified_spread);
-        thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
-        thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+            thisAgent->smem_stmts->act_lti_fake_set->bind_double(1, new_activation);
+            thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, spread);
+            thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, new_base+modified_spread);
+            thisAgent->smem_stmts->act_lti_fake_set->bind_int(4, lti);
+            thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
+        }
+        else
+        {
+            thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
+            thisAgent->smem_stmts->act_lti_set->bind_double(2, 0);
+            thisAgent->smem_stmts->act_lti_set->bind_double(3, new_base);
+            thisAgent->smem_stmts->act_lti_set->bind_int(4, lti);
+            thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+        }
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->act_6_3->stop();
         ////////////////////////////////////////////////////////////////////////////
@@ -2768,7 +2782,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         ////////////////////////////////////////////////////////////////////////////
 
         // only if augmentation count is less than threshold do we associate with edges
-        if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value())) //costly
+        if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && !already_in_spread_table) //costly
         {
             // activation_value=? WHERE lti=?
             thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
@@ -3047,10 +3061,10 @@ void smem_calc_spread(agent* thisAgent)
                 }*/
                 if (still_exists)
                 {
-                    thisAgent->smem_stmts->act_lti_fake_set->bind_int(1, lti_id);
-                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
-                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, spread);
-                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(4, modified_spread+new_base);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, spread);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, modified_spread+new_base);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_int(4, lti_id);
                     thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
                 }
                 else
