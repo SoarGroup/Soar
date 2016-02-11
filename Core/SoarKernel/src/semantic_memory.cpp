@@ -717,30 +717,30 @@ void smem_statement_container::create_indices()
     //Keep track of invalid trajectories.
     //add_structure("CREATE INDEX trajectory_valid ON smem_likelihood_trajectories (valid_bit,lti_id)");
     //This is to find all trajectories containing some LTI. (for deletion and insertion updating.)
-    add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
-    add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2)");
-    add_structure("CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3)");
-    add_structure("CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4)");
-    add_structure("CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5)");
-    add_structure("CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6)");
-    add_structure("CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7)");
-    add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8)");
-    add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9)");
-    add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10)");
-    add_structure("CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti2,lti1)");
-    add_structure("CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti3,lti2)");
-    add_structure("CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti4,lti3)");
-    add_structure("CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti5,lti4)");
-    add_structure("CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti6,lti5)");
-    add_structure("CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti7,lti6)");
-    add_structure("CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti8,lti7)");
-    add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti9,lti8)");
-    add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti10,lti9)");
-    add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
+    add_structure("CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1) WHERE lti1 != 0");
+    add_structure("CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2) WHERE lti2 != 0");
+    add_structure("CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3) WHERE lti3 != 0");
+    add_structure("CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4) WHERE lti4 != 0");
+    add_structure("CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5) WHERE lti5 != 0");
+    add_structure("CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6) WHERE lti6 != 0");
+    add_structure("CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7) WHERE lti7 != 0");
+    add_structure("CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8) WHERE lti8 != 0");
+    add_structure("CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9) WHERE lti9 != 0");
+    add_structure("CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10) WHERE lti10 != 0");
+    add_structure("CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1) WHERE lti2=0");
+    add_structure("CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2) WHERE lti3=0");
+    add_structure("CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3) WHERE lti4=0");
+    add_structure("CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4) WHERE lti5=0");
+    add_structure("CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5) WHERE lti6=0");
+    add_structure("CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6) WHERE lti7=0");
+    add_structure("CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7) WHERE lti8=0");
+    add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8) WHERE lti9=0");
+    add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9) WHERE lti10=0");
+    add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10) WHERE lti10!=0");
     add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
     add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
     //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source,lti_id,num_appearances,num_appearances_i_j)");
+    add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");//,lti_id,num_appearances,num_appearances_i_j)");
     add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
@@ -1052,7 +1052,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(trajectory_invalidate_from_lti);
 
     //invalidating trajectories containing some lti followed by a particular different lti
-    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=?) OR (lti1=? AND lti2=?) OR (lti2=? AND lti3=?) OR (lti3=? AND lti4=?) OR (lti4=? AND lti5=?) OR (lti5=? AND lti6=?) OR (lti6=? AND lti7=?) OR (lti7=? AND lti8=?) OR (lti8=? AND lti9=?) OR (lti9=? AND lti10=?)");
+    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=? AND lti1!=0) OR (lti1=? AND lti2=? AND lti2!=0) OR (lti2=? AND lti3=? AND lti3!=0) OR (lti3=? AND lti4=? AND lti4!=0) OR (lti4=? AND lti5=? AND lti5!=0) OR (lti5=? AND lti6=? AND lti6!=0) OR (lti6=? AND lti7=? AND lti7!=0) OR (lti7=? AND lti8=? AND lti8!=0) OR (lti8=? AND lti9=? AND lti9!=0) OR (lti9=? AND lti10=? AND lti10!=0)");
     add(trajectory_invalidate_edge);
 
     //gets the size of the current fingerprint table.
@@ -2071,102 +2071,102 @@ void smem_create_trajectory_indices(agent* thisAgent)
 //    trajectory_index_delete->execute(soar_module::op_reinit);
 //    delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1)");
+            "CREATE INDEX lti_t1 ON smem_likelihood_trajectories (lti_id,lti1) WHERE lti1 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2)");
+            "CREATE INDEX lti_t2 ON smem_likelihood_trajectories (lti1,lti2) WHERE lti2 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3)");
+            "CREATE INDEX lti_t3 ON smem_likelihood_trajectories (lti2,lti3) WHERE lti3 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4)");
+            "CREATE INDEX lti_t4 ON smem_likelihood_trajectories (lti3,lti4) WHERE lti4 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5)");
+            "CREATE INDEX lti_t5 ON smem_likelihood_trajectories (lti4,lti5) WHERE lti5 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6)");
+            "CREATE INDEX lti_t6 ON smem_likelihood_trajectories (lti5,lti6) WHERE lti6 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7)");
+            "CREATE INDEX lti_t7 ON smem_likelihood_trajectories (lti6,lti7) WHERE lti7 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8)");
+            "CREATE INDEX lti_t8 ON smem_likelihood_trajectories (lti7,lti8) WHERE lti8 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9)");
+            "CREATE INDEX lti_t9 ON smem_likelihood_trajectories (lti8,lti9) WHERE lti9 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10)");
+            "CREATE INDEX lti_t10 ON smem_likelihood_trajectories (lti9,lti10) WHERE lti10 != 0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1,lti2)");
+            "CREATE INDEX lti_t12 ON smem_likelihood_trajectories (lti_id,lti1) WHERE lti2=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2,lti3)");
+            "CREATE INDEX lti_t23 ON smem_likelihood_trajectories (lti_id,lti2) WHERE lti3=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3,lti4)");
+            "CREATE INDEX lti_t34 ON smem_likelihood_trajectories (lti_id,lti3) WHERE lti4=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4,lti5)");
+            "CREATE INDEX lti_t45 ON smem_likelihood_trajectories (lti_id,lti4) WHERE lti5=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5,lti6)");
+            "CREATE INDEX lti_t56 ON smem_likelihood_trajectories (lti_id,lti5) WHERE lti6=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6,lti7)");
+            "CREATE INDEX lti_t67 ON smem_likelihood_trajectories (lti_id,lti6) WHERE lti7=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7,lti8)");
+            "CREATE INDEX lti_t78 ON smem_likelihood_trajectories (lti_id,lti7) WHERE lti8=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8,lti9)");
+            "CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8) WHERE lti9=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9,lti10)");
+            "CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9) WHERE lti10=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
     trajectory_index_delete = new soar_module::sqlite_statement(thisAgent->smem_db,
-            "CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10)");
+            "CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10) WHERE lti10!=0");
     trajectory_index_delete->prepare();
     trajectory_index_delete->execute(soar_module::op_reinit);
     delete trajectory_index_delete;
