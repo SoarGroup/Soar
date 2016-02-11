@@ -420,7 +420,9 @@ agent* create_soar_agent(char* agent_name)                                      
     /*
      * This is used to keep track of ltis in wmem.
      * */
+
     thisAgent->smem_in_wmem = new smem_lti_map;
+    thisAgent->smem_spreaded_to = new smem_lti_unordered_map;
     thisAgent->smem_context_additions = new smem_lti_set;
     thisAgent->smem_context_removals = new smem_lti_set;
     thisAgent->substate_break_level = 0;
@@ -495,6 +497,7 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->smem_timers;
 
     delete delete_agent->smem_in_wmem;//These are for spreading.
+    delete delete_agent->smem_spreaded_to;
     delete delete_agent->smem_context_additions;
     delete delete_agent->smem_context_removals;
 

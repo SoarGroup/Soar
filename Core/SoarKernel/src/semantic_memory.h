@@ -362,6 +362,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* act_lti_child_ct_set;
         soar_module::sqlite_statement* act_lti_child_ct_get;
         soar_module::sqlite_statement* act_lti_set;
+        soar_module::sqlite_statement* act_lti_fake_set;
+        soar_module::sqlite_statement* act_lti_fake_insert;
+        soar_module::sqlite_statement* act_lti_fake_delete;
+        soar_module::sqlite_statement* act_lti_fake_get;
         soar_module::sqlite_statement* act_lti_get;
 
         soar_module::sqlite_statement* history_get;
@@ -459,6 +463,7 @@ typedef uint64_t smem_hash_id;
 typedef std::list<smem_lti_id> smem_lti_list;
 typedef std::set<smem_lti_id> smem_lti_set;
 typedef std::map<smem_lti_id, uint64_t> smem_lti_map;
+typedef std::unordered_map<smem_lti_id, uint64_t> smem_lti_unordered_map;
 
 // a list of symbols
 typedef std::list<Symbol*> smem_sym_list;

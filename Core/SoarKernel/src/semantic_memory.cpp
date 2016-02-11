@@ -651,6 +651,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER)");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
+    add_structure("CREATE TABLE smem_current_spread_activations (lti_id INTEGER PRIMARY KEY, activation_base_level REAL,activation_spread REAL,activation_value REAL)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
     add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, prohibited INTEGER, dirty INTEGER)");
@@ -969,10 +970,19 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //Modified to include spread and base-level.
     act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_base_level=?,activation_spread=?,activation_value=? WHERE lti_id=?");
     add(act_lti_set);
+    act_lti_fake_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_current_spread_activations SET activation_base_level=?,activation_spread=?,activation_value=? WHERE lti_id=?");
+    add(act_lti_fake_set);
     
+    act_lti_fake_insert = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_current_spread_activations (lti_id,activation_base_level,activation_spread,activation_value) VALUES (?,?,?,?)");
+    add(act_lti_fake_insert);
+    act_lti_fake_delete = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_current_spread_activations WHERE lti_id=?");
+    add(act_lti_fake_delete);
+
     //Modified to include spread and base-level.
     act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level,activation_spread,activation_value FROM smem_lti WHERE lti_id=?");
     add(act_lti_get);
+    act_lti_fake_get = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level,activation_spread,activation_value FROM smem_current_spread_activations WHERE lti_id=?");
+    add(act_lti_fake_get);
     
     history_get = new soar_module::sqlite_statement(new_db, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10 FROM smem_activation_history WHERE lti_id=?");
     add(history_get);
@@ -2972,10 +2982,18 @@ void smem_calc_spread(agent* thisAgent)
     thisAgent->smem_timers->spreading_calc_1_1->start();//costly
     ////////////////////////////////////////////////////////////////////////////
                 lti_id = calc_spread->column_int(0);
+                double prev_base;
+                smem_lti_unordered_map* spreaded_to = thisAgent->smem_spreaded_to;
+                bool still_exists;
+                assert(spreaded_to->find(lti_id) != spreaded_to->end());
+                still_exists = (((*spreaded_to)[lti_id]) != 1);
 
-                thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
-                thisAgent->smem_stmts->act_lti_get->execute();
-                spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+                (*spreaded_to)[lti_id] = (*spreaded_to)[lti_id] - 1;
+                thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,lti_id);
+                thisAgent->smem_stmts->act_lti_fake_get->execute();
+                spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
+                prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
+                thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
 
                 ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
                 //raw_prob = (((double)(calc_spread->column_int(2)))/(calc_spread->column_int(1)+1));
@@ -3009,7 +3027,7 @@ void smem_calc_spread(agent* thisAgent)
                 double modified_spread = ((spread < offset) || (spread < 0)) ? (0) : (log(spread)-log(offset));
                 spread = (spread < offset) ? (0) : (spread);
                 //This is the same sort of activation updating one would have to do with base-level.
-                double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
+                //double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
                 double new_base;
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
@@ -3021,20 +3039,31 @@ void smem_calc_spread(agent* thisAgent)
                 {
                     new_base = prev_base;
                 }
-                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on)
+                /*if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on)
                 {
                     thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+                }*/
+                if (still_exists)
+                {
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_int(1, lti_id);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, spread);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(4, modified_spread+new_base);
+                    thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
+                }
+                else
+                {
+                    thisAgent->smem_stmts->act_lti_fake_delete->bind_int(1, lti_id);
+                    thisAgent->smem_stmts->act_lti_fake_delete->execute(soar_module::op_reinit);
+                    thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
+                    thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+new_base);
+                    thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
+                    thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
                 }
 
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
-                thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
-                thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+new_base);
-                thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
-                thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
-
-                thisAgent->smem_stmts->act_lti_get->reinitialize();
 ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_1_1->stop();
     ////////////////////////////////////////////////////////////////////////////
@@ -3271,12 +3300,29 @@ void smem_calc_spread(agent* thisAgent)
         {// Here, I need to get the previous activation of the lti_id in question and update that.
             //First, I need to get the existing info for this lti_id.
             lti_id = calc_spread->column_int(0);
+            smem_lti_unordered_map* spreaded_to = thisAgent->smem_spreaded_to;
+            double prev_base;
+            bool already_in_spread_table = false;
+            if (spreaded_to->find(lti_id) == spreaded_to->end())
+            {
+                (*spreaded_to)[lti_id] = 1;
+                thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
+                thisAgent->smem_stmts->act_lti_get->execute();
+                spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+                prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
+                thisAgent->smem_stmts->act_lti_get->reinitialize();
+            }
+            else
+            {
+                already_in_spread_table = true;
+                (*spreaded_to)[lti_id] = (*spreaded_to)[lti_id] + 1;
+                thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,lti_id);
+                thisAgent->smem_stmts->act_lti_fake_get->execute();
+                spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
+                prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
+                thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
+            }
 
-            thisAgent->smem_stmts->act_lti_get->bind_int(1,lti_id);
-            thisAgent->smem_stmts->act_lti_get->execute();
-            spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
-            double prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
-            thisAgent->smem_stmts->act_lti_get->reinitialize();
             ////this calculation actually captures the log-odds correctly. The alternative is to literally add over the whole context.
             /*raw_prob = (((double)(calc_spread->column_int(2)))/calc_spread->column_int(1));
             offset = (thisAgent->smem_params->spreading_baseline->get_value())/(calc_spread->column_int(1));
@@ -3345,24 +3391,40 @@ void smem_calc_spread(agent* thisAgent)
                 {
                     new_base = prev_base;
                 }
-                if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on) // ** This is costly.
+                /*if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()) && thisAgent->smem_params->spontaneous_retrieval->get_value() == on) // ** This is costly.
                 {//The cost is from having to update several indexes that use the activation value.
                     //These indexes are on the entire graph structure of smem. (smem_augmentations)
                     thisAgent->smem_stmts->act_set->bind_double(1, new_base+modified_spread);
                     thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
                     thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
-                }
+                }*/
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_2->stop();
                 ////////////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3->start();//costly
                 ////////////////////////////////////////////////////////////////////////////
-                thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                if (already_in_spread_table)
+                {
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, spread);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, modified_spread+ new_base);
+                    thisAgent->smem_stmts->act_lti_fake_set->bind_int(4, lti_id);
+                    thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
+                }
+                else
+                {
+                    thisAgent->smem_stmts->act_lti_fake_insert->bind_int(1, lti_id);
+                    thisAgent->smem_stmts->act_lti_fake_insert->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    thisAgent->smem_stmts->act_lti_fake_insert->bind_double(3, spread);
+                    thisAgent->smem_stmts->act_lti_fake_insert->bind_double(4, modified_spread+ new_base);
+                    thisAgent->smem_stmts->act_lti_fake_insert->execute(soar_module::op_reinit);
+                }
+                /*thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                 thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                 thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+ new_base);
                 thisAgent->smem_stmts->act_lti_set->bind_int(4, lti_id);
-                thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+                thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);*/
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3->stop();
                 ////////////////////////////////////////////////////////////////////////////
