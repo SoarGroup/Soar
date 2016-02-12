@@ -3059,7 +3059,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                     ////////////////////////////////////////////////////////////////////////////
                     trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->smem_timers->spreading_calc_2_1_det->start();
+                    thisAgent->smem_timers->spreading_calc_2_1_det->stop();
                     ////////////////////////////////////////////////////////////////////////////
                     double p1 = thisAgent->smem_params->continue_probability->get_value();
                     for (int i = 1; i < 11; i++)
