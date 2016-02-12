@@ -3022,6 +3022,9 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
      *      3.3 - make into new val
      */
 
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_1->start();
+    ////////////////////////////////////////////////////////////////////////////
     if (thisAgent->smem_params->spreading_crawl_time->get_value() != smem_param_container::precalculate)
     {
         //One can put off doing the spreading traversal until it is needed. That's what !=precalculate means.
@@ -3041,7 +3044,6 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 thisAgent->smem_stmts->trajectory_get->reinitialize();
                 if (was_invalid || no_trajectory)
                 {
-                    trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
                     //We also need to make a new one.
                     if (was_invalid)
                     {
@@ -3050,6 +3052,8 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*it));
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
                     }
+                    trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
+
                     double p1 = thisAgent->smem_params->continue_probability->get_value();
                     for (int i = 1; i < 11; i++)
                     {
@@ -3098,6 +3102,15 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
             delete to_delete->second;
         }
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2->start();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_1->start();
+    ////////////////////////////////////////////////////////////////////////////
     soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
     soar_module::sqlite_statement* add_uncommitted_fingerprint = thisAgent->smem_stmts->add_uncommitted_fingerprint;
     for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
@@ -3108,7 +3121,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
         add_uncommitted_fingerprint->execute(soar_module::op_reinit);
     }
     thisAgent->smem_context_additions->clear();
-
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_1->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_2->start();
+    ////////////////////////////////////////////////////////////////////////////
     soar_module::sqlite_statement* delete_old_context = thisAgent->smem_stmts->delete_old_context;
     for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
@@ -3129,7 +3147,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
         delete_old_spread->execute(soar_module::op_reinit);
     }
     thisAgent->smem_context_removals->clear();
-
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_3->start();
+    ////////////////////////////////////////////////////////////////////////////
     double prev_base;
     double raw_prob;
     double additional;
@@ -3294,6 +3317,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
             }
         }
     }
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2_3->stop();
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    thisAgent->smem_timers->spreading_calc_2_2->stop();
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 
