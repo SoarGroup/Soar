@@ -558,6 +558,8 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_calc_2);
     spreading_calc_2_1 = new smem_timer("spreading_calc_2_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_1);
+    spreading_calc_2_1_det = new smem_timer("spreading_calc_2_1_det", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_1_det);
     spreading_calc_2_2 = new smem_timer("spreading_calc_2_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2);
     spreading_calc_2_2_1 = new smem_timer("spreading_calc_2_2_1", thisAgent, soar_module::timer::four);
@@ -3052,8 +3054,13 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->bind_int(1,(*it));
                         thisAgent->smem_stmts->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
                     }
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_1_det->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     trajectory_construction_deterministic(thisAgent,*it,lti_trajectories);
-
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_1_det->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     double p1 = thisAgent->smem_params->continue_probability->get_value();
                     for (int i = 1; i < 11; i++)
                     {
