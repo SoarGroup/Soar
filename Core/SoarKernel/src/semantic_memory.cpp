@@ -5009,35 +5009,38 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_act->start();
         ////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->spreading_calc_1->start();
-        ////////////////////////////////////////////////////////////////////////////
-        q = smem_setup_cheap_web_crawl(thisAgent, (*cand_set));
-        // queue up distinct lti's to update
-        // - set because queries could contain wilds
-        // - not in loop because the effects of activation may actually
-        //   alter the resultset of the query (isolation???)
-        std::set< smem_lti_id > to_update;
-        int num_answers = 0;
-        while (q->execute() == soar_module::row)
+        if (thisAgent->smem_params->spreading->get_value() == on && thisAgent->smem_params->spreading_time->get_value() == smem_param_container::query_time)
         {
-            num_answers++;
-            to_update.insert(q->column_int(0));
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->spreading_calc_1->start();
+            ////////////////////////////////////////////////////////////////////////////
+            q = smem_setup_cheap_web_crawl(thisAgent, (*cand_set));
+            // queue up distinct lti's to update
+            // - set because queries could contain wilds
+            // - not in loop because the effects of activation may actually
+            //   alter the resultset of the query (isolation???)
+            std::set< smem_lti_id > to_update;
+            int num_answers = 0;
+            while (q->execute() == soar_module::row)
+            {
+                num_answers++;
+                to_update.insert(q->column_int(0));
+            }
+            q->reinitialize();
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->spreading_calc_1->stop();
+            ////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->spreading_calc_2->start();
+            ////////////////////////////////////////////////////////////////////////////
+            if (num_answers > 1)
+            {
+                smem_calc_spread(thisAgent, &to_update);
+            }
+            ////////////////////////////////////////////////////////////////////////////
+            thisAgent->smem_timers->spreading_calc_2->stop();
+            ////////////////////////////////////////////////////////////////////////////
         }
-        q->reinitialize();
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->spreading_calc_1->stop();
-        ////////////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->spreading_calc_2->start();
-        ////////////////////////////////////////////////////////////////////////////
-        if (num_answers > 1)
-        {
-            smem_calc_spread(thisAgent, &to_update);
-        }
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->spreading_calc_2->stop();
-        ////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_act->stop();
         ////////////////////////////////////////////////////////////////////////////
