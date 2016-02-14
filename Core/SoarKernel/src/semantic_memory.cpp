@@ -564,6 +564,10 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_calc_2_2);
     spreading_calc_2_2_1 = new smem_timer("spreading_calc_2_2_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_1);
+    spreading_calc_2_2_1_1 = new smem_timer("spreading_calc_2_2_1_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_1_1);
+    spreading_calc_2_2_1_2 = new smem_timer("spreading_calc_2_2_1_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_1_2);
     spreading_calc_2_2_2 = new smem_timer("spreading_calc_2_2_2", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_2);
     spreading_calc_2_2_2_1 = new smem_timer("spreading_calc_2_2_2_1", thisAgent, soar_module::timer::four);
@@ -3130,10 +3134,22 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
     soar_module::sqlite_statement* add_uncommitted_fingerprint = thisAgent->smem_stmts->add_uncommitted_fingerprint;
     for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {//Now we add the walks/traversals we've done. //can imagine doing this as a batch process through a join on a list of the additions if need be.
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_1_1->start();
+        ////////////////////////////////////////////////////////////////////////////
         add_fingerprint->bind_int(1,(*it));
         add_fingerprint->execute(soar_module::op_reinit);
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_1_1->stop();
+        ////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_1_2->start();
+        ////////////////////////////////////////////////////////////////////////////
         add_uncommitted_fingerprint->bind_int(1,(*it));
         add_uncommitted_fingerprint->execute(soar_module::op_reinit);
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_1_2->stop();
+        ////////////////////////////////////////////////////////////////////////////
     }
     thisAgent->smem_context_additions->clear();
     ////////////////////////////////////////////////////////////////////////////
