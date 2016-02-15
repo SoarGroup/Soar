@@ -580,6 +580,32 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_calc_2_2_2_4);
     spreading_calc_2_2_3 = new smem_timer("spreading_calc_2_2_3", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_3);
+    spreading_calc_2_2_3_1 = new smem_timer("spreading_calc_2_2_3_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_1);
+    spreading_calc_2_2_3_2 = new smem_timer("spreading_calc_2_2_3_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_2);
+    spreading_calc_2_2_3_3 = new smem_timer("spreading_calc_2_2_3_3", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_3);
+    spreading_calc_2_2_3_4 = new smem_timer("spreading_calc_2_2_3_4", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_4);
+    spreading_calc_2_2_3_4_1 = new smem_timer("spreading_calc_2_2_3_4_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_4_1);
+    spreading_calc_2_2_3_4_2 = new smem_timer("spreading_calc_2_2_3_4_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_4_2);
+    spreading_calc_2_2_3_5 = new smem_timer("spreading_calc_2_2_3_5", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_5);
+    spreading_calc_2_2_3_6 = new smem_timer("spreading_calc_2_2_3_6", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_6);
+    spreading_calc_2_2_3_7 = new smem_timer("spreading_calc_2_2_3_7", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_7);
+    spreading_calc_2_2_3_8 = new smem_timer("spreading_calc_2_2_3_8", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_8);
+    spreading_calc_2_2_3_8_1 = new smem_timer("spreading_calc_2_2_3_8_1", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_8_1);
+    spreading_calc_2_2_3_8_2 = new smem_timer("spreading_calc_2_2_3_8_2", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_8_2);
+    spreading_calc_2_2_3_8_3 = new smem_timer("spreading_calc_2_2_3_8_3", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_8_3);
 
     spreading_store_1 = new smem_timer("spreading_store_1", thisAgent, soar_module::timer::four);
     add(spreading_store_1);
@@ -665,7 +691,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, PRIMARY KEY (lti_source, lti_id)) WITHOUT ROWID");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
-    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY (lti_source,lti_id)) WITHOUT ROWID");
+    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY(lti_id,lti_source)) WITHOUT ROWID");
     add_structure("CREATE TABLE smem_current_spread_activations (lti_id INTEGER PRIMARY KEY, activation_base_level REAL,activation_spread REAL,activation_value REAL)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
@@ -757,8 +783,8 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
     //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
     //add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");//,lti_id,num_appearances,num_appearances_i_j)");
-    add_structure("CREATE INDEX lti_sink ON smem_uncommitted_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source)");
+    //add_structure("CREATE INDEX lti_sink ON smem_uncommitted_spread (lti_id)");
+    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source,sign) WHERE sign=1");
     add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
@@ -1161,7 +1187,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //When spread is committed but needs removal, add a negative row for later processing.
     //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
-    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread WHERE lti_source=? AND EXISTS (SELECT 1 FROM smem_current_spread_activations WHERE smem_current_spread_activations.lti_id=smem_current_spread.lti_id)");
+    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread SELECT smem_current_spread.lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread INNER JOIN smem_current_spread_activations ON smem_current_spread.lti_id=smem_current_spread_activations.lti_id WHERE lti_source=?");
     add(reverse_old_committed_spread);
 
     //add lti to the context table
@@ -1169,11 +1195,12 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(add_new_context);
 
     //add a fingerprint's information to the current spread table.
-    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j");
+    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?");
     add(add_fingerprint);
 
     //add a fingerprint's information to the current uncommitted spread table. should happen after add_fingerprint
     add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,1 FROM smem_current_spread WHERE lti_source=?");
+//    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j,1 FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j");
     add(add_uncommitted_fingerprint);
 
     //remove a fingerprint's information from the current uncommitted spread table.(has been processed)
@@ -3230,6 +3257,10 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
             bool addition = (((int)(calc_uncommitted_spread->column_int(3))) == 1);
             if (addition)
             {
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_1->start();
+                ////////////////////////////////////////////////////////////////////////////
+
                 if (spreaded_to->find(*candidate) == spreaded_to->end())
                 {
                     (*spreaded_to)[*candidate] = 1;
@@ -3248,6 +3279,13 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                     spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
                     prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_1->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_2->start();
+                ////////////////////////////////////////////////////////////////////////////
+
                 if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
                 {
                     raw_prob = (((double)(calc_uncommitted_spread->column_int(2)))/(calc_uncommitted_spread->column_int(1)+1));
@@ -3267,6 +3305,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                     offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
                     additional = raw_prob;//(log(raw_prob)-log(offset));
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_2->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_3->start();
+                ////////////////////////////////////////////////////////////////////////////
                 spread+=additional;//Now, we've adjusted the activation according to this new addition.
 
                 thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, *candidate);
@@ -3286,25 +3330,49 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 {
                     new_base = prev_base;
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_3->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_4->start();
+                ////////////////////////////////////////////////////////////////////////////
                 if (already_in_spread_table)
                 {
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_4_1->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, spread);
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, modified_spread+ new_base);
                     thisAgent->smem_stmts->act_lti_fake_set->bind_int(4, *candidate);
                     thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_4_1->stop();
+                    ////////////////////////////////////////////////////////////////////////////
                 }
                 else
                 {
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_4_2->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->act_lti_fake_insert->bind_int(1, *candidate);
                     thisAgent->smem_stmts->act_lti_fake_insert->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     thisAgent->smem_stmts->act_lti_fake_insert->bind_double(3, spread);
                     thisAgent->smem_stmts->act_lti_fake_insert->bind_double(4, modified_spread+ new_base);
                     thisAgent->smem_stmts->act_lti_fake_insert->execute(soar_module::op_reinit);
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_4_2->stop();
+                    ////////////////////////////////////////////////////////////////////////////
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_4->stop();
+                ////////////////////////////////////////////////////////////////////////////
             }
             else
             {
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_5->start();
+                ////////////////////////////////////////////////////////////////////////////
                 still_exists = (((*spreaded_to)[*candidate]) > 1);
                 (*spreaded_to)[*candidate] = (*spreaded_to)[*candidate] - 1;
                 thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,*candidate);
@@ -3312,7 +3380,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
                 prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
                 thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
-
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_5->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_6->start();
+                ////////////////////////////////////////////////////////////////////////////
                 if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
                 {
                     raw_prob = (((double)(calc_uncommitted_spread->column_int(2)))/(calc_uncommitted_spread->column_int(1)+1));
@@ -3332,6 +3405,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                     offset = (thisAgent->smem_params->spreading_baseline->get_value())/(thisAgent->smem_params->spreading_limit->get_value());
                     //additional = (log(raw_prob)-log(offset));
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_6->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_7->start();
+                ////////////////////////////////////////////////////////////////////////////
                 spread-=raw_prob;//additional;//Now, we've adjusted the activation according to this new addition.
                 thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, *candidate);
                 thisAgent->smem_stmts->act_lti_child_ct_get->execute();
@@ -3354,26 +3433,56 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 {
                     new_base = prev_base;
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_7->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_8->start();
+                ////////////////////////////////////////////////////////////////////////////
                 if (still_exists)
                 {
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_1->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(2, spread);
                     thisAgent->smem_stmts->act_lti_fake_set->bind_double(3, modified_spread+new_base);
                     thisAgent->smem_stmts->act_lti_fake_set->bind_int(4, *candidate);
                     thisAgent->smem_stmts->act_lti_fake_set->execute(soar_module::op_reinit);
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_1->stop();
+                    ////////////////////////////////////////////////////////////////////////////
                 }
                 else
                 {
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_2->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->act_lti_fake_delete->bind_int(1, *candidate);
                     thisAgent->smem_stmts->act_lti_fake_delete->execute(soar_module::op_reinit);
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_2->stop();
+                    ////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_3->start();
+                    ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_stmts->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     thisAgent->smem_stmts->act_lti_set->bind_double(2, spread);
                     thisAgent->smem_stmts->act_lti_set->bind_double(3, modified_spread+new_base);
                     thisAgent->smem_stmts->act_lti_set->bind_int(4, *candidate);
                     thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->smem_timers->spreading_calc_2_2_3_8_3->stop();
+                    ////////////////////////////////////////////////////////////////////////////
                 }
+                ////////////////////////////////////////////////////////////////////////////
+                thisAgent->smem_timers->spreading_calc_2_2_3_8->stop();
+                ////////////////////////////////////////////////////////////////////////////
             }
         }
+        calc_uncommitted_spread->reinitialize();
+        thisAgent->smem_stmts->delete_committed_fingerprint->bind_int(1,*candidate);
+        thisAgent->smem_stmts->delete_committed_fingerprint->execute(soar_module::op_reinit);
     }
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_2_2_3->stop();
