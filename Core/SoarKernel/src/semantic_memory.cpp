@@ -3196,18 +3196,18 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_2_2_2->start();
     ////////////////////////////////////////////////////////////////////////////
-    soar_module::sqlite_statement* delete_old_context = thisAgent->smem_stmts->delete_old_context;
-    ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->spreading_calc_2_2_2_1->start();
-    ////////////////////////////////////////////////////////////////////////////
-    for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
-    {
-        delete_old_context->bind_int(1,(*it));
-        delete_old_context->execute(soar_module::op_reinit);
-    }
-    ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->spreading_calc_2_2_2_1->stop();
-    ////////////////////////////////////////////////////////////////////////////
+    //soar_module::sqlite_statement* delete_old_context = thisAgent->smem_stmts->delete_old_context;
+    //////////////////////////////////////////////////////////////////////////////
+    //thisAgent->smem_timers->spreading_calc_2_2_2_1->start();
+    //////////////////////////////////////////////////////////////////////////////
+    //for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    //{
+    //    delete_old_context->bind_int(1,(*it));
+    //    delete_old_context->execute(soar_module::op_reinit);
+    //}
+    //////////////////////////////////////////////////////////////////////////////
+    //thisAgent->smem_timers->spreading_calc_2_2_2_1->stop();
+    //////////////////////////////////////////////////////////////////////////////
     soar_module::sqlite_statement* delete_old_spread = thisAgent->smem_stmts->delete_old_spread;
     soar_module::sqlite_statement* delete_old_uncommitted_spread = thisAgent->smem_stmts->delete_old_uncommitted_spread;
     soar_module::sqlite_statement* reverse_old_committed_spread = thisAgent->smem_stmts->reverse_old_committed_spread;
