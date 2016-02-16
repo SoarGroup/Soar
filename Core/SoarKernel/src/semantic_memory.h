@@ -287,6 +287,7 @@ class smem_timer_container: public soar_module::timer_container
         soar_module::timer* spreading_calc_2_2_3_8_1;
         soar_module::timer* spreading_calc_2_2_3_8_2;
         soar_module::timer* spreading_calc_2_2_3_8_3;
+        soar_module::timer* spreading_calc_2_2_3_9;
         soar_module::timer* spreading_store_1;
         soar_module::timer* spreading_store_2;
         soar_module::timer* spreading_store_3;

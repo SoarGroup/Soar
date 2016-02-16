@@ -600,6 +600,8 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(spreading_calc_2_2_3_7);
     spreading_calc_2_2_3_8 = new smem_timer("spreading_calc_2_2_3_8", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_3_8);
+    spreading_calc_2_2_3_9 = new smem_timer("spreading_calc_2_2_3_9", thisAgent, soar_module::timer::four);
+    add(spreading_calc_2_2_3_9);
     spreading_calc_2_2_3_8_1 = new smem_timer("spreading_calc_2_2_3_8_1", thisAgent, soar_module::timer::four);
     add(spreading_calc_2_2_3_8_1);
     spreading_calc_2_2_3_8_2 = new smem_timer("spreading_calc_2_2_3_8_2", thisAgent, soar_module::timer::four);
@@ -3376,7 +3378,8 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 bool remove = (((*spreaded_to)[*candidate]) == 1);
                 (*spreaded_to)[*candidate] = (*spreaded_to)[*candidate] - 1;
                 if ((*spreaded_to)[*candidate]==-1)
-                {
+                {// This shouldn't actually ever happen.
+                    assert(false);
                     thisAgent->smem_stmts->act_lti_get->bind_int(1,*candidate);
                     thisAgent->smem_stmts->act_lti_get->execute();
                     spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
@@ -3492,8 +3495,14 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
             }
         }
         calc_uncommitted_spread->reinitialize();
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_3_9->start();
+        ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_stmts->delete_committed_fingerprint->bind_int(1,*candidate);
         thisAgent->smem_stmts->delete_committed_fingerprint->execute(soar_module::op_reinit);
+        ////////////////////////////////////////////////////////////////////////////
+        thisAgent->smem_timers->spreading_calc_2_2_3_9->stop();
+        ////////////////////////////////////////////////////////////////////////////
     }
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_2_2_3->stop();
