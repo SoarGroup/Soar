@@ -784,7 +784,7 @@ void smem_statement_container::create_indices()
     //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
     //add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");//,lti_id,num_appearances,num_appearances_i_j)");
     //add_structure("CREATE INDEX lti_sink ON smem_uncommitted_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source,sign) WHERE sign=1");
+    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source)");//,sign) WHERE sign=1");
     add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
@@ -1182,7 +1182,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //When spread is still uncommitted, just remove. when it is committed, mark row as negative.
     //This should be called alongside reverse_old_committed_spread
-    delete_old_uncommitted_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND sign=1");
+    delete_old_uncommitted_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_source=?");// AND sign=1");
     add(delete_old_uncommitted_spread);
 
     //When spread is committed but needs removal, add a negative row for later processing.
