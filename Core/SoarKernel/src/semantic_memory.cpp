@@ -691,7 +691,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, PRIMARY KEY (lti_source, lti_id)) WITHOUT ROWID");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
-    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY(lti_id,sign,lti_source)) WITHOUT ROWID");
+    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY(lti_id,lti_source)) WITHOUT ROWID");
     add_structure("CREATE TABLE smem_current_spread_activations (lti_id INTEGER PRIMARY KEY, activation_base_level REAL,activation_spread REAL,activation_value REAL)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
@@ -1165,7 +1165,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(calc_spread);
 
     //gets the relevant info from currently relevant ltis
-    calc_uncommitted_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign FROM smem_uncommitted_spread WHERE lti_id = ? ORDER BY sign DESC");
+    calc_uncommitted_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign FROM smem_uncommitted_spread WHERE lti_id = ?");
     add(calc_uncommitted_spread);
 
     //gets the size of the current spread table.
@@ -3373,13 +3373,24 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3_5->start();
                 ////////////////////////////////////////////////////////////////////////////
-                still_exists = (((*spreaded_to)[*candidate]) > 1);
+                bool remove = (((*spreaded_to)[*candidate]) == 1);
                 (*spreaded_to)[*candidate] = (*spreaded_to)[*candidate] - 1;
-                thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,*candidate);
-                thisAgent->smem_stmts->act_lti_fake_get->execute();
-                spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
-                prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
-                thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
+                if ((*spreaded_to)[*candidate]==-1)
+                {
+                    thisAgent->smem_stmts->act_lti_get->bind_int(1,*candidate);
+                    thisAgent->smem_stmts->act_lti_get->execute();
+                    spread = thisAgent->smem_stmts->act_lti_get->column_double(1);//This is the spread before changes.
+                    prev_base = thisAgent->smem_stmts->act_lti_get->column_double(0);
+                    thisAgent->smem_stmts->act_lti_get->reinitialize();
+                }
+                else
+                {
+                    thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,*candidate);
+                    thisAgent->smem_stmts->act_lti_fake_get->execute();
+                    spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
+                    prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
+                    thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
+                }
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3_5->stop();
                 ////////////////////////////////////////////////////////////////////////////
@@ -3439,7 +3450,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3_8->start();
                 ////////////////////////////////////////////////////////////////////////////
-                if (still_exists)
+                if (!remove)
                 {
                     ////////////////////////////////////////////////////////////////////////////
                     thisAgent->smem_timers->spreading_calc_2_2_3_8_1->start();
