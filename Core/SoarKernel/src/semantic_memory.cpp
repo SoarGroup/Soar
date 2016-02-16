@@ -3261,7 +3261,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 thisAgent->smem_timers->spreading_calc_2_2_3_1->start();
                 ////////////////////////////////////////////////////////////////////////////
 
-                if (spreaded_to->find(*candidate) == spreaded_to->end())
+                if (spreaded_to->find(*candidate) == spreaded_to->end() || (*spreaded_to)[*candidate] != 0)
                 {
                     (*spreaded_to)[*candidate] = 1;
                     thisAgent->smem_stmts->act_lti_get->bind_int(1,*candidate);
