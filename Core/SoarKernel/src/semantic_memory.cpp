@@ -691,7 +691,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, PRIMARY KEY (lti_source, lti_id)) WITHOUT ROWID");
     // This keeps track of the context.
     add_structure("CREATE TABLE smem_current_context (lti_id INTEGER PRIMARY KEY)");
-    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY(lti_id,lti_source)) WITHOUT ROWID");
+    add_structure("CREATE TABLE smem_uncommitted_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, sign INTEGER, PRIMARY KEY(lti_id,sign,lti_source)) WITHOUT ROWID");
     add_structure("CREATE TABLE smem_current_spread_activations (lti_id INTEGER PRIMARY KEY, activation_base_level REAL,activation_spread REAL,activation_value REAL)");
 
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
@@ -1165,7 +1165,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     add(calc_spread);
 
     //gets the relevant info from currently relevant ltis
-    calc_uncommitted_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign FROM smem_uncommitted_spread WHERE lti_id = ?");
+    calc_uncommitted_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign FROM smem_uncommitted_spread WHERE lti_id = ? ORDER BY sign DESC");
     add(calc_uncommitted_spread);
 
     //gets the size of the current spread table.
@@ -2796,7 +2796,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         // Adding a bunch of stuff for spreading here.
         bool already_in_spread_table = false;
         smem_lti_unordered_map* spreaded_to = thisAgent->smem_spreaded_to;
-        if ((thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on) && spreaded_to->find(lti) != spreaded_to->end())
+        if ((thisAgent->smem_params->spreading_model->get_value() == smem_param_container::likelihood && thisAgent->smem_params->spreading->get_value() == on) && (spreaded_to->find(lti) != spreaded_to->end() && (*spreaded_to)[lti] != 0))
         {
             already_in_spread_table = true;
             thisAgent->smem_stmts->act_lti_fake_get->bind_int(1,lti);
@@ -3261,7 +3261,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                 thisAgent->smem_timers->spreading_calc_2_2_3_1->start();
                 ////////////////////////////////////////////////////////////////////////////
 
-                if (spreaded_to->find(*candidate) == spreaded_to->end() || (*spreaded_to)[*candidate] != 0)
+                if (spreaded_to->find(*candidate) == spreaded_to->end() || (*spreaded_to)[*candidate] == 0)
                 {
                     (*spreaded_to)[*candidate] = 1;
                     thisAgent->smem_stmts->act_lti_get->bind_int(1,*candidate);
