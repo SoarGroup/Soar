@@ -25,30 +25,6 @@
 using namespace cli;
 using namespace sml;
 
-void GetForceLearnStates(agent* thisAgent, std::stringstream& res)
-{
-    cons* c;
-    char buff[1024];
-
-    for (c = thisAgent->ebChunker->chunky_problem_spaces; c != NIL; c = c->rest)
-    {
-        static_cast<Symbol*>(c->first)->to_string(true, buff, 1024);
-        res << buff;
-    }
-}
-
-void GetDontLearnStates(agent* thisAgent, std::stringstream& res)
-{
-    cons* c;
-    char buff[1024];
-
-    for (c = thisAgent->ebChunker->chunk_free_problem_spaces; c != NIL; c = c->rest)
-    {
-        static_cast<Symbol*>(c->first)->to_string(true, buff, 1024);
-        res << buff;
-    }
-}
-
 bool CommandLineInterface::DoLearn(const LearnBitset& options)
 {
     // No options means print current settings
@@ -72,18 +48,37 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
 
         if (options.test(LEARN_LIST))
         {
-            std::stringstream output;
-            PrintCLIMessage_Section("Force-Learn States", 40);
-            GetForceLearnStates(thisAgent, output);
-            if (output.str().size())
+            std::string output;
+            if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM])
             {
-                PrintCLIMessage(output.str().c_str());
-            }
-            PrintCLIMessage_Section("Dont-Learn States", 40);
-            GetDontLearnStates(thisAgent, output);
-            if (output.str().size())
+                PrintCLIMessage_Section("Only Learning In States", 40);
+                if (!thisAgent->ebChunker->chunky_problem_spaces)
+                {
+                    PrintCLIMessage("No current learning states.\n");
+                } else
+                {
+                    for (cons* c = thisAgent->ebChunker->chunky_problem_spaces; c != NIL; c = c->rest)
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
+                        PrintCLIMessage(output.c_str());
+                        output.clear();
+                    }
+                }
+            } else if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM])
             {
-                PrintCLIMessage(output.str().c_str());
+                PrintCLIMessage_Section("Learning in All States Except", 40);
+                if (!thisAgent->ebChunker->chunky_problem_spaces)
+                {
+                    PrintCLIMessage("Currently learning in all states.\n");
+                } else
+                {
+                    for (cons* c = thisAgent->ebChunker->chunk_free_problem_spaces; c != NIL; c = c->rest)
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
+                        PrintCLIMessage(output.c_str());
+                        output.clear();
+                    }
+                }
             }
         }
         return true;
