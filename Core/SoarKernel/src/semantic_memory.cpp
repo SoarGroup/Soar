@@ -3286,6 +3286,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
                     thisAgent->smem_stmts->act_lti_fake_get->execute();
                     spread = thisAgent->smem_stmts->act_lti_fake_get->column_double(1);//This is the spread before changes.
                     prev_base = thisAgent->smem_stmts->act_lti_fake_get->column_double(0);
+                    thisAgent->smem_stmts->act_lti_fake_get->reinitialize();
                 }
                 ////////////////////////////////////////////////////////////////////////////
                 thisAgent->smem_timers->spreading_calc_2_2_3_1->stop();
