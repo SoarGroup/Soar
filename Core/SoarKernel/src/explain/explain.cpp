@@ -418,14 +418,26 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
 
-    if (pCond->bt.wme_)
+    /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
+     * we use actual tests if we know it's a literal condition because identifier is STI */
+    if (condition_tests.id->eq_test->data.referent->is_identifier() &&
+        !condition_tests.attr->eq_test->data.referent->is_variable() &&
+        !condition_tests.attr->eq_test->data.referent->is_variable())
     {
-        matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
+        matched_wme = new symbol_triple(condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent);
         symbol_add_ref(thisAgent, matched_wme->id);
         symbol_add_ref(thisAgent, matched_wme->attr);
         symbol_add_ref(thisAgent, matched_wme->value);
     } else {
-        matched_wme = NULL;
+        if (pCond->bt.wme_)
+        {
+            matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
+            symbol_add_ref(thisAgent, matched_wme->id);
+            symbol_add_ref(thisAgent, matched_wme->attr);
+            symbol_add_ref(thisAgent, matched_wme->value);
+        } else {
+            matched_wme = NULL;
+        }
     }
     if (pCond->bt.level)
     {
@@ -483,9 +495,9 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     original_production = pInst->prod;
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
 
+    symbol_add_ref(thisAgent, production_name);
     if (pInst->prod)
     {
-        symbol_add_ref(thisAgent, pInst->prod->name);
 //        production_add_ref(original_production);
         original_production->save_for_justification_explanation = true;
     }
@@ -494,7 +506,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
-    if (production_name) symbol_remove_ref(thisAgent, production_name);
+    symbol_remove_ref(thisAgent, production_name);
 //    if (original_production)
 //        production_remove_ref(thisAgent, original_production);
     delete conditions;
@@ -520,6 +532,7 @@ void instantiation_record::record_instantiation_contents(instantiation* pInst, b
         actions->push_front(new_action_record);
     }
 }
+
 action_record* instantiation_record::find_rhs_action(preference* pPref)
 {
     action_record_list::iterator iter;
