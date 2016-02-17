@@ -581,6 +581,7 @@ production* make_production(agent*          thisAgent,
     p->instantiations = NIL;
     p->interrupt = false;
     p->explain_its_chunks = false;
+    p->save_for_justification_explanation = false;
 
     // Soar-RL stuff
     p->rl_update_count = 0.0;

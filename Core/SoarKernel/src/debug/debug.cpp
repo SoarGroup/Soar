@@ -337,9 +337,8 @@ void debug_test(int type)
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
-                condition* dummy;
-                thisAgent->memoryManager->allocate_with_pool(MP_condition, &dummy);
-                init_condition(dummy);
+                condition* dummy = make_condition(thisAgent);
+
 //                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");

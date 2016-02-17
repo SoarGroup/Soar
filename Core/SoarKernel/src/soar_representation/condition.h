@@ -95,20 +95,20 @@ typedef struct condition_struct
 void deallocate_condition(agent* thisAgent, condition*& cond);
 
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
-extern void deallocate_condition_list(agent* thisAgent, condition*& cond_list);
+void deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
 /* --- Initializes substructures of the given condition to default values. --- */
-extern void init_condition(condition* cond);
+condition* make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
 
 /* --- Returns a new copy of the given condition. --- */
-extern condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
 
 /* --- Returns a new copy of the given condition without any relational tests --- */
 condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
 
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
-extern void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
+void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
@@ -116,10 +116,10 @@ void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number 
 void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 /* --- Returns true iff the two conditions are identical. --- */
-extern bool conditions_are_equal(condition* c1, condition* c2);
+bool conditions_are_equal(condition* c1, condition* c2);
 
 /* --- Returns a hash value for the given condition. --- */
-extern uint32_t hash_condition(agent* thisAgent, condition* cond);
+uint32_t hash_condition(agent* thisAgent, condition* cond);
 
 bool canonical_cond_greater(condition* c1, condition* c2);
 

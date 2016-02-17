@@ -147,12 +147,10 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
     for (auto it = lConditionWMEs.begin(); it != lConditionWMEs.end(); it++)
     {
         dprint(DT_GROUND_LTI, "Creating condition for %u: (%y ^%y %y)\n", (*it)->timetag, (*it)->id, (*it)->attr, (*it)->value);
-        thisAgent->memoryManager->allocate_with_pool(MP_condition, &new_cond);
-        init_condition(new_cond);
-        new_cond->type = POSITIVE_CONDITION;
-        new_cond->data.tests.id_test = make_test(thisAgent, (*it)->id, EQUALITY_TEST);
-        new_cond->data.tests.attr_test = make_test(thisAgent, (*it)->attr, EQUALITY_TEST);
-        new_cond->data.tests.value_test = make_test(thisAgent, (*it)->value, EQUALITY_TEST);
+        new_cond = make_condition(thisAgent,
+            make_test(thisAgent, (*it)->id, EQUALITY_TEST),
+            make_test(thisAgent, (*it)->attr, EQUALITY_TEST),
+            make_test(thisAgent, (*it)->value, EQUALITY_TEST));
         new_cond->test_for_acceptable_preference = (*it)->acceptable;
         new_cond->bt.wme_ = (*it);
         new_cond->bt.level = (*it)->id->id->level;

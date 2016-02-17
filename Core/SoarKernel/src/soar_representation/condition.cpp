@@ -17,6 +17,7 @@
 #include "init_soar.h"
 #include "debug.h"
 #include "test.h"
+#include "memory_manager.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).
@@ -64,16 +65,22 @@ void deallocate_condition_list(agent* thisAgent,
     cond_list = NULL;
 }
 
-extern void init_condition(condition* cond)
+condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
 {
+    condition* cond;
+    thisAgent->memoryManager->allocate_with_pool(MP_condition,  &cond);
+
+    cond->type = POSITIVE_CONDITION;
     cond->next = cond->prev = cond->counterpart = NIL;
     cond->bt.trace = NIL;
     cond->bt.wme_ = NIL;
     cond->bt.CDPS = NIL;
-    cond->data.tests.id_test = NIL;
-    cond->data.tests.attr_test = NIL;
-    cond->data.tests.value_test = NIL;
+    cond->data.tests.id_test = pId;
+    cond->data.tests.attr_test = pAttr;
+    cond->data.tests.value_test = pValue;
     cond->test_for_acceptable_preference = false;
+
+    return cond;
 }
 
 condition* copy_condition_without_relational_constraints(agent* thisAgent,
@@ -85,8 +92,7 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent,
     {
         return NIL;
     }
-    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
-    init_condition(New);
+    New = make_condition(thisAgent);
     New->type = cond->type;
 
     switch (cond->type)
@@ -124,8 +130,7 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     {
         return NIL;
     }
-    thisAgent->memoryManager->allocate_with_pool(MP_condition, &New);
-    init_condition(New);
+    New = make_condition(thisAgent);
     New->type = cond->type;
     New->counterpart = cond->counterpart;
 

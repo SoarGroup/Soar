@@ -1378,10 +1378,10 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
      * it has already been excised, and doing it again is wrong.
      */
     production* prod = inst->prod;
-    if (prod->type == JUSTIFICATION_PRODUCTION_TYPE
-            && prod->reference_count > 1)
+    if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
+        (prod->reference_count > 1) &&
+        !prod->save_for_justification_explanation)
     {
-        /* MToDo | May want to not excise if justification that has an explanation */
         excise_production(thisAgent, prod, false);
     }
     else if (prod->type == CHUNK_PRODUCTION_TYPE)
@@ -1461,9 +1461,10 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
         for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
         {
             // construct the condition
-            thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
-            init_condition(cond);
-            cond->type = POSITIVE_CONDITION;
+            cond = make_condition(thisAgent,
+                make_test(thisAgent, (*c_it)->id, EQUALITY_TEST),
+                make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST),
+                make_test(thisAgent, (*c_it)->value, EQUALITY_TEST));
             cond->prev = prev_cond;
             cond->next = NULL;
             if (prev_cond != NULL)
@@ -1475,10 +1476,6 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
                 inst->top_of_instantiated_conditions = cond;
                 inst->bottom_of_instantiated_conditions = cond;
             }
-            cond->data.tests.id_test = make_test(thisAgent, (*c_it)->id, EQUALITY_TEST);
-            cond->data.tests.attr_test = make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST);
-            cond->data.tests.value_test = make_test(thisAgent, (*c_it)->value, EQUALITY_TEST);
-
             cond->test_for_acceptable_preference = (*c_it)->acceptable;
             cond->bt.wme_ = (*c_it);
 

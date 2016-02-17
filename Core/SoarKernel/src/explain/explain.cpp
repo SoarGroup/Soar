@@ -156,7 +156,9 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         name = pProduction->name;
         symbol_add_ref(thisAgent, name);
         original_production = pProduction;
-        production_add_ref(original_production);
+//        production_add_ref(original_production);
+        original_production->save_for_justification_explanation = true;
+
     } else {
         name = NULL;
         original_production = NULL;
@@ -211,6 +213,7 @@ void Explanation_Logger::record_chunk_contents(production* pProduction, conditio
         chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
 
+//        production_add_ref(pProduction);
         symbol_add_ref(thisAgent, pProduction->name);
     } else {
         dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
@@ -386,7 +389,7 @@ chunk_record::~chunk_record()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
     symbol_remove_ref(thisAgent, name);
-    production_remove_ref(thisAgent, original_production);
+//    production_remove_ref(thisAgent, original_production);
     delete conditions;
     delete actions;
 }
@@ -483,7 +486,8 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     if (pInst->prod)
     {
         symbol_add_ref(thisAgent, pInst->prod->name);
-        production_add_ref(original_production);
+//        production_add_ref(original_production);
+        original_production->save_for_justification_explanation = true;
     }
 }
 
@@ -491,7 +495,8 @@ instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
     if (production_name) symbol_remove_ref(thisAgent, production_name);
-    if (original_production) production_remove_ref(thisAgent, original_production);
+//    if (original_production)
+//        production_remove_ref(thisAgent, original_production);
     delete conditions;
     delete actions;
 }

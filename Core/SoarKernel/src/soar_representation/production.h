@@ -21,6 +21,7 @@ typedef struct production_struct
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     bool                            explain_its_chunks;
+    bool                            save_for_justification_explanation;
     uint64_t                        reference_count;
     uint64_t                        firing_count;
     struct instantiation_struct* instantiations; /* dll of inst's in MS */

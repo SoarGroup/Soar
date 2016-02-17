@@ -2164,8 +2164,7 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->i_id = thisAgent->ebChunker->get_new_inst_id();
 
     /* --- make the fake condition --- */
-    thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
-    init_condition(cond);
+    cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
     cond->data.tests.id_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);

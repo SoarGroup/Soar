@@ -4349,8 +4349,7 @@ void rete_node_to_conditions(agent* thisAgent,
     condition* cond;
     alpha_mem* am;
 
-    thisAgent->memoryManager->allocate_with_pool(MP_condition, &cond);
-    init_condition(cond);
+    cond = make_condition(thisAgent);
     if (real_parent_node(node) == cutoff)
     {
         cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this
