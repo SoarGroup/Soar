@@ -101,7 +101,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
 {
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 
-    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0)
+    if ((thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0) || (inst->match_goal_level == TOP_GOAL_LEVEL))
     {
         m_learning_on_for_instantiation = false;
         return false;

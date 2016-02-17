@@ -21,6 +21,7 @@
 #include "agent.h"
 #include "print.h"
 #include "ebc.h"
+#include "output_manager.h"
 
 using namespace cli;
 using namespace sml;
