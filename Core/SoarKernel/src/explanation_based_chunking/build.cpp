@@ -751,7 +751,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
-    print_with_symbols(thisAgent, "\nWarning:  Explanation-based chunking was not able to create a valid rule:\n\nsp {%y\n", m_prod_name);
+    print_with_symbols(thisAgent, "\nWarning:  Chunk learned is invalid:\n\nsp {%y\n", m_prod_name);
     print_condition_list(thisAgent, m_vrblz_top, 4, false);
     print(thisAgent, "\n  -->\n");
     print_action_list(thisAgent, m_rhs, 4, false);
@@ -902,6 +902,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     local_timer.start();
     #endif
 
+//    dprint(DT_DEBUG, "Chunk number %u\n", chunk_count);
+//    if (this->chunk_count == 6)
+//    {
+//        dprint(DT_DEBUG, "Chunk found.\n");
+//    }
     get_results_for_instantiation();
     if (!m_results) { abort(); return; }
 

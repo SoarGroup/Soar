@@ -35,12 +35,13 @@ void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, 
         }
         case ebc_error_invalid_chunk:
         {
-            printa(thisAgent, "\n}\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            printa(thisAgent, "\nCould not create production for variablized rule. Creating justification instead.\n");
+            printa(thisAgent, "\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
             printa(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
             printa(thisAgent, "that the rules are not revising substructure of a result matched only\n");
             printa(thisAgent, "through the local state.\n");
-            xml_generate_warning(thisAgent, "\nCould not create production for variablized rule.\n...creating justification instead.\n");
-            xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+            xml_generate_warning(thisAgent, "\nCould not create production for variablized rule. Creating justification instead.\n");
+            xml_generate_warning(thisAgent, "\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
             xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
             xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
             xml_generate_warning(thisAgent, "through the local state.\n\n");
