@@ -1189,7 +1189,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //When spread is committed but needs removal, add a negative row for later processing.
     //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
-    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT smem_current_spread.lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread INNER JOIN smem_current_spread_activations ON smem_current_spread.lti_id=smem_current_spread_activations.lti_id WHERE lti_source=?");
+    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT smem_current_spread.lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread WHERE lti_source=?");//INNER JOIN smem_current_spread_activations ON smem_current_spread.lti_id=smem_current_spread_activations.lti_id
     add(reverse_old_committed_spread);
 
     //add lti to the context table
