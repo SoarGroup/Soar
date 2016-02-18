@@ -2591,16 +2591,19 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_timers->act_2_2->start();
         ////////////////////////////////////////////////////////////////////////////
 
-        if (prohibited && dirty)// costly
+        if (prohibited)// costly
         {//Just need to flip the bit here.
             //Find the number of touches from the most recent activation. We are removing that many.
-            thisAgent->smem_stmts->history_get->bind_int(1, lti);
-            thisAgent->smem_stmts->history_get->execute();
-            prev_access_n-=thisAgent->smem_stmts->history_get->column_double(10);
-            thisAgent->smem_stmts->history_get->reinitialize();
-            //remove the history
-            thisAgent->smem_stmts->history_remove->bind_int(1,(lti));
-            thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
+            if (dirty)
+            {
+                thisAgent->smem_stmts->history_get->bind_int(1, lti);
+                thisAgent->smem_stmts->history_get->execute();
+                prev_access_n-=thisAgent->smem_stmts->history_get->column_double(10);
+                thisAgent->smem_stmts->history_get->reinitialize();
+                //remove the history
+                thisAgent->smem_stmts->history_remove->bind_int(1,(lti));
+                thisAgent->smem_stmts->history_remove->execute(soar_module::op_reinit);
+            }
             thisAgent->smem_stmts->prohibit_reset->bind_int(1,lti);
             thisAgent->smem_stmts->prohibit_reset->execute(soar_module::op_reinit);
         }
@@ -2699,7 +2702,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         thisAgent->smem_stmts->lti_access_set->bind_double(1, (prev_access_n + ((add_access) ? (touches) : (0))));
         //thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
         thisAgent->smem_stmts->lti_access_set->bind_int(2, (add_access) ? (time_now) : (prev_access_t));
-        thisAgent->smem_stmts->lti_access_set->bind_int(3, (prohibited) ? (prev_access_1) : ((prev_access_n == 0) ? ((add_access) ? (time_now) : (0)) : (prev_access_1)));
+        thisAgent->smem_stmts->lti_access_set->bind_int(3, ((prev_access_n == 0) ? ((add_access) ? (time_now) : (0)) : (prev_access_1)));
         thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
         thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
     }
