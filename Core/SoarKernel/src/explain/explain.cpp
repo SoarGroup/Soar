@@ -30,12 +30,14 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
+
 }
 
 void Explanation_Logger::initialize_counters()
 {
 
     current_discussed_chunk = NULL;
+    dependency_chart = "";
 
     chunk_id_count = 1;
     condition_id_count = 1;
@@ -191,17 +193,31 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     /* Might be needed in the case when none of the base instantiation conditions are in the chunk */
     baseInstantiation = thisAgent->explanationLogger->add_instantiation(pBaseInstantiation, 1);
 
-    dprint(DT_EXPLAIN, "Connecting conditions...\n");
+    dprint(DT_EXPLAIN, "Connecting chunk conditions...\n");
+    /* Now that instantiations in backtrace are guaranteed to be recorded, connect
+     * each condition to the appropriate parent instantiation action record */
+//    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+//    {
+//        (*it)->connect_to_action();
+//    }
+
+    /* MToDo | We might only need to connect base conditions and CDPS */
+    baseInstantiation->connect_conds_to_actions();
+
+    identity_set_mappings = new id_to_id_map_type();
+    (*identity_set_mappings) = (*pIdentitySetMappings);
+
+}
+
+void instantiation_record::connect_conds_to_actions()
+{
+    dprint(DT_EXPLAIN, "Connecting instantiation conditions...\n");
     /* Now that instantiations in backtrace are guaranteed to be recorded, connect
      * each condition to the appropriate parent instantiation action record */
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         (*it)->connect_to_action();
     }
-
-    identity_set_mappings = new id_to_id_map_type();
-    (*identity_set_mappings) = (*pIdentitySetMappings);
-
 }
 
 void Explanation_Logger::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
@@ -239,7 +255,7 @@ void Explanation_Logger::add_condition(condition_record_list* pCondList, conditi
     }
     else
     {
-        dprint(DT_EXPLAIN, "Recording new conditions for NCC...\n");
+        dprint(DT_EXPLAIN, "   Recording new conditions for NCC...\n");
 
         /* Create condition and action records */
         condition_record* new_cond_record;
@@ -297,8 +313,8 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
 
 action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
 {
-    dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
     increment_counter(action_id_count);
+    dprint(DT_EXPLAIN, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
     all_actions->insert({lActionRecord->actionID, lActionRecord});
 
@@ -354,14 +370,19 @@ action_record::action_record(agent* myAgent, preference* pPref, action* pAction,
     } else {
         variablized_action = NULL;
     }
-    dprint(DT_EXPLAIN, "Created action record a%u for pref %p (%r ^%r %r)\naction %a", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
+    identities_used = NULL;
+    dprint(DT_EXPLAIN, "   Created action record a%u for pref %p (%r ^%r %r), [act %a]", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
 }
 
 action_record::~action_record()
 {
-    dprint(DT_EXPLAIN, "Deleting action record a%u for: %p\n", actionID, instantiated_pref);
+    dprint(DT_EXPLAIN, "   Deleting action record a%u for: %p\n", actionID, instantiated_pref);
     deallocate_preference(thisAgent, instantiated_pref);
     deallocate_action_list(thisAgent, variablized_action);
+    if (identities_used)
+    {
+        delete identities_used;
+    }
 }
 
 
@@ -374,6 +395,10 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     chunkID             = pChunkID;
     baseInstantiation   = NULL;
     original_production = NULL;
+    dependency_paths    = NULL;
+//    dependency_paths = new condition_to_ipath_map();
+
+
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
     stats.duplicates = 0;
@@ -396,16 +421,17 @@ chunk_record::~chunk_record()
 
 void condition_record::connect_to_action()
 {
-    if (parent_instantiation)
+    if (parent_instantiation && cached_pref)
     {
         assert(cached_pref);
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
-        cached_pref = NULL;
-        dprint(DT_EXPLAIN, "Linked condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
+        parent_instantiation->connect_conds_to_actions();
+        dprint(DT_EXPLAIN, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
     } else {
-        dprint(DT_EXPLAIN, "Did not link condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
+        dprint(DT_EXPLAIN, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     }
+    cached_pref = NULL;
 }
 
 condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth)
@@ -413,6 +439,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     thisAgent = myAgent;
     conditionID = pCondID;
     type = pCond->type;
+    dprint(DT_EXPLAIN, "   Creating condition %u for %l.\n", conditionID, pCond);
 
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
@@ -446,41 +473,50 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     {
         assert (condition_tests.id->eq_test->data.referent->id->level);
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
-        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+        dprint(DT_EXPLAIN, "   No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
     } else {
         wme_level_at_firing = 0;
-        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+        dprint(DT_EXPLAIN, "   No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
     }
     if (!pStopHere && pCond->bt.trace)
     {
-          /* Crude way to print dependency tree */
-//        Output_Manager::Get_OM().set_column_indent(0, (bt_depth * 3));
-//        dprint(DT_REV_BT, "%-%u\n", pCond->bt.trace->inst->i_id);
-
         parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
         /* Cache the pref to make it easier to connect this condition to the action that created
          * the preference later. */
         cached_pref = parent_instantiation ? pCond->bt.trace : NULL;
+        // Crude way to print a dependency chart
+//        dependency_chart.append(((pDepth + 1) * 3) , ' ');
+//        std::string new_entry;
+//        thisAgent->outputManager->sprinta_sf(thisAgent, new_entry, "%u (%y)\n", pInstRecord->instantiationID, pInstRecord->production_name);
+//        dependency_chart.append(new_entry);
     } else {
         parent_instantiation = NULL;
         cached_pref = NULL;
     }
     parent_action = NULL;
+    path_to_base = NULL;
+    dprint(DT_EXPLAIN, "   Created condition %u DONE.\n", conditionID);
 }
 
 condition_record::~condition_record()
 {
-    dprint(DT_EXPLAIN, "Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+    dprint(DT_EXPLAIN, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+    assert(!cached_pref);
+
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
     if (matched_wme)
     {
-        dprint(DT_EXPLAIN, "Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
+        dprint(DT_EXPLAIN, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
         symbol_remove_ref(thisAgent, matched_wme->id);
         symbol_remove_ref(thisAgent, matched_wme->attr);
         symbol_remove_ref(thisAgent, matched_wme->value);
         delete matched_wme;
+    }
+    if (path_to_base)
+    {
+        delete path_to_base;
     }
 }
 

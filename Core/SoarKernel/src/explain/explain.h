@@ -63,13 +63,17 @@ class action_record
     public:
         action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);
         ~action_record();
-        preference*     original_pref;          // Only used when building explain records
-        uint64_t get_actionID() { return actionID; };
+
+        uint64_t                get_actionID()   { return actionID; };
+        id_set*                 get_identities();
+
+        preference*             original_pref;          // Only used when building explain records
 
     private:
         agent* thisAgent;
         preference*             instantiated_pref;
         action*                 variablized_action;
+        id_set*                 identities_used;
         uint64_t                actionID;
 };
 
@@ -82,8 +86,12 @@ class condition_record
     public:
         condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth);
         ~condition_record();
-        uint64_t get_conditionID() { return conditionID; };
-        void                        connect_to_action();
+
+        void        connect_to_action();
+        void        record_dependencies(const instantiation_record_list* pInstPath);
+        bool        contains_identity_from_set(const id_set* pIDs);
+
+        uint64_t    get_conditionID() { return conditionID; };
 
     private:
         agent* thisAgent;
@@ -92,6 +100,7 @@ class condition_record
         symbol_triple*                  matched_wme;
         action_record*                  parent_action;
         instantiation_record*           parent_instantiation;
+        instantiation_record_list*      path_to_base;
         preference*                     cached_pref;
         uint64_t                        conditionID;
         byte                            type;
@@ -107,7 +116,9 @@ class instantiation_record
 
         uint64_t                get_instantiationID() { return instantiationID; };
         void                    record_instantiation_contents(instantiation* pInst, bool pStopHere, uint64_t bt_depth);
+        void                    record_dependencies(const instantiation_record_list* pInstPath, action_record* pAction = NULL, bool pUseId = true, bool pUseAttr = true, bool pUseValue = true);
         action_record*          find_rhs_action(preference* pPref);
+        void                    connect_conds_to_actions();
 
     private:
         agent* thisAgent;
@@ -129,6 +140,7 @@ class chunk_record
         ~chunk_record();
 
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber);
+        void                    record_dependencies();
 
     private:
         agent*                  thisAgent;
@@ -136,6 +148,7 @@ class chunk_record
         production*             original_production;
         condition_record_list*  conditions;
         action_record_list*     actions;
+        condition_to_ipath_map* dependency_paths;
         id_to_id_map_type*      identity_set_mappings;
         instantiation_record*   baseInstantiation;
         uint64_t                chunkID;
@@ -156,6 +169,7 @@ class Explanation_Logger
         void                    clear_explanations();
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
+        void                    record_dependencies();
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation);
@@ -211,7 +225,8 @@ class Explanation_Logger
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
-        identity_triple    current_explained_ids;
+        identity_triple         current_explained_ids;
+        std::string             dependency_chart;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
@@ -251,6 +266,7 @@ class Explanation_Logger
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
+
 };
 
 #endif /* EBC_EXPLAIN_H_ */

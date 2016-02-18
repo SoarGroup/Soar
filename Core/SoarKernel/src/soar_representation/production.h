@@ -13,21 +13,22 @@ typedef struct production_struct
     Symbol* name;
     struct rete_node_struct*        p_node;                     /* NIL if it's not in the rete */
     char* original_rule_name;
-    char* documentation;        /* pointer to memory block, or NIL */
+    char* documentation;                                        /* pointer to memory block, or NIL */
     char*                           filename;                   /* name of source file, or NIL. */
     SupportType                     declared_support;
-    action* action_list;                    /* RHS actions */
-    ::list* rhs_unbound_variables;            /* RHS vars not bound on LHS */
+    action* action_list;                                        /* RHS actions */
+    ::list* rhs_unbound_variables;                              /* RHS vars not bound on LHS */
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
-    bool                            explain_its_chunks;
-    bool                            save_for_justification_explanation;
     uint64_t                        reference_count;
     uint64_t                        firing_count;
-    struct instantiation_struct* instantiations; /* dll of inst's in MS */
+    struct instantiation_struct*    instantiations;             /* dll of inst's in MS */
     struct production_struct        *next, *prev;
 
+    bool                            explain_its_chunks;
+    bool                            save_for_justification_explanation;
     byte                            interrupt;
+
     struct
     {
         bool interrupt_break : 1;

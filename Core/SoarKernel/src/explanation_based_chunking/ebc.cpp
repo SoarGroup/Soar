@@ -113,7 +113,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
-            message << "\nnot chunking due to chunk-free state " << inst->match_goal->to_string();
+            message << "\nWill not attempt to learn a new rule because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
@@ -127,7 +127,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
-            message << "\nnot chunking due to non-chunky state " << inst->match_goal->to_string();
+            message << "\nWill not attempt to learn a new rule because state " << inst->match_goal->to_string() << " was not flagged for learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }

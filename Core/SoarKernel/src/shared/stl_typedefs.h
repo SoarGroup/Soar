@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <unordered_set>
 #include <list>
 #include <functional>
 #include <assert.h>
@@ -24,6 +25,7 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
 class sym_grounding_path;
 class condition_record;
 class action_record;
+class instantiation_record;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > condition_list;
@@ -66,10 +68,13 @@ class action_record;
     //typedef std::list< action_record* > action_record_list;
     //typedef std::list< uint64_t > id_list;
     //#endif
-    typedef std::list< condition_record* >                      condition_record_list;
-    typedef std::list< action_record* >                         action_record_list;
-    typedef std::list< uint64_t >                               id_list;
-    typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
-
+    typedef std::list< instantiation_record* >                          instantiation_record_list;
+    typedef std::list< instantiation_record_list* >                     inst_path_list;
+    typedef std::unordered_map< condition_record*, inst_path_list* >    condition_to_ipath_map;
+    typedef std::list< condition_record* >                              condition_record_list;
+    typedef std::list< action_record* >                                 action_record_list;
+    typedef std::list< uint64_t >                                       id_list;
+    typedef std::unordered_set< uint64_t >                              id_set;
+    typedef std::unordered_map< uint64_t, uint64_t >                    id_to_id_map_type;
 
 #endif /* STL_TYPEDEFS_H_ */

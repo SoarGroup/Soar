@@ -13,7 +13,7 @@ typedef unsigned char byte;
 /* ------------------------- debug trace channels -----------------------------
  *
  * NOTE: IF YOU ADD A NEW TRACE OR DEBUG MODE, MAKE SURE TO INITIALIZE PREFIX
- *       INFO AND INITIAL VALUE IN Output_Manager::initialize_debug_trace
+ *       INFO AND INITIAL VALUE IN initialize_debug_trace() in debug.cpp
  *
  * ------------------------------------------------------------------------- */
 enum TraceMode
@@ -57,6 +57,7 @@ enum TraceMode
     DT_REV_BT = 36,
     DT_RETE_PNODE_ADD = 37,
     DT_GROUND_LTI = 38,
+    DT_EXPLAIN_DEP = 39,
     num_trace_modes
 };
 

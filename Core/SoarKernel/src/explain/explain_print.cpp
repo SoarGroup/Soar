@@ -15,6 +15,12 @@
 void Explanation_Logger::print_dependency_analysis()
 {
     assert(current_discussed_chunk);
+
+    /* We link up all of the dependencies here.  Since the linking may be expensive and
+     * we may be watching all chunk formations, we wait until someone attempts to look
+     * at the dependency analysis before we perform the linking. */
+    record_dependencies();
+
     outputManager->printa_sf(thisAgent, "The formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
     outputManager->printa_sf(thisAgent, "   (1) At time 0, rule '%y' matched, fired (i%u) and created new working memory\n"
@@ -51,8 +57,8 @@ void Explanation_Logger::print_dependency_analysis()
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(ebc_explanation_trace, current_discussed_chunk->baseInstantiation->actions, current_discussed_chunk->baseInstantiation->original_production);
 
-    outputManager->printa_sf(thisAgent, "\nIdentity to identity set mappings:\n\n");
-    print_identity_set_explanation();
+    outputManager->printa(thisAgent, "Dependency Analysis of Rule Firings\n");
+    outputManager->printa(thisAgent, dependency_chart.c_str());
 
 }
 
