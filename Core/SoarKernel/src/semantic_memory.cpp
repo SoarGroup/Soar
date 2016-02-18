@@ -8479,9 +8479,13 @@ void smem_print_store(agent* thisAgent, std::string* return_val)
 {
     // id, soar_letter, number
     soar_module::sqlite_statement* q = thisAgent->smem_stmts->vis_lti;
+    soar_module::sqlite_statement* act_q = thisAgent->smem_stmts->vis_lti_act;
     while (q->execute() == soar_module::row)
     {
-        _smem_print_lti(thisAgent, q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3)+q->column_double(4), return_val);
+        act_q->bind_int(1, q->column_int(0));
+        act_q->execute();
+        _smem_print_lti(thisAgent, q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), act_q->column_double(0), return_val);
+        act_q->reinitialize();
     }
     q->reinitialize();
 }
