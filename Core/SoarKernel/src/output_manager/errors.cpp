@@ -18,17 +18,22 @@
 
 void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, int64_t pSysParam)
 {
-    if (pSysParam && !thisAgent->sysparams[pSysParam]) return;
+    if ( (pSysParam > 0) && !thisAgent->sysparams[pSysParam])
+    {
+        printa(thisAgent, "Warning: Setting off.\n");
+        xml_generate_warning(thisAgent, "Warning: Setting off.");
+        return;
+    }
 
     switch (pErrorType)
     {
-        ebc_error_max_chunks:
+        case ebc_error_max_chunks:
         {
             printa(thisAgent, "Warning: We've formed the maximum number of chunks.  Skipping opportunity to learn new rule.\n");
             xml_generate_warning(thisAgent, "Warning: We've formed the maximum number of chunks.  Skipping opportunity to learn new rule.");
             break;
         }
-        ebc_error_invalid_chunk:
+        case ebc_error_invalid_chunk:
         {
             printa(thisAgent, "\n}\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
             printa(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
@@ -41,7 +46,7 @@ void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, 
             xml_generate_warning(thisAgent, "through the local state.\n\n");
             break;
         }
-        ebc_error_invalid_justification:
+        case ebc_error_invalid_justification:
         {
             printa(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
             printa(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
@@ -54,7 +59,7 @@ void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, 
             xml_generate_warning(thisAgent, "through the local state.\n");
             break;
         }
-        ebc_no_conditions:
+        case ebc_error_no_conditions:
         {
             printa(thisAgent, "Warning: Chunk/justification has no conditions.  Soar cannot learn a rule for\n");
             printa(thisAgent, "         the results created from this substate. To avoid this issue, the agent\n");
@@ -66,7 +71,8 @@ void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, 
         }
         default:
         {
-
+            printa(thisAgent, "Warning: Unspecified error. That's weird.  Should report.\n");
+            xml_generate_warning(thisAgent, "Warning: Unspecified error. That's weird.  Should report.");
         }
     }
 }
