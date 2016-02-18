@@ -1215,15 +1215,15 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //
 
     //Modified to include spread value.
-    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_base_level, activation_spread FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
+    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
     add(vis_lti);
     
     //Modified to include spread value.
-    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level,activation_spread FROM smem_lti WHERE lti_id=?");
+    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT CASE WHEN activation_value IS NULL THEN activation_value_lti ELSE activation_value END AS activation_val FROM ((SELECT lti_id AS lti_id1, activation_value AS activation_value_lti FROM smem_lti WHERE lti_id1=?) LEFT OUTER JOIN smem_current_spread_activations ON lti_id1=smem_current_spread_activations.lti_id AND activation_value_lti != smem_current_spread_activations.activation_value)");
     add(vis_lti_act);
     
-    vis_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT activation_value FROM smem_augmentations WHERE lti_id=?");
-    add(vis_act);
+    //vis_act = new soar_module::sqlite_statement(new_db, "SELECT DISTINCT activation_value FROM smem_augmentations WHERE lti_id=?");
+    //add(vis_act);
 
     vis_value_const = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)");
     add(vis_value_const);
@@ -7770,6 +7770,7 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
     std::map< smem_lti_id, std::string >::iterator n_p;
     {
         soar_module::sqlite_statement* q;
+        soar_module::sqlite_statement* q_act;
         
         smem_lti_id lti_id;
         char lti_letter;
@@ -7782,6 +7783,7 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
         
         // id, soar_letter, number
         q = thisAgent->smem_stmts->vis_lti;
+        q_act = thisAgent->smem_stmts->vis_lti_act;
         while (q->execute() == soar_module::row)
         {
             lti_id = q->column_int(0);
@@ -7799,7 +7801,10 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
             return_val->append((*lti_name));
             return_val->append("\\n[");
 
-            temp_double = q->column_double(3)+q->column_double(4);
+            q_act->bind_int(1,lti_id);
+            q_act->execute();
+            temp_double = q_act->column_double(0);
+            q_act->reinitialize();
             to_string(temp_double, temp_str, 3, true);
             if (temp_double >= 0)
             {
@@ -8249,7 +8254,7 @@ void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth
             act_q->bind_int(1, cl_p->first);
             if (act_q->execute() == soar_module::row)
             {
-                temp_double = act_q->column_double(0)+act_q->column_double(1);
+                temp_double = act_q->column_double(0);
                 to_string(temp_double, temp_str, 3, true);
                 if (temp_double >= 0)
                 {
@@ -8527,14 +8532,8 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
 
                 thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
             }
-            if (num_edges >= static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
-            {
-                act_q = thisAgent->smem_stmts->vis_lti_act;
-            }
-            else
-            {
-                act_q = thisAgent->smem_stmts->vis_act;
-            }
+
+            act_q = thisAgent->smem_stmts->vis_lti_act;
             act_q->bind_int(1, c.first);
             act_q->execute();
             
