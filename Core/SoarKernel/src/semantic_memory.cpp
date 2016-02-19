@@ -688,7 +688,7 @@ void smem_statement_container::create_tables()
     /*
      * This keeps track of how often an lti shows up in fingerprints at all when used for ACT-R activation and it keeps track of fingerprint size in Soar (personalized pagerank) activation
      */
-    add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER, num_appearances REAL)");
+    add_structure("CREATE TABLE smem_trajectory_num (lti_id INTEGER PRIMARY KEY, num_appearances REAL)");
     // This contains the counts needed to calculation spreading activation values for ltis in working memory.
     add_structure("CREATE TABLE smem_current_spread (lti_id INTEGER,num_appearances_i_j REAL,num_appearances REAL, lti_source INTEGER, PRIMARY KEY (lti_source, lti_id)) WITHOUT ROWID");
     // This keeps track of the context.
@@ -789,7 +789,7 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX lti_source_1 ON smem_uncommitted_spread (lti_source,sign) WHERE sign=1");
     add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (lti_source,sign) WHERE sign=0");
     //add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (sign,lti_source)");
-    add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
+    //add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
 void smem_statement_container::drop_tables(agent* new_agent)
@@ -1191,7 +1191,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //When spread is committed but needs removal, add a negative row for later processing.
     //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
-    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT smem_current_spread.lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread WHERE lti_source=?");//INNER JOIN smem_current_spread_activations ON smem_current_spread.lti_id=smem_current_spread_activations.lti_id
+    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT smem_current_spread.lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_current_spread INNER JOIN smem_current_spread_activations ON smem_current_spread.lti_id=smem_current_spread_activations.lti_id WHERE lti_source=?");//
     add(reverse_old_committed_spread);
 
     //add lti to the context table
