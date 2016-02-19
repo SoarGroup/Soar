@@ -683,7 +683,7 @@ void smem_statement_container::create_tables()
     //Just added "valid_bit"
     add_structure("CREATE TABLE smem_likelihood_trajectories (lti_id INTEGER, lti1 INTEGER, lti2 INTEGER, lti3 INTEGER, lti4 INTEGER, lti5 INTEGER, lti6 INTEGER, lti7 INTEGER, lti8 INTEGER, lti9 INTEGER, lti10 INTEGER, valid_bit INTEGER)");
     //This is bookkeeping. It contains counts of how often certain ltis show up in the fingerprints of other ltis.
-    add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j REAL)");
+    add_structure("CREATE TABLE smem_likelihoods (lti_j INTEGER, lti_i INTEGER, num_appearances_i_j REAL, PRIMARY KEY (lti_j,lti_i)) WITHOUT ROWID");
     //The above (smem_likelihoods) needs to have integers changed to real in order to support deterministic spreading.
     /*
      * This keeps track of how often an lti shows up in fingerprints at all when used for ACT-R activation and it keeps track of fingerprint size in Soar (personalized pagerank) activation
@@ -781,12 +781,14 @@ void smem_statement_container::create_indices()
     add_structure("CREATE INDEX lti_t89 ON smem_likelihood_trajectories (lti_id,lti8) WHERE lti9=0");
     add_structure("CREATE INDEX lti_t910 ON smem_likelihood_trajectories (lti_id,lti9) WHERE lti10=0");
     add_structure("CREATE INDEX lti_tid10 ON smem_likelihood_trajectories (lti_id,lti10) WHERE lti10!=0");
-    add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
-    add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
+    //add_structure("CREATE INDEX lti_cue ON smem_likelihoods (lti_j)");
+    //add_structure("CREATE INDEX lti_given ON smem_likelihoods (lti_i)"); // Want p(i|j), but use ~ p(j|i)p(i), where j is LTI in WMem.
     //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
     //add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");//,lti_id,num_appearances,num_appearances_i_j)");
     //add_structure("CREATE INDEX lti_sink ON smem_uncommitted_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source,sign)");// WHERE sign=1");
+    add_structure("CREATE INDEX lti_source_1 ON smem_uncommitted_spread (lti_source,sign) WHERE sign=1");
+    add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (lti_source,sign) WHERE sign=0");
+    //add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (sign,lti_source)");
     add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
 }
 
