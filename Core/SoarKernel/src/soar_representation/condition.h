@@ -40,13 +40,21 @@
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct
 {
-    wme* wme_;                /* the actual wme that was matched */
-    goal_stack_level level;   /* level (at firing time) of the id of the wme */
-    preference* trace;        /* preference for BT, or NIL */
+    wme* wme_;                      /* the actual wme that was matched */
+    goal_stack_level level;         /* level (at firing time) of the id of the wme */
+    preference* trace;              /* preference for BT, or NIL */
+    instantiation* inst;            /* ID for the instantiation where this condition
+                                       came to the grounds from.  This is used by
+                                       EBC's explain mechanism to properly link
+                                       the chunk condition to the proper condition
+                                       in the explanation trace.  We could not used
+                                       preferences because architectural wme's
+                                       don't have preferences.  Used only during
+                                       chunking.*/
 
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
+    bt_info_struct() : wme_(NULL), level(0), trace(NULL), inst(0), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -84,7 +92,10 @@ typedef struct condition_struct
     bt_info                     bt;             /* backtrace info for top-level positive cond's:
                                                    used by chunking and the rete */
     reorder_info                reorder;        /* used only during reordering */
-    struct condition_struct*    counterpart;    /* only used during chunking */
+    struct condition_struct*    counterpart;    /* pointer from variablized condition to instantiated condtion.
+                                                   Used only during chunking and not guaranteed to exist */
+    condition_struct() : type(POSITIVE_CONDITION), already_in_tc(false), test_for_acceptable_preference(false),
+                         next(NULL), prev(NULL), counterpart(NULL) {}
 } condition;
 
 /* ------------------------ */

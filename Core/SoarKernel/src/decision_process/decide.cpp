@@ -2208,6 +2208,7 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
 
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;
+    cond->bt.inst = inst;
 #ifdef DO_TOP_LEVEL_REF_CTS
     wme_add_ref(ap_wme);
 #else

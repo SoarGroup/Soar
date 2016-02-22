@@ -29,22 +29,92 @@ void Explanation_Logger::record_dependencies()
 
 void chunk_record::record_dependencies()
 {
-    dprint(DT_EXPLAIN_DEP, "Traversing conditions in chunk...\n");
 
-    instantiation_record_list* lInstPath = new instantiation_record_list();
+    dprint(DT_EXPLAIN_CONNECT, "Connecting conditions to specific RHS actions...\n");
+    /* Now that instantiations in backtrace are guaranteed to be recorded, connect
+     * each condition to the appropriate parent instantiation action record */
+    /* MToDo | We might only need to connect base conditions and CDPS */
+    baseInstantiation->connect_conds_to_actions();
+    dprint(DT_EXPLAIN_CONNECT, "Done connecting conditions to specific RHS actions...\n");
 
-    baseInstantiation->record_dependencies(lInstPath);
+    dprint(DT_EXPLAIN_PATHS, "Creating paths based on identities affected %u...\n", chunkID);
+
+    inst_record_list* lInstPath = new inst_record_list();
+
+    baseInstantiation->create_identity_paths(lInstPath);
 
     if (lInstPath)
     {
-        dprint(DT_EXPLAIN_DEP, "Deleting lInstPath of size %d for chunk record.\n", lInstPath->size());
         delete lInstPath;
     }
 
-//    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
-//    {
-//        (*it)->record_dependencies();
-//    }
+    dprint(DT_EXPLAIN_PATHS, "Searching for paths for conditions in chunk %u...\n", chunkID);
+    condition_record* linked_cond, *l_cond;
+    preference* l_cachedPref;
+    wme* l_cachedWME;
+    instantiation_record* l_inst;
+    inst_record_list* l_path;
+
+    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+    {
+        l_cond = (*it);
+        l_cachedPref = l_cond->get_cached_pref();
+        l_cachedWME = l_cond->get_cached_wme();
+        l_inst = l_cond->get_instantiation();
+        linked_cond = l_inst->find_condition_for_chunk(l_cachedPref, l_cachedWME);
+        assert(linked_cond);
+        l_path = linked_cond->get_path_to_base();
+        dprint(DT_EXPLAIN_PATHS, "Condition %u found with path: ", linked_cond->get_conditionID());
+        l_cond->set_path_to_base(l_path);
+        l_cond->print_path_to_base();
+        dprint(DT_EXPLAIN_PATHS, "\n");
+    }
+}
+
+condition_record* instantiation_record::find_condition_for_chunk(preference* pPref, wme* pWME)
+{
+    dprint(DT_EXPLAIN_PATHS, "Looking for condition in i%u: ", instantiationID);
+    if (pPref)
+    {
+        dprint_noprefix(DT_EXPLAIN_PATHS, " pref %p", pPref);
+    }
+    if (pWME)
+    {
+        dprint_noprefix(DT_EXPLAIN_PATHS, " wme %w", pWME);
+    }
+    dprint_noprefix(DT_EXPLAIN_PATHS, "\n");
+    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+    {
+        dprint(DT_EXPLAIN_PATHS, "Comparing against condition %u", (*it)->get_conditionID());
+        condition_record* lit = (*it);
+        preference* lp = lit->get_cached_pref();
+        wme* lw = lit->get_cached_wme();
+        uint64_t li = (*it)->get_conditionID();
+        if ((*it)->get_conditionID() == 24) {
+            dprint(DT_EXPLAIN_PATHS, "Comparing against condition %u", (*it)->get_conditionID());
+        }
+        if (lp)
+        {
+            dprint_noprefix(DT_EXPLAIN_PATHS, " %p", lp);
+        }
+        if (lw)
+        {
+            dprint_noprefix(DT_EXPLAIN_PATHS, " %w", lw);
+        }
+        dprint_noprefix(DT_EXPLAIN_PATHS, "\n");
+
+        if (pPref && ((*it)->get_cached_pref() == pPref))
+        {
+            dprint(DT_EXPLAIN_PATHS, "Found condition %u %p for target preference %p\n", (*it)->get_conditionID(), (*it)->get_cached_pref(), pPref);
+            return (*it);
+        } else if (pWME && ((*it)->get_cached_wme() == pWME))
+        {
+            dprint(DT_EXPLAIN_PATHS, "Found condition %u %w for target wme %w\n", (*it)->get_conditionID(), (*it)->get_cached_wme(), pWME);
+            return (*it);
+        }
+    }
+//    assert(false);
+    return NULL;
 }
 
 void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pIDSet)
@@ -59,7 +129,7 @@ void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pID
         sym = rhs_value_to_symbol(rv);
         if (sym->is_variable())
         {
-            dprint(DT_EXPLAIN_DEP, "Adding identity %u from rhs value to id set...\n", rhs_value_to_o_id(rv));
+            dprint(DT_EXPLAIN_PATHS, "Adding identity %u from rhs value to id set...\n", rhs_value_to_o_id(rv));
             pIDSet->insert(rhs_value_to_o_id(rv));
         }
     }
@@ -89,7 +159,7 @@ void add_all_identities_in_action(agent* thisAgent, action* a, id_set* pIDSet)
         id = rhs_value_to_symbol(a->id);
         if (id->is_variable())
         {
-            dprint(DT_EXPLAIN_DEP, "Adding identity %u from rhs action id to id set...\n", rhs_value_to_o_id(a->id));
+            dprint(DT_EXPLAIN_PATHS, "Adding identity %u from rhs action id to id set...\n", rhs_value_to_o_id(a->id));
             pIDSet->insert(rhs_value_to_o_id(a->id));
         }
         add_all_identities_in_rhs_value(thisAgent, a->attr, pIDSet);
@@ -156,14 +226,14 @@ bool condition_record::contains_identity_from_set(const id_set* pIDSet)
         test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
         test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
 
-    dprint(DT_EXPLAIN_DEP, "condition_record::contains_identity_from_set returning %s.\n", returnVal ? "TRUE" : "FALSE");
+    dprint(DT_EXPLAIN_PATHS, "condition_record::contains_identity_from_set returning %s.\n", returnVal ? "TRUE" : "FALSE");
 
     return returnVal;
 }
 
-void instantiation_record::record_dependencies(const instantiation_record_list* pInstPath, action_record* pAction, bool pUseId, bool pUseAttr, bool pUseValue)
+void instantiation_record::create_identity_paths(const inst_record_list* pInstPath, action_record* pAction, bool pUseId, bool pUseAttr, bool pUseValue)
 {
-    instantiation_record_list* lInstPath = new instantiation_record_list();
+    inst_record_list* lInstPath = new inst_record_list();
     (*lInstPath) = (*pInstPath);
     lInstPath->push_back(this);
 
@@ -176,7 +246,7 @@ void instantiation_record::record_dependencies(const instantiation_record_list* 
         lNumIdsFounds = lIdsFound->size();
     }
 
-    dprint(DT_EXPLAIN_DEP, "Traversing conditions looking for %d IDs...\n", lNumIdsFounds);
+    dprint(DT_EXPLAIN_PATHS, "Traversing conditions of i%u (%y) looking for %d IDs...\n", instantiationID, production_name, lNumIdsFounds);
     /* If no pAction is passed in, this must be from the base instantiation or
      * the CDPS, so we process all conditions.
      *
@@ -194,43 +264,53 @@ void instantiation_record::record_dependencies(const instantiation_record_list* 
             {
                 lAffectedCondition = (*it)->contains_identity_from_set(lIdsFound);
             }
-            if (lAffectedCondition)
+
+            if (lAffectedCondition || ((match_level > 0) && ((*it)->get_level() < match_level)))
             {
-                dprint(DT_EXPLAIN_DEP, "Found affected condition %u in i%u.  Recording its dependencies...\n", (*it)->get_conditionID(), instantiationID);
-                (*it)->record_dependencies(lInstPath);
+                dprint(DT_EXPLAIN_PATHS, "   Found affected condition %u in i%u.  Recording its dependencies...%s\n", (*it)->get_conditionID(), instantiationID,
+                    ((match_level > 0) && ((*it)->get_level() < match_level)) ? "Super" : "Local");
+                (*it)->create_identity_paths(lInstPath);
             }
+            dprint(DT_EXPLAIN_PATHS, "   path_to_base for condition %u in i%u is now: ", (*it)->get_conditionID(), instantiationID);
+//            (*it)->print_path_to_base();
+            dprint(DT_EXPLAIN_PATHS, "\n");
+
         }
     }
     if (lInstPath)
     {
-        dprint(DT_EXPLAIN_DEP, "Deleting lInstPath of size %d for instantiation record %u.\n", lInstPath->size(), instantiationID);
+        dprint(DT_EXPLAIN_PATHS, "Deleting lInstPath of size %d for instantiation record %u.\n", lInstPath->size(), instantiationID);
         delete lInstPath;
     }
     /* Note:  lIdsFound will be deleted by the action record.  That way they can be
      *        re-used, since they won't change between different chunks explained */
 }
 
-void condition_record::record_dependencies(const instantiation_record_list* pInstPath)
+void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 {
     if (path_to_base)
     {
         /* MToDo | Should allow multiple paths to base. */
-        dprint(DT_EXPLAIN_DEP, "Condition already has a path to base.  Skipping (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
+        dprint(DT_EXPLAIN_PATHS, "      Condition already has a path to base.  Skipping (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
         return;
     } else
     {
-        path_to_base = new instantiation_record_list();
+        assert(!path_to_base);
+        path_to_base = new inst_record_list();
         (*path_to_base) = (*pInstPath);
-        dprint(DT_EXPLAIN_DEP, "Condition record copied path_to_base %d = %d.\n", path_to_base->size(), pInstPath->size());
+        dprint(DT_EXPLAIN_PATHS, "      Condition record copied path_to_base %d = %d.\n", path_to_base->size(), pInstPath->size());
     }
     if (parent_instantiation)
     {
         assert(parent_action);
-        dprint(DT_EXPLAIN_DEP, "Traversing parent instantiation for condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
-        parent_instantiation->record_dependencies(path_to_base);
+        dprint(DT_EXPLAIN_PATHS, "      Traversing parent instantiation i%u for condition (%t ^%t %t).\n", parent_instantiation->get_instantiationID(), condition_tests.id, condition_tests.attr, condition_tests.value);
+        parent_instantiation->create_identity_paths(path_to_base);
         /* List has current instantiation, which we needed for parent calls but don't need for this condition, so we pop it off */
-        path_to_base->pop_back();
+//        dprint(DT_EXPLAIN_DEP, "   Popping last item from path_to_base for condition %u (%t ^%t %t): ", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+//        print_path_to_base();
+//        dprint(DT_EXPLAIN_DEP, "\n");
+//        path_to_base->pop_back();
     } else {
-        dprint(DT_EXPLAIN_DEP, "No parent instantiation to traverse for condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
+        dprint(DT_EXPLAIN_PATHS, "      No parent instantiation to traverse for condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
     }
 }

@@ -838,7 +838,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_succeeded();
         assert(m_prod);
-        thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst);
+        thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         #endif
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             #ifdef BUILD_WITH_EXPLAINER
@@ -865,7 +865,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
             assert(m_prod);
-            thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst);
+            thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
             #endif
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
@@ -968,6 +968,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_PRINT_INSTANTIATIONS, "Chunk_instantiation instantiated conditions from backtrace:\n%6", m_inst_top, m_results);
     dprint(DT_BUILD_CHUNK_CONDS, "Counterparts conditions for variablization:\n%6", m_vrblz_top, m_results);
 
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationLogger->add_result_instantiations(m_results);
+    #endif
+
     if (variablize)
     {
         /* Save conditions and results in case we need to make a justification because chunking fails */
@@ -1028,6 +1032,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         m_prod = make_production(thisAgent, m_prod_type, m_prod_name, (m_inst->prod ? m_inst->prod->name->sc->name : m_prod_name->sc->name), &m_vrblz_top, &m_rhs, false, NULL);
     }
 
+    #ifdef BUILD_WITH_EXPLAINER
+    if (m_inst->prod && m_inst->prod->explain_its_chunks)
+    {
+        m_prod ->explain_its_chunks = true;
+    }
+    #endif
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 

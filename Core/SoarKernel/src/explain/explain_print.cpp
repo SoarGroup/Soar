@@ -16,11 +16,6 @@ void Explanation_Logger::print_dependency_analysis()
 {
     assert(current_discussed_chunk);
 
-    /* We link up all of the dependencies here.  Since the linking may be expensive and
-     * we may be watching all chunk formations, we wait until someone attempts to look
-     * at the dependency analysis before we perform the linking. */
-    record_dependencies();
-
     outputManager->printa_sf(thisAgent, "The formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
     outputManager->printa_sf(thisAgent, "   (1) At time 0, rule '%y' matched, fired (i%u) and created new working memory\n"
@@ -43,7 +38,8 @@ void Explanation_Logger::print_dependency_analysis()
     outputManager->set_column_indent(0, 70);
     outputManager->set_column_indent(1, 80);
     outputManager->set_column_indent(2, 90);
-    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Source%-Chunk %-Instantiation that created matched WME\n\n",
+    outputManager->set_column_indent(3, 110);
+    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Source%-Opertnl%-Creator%-Paths\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
 
     print_condition_list(ebc_actual_trace, false, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
@@ -75,7 +71,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
     outputManager->set_column_indent(0, 70);
     outputManager->set_column_indent(1, 80);
     outputManager->set_column_indent(2, 90);
-    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)%-Source%-Chunk%-Instantiation that created WME\n\n",
+    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)%-Source%-Chunk%-Creator%-Paths\n\n",
         pInstRecord->instantiationID, pInstRecord->production_name);
     print_instantiation(ebc_actual_trace, pInstRecord);
     outputManager->printa(thisAgent, "\n");
@@ -95,6 +91,27 @@ bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
 //    }
     return false;
 }
+
+void condition_record::print_path_to_base()
+{
+    if (path_to_base)
+    {
+        bool notFirst = false;
+        for (auto it = (path_to_base)->rbegin(); it != (path_to_base)->rend(); it++)
+        {
+            if (notFirst)
+            {
+                thisAgent->outputManager->printa(thisAgent, " -> ");
+//            } else {
+//                thisAgent->outputManager->printa_sf(thisAgent, "%d: ", (path_to_base)->size());
+            }
+            thisAgent->outputManager->printa_sf(thisAgent, "i%u", (*it)->get_instantiationID());
+            notFirst = true;
+        }
+    }
+//    thisAgent->outputManager->printa_sf(thisAgent, " (%t ^%t %t)", condition_tests.id, condition_tests.attr, condition_tests.value);
+}
+
 void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk, condition_record_list* pCondRecords, production* pOriginalRule, goal_stack_level pMatch_level)
 {
     if (pCondRecords->empty())
@@ -115,6 +132,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
         outputManager->set_column_indent(1, 70);
         outputManager->set_column_indent(2, 80);
         outputManager->set_column_indent(3, 90);
+        outputManager->set_column_indent(4, 110);
         thisAgent->outputManager->set_print_test_format(true, false);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
@@ -168,20 +186,23 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                     lCond->condition_tests.attr, lCond->condition_tests.value, is_condition_related(lCond) ? "*" : "");
                 if (pForChunk)
                 {
-                    outputManager->printa_sf(thisAgent, "%-%u\n", lCond->conditionID);
+                    outputManager->printa_sf(thisAgent, "%-%u%-", lCond->conditionID);
                 } else {
                     outputManager->printa_sf(thisAgent, "%-Rule%-%s", ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : "Local"));
                     if (lCond->parent_instantiation)
                     {
-                        outputManager->printa_sf(thisAgent, "%-i%u (%s)\n",
+                        outputManager->printa_sf(thisAgent, "%-i%u (%s)%-",
                             (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
                             (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
                     } else
                     {
-                        outputManager->printa_sf(thisAgent, "%-Soar Architecture\n");
+                        outputManager->printa_sf(thisAgent, "%-Soar Architecture%-");
                     }
                 }
-            } else if (pType == ebc_explanation_trace)
+                lCond->print_path_to_base();
+                outputManager->printa(thisAgent, "\n");
+            }
+            else if (pType == ebc_explanation_trace)
             {
 
                 /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */

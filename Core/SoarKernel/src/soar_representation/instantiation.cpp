@@ -891,6 +891,7 @@ void create_instantiation(agent* thisAgent, production* prod,
             cond->bt.level = cond->bt.wme_->id->id->level;
             cond->bt.trace = cond->bt.wme_->preference;
         }
+        cond->bt.inst = inst;
     }
 
     /* --- print trace info --- */
@@ -1478,6 +1479,7 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
             }
             cond->test_for_acceptable_preference = (*c_it)->acceptable;
             cond->bt.wme_ = (*c_it);
+            cond->bt.inst = inst;
 
 #ifndef DO_TOP_LEVEL_REF_CTS
             if (inst->match_goal_level > TOP_GOAL_LEVEL)

@@ -69,17 +69,10 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
 {
     condition* cond;
     thisAgent->memoryManager->allocate_with_pool(MP_condition,  &cond);
-
-    cond->type = POSITIVE_CONDITION;
-    cond->next = cond->prev = cond->counterpart = NIL;
-    cond->bt.trace = NIL;
-    cond->bt.wme_ = NIL;
-    cond->bt.CDPS = NIL;
     cond->data.tests.id_test = pId;
     cond->data.tests.attr_test = pAttr;
     cond->data.tests.value_test = pValue;
-    cond->test_for_acceptable_preference = false;
-
+    /* Other data initialized to 0 in struct initializers */
     return cond;
 }
 
@@ -137,17 +130,23 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     switch (cond->type)
     {
         case POSITIVE_CONDITION:
-                New->bt = cond->bt;
-        /* ... and fall through to next case */
+            New->bt = cond->bt;
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+            break;
         case NEGATIVE_CONDITION:
+            New->bt.inst = cond->bt.inst;
             New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
+            New->bt.inst = cond->bt.inst;
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts);
+                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts);
             break;
     }
     return New;

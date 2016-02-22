@@ -68,8 +68,10 @@ class instantiation_record;
     //typedef std::list< action_record* > action_record_list;
     //typedef std::list< uint64_t > id_list;
     //#endif
-    typedef std::list< instantiation_record* >                          instantiation_record_list;
-    typedef std::list< instantiation_record_list* >                     inst_path_list;
+    typedef std::set< instantiation* >                                  inst_set;
+    typedef std::set< instantiation_record* >                           inst_record_set;
+    typedef std::list< instantiation_record* >                          inst_record_list;
+    typedef std::list< inst_record_list* >                              inst_path_list;
     typedef std::unordered_map< condition_record*, inst_path_list* >    condition_to_ipath_map;
     typedef std::list< condition_record* >                              condition_record_list;
     typedef std::list< action_record* >                                 action_record_list;

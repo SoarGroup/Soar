@@ -280,7 +280,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             continue;
         }
 
-        dprint(DT_BACKTRACE, "Backtracing through condition: %l\n", c);
+//        dprint(DT_BACKTRACE, "Backtracing marking tc of condition: %l\n", c);
         /* -- We copy any relational constraints found in this condition into a temporary map.
          *    When backtracing is complete and we are building the chunk conditions, we will
          *    add all of the relational constraints found while backtracing into the final
@@ -374,7 +374,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             /* --- positive cond's are grounds, potentials, or locals --- */
             if (thisID->tc_num == tc)
             {
-                dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l (i%u)\n", c, c->bt.inst->i_id);
                 add_to_grounds(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -383,7 +383,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             }
             else if (c->bt.level <= grounds_level)
             {
-                dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l (i%u)\n", c, c->bt.inst->i_id);
                 add_to_potentials(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -392,7 +392,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             }
             else
             {
-                dprint(DT_BACKTRACE, "Backtracing adding local condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding local condition... %l (i%u)\n", c, c->bt.inst->i_id);
                 add_to_locals(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -402,7 +402,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
         else
         {
-            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l\n", c);
+            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->bt.inst->i_id);
             /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(&negated_set,
                                   make_chunk_cond_for_negated_condition(c));
@@ -413,9 +413,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
     } /* end of for loop */
 
-    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
-    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
+//    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+//    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
+//    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
     /* Now record the sets of conditions.  Note that these are not necessarily */
     /* the final resting place for these wmes.  In particular potentials may   */

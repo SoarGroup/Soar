@@ -53,11 +53,14 @@ enum TraceMode
     DT_LINKS = 32,
     DT_EBC_CLEANUP = 33,
     DT_UNKNOWN_LEVEL = 34,
-    DT_EXPLAIN = 35,
-    DT_REV_BT = 36,
-    DT_RETE_PNODE_ADD = 37,
-    DT_GROUND_LTI = 38,
-    DT_EXPLAIN_DEP = 39,
+    DT_RETE_PNODE_ADD = 35,
+    DT_GROUND_LTI = 36,
+    DT_EXPLAIN = 37,
+    DT_EXPLAIN_PATHS = 38,
+    DT_EXPLAIN_ADD_INST = 39,
+    DT_EXPLAIN_CONNECT = 40,
+    DT_EXPLAIN_UPDATE = 41,
+    DT_EXPLAIN_CONDS = 42,
     num_trace_modes
 };
 
@@ -97,8 +100,7 @@ enum EBCFailureType {
 enum EBCExplainStatus {
     explain_unrecorded,
     explain_recording,
-    explain_recorded,
-    explain_connected
+    explain_recorded
 };
 
 enum MemoryPoolType
