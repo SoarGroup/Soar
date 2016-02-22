@@ -3176,6 +3176,7 @@ namespace cli
                 {'d', "off",        OPTARG_NONE},
                 {'e', "enable",     OPTARG_NONE},
                 {'e', "on",         OPTARG_NONE},
+                {'f', "forget",     OPTARG_NONE},
                 {'g', "get",        OPTARG_NONE},
                 {'h', "history",    OPTARG_NONE},
                 {'i', "init",       OPTARG_NONE},
@@ -3304,6 +3305,13 @@ namespace cli
                         return cli.DoSMem( option, &(argv[2]), 0 );
 
                     return cli.DoSMem( option, &(argv[2]), &(argv[3]) );
+                }
+            case 'f':
+                {
+                    // case: forget takes no arguments
+                    if (!opt.CheckNumNonOptArgs(0, 0)) return cli.SetError( opt.GetError().c_str());
+
+                    return cli.DoSMem( option );
                 }
             }
 

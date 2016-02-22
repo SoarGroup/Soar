@@ -378,6 +378,18 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         return true;
     }
+    else if ( pOp == 'f' )
+    {
+        // vizualizing the store requires an open semantic database
+        smem_attach( agnt );
+        if ( agnt->smem_db->get_status() == soar_module::connected )
+        {
+            smem_reset_activation( agnt );
+        }
+
+        return true;
+
+    }
 
     return SetError( "Unknown option." );
 }

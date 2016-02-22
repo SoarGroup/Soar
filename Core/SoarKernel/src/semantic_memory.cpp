@@ -607,6 +607,15 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
+	act_reset = new soar_module::sqlite_statement( new_db, "UPDATE smem_augmentations SET activation_value=?" );
+	add( act_reset );
+
+	act_lti_reset = new soar_module::sqlite_statement( new_db, "UPDATE smem_lti SET activation_value=?,activations_total=0,activations_last=0,activations_first=0" );
+	add( act_lti_reset );
+
+	hist_clear = new soar_module::sqlite_statement( new_db, "DELETE FROM smem_activation_history" );
+	add( hist_clear );
+
 	act_set = new soar_module::sqlite_statement( new_db, "UPDATE smem_augmentations SET activation_value=? WHERE lti_id=?" );
 	add( act_set );
 
@@ -1271,6 +1280,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					soar_module::sqlite_statement *lti_q = my_agent->smem_stmts->lti_letter_num;
 					lti_q->bind_int( 1, temp_lti_id );
 					lti_q->execute();
+					//std::cout << static_cast<char>(lti_q->column_int(0)) << " " << static_cast<uint64_t>(lti_q->column_int(1)) << std::endl;
 					lti_q->reinitialize();
 				}
 
@@ -1400,6 +1410,15 @@ void smem_activate_ltis_tested_in_prods( agent* my_agent )
 			}
 		}
 	}
+}
+
+void smem_reset_activation( agent* my_agent )
+{
+	my_agent->smem_stmts->act_reset->bind_int( 1, SMEM_ACT_LOW );
+	my_agent->smem_stmts->act_reset->execute( soar_module::op_reinit );
+	my_agent->smem_stmts->act_lti_reset->bind_int( 1, SMEM_ACT_LOW );
+	my_agent->smem_stmts->act_lti_reset->execute( soar_module::op_reinit );
+	my_agent->smem_stmts->hist_clear->execute( soar_module::op_reinit );
 }
 
 //////////////////////////////////////////////////////////

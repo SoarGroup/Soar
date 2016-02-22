@@ -274,6 +274,9 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *wmes_constant_frequency_get;
 		soar_module::sqlite_statement *wmes_lti_frequency_get;
 
+		soar_module::sqlite_statement *act_reset;
+		soar_module::sqlite_statement *act_lti_reset;
+		soar_module::sqlite_statement *hist_clear;
 		soar_module::sqlite_statement *act_set;
 		soar_module::sqlite_statement *act_lti_child_ct_set;
 		soar_module::sqlite_statement *act_lti_child_ct_get;
@@ -490,6 +493,7 @@ extern Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_l
 
 extern double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX );
 extern void smem_activate_ltis_tested_in_prods( agent* my_agent );
+extern void smem_reset_activation( agent* my_agent );
 
 extern void smem_reset( agent *my_agent, Symbol *state );
 extern void smem_reset_id_counters( agent *my_agent );
