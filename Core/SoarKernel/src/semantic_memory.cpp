@@ -1241,14 +1241,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 					my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
 				}
 
-				if ( prev_access_n == 0 )
-				{
-					new_activation = 0;
-				}
-				else
-				{
-					new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
-				}
+				new_activation = smem_lti_calc_base( my_agent, temp_lti_id, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
 
 				my_agent->smem_stats->act_accesses->set_value( my_agent->smem_stats->act_accesses->get_value() + 1 );
 
