@@ -149,6 +149,7 @@ class instantiation_record
         condition_record_list*  conditions;
         action_record_list*     actions;
         uint64_t                instantiationID;
+        bool                    terminal;
 };
 
 class chunk_record
@@ -192,6 +193,8 @@ class Explanation_Logger
         void                    clear_explanations();
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
+        void                    add_bt_instantiation(instantiation* pInst) { backtraced_instantiations->insert(pInst); };
+
         void                    record_dependencies();
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
@@ -252,6 +255,7 @@ class Explanation_Logger
         chunk_record*           current_recording_chunk;
         identity_triple         current_explained_ids;
         std::string             dependency_chart;
+        inst_set*               backtraced_instantiations;
         inst_record_set*        instantiations_for_current_chunk;
 
         void                    initialize_counters();

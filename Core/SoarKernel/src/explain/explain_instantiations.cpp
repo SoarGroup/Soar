@@ -19,9 +19,10 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     conditions          = new condition_record_list;
     actions             = new action_record_list;
     original_production = pInst->prod;
+    terminal            = false;
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
-
     symbol_add_ref(thisAgent, production_name);
+
     if (pInst->prod)
     {
         original_production->save_for_justification_explanation = true;

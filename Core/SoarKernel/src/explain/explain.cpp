@@ -32,7 +32,7 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     all_actions = new std::unordered_map< uint64_t, action_record* >();
 
     instantiations_for_current_chunk = new inst_record_set();
-
+    backtraced_instantiations = new inst_set();
 }
 
 void Explanation_Logger::initialize_counters()
@@ -106,6 +106,7 @@ void Explanation_Logger::clear_explanations()
     }
     all_actions->clear();
     instantiations_for_current_chunk->clear();
+    backtraced_instantiations->clear();
 }
 
 Explanation_Logger::~Explanation_Logger()
@@ -122,6 +123,7 @@ Explanation_Logger::~Explanation_Logger()
     delete all_actions;
     delete instantiations;
     delete instantiations_for_current_chunk;
+    delete backtraced_instantiations;
 
 }
 
@@ -154,6 +156,8 @@ void Explanation_Logger::end_chunk_record()
 {
     current_recording_chunk = NULL;
     instantiations_for_current_chunk->clear();
+    backtraced_instantiations->clear();
+
 }
 
 void Explanation_Logger::add_result_instantiations(preference* pResults)
@@ -231,7 +235,14 @@ void Explanation_Logger::print_involved_instantiations()
 
     for (auto it = instantiations_for_current_chunk->begin(); it != instantiations_for_current_chunk->end(); it++)
     {
-        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->instantiationID, (*it)->production_name);
+        dprint(DT_EXPLAIN, "%u (%y) %s\n", (*it)->instantiationID, (*it)->production_name, (*it)->terminal ? "Terminal" : "BT");
+    }
+
+    dprint(DT_EXPLAIN, "Involved bt instantiations: \n");
+
+    for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
+    {
+        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
     }
 }
 
@@ -270,6 +281,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation, bt_depth);
+        lInstRecord->terminal = lIsTerminalInstantiation;
         instantiations_for_current_chunk->insert(lInstRecord);
 
         increment_counter(total_recorded.instantiations);
