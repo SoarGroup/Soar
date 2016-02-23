@@ -18,15 +18,14 @@ void condition_record::connect_to_action()
         assert(cached_pref);
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
-        parent_instantiation->connect_conds_to_actions();
         dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
-//    } else {
-//        dprint(DT_EXPLAIN, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+    } else {
+        dprint(DT_EXPLAIN, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     }
 //    cached_pref = NULL;
 }
 
-void condition_record::update_condition(condition* pCond, instantiation_record* pInst, bool pStopHere, uint64_t bt_depth)
+void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
 {
 //    dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
     if (!matched_wme)
@@ -35,11 +34,11 @@ void condition_record::update_condition(condition* pCond, instantiation_record* 
     }
     cached_pref = pCond->bt.trace;
     cached_wme = pCond->bt.wme_;
-    if (!pStopHere && pCond->bt.trace)
+    if (pCond->bt.trace)
     {
-        parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
+        parent_instantiation = thisAgent->explanationLogger->get_instantiation(pCond->bt.trace->inst);
     } else {
-        assert(!parent_instantiation);
+        parent_instantiation = NULL;
     }
     parent_action = NULL;
     if (path_to_base) {
@@ -73,7 +72,7 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
     }
 }
 
-condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth)
+condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -115,17 +114,9 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     if (!cached_pref && pCond->counterpart) {
         dprint(DT_EXPLAIN_CONDS, "   Chunk condition without pref found.\n");
     }
-    if (!pStopHere && pCond->bt.trace)
+    if (pCond->bt.trace)
     {
-        parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
-
-        // Crude way to print a dependency chart
-        //        Output_Manager::Get_OM().set_column_indent(0, (bt_depth * 3));
-        //        dprint(DT_EXPLAIN, "%-%u\n", pCond->bt.trace->inst->i_id);
-        //        dependency_chart.append(((pDepth + 1) * 3) , ' ');
-        //        std::string new_entry;
-        //        thisAgent->outputManager->sprinta_sf(thisAgent, new_entry, "%u (%y)\n", pInstRecord->instantiationID, pInstRecord->production_name);
-        //        dependency_chart.append(new_entry);
+        parent_instantiation = thisAgent->explanationLogger->get_instantiation(pCond->bt.trace->inst);
     } else {
         parent_instantiation = NULL;
     }

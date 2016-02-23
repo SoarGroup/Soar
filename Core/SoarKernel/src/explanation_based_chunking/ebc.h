@@ -268,9 +268,10 @@ class Explanation_Based_Chunker
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
-                int indent,
                 const identity_triple o_ids_to_replace,
-                const rhs_triple rhs_funcs);
+                const rhs_triple rhs_funcs,
+                uint64_t bt_depth,
+                BTSourceType bt_type);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */

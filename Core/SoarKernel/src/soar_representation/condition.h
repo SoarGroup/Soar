@@ -43,18 +43,9 @@ typedef struct bt_info_struct
     wme* wme_;                      /* the actual wme that was matched */
     goal_stack_level level;         /* level (at firing time) of the id of the wme */
     preference* trace;              /* preference for BT, or NIL */
-    instantiation* inst;            /* ID for the instantiation where this condition
-                                       came to the grounds from.  This is used by
-                                       EBC's explain mechanism to properly link
-                                       the chunk condition to the proper condition
-                                       in the explanation trace.  We could not used
-                                       preferences because architectural wme's
-                                       don't have preferences.  Used only during
-                                       chunking.*/
-
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-    bt_info_struct() : wme_(NULL), level(0), trace(NULL), inst(0), CDPS(NULL) {}
+    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -94,8 +85,17 @@ typedef struct condition_struct
     reorder_info                reorder;        /* used only during reordering */
     struct condition_struct*    counterpart;    /* pointer from variablized condition to instantiated condtion.
                                                    Used only during chunking and not guaranteed to exist */
+    instantiation*              inst;           /* ID for the instantiation where this condition
+                                                   came to the grounds from.  This is used by
+                                                   EBC's explain mechanism to properly link
+                                                   the chunk condition to the proper condition
+                                                   in the explanation trace.  We could not used
+                                                   preferences because architectural wme's
+                                                   don't have preferences.  Used only during
+                                                   chunking.*/
+
     condition_struct() : type(POSITIVE_CONDITION), already_in_tc(false), test_for_acceptable_preference(false),
-                         next(NULL), prev(NULL), counterpart(NULL) {}
+                         next(NULL), prev(NULL), counterpart(NULL), inst(NULL) {}
 } condition;
 
 /* ------------------------ */
@@ -120,7 +120,8 @@ condition* copy_condition_without_relational_constraints(agent* thisAgent, condi
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
 void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
-                         condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
+                         condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
+                         bool pCopyInstantiation = false);
 
 void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
                                       ::list** var_list, bool add_LTIs = false);

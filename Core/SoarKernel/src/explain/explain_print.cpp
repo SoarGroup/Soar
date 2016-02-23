@@ -188,7 +188,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 {
                     outputManager->printa_sf(thisAgent, "%-%u%-", lCond->conditionID);
                 } else {
-                    outputManager->printa_sf(thisAgent, "%-Rule%-%s", ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : "Local"));
+                    outputManager->printa_sf(thisAgent, "%-Rule%-%s", ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : "No"));
                     if (lCond->parent_instantiation)
                     {
                         outputManager->printa_sf(thisAgent, "%-i%u (%s)%-",
@@ -336,11 +336,12 @@ void Explanation_Logger::print_chunk(EBCTraceType pType, chunk_record* pChunkRec
     {
         outputManager->set_column_indent(0, 70);
         outputManager->set_column_indent(1, 80);
-        outputManager->printa_sf(thisAgent, "sp {%y %-Condition ID\n\n", current_discussed_chunk->name);
+        outputManager->set_column_indent(2, 90);
+        outputManager->printa_sf(thisAgent, "sp {%y %-ID%-Path to Operational Preference\n\n", current_discussed_chunk->name);
     } else if (pType == ebc_explanation_trace)
     {
         outputManager->set_column_indent(0, 70);
-        outputManager->printa_sf(thisAgent, "Explanation Trace:     %-Using variable identity set IDs\n\n");
+        outputManager->printa_sf(thisAgent, "Explanation Trace:     %-Using variable identity IDs\n\n");
     } else if (pType == ebc_match_trace)
     {
         outputManager->printa_sf(thisAgent, "Working Memory trace: %-Instantiation that created matched WME\n\n");
@@ -628,17 +629,18 @@ void Explanation_Logger::print_involved_instantiations()
 //    std::set< instantiation_record*, cmp_iID > sorted_set;
 ////    { std::begin((*instantiations_for_current_chunk)), std::end((*instantiations_for_current_chunk)) };
 //    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
+    assert(current_recording_chunk);
 
     dprint(DT_EXPLAIN, "Involved instantiations: \n");
 
-    for (auto it = instantiations_for_current_chunk->begin(); it != instantiations_for_current_chunk->end(); it++)
+    for (auto it = current_recording_chunk->backtraced_inst_records->begin(); it != current_recording_chunk->backtraced_inst_records->end(); it++)
     {
         dprint(DT_EXPLAIN, "%u (%y) %s\n", (*it)->instantiationID, (*it)->production_name, (*it)->terminal ? "Terminal" : "BT");
     }
 
     dprint(DT_EXPLAIN, "Involved bt instantiations: \n");
 
-    for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
+    for (auto it = current_recording_chunk->backtraced_instantiations->begin(); it != current_recording_chunk->backtraced_instantiations->end(); it++)
     {
         dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
     }

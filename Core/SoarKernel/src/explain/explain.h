@@ -85,7 +85,7 @@ class condition_record
         friend class Explanation_Logger;
 
     public:
-        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth);
+        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
         ~condition_record();
 
         void        connect_to_action();
@@ -99,7 +99,7 @@ class condition_record
                         (*path_to_base) = (*pPath); }
         void        set_instantiation(instantiation_record* pInst) { my_instantiation = pInst; };
         void        set_matched_wme_for_cond(condition* pCond);
-        void        update_condition(condition* pCond, instantiation_record* pInst, bool pStopHere, uint64_t bt_depth);
+        void        update_condition(condition* pCond, instantiation_record* pInst);
 
         uint64_t                        get_conditionID()   { return conditionID; };
         goal_stack_level                get_level()         { return wme_level_at_firing; };
@@ -133,12 +133,12 @@ class instantiation_record
         ~instantiation_record();
 
         uint64_t                get_instantiationID() { return instantiationID; };
-        void                    record_instantiation_contents(instantiation* pInst, bool pStopHere, uint64_t bt_depth);
-        void                    update_instantiation_contents(instantiation* pInst, bool pStopHere, uint64_t bt_depth);
+        void                    record_instantiation_contents();
+        void                    update_instantiation_contents();
         void                    create_identity_paths(const inst_record_list* pInstPath, action_record* pAction = NULL, bool pUseId = true, bool pUseAttr = true, bool pUseValue = true);
         condition_record*       find_condition_for_chunk(preference* pPref, wme* pWME);
         action_record*          find_rhs_action(preference* pPref);
-        void                    connect_conds_to_actions();
+        instantiation*          cached_inst;
 
     private:
         agent* thisAgent;
@@ -162,6 +162,7 @@ class chunk_record
 
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    record_dependencies();
+        void                    end_chunk_record();
 
     private:
         agent*                  thisAgent;
@@ -171,6 +172,9 @@ class chunk_record
         action_record_list*     actions;
         condition_to_ipath_map* dependency_paths;
         id_to_id_map_type*      identity_set_mappings;
+        inst_set*               backtraced_instantiations;
+        inst_record_list*       backtraced_inst_records;
+
         instantiation_record*   baseInstantiation;
         inst_set*               result_instantiations;
         inst_record_set*        result_inst_records;
@@ -193,7 +197,7 @@ class Explanation_Logger
         void                    clear_explanations();
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
-        void                    add_bt_instantiation(instantiation* pInst) { backtraced_instantiations->insert(pInst); };
+        void                    add_bt_instantiation(instantiation* pInst, BTSourceType bt_type) { if (current_recording_chunk) current_recording_chunk->backtraced_instantiations->insert(pInst); };
 
         void                    record_dependencies();
 
@@ -203,7 +207,7 @@ class Explanation_Logger
         void                    cancel_chunk_record();
         void                    end_chunk_record();
 
-        instantiation_record*   add_instantiation(instantiation* pInst, uint64_t bt_depth);
+        instantiation_record*   add_instantiation(instantiation* pInst);
 
         void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_unorderable() { stats.unorderable++; };
@@ -255,13 +259,11 @@ class Explanation_Logger
         chunk_record*           current_recording_chunk;
         identity_triple         current_explained_ids;
         std::string             dependency_chart;
-        inst_set*               backtraced_instantiations;
-        inst_record_set*        instantiations_for_current_chunk;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
         instantiation_record*   get_instantiation(instantiation* pInst);
-        condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst, bool pStopHere, uint64_t bt_depth, bool pMakeNegative = false);
+        condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         void                    print_chunk_list(short pNumToPrint = 0);

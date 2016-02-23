@@ -31,8 +31,6 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
 
-    instantiations_for_current_chunk = new inst_record_set();
-    backtraced_instantiations = new inst_set();
 }
 
 void Explanation_Logger::initialize_counters()
@@ -105,8 +103,6 @@ void Explanation_Logger::clear_explanations()
         delete it->second;
     }
     all_actions->clear();
-    instantiations_for_current_chunk->clear();
-    backtraced_instantiations->clear();
 }
 
 Explanation_Logger::~Explanation_Logger()
@@ -122,9 +118,6 @@ Explanation_Logger::~Explanation_Logger()
     delete all_conditions;
     delete all_actions;
     delete instantiations;
-    delete instantiations_for_current_chunk;
-    delete backtraced_instantiations;
-
 }
 
 void Explanation_Logger::re_init()
@@ -154,10 +147,11 @@ void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
 
 void Explanation_Logger::end_chunk_record()
 {
-    current_recording_chunk = NULL;
-    instantiations_for_current_chunk->clear();
-    backtraced_instantiations->clear();
-
+    if (current_recording_chunk)
+    {
+        current_recording_chunk->end_chunk_record();
+        current_recording_chunk = NULL;
+    }
 }
 
 void Explanation_Logger::add_result_instantiations(preference* pResults)
@@ -185,15 +179,15 @@ void Explanation_Logger::record_chunk_contents(production* pProduction, conditio
     }
 }
 
-condition_record* Explanation_Logger::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst, bool pStopHere, uint64_t bt_depth, bool pMakeNegative)
+condition_record* Explanation_Logger::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
 {
-    dprint(DT_EXPLAIN_CONDS, "   Creating %s condition: %l\n", (!pStopHere ? "new" : "new terminal"), pCond);
+    dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
 
     if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         increment_counter(condition_id_count);
-        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count, pStopHere, bt_depth);
+        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count);
         lCondRecord->set_instantiation(pInst);
         if (pMakeNegative)
         {
@@ -212,20 +206,20 @@ condition_record* Explanation_Logger::add_condition(condition_record_list* pCond
         condition_record* new_cond_record;
         for (condition* cond = pCond->data.ncc.top; cond != NIL; cond = cond->next)
         {
-            new_cond_record = add_condition(pCondList, cond, pInst, pStopHere, bt_depth, true);
+            new_cond_record = add_condition(pCondList, cond, pInst, true);
         }
         return new_cond_record;
     }
 }
 
-instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t bt_depth)
+instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst)
 {
-    if (++bt_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
+    if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
     bool lIsTerminalInstantiation = false;
-
     dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
         pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+
 
     if (pInst->explain_status == explain_unrecorded)
     {
@@ -239,7 +233,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
          * instantiation.  This puts a cap on the memory used, which can easily cause
          * issues for example in the count-and-die test agent that creates thousands
          * of instantiations */
-        if ((pInst->backtrace_number != backtrace_number) || (bt_depth > EXPLAIN_MAX_BT_DEPTH))
+        if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
             dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record...\n",
                 pInst->backtrace_number, backtrace_number);
@@ -252,40 +246,32 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
 
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
-        lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation, bt_depth);
         lInstRecord->terminal = lIsTerminalInstantiation;
-        instantiations_for_current_chunk->insert(lInstRecord);
 
         increment_counter(total_recorded.instantiations);
-        pInst->explain_status = explain_recorded;
-        dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).  %d inst involved in current chunk\n",
-            pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), instantiations_for_current_chunk->size());
+        dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
+            pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
         return lInstRecord;
-    } else if (pInst->explain_status == explain_recording) {
-        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
     } else if ((pInst->explain_status == explain_recorded) && (pInst->explain_tc_num != backtrace_number))
     {
         /* Update instantiation*/
         dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
-        if ((pInst->backtrace_number != backtrace_number) || (bt_depth > EXPLAIN_MAX_BT_DEPTH))
+        if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
             dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record for i%u (%y).\n",
                 pInst->backtrace_number, backtrace_number, pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
             lIsTerminalInstantiation = true;
         }
         /* Set status flag to recording to handle recursive addition */
-        pInst->explain_status = explain_recording;
+        pInst->explain_status = explain_recording_update;
         pInst->explain_tc_num = backtrace_number;
 
         instantiation_record* lInstRecord = get_instantiation(pInst);
-        assert(lInstRecord);
-        lInstRecord->update_instantiation_contents(pInst, lIsTerminalInstantiation, bt_depth);
-        instantiations_for_current_chunk->insert(lInstRecord);
-
-        increment_counter(total_recorded.instantiations);
-        pInst->explain_status = explain_recorded;
-        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).  %d inst involved in current chunk\n",
-            pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), instantiations_for_current_chunk->size());
+        lInstRecord->terminal = lIsTerminalInstantiation;
+        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        return lInstRecord;
+    } else if (pInst->explain_status == explain_recording) {
+        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
     } else {
         dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
     }

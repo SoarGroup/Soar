@@ -5,12 +5,9 @@
 
 /*************************************************************************
  *
- *  file:  recmem.cpp
+ *  file:  instantiation.cpp
  *
  * =======================================================================
- *
- *             Recognition Memory (Firer and Chunker) Routines
- *                 (Does not include the Rete net)
  *
  * Init_firer() and init_chunker() should be called at startup time, to
  * do initialization.
@@ -711,6 +708,7 @@ void init_instantiation(agent*          thisAgent,
 #endif
             }
         }
+        cond->inst = inst;
     }
 
     if (inst->match_goal)
@@ -841,6 +839,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->in_ms = true;
     inst->i_id = thisAgent->ebChunker->get_new_inst_id();
     inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
     inst->GDS_evaluated_already = false;
 
     dprint_header(DT_MILESTONES, PrintBefore,
@@ -886,14 +886,13 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
+        cond->inst = inst;
         if (cond->type == POSITIVE_CONDITION)
         {
             cond->bt.level = cond->bt.wme_->id->id->level;
             cond->bt.trace = cond->bt.wme_->preference;
         }
-        cond->bt.inst = inst;
     }
-
     /* --- print trace info --- */
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
@@ -1479,7 +1478,7 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
             }
             cond->test_for_acceptable_preference = (*c_it)->acceptable;
             cond->bt.wme_ = (*c_it);
-            cond->bt.inst = inst;
+            cond->inst = inst;
 
 #ifndef DO_TOP_LEVEL_REF_CTS
             if (inst->match_goal_level > TOP_GOAL_LEVEL)

@@ -64,6 +64,13 @@ enum TraceMode
     num_trace_modes
 };
 
+enum BTSourceType {
+    BT_BaseInstantiation,
+    BT_CDPS,
+    BT_ExtraResults,
+    BT_Normal
+};
+
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
                     GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT
                   };
@@ -100,6 +107,7 @@ enum EBCFailureType {
 enum EBCExplainStatus {
     explain_unrecorded,
     explain_recording,
+    explain_recording_update,
     explain_recorded
 };
 

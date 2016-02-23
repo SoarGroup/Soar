@@ -31,6 +31,8 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     dependency_paths    = NULL;
 //    dependency_paths = new condition_to_ipath_map();
 
+    backtraced_inst_records = new inst_record_list();
+    backtraced_instantiations = new inst_set();
     result_instantiations = new inst_set;
     result_inst_records = new inst_record_set;
 
@@ -50,10 +52,12 @@ chunk_record::~chunk_record()
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
     symbol_remove_ref(thisAgent, name);
 //    production_remove_ref(thisAgent, original_production);
-    delete conditions;
-    delete actions;
-    delete result_instantiations;
-    delete result_inst_records;
+    if (conditions) delete conditions;
+    if (actions) delete actions;
+    if (result_instantiations) delete result_instantiations;
+    if (result_inst_records) delete result_inst_records;
+    if (backtraced_inst_records) delete backtraced_inst_records;
+    if (backtraced_instantiations) delete backtraced_instantiations;
 }
 
 int condition_count(condition* pCond)
@@ -84,23 +88,40 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     conditions         = new condition_record_list;
     actions            = new action_record_list;
 
-    dprint(DT_EXPLAIN, "(1) Recording base instantiation i%u of chunk (%d conditions)...\n", pBaseInstantiation->i_id, condition_count(pBaseInstantiation->top_of_instantiated_conditions));
-    baseInstantiation = thisAgent->explanationLogger->add_instantiation(pBaseInstantiation, 1);
+    instantiation_record* lResultInstRecord, *lNewInstRecord;
+
+    /* Check if max number of instantiations in list.  If so, take most recent i_ids */
+    dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", pBaseInstantiation->i_id, backtraced_instantiations->size());
+    for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
+    {
+        lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it));
+        backtraced_inst_records->push_back(lNewInstRecord);
+        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
+    }
+
+    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
+    {
+        lNewInstRecord = (*it);
+        if (lNewInstRecord->cached_inst->explain_status == explain_recording)
+        {
+            lNewInstRecord->record_instantiation_contents();
+
+        } else if (lNewInstRecord->cached_inst->explain_status == explain_recording_update)
+        {
+            lNewInstRecord->update_instantiation_contents();
+        } else {
+            assert(false);
+        }
+    }
+
+    baseInstantiation = thisAgent->explanationLogger->get_instantiation(pBaseInstantiation);
 
     dprint(DT_EXPLAIN, "(2) Recording other result instantiation of chunk...\n", pBaseInstantiation->i_id);
-    instantiation_record* lResultInstRecord;
     for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
     {
-//        lResultInstRecord = thisAgent->explanationLogger->get_instantiation((*it));
-//        if (!lResultInstRecord)
-//        {
-//            dprint(DT_EXPLAIN, "...FOUND EXTRA RESULT INSTANTIATION: %u (%y)...\n", (*it)->i_id, ((*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol));
-            lResultInstRecord = thisAgent->explanationLogger->add_instantiation((*it), 1);
-            assert(lResultInstRecord);
-            result_inst_records->insert(lResultInstRecord);
-//        } else {
-//            dprint(DT_EXPLAIN, "...result instantiation already exists: %u (%y)...\n", (*it)->i_id, ((*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol));
-//        }
+        lResultInstRecord = thisAgent->explanationLogger->get_instantiation((*it));
+        assert(lResultInstRecord);
+        result_inst_records->insert(lResultInstRecord);
     }
 
     /* Comment not true if we keep here:  We link up all of the dependencies here.  Since the linking may be expensive and
@@ -112,22 +133,24 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     dprint(DT_EXPLAIN, "(4) Recording conditions of chunk...\n");
     thisAgent->explanationLogger->print_involved_instantiations();
     /* Create condition and action records */
-    bool has_backtrace_num = false;
-    instantiation_record* lchunkInstantiation;
+    instantiation_record* lchunkInstRecord;
+    instantiation* lChunkCondInst = NULL;
     condition_record* lcondRecord;
 
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
-        dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, cond->bt.inst->i_id,
-            (cond->bt.inst->prod ? cond->bt.inst->prod->name : thisAgent->fake_instantiation_symbol));
-        has_backtrace_num = (cond->bt.trace && cond->bt.trace->inst && (cond->bt.trace->inst->backtrace_number == pBacktraceNumber));
-        lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, NULL, has_backtrace_num, 0);
-        lchunkInstantiation = thisAgent->explanationLogger->get_instantiation(cond->bt.inst);
-//        lchunkInstantiation = thisAgent->explanationLogger->add_instantiation(cond->bt.inst, 1);
+        lChunkCondInst = cond->inst;
+        dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id,
+            (lChunkCondInst->prod ? lChunkCondInst->prod->name : thisAgent->fake_instantiation_symbol));
+        assert(lChunkCondInst->backtrace_number == pBacktraceNumber);
+        lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond);
         /* The backtrace should have already added all instantiations that contained
          * grounds, so we can just look up the instantiation for each condition */
-        assert(lchunkInstantiation);
-        lcondRecord->set_instantiation(lchunkInstantiation);
+        lchunkInstRecord = thisAgent->explanationLogger->get_instantiation(lChunkCondInst);
+        assert(lchunkInstRecord);
+        lcondRecord->set_instantiation(lchunkInstRecord);
+        cond->inst = pChunkInstantiation;
+        cond->counterpart->inst = pChunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 
@@ -150,15 +173,6 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
 void chunk_record::record_dependencies()
 {
-
-    dprint(DT_EXPLAIN_CONNECT, "Connecting conditions to specific RHS actions...\n");
-    /* Now that instantiations in backtrace are guaranteed to be recorded, connect
-     * each condition to the appropriate parent instantiation action record */
-    /* MToDo | We might only need to connect base conditions and CDPS */
-    baseInstantiation->connect_conds_to_actions();
-
-    dprint(DT_EXPLAIN_CONNECT, "Done connecting conditions to specific RHS actions...\n");
-
     dprint(DT_EXPLAIN_PATHS, "Creating paths based on identities affected %u...\n", chunkID);
 
     inst_record_list* lInstPath = new inst_record_list();
@@ -193,6 +207,11 @@ void chunk_record::record_dependencies()
     }
 }
 
-
-
-
+void chunk_record::end_chunk_record()
+{
+    if (backtraced_instantiations)
+    {
+        backtraced_instantiations->clear();
+        result_instantiations->clear();
+    }
+}

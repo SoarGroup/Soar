@@ -54,6 +54,7 @@ typedef struct instantiation_struct
     uint64_t                        i_id;                   /* id number used by EBC */
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
+    uint64_t                        explain_depth;
 } instantiation;
 
 /* A dll of instantiations that will be used to determine the gds through

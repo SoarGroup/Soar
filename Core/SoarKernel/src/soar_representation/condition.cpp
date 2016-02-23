@@ -137,16 +137,14 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case NEGATIVE_CONDITION:
-            New->bt.inst = cond->bt.inst;
             New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
-            New->bt.inst = cond->bt.inst;
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts);
+                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false);
             break;
     }
     return New;
@@ -162,7 +160,8 @@ void copy_condition_list(agent* thisAgent,
                          condition** dest_top,
                          condition** dest_bottom,
                          bool pUnify_variablization_identity,
-                         bool pStripLiteralConjuncts)
+                         bool pStripLiteralConjuncts,
+                         bool pCopyInstantiation)
 {
     condition* New, *prev;
 
@@ -170,6 +169,10 @@ void copy_condition_list(agent* thisAgent,
     while (top_cond)
     {
         New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts);
+        if (pCopyInstantiation)
+        {
+            New->inst = top_cond->inst;
+        }
         if (prev)
         {
             prev->next = New;

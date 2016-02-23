@@ -399,7 +399,8 @@ void Explanation_Based_Chunker::create_instantiated_counterparts()
     while (copy_cond)
     {
         c_inst = copy_condition(thisAgent, copy_cond);
-
+        c_inst->inst = copy_cond->inst;
+        assert(c_inst->inst);
         /*-- Store a link from the variablized condition to the instantiated
          *   condition.  Used during merging if the chunker needs
          *   to delete a redundant condition.  Also used to reorder
@@ -451,6 +452,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
         c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify);
+        c_vrblz->inst = ground->inst;
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
@@ -479,6 +481,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 print_condition(thisAgent, cc->cond);
             }
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            c_vrblz->inst = cc->cond->inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
             }
@@ -712,7 +715,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             print_preference(thisAgent, pref);
             print_string(thisAgent, " ");
         }
-        backtrace_through_instantiation(pref->inst, grounds_level, NULL, 0, pref->o_ids, pref->rhs_funcs);
+        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -975,7 +978,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize)
     {
         /* Save conditions and results in case we need to make a justification because chunking fails */
-        copy_condition_list(thisAgent, m_vrblz_top, &m_saved_justification_top, &m_saved_justification_bottom);
+        copy_condition_list(thisAgent, m_vrblz_top, &m_saved_justification_top, &m_saved_justification_bottom, false, false, true);
 
         reset_variable_generator(thisAgent, m_vrblz_top, NIL);
         variablize_condition_list(m_vrblz_top);
