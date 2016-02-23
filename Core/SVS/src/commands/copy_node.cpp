@@ -15,6 +15,7 @@
  *     ^scale <vec3> [Optional] - scale of the new node
  *       (These transforms default to that of the source node)
  *     ^copy_tags <bool> [Optional] - whether to copy tags from source
+ *     ^tags <tags> [Optional] - any string att/val pairs underneath added as tags
  **********************************************************/
 #include <iostream>
 #include <string>
@@ -146,6 +147,27 @@ class copy_node_command : public command
                 copy_tags = true;
             }
 
+            // Find any att/val pairs underneath tags
+            wme* tags_wme;
+            if(si->find_child_wme(root, "tags", tags_wme))
+            {
+                Symbol* tags_root = si->get_wme_val(tags_wme);
+                wme_list tag_wmes;
+                if(si->get_child_wmes(tags_root, tag_wmes))
+                {
+                    for(wme_list::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
+                    {
+                        Symbol* tag_attr = si->get_wme_attr(*tag_it);
+                        Symbol* tag_value = si->get_wme_val(*tag_it);
+                        string tag_attr_str;
+                        string tag_value_str;
+                        if(get_symbol_value(tag_attr, tag_attr_str) && get_symbol_value(tag_value, tag_value_str))
+                        {
+                            tags[tag_attr_str] = tag_value_str;
+                        }
+                    }
+                }
+            }
 
 						// adjust << true false >>
 						adjust = false;
@@ -187,12 +209,16 @@ class copy_node_command : public command
             
             if (copy_tags)
             {
-                const tag_map& tags = source_node->get_all_tags();
-                tag_map::const_iterator tag_it;
-                for (tag_it = tags.begin(); tag_it != tags.end(); tag_it++)
+                const tag_map& src_tags = source_node->get_all_tags();
+                for (tag_map::const_iterator tag_it = src_tags.begin(); tag_it != src_tags.end(); tag_it++)
                 {
                     dest_node->set_tag(tag_it->first, tag_it->second);
                 }
+            }
+
+            for (tag_map::const_iterator tag_it = tags.begin(); tag_it != tags.end(); tag_it++)
+            {
+                dest_node->set_tag(tag_it->first, tag_it->second);
             }
 
 						if(adjust){
@@ -213,6 +239,7 @@ class copy_node_command : public command
         group_node* parent;
         string node_id;
         map<char, vec3> transforms;
+        tag_map tags;
         bool copy_tags;
 				bool adjust;
 };
@@ -234,6 +261,7 @@ command_table_entry* copy_node_command_entry()
     e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
     e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
     e->parameters["copy_tags"] = "[Optional] - true/false to copy tags from source node";
+    e->parameters["tags"] = "[Optional] - any att/val pairs underneath added as tags";
     e->create = &_make_copy_node_command_;
     return e;
 }

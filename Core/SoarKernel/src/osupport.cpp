@@ -376,7 +376,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                          *    assert will be ignored in optimized build, so behavior should not be affected by this case. -- */
                         print(thisAgent, "ERROR!  Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
                               " to Soar Umich group.\n");
-                        assert(false);
+                        //assert(false);
                     }
                 }
             }
