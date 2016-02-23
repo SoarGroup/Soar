@@ -614,3 +614,32 @@ void Explanation_Logger::print_constraints_enforced()
     assert(current_discussed_chunk);
     outputManager->printa_sf(thisAgent, "Constraints enforced during formation of chunk %y.\n\nNot yet implemented.\n", current_discussed_chunk->name);
 }
+
+
+void Explanation_Logger::print_involved_instantiations()
+{
+//    struct cmp_iID
+//        {
+//            bool operator () (const instantiation_record& a, const instantiation_record& b)
+//            {
+//                  return (a.instantiationID <= b.instantiationID);
+//            }
+//        };
+//    std::set< instantiation_record*, cmp_iID > sorted_set;
+////    { std::begin((*instantiations_for_current_chunk)), std::end((*instantiations_for_current_chunk)) };
+//    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
+
+    dprint(DT_EXPLAIN, "Involved instantiations: \n");
+
+    for (auto it = instantiations_for_current_chunk->begin(); it != instantiations_for_current_chunk->end(); it++)
+    {
+        dprint(DT_EXPLAIN, "%u (%y) %s\n", (*it)->instantiationID, (*it)->production_name, (*it)->terminal ? "Terminal" : "BT");
+    }
+
+    dprint(DT_EXPLAIN, "Involved bt instantiations: \n");
+
+    for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
+    {
+        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
+    }
+}

@@ -218,41 +218,13 @@ condition_record* Explanation_Logger::add_condition(condition_record_list* pCond
     }
 }
 
-void Explanation_Logger::print_involved_instantiations()
-{
-//    struct cmp_iID
-//        {
-//            bool operator () (const instantiation_record& a, const instantiation_record& b)
-//            {
-//                  return (a.instantiationID <= b.instantiationID);
-//            }
-//        };
-//    std::set< instantiation_record*, cmp_iID > sorted_set;
-////    { std::begin((*instantiations_for_current_chunk)), std::end((*instantiations_for_current_chunk)) };
-//    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
-
-    dprint(DT_EXPLAIN, "Involved instantiations: \n");
-
-    for (auto it = instantiations_for_current_chunk->begin(); it != instantiations_for_current_chunk->end(); it++)
-    {
-        dprint(DT_EXPLAIN, "%u (%y) %s\n", (*it)->instantiationID, (*it)->production_name, (*it)->terminal ? "Terminal" : "BT");
-    }
-
-    dprint(DT_EXPLAIN, "Involved bt instantiations: \n");
-
-    for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
-    {
-        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
-    }
-}
-
 instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t bt_depth)
 {
     if (++bt_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
     bool lIsTerminalInstantiation = false;
 
-    dprint(DT_EXPLAIN_ADD_INST, "Adding instantation for i%u (%y).\n",
+    dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
         pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
 
     if (pInst->explain_status == explain_unrecorded)
@@ -295,7 +267,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     {
         /* Update instantiation*/
         dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
-        if ((pInst->backtrace_number != backtrace_number) || (bt_depth < EXPLAIN_MAX_BT_DEPTH))
+        if ((pInst->backtrace_number != backtrace_number) || (bt_depth > EXPLAIN_MAX_BT_DEPTH))
         {
             dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record for i%u (%y).\n",
                 pInst->backtrace_number, backtrace_number, pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));

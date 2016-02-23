@@ -156,6 +156,7 @@ void chunk_record::record_dependencies()
      * each condition to the appropriate parent instantiation action record */
     /* MToDo | We might only need to connect base conditions and CDPS */
     baseInstantiation->connect_conds_to_actions();
+
     dprint(DT_EXPLAIN_CONNECT, "Done connecting conditions to specific RHS actions...\n");
 
     dprint(DT_EXPLAIN_PATHS, "Creating paths based on identities affected %u...\n", chunkID);
