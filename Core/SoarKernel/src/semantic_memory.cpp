@@ -3177,45 +3177,32 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
     soar_module::sqlite_statement* add_fingerprint = thisAgent->smem_stmts->add_fingerprint;
     soar_module::sqlite_statement* add_uncommitted_fingerprint = thisAgent->smem_stmts->add_uncommitted_fingerprint;
     soar_module::sqlite_statement* remove_fingerprint_reversal = thisAgent->smem_stmts->remove_fingerprint_reversal;
-    soar_module::sqlite_statement* add_context_additions = thisAgent->smem_stmts->add_context_additions;
     for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
-    {
-        add_context_additions->bind_int(1,*it);
-        add_context_additions->execute(soar_module::op_reinit);
-    }
-    soar_module::sqlite_statement* add_context_removals = thisAgent->smem_stmts->add_context_removals;
-    for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
-    {
-        add_context_removals->bind_int(1,*it);
-        add_context_removals->execute(soar_module::op_reinit);
-    }
-//    for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {//Now we add the walks/traversals we've done. //can imagine doing this as a batch process through a join on a list of the additions if need be.
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_1_1->start();
         ////////////////////////////////////////////////////////////////////////////
-//        add_fingerprint->bind_int(1,(*it));
+        add_fingerprint->bind_int(1,(*it));
         add_fingerprint->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_1_1->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
-//    for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
+    for (smem_lti_set::iterator it = thisAgent->smem_context_additions->begin(); it != thisAgent->smem_context_additions->end(); ++it)
     {
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_1_2->start();
         ////////////////////////////////////////////////////////////////////////////
-//        add_uncommitted_fingerprint->bind_int(1,(*it));
+        add_uncommitted_fingerprint->bind_int(1,(*it));
         add_uncommitted_fingerprint->execute(soar_module::op_reinit);
-//        remove_fingerprint_reversal->bind_int(1,(*it));
-//        remove_fingerprint_reversal->bind_int(2,(*it));
+        remove_fingerprint_reversal->bind_int(1,(*it));
+        remove_fingerprint_reversal->bind_int(2,(*it));
         remove_fingerprint_reversal->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_1_2->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
     thisAgent->smem_context_additions->clear();
-    thisAgent->smem_stmts->remove_context_additions->execute(soar_module::op_reinit);
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_2_2_1->stop();
     ////////////////////////////////////////////////////////////////////////////
@@ -3238,12 +3225,12 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
     soar_module::sqlite_statement* delete_old_uncommitted_spread = thisAgent->smem_stmts->delete_old_uncommitted_spread;
     soar_module::sqlite_statement* reverse_old_committed_spread = thisAgent->smem_stmts->reverse_old_committed_spread;
     //delete_old_spread->prepare();
-//    for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
+    for (smem_lti_set::iterator it = thisAgent->smem_context_removals->begin(); it != thisAgent->smem_context_removals->end(); ++it)
     {
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_2->start();
         ////////////////////////////////////////////////////////////////////////////
-//        delete_old_uncommitted_spread->bind_int(1,(*it));
+        delete_old_uncommitted_spread->bind_int(1,(*it));
         delete_old_uncommitted_spread->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_2->stop();
@@ -3251,7 +3238,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_3->start();
         ////////////////////////////////////////////////////////////////////////////
-//        reverse_old_committed_spread->bind_int(1,(*it));
+        reverse_old_committed_spread->bind_int(1,(*it));
         reverse_old_committed_spread->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_3->stop();
@@ -3259,14 +3246,13 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_4->start();
         ////////////////////////////////////////////////////////////////////////////
-//        delete_old_spread->bind_int(1,(*it));
+        delete_old_spread->bind_int(1,(*it));
         delete_old_spread->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_4->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
     thisAgent->smem_context_removals->clear();
-    thisAgent->smem_stmts->remove_context_removals->execute(soar_module::op_reinit);
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->spreading_calc_2_2_2->stop();
     ////////////////////////////////////////////////////////////////////////////
