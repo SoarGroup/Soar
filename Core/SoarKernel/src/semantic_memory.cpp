@@ -3231,6 +3231,7 @@ void smem_calc_spread(agent* thisAgent, smem_lti_set* current_candidates)
         thisAgent->smem_timers->spreading_calc_2_2_2_2->start();
         ////////////////////////////////////////////////////////////////////////////
         delete_old_uncommitted_spread->bind_int(1,(*it));
+        delete_old_uncommitted_spread->bind_int(2,(*it));
         delete_old_uncommitted_spread->execute(soar_module::op_reinit);
         ////////////////////////////////////////////////////////////////////////////
         thisAgent->smem_timers->spreading_calc_2_2_2_2->stop();
