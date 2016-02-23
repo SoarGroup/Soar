@@ -700,10 +700,6 @@ void smem_statement_container::create_tables()
     //Also adding in prohibit tracking in order to meaningfully use BLA with "activate-on-query".
     add_structure("CREATE TABLE smem_prohibited (lti_id INTEGER PRIMARY KEY, prohibited INTEGER, dirty INTEGER)");
 
-    //testing to see if this is faster.
-    add_structure("CREATE TABLE smem_context_additions (lti_id INTEGER PRIMARY KEY)");
-    add_structure("CREATE TABLE smem_context_removals (lti_id INTEGER PRIMARY KEY)");
-
     // adding an ascii table just to make lti queries easier when inspecting database
     {
         add_structure("INSERT OR IGNORE INTO smem_ascii (ascii_num, ascii_chr) VALUES (65,'A')");
@@ -1185,34 +1181,18 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //delete_old_context = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_context WHERE lti_id=?");
     //add(delete_old_context);
 
-    //just adding to the table of smem_context_additions
-    add_context_additions = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_context_additions (lti_id) VALUES (?)");
-    add(add_context_additions);
-    
-    //for after the additions have been used.
-    remove_context_additions = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_context_additions");
-    add(remove_context_additions);
-
-    //just adding to the table of smem_context_removals
-    add_context_removals = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_context_removals (lti_id) VALUES (?)");
-    add(add_context_removals);
-    
-    //for after the removals have been used.
-    remove_context_removals = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_context_removals");
-    add(remove_context_additions);
-
     //delete lti's info from current spread table
-    delete_old_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_spread WHERE lti_source IN (SELECT lti_id FROM smem_context_removals)");
+    delete_old_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_spread WHERE lti_source=?");
     add(delete_old_spread);
 
-    //When spread is still uncommitted, just remove. when it is committed, mark row as negative.select 1 from smem_committed_spread where smem_committed_spread.lti_source=smem_uncommitted_spread.lti_source and smem_committed_spread.lti_id=smem_uncommitted_spread.lti_id
+    //When spread is still uncommitted, just remove. when it is committed, mark row as negative.
     //This should be called alongside reverse_old_committed_spread
-    delete_old_uncommitted_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_source IN (SELECT lti_id FROM smem_context_removals) AND NOT EXISTS (SELECT 1 FROM smem_committed_spread WHERE smem_committed_spread.lti_source=smem_uncommitted_spread.lti_source AND smem_committed_spread.lti_id=smem_uncommitted_spread.lti_id)");//"DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id NOT IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
+    delete_old_uncommitted_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id NOT IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
     add(delete_old_uncommitted_spread);
 
     //When spread is committed but needs removal, add a negative row for later processing.
     //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
-    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source IN (SELECT lti_id FROM smem_context_removals)");//
+    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source=?");//
     add(reverse_old_committed_spread);
 
     //add lti to the context table
@@ -1220,15 +1200,15 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //add(add_new_context);
 
     //add a fingerprint's information to the current spread table.
-    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j IN (SELECT lti_id FROM smem_context_additions)");
+    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,lti_source) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?");
     add(add_fingerprint);
 
     //add a fingerprint's information to the current uncommitted spread table. should happen after add_fingerprint
-    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,1 FROM smem_current_spread WHERE lti_source IN (SELECT lti_id FROM smem_context_additions)");
+    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,1 FROM smem_current_spread WHERE lti_source=?");
 //    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j,1 FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j");
     add(add_uncommitted_fingerprint);
 
-    remove_fingerprint_reversal = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_uncommitted_spread WHERE lti_source IN (SELECT lti_id FROM smem_context_additions) AND EXISTS (SELECT 1 FROM smem_committed_spread WHERE smem_committed_spread.lti_source=smem_uncommitted_spread.lti_source AND smem_committed_spread.lti_id=smem_uncommitted_spread.lti_id)");//lti_id IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
+    remove_fingerprint_reversal = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
     add(remove_fingerprint_reversal);
 
     //remove a fingerprint's information from the current uncommitted spread table.(has been processed)
