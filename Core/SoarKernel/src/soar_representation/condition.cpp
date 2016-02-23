@@ -306,3 +306,14 @@ uint32_t hash_condition(agent* thisAgent,
     }
     return result;
 }
+
+int condition_count(condition* pCond)
+{
+    int cnt = 0;
+    while (pCond != NULL)
+    {
+        ++cnt;
+        pCond = pCond->next;
+    }
+    return cnt;
+}

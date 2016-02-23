@@ -139,6 +139,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
          * because we don't want to cache all explanation trace's symbols every time we create an instantiation.
          * We used to and it's very inefficient.  We also can't use the ebChunker's lookup table because that
          * is only for debugging and does not get built for releases. */
+        dprint(DT_EXPLAIN, "Condition record list size %d.\n", pCondRecords->size());
 
         if (pType == ebc_explanation_trace)
         {
@@ -156,6 +157,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 currentNegativeCond = NULL;
             }
             thisAgent->outputManager->set_print_test_format(false, true);
+            dprint(DT_EXPLAIN, "Record size %d, condition list size %d.\n", pCondRecords->size(), condition_count(top));
         }
         for (condition_record_list::iterator it = pCondRecords->begin(); it != pCondRecords->end(); it++)
         {
@@ -223,9 +225,7 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 if (currentNegativeCond)
                 {
                     currentNegativeCond = currentNegativeCond->next;
-                }
-                if (!currentNegativeCond)
-                {
+                } else {
                     current_cond = current_cond->next;
                 }
                 if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)

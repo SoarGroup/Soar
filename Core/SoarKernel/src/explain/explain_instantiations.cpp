@@ -48,12 +48,20 @@ instantiation_record::~instantiation_record()
 
 void instantiation_record::record_instantiation_contents()
 {
+    if (cached_inst->i_id == 589)
+    {
+        dprint(DT_EXPLAIN, "Found. %d\n", condition_count(cached_inst->top_of_instantiated_conditions));
+    }
     dprint(DT_EXPLAIN_ADD_INST, "- Recording instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Create condition and action records */
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
         condition_record* lCondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, this);
         lCondRecord->connect_to_action();
+    }
+    if (cached_inst->i_id == 589)
+    {
+        dprint(DT_EXPLAIN, "Found. %d\n", conditions->size());
     }
 }
 
@@ -72,13 +80,20 @@ void instantiation_record::update_instantiation_contents()
         lCondRecord->connect_to_action();
     }
 
-    action_record* lActionRecord;
-    preference* pref = cached_inst->preferences_generated;
-    for (action_record_list::iterator it = actions->begin(); pref != NIL && it != actions->end(); it++, pref = pref->inst_next)
-    {
-        lActionRecord = (*it);
-        lActionRecord->update_action(pref);
-    }
+    /* Don't think we actualy need to update the actions.  I don't think their preference can ever change. */
+//    action_record* lActionRecord;
+//    preference* pref = cached_inst->preferences_generated;
+//    for (action_record_list::iterator it = actions->begin(); pref != NIL && it != actions->end(); it++, pref = pref->inst_next)
+//    {
+//        lActionRecord = (*it);
+//        dprint(DT_EXPLAIN, "Action record pref update: %p == %p\n", pref, lActionRecord->original_pref);
+//    }
+//    pref = cached_inst->preferences_generated;
+//    for (action_record_list::iterator it = actions->begin(); pref != NIL && it != actions->end(); it++, pref = pref->inst_next)
+//    {
+//        lActionRecord = (*it);
+//        lActionRecord->update_action(pref);
+//    }
 }
 
 action_record* instantiation_record::find_rhs_action(preference* pPref)

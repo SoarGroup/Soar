@@ -60,17 +60,6 @@ chunk_record::~chunk_record()
     if (backtraced_instantiations) delete backtraced_instantiations;
 }
 
-int condition_count(condition* pCond)
-{
-    int cnt = 0;
-    while (pCond != NULL)
-    {
-        ++cnt;
-        pCond = pCond->next;
-    }
-    return cnt;
-}
-
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
 {
     if (pProduction)
@@ -112,6 +101,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         } else {
             assert(false);
         }
+        lNewInstRecord->cached_inst->explain_status = explain_recorded;
     }
 
     baseInstantiation = thisAgent->explanationLogger->get_instantiation(pBaseInstantiation);

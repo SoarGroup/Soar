@@ -221,6 +221,10 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
 
 
+    if (pInst->i_id == 589)
+    {
+        dprint(DT_EXPLAIN, "Found.\n");
+    }
     if (pInst->explain_status == explain_unrecorded)
     {
 

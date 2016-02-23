@@ -135,4 +135,6 @@ uint32_t hash_condition(agent* thisAgent, condition* cond);
 
 bool canonical_cond_greater(condition* c1, condition* c2);
 
+int condition_count(condition* pCond);
+
 #endif
