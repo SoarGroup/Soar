@@ -39,7 +39,7 @@ void Explanation_Logger::print_dependency_analysis()
     outputManager->set_column_indent(1, 80);
     outputManager->set_column_indent(2, 90);
     outputManager->set_column_indent(3, 110);
-    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Source%-Opertnl%-Creator%-Paths\n\n",
+    outputManager->printa_sf(thisAgent, "Conditions from Step 2 %-Source%-Opertnl%-Creator\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
 
     print_condition_list(ebc_actual_trace, false, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
@@ -52,9 +52,6 @@ void Explanation_Logger::print_dependency_analysis()
     print_condition_list(ebc_explanation_trace, false, current_discussed_chunk->baseInstantiation->conditions, current_discussed_chunk->baseInstantiation->original_production, current_discussed_chunk->baseInstantiation->match_level);
     outputManager->printa(thisAgent, "   -->\n");
     print_action_list(ebc_explanation_trace, current_discussed_chunk->baseInstantiation->actions, current_discussed_chunk->baseInstantiation->original_production);
-
-    outputManager->printa(thisAgent, "Dependency Analysis of Rule Firings\n");
-    outputManager->printa(thisAgent, dependency_chart.c_str());
 
 }
 
@@ -71,14 +68,16 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
     outputManager->set_column_indent(0, 70);
     outputManager->set_column_indent(1, 80);
     outputManager->set_column_indent(2, 90);
-    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)%-Source%-Chunk%-Creator%-Paths\n\n",
+    outputManager->printa_sf(thisAgent, "Instantiation # %u (match of rule %y)",
         pInstRecord->instantiationID, pInstRecord->production_name);
+    outputManager->printa_sf(thisAgent, "%-Source%-Chunk%-Creator\n");
     print_instantiation(ebc_actual_trace, pInstRecord);
-    outputManager->printa(thisAgent, "\n");
     outputManager->set_column_indent(0,70);
-    outputManager->printa_sf(thisAgent, "Explanation Trace: %-Using variable identity IDs\n\n");
+    outputManager->printa_sf(thisAgent, "\nExplanation Trace: %-Using variable identity IDs\n\n");
     print_instantiation(ebc_explanation_trace, pInstRecord);
-    outputManager->printa_sf(thisAgent, "\nIdentity to identity set mappings:\n\n");
+    outputManager->printa_sf(thisAgent, "\nShortest dependency path to base instantiation: ");
+    print_path_to_base(pInstRecord->path_to_base);
+    outputManager->printa_sf(thisAgent, "\n\nIdentity to identity set mappings:\n\n");
 //    print_identity_set_explanation();
 }
 
@@ -92,12 +91,12 @@ bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
     return false;
 }
 
-void condition_record::print_path_to_base()
+void Explanation_Logger::print_path_to_base(const inst_record_list* pPathToBase)
 {
-    if (path_to_base)
+    if (pPathToBase)
     {
         bool notFirst = false;
-        for (auto it = (path_to_base)->rbegin(); it != (path_to_base)->rend(); it++)
+        for (auto it = (pPathToBase)->rbegin(); it != (pPathToBase)->rend(); it++)
         {
             if (notFirst)
             {
@@ -139,8 +138,6 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
          * because we don't want to cache all explanation trace's symbols every time we create an instantiation.
          * We used to and it's very inefficient.  We also can't use the ebChunker's lookup table because that
          * is only for debugging and does not get built for releases. */
-        dprint(DT_EXPLAIN, "Condition record list size %d.\n", pCondRecords->size());
-
         if (pType == ebc_explanation_trace)
         {
             if (!pOriginalRule || !pOriginalRule->p_node)
@@ -157,7 +154,6 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 currentNegativeCond = NULL;
             }
             thisAgent->outputManager->set_print_test_format(false, true);
-            dprint(DT_EXPLAIN, "Record size %d, condition list size %d.\n", pCondRecords->size(), condition_count(top));
         }
         for (condition_record_list::iterator it = pCondRecords->begin(); it != pCondRecords->end(); it++)
         {
@@ -189,19 +185,22 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 if (pForChunk)
                 {
                     outputManager->printa_sf(thisAgent, "%-%u%-", lCond->conditionID);
+                    print_path_to_base(lCond->get_path_to_base());
                 } else {
-                    outputManager->printa_sf(thisAgent, "%-Rule%-%s", ((pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level) ? "Yes" : "No"));
+                    bool isSuper = (pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level);
+                    outputManager->printa_sf(thisAgent, "%-Rule%-%s", (isSuper ? "Yes" : "No"));
                     if (lCond->parent_instantiation)
                     {
-                        outputManager->printa_sf(thisAgent, "%-i%u (%s)%-",
-                            (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
-                            (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
-                    } else
+                        outputManager->printa_sf(thisAgent, "%-i%u (%y)%-",
+                            (lCond->parent_instantiation->instantiationID),
+                            (lCond->parent_instantiation->production_name));
+                    } else if (lCond->type == POSITIVE_CONDITION)
                     {
-                        outputManager->printa_sf(thisAgent, "%-Soar Architecture%-");
+                        outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                    } else {
+                        outputManager->printa_sf(thisAgent, "%-N/A%-");
                     }
                 }
-                lCond->print_path_to_base();
                 outputManager->printa(thisAgent, "\n");
             }
             else if (pType == ebc_explanation_trace)
@@ -244,14 +243,18 @@ void Explanation_Logger::print_condition_list(EBCTraceType pType, bool pForChunk
                 }
                 if (pForChunk && (lCond->matched_wme != NULL))
                 {
-                    if (lCond->parent_instantiation)
+                    instantiation_record* lInstRecord = lCond->get_instantiation();
+                    bool isSuper = (pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level);
+                    if (lInstRecord)
                     {
-                        outputManager->printa_sf(thisAgent, "%-i%u (%s)\n",
-                            (lCond->parent_instantiation ? lCond->parent_instantiation->instantiationID : 0),
-                            (lCond->parent_instantiation ? lCond->parent_instantiation->production_name->sc->name  : "Soar Architecture"));
-                    } else
+                        outputManager->printa_sf(thisAgent, "%-i%u (%y)\n",
+                            lInstRecord->instantiationID,
+                            lInstRecord->production_name);
+                    } else if (lCond->type == POSITIVE_CONDITION)
                     {
-                        outputManager->printa_sf(thisAgent, "%-Soar Architecture\n");
+                        outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                    } else {
+                        outputManager->printa_sf(thisAgent, "%-N/A%-");
                     }
 
                 } else {

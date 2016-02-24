@@ -22,6 +22,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     terminal            = false;
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
     cached_inst         = pInst;
+    path_to_base        = NULL;
     symbol_add_ref(thisAgent, production_name);
 
     if (pInst->prod)
@@ -44,6 +45,10 @@ instantiation_record::~instantiation_record()
     symbol_remove_ref(thisAgent, production_name);
     delete conditions;
     delete actions;
+    if (path_to_base)
+    {
+        delete path_to_base;
+    }
 }
 
 void instantiation_record::record_instantiation_contents()
@@ -77,23 +82,10 @@ void instantiation_record::update_instantiation_contents()
     {
         lCondRecord = (*it);
         lCondRecord->update_condition(cond, this);
+        /* MToDo | Can the connections ever really change?  I think a new instantiation would be created if that were the case.
+         *          Test this out.*/
         lCondRecord->connect_to_action();
     }
-
-    /* Don't think we actualy need to update the actions.  I don't think their preference can ever change. */
-//    action_record* lActionRecord;
-//    preference* pref = cached_inst->preferences_generated;
-//    for (action_record_list::iterator it = actions->begin(); pref != NIL && it != actions->end(); it++, pref = pref->inst_next)
-//    {
-//        lActionRecord = (*it);
-//        dprint(DT_EXPLAIN, "Action record pref update: %p == %p\n", pref, lActionRecord->original_pref);
-//    }
-//    pref = cached_inst->preferences_generated;
-//    for (action_record_list::iterator it = actions->begin(); pref != NIL && it != actions->end(); it++, pref = pref->inst_next)
-//    {
-//        lActionRecord = (*it);
-//        lActionRecord->update_action(pref);
-//    }
 }
 
 action_record* instantiation_record::find_rhs_action(preference* pPref)
@@ -149,65 +141,41 @@ condition_record* instantiation_record::find_condition_for_chunk(preference* pPr
     return NULL;
 }
 
-void instantiation_record::create_identity_paths(const inst_record_list* pInstPath, action_record* pAction, bool pUseId, bool pUseAttr, bool pUseValue)
+void instantiation_record::create_identity_paths(const inst_record_list* pInstPath)
 {
-    inst_record_list* lInstPath = new inst_record_list();
-    (*lInstPath) = (*pInstPath);
-    lInstPath->push_back(this);
-
-//    id_set* lIdsFound;
-//    int lNumIdsFounds = 0;
-//    if (pAction)
-//    {
-//        /* Compile a list of identities in rhs action */
-//        lIdsFound = pAction->get_identities();
-//        lNumIdsFounds = lIdsFound->size();
-//    }
-
-//    dprint(DT_EXPLAIN_PATHS, "Traversing conditions of i%u (%y) looking for %d IDs...\n", instantiationID, production_name, lNumIdsFounds);
-    dprint(DT_EXPLAIN_PATHS, "Traversing conditions of i%u (%y) to create paths...\n", instantiationID, production_name);
-    /* If no pAction is passed in, this must be from the base instantiation or
-     * the CDPS, so we process all conditions.
-     *
-     * If pAction but !lIdsFound, then the action is not connected to any LHS
-     * conditions, so we don't process any conditions
-     *
-     * If pAction but !lIdsFound, then we look for conditions that contain any
-     * of the identities in lIdsFound and call function recursively on those */
-//    if (!pAction || lNumIdsFounds)
-        if (!pAction)
+    if (!path_to_base)
     {
-        bool lAffectedCondition = !pAction;
-        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        path_to_base = new inst_record_list();
+    }
+    else {
+        int size1 = path_to_base->size();
+        int size2 = pInstPath->size();
+        if (path_to_base->size() <= pInstPath->size())
         {
-//            if (lNumIdsFounds)
-//            {
-//                if ((pAction->original_pref->id == (*it)->get_cached_wme()->id) &&
-//                    (pAction->original_pref->attr == (*it)->get_cached_wme()->attr) &&
-//                    (pAction->original_pref->value == (*it)->get_cached_wme()->value))
-//                {
-//                    lAffectedCondition = true;
-//                }
-//                lAffectedCondition = (*it)->contains_identity_from_set(lIdsFound);
-//            }
-            lAffectedCondition = true;
-            if (lAffectedCondition || ((match_level > 0) && ((*it)->get_level() < match_level)))
-            {
-                dprint(DT_EXPLAIN_PATHS, "   Found affected condition %u in i%u.  Recording its dependencies...%s\n", (*it)->get_conditionID(), instantiationID,
-                    ((match_level > 0) && ((*it)->get_level() < match_level)) ? "Super" : "Local");
-                (*it)->create_identity_paths(lInstPath);
-            }
-//            dprint(DT_EXPLAIN_PATHS, "   path_to_base for condition %u in i%u is now: ", (*it)->get_conditionID(), instantiationID);
-//            (*it)->print_path_to_base();
-//            dprint(DT_EXPLAIN_PATHS, "\n");
-
+            return;
         }
     }
-    if (lInstPath)
+
+    (*path_to_base) = (*pInstPath);
+    path_to_base->push_back(this);
+    instantiation_record* lParentInst;
+    dprint(DT_EXPLAIN_PATHS, "Adding paths recursively for conditions of i%u (%y)...\n", instantiationID, production_name);
+    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
-        dprint(DT_EXPLAIN_PATHS, "Deleting lInstPath of size %d for instantiation record %u.\n", lInstPath->size(), instantiationID);
-        delete lInstPath;
+        lParentInst = (*it)->get_parent_inst();
+        if (lParentInst && (lParentInst->get_match_level() == match_level))
+        {
+//            if ((match_level > 0) && ((*it)->get_level() < match_level))
+//            {
+                lParentInst->create_identity_paths(path_to_base);
+//            } else {
+//                dprint(DT_EXPLAIN_PATHS, "...not recursing because match level is 0 or condition level < match level\n");
+//                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", match_level, (*it)->get_level());
+//            }
+//            path_to_base->pop_back();
+        } else {
+            dprint(DT_EXPLAIN_PATHS, "...not recursing because no parent or parent != match level\n");
+            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? lParentInst->get_match_level() : 0), match_level);
+        }
     }
-    /* Note:  lIdsFound will be deleted by the action record.  That way they can be
-     *        re-used, since they won't change between different chunks explained */
 }

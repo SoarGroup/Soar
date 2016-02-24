@@ -27,14 +27,6 @@ action_record::action_record(agent* myAgent, preference* pPref, action* pAction,
     dprint(DT_EXPLAIN_CONDS, "   Created action record a%u for pref %p (%r ^%r %r), [act %a]", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
 }
 
-void action_record::update_action(preference* pPref)
-{
-    // Can this ever really change?  If not remove this function.
-    assert(original_pref == pPref);
-    original_pref           = pPref;
-//    dprint(DT_EXPLAIN_CONDS, "   Updated action record a%u for pref %p (%r ^%r %r)", actionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value);
-}
-
 action_record::~action_record()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting action record a%u for: %p\n", actionID, instantiated_pref);

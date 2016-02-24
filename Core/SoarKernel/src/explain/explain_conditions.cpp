@@ -77,6 +77,9 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     thisAgent = myAgent;
     conditionID = pCondID;
     type = pCond->type;
+    parent_action = NULL;
+    path_to_base = NULL;
+
     dprint(DT_EXPLAIN_CONDS, "   Creating condition %u for %l.\n", conditionID, pCond);
 
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
@@ -120,8 +123,6 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     } else {
         parent_instantiation = NULL;
     }
-    parent_action = NULL;
-    path_to_base = NULL;
     dprint(DT_EXPLAIN_CONDS, "   Created condition %u DONE.\n", conditionID);
 }
 
@@ -207,17 +208,5 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
         (*path_to_base) = (*pInstPath);
         dprint(DT_EXPLAIN_PATHS, "      Condition record copied path_to_base %d = %d.\n", path_to_base->size(), pInstPath->size());
     }
-    if (parent_instantiation)
-    {
-        assert(parent_action);
-        dprint(DT_EXPLAIN_PATHS, "      Traversing parent instantiation i%u for condition (%t ^%t %t).\n", parent_instantiation->get_instantiationID(), condition_tests.id, condition_tests.attr, condition_tests.value);
-        parent_instantiation->create_identity_paths(path_to_base);
-        /* List has current instantiation, which we needed for parent calls but don't need for this condition, so we pop it off */
-//        dprint(DT_EXPLAIN_DEP, "   Popping last item from path_to_base for condition %u (%t ^%t %t): ", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
-//        print_path_to_base();
-//        dprint(DT_EXPLAIN_DEP, "\n");
-//        path_to_base->pop_back();
-    } else {
-        dprint(DT_EXPLAIN_PATHS, "      No parent instantiation to traverse for condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
-    }
+
 }

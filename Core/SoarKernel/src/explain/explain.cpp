@@ -336,7 +336,7 @@ void Explanation_Logger::record_dependencies()
 
     assert(current_discussed_chunk);
 
-    current_discussed_chunk->record_dependencies();
+    current_discussed_chunk->generate_dependency_paths();
 
 }
 
@@ -382,6 +382,7 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         if (lFoundChunk)
         {
             current_discussed_chunk = lFoundChunk;
+            current_discussed_chunk ->generate_dependency_paths();
             print_chunk_explanation();
             return true;
         }
@@ -407,6 +408,7 @@ bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
     }
 
     current_discussed_chunk = iter_chunk->second;
+    current_discussed_chunk ->generate_dependency_paths();
     print_chunk_explanation();
     return true;
 }

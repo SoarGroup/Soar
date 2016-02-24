@@ -68,7 +68,6 @@ class action_record
         id_set*                 get_identities();
 
         preference*             original_pref;          // Only used when building explain records
-        void                    update_action(preference* pPref);
 
     private:
         agent* thisAgent;
@@ -91,7 +90,6 @@ class condition_record
         void        connect_to_action();
         void        create_identity_paths(const inst_record_list* pInstPath);
         bool        contains_identity_from_set(const id_set* pIDs);
-        void        print_path_to_base();
         void        set_path_to_base(inst_record_list* pPath)
                     {   //if (!pPath) return;
                         assert(pPath && !path_to_base);
@@ -133,9 +131,11 @@ class instantiation_record
         ~instantiation_record();
 
         uint64_t                get_instantiationID() { return instantiationID; };
+        goal_stack_level        get_match_level() { return match_level; };
+        inst_record_list*       get_path_to_base() { return path_to_base; };
         void                    record_instantiation_contents();
         void                    update_instantiation_contents();
-        void                    create_identity_paths(const inst_record_list* pInstPath, action_record* pAction = NULL, bool pUseId = true, bool pUseAttr = true, bool pUseValue = true);
+        void                    create_identity_paths(const inst_record_list* pInstPath);
         condition_record*       find_condition_for_chunk(preference* pPref, wme* pWME);
         action_record*          find_rhs_action(preference* pPref);
         instantiation*          cached_inst;
@@ -150,6 +150,7 @@ class instantiation_record
         action_record_list*     actions;
         uint64_t                instantiationID;
         bool                    terminal;
+        inst_record_list*       path_to_base;
 };
 
 class chunk_record
@@ -161,7 +162,7 @@ class chunk_record
         ~chunk_record();
 
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
-        void                    record_dependencies();
+        void                    generate_dependency_paths();
         void                    end_chunk_record();
 
     private:
@@ -280,7 +281,7 @@ class Explanation_Logger
         bool                    print_condition_explanation_for_id(uint64_t pInstID);
         void                    print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord);
         void                    print_condition_explanation(uint64_t pCondID);
-
+        void                    print_path_to_base(const inst_record_list* pPathToBase);
         bool                    is_condition_related(condition_record* pCondRecord);
 
         /* ID Counters */

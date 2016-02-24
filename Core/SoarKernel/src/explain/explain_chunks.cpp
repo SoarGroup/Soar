@@ -80,7 +80,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     instantiation_record* lResultInstRecord, *lNewInstRecord;
 
     /* Check if max number of instantiations in list.  If so, take most recent i_ids */
-    dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", pBaseInstantiation->i_id, backtraced_instantiations->size());
+    dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", backtraced_instantiations->size());
     for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
     {
         lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it));
@@ -114,14 +114,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         result_inst_records->insert(lResultInstRecord);
     }
 
-    /* Comment not true if we keep here:  We link up all of the dependencies here.  Since the linking may be expensive and
-     * we may be watching all chunk formations, we wait until someone attempts to look
-     * at the dependency analysis before we perform the linking. */
-    dprint(DT_EXPLAIN, "(3) Connecting conditions in trace and generating baths to base instantiations...\n");
-    record_dependencies();
-
     dprint(DT_EXPLAIN, "(4) Recording conditions of chunk...\n");
-    thisAgent->explanationLogger->print_involved_instantiations();
     /* Create condition and action records */
     instantiation_record* lchunkInstRecord;
     instantiation* lChunkCondInst = NULL;
@@ -133,11 +126,11 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id,
             (lChunkCondInst->prod ? lChunkCondInst->prod->name : thisAgent->fake_instantiation_symbol));
         assert(lChunkCondInst->backtrace_number == pBacktraceNumber);
-        lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond);
         /* The backtrace should have already added all instantiations that contained
          * grounds, so we can just look up the instantiation for each condition */
         lchunkInstRecord = thisAgent->explanationLogger->get_instantiation(lChunkCondInst);
         assert(lchunkInstRecord);
+        lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
         cond->inst = pChunkInstantiation;
         cond->counterpart->inst = pChunkInstantiation;
@@ -157,43 +150,39 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     identity_set_mappings = new id_to_id_map_type();
     (*identity_set_mappings) = (*pIdentitySetMappings);
 
+
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
 
 
-void chunk_record::record_dependencies()
+void chunk_record::generate_dependency_paths()
 {
-    dprint(DT_EXPLAIN_PATHS, "Creating paths based on identities affected %u...\n", chunkID);
+    dprint(DT_EXPLAIN_PATHS, "Creating paths for chunk %u...\n", chunkID);
 
     inst_record_list* lInstPath = new inst_record_list();
 
     baseInstantiation->create_identity_paths(lInstPath);
-
-    if (lInstPath)
+    for (auto it = result_inst_records->begin(); it != result_inst_records->end(); it++)
     {
-        delete lInstPath;
+        (*it)->create_identity_paths(lInstPath);
     }
 
-    dprint(DT_EXPLAIN_PATHS, "Searching for paths for conditions in chunk %u...\n", chunkID);
-    condition_record* linked_cond, *l_cond;
-    preference* l_cachedPref;
-    wme* l_cachedWME;
+    delete lInstPath;
+
+    dprint(DT_EXPLAIN_PATHS, "Getting paths from instantiations linked to conditions in chunk %u...\n", chunkID);
+    condition_record* l_cond;
     instantiation_record* l_inst;
     inst_record_list* l_path;
 
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         l_cond = (*it);
-        l_cachedPref = l_cond->get_cached_pref();
-        l_cachedWME = l_cond->get_cached_wme();
         l_inst = l_cond->get_instantiation();
-        linked_cond = l_inst->find_condition_for_chunk(l_cachedPref, l_cachedWME);
-        assert(linked_cond);
-        l_path = linked_cond->get_path_to_base();
-        dprint(DT_EXPLAIN_PATHS, "Condition %u found with path: ", linked_cond->get_conditionID());
+        l_path = l_inst->get_path_to_base();
+        dprint(DT_EXPLAIN_PATHS, "Path to base for chunk cond found from instantiation i%u: ", l_inst->get_instantiationID());
         l_cond->set_path_to_base(l_path);
-        l_cond->print_path_to_base();
-        dprint(DT_EXPLAIN_PATHS, "\n");
+        thisAgent->explanationLogger->print_path_to_base(l_path);
+        dprint_noprefix(DT_EXPLAIN_PATHS, "\n");
     }
 }
 
