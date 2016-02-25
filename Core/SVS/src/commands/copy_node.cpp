@@ -152,10 +152,10 @@ class copy_node_command : public command
             if(si->find_child_wme(root, "tags", tags_wme))
             {
                 Symbol* tags_root = si->get_wme_val(tags_wme);
-                wme_list tag_wmes;
+                vector<wme*> tag_wmes;
                 if(si->get_child_wmes(tags_root, tag_wmes))
                 {
-                    for(wme_list::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
+                    for(vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
                     {
                         Symbol* tag_attr = si->get_wme_attr(*tag_it);
                         Symbol* tag_value = si->get_wme_val(*tag_it);

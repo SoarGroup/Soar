@@ -411,6 +411,34 @@ void group_node::proxy_get_children(map<string, cliproxy*>& c)
     }
 }
 
+double group_node::max_project_on_axis(const vec3& axis) const
+{
+    double max = get_centroid().dot(axis);
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
+    {
+        double child_proj = children[i]->max_project_on_axis(axis);
+        if(child_proj > max)
+        {
+            max = child_proj;
+        }
+    }
+    return max;
+}
+
+double group_node::min_project_on_axis(const vec3& axis) const
+{
+    double min = get_centroid().dot(axis);
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
+    {
+        double child_proj = children[i]->min_project_on_axis(axis);
+        if(child_proj < min)
+        {
+            min = child_proj;
+        }
+    }
+    return min;
+}
+
 /*
  Based on the fact that the support s_T(v) of a geometry under transformation
  T(x) = Bx + c is T(s(Bt(v))), where Bt is the transpose of B.
@@ -526,6 +554,37 @@ void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
     t.print(os);
 }
 
+double convex_node::max_project_on_axis(const vec3& axis) const
+{
+    double max = get_centroid().dot(axis);
+    const ptlist& world_verts = get_world_verts();
+    for (size_t i = 0, iend = world_verts.size(); i < iend; ++i)
+    {
+        double vert_proj = world_verts[i].dot(axis);
+        
+        if(vert_proj > max)
+        {
+            max = vert_proj;
+        }
+    }
+    return max;
+}
+
+double convex_node::min_project_on_axis(const vec3& axis) const
+{
+    double min = get_centroid().dot(axis);
+    const ptlist& world_verts = get_world_verts();
+    for (size_t i = 0, iend = world_verts.size(); i < iend; ++i)
+    {
+        double vert_proj = world_verts[i].dot(axis);
+        if(vert_proj < min)
+        {
+            min = vert_proj;
+        }
+    }
+    return min;
+}
+
 ball_node::ball_node(const string& id, double radius)
     : geometry_node(id), radius(radius)
 {}
@@ -575,6 +634,18 @@ void ball_node::proxy_use_sub(const vector<string>& args, ostream& os)
     sgnode::proxy_use_sub(args, os);
     
     os << endl << "radius: " << radius << endl;
+}
+
+double ball_node::max_project_on_axis(const vec3& axis) const
+{
+    double world_radius = get_world_trans()(vec3(radius, 0.0, 0.0)).norm();
+    return get_centroid().dot(axis) + world_radius;
+}
+
+double ball_node::min_project_on_axis(const vec3& axis) const
+{
+    double world_radius = get_world_trans()(vec3(radius, 0.0, 0.0)).norm();
+    return get_centroid().dot(axis) - world_radius;
 }
 
 const tag_map& sgnode::get_all_tags() const
