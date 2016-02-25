@@ -74,6 +74,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         original_production = NULL;
         assert(false);
     }
+    time_formed = thisAgent->d_cycle_count;
+
     conditions         = new condition_record_list;
     actions            = new action_record_list;
 
@@ -161,7 +163,7 @@ void chunk_record::generate_dependency_paths()
 
     inst_record_list* lInstPath = new inst_record_list();
 
-    baseInstantiation->create_identity_paths(lInstPath);
+//    baseInstantiation->create_identity_paths(lInstPath);
     for (auto it = result_inst_records->begin(); it != result_inst_records->end(); it++)
     {
         (*it)->create_identity_paths(lInstPath);
@@ -179,10 +181,8 @@ void chunk_record::generate_dependency_paths()
         l_cond = (*it);
         l_inst = l_cond->get_instantiation();
         l_path = l_inst->get_path_to_base();
-        dprint(DT_EXPLAIN_PATHS, "Path to base for chunk cond found from instantiation i%u: ", l_inst->get_instantiationID());
+        dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
         l_cond->set_path_to_base(l_path);
-        thisAgent->explanationLogger->print_path_to_base(l_path);
-        dprint_noprefix(DT_EXPLAIN_PATHS, "\n");
     }
 }
 

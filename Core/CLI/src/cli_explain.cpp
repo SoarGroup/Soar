@@ -50,16 +50,17 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_DEPENDENCY) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
+        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE)))
     {
         print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
     }
     else
     {
-        if (options.test(EXPLAIN_DEPENDENCY))
+        if (options.test(EXPLAIN_FORMATION))
         {
-            thisAgent->explanationLogger->print_dependency_analysis();
+            thisAgent->explanationLogger->print_formation_explanation();
         }
         if (options.test(EXPLAIN_CONSTRAINTS))
         {
@@ -75,6 +76,14 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         if (options.test(EXPLAIN_STATS))
         {
             thisAgent->explanationLogger->print_chunk_stats();
+        }
+        if (options.test(EXPLAIN_EXPLANATION_TRACE))
+        {
+            thisAgent->explanationLogger->switch_to_explanation_trace(true);
+        }
+        if (options.test(EXPLAIN_WME_TRACE))
+        {
+            thisAgent->explanationLogger->switch_to_explanation_trace(false);
         }
     }
 
@@ -93,7 +102,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     }
 
     /* Handle global stats command*/
-    if (options.test(EXPLAIN_WATCH))
+    if (options.test(EXPLAIN_RECORD))
     {
         if (pStringParameter->empty())
         {

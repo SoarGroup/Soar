@@ -168,9 +168,11 @@ class chunk_record
     private:
         agent*                  thisAgent;
         Symbol*                 name;
+        uint64_t                time_formed;
         production*             original_production;
         condition_record_list*  conditions;
         action_record_list*     actions;
+
         condition_to_ipath_map* dependency_paths;
         id_to_id_map_type*      identity_set_mappings;
         inst_set*               backtraced_instantiations;
@@ -238,10 +240,11 @@ class Explanation_Logger
         void print_chunk_stats();
         void print_all_watched_rules();
         void print_all_chunks();
-        void print_dependency_analysis();
+        void print_formation_explanation();
         void print_identity_set_explanation();
         void print_constraints_enforced();
         void print_involved_instantiations();
+        void switch_to_explanation_trace(bool pEnableExplanationTrace);
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -252,6 +255,9 @@ class Explanation_Logger
         Output_Manager*         outputManager;
 
         bool                    enabled;
+        bool                    print_explanation_trace;
+        uint64_t                last_printed_id;
+
         int                     num_rules_watched;
         bool                    shouldRecord() { return (enabled || current_recording_chunk); }
 
@@ -267,21 +273,23 @@ class Explanation_Logger
         condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
+        void                    discuss_chunk(chunk_record* pChunkRecord);
+        void                    clear_chunk_from_instantiations();
         void                    print_chunk_list(short pNumToPrint = 0);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
-        void                    print_condition_list(EBCTraceType pType, bool pForChunk, condition_record_list* pCondRecords, production* pOriginalRule, goal_stack_level pMatch_level = 0);
-        void                    print_action_list(EBCTraceType pType, action_record_list* pActionRecords, production* pOriginalRule, bool pPrintIdentity = true);
+        void                    print_instantiation(instantiation_record* pInstRecord);
+        void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
-        void                    print_chunk(EBCTraceType pType, chunk_record* pChunkRecord);
+        void                    print_chunk(chunk_record* pChunkRecord);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         bool                    print_condition_explanation_for_id(uint64_t pInstID);
-        void                    print_instantiation(EBCTraceType pType, instantiation_record* pInstRecord);
         void                    print_condition_explanation(uint64_t pCondID);
-        void                    print_path_to_base(const inst_record_list* pPathToBase);
+        void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
+        void                    print_footer(bool pPrintDiscussedChunkCommands = false);
         bool                    is_condition_related(condition_record* pCondRecord);
 
         /* ID Counters */

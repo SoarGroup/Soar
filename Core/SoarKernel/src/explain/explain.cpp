@@ -24,6 +24,9 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     enabled = false;
     num_rules_watched = 0;
 
+    print_explanation_trace = true;
+    last_printed_id = 0;
+
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
     chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
@@ -381,9 +384,7 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         chunk_record* lFoundChunk = get_chunk_record(sym);
         if (lFoundChunk)
         {
-            current_discussed_chunk = lFoundChunk;
-            current_discussed_chunk ->generate_dependency_paths();
-            print_chunk_explanation();
+            discuss_chunk(lFoundChunk);
             return true;
         }
 
@@ -396,6 +397,23 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
     return false;
 
 }
+
+void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
+{
+    if (current_discussed_chunk != pChunkRecord)
+    {
+        if (current_discussed_chunk)
+        {
+            clear_chunk_from_instantiations();
+        }
+        current_discussed_chunk = pChunkRecord;
+        last_printed_id = 0;
+        current_discussed_chunk->generate_dependency_paths();
+    }
+    print_chunk_explanation();
+
+}
+
 bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
 {
     std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
@@ -407,9 +425,7 @@ bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
         return false;
     }
 
-    current_discussed_chunk = iter_chunk->second;
-    current_discussed_chunk ->generate_dependency_paths();
-    print_chunk_explanation();
+    discuss_chunk(iter_chunk->second);
     return true;
 }
 
@@ -423,7 +439,7 @@ bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID
         outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
         return false;
     }
-
+    last_printed_id = pInstID;
     print_instantiation_explanation(iter_inst->second);
     return true;
 }
@@ -515,3 +531,17 @@ void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
         increment_counter(lChunkRecord->stats.duplicates);
     }
 };
+
+void Explanation_Logger::clear_chunk_from_instantiations()
+{
+    instantiation_record* lNewInstRecord;
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+
+        lNewInstRecord = (*it);
+        if (lNewInstRecord->path_to_base)
+        {
+            lNewInstRecord->path_to_base->clear();
+        }
+    }
+}

@@ -43,14 +43,16 @@ namespace cli
                 {
                     {'a', "all",                    OPTARG_NONE},
                     {'c', "constraints",            OPTARG_NONE},
-                    {'d', "dependency-analysis",    OPTARG_NONE},
+                    {'f', "formation",              OPTARG_NONE},
+                    {'e', "explanation-trace",      OPTARG_NONE},
                     {'g', "global-stats",           OPTARG_NONE},
                     {'i', "identity",               OPTARG_NONE},
                     {'l', "list",                   OPTARG_NONE},
                     {'o', "only-specific",          OPTARG_NONE},
+                    {'r', "record",                 OPTARG_OPTIONAL},
                     {'s', "stats",                  OPTARG_NONE},
                     {'t', "time",                   OPTARG_REQUIRED},
-                    {'w', "watch",                  OPTARG_OPTIONAL},
+                    {'w', "wme-trace",              OPTARG_OPTIONAL},
                     {0, 0,                          OPTARG_NONE}
                 };
 
@@ -77,8 +79,12 @@ namespace cli
                             options.set(Cli::EXPLAIN_CONSTRAINTS);
                             break;
 
-                        case 'd':
-                            options.set(Cli::EXPLAIN_DEPENDENCY);
+                        case 'f':
+                            options.set(Cli::EXPLAIN_FORMATION);
+                            break;
+
+                        case 'e':
+                            options.set(Cli::EXPLAIN_EXPLANATION_TRACE);
                             break;
 
                         case 'g':
@@ -102,7 +108,11 @@ namespace cli
                             break;
 
                         case 'w':
-                            options.set(Cli::EXPLAIN_WATCH);
+                            options.set(Cli::EXPLAIN_WME_TRACE);
+                            break;
+
+                        case 'r':
+                            options.set(Cli::EXPLAIN_RECORD);
                             lWatchArgument = opt.GetOptionArgument();
                             break;
                     }
@@ -121,28 +131,30 @@ namespace cli
                 {
                     if ((options.count() != 1) || (num_args > 0))
                     {
-                        return cli.SetError("The explain options --all, --only-specific and --list cannot be used with other options.");
+                        return cli.SetError("That explain options cannot be used with other options.");
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }
 
-                if (options.test(Cli::EXPLAIN_DEPENDENCY) ||
+                if (options.test(Cli::EXPLAIN_FORMATION) ||
                     options.test(Cli::EXPLAIN_CONSTRAINTS) ||
                     options.test(Cli::EXPLAIN_STATS) ||
-                    options.test(Cli::EXPLAIN_IDENTITY_SETS))
+                    options.test(Cli::EXPLAIN_IDENTITY_SETS) ||
+                    options.test(Cli::EXPLAIN_EXPLANATION_TRACE) ||
+                    options.test(Cli::EXPLAIN_WME_TRACE))
                 {
                     if (num_args > 0)
                     {
-                        return cli.SetError("The explain options --dependency-analysis, --constraints, --stats and --identity cannot take additional arguments.");
+                        return cli.SetError("That explain options cannot take additional arguments.");
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }
 
-                if (options.test(Cli::EXPLAIN_WATCH))
+                if (options.test(Cli::EXPLAIN_RECORD))
                 {
                     if ((options.count() != 1) || (num_args > 0))
                     {
-                        return cli.SetError("Please specify only a rule name, for example 'explain -w myRule'.");
+                        return cli.SetError("Please specify only a rule name, for example 'explain -r myRule'.");
                     }
                     return cli.DoExplain(options, &lWatchArgument, &arg2);
                 }
