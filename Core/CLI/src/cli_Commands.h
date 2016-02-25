@@ -1088,14 +1088,15 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'a', "all",        OPTARG_NONE},
-                    {'c', "chunks",        OPTARG_NONE},
-                    {'d', "default",    OPTARG_NONE},
-                    {'r', "rl",            OPTARG_NONE},
-                    {'t', "task",        OPTARG_NONE},
-                    {'T', "template",    OPTARG_NONE},
-                    {'u', "user",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
+                    {'a', "all",            OPTARG_NONE},
+                    {'c', "chunks",         OPTARG_NONE},
+                    {'d', "default",        OPTARG_NONE},
+                    {'n', "never-fired",    OPTARG_NONE},
+                    {'r', "rl",             OPTARG_NONE},
+                    {'t', "task",           OPTARG_NONE},
+                    {'T', "template",       OPTARG_NONE},
+                    {'u', "user",           OPTARG_NONE},
+                    {0, 0,                  OPTARG_NONE}
                 };
 
                 Cli::ExciseBitset options(0);
@@ -1122,6 +1123,9 @@ namespace cli
                             break;
                         case 'd':
                             options.set(Cli::EXCISE_DEFAULT);
+                            break;
+                        case 'n':
+                            options.set(Cli::EXCISE_NEVER_FIRED);
                             break;
                         case 'r':
                             options.set(Cli::EXCISE_RL);
@@ -1168,18 +1172,18 @@ namespace cli
             ExciseCommand& operator=(const ExciseCommand&);
     };
 
-    class ExplainBacktracesCommand : public cli::ParserCommand
+    class FiringCountsCommand : public cli::ParserCommand
     {
         public:
-            ExplainBacktracesCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~ExplainBacktracesCommand() {}
+            FiringCountsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~FiringCountsCommand() {}
             virtual const char* GetString() const
             {
-                return "explain-backtraces";
+                return "firing-counts";
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: explain-backtraces [options] [prod_name]";
+                return "Syntax: firing-counts -[acdjrtu] [n]\nfiring-counts production_name";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -1187,12 +1191,26 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'c', "condition",    OPTARG_REQUIRED},
-                    {'f', "full",        OPTARG_NONE},
+                    {'a', "all",            OPTARG_NONE},
+                    {'c', "chunks",            OPTARG_NONE},
+                    {'d', "defaults",        OPTARG_NONE},
+                    {'j', "justifications",    OPTARG_NONE},
+                    {'r', "rl",                OPTARG_NONE},
+                    {'t', "template",        OPTARG_NONE},
+                    {'u', "user",            OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
-                int condition = 0;
+                // The number to list defaults to -1 (list all)
+                int numberToList = -1;
+
+                // Production defaults to no production
+                std::string pProduction;
+
+                // We're using a subset of the print options, so
+                // we'll just use the same data structure
+                Cli::PrintBitset options(0);
+                bool hasOptions = false;
 
                 for (;;)
                 {
@@ -1208,97 +1226,75 @@ namespace cli
 
                     switch (opt.GetOption())
                     {
-                        case 'f':
-                            condition = -1;
+                        case 'a':
+                            options.set(Cli::PRINT_ALL);
+                            hasOptions = true;
                             break;
-
                         case 'c':
-                            if (!from_string(condition, opt.GetOptionArgument()) || (condition <= 0))
-                            {
-                                return cli.SetError("Positive integer expected.");
-                            }
+                            options.set(Cli::PRINT_CHUNKS);
+                            hasOptions = true;
+                            break;
+                        case 'd':
+                            options.set(Cli::PRINT_DEFAULTS);
+                            hasOptions = true;
+                            break;
+                        case 'j':
+                            options.set(Cli::PRINT_JUSTIFICATIONS);
+                            hasOptions = true;
+                            break;
+                        case 'r':
+                            options.set(Cli::PRINT_RL);
+                            hasOptions = true;
+                            break;
+                        case 't':
+                            options.set(Cli::PRINT_TEMPLATE);
+                            hasOptions = true;
+                            break;
+                        case 'u':
+                            options.set(Cli::PRINT_USER);
+                            hasOptions = true;
                             break;
                     }
                 }
 
-                // never more than one arg
-                if (opt.GetNonOptionArguments() > 1)
+                if (opt.GetNonOptionArguments() > 0)
                 {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // we need a production if full or condition given
-                if (condition)
-                    if (opt.GetNonOptionArguments() < 1)
+                    if (opt.GetNonOptionArguments() > 1)
                     {
-                        return cli.SetError("Production name required for that option.");
-                    }
-
-                // we have a production
-                if (opt.GetNonOptionArguments() == 1)
-                {
-                    return cli.DoExplainBacktraces(&argv[opt.GetArgument() - opt.GetNonOptionArguments()], condition);
-                }
-
-                // query
-                return cli.DoExplainBacktraces();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            ExplainBacktracesCommand& operator=(const ExplainBacktracesCommand&);
-    };
-
-    class FiringCountsCommand : public cli::ParserCommand
-    {
-        public:
-            FiringCountsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~FiringCountsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "firing-counts";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: firing-counts [n]\nfiring-counts production_name";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // The number to list defaults to -1 (list all)
-                int numberToList = -1;
-
-                // Production defaults to no production
-                std::string* pProduction = 0;
-
-                // no more than 1 arg
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                if (argv.size() == 2)
-                {
-                    // one argument, figure out if it is a non-negative integer or a production
-                    if (from_string(numberToList, argv[1]))
-                    {
-                        if (numberToList < 0)
+                        return cli.SetError(GetSyntax());
+                    } else {
+                        /* This might not be needed since we can only get a single argument */
+                        for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
                         {
-                            return cli.SetError("Expected non-negative integer (count).");
+                            if (!pProduction.empty())
+                            {
+                                pProduction.push_back(' ');
+                            }
+                            pProduction.append(argv[i]);
                         }
-
-                    }
-                    else
-                    {
-                        numberToList = -1;
-
-                        // non-integer argument, hopfully a production
-                        pProduction = &(argv[1]);
+                        // one argument, figure out if it is a non-negative integer or a production
+                        if (from_string(numberToList, pProduction))
+                        {
+                            if (numberToList < 0)
+                            {
+                                return cli.SetError("Expected non-negative integer (count).");
+                            } else {
+                                pProduction.clear();
+                            }
+                        }
+                        else
+                        {
+                            // non-integer argument, hopfully a production
+                            numberToList = -1;
+                            if (hasOptions)
+                            {
+                                cli.SetError("Ignoring unexpected options when printing firing count for a single production.\n");
+                            }
+                        }
                     }
                 }
 
-                return cli.DoFiringCounts(numberToList, pProduction);
+                return cli.DoFiringCounts(options, numberToList, &pProduction);
             }
 
         private:
@@ -3681,72 +3677,6 @@ namespace cli
             }
 
             RunCommand& operator=(const RunCommand&);
-    };
-
-    class SaveBacktracesCommand : public cli::ParserCommand
-    {
-        public:
-            SaveBacktracesCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SaveBacktracesCommand() {}
-            virtual const char* GetString() const
-            {
-                return "save-backtraces";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: save-backtraces [-ed]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'d', "disable",    OPTARG_NONE},
-                    {'e', "enable",        OPTARG_NONE},
-                    {'d', "off",        OPTARG_NONE},
-                    {'e', "on",            OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool setting = true;
-                bool query = true;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'd':
-                            setting = false;
-                            query = false;
-                            break;
-                        case 'e':
-                            setting = true;
-                            query = false;
-                            break;
-                    }
-                }
-                if (opt.GetNonOptionArguments())
-                {
-                    return cli.SetError(GetSyntax());
-                }
-                return cli.DoSaveBacktraces(query ? 0 : &setting);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            SaveBacktracesCommand& operator=(const SaveBacktracesCommand&);
     };
 
     class SelectCommand : public cli::ParserCommand

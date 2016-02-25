@@ -25,10 +25,12 @@
  *********************************************************/
 #include <iostream>
 #include <map>
+#include "base_node_filters.h"
 #include "filter.h"
 #include "filter_table.h"
 #include "common.h"
 #include "scene.h"
+#include "sgnode_algs.h"
 
 using namespace std;
 

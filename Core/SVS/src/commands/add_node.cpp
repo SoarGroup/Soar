@@ -20,7 +20,7 @@
 #include "scene.h"
 #include "command_table.h"
 #include "svs.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 

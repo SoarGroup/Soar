@@ -17,8 +17,8 @@
 #include "sml_AgentSML.h"
 
 #include "agent.h"
-#include "wmem.h"
-#include "wma.h"
+#include "working_memory.h"
+#include "working_memory_activation.h"
 #include "misc.h"
 
 using namespace cli;

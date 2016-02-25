@@ -8,23 +8,20 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
-
-#include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
+#include "sml_Names.h"
+#include "sml_Utils.h"
 
 #include "agent.h"
-
-#include "sml_KernelSML.h"
-#include "sml_AgentSML.h"
 #include "gsysparam.h"
 #include "xml.h"
 #include "print.h"
+#include "slot.h"
 #include "trace.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "rhs.h"
 #include "decide.h"
 #include "output_manager.h"
@@ -591,18 +588,9 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     Symbol* id;
     wme* w;
     list* wmes;
-	
-	soar::Lexer lexer(thisAgent, arg);
-	lexer.get_lexeme();
 
-	soar::Lexeme lexeme = lexer.current_lexeme;
+	soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, arg);
 
-	if (lexeme.type == AT_LEXEME)
-	{
-		lexer.get_lexeme();
-		lexeme = lexer.current_lexeme;
-	}
-	
     switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
@@ -763,29 +751,29 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         options.set(PRINT_TEMPLATE);
     }
 
-    if (options.test(PRINT_CHUNKS))
-    {
-        print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
-    }
     if (options.test(PRINT_DEFAULTS))
     {
         print_productions_of_type(thisAgent, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
-    }
-    if (options.test(PRINT_JUSTIFICATIONS))
-    {
-        print_productions_of_type(thisAgent, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
     }
     if (options.test(PRINT_USER))
     {
         print_productions_of_type(thisAgent, intern, filename, full, USER_PRODUCTION_TYPE);
     }
+    if (options.test(PRINT_TEMPLATE))
+    {
+        print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+    }
     if (options.test(PRINT_RL))
     {
         print_rl_rules(thisAgent, intern, filename, full);
     }
-    if (options.test(PRINT_TEMPLATE))
+    if (options.test(PRINT_JUSTIFICATIONS))
     {
-        print_productions_of_type(thisAgent, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+        print_productions_of_type(thisAgent, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+    }
+    if (options.test(PRINT_CHUNKS))
+    {
+        print_productions_of_type(thisAgent, intern, filename, full, CHUNK_PRODUCTION_TYPE);
     }
 
     return true;

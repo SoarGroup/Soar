@@ -10,6 +10,7 @@
 #include <cctype>
 
 #include "cli_Commands.h"
+#include "cli_explain.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -22,6 +23,7 @@
 #include "KernelHeaders.h"
 
 #include "agent.h"
+#include "slot.h"
 #include "xml.h"
 #include "lexer.h"
 
@@ -37,7 +39,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_VarPrint        = false;
     m_GPMax           = 20000;
     m_XMLResult       = new XMLTrace() ;
-    
+
     // parser takes ownership and deletes commands in its destructor
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
@@ -56,7 +58,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExciseCommand(*this));
-    m_Parser.AddCommand(new cli::ExplainBacktracesCommand(*this));
+    m_Parser.AddCommand(new cli::ExplainCommand(*this));
     m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
     m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
@@ -95,7 +97,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::ReteNetCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
-    m_Parser.AddCommand(new cli::SaveBacktracesCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
     m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
@@ -127,7 +128,7 @@ EXPORT CommandLineInterface::~CommandLineInterface()
         (*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
         delete m_pLogFile;
     }
-    
+
     delete m_XMLResult ;
     m_XMLResult = NULL ;
 }
@@ -138,7 +139,7 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
     {
         return false ;
     }
-    
+
     // echo everything but edit-production
     return strncmp(pCommandLine, "edit-production", strlen("edit_production")) != 0;
 }
@@ -149,9 +150,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     {
         return false;
     }
-    
+
     PushCall(CallData(pAgent, rawOutput));
-    
+
     // Log input
     if (m_pLogFile)
     {
@@ -161,22 +162,22 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
         }
         (*m_pLogFile) << pCommandLine << std::endl;
     }
-    
+
     SetTrapPrintCallbacks(true);
-    
+
     m_LastError.clear();
-    
+
     Source(pCommandLine);
-    
+
     SetTrapPrintCallbacks(false);
-    
+
     if (pConnection && pResponse)
     {
         GetLastResultSML(pConnection, pResponse, echoResults);
     }
-    
+
     PopCall();
-    
+
     // Always returns true to indicate that we've generated any needed error message already
     return true;
 }
@@ -184,7 +185,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 void CommandLineInterface::PushCall(CallData callData)
 {
     m_CallDataStack.push(callData);
-    
+
     if (callData.pAgent)
     {
         m_pAgentSML = callData.pAgent;
@@ -193,9 +194,9 @@ void CommandLineInterface::PushCall(CallData callData)
     {
         m_pAgentSML = 0;
     }
-    
+
     m_RawOutput = callData.rawOutput;
-    
+
     // For kernel callback class we inherit
     SetAgentSML(m_pAgentSML) ;
 }
@@ -204,13 +205,13 @@ void CommandLineInterface::PopCall()
 {
     m_CallDataStack.pop();
     sml::AgentSML* pAgent = 0;
-    
+
     if (m_CallDataStack.size())
     {
         const CallData& callData = m_CallDataStack.top();
         pAgent = callData.pAgent;
         m_RawOutput = callData.rawOutput;
-        
+
         // reset these for the next command
         SetAgentSML(pAgent) ;
         m_pAgentSML = pAgent;
@@ -223,13 +224,13 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
     {
         return;
     }
-    
+
     // If we've already set it, don't re-set it
     if (m_TrapPrintEvents == setting)
     {
         return;
     }
-    
+
     if (setting)
     {
         // Trap print callbacks
@@ -240,7 +241,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
         {
             RegisterWithKernel(smlEVENT_PRINT);
         }
-        
+
         // Tell kernel to collect result in command buffer as opposed to trace buffer
         xml_begin_command_mode(m_pAgentSML->GetSoarAgent());
     }
@@ -248,19 +249,19 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
     {
         // Retrieve command buffer, tell kernel to use trace buffer again
         ElementXML* pXMLCommandResult = xml_end_command_mode(m_pAgentSML->GetSoarAgent());
-        
+
         // The root object is just a <trace> tag.  The substance is in the children
         // Add children of the command buffer to response tags
         for (int i = 0; i < pXMLCommandResult->GetNumberChildren(); ++i)
         {
             ElementXML* pChildXML = new ElementXML();
             pXMLCommandResult->GetChild(pChildXML, i);
-            
+
             m_ResponseTags.push_back(pChildXML);
         }
-        
+
         delete pXMLCommandResult;
-        
+
         if (!m_RawOutput)
         {
             // Add text result to response tags
@@ -270,7 +271,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
                 m_Result.str("");
             }
         }
-        
+
         // Re-enable print callbacks
         if (!m_pLogFile)
         {
@@ -286,13 +287,13 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
 {
     assert(pConnection);
     assert(pResponse);
-    
+
     // Log output
     if (m_pLogFile)
     {
         (*m_pLogFile) << m_Result.str() << std::endl;
     }
-    
+
     if (m_LastError.empty())
     {
         if (m_RawOutput)
@@ -305,7 +306,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
             if (!m_ResponseTags.empty())
             {
                 TagResult* pTag = new TagResult();
-                
+
                 ElementXMLListIter iter = m_ResponseTags.begin();
                 while (iter != m_ResponseTags.end())
                 {
@@ -313,7 +314,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
                     m_ResponseTags.erase(iter);
                     iter = m_ResponseTags.begin();
                 }
-                
+
                 pResponse->AddChild(pTag);
             }
             else
@@ -326,21 +327,21 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
     {
         pConnection->AddErrorToSMLResponse(pResponse, m_Result.str().c_str(), 1);
     }
-    
+
     if (echoResults && m_pAgentSML)
     {
         m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
     }
-    
+
     // reset state
     m_Result.str("");
-    
+
     // Delete all remaining xml objects
     for (ElementXMLListIter cleanupIter = m_ResponseTags.begin(); cleanupIter != m_ResponseTags.end(); ++cleanupIter)
     {
         delete *cleanupIter;
     }
-    
+
     m_ResponseTags.clear();
 }
 
@@ -368,13 +369,13 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory)
     // Pull an arbitrary buffer size of 1024 out of a hat and use it
     char buf[1024];
     char* ret = getcwd(buf, 1024);
-    
+
     // If getcwd returns 0, that is bad
     if (!ret)
     {
         return SetError("Error getting current working directory.");
     }
-    
+
     // Store directory in output parameter and return success
     directory = buf;
     normalize_separators(directory);
@@ -493,15 +494,15 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
     // The result is XML in this format (e.g. for matches):
     // <result><matches>...</matches></result>
     // where ... contains the XML specific to that command.
-    
+
     // Extract the XML object from the xmlTrace object and
     // add it as a child of this message.  This is just moving a few pointers around, nothing is getting copied.
     ElementXML_Handle xmlHandle = m_XMLResult->Detach() ;
     ElementXML* pXMLResult = new ElementXML(xmlHandle) ;
     pXMLResult->SetTagName(pCommandName) ;
-    
+
     m_ResponseTags.push_back(pXMLResult) ;
-    
+
     // Clear the XML result, so it's ready for use again.
     m_XMLResult->Reset() ;
 }
@@ -511,16 +512,16 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
     if (eventID == smlEVENT_PRINT)
     {
         char const* msg = static_cast<char const*>(pCallData);
-        
+
         if (m_TrapPrintEvents || m_pLogFile)
         {
             if (m_VarPrint)
             {
                 // Transform if varprint, see print command
                 std::string message(msg);
-                
+
                 size_t i = 0;
-                
+
                 // [A-Z][0-9]+
                 while (i < message.size())
                 {
@@ -529,25 +530,25 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                         // Potential match
                         // Check next character
                         size_t next = i + 1;
-                
+
                         if (next < message.size() && isdigit(message[next]))
                 {
                             // Match
                             message.insert(i, "<");
-                            
+
                             i = next + 1;
-                            
+
                             while (i < message.size() && isdigit(message[i]))
                             { ++i; }
-                            
+
                             message.insert(i, ">");
                         }
                     }
-                    
+
                     ++i;
                 }
-                
-                
+
+
                 // Simply append to message result
                 if (m_TrapPrintEvents)
                 {
@@ -606,7 +607,7 @@ void CommandLineInterface::PrintCLIMessage(const char* printString, bool add_raw
     {
         AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeString, printString);
     }
-    
+
 }
 void CommandLineInterface::PrintCLIMessage(std::string* printString, bool add_raw_lf)
 {
@@ -623,7 +624,7 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
     std::ostringstream tempString;
     size_t left_width, right_width, middle_width;
     std::string sep_string("");
-    
+
     left_width = strlen(prefixString);
     right_width = strlen(printString);
     if ((column_width - static_cast<int>(left_width) - static_cast<int>(right_width)) < 0)
@@ -634,9 +635,9 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
     {
         middle_width = column_width - left_width - right_width;
     }
-    
+
     sep_string.insert(0, middle_width, ' ');
-    
+
     tempString << prefixString << sep_string << printString;
     PrintCLIMessage(&tempString);
 }
@@ -647,7 +648,7 @@ void CommandLineInterface::PrintCLIMessage_Item(const char* prefixString, soar_m
     char* temp = printObject->get_string();
     PrintCLIMessage_Justify(prefixString, temp, column_width);
     delete temp;
-    
+
 }
 
 void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf)
@@ -655,16 +656,16 @@ void CommandLineInterface::PrintCLIMessage_Header(const char* headerString, int 
     std::ostringstream tempString;
     size_t left_width, right_width, header_width;
     std::string left_string(""), right_string(""), sep_string("");
-    
+
     header_width = strlen(headerString) + 2;
     left_width = (column_width - header_width) / 2;
     right_width = column_width - left_width - header_width;
     left_string.insert(0, left_width, ' ');
     right_string.insert(0, right_width, ' ');
     sep_string.insert(0, column_width, '=');
-    
+
     tempString << "" << left_string << ' ' << headerString << ' ' << right_string << "";
-    
+
     PrintCLIMessage(&sep_string);
     PrintCLIMessage(&tempString);
     PrintCLIMessage(&sep_string);
@@ -675,15 +676,15 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
     std::ostringstream tempString;
     size_t left_width, right_width, header_width;
     std::string left_string(""), right_string("");
-    
+
     header_width = strlen(headerString) + 2;
     left_width = (column_width - header_width) / 2;
     right_width = column_width - left_width - header_width;
-    
+
     left_string.insert(0, left_width, '-');
     right_string.insert(0, right_width, '-');
     tempString << left_string << ' ' << headerString << ' ' << right_string;
-    
+
     PrintCLIMessage(&tempString);
 }
 
@@ -695,7 +696,7 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
     Symbol* v, *g;
     int levels_up;
     wme* w;
-    
+
     v = find_variable(thisAgent, var_name);
     if (v == thisAgent->s_context_variable)
     {
@@ -744,7 +745,7 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
         *dest_current_value = NIL;
         return;
     }
-    
+
     g = thisAgent->bottom_goal;
     while (g && levels_up)
     {
@@ -752,13 +753,13 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
         levels_up--;
     }
     *dest_goal = g;
-    
+
     if (!g)
     {
         *dest_current_value = NIL;
         return;
     }
-    
+
     if (*dest_attr_of_slot == thisAgent->state_symbol)
     {
         *dest_current_value = g;
@@ -775,9 +776,9 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
 {
     Symbol* id;
     Symbol* g, *attr, *value;
-    
-    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, lex_string);
-    
+
+    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, lex_string);
+
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
         id = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number);
@@ -791,40 +792,33 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
             return true;
         }
     }
-    
+
     if (lexeme.type == VARIABLE_LEXEME)
     {
         get_context_var_info(thisAgent, lexeme.string(), &g, &attr, &value);
-        
+
         if ((!attr) || (!value))
         {
             return false;
         }
-        
+
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
             return false;
         }
-        
+
         *result_id = value;
         return true;
     }
-    
-    return false;
-}
 
-soar::Lexeme get_lexeme_from_string(agent* thisAgent, const char* lex_string)
-{
-    soar::Lexer lexer(thisAgent, lex_string);
-    lexer.get_lexeme();
-    return lexer.current_lexeme;
+    return false;
 }
 
 Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme)
 {
     Symbol* id;
     Symbol* g, *attr, *value;
-    
+
     if (lexeme->type == IDENTIFIER_LEXEME)
     {
         id = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);

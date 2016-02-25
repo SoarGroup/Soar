@@ -1,7 +1,7 @@
 #include "filter_table.h"
 #include "scene.h"
 #include "filter.h"
-#include "symtab.h"
+#include "symbol.h"
 #include <iostream>
 #include <iomanip>
 
@@ -62,7 +62,7 @@ filter_table_entry* occlusion_filter_entry();
 
 // filters/overlap.cpp
 filter_table_entry* overlap_filter_entry();
-filter_table_entry* contain_select_filter_entry();
+filter_table_entry* overlap_select_filter_entry();
 
 // filters/monitor_object.cpp
 filter_table_entry* monitor_position_filter_entry();
@@ -187,8 +187,8 @@ Example input:
 */
 filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
 {
-    wme_list children, params;
-    wme_list::iterator i;
+    wme_vector children, params;
+    wme_vector::iterator i;
     string pname, ftype, itype;
     filter_input* input;
     bool fail;

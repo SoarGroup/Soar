@@ -18,7 +18,7 @@
 #include "sml_AgentSML.h"
 #include "print.h"
 #include "agent.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "decide.h"
 
 using namespace cli;

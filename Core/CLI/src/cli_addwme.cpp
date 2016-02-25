@@ -2,10 +2,10 @@
 
 #include "cli_CommandLineInterface.h"
 #include "agent.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "decide.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "lexer.h"
@@ -39,7 +39,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
     else
     {
-        lexeme = get_lexeme_from_string(thisAgent, attribute.c_str());
+        lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, attribute.c_str());
 
         switch (lexeme.type)
         {
@@ -74,7 +74,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
     else
     {
-        get_lexeme_from_string(thisAgent, value.c_str());
+        lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, value.c_str());
         switch (lexeme.type)
         {
             case STR_CONSTANT_LEXEME:

@@ -16,8 +16,8 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "mem.h"
 #include "agent.h"
 #include "print.h"
@@ -26,6 +26,7 @@
 #include "parser.h"
 #include "soar_TraceNames.h"
 #include "sml_AgentSML.h"
+#include "slot.h"
 
 using namespace cli;
 using namespace sml;
@@ -148,7 +149,7 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 
 bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
 {
-    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, const_cast<char*>(s));
+    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, const_cast<char*>(s));
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
         if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL)

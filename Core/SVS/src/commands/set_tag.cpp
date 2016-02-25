@@ -17,7 +17,7 @@
 #include "filter.h"
 #include "svs.h"
 #include "scene.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "command_table.h"
 
 using namespace std;

@@ -148,6 +148,7 @@ namespace cli
                 EXCISE_TASK,
                 EXCISE_TEMPLATE,
                 EXCISE_USER,
+                EXCISE_NEVER_FIRED,
                 EXCISE_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
@@ -159,16 +160,54 @@ namespace cli
              */
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
 
+            enum eExplainOptions
+            {
+                EXPLAIN_ALL,
+                EXPLAIN_ONLY_SPECIFIC,
+                EXPLAIN_STATS,
+                EXPLAIN_CONSTRAINTS,
+                EXPLAIN_DEPENDENCY,
+                EXPLAIN_IDENTITY_SETS,
+                EXPLAIN_LIST_ALL,
+                EXPLAIN_GLOBAL_STATS,
+                EXPLAIN_WATCH,
+                EXPLAIN_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
             /**
-             * @brief explain-backtraces command
+             * @brief explain command
              * @param pProduction Pointer to involved production. Pass 0 (null) for
              *        query
              * @param condition A number representing the condition number to explain,
              *        0 for production name, -1 for full,
              *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0) = 0;
+            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2) = 0;
 
+            /* These enums moved here because we re-used for fc options*/
+            enum ePrintOptions
+            {
+                PRINT_ALL,
+                PRINT_CHUNKS,
+                PRINT_DEPTH,
+                PRINT_DEFAULTS,
+                PRINT_FULL,
+                PRINT_FILENAME,
+                PRINT_INTERNAL,
+                PRINT_TREE,
+                PRINT_JUSTIFICATIONS,
+                PRINT_NAME,
+                PRINT_OPERATORS,
+                PRINT_RL,
+                PRINT_STACK,
+                PRINT_STATES,
+                PRINT_TEMPLATE,
+                PRINT_USER,
+                PRINT_VARPRINT,
+                PRINT_EXACT,
+                PRINT_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
             /**
              * @brief firing-counts command
              * @param numberToList The number of top-firing productions to list.
@@ -176,7 +215,7 @@ namespace cli
              * @param pProduction The specific production to list, pass 0 (null) to list
              *        multiple productions
              */
-            virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0) = 0;
+            virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0) = 0;
 
             /**
              * @brief gds-print command
@@ -391,30 +430,6 @@ namespace cli
              */
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;
 
-            enum ePrintOptions
-            {
-                PRINT_ALL,
-                PRINT_CHUNKS,
-                PRINT_DEPTH,
-                PRINT_DEFAULTS,
-                PRINT_FULL,
-                PRINT_FILENAME,
-                PRINT_INTERNAL,
-                PRINT_TREE,
-                PRINT_JUSTIFICATIONS,
-                PRINT_NAME,
-                PRINT_OPERATORS,
-                PRINT_RL,
-                PRINT_STACK,
-                PRINT_STATES,
-                PRINT_TEMPLATE,
-                PRINT_USER,
-                PRINT_VARPRINT,
-                PRINT_EXACT,
-                PRINT_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
-
             /**
              * @brief print command
              * @param options The options to the print command
@@ -536,12 +551,6 @@ namespace cli
              *         at a finer grain than the run-size parameter.
              */
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
-
-            /**
-             * @brief save-backtraces command
-             * @param setting The new setting, pass 0 (null) for query
-             */
-            virtual bool DoSaveBacktraces(bool* pSetting = 0) = 0;
 
             /**
              * @brief select command

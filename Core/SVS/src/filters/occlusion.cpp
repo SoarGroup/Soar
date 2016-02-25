@@ -11,7 +11,7 @@
  *   Returns:
  *    double - approximate percentage of node a occluded by objects in set b
  *
- *  Purpose: The occlusion filter estimates how much a given 
+ *  Purpose: The occlusion filter estimates how much a given
  *     sgnode is occluded from the eye's point of view and returns
  *     a number indicating a rough percentage of occlusion.
  *     Occlusion is based on the fraction of vertices of the node
@@ -20,7 +20,7 @@
  *  !!!! NOTE !!!!
  *  This filter does not work well for targets that are sphers
  *    (degrades to testing if the center is occluded Y/N)
- *  Also, this has not been tested with ongoing extraction 
+ *  Also, this has not been tested with ongoing extraction
  *    (designed for extract_once)
  *    It may work for moving occluders, but will not recalculate the view lines
  *    if object a moves
@@ -32,6 +32,7 @@
 #include <map>
 #include "filter.h"
 #include "sgnode.h"
+#include "sgnode_algs.h"
 #include "scene.h"
 #include "filter_table.h"
 
@@ -92,7 +93,7 @@ private:
 			nodes[params] = b;
 			changed = true;
 		}
-		
+
 		// Changed inputs
 		for (int i = 0; i < input->num_changed(); ++i)
 		{
@@ -105,7 +106,7 @@ private:
 			nodes[params] = b;
 			changed = true;
 		}
-		
+
 		// Removed inputs
 		for (int i = 0; i < input->num_removed(); ++i)
 		{

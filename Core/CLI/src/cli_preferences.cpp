@@ -18,14 +18,14 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-
+#include "exploration.h"
 #include "print.h"
-#include "tempmem.h"
+#include "slot.h"
 #include "trace.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "decide.h"
 #include "output_manager.h"
-#include "prefmem.h"
+#include "preference.h"
 
 using namespace cli;
 using namespace sml;
@@ -51,7 +51,7 @@ bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, 
         the_lexeme++;
     }
 
-    soar::Lexeme lexeme = get_lexeme_from_string(thisAgent, the_lexeme);
+    soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, the_lexeme);
 
     switch (lexeme.type)
     {
