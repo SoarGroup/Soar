@@ -51,7 +51,7 @@ void Explanation_Logger::print_formation_explanation()
                                         "Base instantiation i%u (%y) that produced results in Step (2)\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
 
-    print_instantiation(current_discussed_chunk->baseInstantiation);
+    print_instantiation_explanation(current_discussed_chunk->baseInstantiation);
 
     if (current_discussed_chunk->result_inst_records->size() > 1)
     {
@@ -60,20 +60,12 @@ void Explanation_Logger::print_formation_explanation()
         {
             if ((*it) != current_discussed_chunk->baseInstantiation)
             {
-                print_instantiation((*it));
+                print_instantiation_explanation((*it));
             }
         }
     }
     outputManager->printa(thisAgent, "\n");
     print_footer(true);
-}
-
-void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
-{
-    print_instantiation(pInstRecord);
-//    print_identity_set_explanation();
-    outputManager->printa(thisAgent, "\n");
-    print_footer();
 }
 
 void Explanation_Logger::print_footer(bool pPrintDiscussedChunkCommands)
@@ -170,13 +162,19 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
             } else {
                 thisAgent->outputManager->set_print_test_format(true, false);
                 outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-                if (print_explanation_trace)
-                {
-                    thisAgent->outputManager->set_print_test_format(false, true);
-                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-                } else {
-                    outputManager->printa(thisAgent, "\n");
-                }
+                thisAgent->outputManager->set_print_test_format(false, true);
+                rhs_value rt = rhs->value;
+
+                outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
+//                outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+//                if (print_explanation_trace)
+//                {
+//                    thisAgent->outputManager->set_print_test_format(false, true);
+//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+//                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
+//                } else {
+//                    outputManager->printa(thisAgent, "\n");
+//                }
                 rhs = rhs->next;
             }
         }
@@ -189,7 +187,7 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
     }
 }
 
-void Explanation_Logger::print_instantiation(instantiation_record* pInstRecord)
+void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
 {
     if (pInstRecord->conditions->empty())
     {
@@ -325,6 +323,8 @@ void Explanation_Logger::print_instantiation(instantiation_record* pInstRecord)
         print_action_list(pInstRecord->actions, pInstRecord->original_production, rhs);
         outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", pInstRecord->match_level);
         print_path_to_base(pInstRecord->path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
+        outputManager->printa(thisAgent, "\n");
+        print_footer();
 
         if (print_explanation_trace)
         {
@@ -333,10 +333,12 @@ void Explanation_Logger::print_instantiation(instantiation_record* pInstRecord)
     }
 }
 
-void Explanation_Logger::print_chunk(chunk_record* pChunkRecord)
+void Explanation_Logger::print_chunk_explanation()
 {
     /* MToDo | Was previously just set to 0 for chunks.  Need to set this right! */
     goal_stack_level pMatch_level;
+
+    assert(current_discussed_chunk);
 
     outputManager->set_column_indent(0, 7);
     outputManager->set_column_indent(1, 60);
@@ -351,7 +353,7 @@ void Explanation_Logger::print_chunk(chunk_record* pChunkRecord)
         outputManager->printa_sf(thisAgent, "sp {%y\n", current_discussed_chunk->name);
     }
 
-    if (pChunkRecord->conditions->empty())
+    if (current_discussed_chunk->conditions->empty())
     {
         outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
     }
@@ -365,7 +367,7 @@ void Explanation_Logger::print_chunk(chunk_record* pChunkRecord)
 
         thisAgent->outputManager->set_print_test_format(true, false);
 
-        for (condition_record_list::iterator it = pChunkRecord->conditions->begin(); it != pChunkRecord->conditions->end(); it++)
+        for (condition_record_list::iterator it = current_discussed_chunk->conditions->begin(); it != current_discussed_chunk->conditions->end(); it++)
         {
             lCond = (*it);
             ++lConditionCount;
@@ -431,19 +433,11 @@ void Explanation_Logger::print_chunk(chunk_record* pChunkRecord)
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    print_action_list(pChunkRecord->actions, pChunkRecord->original_production);
+    print_action_list(current_discussed_chunk->actions, current_discussed_chunk->original_production);
     outputManager->printa(thisAgent, "}\n");
-}
-
-void Explanation_Logger::print_chunk_explanation()
-{
-    assert(current_discussed_chunk);
-    print_chunk(current_discussed_chunk);
-
-//    outputManager->printa(thisAgent, "\n");
-//    print_identity_set_explanation();
 
     print_footer(true);
+
 }
 
 void Explanation_Logger::print_explain_summary()

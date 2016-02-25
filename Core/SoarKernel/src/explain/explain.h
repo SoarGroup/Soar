@@ -279,11 +279,9 @@ class Explanation_Logger
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
-        void                    print_instantiation(instantiation_record* pInstRecord);
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
-        void                    print_chunk(chunk_record* pChunkRecord);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         bool                    print_condition_explanation_for_id(uint64_t pInstID);

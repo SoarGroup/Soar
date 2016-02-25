@@ -224,7 +224,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     {
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
-        if (this->m_print_actual_effective)
+        if (this->m_print_actual_effective || (!rsym->o_id))
         {
             if (rsym->referent)
             {
@@ -233,7 +233,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
                 destString += '#';
             }
         }
-        if (m_print_identity_effective) {
+        if (m_print_identity_effective && rsym->o_id) {
 //            sprinta_sf(thisAgent, destString, " [%y/o%u]",
 //                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
 //                rsym->o_id);
@@ -258,7 +258,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         }
         else
         {
-            destString += "(rete-loc no tok/w)";
+            destString += "<STI>";
         }
     }
     else
