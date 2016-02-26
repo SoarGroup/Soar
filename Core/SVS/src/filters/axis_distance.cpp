@@ -48,7 +48,19 @@ double compare_axis_distance(sgnode* a, sgnode* b, const filter_params* p)
 		} else if(axis >= '0' && axis <= '2'){
 			dim = axis - '0';
 		}
-    return axis_distance(a, b, dim);
+
+    sgnode* ref;
+    if (get_filter_param(0, p, "reference", ref))
+    {
+        vec3 axis(0.0, 0.0, 0.0);
+        axis[dim] = 1.0;
+        vec3 dir = ref->get_world_trans()(axis) - ref->get_world_trans()(vec3(0, 0, 0));
+        return axis_distance(a, b, dir);
+    }
+    else 
+    {
+        return axis_distance(a, b, dim);
+    }
 }
 
 ///// filter axis_distance //////
@@ -65,6 +77,7 @@ filter_table_entry* axis_distance_filter_entry()
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
     e->parameters["axis"] = "Axis to measure distance on (xyz)";
+    e->parameters["reference"] = "[Optional] - base axis on coord frame of sgnode";
     e->create = &make_axis_distance_filter;
     return e;
 }
@@ -83,6 +96,7 @@ filter_table_entry* axis_distance_select_filter_entry()
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
     e->parameters["axis"] = "Axis to measure distance on (xyz)";
+    e->parameters["reference"] = "[Optional] - base axis on coord frame of sgnode";
     e->parameters["min"] = "minimum distance to select";
     e->parameters["max"] = "maximum distance to select";
     e->create = &make_axis_distance_select_filter;

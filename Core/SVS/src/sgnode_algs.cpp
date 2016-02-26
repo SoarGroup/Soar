@@ -172,6 +172,52 @@ double axis_distance(const sgnode* a, const sgnode* b, int axis)
     }
 }
 
+/*
+ * Returns the distance between two nodes along a given axis 
+ *   using their bounding boxes
+ *
+ * Returns a negative distance if node a is higher than node b
+ * Returns a positive distance if node a is lower than node b
+ * Returns 0 if node a and node b overlap on the axis
+ *
+ * Axis should be a non-zero vector
+ */
+double axis_distance(const sgnode* a, const sgnode* b, const vec3& axis)
+{
+    double len = axis.norm();
+    if (len == 0.0)
+    {
+        return len;
+    }
+    vec3 unit_axis = axis / len;
+
+    //cout << "======= axis_distance(" << a->get_id() << ", " << b->get_id() << ") along [" << 
+    //  unit_axis[0] << ", " << unit_axis[1] << ", " << unit_axis[2] << "]" << endl;
+
+    double mina = a->min_project_on_axis(unit_axis);
+    double maxa = a->max_project_on_axis(unit_axis);
+    double minb = b->min_project_on_axis(unit_axis);
+    double maxb = b->max_project_on_axis(unit_axis);
+
+    //cout << "  mina = " << mina << endl;
+    //cout << "  maxa = " << maxa << endl;
+    //cout << "  minb = " << minb << endl;
+    //cout << "  maxb = " << maxb << endl;
+    
+    if (minb > maxa)
+    {
+        return (minb - maxa);
+    }
+    else if (maxb < mina)
+    {
+        return (maxb - mina);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 // Returns the volume of the node's bounding box //
 double bbox_volume(const sgnode* a)
 {
