@@ -241,21 +241,19 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
             outputManager->set_column_indent(0, 7);
             outputManager->set_column_indent(1, 57);
             outputManager->set_column_indent(2, 100);
-            outputManager->set_column_indent(3, 110);
-            outputManager->set_column_indent(4, 125);
+            outputManager->set_column_indent(3, 115);
             thisAgent->outputManager->set_print_test_format(true, false);
             outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n\n",
                 pInstRecord->instantiationID, pInstRecord->production_name);
-            outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Source %-Operational %-Creator\n\n");
+            outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
         } else {
             outputManager->set_column_indent(0, 7);
             outputManager->set_column_indent(1, 57);
-            outputManager->set_column_indent(2, 70);
-            outputManager->set_column_indent(3, 90);
+            outputManager->set_column_indent(2, 72);
             /* Print header */
             outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y)\n\n",
                 pInstRecord->instantiationID, pInstRecord->production_name);
-            outputManager->printa_sf(thisAgent, "%- %-Source %-Operational %-Creator\n");
+            outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n");
             thisAgent->outputManager->set_print_test_format(false, true);
         }
 
@@ -315,7 +313,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
 
             }
             bool isSuper = (pInstRecord->match_level > 0) && (lCond->wme_level_at_firing < pInstRecord->match_level);
-             outputManager->printa_sf(thisAgent, "%-Rule%-%s", (isSuper ? "    Yes" : "    No"));
+             outputManager->printa_sf(thisAgent, "%-%s", (isSuper ? "    Yes" : "    No"));
              if (lCond->parent_instantiation)
              {
                  outputManager->printa_sf(thisAgent, "%-i%u (%y)%-",
@@ -351,9 +349,6 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
 
 void Explanation_Logger::print_chunk_explanation()
 {
-    /* MToDo | Was previously just set to 0 for chunks.  Need to set this right! */
-    goal_stack_level pMatch_level;
-
     assert(current_discussed_chunk);
 
     outputManager->set_column_indent(0, 7);
@@ -424,7 +419,7 @@ void Explanation_Logger::print_chunk_explanation()
                 if (lCond->matched_wme != NULL)
                 {
                     instantiation_record* lInstRecord = lCond->get_instantiation();
-                    bool isSuper = (pMatch_level > 0) && (lCond->wme_level_at_firing < pMatch_level);
+                    bool isSuper = (current_discussed_chunk->match_level > 0) && (lCond->wme_level_at_firing < current_discussed_chunk->match_level);
                     if (lInstRecord)
                     {
                         outputManager->printa_sf(thisAgent, "%-i%u (%y)\n",
@@ -721,7 +716,7 @@ void Explanation_Logger::print_involved_instantiations()
     //    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
     assert(current_discussed_chunk);
 
-    outputManager->printa(thisAgent, "All rule firings involved in problem solving:\n\n");
+    outputManager->printa_sf(thisAgent, "All %d rule firings involved in problem solving:\n\n", current_discussed_chunk->backtraced_inst_records->size());
 
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end();++it)
     {

@@ -94,8 +94,8 @@ void instantiation_record::update_instantiation_contents()
     {
         lCondRecord = (*it);
         lCondRecord->update_condition(cond, this);
-        /* MToDo | Can the connections ever really change?  I think a new instantiation would be created if that were the case.
-         *          Test this out.*/
+        /* I don't think the connection can ever change without the instantiation retracting.  If we have problems
+         * with a trace being connected incorrectly, though, this could be why. */
 //        lCondRecord->connect_to_action();
     }
 }
@@ -135,17 +135,16 @@ condition_record* instantiation_record::find_condition_for_chunk(preference* pPr
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         dprint(DT_EXPLAIN_PATHS, "Comparing against condition %u", (*it)->get_conditionID());
-        condition_record* lit = (*it);
-        preference* lp = lit->get_cached_pref();
-        wme* lw = lit->get_cached_wme();
-        uint64_t li = (*it)->get_conditionID();
-        if (pPref && ((*it)->get_cached_pref() == pPref))
-        {
-            dprint(DT_EXPLAIN_PATHS, "Found condition %u %p for target preference %p\n", (*it)->get_conditionID(), (*it)->get_cached_pref(), pPref);
-            return (*it);
-        } else if (pWME && ((*it)->get_cached_wme() == pWME))
+        if (pWME && ((*it)->get_cached_wme() == pWME))
         {
             dprint(DT_EXPLAIN_PATHS, "Found condition %u %w for target wme %w\n", (*it)->get_conditionID(), (*it)->get_cached_wme(), pWME);
+            return (*it);
+        }
+        else if (pPref && ((*it)->get_cached_pref() == pPref))
+        {
+            /* Don't think we can ever have a wme without a pref */
+            assert(false);
+            dprint(DT_EXPLAIN_PATHS, "Found condition %u %p for target preference %p\n", (*it)->get_conditionID(), (*it)->get_cached_pref(), pPref);
             return (*it);
         }
     }

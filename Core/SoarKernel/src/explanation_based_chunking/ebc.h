@@ -144,7 +144,6 @@ class Explanation_Based_Chunker
         void reinit();
         void cleanup_for_instantiation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
-        /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
 

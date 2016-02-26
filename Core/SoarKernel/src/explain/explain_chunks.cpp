@@ -28,6 +28,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     baseInstantiation   = NULL;
     chunkInstantiation  = NULL;
     original_production = NULL;
+    match_level         = 0;
 
     backtraced_inst_records = new inst_record_list();
     backtraced_instantiations = new inst_set();
@@ -101,6 +102,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         assert(false);
     }
     time_formed = thisAgent->d_cycle_count;
+    match_level = pChunkInstantiation->match_goal_level;
 
     conditions         = new condition_record_list;
     actions            = new action_record_list;

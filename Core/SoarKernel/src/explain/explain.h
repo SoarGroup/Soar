@@ -172,6 +172,7 @@ class chunk_record
         production*             original_production;
         condition_record_list*  conditions;
         action_record_list*     actions;
+        goal_stack_level        match_level;
 
         id_to_id_map_type*      identity_set_mappings;
         inst_set*               backtraced_instantiations;

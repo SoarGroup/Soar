@@ -106,17 +106,6 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
      * may have niether */
     cached_pref = pCond->bt.trace;
     cached_wme = pCond->bt.wme_;
-    if (cached_wme) {
-        dprint(DT_EXPLAIN_CONDS, "   Make sure all wme's can print here: %w.\n", cached_wme);
-    }
-    if (conditionID == 471) {
-        dprint(DT_EXPLAIN_CONDS, "Comparing against condition %u", conditionID);
-    }
-
-    assert(!(cached_pref && !cached_wme));
-    if (!cached_pref && pCond->counterpart) {
-        dprint(DT_EXPLAIN_CONDS, "   Chunk condition without pref found.\n");
-    }
     if (pCond->bt.trace)
     {
         parent_instantiation = thisAgent->explanationLogger->get_instantiation(pCond->bt.trace->inst);
@@ -129,8 +118,6 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
 condition_record::~condition_record()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
-
-    //    assert(!cached_pref);
 
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
