@@ -1432,6 +1432,9 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
     inst->bottom_of_instantiated_conditions = NULL;
+    inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
 
     // create preferences
     inst->preferences_generated = NULL;

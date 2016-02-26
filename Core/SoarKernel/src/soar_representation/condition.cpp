@@ -72,6 +72,15 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     cond->data.tests.id_test = pId;
     cond->data.tests.attr_test = pAttr;
     cond->data.tests.value_test = pValue;
+    cond->type = POSITIVE_CONDITION;
+    cond->already_in_tc = false;
+    cond->test_for_acceptable_preference = false;
+    cond->next = cond->prev = cond->counterpart = NULL;
+    cond->inst = NULL;
+    cond->bt.wme_ = NULL;
+    cond->bt.level = 0;
+    cond->bt.trace = NULL;
+    cond->bt.CDPS = NULL;
     /* Other data initialized to 0 in struct initializers */
     return cond;
 }

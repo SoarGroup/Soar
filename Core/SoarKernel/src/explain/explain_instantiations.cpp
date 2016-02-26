@@ -51,6 +51,18 @@ instantiation_record::~instantiation_record()
     }
 }
 
+void instantiation_record::delete_instantiation()
+{
+    for (auto it = conditions->begin(); it != conditions->end(); it++)
+    {
+        thisAgent->explanationLogger->delete_condition((*it)->get_conditionID());
+    }
+    for (auto it = actions->begin(); it != actions->end(); it++)
+    {
+        thisAgent->explanationLogger->delete_action((*it)->get_actionID());
+    }
+}
+
 void instantiation_record::record_instantiation_contents()
 {
     if (cached_inst->i_id == 589)

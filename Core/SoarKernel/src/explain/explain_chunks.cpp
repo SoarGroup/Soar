@@ -28,30 +28,54 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     baseInstantiation   = NULL;
     chunkInstantiation  = NULL;
     original_production = NULL;
-    dependency_paths    = NULL;
-//    dependency_paths = new condition_to_ipath_map();
 
     backtraced_inst_records = new inst_record_list();
     backtraced_instantiations = new inst_set();
     result_instantiations = new inst_set;
     result_inst_records = new inst_record_set;
 
+    stats.duplicates = 0;
+    stats.tested_local_negation = false;
+    stats.reverted = false;
+    stats.num_grounding_conditions_added = 0;
+    stats.merged_conditions = 0;
+    stats.instantations_backtraced = 0;
+    stats.seen_instantations_backtraced = 0;
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
-    stats.duplicates = 0;
-    stats.instantations_backtraced = 0;
-    stats.merged_conditions = 0;
-    stats.seen_instantations_backtraced = 0;
-    stats.tested_local_negation = false;
 
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
+}
+
+/* This function is not currently used, but I'm leaving in case we ever add something
+ * that needs to excise explanations, for example a command or something to limit
+ * memory use.  This function has not been tested. */
+void chunk_record::excise_chunk_record()
+{
+    for (auto it = conditions->begin(); it != conditions->end(); it++)
+    {
+        thisAgent->explanationLogger->delete_condition((*it)->get_conditionID());
+    }
+    for (auto it = actions->begin(); it != actions->end(); it++)
+    {
+        thisAgent->explanationLogger->delete_action((*it)->get_actionID());
+    }
+    /* MToDo | Need to add refcounts or id of last chunk that created instantiation record */
+    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
+    {
+        if ((*it)->get_chunk_creator() == chunkID)
+        {
+            (*it)->delete_instantiation();
+            thisAgent->explanationLogger->delete_instantiation((*it)->get_instantiationID());
+        }
+    }
 }
 
 chunk_record::~chunk_record()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
-    symbol_remove_ref(thisAgent, name);
 //    production_remove_ref(thisAgent, original_production);
+    if (name) symbol_remove_ref(thisAgent, name);
     if (conditions) delete conditions;
     if (actions) delete actions;
     if (result_instantiations) delete result_instantiations;
@@ -80,19 +104,24 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     actions            = new action_record_list;
 
     instantiation_record* lResultInstRecord, *lNewInstRecord;
+    instantiation* lNewInst;
 
     /* Check if max number of instantiations in list.  If so, take most recent i_ids */
     dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", backtraced_instantiations->size());
     for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
     {
-        lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it));
+        lNewInst = (*it);
+        lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it), chunkID);
+        assert(lNewInstRecord);
         backtraced_inst_records->push_back(lNewInstRecord);
         dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
     }
+    dprint(DT_EXPLAIN, "(1) There are now %d instantiations records...\n", backtraced_inst_records->size());
 
     for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
     {
         lNewInstRecord = (*it);
+        dprint(DT_EXPLAIN, "Recording instantiation i%u.\n", lNewInstRecord->get_instantiationID());
         if (lNewInstRecord->cached_inst->explain_status == explain_recording)
         {
             lNewInstRecord->record_instantiation_contents();
@@ -163,7 +192,7 @@ void chunk_record::generate_dependency_paths()
 
     inst_record_list* lInstPath = new inst_record_list();
 
-//    baseInstantiation->create_identity_paths(lInstPath);
+    baseInstantiation->create_identity_paths(lInstPath);
     for (auto it = result_inst_records->begin(); it != result_inst_records->end(); it++)
     {
         (*it)->create_identity_paths(lInstPath);

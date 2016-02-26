@@ -45,7 +45,6 @@ typedef struct bt_info_struct
     preference* trace;              /* preference for BT, or NIL */
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -94,8 +93,6 @@ typedef struct condition_struct
                                                    don't have preferences.  Used only during
                                                    chunking.*/
 
-    condition_struct() : type(POSITIVE_CONDITION), already_in_tc(false), test_for_acceptable_preference(false),
-                         next(NULL), prev(NULL), counterpart(NULL), inst(NULL) {}
 } condition;
 
 /* ------------------------ */

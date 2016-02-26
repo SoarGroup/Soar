@@ -2200,6 +2200,9 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
+    inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
 
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;

@@ -5,6 +5,7 @@
 #include "condition.h"
 #include "connect_conditions.h"
 #include "debug.h"
+#include "explain.h"
 #include "preference.h"
 #include "slot.h"
 #include "test.h"
@@ -135,7 +136,9 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
             dprint(DT_GROUND_LTI, "Adding wme to connecting condition wme set: (%y ^%y %y)\n", (*it)->id, (*it)->attr, (*it)->value);
         }
     }
-
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationLogger->increment_stat_grounded(lConditionWMEs.size());
+    #endif
     /* Create conditions based on set of wme's compiled */
     condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
     while (prev_cond->next != NULL)

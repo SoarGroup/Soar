@@ -13,7 +13,7 @@
 #include "forward.h"
 
 /* Uncomment this to get common compile settings for release version of Soar */
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 /* Experimental setting that forces Soar to consider the attribute element
  * of a wme/pref when incrementing/decrementing link counts, which are use
@@ -48,7 +48,7 @@
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+//    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
@@ -116,6 +116,7 @@ typedef unsigned char byte;
 //#define ATTENTION_LAPSE
 
 #define increment_counter(counter) counter++; if (counter == 0) counter = 1;
+#define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;
 
 /* --------------- Explanation of directives that alter Soar behavior ----------------
  *

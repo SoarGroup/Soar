@@ -263,6 +263,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     }
     else
     {
+        assert(rhs_value_is_funcall(rv));
         /* -- function call -- */
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);

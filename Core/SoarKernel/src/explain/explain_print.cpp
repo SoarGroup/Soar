@@ -47,24 +47,27 @@ void Explanation_Logger::print_formation_explanation()
     outputManager->printa(thisAgent,    "   (6) Generalized constraints from (5) are added and final chunk conditions are\n"
                                         "       polished by pruning unnecessary tests and merging appropriate conditions.\n"
                                         "       Statistics on polishing are available.  (explain -c) (explain -s)\n\n");
-    outputManager->printa_sf(thisAgent, "------------------------------------------------------------------------------------\n\n"
-                                        "Base instantiation i%u (%y) that produced results in Step (2)\n\n",
-        current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
+    outputManager->printa_sf(thisAgent, "------------------------------------------------------------------------------------\n\n");
 
-    print_instantiation_explanation(current_discussed_chunk->baseInstantiation);
+    outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results in Step (2)\n\n",
+        current_discussed_chunk->result_inst_records->size() + 1);
 
-    if (current_discussed_chunk->result_inst_records->size() > 1)
+    outputManager->printa_sf(thisAgent, "Initial base instantiation i%u that fired when %y matched at time %u:\n\n",
+        current_discussed_chunk->baseInstantiation->instantiationID,
+        current_discussed_chunk->baseInstantiation->production_name,
+        current_discussed_chunk->time_formed);
+
+    print_instantiation_explanation(current_discussed_chunk->baseInstantiation, false);
+
+    if (current_discussed_chunk->result_inst_records->size() > 0)
     {
-        outputManager->printa_sf(thisAgent, "\n%d other instantiations that produced results in Step (2)\n\n", (current_discussed_chunk->result_inst_records->size() - 1));
+        outputManager->printa_sf(thisAgent, "\n%d instantiation(s) that created extra results indirectly because they were connected to the results of the base instantiation:\n\n", (current_discussed_chunk->result_inst_records->size() - 1));
         for (auto it = current_discussed_chunk->result_inst_records->begin(); it != current_discussed_chunk->result_inst_records->end(); ++it)
         {
-            if ((*it) != current_discussed_chunk->baseInstantiation)
-            {
-                print_instantiation_explanation((*it));
-            }
+            print_instantiation_explanation((*it), false);
         }
     }
-    outputManager->printa(thisAgent, "\n");
+    print_involved_instantiations();
     print_footer(true);
 }
 
@@ -165,8 +168,12 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
                 thisAgent->outputManager->set_print_test_format(false, true);
                 rhs_value rt = rhs->value;
 
-                outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
-//                outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+                if (lAction->variablized_action)
+                {
+                    outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
+                } else {
+                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+                }
 //                if (print_explanation_trace)
 //                {
 //                    thisAgent->outputManager->set_print_test_format(false, true);
@@ -187,7 +194,7 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
     }
 }
 
-void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord)
+void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {
     if (pInstRecord->conditions->empty())
     {
@@ -212,7 +219,14 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
              * is only for debugging and does not get built for releases. */
             if (!pInstRecord->original_production || !pInstRecord->original_production->p_node)
             {
-                outputManager->printa_sf(thisAgent, "Cannot print.  Original rule conditions no longer in RETE\n");
+                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n",
+                    pInstRecord->instantiationID, pInstRecord->production_name);
+                outputManager->printa_sf(thisAgent,
+                    "\nError:  Cannot print explanation trace of this instantiation.  Original rule conditions no longer in RETE.\n"
+                    "        Attempting to print working memory trace instead.\n\n");
+                print_explanation_trace = false;
+                print_instantiation_explanation(pInstRecord, printFooter);
+                print_explanation_trace = true;
                 return;
             }
             p_node_to_conditions_and_rhs(thisAgent, pInstRecord->original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
@@ -230,7 +244,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
             outputManager->set_column_indent(3, 110);
             outputManager->set_column_indent(4, 125);
             thisAgent->outputManager->set_print_test_format(true, false);
-            outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u (match of rule %y)\n",
+            outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n\n",
                 pInstRecord->instantiationID, pInstRecord->production_name);
             outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Source %-Operational %-Creator\n\n");
         } else {
@@ -239,7 +253,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
             outputManager->set_column_indent(2, 70);
             outputManager->set_column_indent(3, 90);
             /* Print header */
-            outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u (match of rule %y)\n",
+            outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y)\n\n",
                 pInstRecord->instantiationID, pInstRecord->production_name);
             outputManager->printa_sf(thisAgent, "%- %-Source %-Operational %-Creator\n");
             thisAgent->outputManager->set_print_test_format(false, true);
@@ -321,10 +335,12 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
         }
         outputManager->printa(thisAgent, "   -->\n");
         print_action_list(pInstRecord->actions, pInstRecord->original_production, rhs);
-        outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", pInstRecord->match_level);
-        print_path_to_base(pInstRecord->path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
+        if (printFooter) {
+            print_footer();
+            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", pInstRecord->match_level);
+            print_path_to_base(pInstRecord->path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
+        }
         outputManager->printa(thisAgent, "\n");
-        print_footer();
 
         if (print_explanation_trace)
         {
@@ -403,7 +419,7 @@ void Explanation_Logger::print_chunk_explanation()
                     outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
                         lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, is_condition_related(lCond) ? "*" : "");
                 } else {
-                    outputManager->printa_sf(thisAgent, "(Condition tests that a WME doesn't exist)%s", is_condition_related(lCond) ? "*" : "");
+                    outputManager->printa_sf(thisAgent, "(N/A)%s", is_condition_related(lCond) ? "*" : "");
                 }
                 if (lCond->matched_wme != NULL)
                 {
@@ -497,65 +513,75 @@ void Explanation_Logger::print_all_chunks()
 
 void Explanation_Logger::print_explainer_stats()
 {
+    outputManager->set_column_indent(0, 50);
+
     outputManager->printa_sf(thisAgent, "%f-------------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Executions Statistics\n");
     outputManager->printa_sf(thisAgent, "-------------------------\n");
-    outputManager->printa_sf(thisAgent, "Chunks                                     %u\n", thisAgent->ebChunker->get_chunk_count());
-    outputManager->printa_sf(thisAgent, "Chunks attempted                           %u\n", stats.chunks_attempted);
-    outputManager->printa_sf(thisAgent, "Chunks successfully built                  %u\n", stats.succeeded);
+    outputManager->printa_sf(thisAgent, "Chunks attempted                           %-%u\n", stats.chunks_attempted);
+    outputManager->printa_sf(thisAgent, "Chunks successfully built                  %-%u\n", stats.chunks_succeeded);
+    outputManager->printa_sf(thisAgent, "Chunk failures reverted to justifications  %-%u\n", stats.chunks_reverted);
 
-    outputManager->printa_sf(thisAgent, "\nJustifications                             %u\n", thisAgent->ebChunker->get_justification_count());
-    outputManager->printa_sf(thisAgent, "Justifications attempted                   %u\n", stats.justifications_attempted);
-    outputManager->printa_sf(thisAgent, "Justifications successfully built          %u\n", stats.justifications);
+    outputManager->printa_sf(thisAgent, "Justifications attempted                   %-%u\n", stats.justifications_attempted);
+    outputManager->printa_sf(thisAgent, "Justifications successfully built          %-%u\n", stats.justifications_succeeded);
 
-    outputManager->printa_sf(thisAgent, "\nInstantiations built                       %u\n", thisAgent->ebChunker->get_instantiation_count());
-    outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %u\n", stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %u\n", stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "\nInstantiations built                     %- %u\n", thisAgent->ebChunker->get_instantiation_count());
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %-%u\n", stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %-%u\n", stats.seen_instantations_backtraced);
 
-    outputManager->printa_sf(thisAgent, "\nConditions merged                          %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Constraints collected                      %u\n", stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Constraints attached                       %u\n", stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "\nConditions merged                        %- %u\n", stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "Grounding conditions generated             %-%u\n", stats.grounding_conditions_added);
 
-    outputManager->printa_sf(thisAgent, "----------------------\n");
+    outputManager->printa_sf(thisAgent, "\n----------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Failure Statistics\n");
     outputManager->printa_sf(thisAgent, "----------------------\n");
 
-    outputManager->printa_sf(thisAgent, "Duplicate chunk already existed            %u\n", stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Chunk tested local negation                %u\n", stats.tested_local_negation);
-    outputManager->printa_sf(thisAgent, "Could not re-order chunk                   %u\n", stats.unorderable);
-    outputManager->printa_sf(thisAgent, "Chunk had no grounds                       %u\n", stats.no_grounds);
-    outputManager->printa_sf(thisAgent, "Already reached max-chunks                 %u\n", stats.max_chunks);
-    outputManager->printa_sf(thisAgent, "Chunk formed did not match WM              %u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %u\n", stats.justification_did_not_match);
+    outputManager->printa_sf(thisAgent, "Duplicate chunk already existed            %-%u\n", stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Chunk tested local negation                %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "Could not re-order chunk                   %-%u\n", stats.unorderable);
+    outputManager->printa_sf(thisAgent, "Chunk had no grounds                       %-%u\n", stats.no_grounds);
+    outputManager->printa_sf(thisAgent, "Already reached max-chunks                 %-%u\n", stats.max_chunks);
+    outputManager->printa_sf(thisAgent, "Chunk formed did not match WM              %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
 
-    outputManager->printa_sf(thisAgent, "------------------------\n");
+    outputManager->printa_sf(thisAgent, "\n------------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Explainer Statistics\n");
     outputManager->printa_sf(thisAgent, "------------------------\n");
-    outputManager->printa_sf(thisAgent, "Chunks records                             %u\n", total_recorded.chunks);
-    outputManager->printa_sf(thisAgent, "Actions records                            %u\n", total_recorded.actions);
-    outputManager->printa_sf(thisAgent, "Condition records                          %u\n", total_recorded.conditions);
-    outputManager->printa_sf(thisAgent, "Instantiation records                      %u\n", total_recorded.instantiations);
-    outputManager->printa_sf(thisAgent, "Instantiation references in conditions     %u\n", total_recorded.instantiations_referenced);
-    outputManager->printa_sf(thisAgent, "Instantiations skipped                     %u\n", total_recorded.instantiations_skipped);
+    outputManager->printa_sf(thisAgent, "Chunks records                             %-%d\n", chunks->size());
+    outputManager->printa_sf(thisAgent, "Actions records                            %-%d\n", all_actions->size());
+    outputManager->printa_sf(thisAgent, "Condition records                          %-%d\n", all_conditions->size());
+    outputManager->printa_sf(thisAgent, "Instantiation records                      %-%d\n", instantiations->size());
 }
 
 void Explanation_Logger::print_chunk_stats() {
 
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "%fStatistics for '%y' (c%u):\n\n",                            current_discussed_chunk->name, current_discussed_chunk->chunkID);
-    outputManager->printa_sf(thisAgent, "Number of conditions                       %u\n",        current_discussed_chunk->conditions->size());
-    outputManager->printa_sf(thisAgent, "Number of actions                          %u\n",        current_discussed_chunk->actions->size());
-    outputManager->printa_sf(thisAgent, "Base instantiation                         i%u\n",       current_discussed_chunk->baseInstantiation->instantiationID);
-    outputManager->printa_sf(thisAgent, "Base instantiation matched rule            %y\n",        current_discussed_chunk->baseInstantiation->production_name);
-    outputManager->printa_sf(thisAgent, "\nInstantiations backtraced through          %u\n",    current_discussed_chunk->stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %u\n",      current_discussed_chunk->stats.seen_instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Conditions merged                          %u\n",      current_discussed_chunk->stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Constraints collected                      %u\n",      current_discussed_chunk->stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Constraints attached                       %u\n",      current_discussed_chunk->stats.constraints_attached);
+    outputManager->set_column_indent(0, 45);
+    outputManager->printa_sf(thisAgent, "%fStatistics for '%y' (c%u):\n\n",                         current_discussed_chunk->name, current_discussed_chunk->chunkID);
+    outputManager->printa_sf(thisAgent, "Number of conditions           %-%u\n",          current_discussed_chunk->conditions->size());
+    outputManager->printa_sf(thisAgent, "Number of actions              %-%u\n",          current_discussed_chunk->actions->size());
+    outputManager->printa_sf(thisAgent, "Base instantiation             %-i%u (%y)\n",    current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
+    outputManager->printa_sf(thisAgent, "Extra result instantiations " );
+    if (current_discussed_chunk->result_inst_records->size() > 0)
+    {
+        for (auto it = current_discussed_chunk->result_inst_records->begin(); it != current_discussed_chunk->result_inst_records->end(); ++it)
+        {
+            outputManager->printa_sf(thisAgent, "%-i%u (%y)\n", (*it)->instantiationID, (*it)->production_name);
+        }
+    }
 
-    outputManager->printa_sf(thisAgent, "\nDuplicates chunks later created            %u\n", current_discussed_chunk->stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Tested negation in local substate          %s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "\nInstantiations backtraced through        %- %u\n", current_discussed_chunk->stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Instantiations backtraced multiple times   %-%u\n", current_discussed_chunk->stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Conditions merged                          %-%u\n", current_discussed_chunk->stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", current_discussed_chunk->stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", current_discussed_chunk->stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "Grounding conditions added                 %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
 
+    outputManager->printa_sf(thisAgent, "\nDuplicates chunks later created          %- %u\n", current_discussed_chunk->stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Failed chunk reverted to justification     %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
 }
 
 void Explanation_Logger::print_chunk_list(short pNumToPrint)
@@ -693,19 +719,17 @@ void Explanation_Logger::print_involved_instantiations()
     //    std::set< instantiation_record*, cmp_iID > sorted_set;
     ////    { std::begin((*instantiations_for_current_chunk)), std::end((*instantiations_for_current_chunk)) };
     //    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
-    assert(current_recording_chunk);
+    assert(current_discussed_chunk);
 
-    dprint(DT_EXPLAIN, "Involved instantiations: \n");
+    outputManager->printa(thisAgent, "All rule firings involved in problem solving:\n\n");
 
-    for (auto it = current_recording_chunk->backtraced_inst_records->begin(); it != current_recording_chunk->backtraced_inst_records->end(); it++)
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end();++it)
     {
-        dprint(DT_EXPLAIN, "%u (%y) %s\n", (*it)->instantiationID, (*it)->production_name, (*it)->terminal ? "Terminal" : "BT");
+        outputManager->printa_sf(thisAgent, "   i%u (%y)\n", (*it)->instantiationID, (*it)->production_name);
+//        if (++it != current_discussed_chunk->backtraced_inst_records->end())
+//        {
+//            outputManager->printa(thisAgent, ", ");
+//        }
     }
-
-    dprint(DT_EXPLAIN, "Involved bt instantiations: \n");
-
-    for (auto it = current_recording_chunk->backtraced_instantiations->begin(); it != current_recording_chunk->backtraced_instantiations->end(); it++)
-    {
-        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
-    }
+    outputManager->printa(thisAgent, "\n");
 }

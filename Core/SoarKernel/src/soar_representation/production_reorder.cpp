@@ -141,6 +141,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     if (remaining_actions)
     {
+        dprint_header(DT_REORDERER, PrintAfter, "Remaining action list:\n%2", remaining_actions);
         /* --- there are remaining_actions but none can be legally added --- */
         print(thisAgent,  "\nError: Could not re-order actions of production %s --\n",
               thisAgent->name_of_production_being_reordered);

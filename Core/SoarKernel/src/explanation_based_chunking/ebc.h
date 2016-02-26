@@ -250,7 +250,6 @@ class Explanation_Based_Chunker
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
-        void            abort();
         void            clean_up();
         void            save_conditions_for_reversal();
         void            revert_chunk_to_instantiation();

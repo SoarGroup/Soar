@@ -18,15 +18,6 @@
 #include <cstdlib>
 #include <string>
 
-typedef struct tr_stats_struct {
-        uint64_t            chunks;
-        uint64_t            instantiations;
-        uint64_t            instantiations_referenced;
-        uint64_t            instantiations_skipped;
-        uint64_t            conditions;
-        uint64_t            actions;
-} tr_stats;
-
 typedef struct chunking_stats_struct {
         uint64_t            duplicates;
         uint64_t            unorderable;
@@ -34,21 +25,25 @@ typedef struct chunking_stats_struct {
         uint64_t            chunk_did_not_match;
         uint64_t            no_grounds;
         uint64_t            max_chunks;
-        uint64_t            succeeded;
         uint64_t            tested_local_negation;
         uint64_t            merged_conditions;
         uint64_t            chunks_attempted;
+        uint64_t            chunks_reverted;
+        uint64_t            chunks_succeeded;
         uint64_t            justifications_attempted;
-        uint64_t            justifications;
+        uint64_t            justifications_succeeded;
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
         uint64_t            constraints_attached;
         uint64_t            constraints_collected;
+        uint64_t            grounding_conditions_added;
 } chunking_stats;
 
 typedef struct chunk_stats_struct {
         uint64_t            duplicates;
         bool                tested_local_negation;
+        bool                reverted;
+        uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
@@ -133,11 +128,14 @@ class instantiation_record
         uint64_t                get_instantiationID() { return instantiationID; };
         goal_stack_level        get_match_level() { return match_level; };
         inst_record_list*       get_path_to_base() { return path_to_base; };
+        uint64_t                get_chunk_creator() { return creating_chunk; }
         void                    record_instantiation_contents();
         void                    update_instantiation_contents();
         void                    create_identity_paths(const inst_record_list* pInstPath);
         condition_record*       find_condition_for_chunk(preference* pPref, wme* pWME);
         action_record*          find_rhs_action(preference* pPref);
+        void                    delete_instantiation();
+
         instantiation*          cached_inst;
 
     private:
@@ -149,6 +147,7 @@ class instantiation_record
         condition_record_list*  conditions;
         action_record_list*     actions;
         uint64_t                instantiationID;
+        uint64_t                creating_chunk;
         bool                    terminal;
         inst_record_list*       path_to_base;
 };
@@ -164,6 +163,7 @@ class chunk_record
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    generate_dependency_paths();
         void                    end_chunk_record();
+        void                    excise_chunk_record();
 
     private:
         agent*                  thisAgent;
@@ -173,7 +173,6 @@ class chunk_record
         condition_record_list*  conditions;
         action_record_list*     actions;
 
-        condition_to_ipath_map* dependency_paths;
         id_to_id_map_type*      identity_set_mappings;
         inst_set*               backtraced_instantiations;
         inst_record_list*       backtraced_inst_records;
@@ -205,25 +204,27 @@ class Explanation_Logger
         void                    record_dependencies();
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
-        void                    add_result_instantiations(preference* pResults);
+        void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
 
-        instantiation_record*   add_instantiation(instantiation* pInst);
+        instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
         void increment_stat_duplicates(production* duplicate_rule);
+        void increment_stat_grounded(int pNumConds);
+        void increment_stat_reverted();
         void increment_stat_unorderable() { stats.unorderable++; };
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
-        void increment_stat_succeeded() { stats.succeeded++; };
+        void increment_stat_succeeded() { stats.chunks_succeeded++; };
         void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
-        void increment_stat_justifications() { stats.justifications++; };
+        void increment_stat_justifications() { stats.justifications_succeeded++; };
         void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
         void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
         void increment_stat_constraints_attached() { stats.constraints_attached++; if (current_recording_chunk) current_recording_chunk->stats.constraints_attached++; };
@@ -265,7 +266,6 @@ class Explanation_Logger
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
         identity_triple         current_explained_ids;
-        std::string             dependency_chart;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
@@ -282,7 +282,7 @@ class Explanation_Logger
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
-        void                    print_instantiation_explanation(instantiation_record* pInstRecord);
+        void                    print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter = true);
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         bool                    print_condition_explanation_for_id(uint64_t pInstID);
         void                    print_condition_explanation(uint64_t pCondID);
@@ -290,13 +290,16 @@ class Explanation_Logger
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
         bool                    is_condition_related(condition_record* pCondRecord);
 
+        void                    delete_condition(uint64_t pCondID);
+        void                    delete_action(uint64_t pActionID);
+        void                    delete_instantiation(uint64_t pInstID);
+
         /* ID Counters */
         uint64_t            condition_id_count;
         uint64_t            chunk_id_count;
         uint64_t            action_id_count;
 
         /* Statistics on learning performed so far */
-        tr_stats            total_recorded;
         chunking_stats      stats;
 
         /* These maps store all of the records the logger keeps */

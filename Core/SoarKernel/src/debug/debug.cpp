@@ -76,7 +76,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
     //    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
     //    mode_info[DT_UNGROUNDED_STI].enabled =              true;
-    //    mode_info[DT_REORDERER].enabled =                   true;
+//        mode_info[DT_REORDERER].enabled =                   true;
     //    mode_info[DT_MERGE].enabled =                       true;
     //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
     //    mode_info[DT_EBC_CLEANUP].enabled =                 true;

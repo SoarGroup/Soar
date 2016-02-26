@@ -994,6 +994,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
+    new_ct->tc_num = 0;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

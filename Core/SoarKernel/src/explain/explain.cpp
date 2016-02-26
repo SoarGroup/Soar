@@ -40,18 +40,10 @@ void Explanation_Logger::initialize_counters()
 {
 
     current_discussed_chunk = NULL;
-    dependency_chart = "";
 
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;
-
-    total_recorded.chunks = 0;
-    total_recorded.instantiations = 0;
-    total_recorded.instantiations_referenced = 0;
-    total_recorded.instantiations_skipped = 0;
-    total_recorded.conditions = 0;
-    total_recorded.actions = 0;
 
     stats.duplicates = 0;
     stats.unorderable = 0;
@@ -59,16 +51,18 @@ void Explanation_Logger::initialize_counters()
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
     stats.max_chunks = 0;
-    stats.succeeded = 0;
     stats.tested_local_negation = 0;
     stats.merged_conditions = 0;
     stats.chunks_attempted = 0;
+    stats.chunks_succeeded = 0;
+    stats.chunks_reverted = 0;
     stats.justifications_attempted = 0;
-    stats.justifications = 0;
+    stats.justifications_succeeded = 0;
     stats.instantations_backtraced = 0;
     stats.seen_instantations_backtraced = 0;
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
+    stats.grounding_conditions_added = 0;
 
 }
 void Explanation_Logger::clear_explanations()
@@ -76,7 +70,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         symbol_remove_ref(thisAgent, it->first);
         delete it->second;
     }
@@ -86,7 +79,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
     instantiations->clear();
@@ -94,7 +86,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing condition records...\n");
     for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
     all_conditions->clear();
@@ -102,7 +93,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing action records...\n");
     for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
     all_actions->clear();
@@ -145,7 +135,6 @@ void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
     }
 
     current_recording_chunk = new chunk_record(thisAgent, chunk_id_count++);
-    total_recorded.chunks++;
 }
 
 void Explanation_Logger::end_chunk_record()
@@ -157,13 +146,39 @@ void Explanation_Logger::end_chunk_record()
     }
 }
 
-void Explanation_Logger::add_result_instantiations(preference* pResults)
+void Explanation_Logger::cancel_chunk_record()
+{
+    if (current_recording_chunk)
+    {
+        delete current_recording_chunk;
+        current_recording_chunk = NULL;
+    }
+}
+void Explanation_Logger::delete_condition(uint64_t pCondID)
+{
+    all_conditions->erase(pCondID);
+}
+
+void Explanation_Logger::delete_action(uint64_t pActionID)
+{
+    all_actions->erase(pActionID);
+}
+
+void Explanation_Logger::delete_instantiation(uint64_t pInstID)
+{
+    instantiations->erase(pInstID);
+}
+
+void Explanation_Logger::add_result_instantiations(instantiation* pBaseInst, preference* pResults)
 {
     if (current_recording_chunk)
     {
         for (preference* lResult = pResults; lResult != NIL; lResult = lResult->next_result)
         {
-            current_recording_chunk->result_instantiations->insert(lResult->inst);
+            if (lResult->inst != pBaseInst)
+            {
+                current_recording_chunk->result_instantiations->insert(lResult->inst);
+            }
         }
     }
 }
@@ -197,7 +212,6 @@ condition_record* Explanation_Logger::add_condition(condition_record_list* pCond
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;
         }
         all_conditions->insert({lCondRecord->conditionID, lCondRecord});
-        increment_counter(total_recorded.conditions);
         pCondList->push_back(lCondRecord);
         return lCondRecord;
     }
@@ -215,7 +229,7 @@ condition_record* Explanation_Logger::add_condition(condition_record_list* pCond
     }
 }
 
-instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst)
+instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t pChunkID)
 {
     if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
@@ -223,11 +237,6 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
         pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
 
-
-    if (pInst->i_id == 589)
-    {
-        dprint(DT_EXPLAIN, "Found.\n");
-    }
     if (pInst->explain_status == explain_unrecorded)
     {
 
@@ -254,8 +263,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->terminal = lIsTerminalInstantiation;
-
-        increment_counter(total_recorded.instantiations);
+        lInstRecord->creating_chunk = pChunkID;
         dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
             pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
         return lInstRecord;
@@ -281,8 +289,11 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
     } else {
         dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+        {
+            dprint(DT_EXPLAIN_ADD_INST, "i%u (%y)\n", it->second->instantiationID, it->second->production_name);
+        }
     }
-    increment_counter(total_recorded.instantiations_skipped);
     return get_instantiation(pInst);
 }
 
@@ -292,8 +303,6 @@ action_record* Explanation_Logger::add_result(preference* pPref, action* pAction
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
     all_actions->insert({lActionRecord->actionID, lActionRecord});
-
-    increment_counter(total_recorded.actions);
 
     return lActionRecord;
 }
@@ -524,12 +533,36 @@ void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
 {
     assert(duplicate_rule);
     increment_counter(stats.duplicates);
-    dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
-    chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
-    if (lChunkRecord)
+    if (current_recording_chunk)
     {
-        increment_counter(lChunkRecord->stats.duplicates);
+        chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
+        if (lChunkRecord)
+        {
+            dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
+            increment_counter(lChunkRecord->stats.duplicates);
+        }
     }
+};
+
+void Explanation_Logger::increment_stat_grounded(int pNumConds)
+{
+    increment_counter(stats.grounding_conditions_added);
+    if (current_recording_chunk)
+    {
+        dprint(DT_EXPLAIN, "Incrementing stats for %d grounding conditions in rule %y.\n", pNumConds, current_recording_chunk->name);
+        add_to_counter(current_recording_chunk->stats.num_grounding_conditions_added, pNumConds);
+    }
+};
+
+void Explanation_Logger::increment_stat_reverted()
+{
+    increment_counter(stats.chunks_reverted);
+    if (current_recording_chunk)
+    {
+        dprint(DT_EXPLAIN, "Incrementing stats for reverted chunk in rule %y.\n", current_recording_chunk->name);
+        current_recording_chunk->stats.reverted = true;
+    }
+    stats.justifications_attempted--;
 };
 
 void Explanation_Logger::clear_chunk_from_instantiations()
