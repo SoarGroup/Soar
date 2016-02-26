@@ -11,6 +11,7 @@
  *    sgnode a
  *    sgnode b
  *    axis << x y z >>
+ *    sgnode reference [optional - default=world], frame of reference to calculate wrt
  *   Returns:
  *    double - axis_distance between a and b
  *
@@ -21,6 +22,7 @@
  *    axis << x y z >>
  *    double min [optional - default = -INF]
  *    double max [optional - default = +INF]
+ *    sgnode reference [optional - default=world], frame of reference to calculate wrt
  *   Returns:
  *    sgnode b if min <= dist(a, b) <= max
  *

@@ -15,6 +15,7 @@
  *    x_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *    y_axis_separation FLOAT [Optional] - Default is 0 (aligned)
  *    z_axis_separation FLOAT [Optional] - Default is 0 (aligned)
+ *    sgnode reference [optional - default=world], frame of reference to calculate wrt
  *   Returns:
  *    vec3 - a position at which to place node a such that the given 
  *    	axis separation constraints are satisfied
@@ -35,30 +36,53 @@
 
 using namespace std;
 
-vec3 calculate_placement(const sgnode* a, const sgnode* b, double xsep, double ysep, double zsep){
-	vec3 sep(xsep, ysep, zsep);
-	vec3 pa = a->get_centroid();
-	vec3 pb = b->get_centroid();
-	vec3 mina = a->get_bounds().get_min();
-	vec3 minb = b->get_bounds().get_min();
-	vec3 maxa = a->get_bounds().get_max();
-	vec3 maxb = b->get_bounds().get_max();
-	vec3 pos;
-	for(int dim = 0; dim < 3; dim++){
-		// For each dimension/axis
-		if(sep[dim] > 0){
-			// Pos of a = Max bound of b + separation distance + distance from min bound to centroid of a
-			pos[dim] = maxb[dim] + sep[dim] + (pa[dim] - mina[dim]);
-		} else if(sep[dim] == 0){
-			// Pos of a = pos of b (aligned)
-			pos[dim] = pb[dim];
-		} else {
-			// Pos of a = min bound of b - separation distance - distance from centroid to max bound of a
-			// (note separation distance is negative, so we add it)
-			pos[dim] = minb[dim] + sep[dim] - (maxa[dim] - pa[dim]);
-		}
-	}
-	return pos;
+vec3 calculate_placement(const sgnode* a, const sgnode* b, const sgnode* ref, double xsep, double ysep, double zsep){
+    vec3 sep(xsep, ysep, zsep);
+    vec3 pa = a->get_centroid();
+    vec3 pb = b->get_centroid();
+
+    vec3 axes[3];
+    axes[0] = vec3(1.0, 0.0, 0.0);
+    axes[1] = vec3(0.0, 1.0, 0.0);
+    axes[2] = vec3(0.0, 0.0, 1.0);
+
+    if(ref != 0)
+    {
+        // Transform axes relative to the given reference object
+        transform3 rot('r', ref->get_trans('r'));
+        for(int dim = 0; dim < 3; dim++)
+        {
+            axes[dim] = rot(axes[dim]);
+        }
+    }
+
+    // Project each object onto the axes
+    vec3 mina, minb, maxa, maxb;
+    for(int dim = 0; dim < 3; dim++)
+    {
+      mina[dim] = a->min_project_on_axis(axes[dim]) - axes[dim].dot(pa);
+      minb[dim] = b->min_project_on_axis(axes[dim]) - axes[dim].dot(pb);
+      maxa[dim] = a->max_project_on_axis(axes[dim]) - axes[dim].dot(pa);
+      maxb[dim] = b->max_project_on_axis(axes[dim]) - axes[dim].dot(pb);
+    }
+
+    vec3 pos = pb;
+    for(int dim = 0; dim < 3; dim++){
+        // For each dimension/axis
+        if(sep[dim] > 0)
+        {
+          // Pos of a += axis * (max bound of b + separation distance + distance to centroid of a)
+          // (mina is negative)
+          pos = pos + axes[dim] * (maxb[dim] + sep[dim] - mina[dim]);
+        } 
+        else if(sep[dim] < 0)
+        {
+          // Pos of a -= axis * (min bound of b + separation distance + distance to centroid of a)
+          // (note separation distance is negative, so we subtract it)
+          pos = pos - axes[dim] * (-minb[dim] - sep[dim] + maxa[dim]);
+        }
+    }
+    return pos;
 }
 
 class calculate_placement_filter : public map_filter<vec3>
@@ -84,6 +108,12 @@ class calculate_placement_filter : public map_filter<vec3>
                 return false;
             }
 
+            sgnode* ref = 0;
+            if (!get_filter_param(this, params, "reference", ref))
+            {
+                ref = 0;
+            }
+
 						double xsep;
 						if(!get_filter_param(this, params, "x_axis_separation", xsep)){
 							xsep = 0;
@@ -97,7 +127,7 @@ class calculate_placement_filter : public map_filter<vec3>
 							zsep = 0;
 						}
 
-						out = calculate_placement(a, b, xsep, ysep, zsep);
+						out = calculate_placement(a, b, ref, xsep, ysep, zsep);
             return true;
         }
 };
