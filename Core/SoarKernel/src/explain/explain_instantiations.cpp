@@ -96,7 +96,7 @@ void instantiation_record::update_instantiation_contents()
         lCondRecord->update_condition(cond, this);
         /* MToDo | Can the connections ever really change?  I think a new instantiation would be created if that were the case.
          *          Test this out.*/
-        lCondRecord->connect_to_action();
+//        lCondRecord->connect_to_action();
     }
 }
 

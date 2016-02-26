@@ -60,7 +60,9 @@ void chunk_record::excise_chunk_record()
     {
         thisAgent->explanationLogger->delete_action((*it)->get_actionID());
     }
-    /* MToDo | Need to add refcounts or id of last chunk that created instantiation record */
+    /* For this to work, store id of last chunk that created instantiation record.  If it's the
+     * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
+     * called when a chunk fails.  If we need to excise records in general, we'll need refcounts */
     for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
     {
         if ((*it)->get_chunk_creator() == chunkID)

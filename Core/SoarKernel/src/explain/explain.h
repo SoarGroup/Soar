@@ -86,9 +86,9 @@ class condition_record
         void        create_identity_paths(const inst_record_list* pInstPath);
         bool        contains_identity_from_set(const id_set* pIDs);
         void        set_path_to_base(inst_record_list* pPath)
-                    {   //if (!pPath) return;
-                        assert(pPath && !path_to_base);
+                    {   assert(pPath);
                         if (!path_to_base) path_to_base = new inst_record_list();
+                        else path_to_base->clear();
                         (*path_to_base) = (*pPath); }
         void        set_instantiation(instantiation_record* pInst) { my_instantiation = pInst; };
         void        set_matched_wme_for_cond(condition* pCond);

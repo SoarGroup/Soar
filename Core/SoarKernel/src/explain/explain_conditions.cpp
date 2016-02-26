@@ -130,7 +130,6 @@ condition_record::~condition_record()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
 
-    /* MToDo | I think the conditions in the chunk record don't get cleared b/c not connected */
     //    assert(!cached_pref);
 
     deallocate_test(thisAgent, condition_tests.id);
@@ -198,7 +197,6 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 {
     if (path_to_base)
     {
-        /* MToDo | Should allow multiple paths to base. */
         dprint(DT_EXPLAIN_PATHS, "      Condition already has a path to base.  Skipping (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
         return;
     } else
