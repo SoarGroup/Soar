@@ -25,14 +25,17 @@ identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord, id_
 
 identity_record::~identity_record()
 {
-    delete original_ebc_mappings;
+    if (original_ebc_mappings) delete original_ebc_mappings;
+    if (id_to_id_set_mappings)
+    {
     for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
     {
         if (it->second->rule_variable) symbol_remove_ref(thisAgent, it->second->rule_variable);
         delete it->second;
     }
     delete id_to_id_set_mappings;
-    delete identities_in_chunk;
+    }
+    if (identities_in_chunk) delete identities_in_chunk;
 }
 
 
@@ -63,7 +66,10 @@ void identity_record::generate_identity_sets(condition* lhs)
             assert (lIter != id_to_id_set_mappings->end());
             lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;
             lNewIDSet->rule_variable = id_to_id_set_mappings->find(iter->second)->second->rule_variable;
-            symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+            if (lNewIDSet->rule_variable)
+            {
+                symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+            }
         } else {
             lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
             lNewIDSet->rule_variable = NULL;
@@ -91,17 +97,33 @@ void identity_record::print_identities_in_chunk()
 }
 void identity_record::print_identity_mappings()
 {
-    thisAgent->outputManager->set_column_indent(0, 8);
-    thisAgent->outputManager->set_column_indent(1, 20);
-    thisAgent->outputManager->set_column_indent(2, 24);
-    thisAgent->outputManager->set_column_indent(3, 40);
+    thisAgent->outputManager->set_column_indent(0, 4);
+    thisAgent->outputManager->set_column_indent(1, 14);
+    thisAgent->outputManager->set_column_indent(2, 20);
+    thisAgent->outputManager->set_column_indent(3, 37);
 
-    thisAgent->outputManager->printa_sf(thisAgent, "\n\nHow the %u variable identities in problem solving map to identity sets:\n", id_to_id_set_mappings->size());
-    thisAgent->outputManager->printa_sf(thisAgent, "Variable Identity %- %- Identity Set %- Chunk Variable\n");
+    thisAgent->outputManager->printa_sf(thisAgent, "%fHow the element identities in problem solving map to identity sets:\n\n");
+    thisAgent->outputManager->printa_sf(thisAgent, "Identity %- %- Identity Set %- Chunk Variable\n");
     for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%-%u %--> %-     %u %-(%y)\n", it->first, it->second->identity_set_ID, it->second->rule_variable);
+        if (it->second->identity_set_ID)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%-%u %--> %-    %u %-%y\n", it->first, it->second->identity_set_ID, it->second->rule_variable);
+        }
     }
+    thisAgent->outputManager->printa(thisAgent, "\nThe following element identities in problem solving map to the null \n"
+        "identity set. Elements in conditions that test those identities will \n"
+        "not be generalized:\n\n");
+    thisAgent->outputManager->printa_sf(thisAgent, "%- ");
+    for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
+    {
+        if (!it->second->identity_set_ID)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u ", it->first);
+        }
+    }
+    thisAgent->outputManager->printa(thisAgent, "\n");
+
 }
 
 void identity_record::print_original_ebc_mappings()

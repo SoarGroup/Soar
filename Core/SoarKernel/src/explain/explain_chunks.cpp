@@ -185,8 +185,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     dprint(DT_EXPLAIN, "(5) Recording identity mappings...\n");
 
-//    identity_analysis = new identity_record(thisAgent, this, pIdentitySetMappings);
-//    identity_analysis->generate_identity_sets(lhs);
+    identity_analysis = new identity_record(thisAgent, this, pIdentitySetMappings);
+    identity_analysis->generate_identity_sets(lhs);
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }

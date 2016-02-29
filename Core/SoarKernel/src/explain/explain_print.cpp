@@ -477,7 +477,6 @@ void Explanation_Logger::print_chunk_explanation()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     print_action_list(current_discussed_chunk->actions, current_discussed_chunk->original_production);
     outputManager->printa(thisAgent, "}\n");
-//    current_discussed_chunk->identity_analysis->print_identity_mappings();
     print_footer(true);
 
 }
@@ -695,8 +694,7 @@ void Explanation_Logger::print_condition_explanation(uint64_t pCondID)
 void Explanation_Logger::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
-//    current_discussed_chunk->identity_analysis->print_identity_mappings();
-//    current_discussed_chunk->identity_analysis->print_identity_explanation(current_discussed_chunk);
+    current_discussed_chunk->identity_analysis->print_identity_mappings();
 }
 
 void Explanation_Logger::print_constraints_enforced()

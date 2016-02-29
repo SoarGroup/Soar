@@ -241,7 +241,7 @@ class Explanation_Logger
         void                    cancel_chunk_record();
         void                    end_chunk_record();
 
-        void                    reset_identity_set_counter() { id_set_counter = 99; };
+        void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);

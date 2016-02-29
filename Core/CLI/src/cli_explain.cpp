@@ -68,9 +68,6 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         }
         if (options.test(EXPLAIN_IDENTITY_SETS))
         {
-            print(thisAgent, "-------------------------------------\n"
-                             "Variable identities --> Identity sets\n"
-                             "-------------------------------------\n");
             thisAgent->explanationLogger->print_identity_set_explanation();
         }
         if (options.test(EXPLAIN_STATS))
