@@ -85,6 +85,7 @@ chunk_record::~chunk_record()
     if (result_inst_records) delete result_inst_records;
     if (backtraced_inst_records) delete backtraced_inst_records;
     if (backtraced_instantiations) delete backtraced_instantiations;
+    if (identity_analysis) delete identity_analysis;
 }
 
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
@@ -110,7 +111,6 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     instantiation_record* lResultInstRecord, *lNewInstRecord;
     instantiation* lNewInst;
 
-    /* Check if max number of instantiations in list.  If so, take most recent i_ids */
     dprint(DT_EXPLAIN, "(1) Recording all bt instantiations (%d instantiations)...\n", backtraced_instantiations->size());
     for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
     {
@@ -182,9 +182,11 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         new_action_record = thisAgent->explanationLogger->add_result(pref, lAction);
         actions->push_back(new_action_record);
     }
-    identity_set_mappings = new id_to_id_map_type();
-    (*identity_set_mappings) = (*pIdentitySetMappings);
 
+    dprint(DT_EXPLAIN, "(5) Recording identity mappings...\n");
+
+    identity_analysis = new identity_record(thisAgent, this, pIdentitySetMappings);
+    identity_analysis->generate_identity_sets(lhs);
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }

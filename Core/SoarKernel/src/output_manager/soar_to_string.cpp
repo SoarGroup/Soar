@@ -110,7 +110,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         {
             destString += test_type_to_string_brief(t->type);
         }
-        destString += t->data.referent->to_string(true);
+        destString += t->data.referent->to_string(false);
     }
     else if (t->type == CONJUNCTIVE_TEST)
     {
@@ -126,14 +126,14 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
     else if (test_has_referent(t))
     {
         destString += test_type_to_string_brief(t->type);
-        destString += t->data.referent->to_string(true);
+        destString += t->data.referent->to_string(false);
     }
     else if (t->type == DISJUNCTION_TEST)
     {
         destString += "<< ";
         for (c = t->data.disjunction_list; c != NIL; c = c->rest)
         {
-            destString += static_cast<symbol_struct*>(c->first)->to_string(true);
+            destString += static_cast<symbol_struct*>(c->first)->to_string(false);
             destString += ' ';
         }
         destString += ">>";
@@ -217,7 +217,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     else if (rhs_value_is_unboundvar(rv))
     {
         /* -- unbound variable -- */
-        destString += "<unbound-var>";
+        destString += "[STI_UV]";
 
     }
     else if (rhs_value_is_symbol(rv))
@@ -228,7 +228,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         {
             if (rsym->referent)
             {
-                destString += rsym->referent->to_string(true);
+                destString += rsym->referent->to_string(false);
             } else {
                 destString += '#';
             }
@@ -237,7 +237,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
 //            sprinta_sf(thisAgent, destString, " [%y/o%u]",
 //                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
 //                rsym->o_id);
-            sprinta_sf(thisAgent, destString, "<%u>", rsym->o_id);
+            sprinta_sf(thisAgent, destString, "[%u]", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -250,15 +250,15 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
                 rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
-                destString += sym->to_string(true);
+                destString += sym->to_string(false);
             } else {
                 destString += '#';
             }
-            destString += " (reteloc)";
+            destString += "[STI-RETE]";
         }
         else
         {
-            destString += "<STI>";
+            destString += "[STI]";
         }
     }
     else
@@ -271,7 +271,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         destString += '(';
         if (rf->name)
         {
-            destString += rf->name->to_string(true);
+            destString += rf->name->to_string(false);
         } else {
             destString += '#';
         }
@@ -341,17 +341,17 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         if (pref->o_ids.id) {
             lID = "<" + std::to_string(pref->o_ids.id) + ">";
         } else {
-            lID = pref->id->to_string();
+            lID = pref->id->to_string(false);
         }
         if (pref->o_ids.attr) {
             lAttr = "<" + std::to_string(pref->o_ids.attr) + ">";
         } else {
-            lAttr = pref->attr->to_string();
+            lAttr = pref->attr->to_string(false);
         }
         if (pref->o_ids.value) {
             lValue = "<" + std::to_string(pref->o_ids.value) + ">";
         } else {
-            lValue = pref->value->to_string();
+            lValue = pref->value->to_string(false);
         }
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));

@@ -946,6 +946,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->o_context_variable = make_variable(thisAgent, "<o>");
 
     thisAgent->fake_instantiation_symbol = make_str_constant(thisAgent, "Fake Instantiation");
+    thisAgent->sti_symbol = make_str_constant(thisAgent, "[STI]");
     thisAgent->input_link_symbol = make_str_constant(thisAgent, "input-link");
     thisAgent->output_link_symbol = make_str_constant(thisAgent, "output-link");
 

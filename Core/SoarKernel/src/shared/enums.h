@@ -61,6 +61,7 @@ enum TraceMode
     DT_EXPLAIN_CONNECT = 40,
     DT_EXPLAIN_UPDATE = 41,
     DT_EXPLAIN_CONDS = 42,
+    DT_EXPLAIN_IDENTITIES = 43,
     num_trace_modes
 };
 

@@ -294,12 +294,28 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
                 }
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, print_cond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
                 id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-                outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s    %-(%g%s^%g %g)",
+                outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s%-",
                     id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
-                    is_condition_related(lCond) ? "*" : "",
+                    is_condition_related(lCond) ? "*" : "");
+//                outputManager->printa_sf(thisAgent, "%-(%g%s^%g %g)%-",
+//                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+//                    lCond->condition_tests.attr, lCond->condition_tests.value);
+                if (!lCond->matched_wme )
+                {
+                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
                         id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                         lCond->condition_tests.attr, lCond->condition_tests.value);
+                } else {
+                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
+                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
+                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
+                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
+                    deallocate_test(thisAgent, temp_sti_test);
+                }
+
                 if (currentNegativeCond)
                 {
                     currentNegativeCond = currentNegativeCond->next;
@@ -313,7 +329,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
 
             }
             bool isSuper = (pInstRecord->match_level > 0) && (lCond->wme_level_at_firing < pInstRecord->match_level);
-             outputManager->printa_sf(thisAgent, "%-%s", (isSuper ? "    Yes" : "    No"));
+             outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
              if (lCond->parent_instantiation)
              {
                  outputManager->printa_sf(thisAgent, "%-i%u (%y)%-",
@@ -402,11 +418,26 @@ void Explanation_Logger::print_chunk_explanation()
             {
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
                 id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-                outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s    %-(%g%s^%g %g)%-",
+                outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                     id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                    lCond->condition_tests.attr, lCond->condition_tests.value, is_condition_related(lCond) ? "*" : "",
-                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                    lCond->condition_tests.attr, lCond->condition_tests.value);
+                    lCond->condition_tests.attr, lCond->condition_tests.value, is_condition_related(lCond) ? "*" : "");
+//                outputManager->printa_sf(thisAgent, "%-(%g%s^%g %g)%-",
+//                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+//                    lCond->condition_tests.attr, lCond->condition_tests.value);
+                if (!lCond->matched_wme )
+                {
+                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+                        id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                        lCond->condition_tests.attr, lCond->condition_tests.value);
+                } else {
+                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
+                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
+                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
+                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
+                    deallocate_test(thisAgent, temp_sti_test);
+                }
                 print_path_to_base(lCond->get_path_to_base(), true);
             } else {
                 if (lCond->matched_wme)
@@ -664,34 +695,36 @@ void Explanation_Logger::print_condition_explanation(uint64_t pCondID)
 void Explanation_Logger::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
+    current_discussed_chunk->identity_analysis->print_identity_explanation(current_discussed_chunk);
+    return;
     outputManager->printa_sf(thisAgent, "\n\nIdentity to identity set mappings:\n\n");
-    id_to_id_map_type* identity_mappings = current_discussed_chunk->identity_set_mappings;
-    if (identity_mappings->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "This chunk had no identity to identity set assignments.\n");
-        return;
-    }
-
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-
-    outputManager->set_column_indent(0, 6);
-    outputManager->set_column_indent(1, 26);
-    outputManager->set_column_indent(2, 31);
-    outputManager->printa_sf(thisAgent, "ID %-Original %-Set %-Final\n\n");
-
-    for (iter = identity_mappings->begin(); iter != identity_mappings->end(); ++iter)
-    {
-        outputManager->printa_sf(thisAgent, "%u%-%y%",
-            iter->first, thisAgent->ebChunker->get_ovar_for_o_id(iter->first));
-        if (iter->second == NULL_IDENTITY_SET)
-        {
-            outputManager->printa_sf(thisAgent, "%-0%-NULL IDENTITY SET (retains literal value)\n");
-
-        } else {
-            outputManager->printa_sf(thisAgent, "%-%u%-%y\n",
-                iter->second, thisAgent->ebChunker->get_ovar_for_o_id(iter->second));
-        }
-    }
+//    id_to_id_map_type* identity_mappings = current_discussed_chunk->identity_set_mappings;
+//    if (identity_mappings->size() == 0)
+//    {
+//        outputManager->printa_sf(thisAgent, "This chunk had no identity to identity set assignments.\n");
+//        return;
+//    }
+//
+//    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+//
+//    outputManager->set_column_indent(0, 6);
+//    outputManager->set_column_indent(1, 26);
+//    outputManager->set_column_indent(2, 31);
+//    outputManager->printa_sf(thisAgent, "ID %-Original %-Set %-Final\n\n");
+//
+//    for (iter = identity_mappings->begin(); iter != identity_mappings->end(); ++iter)
+//    {
+//        outputManager->printa_sf(thisAgent, "%u%-%y%",
+//            iter->first, thisAgent->ebChunker->get_ovar_for_o_id(iter->first));
+//        if (iter->second == NULL_IDENTITY_SET)
+//        {
+//            outputManager->printa_sf(thisAgent, "%-0%-NULL IDENTITY SET (retains literal value)\n");
+//
+//        } else {
+//            outputManager->printa_sf(thisAgent, "%-%u%-%y\n",
+//                iter->second, thisAgent->ebChunker->get_ovar_for_o_id(iter->second));
+//        }
+//    }
 }
 
 void Explanation_Logger::print_constraints_enforced()

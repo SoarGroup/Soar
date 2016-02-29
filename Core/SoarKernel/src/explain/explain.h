@@ -51,6 +51,9 @@ typedef struct chunk_stats_struct {
         uint64_t            constraints_collected;
 } chunk_stats;
 
+class instantiation_record;
+class chunk_record;
+
 class action_record
 {
         friend class Explanation_Logger;
@@ -71,8 +74,6 @@ class action_record
         id_set*                 identities_used;
         uint64_t                actionID;
 };
-
-class instantiation_record;
 
 class condition_record
 {
@@ -98,7 +99,7 @@ class condition_record
         goal_stack_level                get_level()         { return wme_level_at_firing; };
         instantiation_record*           get_parent_inst()   { return parent_instantiation; };
         instantiation_record*           get_instantiation() { return my_instantiation; };
-        inst_record_list*      get_path_to_base()  { return path_to_base; };
+        inst_record_list*               get_path_to_base()  { return path_to_base; };
         preference*                     get_cached_pref()   { return cached_pref; };
         wme*                            get_cached_wme()    { return cached_wme; };
 
@@ -152,6 +153,40 @@ class instantiation_record
         inst_record_list*       path_to_base;
 };
 
+typedef struct identity_set_struct {
+        uint64_t    identity_set_ID;
+        Symbol*     rule_variable;
+} identity_set_info;
+
+typedef std::unordered_map< uint64_t, identity_set_info* >                    id_to_idset_map_type;
+typedef std::unordered_map< uint64_t, identity_set_info* >::iterator          id_to_idset_map_iter_type;
+
+class identity_record
+{
+        friend class Explanation_Logger;
+
+    public:
+        identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map_type* pIdentitySetMappings);
+        ~identity_record();
+
+        void    generate_identity_sets(condition* lhs);
+        void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
+        void    print_identity_explanation(chunk_record* pChunkRecord);
+    private:
+
+        agent*                  thisAgent;
+        id_set*                 identities_in_chunk;
+        id_to_id_map_type*      original_ebc_mappings;
+        uint64_t                id_set_counter;
+        id_to_idset_map_type*   id_to_id_set_mappings;
+
+        void    add_identities_in_condition_list(condition* lhs);
+        void    add_identities_in_test(test pTest);
+        void    print_identities_in_chunk();
+        void    print_identity_mappings();
+        void    print_original_ebc_mappings();
+};
+
 class chunk_record
 {
         friend class Explanation_Logger;
@@ -174,7 +209,7 @@ class chunk_record
         action_record_list*     actions;
         goal_stack_level        match_level;
 
-        id_to_id_map_type*      identity_set_mappings;
+        identity_record*        identity_analysis;
         inst_set*               backtraced_instantiations;
         inst_record_list*       backtraced_inst_records;
 

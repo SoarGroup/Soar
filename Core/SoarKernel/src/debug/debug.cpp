@@ -96,6 +96,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EXPLAIN_CONNECT].enabled =             true;
     //    mode_info[DT_EXPLAIN_PATHS].enabled =               true;
     //    mode_info[DT_EXPLAIN_CONDS].enabled =               true;
+        //    mode_info[DT_EXPLAIN_IDENTITIES].enabled =               true;
     }
 }
 
@@ -149,6 +150,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_CONNECT].prefix =              strdup("EConnect| ");
     mode_info[DT_EXPLAIN_UPDATE].prefix =               strdup("EUpdate | ");
     mode_info[DT_EXPLAIN_CONDS].prefix =                strdup("EConds  | ");
+    mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
 
 
 #ifdef DEBUG_OUTPUT_ON

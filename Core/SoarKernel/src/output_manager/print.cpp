@@ -394,6 +394,60 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         }
                     }
                     break;
+
+//                    case 'h':
+//                    {
+//                        t = va_arg(args, test);
+//                        int isSTI = va_arg(args, int);
+//                        if (isSTI)
+//                        {
+//                            destString += "[STI]";
+//                        }
+//                        ct = NULL;
+//                        if (t)
+//                        {
+//                            if (t->type != CONJUNCTIVE_TEST)
+//                            {
+//                                if (t->identity)
+//                                {
+//                                    if (t->type != EQUALITY_TEST)
+//                                    {
+//                                        destString += test_type_to_string_brief(t->type);
+//                                    }
+//                                    destString += "[";
+//                                    destString += std::to_string(t->identity);
+//                                    destString += "]";
+//                                } else {
+//                                    test_to_string(t, destString);
+//                                }
+//                            } else {
+//                                destString += "{ ";
+//                                for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
+//                                {
+//                                    ct = static_cast<test>(c->first);
+//                                    assert(ct);
+//                                    if (ct->identity)
+//                                    {
+//                                        if (ct->type != EQUALITY_TEST)
+//                                        {
+//                                            destString += test_type_to_string_brief(ct->type);
+//                                        }
+//                                        destString += "[";
+//                                        destString += std::to_string(ct->identity);
+//                                        destString += "]";
+//                                    } else {
+//                                        test_to_string(ct, destString);
+//                                    }
+//                                    destString += ' ';
+//                                }
+//                                destString += '}';
+//                            }
+//                        } else {
+//                            destString += '#';
+//                        }
+//                    }
+//                    break;
+
                     case 'o':
                     {
                         t = va_arg(args, test);

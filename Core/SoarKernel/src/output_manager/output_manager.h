@@ -350,6 +350,7 @@ class Output_Manager
  *       %o   symbol's original variable(s)
  *       %t   test
  *       %g   identity information for test
+ *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
  *       %1   condition list
