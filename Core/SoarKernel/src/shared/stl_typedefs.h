@@ -78,4 +78,8 @@ class instantiation_record;
     typedef std::unordered_set< uint64_t >                              id_set;
     typedef std::unordered_map< uint64_t, uint64_t >                    id_to_id_map_type;
 
+    typedef struct identity_set_struct identity_set_info;
+    typedef std::unordered_map< uint64_t, identity_set_info* >                    id_to_idset_map_type;
+    typedef std::unordered_map< uint64_t, identity_set_info* >::iterator          id_to_idset_map_iter_type;
+
 #endif /* STL_TYPEDEFS_H_ */

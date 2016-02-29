@@ -44,6 +44,7 @@ void Explanation_Logger::initialize_counters()
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;
+    id_set_counter = 99;
 
     stats.duplicates = 0;
     stats.unorderable = 0;

@@ -5,6 +5,7 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "production.h"
+#include "rete.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
@@ -23,6 +24,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
     cached_inst         = pInst;
     path_to_base        = NULL;
+    lhs_identities      = NULL;
     symbol_add_ref(thisAgent, production_name);
 
     if (pInst->prod)
@@ -189,4 +191,19 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
             dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? lParentInst->get_match_level() : 0), match_level);
         }
     }
+}
+
+id_set* instantiation_record::get_lhs_identities()
+{
+    if (lhs_identities) return lhs_identities;
+    lhs_identities = new id_set();
+    if (!original_production || !original_production->p_node)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
+        return lhs_identities;
+    }
+    action* rhs;
+    condition* top, *bottom;
+    p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, NULL);
+    return lhs_identities;
 }

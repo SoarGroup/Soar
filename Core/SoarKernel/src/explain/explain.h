@@ -130,6 +130,7 @@ class instantiation_record
         goal_stack_level        get_match_level() { return match_level; };
         inst_record_list*       get_path_to_base() { return path_to_base; };
         uint64_t                get_chunk_creator() { return creating_chunk; }
+        id_set*                 get_lhs_identities();
         void                    record_instantiation_contents();
         void                    update_instantiation_contents();
         void                    create_identity_paths(const inst_record_list* pInstPath);
@@ -151,15 +152,13 @@ class instantiation_record
         uint64_t                creating_chunk;
         bool                    terminal;
         inst_record_list*       path_to_base;
+        id_set*                 lhs_identities;
 };
 
 typedef struct identity_set_struct {
         uint64_t    identity_set_ID;
         Symbol*     rule_variable;
 } identity_set_info;
-
-typedef std::unordered_map< uint64_t, identity_set_info* >                    id_to_idset_map_type;
-typedef std::unordered_map< uint64_t, identity_set_info* >::iterator          id_to_idset_map_iter_type;
 
 class identity_record
 {
@@ -177,11 +176,8 @@ class identity_record
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
         id_to_id_map_type*      original_ebc_mappings;
-        uint64_t                id_set_counter;
         id_to_idset_map_type*   id_to_id_set_mappings;
 
-        void    add_identities_in_condition_list(condition* lhs);
-        void    add_identities_in_test(test pTest);
         void    print_identities_in_chunk();
         void    print_identity_mappings();
         void    print_original_ebc_mappings();
@@ -244,6 +240,9 @@ class Explanation_Logger
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
+
+        void                    reset_identity_set_counter() { id_set_counter = 99; };
+        uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
@@ -334,6 +333,7 @@ class Explanation_Logger
         uint64_t            condition_id_count;
         uint64_t            chunk_id_count;
         uint64_t            action_id_count;
+        uint64_t            id_set_counter;
 
         /* Statistics on learning performed so far */
         chunking_stats      stats;

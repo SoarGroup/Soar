@@ -477,7 +477,7 @@ void Explanation_Logger::print_chunk_explanation()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     print_action_list(current_discussed_chunk->actions, current_discussed_chunk->original_production);
     outputManager->printa(thisAgent, "}\n");
-
+    current_discussed_chunk->identity_analysis->print_identity_mappings();
     print_footer(true);
 
 }
@@ -695,36 +695,8 @@ void Explanation_Logger::print_condition_explanation(uint64_t pCondID)
 void Explanation_Logger::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
-    current_discussed_chunk->identity_analysis->print_identity_explanation(current_discussed_chunk);
-    return;
-    outputManager->printa_sf(thisAgent, "\n\nIdentity to identity set mappings:\n\n");
-//    id_to_id_map_type* identity_mappings = current_discussed_chunk->identity_set_mappings;
-//    if (identity_mappings->size() == 0)
-//    {
-//        outputManager->printa_sf(thisAgent, "This chunk had no identity to identity set assignments.\n");
-//        return;
-//    }
-//
-//    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-//
-//    outputManager->set_column_indent(0, 6);
-//    outputManager->set_column_indent(1, 26);
-//    outputManager->set_column_indent(2, 31);
-//    outputManager->printa_sf(thisAgent, "ID %-Original %-Set %-Final\n\n");
-//
-//    for (iter = identity_mappings->begin(); iter != identity_mappings->end(); ++iter)
-//    {
-//        outputManager->printa_sf(thisAgent, "%u%-%y%",
-//            iter->first, thisAgent->ebChunker->get_ovar_for_o_id(iter->first));
-//        if (iter->second == NULL_IDENTITY_SET)
-//        {
-//            outputManager->printa_sf(thisAgent, "%-0%-NULL IDENTITY SET (retains literal value)\n");
-//
-//        } else {
-//            outputManager->printa_sf(thisAgent, "%-%u%-%y\n",
-//                iter->second, thisAgent->ebChunker->get_ovar_for_o_id(iter->second));
-//        }
-//    }
+    current_discussed_chunk->identity_analysis->print_identity_mappings();
+//    current_discussed_chunk->identity_analysis->print_identity_explanation(current_discussed_chunk);
 }
 
 void Explanation_Logger::print_constraints_enforced()
