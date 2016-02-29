@@ -10,6 +10,7 @@
 #include "src/explain/explain_actions.cpp"
 #include "src/explain/explain_chunks.cpp"
 #include "src/explain/explain_conditions.cpp"
+#include "src/explain/explain_identity.cpp"
 #include "src/explain/explain_instantiations.cpp"
 #include "src/explain/explain_print.cpp"
 #include "src/explain/explain.cpp"
