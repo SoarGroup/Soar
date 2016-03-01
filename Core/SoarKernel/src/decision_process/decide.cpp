@@ -1113,7 +1113,7 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
     {
         if (cand->inst && cand->inst->prod)
         {
-//       std::cerr << "rl-trace: " << cand->inst->prod->name->sc->name << std::endl;
+//       std::cerr << "rl-trace: " << cand->inst->prod_name->sc->name << std::endl;
 
 //       for(preference *pref = cand->inst->match_goal->id->operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
 //         production * const &prod2 = pref->inst->prod;
@@ -2203,6 +2203,8 @@ preference* make_fake_preference_for_goal_item(agent* thisAgent,
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
+    inst->prod_name = thisAgent->fake_instantiation_symbol;
+    symbol_add_ref(thisAgent, inst->prod_name);
 
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
@@ -2613,20 +2615,20 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                             {
 #ifdef DEBUG_GDS_HIGH
                                 print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
-                                                   pref->inst->prod->name);
+                                                   pref->inst->prod_name);
                                 print(thisAgent, "is %d\n", pref->inst->match_goal_level);
 #endif
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
 #ifdef DEBUG_GDS_HIGH
-                                    print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
+                                    print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod_name);
 #endif
 
                                 }
                                 else
                                 {
 #ifdef DEBUG_GDS_HIGH
-                                    print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name);
+                                    print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod_name);
 #endif
                                     uniquely_add_to_head_of_dll(thisAgent, pref->inst);
                                     pref->inst->GDS_evaluated_already = true;
@@ -2635,7 +2637,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 #ifdef DEBUG_GDS_HIGH
                             else
                             {
-                                print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
+                                print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod_name);
                             }
 #endif
 
@@ -3578,10 +3580,10 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
         if (thisAgent->soar_verbose_flag == true)
         {
             print_with_symbols(thisAgent,
-                               "\n      asserting instantiation: %y\n", inst->prod->name);
+                               "\n      asserting instantiation: %y\n", inst->prod_name);
             char buf[256];
             SNPRINTF(buf, 254, "asserting instantiation: %s",
-                     inst->prod->name->to_string(true));
+                     inst->prod_name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
         /* REW: end   09.15.96 */
@@ -4069,12 +4071,12 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
         if (curr_pi->inst == inst)
         {
 #ifdef DEBUG_GDS
-            print_with_symbols(thisAgent, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod->name);
+            print_with_symbols(thisAgent, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
 #endif
             return;
         }
 #ifdef DEBUG_GDS
-        print_with_symbols(thisAgent, "UNIQUE DLL:            %y\n", curr_pi->inst->prod->name);
+        print_with_symbols(thisAgent, "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
 #endif
     } /* end for loop */
 
@@ -4092,7 +4094,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 
     thisAgent->parent_list_head = new_pi;
 #ifdef DEBUG_GDS
-    print_with_symbols(thisAgent, "UNIQUE DLL:         added: %y\n", inst->prod->name);
+    print_with_symbols(thisAgent, "UNIQUE DLL:         added: %y\n", inst->prod_name);
 #endif
 }
 
@@ -4142,7 +4144,7 @@ void elaborate_gds(agent* thisAgent)
         inst = curr_pi->inst;
 
 #ifdef DEBUG_GDS
-        print_with_symbols(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod->name);
+        print_with_symbols(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod_name);
         print(thisAgent, "      ");
         print_instantiation_with_wmes(thisAgent, curr_pi->inst , TIMETAG_WME_TRACE, -1);
 #endif
@@ -4333,9 +4335,9 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                         print(thisAgent, "         don't back up through top state\n");
                         if (inst->prod)
-                            if (inst->prod->name)
+                            if (inst->prod_name)
                             {
-                                print_with_symbols(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod->name);
+                                print_with_symbols(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod_name);
                             }
 #endif
                         continue;
@@ -4506,7 +4508,7 @@ void elaborate_gds(agent* thisAgent)
                                     {
 
 #ifdef DEBUG_GDS
-                                        print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod->name);
+                                        print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
 #endif
                                         //////////////////////////////////////////////////////
                                         /* REW: 2003-12-07 */
@@ -4529,7 +4531,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                         else
                                         {
-                                            print_with_symbols(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod->name);
+                                            print_with_symbols(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
                                             pref->inst->GDS_evaluated_already = true;
                                         }
 #endif
@@ -4563,7 +4565,7 @@ void elaborate_gds(agent* thisAgent)
 
 #ifdef DEBUG_GDS
         print_with_symbols(thisAgent, "\n      removing instantiation: %y\n",
-                           curr_pi->inst->prod->name);
+                           curr_pi->inst->prod_name);
 #endif
 
         if (curr_pi->next != NIL)
@@ -4596,7 +4598,7 @@ void elaborate_gds(agent* thisAgent)
                 curr_pi;
                 curr_pi = curr_pi->next)
         {
-            print_with_symbols(thisAgent, "      %y\n", curr_pi->inst->prod->name);
+            print_with_symbols(thisAgent, "      %y\n", curr_pi->inst->prod_name);
         }
 #endif
 

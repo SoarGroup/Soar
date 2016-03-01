@@ -57,11 +57,13 @@ void identity_record::generate_identity_sets(condition* lhs)
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     identity_set_info* lNewIDSet;
+    //uint64_t lMapping;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
         lNewIDSet = new identity_set_info();
         if (iter->second != NULL_IDENTITY_SET)
         {
+            //lMapping = iter->second;
             id_to_idset_map_iter_type lIter = id_to_id_set_mappings->find(iter->second);
             assert (lIter != id_to_id_set_mappings->end());
             lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;

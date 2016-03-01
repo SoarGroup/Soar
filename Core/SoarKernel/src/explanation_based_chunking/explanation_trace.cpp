@@ -57,7 +57,7 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
      *     data structure rather than the alpha memory --- */
     dprint(DT_ADD_ADDITIONALS, "-=-=-=-=-=-\n");
     dprint(DT_ADD_ADDITIONALS, "add_inequalities called for rl instantiation %s.\n",
-           thisAgent->newly_created_instantiations->prod->name->sc->name);
+           thisAgent->newly_created_instantiations->prod_name->sc->name);
     dprint(DT_ADD_ADDITIONALS, "%l\n", cond);
 
     /* -- Now process any additional relational test -- */
@@ -130,7 +130,7 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
     }
 
     dprint(DT_ADD_ADDITIONALS, "add_additional_tests_and_originals finished for %s.\n",
-           thisAgent->newly_created_instantiations->prod->name->sc->name);
+           thisAgent->newly_created_instantiations->prod_name->sc->name);
     dprint(DT_ADD_ADDITIONALS, "Final test after add_additional_tests and creating identity: %l\n", cond);
 }
 
@@ -158,7 +158,7 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
 
     dprint(DT_ADD_ADDITIONALS, "-=-=-=-=-=-\n");
     dprint(DT_ADD_ADDITIONALS, "add_constraints_and_identities called for %s.\n",
-           thisAgent->newly_created_instantiations->prod->name->sc->name);
+           thisAgent->newly_created_instantiations->prod_name->sc->name);
     dprint(DT_ADD_ADDITIONALS, "%l\n", cond);
     dprint(DT_ADD_ADDITIONALS, "AM: (%y ^%y %y)\n", am->id , am->attr, am->value);
 

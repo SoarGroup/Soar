@@ -42,59 +42,6 @@ void Explanation_Based_Chunker::unify_identity(test t)
         t->identity = iter->second;
     }
 }
-void Explanation_Based_Chunker::unify_identity_for_result_element(preference* result, WME_Field field)
-{
-
-    uint64_t lO_id = 0;
-
-    if (field == ID_ELEMENT)
-    {
-        lO_id = result->o_ids.id;
-    } else if (field == ATTR_ELEMENT) {
-        lO_id = result->o_ids.attr;
-    } else if (field == VALUE_ELEMENT) {
-        lO_id = result->o_ids.value;
-    }
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(lO_id);
-    if (iter != (*unification_map).end())
-    {
-        dprint(DT_UNIFICATION, "...found variablization unification o%u (%y) -> o%u (%y)\n",
-            lO_id, get_ovar_for_o_id(lO_id), iter->second, get_ovar_for_o_id(iter->second));
-
-        lO_id = iter->second;
-        if (field == ID_ELEMENT)
-        {
-            result->o_ids.id = lO_id;
-        } else if (field == ATTR_ELEMENT) {
-            result->o_ids.attr = lO_id;
-        } else if (field == VALUE_ELEMENT) {
-            result->o_ids.value = lO_id;
-        }
-    }
-}
-
-void Explanation_Based_Chunker::unify_identities_for_results(preference* result)
-{
-    if (!m_learning_on) return;
-    if (!result) return;
-
-    dprint(DT_UNIFICATION, "Fixing result %p\n", result);
-    dprint_o_id_substitution_map(DT_UNIFICATION);
-
-    if (result->o_ids.id)
-    {
-        unify_identity_for_result_element(result, ID_ELEMENT);
-    }
-    if (result->o_ids.attr)
-    {
-        unify_identity_for_result_element(result, ATTR_ELEMENT);
-    }
-    if (result->o_ids.value)
-    {
-        unify_identity_for_result_element(result, VALUE_ELEMENT);
-    }
-    unify_identities_for_results(result->next_result);
-}
 
 void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {

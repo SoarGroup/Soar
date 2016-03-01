@@ -777,7 +777,7 @@ void init_instantiation(agent*          thisAgent,
             {
                 print_with_symbols(thisAgent,
                                    "\n*** O-support difference found in production %y",
-                                   inst->prod->name);
+                                   inst->prod_name);
             }
         }
     }
@@ -842,18 +842,23 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
     inst->GDS_evaluated_already = false;
-
+    inst->prod_name = prod ? prod->name : thisAgent->fake_instantiation_symbol;
+    symbol_add_ref(thisAgent, inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
-        inst->prod->name, inst->i_id);
+        inst->prod_name, inst->i_id);
+    if (inst->i_id == 201)
+    {
+        dprint(DT_DEBUG, "Found.\n");
+    }
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent,
             "\n   In create_instantiation for instance of rule %y",
-            inst->prod->name);
+            inst->prod_name);
         char buf[256];
         SNPRINTF(buf, 254, "in create_instantiation: %s",
-                 inst->prod->name->to_string(true));
+            inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
 
@@ -1074,7 +1079,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     thisAgent->ebChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
@@ -1082,7 +1087,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod->name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
 
     if (!thisAgent->system_halted)
     {
@@ -1128,7 +1133,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
+        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod_name);
 
         level = inst->match_goal_level;
 
@@ -1308,6 +1313,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
+    symbol_remove_ref(thisAgent, inst->prod_name);
     inst = NULL;
 }
 
@@ -1435,6 +1441,8 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
+    inst->prod_name = thisAgent->fake_instantiation_symbol;
+    symbol_add_ref(thisAgent, inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;

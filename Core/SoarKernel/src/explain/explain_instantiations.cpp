@@ -21,7 +21,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     actions             = new action_record_list;
     original_production = pInst->prod;
     terminal            = false;
-    production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
+    production_name     = pInst->prod_name;
     cached_inst         = pInst;
     path_to_base        = NULL;
     lhs_identities      = NULL;

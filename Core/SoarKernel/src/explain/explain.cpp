@@ -236,7 +236,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
 
     bool lIsTerminalInstantiation = false;
     dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
-        pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        pInst->i_id, pInst->prod_name);
 
     if (pInst->explain_status == explain_unrecorded)
     {
@@ -266,16 +266,16 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
         lInstRecord->terminal = lIsTerminalInstantiation;
         lInstRecord->creating_chunk = pChunkID;
         dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
-            pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+            pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if ((pInst->explain_status == explain_recorded) && (pInst->explain_tc_num != backtrace_number))
     {
         /* Update instantiation*/
-        dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, pInst->prod_name);
         if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
             dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record for i%u (%y).\n",
-                pInst->backtrace_number, backtrace_number, pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+                pInst->backtrace_number, backtrace_number, pInst->i_id, pInst->prod_name);
             lIsTerminalInstantiation = true;
         }
         /* Set status flag to recording to handle recursive addition */
@@ -284,12 +284,12 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
 
         instantiation_record* lInstRecord = get_instantiation(pInst);
         lInstRecord->terminal = lIsTerminalInstantiation;
-        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
-        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, pInst->prod_name);
     } else {
-        dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol));
+        dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, pInst->prod_name);
         for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
         {
             dprint(DT_EXPLAIN_ADD_INST, "i%u (%y)\n", it->second->instantiationID, it->second->production_name);

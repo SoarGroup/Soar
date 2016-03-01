@@ -201,7 +201,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     condition* c;
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
-    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod ? inst->prod->name : NULL, grounds_level);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod_name, grounds_level);
     dprint(DT_BACKTRACE, "(%y [o%u] ^%y [o%u] %y [o%u]) that matched condition %l\n",
         get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
         get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
@@ -213,7 +213,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         print(thisAgent,  "... BT through instantiation of ");
         if (inst->prod)
         {
-            print_with_symbols(thisAgent, "%y\n", inst->prod->name);
+            print_with_symbols(thisAgent, "%y\n", inst->prod_name);
         }
         else
         {
@@ -223,7 +223,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         xml_begin_tag(thisAgent, kTagBacktrace);
         if (inst->prod)
         {
-            xml_att_val(thisAgent, kProduction_Name, inst->prod->name);
+            xml_att_val(thisAgent, kProduction_Name, inst->prod_name);
         }
         else
         {
@@ -259,7 +259,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
-    dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, (inst->prod ? inst->prod->name : NULL), backtrace_number);
+    dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, inst->prod_name, backtrace_number);
     inst->backtrace_number = backtrace_number;
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->add_bt_instantiation(inst, bt_type);

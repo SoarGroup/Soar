@@ -52,6 +52,7 @@ typedef struct instantiation_struct
     tc_number                       backtrace_number;
     bool                            GDS_evaluated_already;
     uint64_t                        i_id;                   /* id number used by EBC */
+    Symbol*                         prod_name;
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;

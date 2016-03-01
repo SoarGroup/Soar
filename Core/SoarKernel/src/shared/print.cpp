@@ -1025,8 +1025,8 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
 
     if (inst->prod)
     {
-        print_with_symbols(thisAgent, "%y", inst->prod->name);
-        xml_att_val(thisAgent, kProduction_Name, inst->prod->name->to_string(true));
+        print_with_symbols(thisAgent, "%y", inst->prod_name);
+        xml_att_val(thisAgent, kProduction_Name, inst->prod_name->to_string(true));
     }
     else
     {

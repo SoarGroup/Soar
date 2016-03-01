@@ -282,7 +282,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
 
             if (inst->prod)
             {
-                if (strstr(inst->prod->name->sc->name, chunk_name_prefix) == inst->prod->name->sc->name)
+                if (strstr(inst->prod_name->sc->name, chunk_name_prefix) == inst->prod_name->sc->name)
                 {
                     /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                     lName << "-multi";

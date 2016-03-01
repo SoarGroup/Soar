@@ -358,7 +358,13 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
 
         if (preference_is_binary(pref->type))
         {
-            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+            sprinta_sf(thisAgent, destString, " %y", pref->referent);
+        }
+        if (pref->o_supported)
+        {
+            sprinta_sf(thisAgent, destString, " (o-support)");
+        } else {
+            sprinta_sf(thisAgent, destString, " (i-support)");
         }
     }
 }
@@ -482,15 +488,8 @@ void Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_con
 
 void Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString)
 {
-    if (inst->prod)
-    {
-        sprinta_sf(thisAgent, destString, "%sInstantiation (i%u) matched %y ", m_pre_string, inst->i_id, inst->prod->name);
-    }
-    else
-    {
-        sprinta_sf(thisAgent, destString, "%sInstantiation #%u matched nothing (dummy production?) ", m_pre_string, inst->i_id);
-    }
-    sprinta_sf(thisAgent, destString, "in state %y (level %d)\n", inst->match_goal, inst->match_goal_level);
+    sprinta_sf(thisAgent, destString, "%sInstantiation (i%u) matched %y in state %y (level %d)\n", 
+        m_pre_string, inst->i_id, inst->prod_name, inst->match_goal, inst->match_goal_level);
     cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, destString);
 }
 

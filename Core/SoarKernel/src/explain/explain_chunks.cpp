@@ -118,7 +118,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it), chunkID);
         assert(lNewInstRecord);
         backtraced_inst_records->push_back(lNewInstRecord);
-        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod ? (*it)->prod->name : thisAgent->fake_instantiation_symbol);
+        dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod_name);
     }
     dprint(DT_EXPLAIN, "(1) There are now %d instantiations records...\n", backtraced_inst_records->size());
 
@@ -158,8 +158,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
         lChunkCondInst = cond->inst;
-        dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id,
-            (lChunkCondInst->prod ? lChunkCondInst->prod->name : thisAgent->fake_instantiation_symbol));
+        dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);
         assert(lChunkCondInst->backtrace_number == pBacktraceNumber);
         /* The backtrace should have already added all instantiations that contained
          * grounds, so we can just look up the instantiation for each condition */
