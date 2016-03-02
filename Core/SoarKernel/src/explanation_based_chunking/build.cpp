@@ -807,7 +807,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     if (pForChunk)
     {
         chunks_this_d_cycle++;
-        m_prod_name = generate_chunk_name(m_inst);
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
 
         m_prod_type = CHUNK_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -818,7 +818,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     }
     else
     {
-        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+//        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
@@ -830,8 +831,12 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     if (m_should_print_name)
     {
         start_fresh_line(thisAgent);
-        print_with_symbols(thisAgent, "Building rule %y\n", m_prod_name);
-
+        if (pForChunk)
+        {
+            print_with_symbols(thisAgent, "Learning chunk %y\n", m_prod_name);
+        } else {
+            print_with_symbols(thisAgent, "Learning justification %y\n", m_prod_name);
+        }
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
         xml_att_val(thisAgent, kProduction_Name, m_prod_name);

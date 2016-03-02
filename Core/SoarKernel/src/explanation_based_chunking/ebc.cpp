@@ -47,6 +47,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     chunkNameFormat = ruleFormat;
     max_chunks_reached = false;
     strcpy(chunk_name_prefix, "chunk");
+    strcpy(justification_name_prefix, "justify");
 
     reinit();
 }
@@ -62,6 +63,8 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete rulesym_to_identity_map;
     delete unification_map;
     delete o_id_to_ovar_debug_map;
+    free(chunk_name_prefix);
+    free(justification_name_prefix);
 }
 
 void Explanation_Based_Chunker::reinit()
@@ -149,7 +152,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     return true;
 }
 
-Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
+Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool pIsChunk)
 {
     Symbol* generated_name;
     Symbol* goal;
@@ -158,8 +161,15 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
     goal_stack_level lowest_result_level;
     std::string lImpasseName;
     std::stringstream lName;
-
+    char* rule_prefix;
     chunkNameFormats chunkNameFormat = Get_Chunk_Name_Format();
+
+    if (pIsChunk)
+    {
+        rule_prefix = chunk_name_prefix;
+    } else {
+        rule_prefix = justification_name_prefix;
+    }
 
     lowest_result_level = thisAgent->top_goal->id->level;
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
@@ -177,7 +187,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             increment_counter(chunk_count);
             return (generate_new_str_constant(
                         thisAgent,
-                        chunk_name_prefix,
+                        rule_prefix,
                         &(chunk_count)));
         }
         case longFormat:
@@ -231,7 +241,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
                 lImpasseName = "unknownimpasse";
             }
             increment_counter(chunk_count);
-            lName << chunk_name_prefix << "-" << chunk_count << "*" <<
+            lName << rule_prefix << "-" << chunk_count << "*" <<
                   thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
 
             break;
@@ -241,7 +251,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
             std::string real_prod_name;
 
             lImpasseName.erase();
-            lName << chunk_name_prefix;
+            lName << rule_prefix;
 
             increment_counter(chunk_count);
             if (goal)
@@ -282,7 +292,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst)
 
             if (inst->prod)
             {
-                if (strstr(inst->prod_name->sc->name, chunk_name_prefix) == inst->prod_name->sc->name)
+                if (strstr(inst->prod_name->sc->name, rule_prefix) == inst->prod_name->sc->name)
                 {
                     /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                     lName << "-multi";

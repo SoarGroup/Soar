@@ -159,6 +159,7 @@ class Explanation_Based_Chunker
 
         /* String that every chunk name begins with */
         char                chunk_name_prefix[kChunkNamePrefixMaxLength];
+        char                justification_name_prefix[kChunkNamePrefixMaxLength];
 
         /* Variables used by dependency analysis methods */
         ::list*             grounds;
@@ -230,7 +231,7 @@ class Explanation_Based_Chunker
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
                                                         wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
-        Symbol*         generate_chunk_name(instantiation* inst);
+        Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
         void            set_up_rule_name(bool pForChunk);
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
