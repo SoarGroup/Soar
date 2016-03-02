@@ -1194,7 +1194,29 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	if ( act_mode == smem_param_container::act_base )
 	{
 		// spreading activation
-		{
+		if (!add_access) {
+
+
+				new_activation = smem_lti_calc_base( my_agent, lti, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
+
+				// push new activation to smem_augmentations if appropriate
+				// only if augmentation count is less than threshold do we associate with edges
+				if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
+				{
+					// activation_value=? WHERE lti=?
+					my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
+					my_agent->smem_stmts->act_set->bind_int( 2, lti );
+					my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+				}
+				// always associate activation with lti
+				{
+					// activation_value=? WHERE lti=?
+					my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
+					my_agent->smem_stmts->act_lti_set->bind_int( 2, lti );
+					my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
+				}
+
+		} else {
 			smem_lti_id temp_lti_id, child_lti_id;
 			double old_activation;
 			uint64_t depth;
