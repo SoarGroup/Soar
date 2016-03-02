@@ -1385,8 +1385,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
      */
     production* prod = inst->prod;
     if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
-        (prod->reference_count > 1) &&
-        !prod->save_for_justification_explanation)
+        (prod->reference_count > 1))
     {
         excise_production(thisAgent, prod, false);
     }

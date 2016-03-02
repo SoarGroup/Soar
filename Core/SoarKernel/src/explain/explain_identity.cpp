@@ -50,36 +50,56 @@ void identity_record::generate_identity_sets(condition* lhs)
     /* Generate identity sets and add mappings for all conditions in chunk */
     add_identities_in_condition_list(thisAgent, lhs, identities_in_chunk, id_to_id_set_mappings);
     /* MToDo | Will need to do for all base instantiations */
-    print_identities_in_chunk();
-    print_identity_mappings();
-    print_original_ebc_mappings();
+//    print_identities_in_chunk();
+//    print_identity_mappings();
+//    print_original_ebc_mappings();
 
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
+    id_to_idset_map_iter_type lIter;
     identity_set_info* lNewIDSet;
-    //uint64_t lMapping;
+    uint64_t lMapping, lNewIdSetID;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
         lNewIDSet = new identity_set_info();
         if (iter->second != NULL_IDENTITY_SET)
         {
-            //lMapping = iter->second;
-            id_to_idset_map_iter_type lIter = id_to_id_set_mappings->find(iter->second);
-            assert (lIter != id_to_id_set_mappings->end());
-            lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;
-            lNewIDSet->rule_variable = id_to_id_set_mappings->find(iter->second)->second->rule_variable;
-            if (lNewIDSet->rule_variable)
+            lMapping = iter->first;
+            lIter = id_to_id_set_mappings->find(iter->first);
+            assert(lIter == id_to_id_set_mappings->end());
+
+            lIter = id_to_id_set_mappings->find(iter->second);
+            if (lIter != id_to_id_set_mappings->end())
             {
-                symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+                /* Identity points to a current identity set */
+                lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;
+                lNewIDSet->rule_variable = lIter->second->rule_variable;
+                if (lNewIDSet->rule_variable)
+                {
+                    symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+                }
+                id_to_id_set_mappings->insert({iter->first, lNewIDSet});
+            } else {
+                /* Identity points to an identity not in the chunk.  Create a new identity
+                 * set and assign both identities to it. */
+                lNewIdSetID = thisAgent->explanationLogger->get_identity_set_counter();
+                lNewIDSet->identity_set_ID = lNewIdSetID;
+                lNewIDSet->rule_variable = NULL;
+                id_to_id_set_mappings->insert({iter->first, lNewIDSet});
+                lNewIDSet = new identity_set_info();
+                lNewIDSet->identity_set_ID = lNewIdSetID;
+                lNewIDSet->rule_variable = NULL;
+                id_to_id_set_mappings->insert({iter->first, lNewIDSet});
             }
         } else {
+            /* Identity maps to NULL identity set */
             lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
             lNewIDSet->rule_variable = NULL;
+            id_to_id_set_mappings->insert({iter->first, lNewIDSet});
         }
-        id_to_id_set_mappings->insert({iter->first, lNewIDSet});
     }
 
-    print_identity_mappings();
+//    print_identity_mappings();
 }
 
 

@@ -20,30 +20,36 @@
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {
-    thisAgent           = myAgent;
-    name                = NULL;
-    conditions          = new condition_record_list;
-    actions             = new action_record_list;
-    chunkID             = pChunkID;
-    baseInstantiation   = NULL;
-    chunkInstantiation  = NULL;
-    original_production = NULL;
-    match_level         = 0;
+    thisAgent                   = myAgent;
+    name                        = NULL;
+    chunkID                     = pChunkID;
+    chunkInstantiation          = NULL;
+    original_production         = NULL;
+    excised_production          = NULL;
+    time_formed                 = 0;
+    match_level                 = 0;
 
-    backtraced_inst_records = new inst_record_list();
-    backtraced_instantiations = new inst_set();
-    result_instantiations = new inst_set;
-    result_inst_records = new inst_record_set;
+    conditions                  = new condition_record_list;
+    actions                     = new action_record_list;
 
-    stats.duplicates = 0;
-    stats.tested_local_negation = false;
-    stats.reverted = false;
-    stats.num_grounding_conditions_added = 0;
-    stats.merged_conditions = 0;
-    stats.instantations_backtraced = 0;
-    stats.seen_instantations_backtraced = 0;
-    stats.constraints_attached = 0;
-    stats.constraints_collected = 0;
+    baseInstantiation           = NULL;
+    result_instantiations       = new inst_set();
+    result_inst_records         = new inst_record_set();
+
+    backtraced_instantiations   = new inst_set();
+    backtraced_inst_records     = new inst_record_list();
+
+    identity_analysis           = NULL;
+
+    stats.duplicates                        = 0;
+    stats.tested_local_negation             = false;
+    stats.reverted                          = false;
+    stats.num_grounding_conditions_added    = 0;
+    stats.merged_conditions                 = 0;
+    stats.instantations_backtraced          = 0;
+    stats.seen_instantations_backtraced     = 0;
+    stats.constraints_attached              = 0;
+    stats.constraints_collected             = 0;
 
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
@@ -90,18 +96,11 @@ chunk_record::~chunk_record()
 
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
 {
-    if (pProduction)
-    {
-        name = pProduction->name;
-        symbol_add_ref(thisAgent, name);
-        original_production = pProduction;
-        original_production->save_for_justification_explanation = true;
+    name = pProduction->name;
+    symbol_add_ref(thisAgent, name);
+    original_production = pProduction;
+    original_production->save_for_justification_explanation = true;
 
-    } else {
-        name = NULL;
-        original_production = NULL;
-        assert(false);
-    }
     time_formed = thisAgent->d_cycle_count;
     match_level = pChunkInstantiation->match_goal_level;
 
@@ -133,8 +132,6 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         } else if (lNewInstRecord->cached_inst->explain_status == explain_recording_update)
         {
             lNewInstRecord->update_instantiation_contents();
-        } else {
-            assert(false);
         }
         lNewInstRecord->cached_inst->explain_status = explain_recorded;
     }

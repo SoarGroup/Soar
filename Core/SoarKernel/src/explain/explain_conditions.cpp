@@ -79,6 +79,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     type = pCond->type;
     parent_action = NULL;
     path_to_base = NULL;
+    my_instantiation = NULL;
 
     dprint(DT_EXPLAIN_CONDS, "   Creating condition %u for %l.\n", conditionID, pCond);
 

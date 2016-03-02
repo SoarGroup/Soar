@@ -422,6 +422,7 @@ void destroy_soar_agent(agent* delete_agent)
 {
 
     delete delete_agent->explanationLogger;
+    delete_agent->explanationLogger = NULL;
     delete delete_agent->ebChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
 

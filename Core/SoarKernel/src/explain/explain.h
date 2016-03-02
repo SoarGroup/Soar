@@ -105,17 +105,38 @@ class condition_record
 
     private:
         agent* thisAgent;
-        goal_stack_level                wme_level_at_firing;
-        test_triple                     condition_tests;
-        symbol_triple*                  matched_wme;
-        action_record*                  parent_action;
-        instantiation_record*           parent_instantiation;
-        instantiation_record*           my_instantiation;
-        inst_record_list*               path_to_base;
+
+        uint64_t                        conditionID;
         preference*                     cached_pref;
         wme*                            cached_wme;
-        uint64_t                        conditionID;
+        instantiation_record*           my_instantiation;
+        instantiation_record*           parent_instantiation;
+        action_record*                  parent_action;
+
         byte                            type;
+        goal_stack_level                wme_level_at_firing;
+        inst_record_list*               path_to_base;
+
+        test_triple                     condition_tests;
+        symbol_triple*                  matched_wme;
+};
+
+class production_record
+{
+        friend class Explanation_Logger;
+
+    public:
+
+        production_record(agent* pAgent, production* pProd);
+        ~production_record();
+
+        condition*  get_lhs() { return lhs_conds; }
+        action*     get_rhs() { return rhs_actions; }
+
+    private:
+        agent*      thisAgent;
+        condition*  lhs_conds;
+        action*     rhs_actions;
 };
 
 class instantiation_record
@@ -142,17 +163,19 @@ class instantiation_record
 
     private:
         agent* thisAgent;
+        uint64_t                instantiationID;
         Symbol*                 production_name;
         production*             original_production;
-        goal_stack_level        match_level;
-
-        condition_record_list*  conditions;
-        action_record_list*     actions;
-        uint64_t                instantiationID;
+        production_record*      excised_production;
         uint64_t                creating_chunk;
+
+        goal_stack_level        match_level;
         bool                    terminal;
         inst_record_list*       path_to_base;
         id_set*                 lhs_identities;
+
+        condition_record_list*  conditions;
+        action_record_list*     actions;
 };
 
 typedef struct identity_set_struct {
@@ -198,24 +221,30 @@ class chunk_record
 
     private:
         agent*                  thisAgent;
+
         Symbol*                 name;
-        uint64_t                time_formed;
+        uint64_t                chunkID;
+        instantiation_record*   chunkInstantiation;
         production*             original_production;
-        condition_record_list*  conditions;
-        action_record_list*     actions;
+        production_record*      excised_production;
+        uint64_t                time_formed;
         goal_stack_level        match_level;
 
-        identity_record*        identity_analysis;
-        inst_set*               backtraced_instantiations;
-        inst_record_list*       backtraced_inst_records;
+
+        condition_record_list*  conditions;
+        action_record_list*     actions;
 
         instantiation_record*   baseInstantiation;
         inst_set*               result_instantiations;
         inst_record_set*        result_inst_records;
-        instantiation_record*   chunkInstantiation;
-        uint64_t                chunkID;
+
+        inst_set*               backtraced_instantiations;
+        inst_record_list*       backtraced_inst_records;
+
+        identity_record*        identity_analysis;
         chunk_stats             stats;
 };
+
 
 class Explanation_Logger
 {
@@ -240,6 +269,7 @@ class Explanation_Logger
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
+        void                    save_excised_production(production* pProd);
 
         void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };
@@ -314,7 +344,7 @@ class Explanation_Logger
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
-        void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
+        void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL, production_record* pExcisedRule = NULL);
         void                    print_chunk_explanation();
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter = true);
@@ -344,6 +374,7 @@ class Explanation_Logger
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
+        std::set< production_record* >*                         all_excised_productions;
 
 };
 

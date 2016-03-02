@@ -29,7 +29,7 @@ void Explanation_Logger::print_formation_explanation()
 
     outputManager->printa_sf(thisAgent, "The formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
-    outputManager->printa_sf(thisAgent, "   (1) At time %u, rule '%y' matched (i%u) \n"
+    outputManager->printa_sf(thisAgent, "   (1) At time %u, rule '%y' matched (i %u) \n"
                                         "       and created results in a superstate.\n\n",
         current_discussed_chunk->time_formed,
         current_discussed_chunk->baseInstantiation->production_name,
@@ -52,7 +52,7 @@ void Explanation_Logger::print_formation_explanation()
     outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results in Step (2)\n\n",
         current_discussed_chunk->result_inst_records->size() + 1);
 
-    outputManager->printa_sf(thisAgent, "Initial base instantiation i%u that fired when %y matched at time %u:\n\n",
+    outputManager->printa_sf(thisAgent, "Initial base instantiation i %u that fired when %y matched at time %u:\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID,
         current_discussed_chunk->baseInstantiation->production_name,
         current_discussed_chunk->time_formed);
@@ -115,7 +115,7 @@ void Explanation_Logger::print_path_to_base(const inst_record_list* pPathToBase,
                 {
                     thisAgent->outputManager->printa(thisAgent, " -> ");
                 }
-                thisAgent->outputManager->printa_sf(thisAgent, "i%u", (*it)->get_instantiationID());
+                thisAgent->outputManager->printa_sf(thisAgent, "i %u", (*it)->get_instantiationID());
                 notFirst = true;
             }
         } else if (pFailedStr)
@@ -127,7 +127,7 @@ void Explanation_Logger::print_path_to_base(const inst_record_list* pPathToBase,
 }
 
 
-void Explanation_Logger::print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs)
+void Explanation_Logger::print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
 {
     if (pActionRecords->empty())
     {
@@ -149,10 +149,17 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
             } else {
                 if (!pOriginalRule || !pOriginalRule->p_node)
                 {
-                    outputManager->printa_sf(thisAgent, "Original rule actions no longer in RETE\n");
-                    return;
+                    if (pExcisedRule)
+                    {
+                        rhs = pExcisedRule->get_rhs();
+                        assert(rhs);
+                    } else {
+                        outputManager->printa_sf(thisAgent, "No rule for this instantiation found in RETE\n");
+                        return;
+                    }
+                } else {
+                    p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
                 }
-                p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
             }
         }
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
@@ -187,8 +194,9 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
         }
         if (print_explanation_trace)
         {
+            /* If top exists, we generated conditions here and must deallocate. */
+            if (pRhs || top) deallocate_action_list(thisAgent, rhs);
             if (top) deallocate_condition_list(thisAgent, top);
-            deallocate_action_list(thisAgent, rhs);
         }
         thisAgent->outputManager->clear_print_test_format();
     }
@@ -219,17 +227,26 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
              * is only for debugging and does not get built for releases. */
             if (!pInstRecord->original_production || !pInstRecord->original_production->p_node)
             {
-                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n",
-                    pInstRecord->instantiationID, pInstRecord->production_name);
-                outputManager->printa_sf(thisAgent,
-                    "\nError:  Cannot print explanation trace of this instantiation.  Original rule conditions no longer in RETE.\n"
-                    "        Attempting to print working memory trace instead.\n\n");
-                print_explanation_trace = false;
-                print_instantiation_explanation(pInstRecord, printFooter);
-                print_explanation_trace = true;
-                return;
+                if (pInstRecord->excised_production)
+                {
+                    top = pInstRecord->excised_production->get_lhs();
+                    rhs = pInstRecord->excised_production->get_rhs();
+                    assert(top);
+                    assert(rhs);
+                } else {
+                    outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n",
+                        pInstRecord->instantiationID, pInstRecord->production_name);
+                    outputManager->printa_sf(thisAgent,
+                        "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
+                        "            rule found in RETE.  Printing working memory trace instead.\n\n");
+                    print_explanation_trace = false;
+                    print_instantiation_explanation(pInstRecord, printFooter);
+                    print_explanation_trace = true;
+                    return;
+                }
+            } else {
+                p_node_to_conditions_and_rhs(thisAgent, pInstRecord->original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
             }
-            p_node_to_conditions_and_rhs(thisAgent, pInstRecord->original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
             current_cond = top;
             if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
             {
@@ -253,7 +270,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
             /* Print header */
             outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y)\n\n",
                 pInstRecord->instantiationID, pInstRecord->production_name);
-            outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n");
+            outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n\n");
             thisAgent->outputManager->set_print_test_format(false, true);
         }
 
@@ -281,7 +298,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
             {
                 id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
 
-                outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s",
+                outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                     id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     lCond->condition_tests.attr, lCond->condition_tests.value, is_condition_related(lCond) ? "*" : "");
             } else {
@@ -332,7 +349,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
              outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
              if (lCond->parent_instantiation)
              {
-                 outputManager->printa_sf(thisAgent, "%-i%u (%y)%-",
+                 outputManager->printa_sf(thisAgent, "%-i %u (%y)%-",
                      (lCond->parent_instantiation->instantiationID),
                      (lCond->parent_instantiation->production_name));
              } else if (lCond->type == POSITIVE_CONDITION)
@@ -356,7 +373,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
         }
         outputManager->printa(thisAgent, "\n");
 
-        if (print_explanation_trace)
+        if (print_explanation_trace && pInstRecord->original_production && pInstRecord->original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
         }
@@ -453,7 +470,7 @@ void Explanation_Logger::print_chunk_explanation()
                     bool isSuper = (current_discussed_chunk->match_level > 0) && (lCond->wme_level_at_firing < current_discussed_chunk->match_level);
                     if (lInstRecord)
                     {
-                        outputManager->printa_sf(thisAgent, "%-i%u (%y)\n",
+                        outputManager->printa_sf(thisAgent, "%-i %u (%y)\n",
                             lInstRecord->instantiationID,
                             lInstRecord->production_name);
                     } else if (lCond->type == POSITIVE_CONDITION)
@@ -475,7 +492,7 @@ void Explanation_Logger::print_chunk_explanation()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    print_action_list(current_discussed_chunk->actions, current_discussed_chunk->original_production);
+    print_action_list(current_discussed_chunk->actions, current_discussed_chunk->original_production, NULL, current_discussed_chunk->excised_production);
     outputManager->printa(thisAgent, "}\n");
     print_footer(true);
 
@@ -587,13 +604,13 @@ void Explanation_Logger::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "%fStatistics for '%y' (c%u):\n\n",                         current_discussed_chunk->name, current_discussed_chunk->chunkID);
     outputManager->printa_sf(thisAgent, "Number of conditions           %-%u\n",          current_discussed_chunk->conditions->size());
     outputManager->printa_sf(thisAgent, "Number of actions              %-%u\n",          current_discussed_chunk->actions->size());
-    outputManager->printa_sf(thisAgent, "Base instantiation             %-i%u (%y)\n",    current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
+    outputManager->printa_sf(thisAgent, "Base instantiation             %-i %u (%y)\n",    current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
     outputManager->printa_sf(thisAgent, "Extra result instantiations " );
     if (current_discussed_chunk->result_inst_records->size() > 0)
     {
         for (auto it = current_discussed_chunk->result_inst_records->begin(); it != current_discussed_chunk->result_inst_records->end(); ++it)
         {
-            outputManager->printa_sf(thisAgent, "%-i%u (%y)\n", (*it)->instantiationID, (*it)->production_name);
+            outputManager->printa_sf(thisAgent, "%-i %u (%y)\n", (*it)->instantiationID, (*it)->production_name);
         }
     }
 
@@ -723,11 +740,7 @@ void Explanation_Logger::print_involved_instantiations()
 
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end();++it)
     {
-        outputManager->printa_sf(thisAgent, "   i%u (%y)\n", (*it)->instantiationID, (*it)->production_name);
-//        if (++it != current_discussed_chunk->backtraced_inst_records->end())
-//        {
-//            outputManager->printa(thisAgent, ", ");
-//        }
+        outputManager->printa_sf(thisAgent, "   i %u (%y)\n", (*it)->instantiationID, (*it)->production_name);
     }
     outputManager->printa(thisAgent, "\n");
 }

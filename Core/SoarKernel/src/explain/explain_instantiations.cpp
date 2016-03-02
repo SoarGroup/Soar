@@ -15,17 +15,23 @@
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
     thisAgent           = myAgent;
+
     instantiationID     = pInst->i_id;
-    match_level         = pInst->match_goal_level;
-    conditions          = new condition_record_list;
-    actions             = new action_record_list;
-    original_production = pInst->prod;
-    terminal            = false;
-    production_name     = pInst->prod_name;
     cached_inst         = pInst;
+    production_name     = pInst->prod_name;
+    symbol_add_ref(thisAgent, production_name);
+    original_production = pInst->prod;
+    excised_production  = NULL;
+
+    creating_chunk      = 0;
+
+    match_level         = pInst->match_goal_level;
+    terminal            = false;
     path_to_base        = NULL;
     lhs_identities      = NULL;
-    symbol_add_ref(thisAgent, production_name);
+
+    conditions          = new condition_record_list;
+    actions             = new action_record_list;
 
     if (pInst->prod)
     {
@@ -197,13 +203,18 @@ id_set* instantiation_record::get_lhs_identities()
 {
     if (lhs_identities) return lhs_identities;
     lhs_identities = new id_set();
+    condition* top, *bottom;
     if (!original_production || !original_production->p_node)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
-        return lhs_identities;
+        if (excised_production)
+        {
+            top = excised_production->get_lhs();
+            assert(top);
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
+        }
+    } else {
+        p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, NULL);
     }
-    action* rhs;
-    condition* top, *bottom;
-    p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, NULL);
     return lhs_identities;
 }

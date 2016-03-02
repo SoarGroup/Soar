@@ -16,6 +16,7 @@
 #include "condition.h"
 #include "debug.h"
 #include "ebc.h"
+#include "explain.h"
 #include "init_soar.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -648,6 +649,10 @@ void deallocate_production(agent* thisAgent, production* prod)
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
+    if (prod->save_for_justification_explanation && thisAgent->explanationLogger)
+    {
+        thisAgent->explanationLogger->save_excised_production(prod);
+    }
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);

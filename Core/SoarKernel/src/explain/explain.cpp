@@ -33,6 +33,7 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
+    all_excised_productions = new std::set< production_record* >();
 
 }
 
@@ -97,6 +98,13 @@ void Explanation_Logger::clear_explanations()
         delete it->second;
     }
     all_actions->clear();
+
+    dprint(DT_EXPLAIN, "Explanation logger clearing cached productions...\n");
+    for (std::set< production_record* >::iterator it = (*all_excised_productions).begin(); it != (*all_excised_productions).end(); ++it)
+    {
+        delete (*it);
+    }
+    all_excised_productions->clear();
 }
 
 Explanation_Logger::~Explanation_Logger()
@@ -412,6 +420,7 @@ void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
+        outputManager->printa_sf(thisAgent, "Now explaining %y.  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -422,6 +431,37 @@ void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
     }
     print_chunk_explanation();
 
+}
+
+void Explanation_Logger::save_excised_production(production* pProd)
+{
+    dprint(DT_EXPLAIN_CONDS, "Explanation logger adding production record for excised production: %y\n", pProd->name);
+    production_record* lProductionRecord = new production_record(thisAgent, pProd);
+    all_excised_productions->insert(lProductionRecord);
+
+    dprint(DT_EXPLAIN, "...searching %d chunks for excised rule %y...\n", chunks->size(), pProd->name);
+    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    {
+        chunk_record* pChunk = it->second;
+        if (it->second->original_production == pProd)
+        {
+            dprint(DT_EXPLAIN, "Found chunk %u (%y)...\n", it->second->chunkID, it->second->name);
+            it->second->original_production = NULL;
+            it->second->excised_production = lProductionRecord;
+        }
+    }
+
+    dprint(DT_EXPLAIN, "...searching %d instantiations for excised rule %y...\n", instantiations->size(), pProd->name);
+    for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+    {
+        instantiation_record* pInst = it->second;
+        if (it->second->original_production == pProd)
+        {
+            dprint(DT_EXPLAIN, "Found instantiations i%u...\n", it->second->instantiationID);
+            it->second->original_production = NULL;
+            it->second->excised_production = lProductionRecord;
+        }
+    }
 }
 
 bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
