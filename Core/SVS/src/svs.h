@@ -33,6 +33,7 @@ class sgwme : public sgnode_listener
         {
             return &childs;
         }
+
     private:
         void add_child(sgnode* c);
         
@@ -180,6 +181,19 @@ class svs : public svs_interface, public cliproxy
         {
             return "";
         }
+
+        // dirty bit is true only if there has been a new command
+        //   from soar or from SendSVSInput 
+        //   (no need to recheck filters)
+        static void mark_filter_dirty_bit()
+        {
+            svs::filter_dirty_bit = true;
+        }
+
+        static bool get_filter_dirty_bit()
+        {
+            return svs::filter_dirty_bit;
+        }
         
     private:
         void proc_input(svs_state* s);
@@ -196,6 +210,8 @@ class svs : public svs_interface, public cliproxy
         scene*                    scn_cache;      // temporarily holds top-state scene during init
         
         bool enabled;
+
+        static bool filter_dirty_bit;
 };
 
 #endif

@@ -4,11 +4,12 @@
 #include <assert.h>
 #include "portability.h"
 #include "soar_module.h"
-#include "symtab.h"
-#include "wmem.h"
+#include "symbol.h"
+#include "working_memory.h"
 #include "print.h"
 #include "soar_interface.h"
 #include "decide.h"
+#include "slot.h"
 
 tc_number get_new_tc_number(agent* thisAgent);
 
@@ -64,7 +65,7 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
 {
     char n;
     Symbol* val;
-    
+
     if (attr->symbol_type != STR_CONSTANT_SYMBOL_TYPE ||
             strlen(attr->sc->name) == 0)
     {
@@ -74,7 +75,7 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
     {
         n = attr->sc->name[0];
     }
-    
+
     val = make_new_identifier(thisAgent, n, id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
     symbol_remove_ref(thisAgent, val);
@@ -86,16 +87,16 @@ void soar_interface::remove_wme(wme* w)
     soar_module::remove_module_wme(thisAgent, w);
 }
 
-bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
+bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
 {
     slot* s;
     wme* w;
-    
+
     if (!id->is_identifier())
     {
         return false;
     }
-    
+
     childs.clear();
     for (s = id->id->slots; s != NULL; s = s->next)
     {
@@ -104,15 +105,17 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_list& childs)
             childs.push_back(w);
         }
     }
-    
+
     return true;
 }
 
-
+#include <iostream>
+#include "symbol.h"
+using namespace std;
 bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
 {
     vec3 res;
-    
+
     // First find the vec3 wme
     wme* vec3_wme;
     if (!find_child_wme(id, attr.c_str(), vec3_wme))
@@ -120,17 +123,23 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
         return false;
     }
     Symbol* vec3_root = get_wme_val(vec3_wme);
-    
+
+		string vec_id_name;
+		vec3_root->get_id_name(vec_id_name);
+
     // Then find each dimension to make up the vec3
-    const char* dims[] = { "x", "y", "z" };
+    string dims[] = { "x", "y", "z" };
     for (int d = 0; d < 3; d++)
     {
         wme* dim_wme;
-        double dim_val = 0.0;
-        if (!find_child_wme(vec3_root, dims[d], dim_wme)
-                || !get_symbol_value(get_wme_val(dim_wme), dim_val))
+        double dim_val;
+        if (!find_child_wme(vec3_root, dims[d].c_str(), dim_wme))
+				{
+					return false;
+				}
+				if( !get_symbol_value(get_wme_val(dim_wme), dim_val))
         {
-            return false;
+          return false;
         }
         res[d] = dim_val;
     }
@@ -144,12 +153,12 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
     slot* s;
     wme* w1;
     string a;
-    
+
     if (!id->is_identifier())
     {
         return false;
     }
-    
+
     for (s = id->id->slots; s != NULL; s = s->next)
     {
         for (w1 = s->wmes; w1 != NULL; w1 = w1->next)
@@ -161,7 +170,7 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
             }
         }
     }
-    
+
     return false;
 }
 
@@ -178,7 +187,7 @@ wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
     Symbol* attrsym = make_sym(attr);
     w = make_wme(id, attrsym, val);
     symbol_remove_ref(thisAgent, attrsym);
-    
+
     return w;
 }
 

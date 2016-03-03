@@ -416,7 +416,6 @@ class bbox
             return (max_pt[0] - min_pt[0]) * (max_pt[1] - min_pt[1]) * (max_pt[2] - min_pt[2]);
         }
         
-        
         friend std::ostream& operator<<(std::ostream& os, const bbox& b);
         
     private:

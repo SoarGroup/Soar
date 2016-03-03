@@ -16,8 +16,8 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "mem.h"
 #include "agent.h"
 #include "print.h"
@@ -26,6 +26,7 @@
 #include "parser.h"
 #include "soar_TraceNames.h"
 #include "sml_AgentSML.h"
+#include "slot.h"
 
 using namespace cli;
 using namespace sml;

@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 {
 	Kernel* kernel = sml::Kernel::CreateKernelInCurrentThread(true);
 	Agent* agent = kernel->CreateAgent("Leak");
-	
+
 	agent->ExecuteCommandLine(
 R"raw(
 smem --set learning on
@@ -95,11 +95,11 @@ sp {apply*store-result-removal
 	(<c>	^result <r> -)
 }
 )raw");
-	
+
 	smem_timer_container* container = dynamic_cast<EmbeddedConnectionSynch*>(kernel->GetConnection())->GetKernelSML()->GetAgentSML(agent->GetAgentName())->GetSoarAgent()->smem_timers;
-	
+
 	std::vector<soar_module::timer*> timers;
-	
+
 	timers.push_back(container->total);
 	timers.push_back(container->storage);
 	timers.push_back(container->ncb_retrieval);
@@ -108,21 +108,21 @@ sp {apply*store-result-removal
 	timers.push_back(container->init);
 	timers.push_back(container->hash);
 	timers.push_back(container->act);
-	
+
 	auto get_timers = [timers]() -> std::map<std::string, double>
 	{
 		std::map<std::string, double> result;
-		
+
 		for (soar_module::timer* timer : timers)
 		{
 			result[timer->get_name()] = timer->value();
 		}
-		
+
 		return result;
 	};
 
 	static const char DELIMITER = ',';
-	
+
 	auto print_timer = [](std::map<std::string, double> timer, std::ostream* output)
 	{
 		for (auto pair : timer)
@@ -130,7 +130,7 @@ sp {apply*store-result-removal
 			*output << DELIMITER << pair.second;
 		}
 	};
-	
+
 	auto print_timer_header = [](std::map<std::string, double> timer, std::ostream* output)
 	{
 		for (auto pair : timer)
@@ -138,7 +138,7 @@ sp {apply*store-result-removal
 			*output << DELIMITER << pair.first;
 		}
 	};
-	
+
 	auto reset_timers = [timers]()
 	{
 		for (soar_module::timer* timer : timers)
@@ -146,30 +146,30 @@ sp {apply*store-result-removal
 			timer->reset();
 		}
 	};
-	
+
 	std::ostream* output = &std::cout;
-	
+
 	ofstream out("out.csv");
 	output = &out;
-	
+
 	std::map<std::string, double> query, store_result;
-	
+
 	agent->RunSelf(20, sml_DECISION);
-	
+
 	reset_timers();
 	agent->RunSelf(1, sml_DECISION);
 	query = get_timers();
-	
+
 	reset_timers();
 	agent->RunSelf(1, sml_DECISION);
 	store_result = get_timers();
-	
+
 	*output << "Query";
 	print_timer_header(query, output);
 	*output << DELIMITER << "Store";
 	print_timer_header(store_result, output);
 	*output << std::endl;
-	
+
 	print_timer(query, output);
 	*output << DELIMITER;
 	print_timer(store_result, output);
@@ -179,18 +179,18 @@ sp {apply*store-result-removal
 	{
 		reset_timers();
 		agent->RunSelf(1, sml_DECISION);
-		
+
 		auto timer = get_timers();
-		
+
 		if (i % 2 == 1)
 			*output << DELIMITER;
-		
+
 		print_timer(timer, output);
-		
+
 		if (i % 2 == 1)
 			*output << std::endl;
 	}
-	
+
 	out.close();
 
 	return 0;

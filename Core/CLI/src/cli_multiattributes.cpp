@@ -18,7 +18,7 @@
 #include "agent.h"
 #include "production.h"
 #include "print.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "memory_manager.h"
 
 using namespace cli;

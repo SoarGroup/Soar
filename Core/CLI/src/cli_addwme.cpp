@@ -2,10 +2,10 @@
 
 #include "cli_CommandLineInterface.h"
 #include "agent.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "decide.h"
-#include "wma.h"
+#include "working_memory_activation.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "lexer.h"

@@ -7,27 +7,19 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <cli_Cli.h>
-#include <cli_CommandLineInterface.h>
-#include <enums.h>
-#include <episodic_memory.h>
-#include <kernel.h>
-#include <lexer.h>
-#include <misc.h>
-#include <semantic_memory.h>
-#include <sml_AgentSML.h>
-#include <soar_db.h>
-#include <soar_module.h>
-#include <string.h>
-//#include "agent.h"
-//#include "cli_Commands.h"
-//#include "portability.h"
-//#include "sml_Names.h"
-#include <bitset>
-#include <iosfwd>
-#include <ostream>
-#include <sstream>
-#include <string>
+#include "portability.h"
+
+#include "cli_CommandLineInterface.h"
+
+#include "cli_Commands.h"
+
+#include "sml_Names.h"
+#include "sml_AgentSML.h"
+#include "slot.h"
+
+#include "semantic_memory.h"
+#include "agent.h"
+#include "misc.h"
 
 using namespace cli;
 using namespace sml;
