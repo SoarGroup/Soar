@@ -787,7 +787,7 @@ void smem_statement_container::create_indices()
     //add_structure("CREATE INDEX lti_spreaded ON smem_current_spread (lti_id)");
     //add_structure("CREATE INDEX lti_source ON smem_current_spread (lti_source)");//,lti_id,num_appearances,num_appearances_i_j)");
     //add_structure("CREATE INDEX lti_sink ON smem_uncommitted_spread (lti_id)");
-    add_structure("CREATE INDEX lti_source_1 ON smem_uncommitted_spread (lti_source)");//,sign) WHERE sign=1");
+    add_structure("CREATE INDEX lti_source ON smem_uncommitted_spread (lti_source)");//,sign) WHERE sign=1");
    // add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (lti_source,sign) WHERE sign=0");
     //add_structure("CREATE INDEX lti_source_0 ON smem_uncommitted_spread (sign,lti_source)");
     //add_structure("CREATE INDEX lti_count ON smem_trajectory_num (lti_id)");
