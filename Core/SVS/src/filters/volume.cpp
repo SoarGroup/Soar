@@ -10,9 +10,15 @@
  *  bool smaller_test(sgnode* a, sgnode* b, fp* p)
  *    Returns true if vol(a) < vol(b)
  *
+ * Volume Type 
+ *   bbox - the volume of the node's axis-aligned bounding box
+ *   scale - the product of the dimensions in the scale transform
+ *     (If the geometry is a unit size, this works well)
+ *
  * Filter volume : node_evaluation_filter
  *   Parameters:
  *    sgnode a
+ *    volume_type << bbox scale >> [optional - default is bbox]
  *   Returns:
  *    double - volume of a
  *
@@ -21,18 +27,21 @@
  *    sgnode a
  *    double min [optional - default = -INF]
  *    double max [optional - default = +INF]
+ *    volume_type << bbox scale >> [optional - default is bbox]
  *   Returns:
  *    sgnode a if min <= vol(a) <= max
  *
  *  Filter largest : node_evaluation_rank_filter
  *    Parameters:
  *      set<sgnode> a
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns:
  *      sgnode - the node in input set a with the largest volume
  *
  *  Filter smallest : node_evaluation_rank_filter
  *    Parameters:
  *      set<sgnode> a
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns:
  *      sgnode - the node in input set a with the smallest volume
  *
@@ -40,6 +49,7 @@
  *    Parameters:
  *      sgnode a
  *      sgnode b
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns
  *      bool - true if vol(a) > vol(b)
  *
@@ -47,6 +57,7 @@
  *    Parameters:
  *      sgnode a
  *      sgnode b
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns:
  *      bool - True if vol(a) < vol(b)
  *
@@ -54,6 +65,7 @@
  *    Parameters:
  *      sgnode a
  *      sgnode b
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns:
  *      sgnode b if vol(a) > vol(b)
  *
@@ -61,8 +73,10 @@
  *    Parameters:
  *      sgnode a
  *      sgnode b
+ *    	volume_type << bbox scale >> [optional - default is bbox]
  *    Returns:
  *      sgnode b if vol(a) < vol(b)
+	*
  *
  *********************************************************/
 #include "sgnode_algs.h"
@@ -76,7 +90,16 @@ using namespace std;
 
 double evaluate_volume(sgnode* a, const filter_params* p)
 {
-    return bbox_volume(a);
+    string vol_type = "bbox";
+    get_filter_param(0, p, "volume_type", vol_type);
+    if (vol_type == "scale")
+    {
+        return scale_volume(a);
+    }
+    else
+    {
+        return bbox_volume(a);
+    }
 }
 
 bool larger_test(sgnode* a, sgnode* b, const filter_params* p)
@@ -85,7 +108,16 @@ bool larger_test(sgnode* a, sgnode* b, const filter_params* p)
     {
         return false;
     }
-    return bbox_volume(a) > bbox_volume(b);
+    string vol_type = "bbox";
+    get_filter_param(0, p, "volume_type", vol_type);
+    if (vol_type == "scale")
+    {
+				return scale_volume(a) > scale_volume(b);
+    }
+    else
+    {
+    		return bbox_volume(a) > bbox_volume(b);
+    }
 }
 
 bool smaller_test(sgnode* a, sgnode* b, const filter_params* p)
@@ -94,7 +126,16 @@ bool smaller_test(sgnode* a, sgnode* b, const filter_params* p)
     {
         return false;
     }
-    return bbox_volume(a) < bbox_volume(b);
+    string vol_type = "bbox";
+    get_filter_param(0, p, "volume_type", vol_type);
+    if (vol_type == "scale")
+    {
+				return scale_volume(a) < scale_volume(b);
+    }
+    else
+    {
+    		return bbox_volume(a) < bbox_volume(b);
+    }
 }
 
 ///// filter volume //////
@@ -109,6 +150,7 @@ filter_table_entry* volume_filter_entry()
     e->name = "volume";
     e->description = "Returns volume of each node a";
     e->parameters["a"] = "Sgnode a";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_volume_filter;
     return e;
 }
@@ -125,6 +167,7 @@ filter_table_entry* volume_select_filter_entry()
     e->name = "volume_select";
     e->description = "Select a if min <= volume(a) <= max";
     e->parameters["a"] = "Sgnode a";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->parameters["min"] = "minimum volume to select";
     e->parameters["max"] = "maximum volume to select";
     e->create = &make_volume_select_filter;
@@ -145,6 +188,7 @@ filter_table_entry* smallest_filter_entry()
     e->name = "smallest";
     e->description = "Select node a with the smallest volume";
     e->parameters["a"] = "Sgnode a";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_smallest_filter;
     return e;
 }
@@ -161,6 +205,7 @@ filter_table_entry* largest_filter_entry()
     e->name = "largest";
     e->description = "Select node a with the largest volume";
     e->parameters["a"] = "Sgnode a";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_largest_filter;
     return e;
 }
@@ -178,6 +223,7 @@ filter_table_entry* larger_filter_entry()
     e->description = "Returns true if volume(a) > volume(b)";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_larger_filter;
     return e;
 }
@@ -195,6 +241,7 @@ filter_table_entry* smaller_filter_entry()
     e->description = "Returns true if volume(a) < volume(b)";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_smaller_filter;
     return e;
 }
@@ -212,6 +259,7 @@ filter_table_entry* larger_select_filter_entry()
     e->description = "Select b if volume(a) > volume(b)";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_larger_select_filter;
     return e;
 }
@@ -229,6 +277,7 @@ filter_table_entry* smaller_select_filter_entry()
     e->description = "Select b if volume(a) < volume(b)";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["volume_type"] = "Either bbox or scale";
     e->create = &make_smaller_select_filter;
     return e;
 }

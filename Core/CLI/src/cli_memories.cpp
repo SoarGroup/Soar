@@ -18,7 +18,7 @@
 
 #include "agent.h"
 #include "production.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "rete.h"
 
 using namespace cli;

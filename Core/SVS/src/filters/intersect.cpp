@@ -63,6 +63,7 @@ filter_table_entry* intersect_filter_entry()
     e->description = "Returns true if a intersects b";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["intersect_type"] = "Either bbox or hull";
     e->create = &make_intersect_filter;
     return e;
 }
@@ -80,6 +81,7 @@ filter_table_entry* intersect_select_filter_entry()
     e->description = "Selects b if a intersects b";
     e->parameters["a"] = "Sgnode a";
     e->parameters["b"] = "Sgnode b";
+		e->parameters["intersect_type"] = "Either bbox or hull";
     e->create = &make_intersect_select_filter;
     return e;
 }

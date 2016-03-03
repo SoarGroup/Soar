@@ -10,6 +10,7 @@
 #include <cctype>
 
 #include "cli_Commands.h"
+#include "cli_explain.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -22,6 +23,7 @@
 #include "KernelHeaders.h"
 
 #include "agent.h"
+#include "slot.h"
 #include "xml.h"
 #include "lexer.h"
 
@@ -56,7 +58,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExciseCommand(*this));
-    m_Parser.AddCommand(new cli::ExplainBacktracesCommand(*this));
+    m_Parser.AddCommand(new cli::ExplainCommand(*this));
     m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
     m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
@@ -95,7 +97,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::ReteNetCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
-    m_Parser.AddCommand(new cli::SaveBacktracesCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
     m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));

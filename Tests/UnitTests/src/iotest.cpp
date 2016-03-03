@@ -15,11 +15,11 @@
 
 enum eKernelOptions
 {
-    NONE,
-    EMBEDDED,
-    USE_CLIENT_THREAD,
-    FULLY_OPTIMIZED,
-    AUTO_COMMIT_ENABLED,
+    kOpt_NONE,
+    kOpt_EMBEDDED,
+    kOpt_USE_CLIENT_THREAD,
+    kOpt_FULLY_OPTIMIZED,
+    kOpt_AUTO_COMMIT_ENABLED,
     NUM_KERNEL_OPTIONS,
 };
 
@@ -106,12 +106,12 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
 {
     CPPUNIT_ASSERT(pKernel == NULL);
 
-    if (options.test(EMBEDDED))
+    if (options.test(kOpt_EMBEDDED))
     {
         CPPUNIT_ASSERT(!remote);
-        if (options.test(USE_CLIENT_THREAD))
+        if (options.test(kOpt_USE_CLIENT_THREAD))
         {
-            pKernel = sml::Kernel::CreateKernelInCurrentThread(options.test(FULLY_OPTIMIZED), sml::Kernel::GetDefaultPort());
+            pKernel = sml::Kernel::CreateKernelInCurrentThread(options.test(kOpt_FULLY_OPTIMIZED), sml::Kernel::GetDefaultPort());
         }
         else
         {
@@ -127,7 +127,7 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
 
-    pKernel->SetAutoCommit(options.test(AUTO_COMMIT_ENABLED)) ;
+    pKernel->SetAutoCommit(options.test(kOpt_AUTO_COMMIT_ENABLED)) ;
 
     // Set this to true to give us lots of extra debug information on remote clients
     // (useful in a test app like this).
@@ -156,10 +156,10 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
 void IOTest::testInputLeak()
 {
     KernelBitset options(0);
-    options.set(EMBEDDED);
-    options.set(USE_CLIENT_THREAD);
-    options.set(FULLY_OPTIMIZED);
-    options.set(AUTO_COMMIT_ENABLED);
+    options.set(kOpt_EMBEDDED);
+    options.set(kOpt_USE_CLIENT_THREAD);
+    options.set(kOpt_FULLY_OPTIMIZED);
+    options.set(kOpt_AUTO_COMMIT_ENABLED);
     createKernelAndAgents(options);
 
     sml::Agent* pAgent = pKernel->GetAgent("IOTest") ;
@@ -205,10 +205,10 @@ void IOTest::testInputLeak()
 void IOTest::testInputLeak2()
 {
     KernelBitset options(0);
-    options.set(EMBEDDED);
-    options.set(USE_CLIENT_THREAD);
-    options.set(FULLY_OPTIMIZED);
-    options.set(AUTO_COMMIT_ENABLED);
+    options.set(kOpt_EMBEDDED);
+    options.set(kOpt_USE_CLIENT_THREAD);
+    options.set(kOpt_FULLY_OPTIMIZED);
+    options.set(kOpt_AUTO_COMMIT_ENABLED);
     createKernelAndAgents(options);
 
     sml::Agent* pAgent = pKernel->GetAgent("IOTest") ;
@@ -263,10 +263,10 @@ void IOTest::testInputLeak2()
 void IOTest::testInputLeak3()
 {
     KernelBitset options(0);
-    options.set(EMBEDDED);
-    options.set(USE_CLIENT_THREAD);
-    options.set(FULLY_OPTIMIZED);
-    options.set(AUTO_COMMIT_ENABLED);
+    options.set(kOpt_EMBEDDED);
+    options.set(kOpt_USE_CLIENT_THREAD);
+    options.set(kOpt_FULLY_OPTIMIZED);
+    options.set(kOpt_AUTO_COMMIT_ENABLED);
     createKernelAndAgents(options);
 
     sml::Agent* pAgent = pKernel->GetAgent("IOTest") ;
@@ -318,10 +318,10 @@ void IOTest::testInputLeak3()
 void IOTest::testInputLeak4()
 {
     KernelBitset options(0);
-    options.set(EMBEDDED);
-    options.set(USE_CLIENT_THREAD);
-    options.set(FULLY_OPTIMIZED);
-    options.set(AUTO_COMMIT_ENABLED);
+    options.set(kOpt_EMBEDDED);
+    options.set(kOpt_USE_CLIENT_THREAD);
+    options.set(kOpt_FULLY_OPTIMIZED);
+    options.set(kOpt_AUTO_COMMIT_ENABLED);
     createKernelAndAgents(options);
 
     sml::Agent* pAgent = pKernel->GetAgent("IOTest") ;
@@ -382,10 +382,10 @@ void IOTest::testInputLeak4()
 void IOTest::testOutputLeak1()
 {
     KernelBitset options(0);
-    options.set(EMBEDDED);
-    options.set(USE_CLIENT_THREAD);
-    options.set(FULLY_OPTIMIZED);
-    options.set(AUTO_COMMIT_ENABLED);
+    options.set(kOpt_EMBEDDED);
+    options.set(kOpt_USE_CLIENT_THREAD);
+    options.set(kOpt_FULLY_OPTIMIZED);
+    options.set(kOpt_AUTO_COMMIT_ENABLED);
     createKernelAndAgents(options);
 
     sml::Agent* pAgent = pKernel->GetAgent("IOTest") ;

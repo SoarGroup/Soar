@@ -17,7 +17,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "command_table.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 

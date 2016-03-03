@@ -24,6 +24,7 @@
 #include "rete.h"
 #include "rhs.h"
 #include "test.h"
+#include "condition.h"
 
 using namespace cli;
 using namespace sml;

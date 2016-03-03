@@ -16,7 +16,7 @@
 
 #include "agent.h"
 #include "production.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "reinforcement_learning.h"
 
 using namespace cli;

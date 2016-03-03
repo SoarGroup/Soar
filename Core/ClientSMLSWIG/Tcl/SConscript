@@ -73,7 +73,19 @@ else:
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')
 include_dirs = [ clone.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
-
+include_dirs.append(clone.Dir('#Core/shared').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/debug').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/decision_process').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/episodic_memory').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/explain').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/explanation_based_chunking').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/interface').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/output_manager').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/parsing').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/reinforcement_learning').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/semantic_memory').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/shared').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/soar_representation').abspath)
 # files
 swig_tcl_wrapper_cpp = clone.File('Tcl_sml_ClientInterface_wrap.cpp')
 swig_tcl_interface = clone.File('Tcl_sml_ClientInterface.i')
@@ -138,7 +150,7 @@ tclstep3 = clone.InstallAs(os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl')
 clone.Depends(tclstep1, swig_tcl_interface)
 clone.Depends(tclstep2, swig_tcl_wrapper_cpp)
 clone.Depends(tclstep3, lib)
-clone.Depends(clone.File('#Core/SoarKernel/src/soar_instance.h'), swig_tcl_wrapper_cpp)
+clone.Depends(clone.File('#Core/SoarKernel/src/shared/soar_instance.h'), swig_tcl_wrapper_cpp)
 # clone.Depends(soarlib, swig_tcl_wrapper_cpp)
 
 # Tell SCons to clean up intermediate files when doing a scons -c

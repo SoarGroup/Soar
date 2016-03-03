@@ -18,14 +18,14 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-
+#include "exploration.h"
 #include "print.h"
-#include "tempmem.h"
+#include "slot.h"
 #include "trace.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "decide.h"
 #include "output_manager.h"
-#include "prefmem.h"
+#include "preference.h"
 
 using namespace cli;
 using namespace sml;

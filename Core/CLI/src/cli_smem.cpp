@@ -15,6 +15,7 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "slot.h"
 
 #include "semantic_memory.h"
 #include "agent.h"
