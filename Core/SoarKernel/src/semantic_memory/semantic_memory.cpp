@@ -31,11 +31,11 @@
 #include "working_memory.h"
 #include "working_memory_activation.h"
 #include "xml.h"
-#include "tempmem.h"
+//#include "tempmem.h"
 
 #include "soar_rand.h"
 
-#include "variablization_manager.h"
+//#include "variablization_manager.h"
 
 
 #include <list>
