@@ -998,6 +998,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->smem_sym_failure = make_str_constant(thisAgent, "failure");
     thisAgent->smem_sym_bad_cmd = make_str_constant(thisAgent, "bad-cmd");
     thisAgent->smem_sym_depth = make_str_constant(thisAgent, "depth");
+    thisAgent->smem_sym_spontaneously_retrieved = make_str_constant(thisAgent, "spontaneously-retrieved");
 
     thisAgent->smem_sym_retrieve = make_str_constant(thisAgent, "retrieve");
     thisAgent->smem_sym_query = make_str_constant(thisAgent, "query");
@@ -1109,6 +1110,7 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->smem_sym_failure));
     release_helper(thisAgent, &(thisAgent->smem_sym_bad_cmd));
     release_helper(thisAgent, &(thisAgent->smem_sym_depth));
+    release_helper(thisAgent, &(thisAgent->smem_sym_spontaneously_retrieved));
 
     release_helper(thisAgent, &(thisAgent->smem_sym_retrieve));
     release_helper(thisAgent, &(thisAgent->smem_sym_query));

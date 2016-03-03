@@ -254,6 +254,7 @@ typedef struct EXPORT agent_struct
     Symbol*             smem_sym_failure;
     Symbol*             smem_sym_bad_cmd;
 
+    Symbol*             smem_sym_spontaneously_retrieved;
     Symbol*             smem_sym_retrieve;
     Symbol*             smem_sym_query;
     Symbol*             smem_sym_negquery;
@@ -759,6 +760,11 @@ typedef struct EXPORT agent_struct
     smem_pooled_symbol_set* smem_changed_ids;
     bool smem_ignore_changes;
 
+    smem_lti_map* smem_in_wmem;//These are for spreading.
+    smem_lti_unordered_map* smem_spreaded_to;
+    smem_lti_set* smem_context_additions;
+    smem_lti_set* smem_context_removals;
+
 	// BasicWeightedCue from JSoar for unit testing
 	class BasicWeightedCue
 	{
@@ -769,7 +775,6 @@ typedef struct EXPORT agent_struct
 		BasicWeightedCue(wme_struct* c, long w) : cue(c), weight(w) {}
 	};
 	BasicWeightedCue* lastCue;
-
 
     // dynamic RHS counters
     std::unordered_map< std::string, uint64_t >* dyn_counters;
