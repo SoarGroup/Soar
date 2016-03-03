@@ -816,6 +816,10 @@ void smem_statement_container::drop_tables(agent* new_agent)
     new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_trajectory_num");
 
     new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_prohibited");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_current_context");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_uncommitted_spread");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_committed_spread");
+    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_current_spread_activations");
 }
 
 smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->smem_db)
