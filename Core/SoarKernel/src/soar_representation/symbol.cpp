@@ -22,7 +22,6 @@
 
 #include "agent.h"
 #include "debug.h"
-#include "init_soar.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "print.h"
@@ -30,6 +29,7 @@
 #include "xml.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 /* -------------------------------------------------------------------

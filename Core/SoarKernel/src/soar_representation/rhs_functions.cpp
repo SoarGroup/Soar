@@ -35,13 +35,13 @@
  * =======================================================================
  */
 
+#include <run_soar.h>
 #include "rhs_functions.h"
 
 #include "agent.h"
 #include "decide.h"
 #include "ebc.h"
 #include "gsysparam.h"
-#include "init_soar.h"
 #include "io_link.h"
 #include "mem.h"
 #include "print.h"

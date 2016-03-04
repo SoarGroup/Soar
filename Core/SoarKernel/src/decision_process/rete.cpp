@@ -1,3 +1,4 @@
+#include <run_soar.h>
 #include "rete.h"
 
 #include "agent.h"
@@ -8,7 +9,6 @@
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "mem.h"

@@ -17,7 +17,6 @@
 #include "debug.h"
 #include "ebc.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "print.h"
@@ -29,6 +28,7 @@
 #include "test.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 void init_production_utilities(agent* thisAgent)

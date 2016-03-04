@@ -20,7 +20,6 @@
 #include "debug.h"
 #include "decide.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -38,6 +37,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <run_soar.h>
 
 using namespace soar_TraceNames;
 

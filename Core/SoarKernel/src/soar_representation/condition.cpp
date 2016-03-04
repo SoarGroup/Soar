@@ -11,11 +11,11 @@
  * =======================================================================
  */
 
+#include <run_soar.h>
 #include "condition.h"
 
 #include "agent.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "debug.h"
 #include "test.h"
 #include "memory_manager.h"

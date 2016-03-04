@@ -12,7 +12,6 @@
 #include "debug.h"
 #include "ebc.h"
 #include "output_manager.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -21,6 +20,7 @@
 #include "working_memory.h"
 
 #include <assert.h>
+#include <run_soar.h>
 
 /* =================================================================
 

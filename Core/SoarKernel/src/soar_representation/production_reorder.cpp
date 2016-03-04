@@ -14,6 +14,7 @@
  *
  * =======================================================================
  */
+#include <run_soar.h>
 #include "production.h"
 #include "production_reorder.h"
 
@@ -23,7 +24,6 @@
 #include "symbol.h"
 #include "test.h"
 #include "debug.h"
-#include "init_soar.h"
 #include "mem.h"
 #include "print.h"
 #include "xml.h"
