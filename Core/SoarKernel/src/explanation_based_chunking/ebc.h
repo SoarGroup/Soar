@@ -111,8 +111,7 @@ class Explanation_Based_Chunker
         uint64_t get_chunk_count() { return chunk_count; };
         void     set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
         char*    get_chunk_name_prefix() { return chunk_name_prefix; };
-        void     set_chunk_name_prefix(const char* pChunk_name_prefix)
-                 { free(chunk_name_prefix); strcpy(chunk_name_prefix, pChunk_name_prefix); };
+        void     set_chunk_name_prefix(const char* pChunk_name_prefix);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -158,8 +157,8 @@ class Explanation_Based_Chunker
         uint64_t            chunks_this_d_cycle;
 
         /* String that every chunk name begins with */
-        char                chunk_name_prefix[kChunkNamePrefixMaxLength];
-        char                justification_name_prefix[kChunkNamePrefixMaxLength];
+        char*               chunk_name_prefix;
+        char*               justification_name_prefix;
 
         /* Variables used by dependency analysis methods */
         ::list*             grounds;

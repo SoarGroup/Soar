@@ -1,6 +1,7 @@
 #ifndef SGNODE_ALGS_H
 #define SGNODE_ALGS_H
 
+#include "mat.h"
 #include <vector>
 
 class sgnode;

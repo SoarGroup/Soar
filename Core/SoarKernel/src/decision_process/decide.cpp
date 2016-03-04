@@ -16,6 +16,7 @@
  */
 
 
+#include <run_soar.h>
 #include "decide.h"
 
 #include "agent.h"
@@ -27,7 +28,6 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "exploration.h"
-#include "init_soar.h"
 #include "io_link.h"
 #include "instantiation.h"
 #include "mem.h"

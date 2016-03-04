@@ -29,7 +29,6 @@
 #include "agent.h"
 #include "callback.h"
 #include "decide.h"
-#include "init_soar.h"
 #include "lexer.h"
 #include "print.h"
 #include "production.h"
@@ -42,6 +41,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 using namespace soar_TraceNames;

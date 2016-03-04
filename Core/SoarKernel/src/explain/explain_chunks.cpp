@@ -155,12 +155,15 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
         lChunkCondInst = cond->inst;
-        dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);
-        assert(lChunkCondInst->backtrace_number == pBacktraceNumber);
-        /* The backtrace should have already added all instantiations that contained
-         * grounds, so we can just look up the instantiation for each condition */
-        lchunkInstRecord = thisAgent->explanationLogger->get_instantiation(lChunkCondInst);
-        assert(lchunkInstRecord);
+        if (lChunkCondInst)
+        {
+            dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);
+            /* The backtrace should have already added all instantiations that contained
+             * grounds, so we can just look up the instantiation for each condition */
+            lchunkInstRecord = thisAgent->explanationLogger->get_instantiation(lChunkCondInst);
+        } else {
+            lchunkInstRecord = NULL;
+        }
         lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
         cond->inst = pChunkInstantiation;
@@ -211,9 +214,12 @@ void chunk_record::generate_dependency_paths()
     {
         l_cond = (*it);
         l_inst = l_cond->get_instantiation();
-        l_path = l_inst->get_path_to_base();
-        dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
-        l_cond->set_path_to_base(l_path);
+        if (l_inst)
+        {
+            l_path = l_inst->get_path_to_base();
+            dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
+            l_cond->set_path_to_base(l_path);
+        }
     }
 }
 

@@ -14,10 +14,10 @@
 #include "mem.h"
 
 #include "agent.h"
-#include "init_soar.h"
 #include "print.h"
 
 #include <assert.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 /* ====================================================================

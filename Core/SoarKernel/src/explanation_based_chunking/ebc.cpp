@@ -46,8 +46,9 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     chunkNameFormat = ruleFormat;
     max_chunks_reached = false;
-    strcpy(chunk_name_prefix, "chunk");
-    strcpy(justification_name_prefix, "justify");
+
+    chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
+    justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
     reinit();
 }
@@ -63,9 +64,17 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete rulesym_to_identity_map;
     delete unification_map;
     delete o_id_to_ovar_debug_map;
-    free(chunk_name_prefix);
-    free(justification_name_prefix);
+
+    free_memory_block_for_string(thisAgent, chunk_name_prefix);
+    free_memory_block_for_string(thisAgent, justification_name_prefix);
+
 }
+
+void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
+{
+    free_memory_block_for_string(thisAgent, chunk_name_prefix);
+    chunk_name_prefix = make_memory_block_for_string(thisAgent, pChunk_name_prefix);
+};
 
 void Explanation_Based_Chunker::reinit()
 {

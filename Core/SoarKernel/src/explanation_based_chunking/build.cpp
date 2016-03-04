@@ -20,7 +20,6 @@
 #include "debug.h"
 #include "decide.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -38,6 +37,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <run_soar.h>
 
 using namespace soar_TraceNames;
 
@@ -863,19 +863,23 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
     {
         #ifdef BUILD_WITH_EXPLAINER
         assert(m_prod);
+        //debug_trace_set(2,true);
         thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationLogger->increment_stat_justifications();
         } else {
             thisAgent->explanationLogger->increment_stat_succeeded();
         }
+        //debug_trace_set(2,false);
         #endif
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
 
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
         #ifdef BUILD_WITH_EXPLAINER
+        //debug_trace_set(2,true);
         thisAgent->explanationLogger->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationLogger->cancel_chunk_record();
+        //debug_trace_set(2,false);
         #endif
         excise_production(thisAgent, m_prod, false);
         m_chunk_inst->in_ms = false;
@@ -884,15 +888,19 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             #ifdef BUILD_WITH_EXPLAINER
+            //debug_trace_set(2,true);
             thisAgent->explanationLogger->increment_stat_justification_did_not_match();
             thisAgent->explanationLogger->cancel_chunk_record();
+            //debug_trace_set(2,false);
             #endif
             excise_production(thisAgent, m_prod, false);
         } else {
             #ifdef BUILD_WITH_EXPLAINER
+            //debug_trace_set(2,true);
             thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
             assert(m_prod);
             thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+            //debug_trace_set(2,false);
             #endif
             /* MToDo | Why don't we excise the chunk here like we do non-matching
              * justifications? It doesn't seem like either case of non-matching rule
@@ -960,7 +968,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     #ifdef BUILD_WITH_EXPLAINER
+    //debug_trace_set(2,true);
     thisAgent->explanationLogger->add_chunk_record(m_inst);
+    //debug_trace_set(2,false);
     #endif
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
@@ -986,8 +996,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         thisAgent->outputManager->display_soar_error(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
         #ifdef BUILD_WITH_EXPLAINER
+        //debug_trace_set(2,true);
         thisAgent->explanationLogger->increment_stat_no_grounds();
         thisAgent->explanationLogger->cancel_chunk_record();
+        //debug_trace_set(2,false);
         #endif
         clean_up();
         return;
@@ -1003,7 +1015,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_BUILD_CHUNK_CONDS, "Counterparts conditions for variablization:\n%6", m_vrblz_top, m_results);
 
     #ifdef BUILD_WITH_EXPLAINER
+    //debug_trace_set(2,true);
     thisAgent->explanationLogger->add_result_instantiations(m_inst, m_results);
+    //debug_trace_set(2,false);
     #endif
 
     if (variablize)
@@ -1061,7 +1075,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
+            //debug_trace_set(2,true);
             thisAgent->explanationLogger->cancel_chunk_record();
+            //debug_trace_set(2,false);
             #endif
             clean_up();
             return;
