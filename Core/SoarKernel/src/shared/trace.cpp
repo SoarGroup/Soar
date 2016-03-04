@@ -27,7 +27,6 @@
 #include "symbol.h"
 #include "agent.h"
 #include "print.h"
-#include "init_soar.h"
 #include "decide.h"
 #include "slot.h"
 #include "working_memory.h"
@@ -36,6 +35,7 @@
 #include "output_manager.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 using namespace soar_TraceNames;

@@ -1,6 +1,5 @@
 #include "mem.h"
 #include "agent.h"
-#include "init_soar.h"
 #include "print.h"
 #include "debug.h"
 #include "sml_Names.h"
@@ -8,6 +7,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <run_soar.h>
 #include "memory_manager.h"
 #include <iostream>
 

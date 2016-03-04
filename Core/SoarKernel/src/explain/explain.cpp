@@ -81,6 +81,10 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
+        if (it->second->original_production)
+        {
+            it->second->original_production->save_for_justification_explanation = false;
+        }
         delete it->second;
     }
     instantiations->clear();
@@ -402,7 +406,9 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         chunk_record* lFoundChunk = get_chunk_record(sym);
         if (lFoundChunk)
         {
+            //debug_trace_set(2,true);
             discuss_chunk(lFoundChunk);
+            //debug_trace_set(2,false);
             return true;
         }
 
@@ -540,14 +546,18 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
         {
             outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
         }
+        //debug_trace_set(2,true);
         lSuccess = print_chunk_explanation_for_id(lObjectID);
+        //debug_trace_set(2,false);
     } else if (lFirstChar == 'i')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {
             outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
         }
+        //debug_trace_set(2,true);
         lSuccess = print_instantiation_explanation_for_id(lObjectID);
+        //debug_trace_set(2,false);
     } else if (lFirstChar == 'l')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))

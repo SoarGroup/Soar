@@ -1,4 +1,3 @@
-
 #include "ebc.h"
 
 #include "agent.h"

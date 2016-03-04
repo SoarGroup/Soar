@@ -127,7 +127,7 @@ typedef struct EXPORT symbol_struct
     bool        is_constant();
     bool        is_lti();
     bool        is_sti();
-    bool is_variablizable();
+    bool        is_variablizable();
     bool        is_constant_or_marked_variable(tc_number tc);
     bool        is_in_tc(tc_number tc);
     bool        is_string();
@@ -478,7 +478,9 @@ double get_number_from_symbol(Symbol* sym);
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 #include <string>
 #include <iostream>
+#include "enums.h"
 std::string get_stacktrace(const char* prefix);
+extern bool is_DT_mode_enabled(TraceMode mode);
 #endif
 
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
@@ -503,7 +505,10 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x)
     {
         std::string caller_string = get_stacktrace("add_ref");
 //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
-        std::cout << "++ | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+        if (is_DT_mode_enabled(DT_ID_LEAKING))
+        {
+            std::cout << "++ | " << strName.c_str() << " |" << x->reference_count << " | " << caller_string.c_str() << "\n";
+        }
     }
 #endif
 
@@ -533,8 +538,11 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_stacktrace("remove_ref");
-        //dprint(DT_DEBUG, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
-        std::cout << "-- | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+        if (is_DT_mode_enabled(DT_ID_LEAKING))
+        {
+            std::cout << "-- | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+        }
     }
 #endif
 

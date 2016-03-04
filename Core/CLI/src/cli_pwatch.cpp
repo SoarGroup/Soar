@@ -6,6 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include <run_soar.h>
 #include "portability.h"
 
 #include "sml_Utils.h"
@@ -21,7 +22,6 @@
 #include "agent.h"
 #include "production.h"
 #include "symbol.h"
-#include "init_soar.h"
 
 using namespace cli;
 using namespace sml;

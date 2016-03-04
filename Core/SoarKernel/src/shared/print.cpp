@@ -13,12 +13,12 @@
  * =======================================================================
  */
 
+#include <run_soar.h>
 #include "print.h"
 
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"

@@ -842,7 +842,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
     inst->GDS_evaluated_already = false;
-    inst->prod_name = prod ? prod->name : thisAgent->fake_instantiation_symbol;
+    inst->prod_name = prod ? prod->name : thisAgent->architecture_inst_symbol;
     symbol_add_ref(thisAgent, inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
@@ -1298,6 +1298,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
+    symbol_remove_ref(thisAgent, inst->prod_name);
+
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
     while (riter != inst_list.rend())
@@ -1313,7 +1315,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
-    symbol_remove_ref(thisAgent, inst->prod_name);
     inst = NULL;
 }
 

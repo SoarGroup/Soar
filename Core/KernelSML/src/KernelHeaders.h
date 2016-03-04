@@ -11,11 +11,11 @@
 /////////////////////////////////////////////////////////////////
 
 // NOTE: Requires that portability.h be loaded first
+#include <run_soar.h>
 #include "portability.h"
 #include "kernel.h"
 #include "ebc.h"
 #include "decide.h"
-#include "init_soar.h"
 #include "callback.h"
 #include "io_link.h"
 #include "lexer.h"

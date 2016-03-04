@@ -17,7 +17,6 @@
 #include "debug.h"
 #include "ebc.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "print.h"
@@ -29,6 +28,7 @@
 #include "test.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 void init_production_utilities(agent* thisAgent)
@@ -649,10 +649,14 @@ void deallocate_production(agent* thisAgent, production* prod)
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
+#ifdef BUILD_WITH_EXPLAINER
+    //debug_trace_set(2,true);
     if (prod->save_for_justification_explanation && thisAgent->explanationLogger)
     {
         thisAgent->explanationLogger->save_excised_production(prod);
     }
+    //debug_trace_set(2,false);
+#endif
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);

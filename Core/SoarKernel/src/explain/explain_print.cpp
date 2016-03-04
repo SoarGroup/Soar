@@ -301,6 +301,8 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
                 outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                     id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                     lCond->condition_tests.attr, lCond->condition_tests.value, is_condition_related(lCond) ? "*" : "");
+                deallocate_test(thisAgent, id_test_without_goal_test);
+
             } else {
                 /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */
                 if (currentNegativeCond)
@@ -332,7 +334,8 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
                       lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
                     deallocate_test(thisAgent, temp_sti_test);
                 }
-
+                deallocate_test(thisAgent, id_test_without_goal_test);
+                deallocate_test(thisAgent, id_test_without_goal_test2);
                 if (currentNegativeCond)
                 {
                     currentNegativeCond = currentNegativeCond->next;
@@ -455,6 +458,9 @@ void Explanation_Logger::print_chunk_explanation()
                       lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
                     deallocate_test(thisAgent, temp_sti_test);
                 }
+                deallocate_test(thisAgent, id_test_without_goal_test);
+                deallocate_test(thisAgent, id_test_without_goal_test2);
+
                 print_path_to_base(lCond->get_path_to_base(), true);
             } else {
                 if (lCond->matched_wme)

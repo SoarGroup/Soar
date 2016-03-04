@@ -22,10 +22,10 @@
  * =======================================================================
  */
 
+#include <run_soar.h>
 #include "callback.h"
 
 #include "agent.h"
-#include "init_soar.h"
 #include "print.h"
 
 #include <stdlib.h>

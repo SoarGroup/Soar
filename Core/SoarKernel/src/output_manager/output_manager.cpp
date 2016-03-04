@@ -17,6 +17,8 @@
 #include "print.h"
 #include "agent.h"
 
+bool is_DT_mode_enabled(TraceMode mode) { return Output_Manager::Get_OM().is_debug_mode_enabled(mode); }
+
 AgentOutput_Info::AgentOutput_Info()
 {
     print_enabled = true;
