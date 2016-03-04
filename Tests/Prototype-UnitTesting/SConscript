@@ -1,0 +1,48 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Alex Turner <alexlt@umich.edu>
+
+import os, sys, platform
+
+Import('env', 'g_msvs_variant')
+Import('env', 'InstallDir')
+
+clone = env.Clone()
+scu_src = ['Prototype-UnitTesting.cxx']
+# scu_src = [env.File('Prototype-UnitTesting.cxx')]
+
+clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('kernel/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
+# clone.Append(LINKFLAGS = ['-v'])
+
+srcdirs = ['kernel/*', 'kernel', 'SoarHelpers', 'TestHarness']
+src = []
+if env['SCU']:
+	src = scu_src
+else:
+	for d in srcdirs:
+		src += Glob(d + '/*.cpp')
+
+src2 = []
+
+# SCU is not linking properly, so overwrite with Alex's previous non-scu list until we can figure out why
+src = [Glob('kernel/*/*.cpp'), Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]
+
+# print "src1: ", src
+# print "src2: ", src2
+put_obj = clone.Program(target = 'Prototype-UnitTesting', source = src)
+t = env.Install('$OUT_DIR', put_obj)
+
+# t = env.Install('$OUT_DIR', clone.Program('Prototype-UnitTesting', src))
+
+if 'MSVSProject' in env['BUILDERS']:
+	proj = env.MSVSProject(
+		target = '#prototype-unittesting' + env['MSVSPROJECTSUFFIX'],
+		srcs = [ str(s) for s in src ],
+		buildtarget = t,
+		variant = g_msvs_variant,
+		auto_build_solution = 0,
+	)
+	Import('msvs_projs')
+	msvs_projs.append(proj)
+
+Return('t')

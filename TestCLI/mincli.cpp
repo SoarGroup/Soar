@@ -146,26 +146,26 @@ void execcmd(const string& c)
          *    identifier on the command line to print it.  Not sure how
          *    useful this is, but it was in the old mincli but had a bug. -- */
         if ((c.length() > 1) && isupper(c[0]))
+    {
+        isident = true;
+        for (int i = 1; i < c.size(); ++i)
         {
-            isident = true;
-            for (int i = 1; i < c.size(); ++i)
+            if (!isdigit(c[i]))
             {
-                if (!isdigit(c[i]))
-                {
-                    isident = false;
-                }
+                isident = false;
             }
         }
+    }
         string pc;
-        if (isident)
-        {
+    if (isident)
+    {
             pc.assign("print ");
-            pc += c;
-        }
-        else
-        {
+        pc += c;
+    }
+    else
+    {
             pc = c;
-        }
+    }
         
         out = agent->ExecuteCommandLine(pc.c_str());
         out = trim(out);

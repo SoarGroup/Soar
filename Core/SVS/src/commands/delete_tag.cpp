@@ -17,7 +17,7 @@
 #include "svs.h"
 #include "scene.h"
 #include "command_table.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 
@@ -73,7 +73,7 @@ class delete_tag_command : public command
         
         bool parse()
         {
-            wme* idwme, *tagwme, *valwme;
+            wme* idwme, *tagwme;
             
             // id - the id of the node to delete the tag from
             if (!si->find_child_wme(root, "id", idwme))

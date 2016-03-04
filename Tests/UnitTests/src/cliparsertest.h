@@ -8,7 +8,7 @@ class CliAdapter : public cli::Cli
 {
     public:
         virtual ~CliAdapter() {}
-        
+
         virtual bool SetError(const std::string& error)
         {
             return false;
@@ -81,11 +81,11 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0)
+        virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2)
         {
             return false;
         }
-        virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0)
+        virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0)
         {
             return false;
         }
@@ -237,10 +237,6 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoSaveBacktraces(bool* pSetting = 0)
-        {
-            return false;
-        }
         virtual bool DoSelect(const std::string* pOp = 0)
         {
             return false;
@@ -321,23 +317,25 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
+#ifndef NO_SVS
         virtual bool DoSVS(const std::vector<std::string>& args)
         {
             return false;
         }
+#endif
 };
 
 class CliEcho : public CliAdapter
 {
     public:
         virtual ~CliEcho() {}
-        
+
         void SetExpected(unsigned numArgs, bool newLine)
         {
             this->numArgs = numArgs;
             this->newLine = newLine;
         }
-        
+
         virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline)
         {
             return (argv.size() == numArgs) && (echoNewline == newLine);
@@ -351,12 +349,12 @@ class CliMaxDCTime : public CliAdapter
 {
     public:
         virtual ~CliMaxDCTime() {}
-        
+
         void SetExpected(int n)
         {
             this->n = n;
         }
-        
+
         virtual bool DoMaxDCTime(const int n)
         {
             return this->n == n;

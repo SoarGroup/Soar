@@ -90,6 +90,11 @@ class sgnode : public cliproxy
         virtual void walk_geoms(std::vector<geometry_node*>& g) = 0;
         virtual void walk_geoms(std::vector<const geometry_node*>& g) const = 0;
         
+        // Returns the maximum and minimum values of the node projected on the given axis
+        //   NOTE!: Assumes the given axis is a unit vector
+        virtual double max_project_on_axis(const vec3& axis) const = 0;
+        virtual double min_project_on_axis(const vec3& axis) const = 0;
+
         
         // Accessors/Mutators for tags
         const tag_map& get_all_tags() const;
@@ -142,13 +147,13 @@ class group_node : public sgnode
         group_node(const std::string& id) : sgnode(id, true) {}
         ~group_node();
         
-        sgnode* get_child(int i);
-        const sgnode* get_child(int i) const;
+        sgnode* get_child(size_t i);
+        const sgnode* get_child(size_t i) const;
         bool attach_child(sgnode* c);
         void detach_child(sgnode* c);
         void walk(std::vector<sgnode*>& result);
         
-        int num_children() const
+        size_t num_children() const
         {
             return children.size();
         }
@@ -160,6 +165,9 @@ class group_node : public sgnode
         void walk_geoms(std::vector<const geometry_node*>& g) const;
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
+
+        double max_project_on_axis(const vec3& axis) const;
+        double min_project_on_axis(const vec3& axis) const; 
         
     private:
         void update_shape();
@@ -203,6 +211,9 @@ class convex_node : public geometry_node
         void gjk_local_support(const vec3& dir, vec3& support) const;
         
         void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os);
+
+        double max_project_on_axis(const vec3& axis) const;
+        double min_project_on_axis(const vec3& axis) const; 
         
     private:
         void set_transform_dirty_sub();
@@ -229,6 +240,9 @@ class ball_node : public geometry_node
         void gjk_local_support(const vec3& dir, vec3& support) const;
         
         void proxy_use_sub(const std::vector<std::string>& args, std::ostream& os);
+
+        double max_project_on_axis(const vec3& axis) const;
+        double min_project_on_axis(const vec3& axis) const; 
         
     private:
         void update_shape();

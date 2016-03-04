@@ -1,0 +1,24 @@
+#sp {answer*chunk*apply25f2*onc*t3-1
+#    (state <s1> ^test-current 1)
+#    (state <s1> ^superstate nil)
+#    (state <s1> ^test-item2 <c1>)
+#    (state <s1> -^test-item2 { <> <c1> > <c1> <dupe> })
+#    (state <s1> ^test-item2 { < <c1> <c2> })
+#    (state <s1> -^test-item2 { <> <c2> <> <c1> <dupe> })
+#    -->
+#    (<s1> ^highest <c1> + ^lowest <c2> + ^test-done 1 +)
+#}
+
+sp {answer*chunk*apply25f2*onc*t3-1
+    (state <s1> ^superstate nil)
+    (<s1> ^test-item2 <c4>)
+    (<s1> -^test-item2 { <> <c4> > <c4> <dupe> })
+    (<s1> ^test-item2 <c1>)
+    (<s1> ^test-item2 { < <c1> <c2> })
+    (<s1> -^test-item2 { <> <c2> <> <c1> <dupe> })
+    (<s1> ^test-item2 { < <c4> <c3> })
+    -->
+    (<s1> ^highest <c4> +)
+    (<s1> ^lowest <c2> +)
+    (<s1> ^test-done 1 +)
+}

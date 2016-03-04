@@ -5,8 +5,21 @@
 #include <vector>
 #include "serializable.h"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#elif _MSC_VER
+#pragma warning(push, 0)
+#endif
+
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif _MSC_VER
+#pragma warning(pop)
+#endif
 
 typedef Eigen::Vector3d vec3;
 typedef Eigen::Vector4d vec4;
@@ -21,24 +34,24 @@ typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> m
  can treat them like regular matrices.
 */
 
-typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, true,  true> mat_iblock; // i means inner_panel template arg = true
-typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, false, true> mat_block;
-typedef Eigen::Block<      mat, 1,              Eigen::Dynamic, false, true> row_block;
-typedef Eigen::Block<      mat, Eigen::Dynamic, 1,              false, true> col_block;
-typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, true,  true> const_mat_iblock;
-typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, false, true> const_mat_block;
-typedef Eigen::Block<const mat, 1,              Eigen::Dynamic, false, true> const_row_block;
-typedef Eigen::Block<const mat, Eigen::Dynamic, 1,              false, true> const_col_block;
+typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, true> mat_iblock; // i means inner_panel template arg = true
+typedef Eigen::Block<      mat, Eigen::Dynamic, Eigen::Dynamic, false> mat_block;
+typedef Eigen::Block<      mat, 1,              Eigen::Dynamic, false> row_block;
+typedef Eigen::Block<      mat, Eigen::Dynamic, 1,              false> col_block;
+typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, true> const_mat_iblock;
+typedef Eigen::Block<const mat, Eigen::Dynamic, Eigen::Dynamic, false> const_mat_block;
+typedef Eigen::Block<const mat, 1,              Eigen::Dynamic, false> const_row_block;
+typedef Eigen::Block<const mat, Eigen::Dynamic, 1,              false> const_col_block;
 
 typedef Eigen::Stride<Eigen::Dynamic, 1> mat_stride;
 typedef Eigen::Map<mat, Eigen::Unaligned, mat_stride> mat_map;
 typedef Eigen::Map<const mat, Eigen::Unaligned, mat_stride> const_mat_map;
 
-typedef Eigen::Block<      mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> map_block;
-typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, true,  true> const_map_iblock;
-typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> const_map_block;
-typedef Eigen::Block<const_mat_map, Eigen::Dynamic, 1,              false, true> const_map_col_block;
-typedef Eigen::Block<const_mat_map, 1,              Eigen::Dynamic, false, true> const_map_row_block;
+typedef Eigen::Block<      mat_map, Eigen::Dynamic, Eigen::Dynamic, false> map_block;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, true> const_map_iblock;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, false> const_map_block;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, 1,              false> const_map_col_block;
+typedef Eigen::Block<const_mat_map, 1,              Eigen::Dynamic, false> const_map_row_block;
 
 /*
  If you define a function argument as "const mat &" and a block or a
@@ -51,7 +64,7 @@ class mat_view : public mat_map
 {
     public:
         mat_view(mat& m)               : mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
-        mat_view(mat& m, int r, int c) : mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+        mat_view(mat& m, size_t r, size_t c) : mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
         mat_view(const mat_view& m)    : mat_map(m) {}
 };
 
@@ -64,7 +77,7 @@ class const_mat_view : public const_mat_map
         const_mat_view(const mat& m)                 : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
         const_mat_view(const rvec& v)                : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
         const_mat_view(const cvec& v)                : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
-        const_mat_view(const mat& m, int r, int c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
+        const_mat_view(const mat& m, size_t r, size_t c)   : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
         
         // for things like m.block
         const_mat_view(const mat_block& b)           : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
@@ -95,57 +108,57 @@ class dyn_mat : public serializable
 {
     public:
         dyn_mat();
-        dyn_mat(int nrows, int ncols);
-        dyn_mat(int nrows, int ncols, int init_row_capacity, int init_col_capacity);
+        dyn_mat(size_t nrows, size_t ncols);
+        dyn_mat(size_t nrows, size_t ncols, size_t init_row_capacity, size_t init_col_capacity);
         dyn_mat(const dyn_mat& other);
         dyn_mat(const_mat_view m);
         
-        void resize(int nrows, int ncols);
+        void resize(size_t nrows, size_t ncols);
         void append_row();
         void append_row(const rvec& row);
-        void insert_row(int i);
-        void insert_row(int i, const rvec& row);
-        void remove_row(int i);
+        void insert_row(size_t i);
+        void insert_row(size_t i, const rvec& row);
+        void remove_row(size_t i);
         void append_col();
         void append_col(const cvec& col);
-        void insert_col(int i);
-        void insert_col(int i, const cvec& col);
-        void remove_col(int i);
+        void insert_col(size_t i);
+        void insert_col(size_t i, const cvec& col);
+        void remove_col(size_t i);
         
         void serialize(std::ostream& os) const;
         void unserialize(std::istream& is);
         
-        double& operator()(int i, int j)
+        double& operator()(size_t i, size_t j)
         {
             assert(!released && 0 <= i && i < r && 0 <= j && j < c);
             return buf(i, j);
         }
         
-        double operator()(int i, int j) const
+        double operator()(size_t i, size_t j) const
         {
             assert(!released && 0 <= i && i < r && 0 <= j && j < c);
             return buf(i, j);
         }
         
-        mat::RowXpr row(int i)
+        mat::RowXpr row(size_t i)
         {
             assert(!released && 0 <= i && i < r);
             return buf.row(i);
         }
         
-        mat::ConstRowXpr row(int i) const
+        mat::ConstRowXpr row(size_t i) const
         {
             assert(!released && 0 <= i && i < r);
             return buf.row(i);
         }
         
-        mat::ColXpr col(int j)
+        mat::ColXpr col(size_t j)
         {
             assert(!released && 0 <= j && j < c);
             return buf.col(j);
         }
         
-        mat::ConstColXpr col(int j) const
+        mat::ConstColXpr col(size_t j) const
         {
             assert(!released && 0 <= j && j < c);
             return buf.col(j);
@@ -163,13 +176,13 @@ class dyn_mat : public serializable
             return const_mat_view(buf, r, c);
         }
         
-        inline int rows() const
+        inline size_t rows() const
         {
             assert(!released);
             return r;
         }
         
-        inline int cols() const
+        inline size_t cols() const
         {
             assert(!released);
             return c;
@@ -189,7 +202,7 @@ class dyn_mat : public serializable
         
     public:
         mat buf;
-        int r, c;
+        size_t r, c;
         bool released;
 };
 
@@ -268,7 +281,7 @@ class bbox
                 min_pt = pts[0];
                 max_pt = pts[0];
                 
-                for (int i = 1; i < pts.size(); ++i)
+                for (size_t i = 1; i < pts.size(); ++i)
                 {
                     include(pts[i]);
                 }
@@ -402,7 +415,6 @@ class bbox
         {
             return (max_pt[0] - min_pt[0]) * (max_pt[1] - min_pt[1]) * (max_pt[2] - min_pt[2]);
         }
-        
         
         friend std::ostream& operator<<(std::ostream& os, const bbox& b);
         

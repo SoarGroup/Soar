@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SPARSE_DIAGONAL_PRODUCT_H
 #define EIGEN_SPARSE_DIAGONAL_PRODUCT_H
+
+namespace Eigen { 
 
 // The product of a diagonal matrix with a sparse matrix can be easily
 // implemented using expression template.
@@ -91,7 +78,11 @@ class SparseDiagonalProduct
     EIGEN_SPARSE_PUBLIC_INTERFACE(SparseDiagonalProduct)
 
     typedef internal::sparse_diagonal_product_inner_iterator_selector
-                <_LhsNested,_RhsNested,SparseDiagonalProduct,LhsMode,RhsMode> InnerIterator;
+                      <_LhsNested,_RhsNested,SparseDiagonalProduct,LhsMode,RhsMode> InnerIterator;
+    
+    // We do not want ReverseInnerIterator for diagonal-sparse products,
+    // but this dummy declaration is needed to make diag * sparse * diag compile.
+    class ReverseInnerIterator;
 
     EIGEN_STRONG_INLINE SparseDiagonalProduct(const Lhs& lhs, const Rhs& rhs)
       : m_lhs(lhs), m_rhs(rhs)
@@ -131,19 +122,23 @@ class sparse_diagonal_product_inner_iterator_selector
 <Lhs,Rhs,SparseDiagonalProductType,SDP_IsDiagonal,SDP_IsSparseColMajor>
   : public CwiseBinaryOp<
       scalar_product_op<typename Lhs::Scalar>,
-      SparseInnerVectorSet<Rhs,1>,
-      typename Lhs::DiagonalVectorType>::InnerIterator
+      const typename Rhs::ConstInnerVectorReturnType,
+      const typename Lhs::DiagonalVectorType>::InnerIterator
 {
     typedef typename CwiseBinaryOp<
       scalar_product_op<typename Lhs::Scalar>,
-      SparseInnerVectorSet<Rhs,1>,
-      typename Lhs::DiagonalVectorType>::InnerIterator Base;
+      const typename Rhs::ConstInnerVectorReturnType,
+      const typename Lhs::DiagonalVectorType>::InnerIterator Base;
     typedef typename Lhs::Index Index;
+    Index m_outer;
   public:
     inline sparse_diagonal_product_inner_iterator_selector(
               const SparseDiagonalProductType& expr, Index outer)
-      : Base(expr.rhs().innerVector(outer) .cwiseProduct(expr.lhs().diagonal()), 0)
+      : Base(expr.rhs().innerVector(outer) .cwiseProduct(expr.lhs().diagonal()), 0), m_outer(outer)
     {}
+    
+    inline Index outer() const { return m_outer; }
+    inline Index col() const { return m_outer; }
 };
 
 template<typename Lhs, typename Rhs, typename SparseDiagonalProductType>
@@ -165,19 +160,23 @@ class sparse_diagonal_product_inner_iterator_selector
 <Lhs,Rhs,SparseDiagonalProductType,SDP_IsSparseRowMajor,SDP_IsDiagonal>
   : public CwiseBinaryOp<
       scalar_product_op<typename Rhs::Scalar>,
-      SparseInnerVectorSet<Lhs,1>,
-      Transpose<const typename Rhs::DiagonalVectorType> >::InnerIterator
+      const typename Lhs::ConstInnerVectorReturnType,
+      const Transpose<const typename Rhs::DiagonalVectorType> >::InnerIterator
 {
     typedef typename CwiseBinaryOp<
       scalar_product_op<typename Rhs::Scalar>,
-      SparseInnerVectorSet<Lhs,1>,
-      Transpose<const typename Rhs::DiagonalVectorType> >::InnerIterator Base;
+      const typename Lhs::ConstInnerVectorReturnType,
+      const Transpose<const typename Rhs::DiagonalVectorType> >::InnerIterator Base;
     typedef typename Lhs::Index Index;
+    Index m_outer;
   public:
     inline sparse_diagonal_product_inner_iterator_selector(
               const SparseDiagonalProductType& expr, Index outer)
-      : Base(expr.lhs().innerVector(outer) .cwiseProduct(expr.rhs().diagonal().transpose()), 0)
+      : Base(expr.lhs().innerVector(outer) .cwiseProduct(expr.rhs().diagonal().transpose()), 0), m_outer(outer)
     {}
+    
+    inline Index outer() const { return m_outer; }
+    inline Index row() const { return m_outer; }
 };
 
 } // end namespace internal
@@ -191,5 +190,7 @@ SparseMatrixBase<Derived>::operator*(const DiagonalBase<OtherDerived> &other) co
 {
   return SparseDiagonalProduct<Derived,OtherDerived>(this->derived(), other.derived());
 }
+
+} // end namespace Eigen
 
 #endif // EIGEN_SPARSE_DIAGONAL_PRODUCT_H

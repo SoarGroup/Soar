@@ -1,0 +1,15 @@
+sp {worst-over-conflict*propose*a
+   (state <s> ^name worst-over-conflict)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name a)
+}
+sp {worst-over-conflict*compare*a
+   (state <s> ^name worst-over-conflict
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name a)
+   (<op2> ^name b)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

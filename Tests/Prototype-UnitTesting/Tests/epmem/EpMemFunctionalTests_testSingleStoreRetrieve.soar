@@ -1,0 +1,61 @@
+##!
+# @file
+#
+# @created alex.nickels 20130613
+
+#epmem --set exclusions epmem
+epmem --set trigger dc
+epmem --set learning on
+watch --epmem
+
+sp {propose*initialize-epmem-rand
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-epmem-rand)
+}
+
+sp {apply*initialize-epmem-rand
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-epmem-rand)
+-->
+   (<s> ^name epmem-rand
+        ^random.num 42)
+}
+
+sp {epmem-rand*propose*remember
+   (state <s> ^name epmem-rand
+              ^random)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name remember)
+}
+
+sp {apply*remember*cue
+   (state <s> ^operator <op>
+              ^random <rand>
+              ^epmem.command <cmd>)
+   (<op> ^name remember)
+   (<rand> ^num <num>)
+-->
+   (write |Removing: | <num>)
+   (<s> ^random <rand> -)
+   (<cmd> ^query.random <remember-random>)
+}
+
+sp {done*succeeded
+   (state <s> ^epmem.result.retrieved.random.num 42)
+-->
+   (write |Remebered number| (crlf))
+   (halt)
+}
+
+sp {done*failed
+   (state <s> ^name epmem-rand
+              ^epmem.result.retrieved.random <n>) 
+   -(<n> ^num 42)
+-->
+   (write |Failed to remebered number| (crlf))
+   (halt)
+}

@@ -18,10 +18,10 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-#include "wmem.h"
-#include "symtab.h"
+#include "working_memory.h"
+#include "symbol.h"
 #include "decide.h"
-
+#include "slot.h"
 #include "print.h"
 #include "soar_TraceNames.h"
 #include "misc.h"
@@ -33,7 +33,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
 {
     wme* pWme = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    
+
     for (pWme = thisAgent->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next)
     {
         if (pWme->timetag == timetag)
@@ -41,11 +41,11 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
             break;
         }
     }
-    
+
     if (pWme)
     {
         Symbol* pId = pWme->id;
-        
+
         // remove w from whatever list of wmes it's on
         for (wme* pWme2 = pId->id->input_wmes; pWme2 != 0; pWme2 = pWme2->next)
         {
@@ -55,7 +55,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
                 break;
             }
         }
-        
+
         for (wme* pWme2 = pId->id->impasse_wmes; pWme2 != 0; pWme2 = pWme2->next)
         {
             if (pWme == pWme2)
@@ -64,10 +64,10 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
                 break;
             }
         }
-        
+
         for (slot* s = pId->id->slots; s != 0; s = s->next)
         {
-        
+
             for (wme* pWme2 = s->wmes; pWme2 != 0; pWme2 = pWme2->next)
             {
                 if (pWme == pWme2)
@@ -76,7 +76,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
                     break;
                 }
             }
-            
+
             for (wme* pWme2 = s->acceptable_preference_wmes; pWme2 != NIL; pWme2 = pWme2->next)
             {
                 if (pWme == pWme2)
@@ -86,7 +86,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
                 }
             }
         }
-        
+
         /* REW: begin 09.15.96 */
         if (pWme->gds)
         {
@@ -98,14 +98,14 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
             }
         }
         /* REW: end   09.15.96 */
-        
+
         // now remove w from working memory
         remove_wme_from_wm(thisAgent, pWme);
-        
+
 #ifndef NO_TOP_LEVEL_REFS
         do_buffered_wm_and_ownership_changes(thisAgent);
 #endif // NO_TOP_LEVEL_REFS
     }
-    
+
     return true;
 }

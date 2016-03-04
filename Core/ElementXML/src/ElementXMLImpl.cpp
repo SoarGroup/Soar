@@ -213,24 +213,24 @@ static const int kLenEncodeHex     = static_cast<int>(strlen(kEncodeHex)) ;
 static const int kLenCommentStartString = static_cast<int>(strlen(kCommentStartString)) ;
 static const int kLenCommentEndString = static_cast<int>(strlen(kCommentEndString)) ;
 
-inline static char const* ConvertSpecial(char base)
-{
-    switch (base)
-    {
-        case '<'  :
-            return kLT ;
-        case '>'  :
-            return kGT;
-        case '&'  :
-            return kAMP ;
-        case '\"' :
-            return kQUOT ;
-        case '\'' :
-            return kAPOS ;
-        default:
-            return NULL ;
-    }
-}
+//inline static char const* ConvertSpecial(char base)
+//{
+//    switch (base)
+//    {
+//        case '<'  :
+//            return kLT ;
+//        case '>'  :
+//            return kGT;
+//        case '&'  :
+//            return kAMP ;
+//        case '\"' :
+//            return kQUOT ;
+//        case '\'' :
+//            return kAPOS ;
+//        default:
+//            return NULL ;
+//    }
+//}
 
 inline static int CharLength(char base)
 {
@@ -383,7 +383,7 @@ inline static char* AddXMLString(char* pDest, char const* pAdd)
 
 
 /*************************************************************
-* @brief XML ids can only contain letters, numbers, �.� �-� and �_�.
+* @brief XML ids can only contain letters, numbers, . - and _.
 *************************************************************/
 bool ElementXMLImpl::IsValidID(xmlStringConst str)
 {
@@ -600,7 +600,7 @@ int ElementXMLImpl::GetRefCount()
 * NOTE: The tagName becomes owned by this XML object and will be deleted
 * when it is destroyed.  It should be allocated with either allocateString() or copyString().
 *
-* @param  tagName   Tag name can only contain letters, numbers, �.� �-� and �_�.
+* @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @returns  true if the tag name is valid.
 *************************************************************/
 bool ElementXMLImpl::SetTagName(char* tagName, bool copyName)
@@ -624,7 +624,7 @@ bool ElementXMLImpl::SetTagName(char* tagName, bool copyName)
 * before this object is destroyed.  This requirement means the tag name
 * should generally be declared as a static constant.
 *
-* @param  tagName   Tag name can only contain letters, numbers, �.� �-� and �_�.
+* @param  tagName   Tag name can only contain letters, numbers, . - and _.
 * @returns  true if the tag name is valid.
 *************************************************************/
 bool ElementXMLImpl::SetTagNameFast(char const* tagName)
@@ -730,7 +730,7 @@ ElementXMLImpl const* ElementXMLImpl::GetParent() const
 *
 * The attribute value will be copied and can be deleted by the caller immediately.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
@@ -758,7 +758,7 @@ bool ElementXMLImpl::AddAttribute(char* attributeName, char* attributeValue, boo
 *
 * The attribute value will be copied and can be deleted by the caller immediately.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
@@ -793,7 +793,7 @@ bool ElementXMLImpl::AddAttributeFast(char const* attributeName, char* attribute
 * NOTE: The attribute name and value must remain in scope for the life of this object.
 *       In practice, this generally means it must be a static constant.
 *
-* @param attributeName  Attribute name can only contain letters, numbers, �.� �-� and �_�.
+* @param attributeName  Attribute name can only contain letters, numbers, . - and _.
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
@@ -937,7 +937,7 @@ char const* ElementXMLImpl::GetComment()
 /*************************************************************
 * @brief Set the character data for this element.
 *
-* @param characterData  The character data passed in should *not* replace special characters such as �<� and �&�
+* @param characterData  The character data passed in should *not* replace special characters such as < and &
 *                       with the XML escape sequences &lt; etc.
 *                       These values will be converted when the XML stream is created.
 *************************************************************/
@@ -1076,10 +1076,10 @@ int  ElementXMLImpl::GetCharacterDataLength() const
 }
 
 /*************************************************************
-* @brief Setting this value to true indicates that this element�s character data should be stored in a CDATA section.
+* @brief Setting this value to true indicates that this elements character data should be stored in a CDATA section.
 *        By default this value will be false.
 *
-* @param useCData   true if this element�s character data should be stored in a CDATA section.
+* @param useCData   true if this elements character data should be stored in a CDATA section.
 *************************************************************/
 void ElementXMLImpl::SetUseCData(bool useCData)
 {

@@ -15,7 +15,7 @@
 #include "src/cli_editproduction.cpp"
 #include "src/cli_epmem.cpp"
 #include "src/cli_excise.cpp"
-#include "src/cli_explainbacktraces.cpp"
+#include "src/cli_explain.cpp"
 #include "src/cli_firingcounts.cpp"
 #include "src/cli_gdsprint.cpp"
 #include "src/cli_gp.cpp"
@@ -54,7 +54,6 @@
 #include "src/cli_retenet.cpp"
 #include "src/cli_rl.cpp"
 #include "src/cli_run.cpp"
-#include "src/cli_savebacktraces.cpp"
 #include "src/cli_select.cpp"
 #include "src/cli_setstopphase.cpp"
 #include "src/cli_smem.cpp"
@@ -64,6 +63,9 @@
 #include "src/cli_srand.cpp"
 #include "src/cli_stats.cpp"
 #include "src/cli_stopsoar.cpp"
+#ifndef NO_SVS
+#include "src/cli_svs.cpp"
+#endif
 #include "src/cli_time.cpp"
 #include "src/cli_timers.cpp"
 #include "src/cli_unalias.cpp"
@@ -75,4 +77,3 @@
 #include "src/cli_watchwmes.cpp"
 #include "src/cli_wma.cpp"
 #include "src/cli_CommandLineInterface.cpp"
-#include "src/cli_svs.cpp"

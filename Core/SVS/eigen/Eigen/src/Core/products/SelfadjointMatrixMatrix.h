@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_SELFADJOINT_MATRIX_MATRIX_H
 #define EIGEN_SELFADJOINT_MATRIX_MATRIX_H
+
+namespace Eigen { 
 
 namespace internal {
 
@@ -43,9 +30,9 @@ struct symm_pack_lhs
     for(Index k=i; k<i+BlockRows; k++)
     {
       for(Index w=0; w<h; w++)
-        blockA[count++] = conj(lhs(k, i+w)); // transposed
+        blockA[count++] = numext::conj(lhs(k, i+w)); // transposed
 
-      blockA[count++] = real(lhs(k,k));   // real (diagonal)
+      blockA[count++] = numext::real(lhs(k,k));   // real (diagonal)
 
       for(Index w=h+1; w<BlockRows; w++)
         blockA[count++] = lhs(i+w, k);          // normal
@@ -54,7 +41,7 @@ struct symm_pack_lhs
     // transposed copy
     for(Index k=i+BlockRows; k<cols; k++)
       for(Index w=0; w<BlockRows; w++)
-        blockA[count++] = conj(lhs(k, i+w)); // transposed
+        blockA[count++] = numext::conj(lhs(k, i+w)); // transposed
   }
   void operator()(Scalar* blockA, const Scalar* _lhs, Index lhsStride, Index cols, Index rows)
   {
@@ -78,10 +65,10 @@ struct symm_pack_lhs
       for(Index k=0; k<i; k++)
         blockA[count++] = lhs(i, k);              // normal
 
-      blockA[count++] = real(lhs(i, i));       // real (diagonal)
+      blockA[count++] = numext::real(lhs(i, i));       // real (diagonal)
 
       for(Index k=i+1; k<cols; k++)
-        blockA[count++] = conj(lhs(k, i));     // transposed
+        blockA[count++] = numext::conj(lhs(k, i));     // transposed
     }
   }
 };
@@ -120,12 +107,12 @@ struct symm_pack_rhs
       // transpose
       for(Index k=k2; k<j2; k++)
       {
-        blockB[count+0] = conj(rhs(j2+0,k));
-        blockB[count+1] = conj(rhs(j2+1,k));
+        blockB[count+0] = numext::conj(rhs(j2+0,k));
+        blockB[count+1] = numext::conj(rhs(j2+1,k));
         if (nr==4)
         {
-          blockB[count+2] = conj(rhs(j2+2,k));
-          blockB[count+3] = conj(rhs(j2+3,k));
+          blockB[count+2] = numext::conj(rhs(j2+2,k));
+          blockB[count+3] = numext::conj(rhs(j2+3,k));
         }
         count += nr;
       }
@@ -137,11 +124,11 @@ struct symm_pack_rhs
         for (Index w=0 ; w<h; ++w)
           blockB[count+w] = rhs(k,j2+w);
 
-        blockB[count+h] = real(rhs(k,k));
+        blockB[count+h] = numext::real(rhs(k,k));
 
         // transpose
         for (Index w=h+1 ; w<nr; ++w)
-          blockB[count+w] = conj(rhs(j2+w,k));
+          blockB[count+w] = numext::conj(rhs(j2+w,k));
         count += nr;
         ++h;
       }
@@ -164,12 +151,12 @@ struct symm_pack_rhs
     {
       for(Index k=k2; k<end_k; k++)
       {
-        blockB[count+0] = conj(rhs(j2+0,k));
-        blockB[count+1] = conj(rhs(j2+1,k));
+        blockB[count+0] = numext::conj(rhs(j2+0,k));
+        blockB[count+1] = numext::conj(rhs(j2+1,k));
         if (nr==4)
         {
-          blockB[count+2] = conj(rhs(j2+2,k));
-          blockB[count+3] = conj(rhs(j2+3,k));
+          blockB[count+2] = numext::conj(rhs(j2+2,k));
+          blockB[count+3] = numext::conj(rhs(j2+3,k));
         }
         count += nr;
       }
@@ -182,13 +169,13 @@ struct symm_pack_rhs
       Index half = (std::min)(end_k,j2);
       for(Index k=k2; k<half; k++)
       {
-        blockB[count] = conj(rhs(j2,k));
+        blockB[count] = numext::conj(rhs(j2,k));
         count += 1;
       }
 
       if(half==j2 && half<k2+rows)
       {
-        blockB[count] = real(rhs(j2,j2));
+        blockB[count] = numext::real(rhs(j2,j2));
         count += 1;
       }
       else
@@ -224,7 +211,7 @@ struct product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,LhsSelfAdjoint,Co
     const Scalar* lhs, Index lhsStride,
     const Scalar* rhs, Index rhsStride,
     Scalar* res,       Index resStride,
-    Scalar alpha)
+    const Scalar& alpha)
   {
     product_selfadjoint_matrix<Scalar, Index,
       EIGEN_LOGICAL_XOR(RhsSelfAdjoint,RhsStorageOrder==RowMajor) ? ColMajor : RowMajor,
@@ -247,7 +234,18 @@ struct product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,true,ConjugateLhs
     const Scalar* _lhs, Index lhsStride,
     const Scalar* _rhs, Index rhsStride,
     Scalar* res,        Index resStride,
-    Scalar alpha)
+    const Scalar& alpha);
+};
+
+template <typename Scalar, typename Index,
+          int LhsStorageOrder, bool ConjugateLhs,
+          int RhsStorageOrder, bool ConjugateRhs>
+EIGEN_DONT_INLINE void product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,true,ConjugateLhs, RhsStorageOrder,false,ConjugateRhs,ColMajor>::run(
+    Index rows, Index cols,
+    const Scalar* _lhs, Index lhsStride,
+    const Scalar* _rhs, Index rhsStride,
+    Scalar* res,        Index resStride,
+    const Scalar& alpha)
   {
     Index size = rows;
 
@@ -314,7 +312,6 @@ struct product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,true,ConjugateLhs
       }
     }
   }
-};
 
 // matrix * selfadjoint product
 template <typename Scalar, typename Index,
@@ -328,7 +325,18 @@ struct product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,false,ConjugateLh
     const Scalar* _lhs, Index lhsStride,
     const Scalar* _rhs, Index rhsStride,
     Scalar* res,        Index resStride,
-    Scalar alpha)
+    const Scalar& alpha);
+};
+
+template <typename Scalar, typename Index,
+          int LhsStorageOrder, bool ConjugateLhs,
+          int RhsStorageOrder, bool ConjugateRhs>
+EIGEN_DONT_INLINE void product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,false,ConjugateLhs, RhsStorageOrder,true,ConjugateRhs,ColMajor>::run(
+    Index rows, Index cols,
+    const Scalar* _lhs, Index lhsStride,
+    const Scalar* _rhs, Index rhsStride,
+    Scalar* res,        Index resStride,
+    const Scalar& alpha)
   {
     Index size = cols;
 
@@ -366,7 +374,6 @@ struct product_selfadjoint_matrix<Scalar,Index,LhsStorageOrder,false,ConjugateLh
       }
     }
   }
-};
 
 } // end namespace internal
 
@@ -396,12 +403,12 @@ struct SelfadjointProductMatrix<Lhs,LhsMode,false,Rhs,RhsMode,false>
     RhsIsSelfAdjoint = (RhsMode&SelfAdjoint)==SelfAdjoint
   };
 
-  template<typename Dest> void scaleAndAddTo(Dest& dst, Scalar alpha) const
+  template<typename Dest> void scaleAndAddTo(Dest& dst, const Scalar& alpha) const
   {
     eigen_assert(dst.rows()==m_lhs.rows() && dst.cols()==m_rhs.cols());
 
-    const ActualLhsType lhs = LhsBlasTraits::extract(m_lhs);
-    const ActualRhsType rhs = RhsBlasTraits::extract(m_rhs);
+    typename internal::add_const_on_value_type<ActualLhsType>::type lhs = LhsBlasTraits::extract(m_lhs);
+    typename internal::add_const_on_value_type<ActualRhsType>::type rhs = RhsBlasTraits::extract(m_rhs);
 
     Scalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(m_lhs)
                                * RhsBlasTraits::extractScalarFactor(m_rhs);
@@ -423,5 +430,7 @@ struct SelfadjointProductMatrix<Lhs,LhsMode,false,Rhs,RhsMode,false>
       );
   }
 };
+
+} // end namespace Eigen
 
 #endif // EIGEN_SELFADJOINT_MATRIX_MATRIX_H

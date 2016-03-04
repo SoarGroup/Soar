@@ -7,40 +7,40 @@ Import('env', 'g_msvs_variant')
 cli_env = env.Clone()
 
 if sys.platform == 'linux2':
-	# Following flag fixes a bux in Unbuntu 13.10 that prevents it from
-	# properly linking to the pthread and dl libraries needed by TestCLI
-	cli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])
+    # Following flag fixes a bux in Unbuntu 13.10 that prevents it from
+    # properly linking to the pthread and dl libraries needed by TestCLI
+    cli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])
 
 
 testcli = cli_env.Install('$OUT_DIR', cli_env.Program('testcli', ['testcli.cpp']))
-mincli = cli_env.Install('$OUT_DIR', cli_env.Program('cli', 'mincli.cpp'))
-multicli = cli_env.Install('$OUT_DIR', cli_env.Program('mcli', 'multicli.cpp'))
+mincli = cli_env.Install('$OUT_DIR', cli_env.Program('soar', 'mincli.cpp'))
+multicli = cli_env.Install('$OUT_DIR', cli_env.Program('msoar', 'multicli.cpp'))
 cli_env.Alias('cli', [testcli, mincli, multicli])
 
 if 'MSVSProject' in cli_env['BUILDERS']:
-	mincli_proj = cli_env.MSVSProject(
-		target = '#mincli' + cli_env['MSVSPROJECTSUFFIX'],
-		srcs = [cli_env.File('mincli.cpp').srcnode().path],
-		buildtarget = mincli,
-		variant = g_msvs_variant,
-		auto_build_solution = 0,
-	)
+    mincli_proj = cli_env.MSVSProject(
+        target = '#mincli' + cli_env['MSVSPROJECTSUFFIX'],
+        srcs = [cli_env.File('mincli.cpp').srcnode().path],
+        buildtarget = mincli,
+        variant = g_msvs_variant,
+        auto_build_solution = 0,
+    )
 
-	multicli_proj = cli_env.MSVSProject(
-		target = '#multicli' + cli_env['MSVSPROJECTSUFFIX'],
-		srcs = [cli_env.File('multicli.cpp').srcnode().path],
-		buildtarget = multicli,
-		variant = g_msvs_variant,
-		auto_build_solution = 0,
-	)
+    multicli_proj = cli_env.MSVSProject(
+        target = '#multicli' + cli_env['MSVSPROJECTSUFFIX'],
+        srcs = [cli_env.File('multicli.cpp').srcnode().path],
+        buildtarget = multicli,
+        variant = g_msvs_variant,
+        auto_build_solution = 0,
+    )
 
-	testcli_proj = cli_env.MSVSProject(
-		target = '#testcli' + cli_env['MSVSPROJECTSUFFIX'],
-		srcs = [cli_env.File('testcli.cpp').srcnode().path],
-		buildtarget = testcli,
-		variant = g_msvs_variant,
-		auto_build_solution = 0,
-	)
+    testcli_proj = cli_env.MSVSProject(
+        target = '#testcli' + cli_env['MSVSPROJECTSUFFIX'],
+        srcs = [cli_env.File('testcli.cpp').srcnode().path],
+        buildtarget = testcli,
+        variant = g_msvs_variant,
+        auto_build_solution = 0,
+    )
 
-	Import('msvs_projs')
-	msvs_projs.extend([mincli_proj, testcli_proj])
+    Import('msvs_projs')
+    msvs_projs.extend([mincli_proj, testcli_proj])

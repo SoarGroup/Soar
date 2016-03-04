@@ -306,18 +306,18 @@ sgnode* group_node::clone_sub() const
     return c;
 }
 
-sgnode* group_node::get_child(int i)
+sgnode* group_node::get_child(size_t i)
 {
-    if (0 <= i && i < children.size())
+    if (i < children.size())
     {
         return children[i];
     }
     return NULL;
 }
 
-const sgnode* group_node::get_child(int i) const
+const sgnode* group_node::get_child(size_t i) const
 {
-    if (0 <= i && i < children.size())
+    if (i < children.size())
     {
         return children[i];
     }
@@ -374,7 +374,7 @@ void group_node::update_shape()
     }
     
     bbox b = children[0]->get_bounds();
-    for (int i = 1; i < children.size(); ++i)
+    for (size_t i = 1; i < children.size(); ++i)
     {
         b.include(children[i]->get_bounds());
     }
@@ -405,10 +405,38 @@ void group_node::set_transform_dirty_sub()
 
 void group_node::proxy_get_children(map<string, cliproxy*>& c)
 {
-    for (int i = 0, iend = children.size(); i < iend; ++i)
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
     {
         c[children[i]->get_id()] = children[i];
     }
+}
+
+double group_node::max_project_on_axis(const vec3& axis) const
+{
+    double max = get_centroid().dot(axis);
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
+    {
+        double child_proj = children[i]->max_project_on_axis(axis);
+        if(child_proj > max)
+        {
+            max = child_proj;
+        }
+    }
+    return max;
+}
+
+double group_node::min_project_on_axis(const vec3& axis) const
+{
+    double min = get_centroid().dot(axis);
+    for (size_t i = 0, iend = children.size(); i < iend; ++i)
+    {
+        double child_proj = children[i]->min_project_on_axis(axis);
+        if(child_proj < min)
+        {
+            min = child_proj;
+        }
+    }
+    return min;
 }
 
 /*
@@ -485,7 +513,7 @@ void convex_node::get_shape_sgel(string& s) const
 {
     stringstream ss;
     ss << "v ";
-    for (int i = 0; i < verts.size(); ++i)
+    for (size_t i = 0; i < verts.size(); ++i)
     {
         ss << verts[i](0) << " " << verts[i](1) << " " << verts[i](2) << " ";
     }
@@ -497,10 +525,10 @@ void convex_node::get_shape_sgel(string& s) const
 */
 void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
 {
-    double dp, best;
-    int best_i = -1;
+    double dp, best = 0.0;
+    long long best_i = -1;
     
-    for (int i = 0; i < verts.size(); ++i)
+    for (size_t i = 0; i < verts.size(); ++i)
     {
         dp = dir.dot(verts[i]);
         if (best_i == -1 || dp > best)
@@ -509,7 +537,7 @@ void convex_node::gjk_local_support(const vec3& dir, vec3& support) const
             best_i = i;
         }
     }
-    support = verts[best_i];
+    support = verts[static_cast<size_t>(best_i)];
 }
 
 void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
@@ -517,13 +545,44 @@ void convex_node::proxy_use_sub(const vector<string>& args, ostream& os)
     sgnode::proxy_use_sub(args, os);
     
     table_printer t;
-    for (int i = 0, iend = verts.size(); i < iend; ++i)
+    for (size_t i = 0, iend = verts.size(); i < iend; ++i)
     {
         t.add_row() << verts[i](0) << verts[i](1) << verts[i](2);
     }
     
     os << endl << "vertices" << endl;
     t.print(os);
+}
+
+double convex_node::max_project_on_axis(const vec3& axis) const
+{
+    double max = get_centroid().dot(axis);
+    const ptlist& world_verts = get_world_verts();
+    for (size_t i = 0, iend = world_verts.size(); i < iend; ++i)
+    {
+        double vert_proj = world_verts[i].dot(axis);
+        
+        if(vert_proj > max)
+        {
+            max = vert_proj;
+        }
+    }
+    return max;
+}
+
+double convex_node::min_project_on_axis(const vec3& axis) const
+{
+    double min = get_centroid().dot(axis);
+    const ptlist& world_verts = get_world_verts();
+    for (size_t i = 0, iend = world_verts.size(); i < iend; ++i)
+    {
+        double vert_proj = world_verts[i].dot(axis);
+        if(vert_proj < min)
+        {
+            min = vert_proj;
+        }
+    }
+    return min;
 }
 
 ball_node::ball_node(const string& id, double radius)
@@ -575,6 +634,18 @@ void ball_node::proxy_use_sub(const vector<string>& args, ostream& os)
     sgnode::proxy_use_sub(args, os);
     
     os << endl << "radius: " << radius << endl;
+}
+
+double ball_node::max_project_on_axis(const vec3& axis) const
+{
+    double world_radius = get_world_trans()(vec3(radius, 0.0, 0.0)).norm();
+    return get_centroid().dot(axis) + world_radius;
+}
+
+double ball_node::min_project_on_axis(const vec3& axis) const
+{
+    double world_radius = get_world_trans()(vec3(radius, 0.0, 0.0)).norm();
+    return get_centroid().dot(axis) - world_radius;
 }
 
 const tag_map& sgnode::get_all_tags() const

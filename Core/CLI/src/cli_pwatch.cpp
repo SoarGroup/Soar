@@ -20,7 +20,8 @@
 
 #include "agent.h"
 #include "production.h"
-#include "symtab.h"
+#include "symbol.h"
+#include "init_soar.h"
 
 using namespace cli;
 using namespace sml;
@@ -43,7 +44,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
                 // is it being watched
                 if (pSoarProduction->trace_firings)
                 {
-                
+
                     if (query)
                     {
                         ++productionCount;
@@ -62,10 +63,10 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
                         remove_pwatch(thisAgent, pSoarProduction);
                     }
                 }
-                
+
             }
         }
-        
+
         if (query)
         {
             // we're querying, summarize
@@ -83,17 +84,17 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
                 PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str());
             }
         }
-        
+
         return true;
     }
-    
+
     Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
-    
+
     if (!sym || !(sym->sc->production))
     {
         return SetError("Production not found.");
     }
-    
+
     // we have a production
     if (setting)
     {

@@ -15,6 +15,7 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "slot.h"
 
 #include "semantic_memory.h"
 #include "agent.h"
@@ -27,13 +28,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempString;
-    
+
     if (!pOp)
     {
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->smem_params->learning, 40);
-        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->smem_params->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->smem_params->append_db, 40);
@@ -42,6 +42,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Activation", 40);
         PrintCLIMessage_Item("activation-mode:", thisAgent->smem_params->activation_mode, 40);
         PrintCLIMessage_Item("activate-on-query:", thisAgent->smem_params->activate_on_query, 40);
+        PrintCLIMessage_Item("activate-on-add:", thisAgent->smem_params->activate_on_add, 40);
         PrintCLIMessage_Item("base-decay:", thisAgent->smem_params->base_decay, 40);
         PrintCLIMessage_Item("base-update-policy:", thisAgent->smem_params->base_update, 40);
         PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->smem_params->base_incremental_threshes, 40);
@@ -54,19 +55,30 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Section("Experimental", 40);
         PrintCLIMessage_Item("merge:", thisAgent->smem_params->merge, 40);
         PrintCLIMessage_Item("mirroring:", thisAgent->smem_params->mirroring, 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->smem_params->spreading, 40);
+        PrintCLIMessage_Item("spontaneous-retrieval:", thisAgent->smem_params->spontaneous_retrieval, 40);
         PrintCLIMessage_Item("spreading-baseline:", thisAgent->smem_params->spreading_baseline, 40);
         PrintCLIMessage_Item("spreading-type:", thisAgent->smem_params->spreading_type, 40);
+        PrintCLIMessage_Item("spreading-direction:", thisAgent->smem_params->spreading_direction, 40);
+        PrintCLIMessage_Item("spreading-normalization:", thisAgent->smem_params->spreading_normalization, 40);
+        PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->smem_params->spreading_depth_limit, 40);
+        PrintCLIMessage_Item("spreading-limit:", thisAgent->smem_params->spreading_limit, 40);
+        PrintCLIMessage_Item("spreading-time:", thisAgent->smem_params->spreading_time, 40);
+        PrintCLIMessage_Item("spreading-crawl-time:", thisAgent->smem_params->spreading_crawl_time, 40);
+        PrintCLIMessage_Item("spreading-model:", thisAgent->smem_params->spreading_model, 40);
+        PrintCLIMessage_Item("spreading-traversal:", thisAgent->smem_params->spreading_traversal, 40);
+        PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->smem_params->spreading_loop_avoidance, 40);
         PrintCLIMessage_Item("number-trajectories:", thisAgent->smem_params->number_trajectories, 40);
-        PrintCLIMessage_Item("restart-probability:", thisAgent->smem_params->restart_probability, 40);
+        PrintCLIMessage_Item("continue-probability:", thisAgent->smem_params->continue_probability, 40);
         PrintCLIMessage("");
-        
+
         return true;
     }
     else if (pOp == 'a')
     {
         std::string* err = new std::string("");
         bool result = smem_parse_chunks(thisAgent, pAttr->c_str(), &(err));
-        
+
         if (!result)
         {
             SetError(*err);
@@ -82,7 +94,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     {
         std::string err;
         bool result = smem_backup_db(thisAgent, pAttr->c_str(), &(err));
-        
+
         if (!result)
         {
             SetError("Error while backing up database: " + err);
@@ -92,13 +104,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             tempString << "Semantic memory database backed up to " << pAttr->c_str();
             PrintCLIMessage(&tempString);
         }
-        
+
         return result;
     }
     else if (pOp == 'e')
     {
         bool result = thisAgent->smem_params->learning->set_string("on");
-        
+
         if (!result)
         {
             SetError("This parameter is protected while the semantic memory database is open.");
@@ -107,13 +119,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             PrintCLIMessage("Semantic memory enabled.");
         }
-        
+
         return result;
     }
     else if (pOp == 'd')
     {
         bool result = thisAgent->smem_params->learning->set_string("off");
-        
+
         if (!result)
         {
             SetError("This parameter is protected while the semantic memory database is open.");
@@ -122,7 +134,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             PrintCLIMessage("Semantic memory disabled.");
         }
-        
+
         return result;
     }
     else if (pOp == 'g')
@@ -132,7 +144,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             return SetError("Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings.");
         }
-        
+
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
@@ -142,34 +154,34 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         uint64_t depth = 1;
         bool history = true;
         smem_attach(thisAgent);
-        
+
         if (thisAgent->smem_db->get_status() != soar_module::connected)
         {
             return SetError("Semantic memory database not connected.");
         }
-        
+
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (lexeme.type == IDENTIFIER_LEXEME)
             {
-                lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
+                lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
             }
             if (lti_id == NIL)
             {
                 return SetError("LTI not found");
             }
         }
-        
+
         std::string viz;
-        
+
         smem_print_lti(thisAgent, lti_id, depth, &(viz), history);
-        
+
         if (viz.empty())
         {
             return SetError("Could not find information on LTI.");
         }
-        
+
         PrintCLIMessage_Header("Semantic Memory", 40);
         PrintCLIMessage(&viz);
         return true;
@@ -180,14 +192,14 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // epmem - close before working/production memories to get re-init benefits
         // smem - close before working/production memories to prevent id counter mess-ups
         // production memory (automatic init-soar clears working memory as a result)
-        
+
         epmem_reinit_cmd(thisAgent);
         smem_reinit_cmd(thisAgent);
-        
+
         ExciseBitset options(0);
         options.set(EXCISE_ALL, true);
         DoExcise(options, 0);
-        
+
         PrintCLIMessage("Semantic memory system re-initialized.");
         return true;
     }
@@ -195,44 +207,50 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     {
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
-        
+
         smem_attach(thisAgent);
         if (thisAgent->smem_db->get_status() != soar_module::connected)
         {
             return SetError("Semantic memory database not connected.");
         }
-        
+
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            const char* pAttr_c_str = pAttr->c_str();
+            soar::Lexer lexer(thisAgent, pAttr_c_str);
+            lexer.get_lexeme();
+            if (lexer.current_lexeme.type == AT_LEXEME)
+            {
+                lexer.get_lexeme();
+            }
+            if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
-                    
+                    lti_id = smem_lti_get_id(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+
                     if ((lti_id != NIL) && pVal)
                     {
                         from_c_string(depth, pVal->c_str());
                     }
                 }
             }
-            
+
             if (lti_id == NIL)
             {
                 return SetError("LTI not found.");
             }
         }
-        
+
         std::string viz;
-        
+
         if (lti_id == NIL)
         {
             smem_print_store(thisAgent, &(viz));
             if (!viz.empty())
             {
                 PrintCLIMessage_Header("Semantic Memory", 40);
-            }
+        }
         }
         else
         {
@@ -242,7 +260,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             return SetError("Semantic memory is empty.");
         }
-        
+
         PrintCLIMessage(&viz);
         return true;
     }
@@ -251,14 +269,14 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         std::string* err = new std::string;
         std::string* retrieved = new std::string;
         uint64_t number_to_retrieve = 1;
-        
+
         if (pVal)
         {
             from_c_string(number_to_retrieve, pVal->c_str());
         }
-        
+
         bool result = smem_parse_cues(thisAgent, pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
-        
+
         if (!result)
         {
             SetError("Error while parsing query\n" + *err);
@@ -281,9 +299,9 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
         }
-        
+
         bool result = smem_parse_remove(thisAgent, pAttr->c_str(), &(err), &(retrieved), force);
-        
+
         if (!result)
         {
             SetError("Error while attempting removal.\n" + *err);
@@ -305,15 +323,57 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             return SetError("Invalid SMem parameter.");
         }
-        
+
         if (!my_param->validate_string(pVal->c_str()))
         {
             return SetError("Invalid setting for SMem parameter.");
         }
+        if (!strcmp(pAttr->c_str(), "spontaneous-retrieval"))
+        {
+            if (thisAgent->smem_params->spontaneous_retrieval->get_value() == on)
+            {
+                soar_module::sqlite_statement* lti_back_index_create = new soar_module::sqlite_statement(thisAgent->smem_db,
+                    "CREATE INDEX smem_lti_act ON smem_lti (activation_value, lti_id)");
+                lti_back_index_create->execute(soar_module::op_reinit);
+                delete lti_back_index_create;
+                PrintCLIMessage("If spontaneous retrieval is on, there is a large cost during activation updates.\n"
+                    "If you want to avoid this cost, turn it back off.");
+            }
+            else
+            {
+                soar_module::sqlite_statement* lti_back_index_create = new soar_module::sqlite_statement(thisAgent->smem_db,
+                    "DROP INDEX smem_lti_act");
+                lti_back_index_create->execute(soar_module::op_reinit);
+                delete lti_back_index_create;
+            }
+        }
         
+        if (!(strcmp(pAttr->c_str(), "spreading-baseline") &&
+            strcmp(pAttr->c_str(), "spreading-type") &&
+            strcmp(pAttr->c_str(), "spreading-direction") &&
+            strcmp(pAttr->c_str(), "spreading-normalization") &&
+            strcmp(pAttr->c_str(), "spreading-depth-limit") &&
+            strcmp(pAttr->c_str(), "spreading-limit") &&
+            strcmp(pAttr->c_str(), "spreading-time") &&
+            strcmp(pAttr->c_str(), "spreading-model") &&
+            strcmp(pAttr->c_str(), "spreading-traversal") &&
+            strcmp(pAttr->c_str(), "spreading-loop-avoidance") &&
+            strcmp(pAttr->c_str(), "number-trajectories") &&
+            strcmp(pAttr->c_str(), "continue-probability")) && thisAgent->smem_params->spreading->get_value() == on)
+        {
+            return SetError("Some spreading activation parameters cannot be changed once spreading activation has been turned on.");
+        }
+        if (!strcmp(pAttr->c_str(), "spreading-crawl-time") && !strcmp(pVal->c_str(), "precalculate"))
+        {
+            if (thisAgent->smem_params->spreading->get_value() != on)
+            {
+                PrintCLIMessage("If spreading is turned on while precalculate is on,\n"
+                        "a large batch calculation for spreading activation will occur.");
+            }
+        }
         smem_param_container::db_choices last_db_mode = thisAgent->smem_params->database->get_value();
         bool result = my_param->set_string(pVal->c_str());
-        
+
         if (!result)
         {
             SetError("This parameter is protected while the semantic memory database is open.");
@@ -337,16 +397,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
                                     "         Soar will erase the semantic memory database.\n");
                 }
-                
+
             }
             if (!strcmp(pAttr->c_str(), "spreading-type"))
             {
                 //fragile - I'm assuming no typo (but just in case, I'm defaulting to ppr.)
                 if (pVal)
                 {
-                    if ((((strcmp(pVal->c_str(), "ppr-noloop") && strcmp(pVal->c_str(), "ppr")) && strcmp(pVal->c_str(), "actr")) && strcmp(pVal->c_str(), "ppr-backwards")) && strcmp(pVal->c_str(), "ppr-both"))
+                    if (strcmp(pVal->c_str(), "actr") && strcmp(pVal->c_str(), "ppr"))
                     {
-                        assert(false); //This shouldn't happen while I'm testing.
+                        return SetError("Invalid semantic memory parameter.  Spreading type must be actr or ppr.");
+                        //assert(false); //This shouldn't happen while I'm testing.
                     }
                 }
             }
@@ -356,24 +417,32 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 {
                     PrintCLIMessage("This might take a long while.\n");
                     //This is where a huge batch processing of all of SMem can be run.
-                    if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+
+                    if (thisAgent->smem_params->spreading_crawl_time->get_value() == smem_param_container::precalculate)
                     {
-                        smem_calc_spread_trajectory(thisAgent);
+                        if  (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::random)
+                        {
+                            smem_calc_spread_trajectories(thisAgent);
+                        }
+                        else if (thisAgent->smem_params->spreading_traversal->get_value() == smem_param_container::deterministic)
+                        {
+                            if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::actr)
+                            {
+                                smem_calc_spread_trajectory_actr(thisAgent);
+                            }
+                            else
+                            {
+                                smem_calc_spread_trajectories_deterministic(thisAgent);
+                            }
+                        }
                     }
-                    else if (thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_noloop)
-                    {
-                        smem_calc_spread_trajectories(thisAgent);//It will read the type within the function.
-                    }
-                    else if ((thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr
-                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_backwards)
-                                || thisAgent->smem_params->spreading_type->get_value() == smem_param_container::ppr_both)
-                    {
-                        smem_calc_spread_trajectories(thisAgent);
-                    }
-                    else
-                    {
-                        assert(false);
-                    }
+                }
+                else
+                {
+                    return SetError("Spreading activation has undefined behavior when turned off.\n"
+                            "If you wish to reset spreading activation,\n"
+                            "type 'smem --reset spreading-activation'. Then, you can then change\n"
+                            "the spreading activation parameters and turn it back on afterwards.");
                 }
             }
         }
@@ -396,6 +465,20 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage_Item("Mirrors:", thisAgent->smem_stats->mirrors, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->smem_stats->chunks, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->smem_stats->slots, 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->execute();
+            uint64_t number_spread_elements = thisAgent->smem_stmts->calc_spread_size_debug_cmd->column_int(0);
+            std::ostringstream s_spread_output_string;
+            s_spread_output_string << number_spread_elements;
+            std::string spread_output_string = s_spread_output_string.str();
+            PrintCLIMessage_Justify("Spread Size:",spread_output_string.c_str(), 40);
+            thisAgent->smem_stmts->calc_spread_size_debug_cmd->reinitialize();
+            thisAgent->smem_stmts->trajectory_size_debug_cmd->execute();
+            uint64_t number_fingerprint_elements = thisAgent->smem_stmts->trajectory_size_debug_cmd->column_int(0);
+            std::ostringstream s_trajectory_output_string;
+            s_trajectory_output_string << number_fingerprint_elements;
+            std::string trajectory_output_string = s_trajectory_output_string.str();
+            PrintCLIMessage_Justify("Fingerprint Entries:",trajectory_output_string.c_str(), 40);
+            thisAgent->smem_stmts->trajectory_size_debug_cmd->reinitialize();
         }
         else
         {
@@ -404,10 +487,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 return SetError("Invalid statistic.");
             }
-            
+
             PrintCLIMessage_Item("", my_stat, 0);
         }
-        
+
         return true;
     }
     else if (pOp == 't')
@@ -420,15 +503,15 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                     bool raw;
                     cli::CommandLineInterface* this_cli;
                     std::ostringstream& m_Result;
-                    
+
                     foo& operator=(const foo&)
                     {
                         return *this;
                     }
-                    
+
                 public:
                     foo(bool m_RawOutput, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), this_cli(new_cli), m_Result(m_Result) {};
-                    
+
                     void operator()(soar_module::timer* t)
                     {
                         std::string output(t->get_name());
@@ -436,7 +519,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                         this_cli->PrintCLIMessage_Item(output.c_str(), t, 40);
                     }
             } bar(m_RawOutput, this, m_Result);
-            
+
             PrintCLIMessage_Header("Semantic Memory Timers", 40);
             thisAgent->smem_timers->for_each(bar);
         }
@@ -447,44 +530,44 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 return SetError("Invalid timer.");
             }
-            
+
             PrintCLIMessage_Item("", my_timer, 0);
         }
-        
+
         return true;
     }
     else if (pOp == 'v')
     {
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
-        
-        // vizualizing the store requires an open semantic database
+
+        // visualizing the store requires an open semantic database
         smem_attach(thisAgent);
-        
+
         if (pAttr)
         {
-            get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (thisAgent->lexeme.type == IDENTIFIER_LEXEME)
+            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
+            if (lexeme.type == IDENTIFIER_LEXEME)
             {
                 if (thisAgent->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = smem_lti_get_id(thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number);
-                    
+                    lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
+
                     if ((lti_id != NIL) && pVal)
                     {
                         from_c_string(depth, pVal->c_str());
                     }
                 }
             }
-            
+
             if (lti_id == NIL)
             {
                 return SetError("Invalid long-term identifier.");
             }
         }
-        
+
         std::string viz;
-        
+
         if (lti_id == NIL)
         {
             smem_visualize_store(thisAgent, &(viz));
@@ -493,15 +576,15 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             smem_visualize_lti(thisAgent, lti_id, depth, &(viz));
         }
-        
+
         if (viz.empty())
         {
             return SetError("Nothing to visualize.");
         }
         PrintCLIMessage(&viz);
-        
+
         return true;
     }
-    
+
     return SetError("Unknown option.");
 }

@@ -111,7 +111,7 @@ void cliproxy::print_help(ostream& os) const
         os << endl << "ARGUMENTS" << endl;
         t.set_column_alignment(0, -1);
         t.set_column_alignment(2, -1);
-        for (int i = 0, iend = args_help.size(); i < iend; i += 2)
+        for (size_t i = 0, iend = args_help.size(); i < iend; i += 2)
         {
             t.add_row() << args_help[i] << '-' << args_help[i + 1];
         }

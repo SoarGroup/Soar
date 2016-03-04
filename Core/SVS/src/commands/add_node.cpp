@@ -12,13 +12,15 @@
  *     ^position <vec3> [Optional] - position of the new node
  *     ^rotation <vec3> [Optional] - rotation of the new node
  *     ^scale <vec3> [Optional] - scale of the new node
+ *     ^tags <tags> [Optional] - any att/val pairs underneath added as tags
  **********************************************************/
 #include <string>
+#include <map>
 #include "command.h"
 #include "scene.h"
 #include "command_table.h"
 #include "svs.h"
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 
@@ -142,6 +144,29 @@ class add_node_command : public command
             {
                 geom_type = NONE_GEOM;
             }
+
+            // Find any att/val pairs underneath tags
+            wme* tags_wme;
+            if(si->find_child_wme(root, "tags", tags_wme))
+            {
+                Symbol* tags_root = si->get_wme_val(tags_wme);
+                vector<wme*> tag_wmes;
+                if(si->get_child_wmes(tags_root, tag_wmes))
+                {
+                    for(vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
+                    {
+                        Symbol* tag_attr = si->get_wme_attr(*tag_it);
+                        Symbol* tag_value = si->get_wme_val(*tag_it);
+                        string tag_attr_str;
+                        string tag_value_str;
+                        if(get_symbol_value(tag_attr, tag_attr_str) && get_symbol_value(tag_value, tag_value_str))
+                        {
+                            tags[tag_attr_str] = tag_value_str;
+                        }
+                    }
+                }
+            }
+
             return true;
         }
         
@@ -166,6 +191,9 @@ class add_node_command : public command
                     verts = bbox_vertices();
                     n = new convex_node(node_id, verts);
                     break;
+                default:
+                    n   = NULL;
+                    break;
             }
             
             for (std::map<char, vec3>::iterator i = transforms.begin(); i != transforms.end(); i++)
@@ -177,6 +205,11 @@ class add_node_command : public command
             {
                 set_status("error adding node to scene");
                 return false;
+            }
+
+            for (tag_map::const_iterator tag_it = tags.begin(); tag_it != tags.end(); tag_it++)
+            {
+                n->set_tag(tag_it->first, tag_it->second);
             }
             
             set_status("success");
@@ -209,6 +242,7 @@ class add_node_command : public command
         map<char, vec3> transforms;
         group_node* parent;
         string node_id;
+        tag_map tags;
         
 };
 
@@ -228,6 +262,7 @@ command_table_entry* add_node_command_entry()
     e->parameters["position"] = "[Optional] - node position {^x ^y ^z}";
     e->parameters["rotation"] = "[Optional] - node rotation {^x ^y ^z}";
     e->parameters["scale"] = "[Optional] - node scale {^x ^y ^z}";
+    e->parameters["tags"] = "[Optional] - any att/val pairs underneath added as tags";
     e->create = &_make_add_node_command_;
     return e;
 }

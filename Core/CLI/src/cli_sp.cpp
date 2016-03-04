@@ -15,43 +15,21 @@
 
 #include "agent.h"
 #include "production.h"
-#include "symtab.h"
+#include "symbol.h"
 #include "rete.h"
 #include "parser.h"
 
 using namespace cli;
 
-// FIXME: copied from gSKI
-void soarAlternateInput(agent* ai_agent, const char*  ai_string, char*  ai_suffix, bool  ai_exit)
-{
-    // Side effects:
-    //    The soar agents alternate input values are updated and its
-    //      current character is reset to a whitespace value.
-    ai_agent->alternate_input_string = const_cast<char*>(ai_string);
-    ai_agent->alternate_input_suffix = ai_suffix;
-    ai_agent->current_char = ' ';
-    ai_agent->alternate_input_exit = ai_exit;
-    return;
-}
-
 bool CommandLineInterface::DoSP(const std::string& productionString)
 {
     // Load the production
-    // voigtjr: note: this TODO from gSKI:
-    // TODO: This should not be needed, FIX!
-    // contents of gSKI ProductionManager::soarAlternateInput function:
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    soarAlternateInput(thisAgent, productionString.c_str(), const_cast<char*>(") "), true);
-    set_lexer_allow_ids(thisAgent, false);
-    get_lexeme(thisAgent);
-    
+
     production* p;
     unsigned char rete_addition_result = 0;
-    p = parse_production(thisAgent, &rete_addition_result);
-    
-    set_lexer_allow_ids(thisAgent, true);
-    soarAlternateInput(thisAgent, 0, 0, true);
-    
+    p = parse_production(thisAgent, productionString.c_str(), &rete_addition_result);
+
     if (!p)
     {
         // There was an error, but duplicate production is just a warning
@@ -68,7 +46,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString)
         {
             p->filename = make_memory_block_for_string(thisAgent, m_SourceFileStack.top().c_str());
         }
-        
+
         // production was sourced
         m_NumProductionsSourced += 1;
         if (m_RawOutput)

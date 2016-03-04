@@ -4,10 +4,50 @@
 #include <iostream>
 using namespace std;
 
+void node_select_range_filter::set_range_from_params(const filter_params* p){
+    double sel_min;
+    if (get_filter_param(this, p, "min", sel_min))
+    {
+			range_min = sel_min;
+    }
+    
+    double sel_max;
+    if (get_filter_param(this, p, "max", sel_max))
+    {
+			range_max = sel_max;
+    }
+
+		string incl_min;
+		if(get_filter_param(this, p, "include_min", incl_min))
+		{
+			include_min = (incl_min == "false" ? false : true);
+		}
+		
+		string incl_max;
+		if(get_filter_param(this, p, "include_max", incl_max))
+		{
+			include_max = (incl_max == "false" ? false : true);
+		}
+}
+
+bool node_select_range_filter::falls_in_range(double val){
+	if(include_min && val < range_min)
+		return false;
+	if(!include_min && val <= range_min)
+		return false;
+	if(include_max && val > range_max)
+		return false;
+	if(!include_max && val >= range_max)
+		return false;
+	return true;
+}
+
+
 bool node_test_filter::compute(const filter_params* p, bool& out)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
+    
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -21,8 +61,8 @@ bool node_test_filter::compute(const filter_params* p, bool& out)
 
 bool node_test_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -44,8 +84,8 @@ bool node_test_select_filter::compute(const filter_params* p, sgnode*& out, bool
 
 bool node_comparison_filter::compute(const filter_params* p, double& out)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -58,39 +98,28 @@ bool node_comparison_filter::compute(const filter_params* p, double& out)
 
 bool node_comparison_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
         set_status("Need nodes a and b as input");
         return false;
     }
-    
-    double sel_min;
-    if (!get_filter_param(this, p, "min", sel_min))
-    {
-        sel_min = range_min;
-    }
-    
-    double sel_max;
-    if (!get_filter_param(this, p, "max", sel_max))
-    {
-        sel_max = range_max;
-    }
-    
-    double res = comp(a, b, p);
-    
-    out = b;
-    select = (sel_min <= res && res <= sel_max);
+
+		set_range_from_params(p);
+		
+		double res = comp(a, b, p);
+		out = b;
+		select = falls_in_range(res);
     return true;
 }
 
 
 bool node_comparison_rank_filter::rank(const filter_params* p, double& r)
 {
-    sgnode* a;
-    sgnode* b;
+    sgnode* a = NULL;
+    sgnode* b = NULL;
     if (!get_filter_param(this, p, "a", a)
             || !get_filter_param(this, p, "b", b))
     {
@@ -104,7 +133,7 @@ bool node_comparison_rank_filter::rank(const filter_params* p, double& r)
 
 bool node_evaluation_filter::compute(const filter_params* p, double& out)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a input");
@@ -117,35 +146,25 @@ bool node_evaluation_filter::compute(const filter_params* p, double& out)
 
 bool node_evaluation_select_filter::compute(const filter_params* p, sgnode*& out, bool& select)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a input");
         return false;
     }
     
-    double sel_min;
-    if (!get_filter_param(this, p, "min", sel_min))
-    {
-        sel_min = range_min;
-    }
-    
-    double sel_max;
-    if (!get_filter_param(this, p, "max", sel_max))
-    {
-        sel_max = range_max;
-    }
-    
+		set_range_from_params(p);
+		
     double res = eval(a, p);
-    out = a;
-    select = (sel_min <= res && res <= sel_max);
+		out = a;
+		select = falls_in_range(res);
     return true;
 }
 
 
 bool node_evaluation_rank_filter::rank(const filter_params* p, double& r)
 {
-    sgnode* a;
+    sgnode* a = NULL;
     if (!get_filter_param(this, p, "a", a))
     {
         set_status("Need node a as input");

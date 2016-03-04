@@ -26,7 +26,9 @@
 #    if defined(_USRDLL)
 #      define EXPORT __declspec(dllexport)
 #    else
+#      ifdef WARN_INTERFACE
 #      pragma message("Warning: Only used interfaces imported from Soar.dll")
+#      endif
 #      define EXPORT __declspec(dllimport)
 #    endif
 #  elif defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)

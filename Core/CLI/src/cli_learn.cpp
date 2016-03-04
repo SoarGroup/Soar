@@ -20,33 +20,11 @@
 #include "gsysparam.h"
 #include "agent.h"
 #include "print.h"
+#include "ebc.h"
+#include "output_manager.h"
 
 using namespace cli;
 using namespace sml;
-
-void GetForceLearnStates(agent* thisAgent, std::stringstream& res)
-{
-    cons* c;
-    char buff[1024];
-    
-    for (c = thisAgent->chunky_problem_spaces; c != NIL; c = c->rest)
-    {
-        symbol_to_string(thisAgent, static_cast<Symbol*>(c->first), true, buff, 1024);
-        res << buff;
-    }
-}
-
-void GetDontLearnStates(agent* thisAgent, std::stringstream& res)
-{
-    cons* c;
-    char buff[1024];
-    
-    for (c = thisAgent->chunk_free_problem_spaces; c != NIL; c = c->rest)
-    {
-        symbol_to_string(thisAgent, static_cast<Symbol*>(c->first), true, buff, 1024);
-        res << buff;
-    }
-}
 
 bool CommandLineInterface::DoLearn(const LearnBitset& options)
 {
@@ -68,26 +46,45 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         PrintCLIMessage_Justify("all-levels:", (thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? "on" : "off"), 40);
         PrintCLIMessage_Justify("local-negations:", (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] ? "on" : "off"), 40);
         PrintCLIMessage_Justify("desirability-prefs:", (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] ? "on" : "off"), 40);
-        
+
         if (options.test(LEARN_LIST))
         {
-            std::stringstream output;
-            PrintCLIMessage_Section("Force-Learn States", 40);
-            GetForceLearnStates(thisAgent, output);
-            if (output.str().size())
+            std::string output;
+            if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM])
             {
-                PrintCLIMessage(output.str().c_str());
-            }
-            PrintCLIMessage_Section("Dont-Learn States", 40);
-            GetDontLearnStates(thisAgent, output);
-            if (output.str().size())
+                PrintCLIMessage_Section("Only Learning In States", 40);
+                if (!thisAgent->ebChunker->chunky_problem_spaces)
+                {
+                    PrintCLIMessage("No current learning states.\n");
+                } else
+                {
+                    for (cons* c = thisAgent->ebChunker->chunky_problem_spaces; c != NIL; c = c->rest)
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
+                        PrintCLIMessage(output.c_str());
+                        output.clear();
+                    }
+                }
+            } else if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM])
             {
-                PrintCLIMessage(output.str().c_str());
+                PrintCLIMessage_Section("Learning in All States Except", 40);
+                if (!thisAgent->ebChunker->chunky_problem_spaces)
+                {
+                    PrintCLIMessage("Currently learning in all states.\n");
+                } else
+                {
+                    for (cons* c = thisAgent->ebChunker->chunk_free_problem_spaces; c != NIL; c = c->rest)
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
+                        PrintCLIMessage(output.c_str());
+                        output.clear();
+                    }
+                }
             }
         }
         return true;
     }
-    
+
     if (options.test(LEARN_ONLY))
     {
         set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
@@ -95,7 +92,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
         PrintCLIMessage("Learn| only = on");
     }
-    
+
     if (options.test(LEARN_EXCEPT))
     {
         set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
@@ -103,7 +100,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, true);
         PrintCLIMessage("Learn| except = on");
     }
-    
+
     if (options.test(LEARN_ENABLE))
     {
         set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
@@ -111,7 +108,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
         PrintCLIMessage("Learn| learning = on");
     }
-    
+
     if (options.test(LEARN_DISABLE))
     {
         set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, false);
@@ -119,43 +116,44 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
         PrintCLIMessage("Learn| learning = off");
     }
-    
+
     if (options.test(LEARN_ALL_LEVELS))
     {
         set_sysparam(thisAgent, LEARNING_ALL_GOALS_SYSPARAM, true);
         PrintCLIMessage("Learn| all-levels = on");
     }
-    
+
     if (options.test(LEARN_BOTTOM_UP))
     {
         set_sysparam(thisAgent, LEARNING_ALL_GOALS_SYSPARAM, false);
         PrintCLIMessage("Learn| all-levels = off");
     }
-    
+
     if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS))
     {
         set_sysparam(thisAgent, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
         PrintCLIMessage("Learn| local-negations = on");
     }
-    
+
     if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS))
     {
         set_sysparam(thisAgent, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
         PrintCLIMessage("Learn| local-negations = off");
     }
-    
+
     if (options.test(LEARN_ENABLE_THROUGH_EVALUATION_RULES))
     {
         set_sysparam(thisAgent, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, true);
         PrintCLIMessage("Learn| desirability-prefs = on");
+        PrintCLIMessage("Learn| Learning through desirability prefs may have issues in 9.5 beta.  Use at your own risk.");
     }
-    
+
     if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES))
     {
         set_sysparam(thisAgent, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, false);
         PrintCLIMessage("Learn| desirability-prefs = off");
     }
-    
+
     return true;
 }
 

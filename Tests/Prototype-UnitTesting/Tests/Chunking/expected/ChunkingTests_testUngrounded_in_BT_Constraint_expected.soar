@@ -1,0 +1,15 @@
+sp {answer*apply7c*onc*t3-2
+    (state <s1> ^superstate nil ^substate-output <c2>
+          ^test-item { > <c2> <c1> })
+    -->
+    (<s1> ^result7a <c1> + ^result7b <c2> + ^result7c 7 + ^test-done 1 +)
+}
+
+sp {answer*apply7a*onc*t3-1
+    (state <s1> ^superstate nil ^test-item2 <c2> ^test-item { > <c2> <c1> })
+    -->
+    (<s1> ^substate-output 5 +)
+}
+
+
+

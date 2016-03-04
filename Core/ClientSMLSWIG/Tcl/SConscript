@@ -73,7 +73,19 @@ else:
 # dirs
 lib_install_dir = clone.Dir('$OUT_DIR')
 include_dirs = [ clone.Dir('#Core/%s/src' % d).abspath for d in 'ClientSML ElementXML ConnectionSML SoarKernel'.split() ]
-
+include_dirs.append(clone.Dir('#Core/shared').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/debug').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/decision_process').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/episodic_memory').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/explain').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/explanation_based_chunking').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/interface').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/output_manager').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/parsing').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/reinforcement_learning').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/semantic_memory').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/shared').abspath)
+include_dirs.append(clone.Dir('#Core/SoarKernel/src/soar_representation').abspath)
 # files
 swig_tcl_wrapper_cpp = clone.File('Tcl_sml_ClientInterface_wrap.cpp')
 swig_tcl_interface = clone.File('Tcl_sml_ClientInterface.i')
@@ -83,7 +95,10 @@ soar_dll = clone.File(os.path.join(lib_install_dir.abspath, 'Soar'))
 
 # Create commands to create SWIG wrapper file and pkgIndex file
 includes = ' '.join('-I%s' % d for d in include_dirs)
-wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s' % (swig_tcl_wrapper_cpp.abspath, includes, swig_tcl_interface)
+nosvs = ''
+if GetOption('nosvs'):
+  nosvs = '-DNO_SVS'
+wrap_cmd = 'swig -o %s -c++ -tcl -pkgversion 9.0.1 -Wall %s %s %s' % (swig_tcl_wrapper_cpp.abspath, includes, nosvs, swig_tcl_interface)
 makepkg_cmd = '%s %s %s' % (os.path.join(tcl_bins.abspath, tcl_shname), makepkg_script, lib_install_dir)
 
 # Set up SWIGScanner to find dependencies for .i file
@@ -113,6 +128,10 @@ elif sys.platform == 'linux2':
 else:
   clone.Append(LIBS=[tcl_lib])
 
+# Prevent "Command line warning D9025 : overriding '/W2' with '/w'"
+if '/W2' in clone['CPPFLAGS']:
+  clone['CPPFLAGS'].remove('/W2')
+
 # Create the SWIG dll for tcl
 tclstep2 = clone.SharedLibrary(libname, swig_tcl_wrapper_cpp)
 lib = clone.Install(lib_install_dir, tclstep2)
@@ -131,7 +150,7 @@ tclstep3 = clone.InstallAs(os.path.join(lib_install_dir.abspath, 'pkgIndex.tcl')
 clone.Depends(tclstep1, swig_tcl_interface)
 clone.Depends(tclstep2, swig_tcl_wrapper_cpp)
 clone.Depends(tclstep3, lib)
-clone.Depends(clone.File('#Core/SoarKernel/src/soar_instance.h'), swig_tcl_wrapper_cpp)
+clone.Depends(clone.File('#Core/SoarKernel/src/shared/soar_instance.h'), swig_tcl_wrapper_cpp)
 # clone.Depends(soarlib, swig_tcl_wrapper_cpp)
 
 # Tell SCons to clean up intermediate files when doing a scons -c

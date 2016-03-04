@@ -1,0 +1,16 @@
+sp {simple-conflict*propose*a
+   (state <s> ^name simple-conflict)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name a)
+}
+
+sp {simple-conflict*compare*a
+   (state <s> ^name simple-conflict
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name a)
+   (<op2> ^name b)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

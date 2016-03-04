@@ -45,6 +45,42 @@ using namespace soarxml;
 
 const char* DEBUGGER_NAME = "SoarJavaDebugger.jar";
 
+std::string libraryPath;
+
+void initialize()
+{}
+
+namespace
+{
+    class dynamic_library_load_unload_handler
+    {
+        public:
+            dynamic_library_load_unload_handler()
+            {
+#ifdef _WIN32
+                HMODULE soarModule = GetModuleHandle("Soar.dll");
+                char* str = new char[256];
+                int libNameLength = GetModuleFileName(soarModule, str, 256);
+                
+                std::string path(str);
+                libraryPath = path.substr(0, path.find_last_of("\\"));
+                
+                delete[] str;
+#else
+                Dl_info dl_info;
+                dladdr((void*) initialize, &dl_info);
+                
+                std::string path(dl_info.dli_fname);
+                libraryPath = path.substr(0, path.find_last_of("/") + 1);
+#endif
+            }
+            ~dynamic_library_load_unload_handler()
+            {
+                libraryPath = "";
+            }
+    } dynamic_library_load_unload_handler_hook;
+}
+
 namespace sml
 {
     struct DebuggerProcessInformation
@@ -1434,25 +1470,77 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     {
         p = DEBUGGER_NAME;
     }
-    else
+    
+    char* soarHome = getenv("SOAR_HOME");
+    
+    // Check SOAR_HOME
+    if (p.length() == 0)
     {
-        char* e = getenv("SOAR_HOME");
-        if (!e)
+        std::string h;
+        
+        if (soarHome)
         {
-            return false;
+            h = soarHome;
+            
+            if (h.find_last_of("/\\") != h.size() - 1)
+    {
+                h += '/';
+            }
+            h += DEBUGGER_NAME;
+            
+            if (isfile(h.c_str()))
+        {
+                p = h;
+            }
         }
-        std::string h(e);
+        }
+    
+    // Check the location where the library is
+    if (p.length() == 0)
+    {
+        std::string h;
+        
+        // Last resort, Library path
+        h = libraryPath;
+        
         if (h.find_last_of("/\\") != h.size() - 1)
         {
             h += '/';
         }
+        
         h += DEBUGGER_NAME;
-        if (!isfile(h.c_str()))
+        
+        if (isfile(h.c_str()))
+        {
+            p = h;
+        }
+    }
+    
+    // Check current working directory
+    if (p.length() == 0)
+    {
+        char buffer[4096 + 1];
+        
+#ifdef _MSC_VER
+        GetCurrentDirectory(4096, buffer);
+#else
+        getcwd(buffer, 4096);
+#endif
+        
+        std::string debuggerPath = buffer;
+        debuggerPath += "/";
+        debuggerPath += DEBUGGER_NAME;
+        
+        if (isfile(debuggerPath.c_str()))
+        {
+            p = debuggerPath;
+        }
+    }
+    
+    if (p.length() == 0)
         {
             return false;
         }
-        p = h;
-    }
     
     if (port == -1)
     {
@@ -1466,13 +1554,74 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
     m_pDPI = new DebuggerProcessInformation();
     
 #ifdef _WIN32
+    enum { ParentRead, ParentWrite, ChildWrite, ChildRead, NumPipeTypes };
+    
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(sa);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = nullptr;
+    
+    HANDLE pipes[NumPipeTypes];
+    if (!CreatePipe(&pipes[ParentWrite], &pipes[ChildRead], &sa, 0))
+    { return 0; }
+    if (!CreatePipe(&pipes[ParentRead], &pipes[ChildWrite], &sa, 0))
+    { return 0; }
+    
+    // make sure the handles the parent will use aren't inherited.
+    SetHandleInformation(pipes[ParentRead], HANDLE_FLAG_INHERIT, 0);
+    SetHandleInformation(pipes[ParentWrite], HANDLE_FLAG_INHERIT, 0);
+    
     ZeroMemory(&m_pDPI->debuggerStartupInfo, sizeof(m_pDPI->debuggerStartupInfo));
     m_pDPI->debuggerStartupInfo.cb = sizeof(m_pDPI->debuggerStartupInfo);
+    m_pDPI->debuggerStartupInfo.wShowWindow = SW_SHOW;
+    m_pDPI->debuggerStartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+    m_pDPI->debuggerStartupInfo.hStdOutput = pipes[ChildWrite];
+    m_pDPI->debuggerStartupInfo.hStdError = pipes[ChildWrite];
+    m_pDPI->debuggerStartupInfo.hStdInput = pipes[ChildRead];
+    
     ZeroMemory(&m_pDPI->debuggerProcessInformation, sizeof(m_pDPI->debuggerProcessInformation));
     
     // Start the child process.
     std::stringstream commandLine;
-    commandLine << "javaw.exe -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
+    
+    std::string path = "";
+    char* pathC = getenv("PATH");
+    char buffer[4096 + 1];
+    
+    GetCurrentDirectory(4096, buffer);
+    
+    if (pathC)
+    {
+        path = pathC;
+    }
+    
+    path += ";";
+    path += buffer;
+    
+    path += ";";
+    path += libraryPath;
+    
+    if (soarHome)
+    {
+        path += ";";
+        path += soarHome;
+    }
+    
+    for (size_t i = 0; i < path.length(); ++i)
+    {
+        if (path[i] == ';' && i > 0 && path[i - 1] == '\\')
+        {
+            --i;
+            path.erase(i, 1);
+        }
+    }
+    
+    if (path[path.length() - 1] == '\\')
+    {
+        path.erase(path.length() - 1, 1);
+    }
+    
+    commandLine << "java.exe -Djava.library.path=\"" << path << "\" -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
     
     BOOL ret = CreateProcess(
                    0,
@@ -1486,6 +1635,10 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
                    &m_pDPI->debuggerStartupInfo,           // Pointer to STARTUPINFO structure
                    &m_pDPI->debuggerProcessInformation);   // Pointer to PROCESS_INFORMATION structure
                    
+    CloseHandle(pipes[ChildRead]);
+    CloseHandle(pipes[ChildWrite]);
+    CloseHandle(pipes[ParentWrite]);
+    
     if (ret == 0)
     {
         std::cout << "Error code: " << GetLastError() << std::endl;
@@ -1493,10 +1646,25 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         m_pDPI = 0;
         return false;
     }
+    
+    char ReadBuff[4096 + 1];
+    DWORD ReadNum;
+    bool wait = true;
+    
+    while (wait)
+    {
+        auto success = ReadFile(pipes[ParentRead], ReadBuff, sizeof(ReadBuff) - 1, &ReadNum, NULL);
+        if (!success || !ReadNum)
+        { break; }
+        ReadBuff[ReadNum] = 0;
+        std::cout << ReadBuff;
+    }
+    
     return true;
     
 #else // _WIN32
     m_pDPI->debuggerPid = fork();
+    
     if (m_pDPI->debuggerPid < 0)
     {
         delete m_pDPI;
@@ -1504,19 +1672,79 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
         return false;
     }
     
+    
     if (m_pDPI->debuggerPid == 0)
     {
         // child
         std::string portstring;
         to_string(port, portstring);
     
+        std::string path;
+        char* pathC;
+    
 #if (defined(__APPLE__) && defined(__MACH__))
-        execlp("java", "java", "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
+        pathC = getenv("DYLD_LIBRARY_PATH");
+#else
+        pathC = getenv("LD_LIBRARY_PATH");
+#endif
+    
+        if (pathC)
+        {
+            path = pathC;
+        }
+    
+        char buffer[4096 + 1];
+        getcwd(buffer, 4096);
+    
+        path += ":";
+        path += buffer;
+        path += ":";
+        path += buffer;
+        path += "/java";
+    
+        path += ":";
+        path += libraryPath;
+        path += ":";
+        path += libraryPath;
+        path += "/java";
+    
+        if (soarHome)
+        {
+            path += ":";
+            path += soarHome;
+            path += ":";
+            path += soarHome;
+            path += "/java";
+        }
+    
+        for (size_t i = 0; i < path.length(); ++i)
+        {
+            if (path[i] == ':' && i > 0 && path[i - 1] == '/')
+            {
+                --i;
+                path.erase(i, 1);
+            }
+    
+            if (path[i] == '/' && i > 0 && path[i - 1] == '/')
+            {
+                --i;
+                path.erase(i, 1);
+            }
+        }
+    
+        if (path[path.length() - 1] == '/')
+        {
+            path.erase(path.length() - 1, 1);
+        }
+    
+#ifdef __APPLE__
+        execlp("java", "java", ("-Djava.library.path=\"" + path + "\"").c_str(), "-cp", ("\"" + path + "\"").c_str(), "-XstartOnFirstThread", "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #else
-        execlp("java", "java", "-jar", p.c_str(), "-remote",
+        execlp("java", "java", ("-Djava.library.path=" + path).c_str(), "-jar", p.c_str(), "-remote",
                "-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL);
 #endif
+    
         // does not return on success
     
         std::cerr << "Debugger spawn failed: " << strerror(errno) << std::endl;
@@ -1582,6 +1810,7 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
     return pClientIdentifier;
 }
 
+#ifndef NO_SVS
 void Agent::SendSVSInput(const std::string& txt)
 {
     GetKernel()->SendSVSInput(GetAgentName(), txt);
@@ -1596,3 +1825,4 @@ std::string Agent::GetSVSOutput()
 {
     return GetKernel()->GetSVSOutput(GetAgentName());
 }
+#endif

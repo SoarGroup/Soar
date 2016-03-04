@@ -1,0 +1,51 @@
+# Tests:
+# - 
+
+srand 23
+learn -e
+learn --only
+
+sp {init*state
+   (state <s1> ^superstate nil)
+-->
+   (<s1> ^num1 2 ^num2 3)
+}
+
+sp {turn-learning-on
+(state <s> ^superstate.superstate nil)
+-->
+    (force-learn <s>)
+    (<s> ^name learn-state)
+}
+
+sp {learn-state*propose
+(state <s> ^name learn-state)
+-->
+    (<s> ^operator <o> + =)
+}
+
+sp {chunk*make
+(state <s> ^superstate <ss>)
+    (<ss> ^operator <o>
+          ^superstate <ts>)
+    (<ts> ^superstate nil
+          ^num1 <x1> ^num2 <x2>)
+-->
+    (<ts> ^result (+ <x1> <x2>))
+    (halt)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (succeeded)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (failed)
+}
+

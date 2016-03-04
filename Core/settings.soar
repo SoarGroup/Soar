@@ -17,6 +17,7 @@ alias cnf               chunk-name-format
 alias ea                excise --all
 alias ec                excise --chunks
 alias m                 matches
+alias pcf               print -cfi
 alias pf                production-find
 alias ps                print --stack
 alias quit              exit
@@ -33,7 +34,7 @@ alias sms smem -S
 # Soar Settings #
 #################
 
-max-goal-depth 233
+max-goal-depth 23
 default-wme-depth 2
 
 ###################
@@ -44,4 +45,4 @@ default-wme-depth 2
 # smem -e
 # learn -e
 
-echo "\nSettings loaded from settings/settings.soar..."
+echo "\nUser settings loaded from settings/settings.soar..."

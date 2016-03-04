@@ -18,7 +18,7 @@
 #include "command_table.h"
 #include "drawer.h"
 
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
     if (node->is_group())
     {
         group_node* g = node->as_group();
-        for (int i = 0; i < g->num_children(); ++i)
+        for (size_t i = 0; i < g->num_children(); ++i)
         {
             add_child(g->get_child(i));
         }
@@ -259,8 +259,8 @@ void svs_state::update_cmd_results(bool early)
 
 void svs_state::process_cmds()
 {
-    wme_list all;
-    wme_list::iterator all_it;
+    wme_vector all;
+    wme_vector::iterator all_it;
     si->get_child_wmes(cmd_link, all);
     
     command_set live_commands;
@@ -331,6 +331,7 @@ void svs_state::process_cmds()
         if (c)
         {
             curr_cmds.insert(command_entry(new_cmd->id, c, 0));
+            svs::mark_filter_dirty_bit();
         }
         else
         {
@@ -363,9 +364,11 @@ svs::svs(agent* a)
     draw = new drawer();
 }
 
+bool svs::filter_dirty_bit = true;
+
 svs::~svs()
 {
-    for (int i = 0, iend = state_stack.size(); i < iend; ++i)
+    for (size_t i = 0, iend = state_stack.size(); i < iend; ++i)
     {
         delete state_stack[i];
     }
@@ -418,10 +421,14 @@ void svs::state_deletion_callback(Symbol* state)
 
 void svs::proc_input(svs_state* s)
 {
-    for (int i = 0; i < env_inputs.size(); ++i)
+    for (size_t i = 0; i < env_inputs.size(); ++i)
     {
         strip(env_inputs[i], " \t");
         s->get_scene()->parse_sgel(env_inputs[i]);
+    }
+    if (env_inputs.size() > 0)
+    {
+        svs::mark_filter_dirty_bit();
     }
     env_inputs.clear();
 }
@@ -434,7 +441,6 @@ void svs::output_callback()
     }
     vector<svs_state*>::iterator i;
     string sgel;
-    svs_state* topstate = state_stack.front();
     
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
@@ -461,6 +467,8 @@ void svs::input_callback()
     {
         (**i).update_cmd_results(false);
     }
+
+    svs::filter_dirty_bit = false;
 }
 
 /*
@@ -495,7 +503,7 @@ void svs::proxy_get_children(map<string, cliproxy*>& c)
     c["filters"]           = &get_filter_table();
     c["commands"]          = &get_command_table();
     
-    for (int j = 0, jend = state_stack.size(); j < jend; ++j)
+    for (size_t j = 0, jend = state_stack.size(); j < jend; ++j)
     {
         c[state_stack[j]->get_name()] = state_stack[j];
     }
@@ -512,7 +520,7 @@ bool svs::do_cli_command(const vector<string>& args, string& output)
         return false;
     }
     
-    for (int i = 2, iend = args.size(); i < iend; ++i)
+    for (size_t i = 2, iend = args.size(); i < iend; ++i)
     {
         rest.push_back(args[i]);
     }
@@ -532,7 +540,7 @@ void svs::cli_connect_viewer(const vector<string>& args, ostream& os)
     if (draw->connect(args[0]))
     {
         os << "connection successful" << endl;
-        for (int i = 0, iend = state_stack.size(); i < iend; ++i)
+        for (size_t i = 0, iend = state_stack.size(); i < iend; ++i)
         {
             state_stack[i]->get_scene()->refresh_draw();
         }

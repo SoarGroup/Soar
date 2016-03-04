@@ -1,0 +1,46 @@
+sp {answer*template2*5
+    (state <s1> ^rl-id <t1>)
+    (<t1> ^value 0.9)
+    (<s1> ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> = 0.9)
+}
+
+sp {answer*template1*4
+    (state <s1> ^rl-item 0.9)
+    (<s1> ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> = 0.9)
+}
+
+sp {answer*template3*3
+    (state <s1> ^rl-item 0.9)
+    (<s1> ^rl-id <t2>)
+    (<t2> ^value 0.9)
+    (<s1> ^rl-id2 <t1>)
+    (<t1> ^value <d1>)
+    (<s1> ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {answer*template4*2
+    (state <s1> ^rl-item2 0.7)
+    (<s1> ^rl-item 0.9)
+    (<s1> ^rl-id <t2>)
+    (<t2> ^value 0.9)
+    (<s1> ^rl-id2 { <> <t2> <t1> })
+    (<s1> ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> = 0.7)
+}
+
+sp {answer*template1*1
+    (state <s1> ^rl-item 0.6)
+    (<s1> ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> = 0.6)
+}
+
+
+

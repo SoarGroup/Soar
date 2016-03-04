@@ -6,15 +6,17 @@
 #include <sstream>
 #include <vector>
 #include "portability.h"
-#include "wmem.h"
+#include "working_memory.h"
 #include "mat.h"
 
-tc_number get_new_tc_number(agent* thisAgent);
-extern Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* make_float_constant(agent* thisAgent, double value);
+#include "Export.h"
 
-typedef std::vector<wme*> wme_list;
+tc_number get_new_tc_number(agent* thisAgent);
+extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
+
+typedef std::vector<wme*> wme_vector;
 
 class soar_interface;
 
@@ -54,7 +56,7 @@ class soar_interface
         wme*         make_wme(Symbol* id, Symbol* attr, const T& val);
         
         void         remove_wme(wme* w);
-        bool         get_child_wmes(Symbol* id, wme_list& childs);
+        bool         get_child_wmes(Symbol* id, wme_vector& childs);
         bool         find_child_wme(Symbol* id, const std::string& attr, wme*& w);
         
         template<class T>
@@ -68,7 +70,7 @@ class soar_interface
         
         tc_number    new_tc_num();
         
-        int          get_timetag(wme* w);
+        uint64_t          get_timetag(wme* w);
         common_syms& get_common_syms()
         {
             return cs;
@@ -130,7 +132,7 @@ inline Symbol* soar_interface::get_wme_val(wme* w)
     return w->value;
 }
 
-inline int soar_interface::get_timetag(wme* w)
+inline uint64_t soar_interface::get_timetag(wme* w)
 {
     return w->timetag;
 }

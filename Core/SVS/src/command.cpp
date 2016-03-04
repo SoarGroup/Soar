@@ -11,7 +11,7 @@
 #include "scene.h"
 #include "soar_interface.h"
 
-#include "symtab.h"
+#include "symbol.h"
 
 using namespace std;
 
@@ -46,7 +46,8 @@ command::~command() {}
 
 bool command::changed()
 {
-    int size, max_time;
+    size_t size;
+    uint64_t max_time;
     parse_substructure(size, max_time);
     if (first || size != subtree_size || max_time > prev_max_time)
     {
@@ -58,14 +59,14 @@ bool command::changed()
     return false;
 }
 
-void command::parse_substructure(int& size, int& max_time)
+void command::parse_substructure(size_t& size, uint64_t& max_time)
 {
     tc_number tc;
     stack< Symbol*> to_process;
-    wme_list childs;
-    wme_list::iterator i;
+    wme_vector childs;
+    wme_vector::iterator i;
     Symbol* parent, *v;
-    int tt;
+    uint64_t tt;
     string attr;
     
     tc = si->new_tc_num();
@@ -106,8 +107,8 @@ void command::parse_substructure(int& size, int& max_time)
 
 bool command::get_str_param(const string& name, string& val)
 {
-    wme_list children;
-    wme_list::iterator i;
+    wme_vector children;
+    wme_vector::iterator i;
     string attr, v;
     
     si->get_child_wmes(root, children);
