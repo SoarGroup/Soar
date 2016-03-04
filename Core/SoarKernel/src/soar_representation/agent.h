@@ -200,6 +200,7 @@ typedef struct EXPORT agent_struct
     Symbol*             non_numeric_count_symbol; // NLD 11/11
 
     Symbol*             fake_instantiation_symbol;
+    Symbol*             architecture_inst_symbol;
     Symbol*             sti_symbol;
 
     /* RPM 9/06 begin */

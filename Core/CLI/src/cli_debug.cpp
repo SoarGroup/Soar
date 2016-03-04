@@ -125,7 +125,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             }
             else
             {
-                debug_trace_set(debug_type, true);
+                debug_trace_set(debug_type, false);
                 return true;
             }
         }

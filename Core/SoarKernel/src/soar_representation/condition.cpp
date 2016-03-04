@@ -380,6 +380,7 @@ void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* 
             add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart->data.tests.id_test, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart->data.tests.attr_test, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart->data.tests.value_test, pID_Set, pID_Set_Map);
+            deallocate_test(thisAgent, id_test_without_goal_test);
         }
     }
 }

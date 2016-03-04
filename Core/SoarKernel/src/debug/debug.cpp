@@ -323,10 +323,9 @@ void debug_trace_set(int dt_num, bool pEnable)
     {
         if (dt_num == 0)
         {
-             Output_Manager::Get_OM().set_output_params_global(true);
-             thisAgent->output_settings->set_output_params_agent(true);
-             print(thisAgent, "Debug output enabled.\n");
-             dprint(DT_DEBUG, "Test debug statement.\n");
+             Output_Manager::Get_OM().set_output_params_global(pEnable);
+             thisAgent->output_settings->set_output_params_agent(pEnable);
+             dprint(DT_DEBUG, "Debug output test statement...\n");
              return;
         }
         Output_Manager::Get_OM().set_output_mode(dt_num, pEnable);

@@ -437,6 +437,13 @@ bool reinitialize_soar(agent* thisAgent)
     epmem_reinit(thisAgent);
     smem_reinit(thisAgent);
 
+    thisAgent->ebChunker->reinit();
+    #ifdef BUILD_WITH_EXPLAINER
+        //debug_trace_set(2,true);
+        thisAgent->explanationLogger->re_init();
+        //debug_trace_set(2,false);
+    #endif
+
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->wma_params->activation->set_value(off);
 
@@ -457,8 +464,6 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->epmem_stats->reset();
     thisAgent->smem_stats->reset();
     thisAgent->dyn_counters->clear();
-    thisAgent->ebChunker->reinit();
-    thisAgent->explanationLogger->re_init();
 
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
     thisAgent->FIRING_TYPE = IE_PRODS;
