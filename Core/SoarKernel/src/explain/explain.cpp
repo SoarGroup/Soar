@@ -406,10 +406,8 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         chunk_record* lFoundChunk = get_chunk_record(sym);
         if (lFoundChunk)
         {
-            //debug_trace_set(2,true);
-            discuss_chunk(lFoundChunk);
-            //debug_trace_set(2,false);
-            return true;
+                    discuss_chunk(lFoundChunk);
+                    return true;
         }
 
         outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
@@ -546,19 +544,15 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
         {
             outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
         }
-        //debug_trace_set(2,true);
-        lSuccess = print_chunk_explanation_for_id(lObjectID);
-        //debug_trace_set(2,false);
-    } else if (lFirstChar == 'i')
+            lSuccess = print_chunk_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'i')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {
             outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
         }
-        //debug_trace_set(2,true);
-        lSuccess = print_instantiation_explanation_for_id(lObjectID);
-        //debug_trace_set(2,false);
-    } else if (lFirstChar == 'l')
+            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'l')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {

@@ -422,9 +422,7 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    //debug_trace_set(2,true);
     delete delete_agent->explanationLogger;
-    //debug_trace_set(2,false);
     delete_agent->explanationLogger = NULL;
     delete delete_agent->ebChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
@@ -596,9 +594,7 @@ bool reinitialize_agent(agent* thisAgent)
 
     thisAgent->ebChunker->reinit();
     #ifdef BUILD_WITH_EXPLAINER
-        //debug_trace_set(2,true);
-        thisAgent->explanationLogger->re_init();
-        //debug_trace_set(2,false);
+    thisAgent->explanationLogger->re_init();
     #endif
 
     bool wma_was_enabled = wma_enabled(thisAgent);
