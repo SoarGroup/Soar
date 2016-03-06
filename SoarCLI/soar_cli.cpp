@@ -112,18 +112,18 @@ void PrintColoredMessage(char const* message)
 
     for (ch = message[i]; ch; ch = message[++i])
     {
-        if (ch == '<')
+        if ((ch == '<') || (ch == '['))
         {
-            cout << acc::BYellow << '<';
-        } else if (ch =='>')
+            cout << acc::Yellow << ch;
+        } else if ((ch == '>') || (ch == ']'))
         {
-            cout << ch << acc::Off;
-        } else if ((ch == '{') || (ch =='}') || (ch == '(') || (ch ==')'))
-        {
-            cout << acc::Blue << ch << acc::Off;
-        } else if (ch == '^')
+            cout << acc::Yellow << ch << acc::Off;
+        } else if ((ch == '{') || (ch =='}') || (ch == '(') || (ch ==')') || (ch =='@'))
         {
             cout << acc::Red << ch << acc::Off;
+        } else if ((ch == '^') || (ch =='=') || (ch == '*') || (ch == ':') || (ch == '+') || (ch == '!') || (ch == '~') || (ch == '-'))
+        {
+            cout << acc::BYellow << ch << acc::Off;
         } else {
             cout << ch;
         }
