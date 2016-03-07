@@ -356,15 +356,6 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
 }
 
 
-void Explanation_Logger::record_dependencies()
-{
-
-    assert(current_discussed_chunk);
-
-    current_discussed_chunk->generate_dependency_paths();
-
-}
-
 bool Explanation_Logger::toggle_production_watch(production* pProduction)
 {
     if (pProduction->explain_its_chunks)
