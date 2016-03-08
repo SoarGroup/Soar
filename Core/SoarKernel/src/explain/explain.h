@@ -262,8 +262,6 @@ class Explanation_Logger
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
         void                    add_bt_instantiation(instantiation* pInst, BTSourceType bt_type) { if (current_recording_chunk) current_recording_chunk->backtraced_instantiations->insert(pInst); };
 
-        void                    record_dependencies();
-
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);

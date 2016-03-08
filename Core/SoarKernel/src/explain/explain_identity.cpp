@@ -146,6 +146,8 @@ void identity_record::print_identity_mappings()
     }
     thisAgent->outputManager->printa(thisAgent, "\n");
 
+    //print_original_ebc_mappings();
+
 }
 
 void identity_record::print_original_ebc_mappings()

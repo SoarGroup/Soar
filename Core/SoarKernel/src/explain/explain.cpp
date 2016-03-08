@@ -356,15 +356,6 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
 }
 
 
-void Explanation_Logger::record_dependencies()
-{
-
-    assert(current_discussed_chunk);
-
-    current_discussed_chunk->generate_dependency_paths();
-
-}
-
 bool Explanation_Logger::toggle_production_watch(production* pProduction)
 {
     if (pProduction->explain_its_chunks)
@@ -406,10 +397,8 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         chunk_record* lFoundChunk = get_chunk_record(sym);
         if (lFoundChunk)
         {
-            //debug_trace_set(2,true);
-            discuss_chunk(lFoundChunk);
-            //debug_trace_set(2,false);
-            return true;
+                    discuss_chunk(lFoundChunk);
+                    return true;
         }
 
         outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
@@ -426,7 +415,7 @@ void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
+        outputManager->printa_sf(thisAgent, "Now explaining %y.\n  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -546,19 +535,15 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
         {
             outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
         }
-        //debug_trace_set(2,true);
-        lSuccess = print_chunk_explanation_for_id(lObjectID);
-        //debug_trace_set(2,false);
-    } else if (lFirstChar == 'i')
+            lSuccess = print_chunk_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'i')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {
             outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
         }
-        //debug_trace_set(2,true);
-        lSuccess = print_instantiation_explanation_for_id(lObjectID);
-        //debug_trace_set(2,false);
-    } else if (lFirstChar == 'l')
+            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'l')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {

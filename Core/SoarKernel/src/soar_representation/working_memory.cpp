@@ -79,6 +79,8 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->grounds_tc = 0;
     w->potentials_tc = 0;
     w->locals_tc = 0;
+    w->chunker_bt_last_ground_cond = NULL;
+    w->chunker_bt_pref = NULL;
 
     w->next = NIL;
     w->prev = NIL;

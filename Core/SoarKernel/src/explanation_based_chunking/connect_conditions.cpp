@@ -157,6 +157,7 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
         new_cond->bt.wme_ = (*it);
         new_cond->bt.level = (*it)->id->id->level;
         new_cond->bt.trace = (*it)->preference;
+        new_cond->inst = (*it)->preference->inst;
 
         /* In other functions we only add a reference if the instantiation match goal level is
          * not the top level.  We don't have that value yet, so I'm going to try to use the level

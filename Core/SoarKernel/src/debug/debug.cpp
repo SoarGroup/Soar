@@ -97,6 +97,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EXPLAIN_PATHS].enabled =               true;
     //    mode_info[DT_EXPLAIN_CONDS].enabled =               true;
         //    mode_info[DT_EXPLAIN_IDENTITIES].enabled =               true;
+        //DT_UNIFY_SINGLETONS
     }
 }
 
@@ -151,6 +152,8 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_UPDATE].prefix =               strdup("EUpdate | ");
     mode_info[DT_EXPLAIN_CONDS].prefix =                strdup("EConds  | ");
     mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
+    mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
+
 
 
 #ifdef DEBUG_OUTPUT_ON
