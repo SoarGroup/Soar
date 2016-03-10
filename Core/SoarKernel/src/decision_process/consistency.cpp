@@ -18,6 +18,7 @@
  *
  */
 
+#include <run_soar.h>
 #include "consistency.h"
 
 #include "agent.h"
@@ -25,7 +26,6 @@
 #include "decide.h"
 #include "symbol.h"
 #include "production.h"
-#include "init_soar.h"
 #include "rete.h"
 #include "slot.h"
 #include "working_memory.h"

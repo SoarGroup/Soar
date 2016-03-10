@@ -25,7 +25,6 @@
 #include "rhs_functions.h"
 #include "agent.h"
 #include "explain.h"
-#include "init_soar.h"
 #include "print.h"
 #include "rete.h"
 #include "xml.h"
@@ -34,6 +33,7 @@
 #include "test.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 using soar::Lexer;

@@ -163,14 +163,16 @@ namespace cli
             enum eExplainOptions
             {
                 EXPLAIN_ALL,
-                EXPLAIN_ONLY_SPECIFIC,
-                EXPLAIN_STATS,
                 EXPLAIN_CONSTRAINTS,
-                EXPLAIN_DEPENDENCY,
+                EXPLAIN_FORMATION,
+                EXPLAIN_EXPLANATION_TRACE,
+                EXPLAIN_GLOBAL_STATS,
                 EXPLAIN_IDENTITY_SETS,
                 EXPLAIN_LIST_ALL,
-                EXPLAIN_GLOBAL_STATS,
-                EXPLAIN_WATCH,
+                EXPLAIN_ONLY_SPECIFIC,
+                EXPLAIN_RECORD,
+                EXPLAIN_STATS,
+                EXPLAIN_WME_TRACE,
                 EXPLAIN_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;

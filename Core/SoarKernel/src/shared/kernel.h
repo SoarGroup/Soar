@@ -30,7 +30,6 @@
 //#define EBC_SUPERMERGE
 #endif
 
-
 #ifndef SOAR_RELEASE_VERSION
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
@@ -48,7 +47,7 @@
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+//    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
@@ -116,6 +115,7 @@ typedef unsigned char byte;
 //#define ATTENTION_LAPSE
 
 #define increment_counter(counter) counter++; if (counter == 0) counter = 1;
+#define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;
 
 /* --------------- Explanation of directives that alter Soar behavior ----------------
  *

@@ -83,8 +83,12 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
     if ((cond)->bt.wme_->grounds_tc != grounds_tc)
     {
         (cond)->bt.wme_->grounds_tc = grounds_tc;
+        cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     }
-//    cond->bt.wme_->chunker_bt_last_ground_cond = cond;
+    if (cond->bt.wme_->chunker_bt_last_ground_cond != cond)
+    {
+        add_singleton_unification_if_needed(cond);
+    }
     push(thisAgent, (cond), grounds);
 }
 #else
@@ -190,9 +194,10 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
-                                     int indent,
                                      const identity_triple o_ids_to_replace,
-                                     const rhs_triple rhs_funcs)
+                                     const rhs_triple rhs_funcs,
+                                     uint64_t bt_depth,
+                                     BTSourceType bt_type)
 {
 
     tc_number tc;   /* use this to mark ids in the ground set */
@@ -200,7 +205,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     condition* c;
     list* grounds_to_print, *pots_to_print, *locals_to_print, *negateds_to_print;
     bool need_another_pass;
-    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod ? inst->prod->name : NULL, grounds_level);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Backtracing instantiation i%u (matched %y at level %d) with RHS preference\n", inst->i_id, inst->prod_name, grounds_level);
     dprint(DT_BACKTRACE, "(%y [o%u] ^%y [o%u] %y [o%u]) that matched condition %l\n",
         get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
         get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
@@ -209,25 +214,24 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
 
         /* mvp 5-17-94 */
-        print_spaces(thisAgent, indent);
         print(thisAgent,  "... BT through instantiation of ");
         if (inst->prod)
         {
-            print_with_symbols(thisAgent, "%y\n", inst->prod->name);
+            print_with_symbols(thisAgent, "%y\n", inst->prod_name);
         }
         else
         {
-            print_string(thisAgent, "[dummy production]\n");
+            print_string(thisAgent, "[Architectural Fake Instantiation]\n");
         }
 
         xml_begin_tag(thisAgent, kTagBacktrace);
         if (inst->prod)
         {
-            xml_att_val(thisAgent, kProduction_Name, inst->prod->name);
+            xml_att_val(thisAgent, kProduction_Name, inst->prod_name);
         }
         else
         {
-            xml_att_val(thisAgent, kProduction_Name, "[dummy production]");
+            xml_att_val(thisAgent, kProduction_Name, "[Architectural Fake Instantiation]");
         }
 
     }
@@ -237,6 +241,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
     }
 
+    ++bt_depth;
+    if (inst->explain_depth > bt_depth)
+    {
+        inst->explain_depth = bt_depth;
+    }
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
     if (inst->backtrace_number == backtrace_number)
     {
@@ -244,7 +253,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         {
 
             /* mvp 5-17-94 */
-            print_spaces(thisAgent, indent);
             print_string(thisAgent, "(We already backtraced through this instantiation.)\n");
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
@@ -255,9 +263,10 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         dprint(DT_BACKTRACE, "backtrace_through_instantiation returning b/c this instantiation already backtraced through.\n");
         return;
     }
-    dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, (inst->prod ? inst->prod->name : NULL), backtrace_number);
+    dprint(DT_EXPLAIN, "backtrace_through_instantiation setting backtrace number of i%u (%y) of to %d", inst->i_id, inst->prod_name, backtrace_number);
     inst->backtrace_number = backtrace_number;
     #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationLogger->add_bt_instantiation(inst, bt_type);
     thisAgent->explanationLogger->increment_stat_instantations_backtraced();
     #endif
     if (!inst->reliable)
@@ -280,7 +289,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             continue;
         }
 
-        dprint(DT_BACKTRACE, "Backtracing through condition: %l\n", c);
+//        dprint(DT_BACKTRACE, "Backtracing marking tc of condition: %l\n", c);
         /* -- We copy any relational constraints found in this condition into a temporary map.
          *    When backtracing is complete and we are building the chunk conditions, we will
          *    add all of the relational constraints found while backtracing into the final
@@ -374,7 +383,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             /* --- positive cond's are grounds, potentials, or locals --- */
             if (thisID->tc_num == tc)
             {
-                dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding ground condition... %l (i%u)\n", c, c->inst->i_id);
                 add_to_grounds(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -383,7 +392,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             }
             else if (c->bt.level <= grounds_level)
             {
-                dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l (i%u)\n", c, c->inst->i_id);
                 add_to_potentials(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -392,7 +401,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             }
             else
             {
-                dprint(DT_BACKTRACE, "Backtracing adding local condition... %l\n", c);
+                dprint(DT_BACKTRACE, "Backtracing adding local condition... %l (i%u)\n", c, c->inst->i_id);
                 add_to_locals(c);
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {
@@ -402,7 +411,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
         else
         {
-            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l\n", c);
+            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
             /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(&negated_set,
                                   make_chunk_cond_for_negated_condition(c));
@@ -413,9 +422,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
     } /* end of for loop */
 
-    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
-    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
+//    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+//    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
+//    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
     /* Now record the sets of conditions.  Note that these are not necessarily */
     /* the final resting place for these wmes.  In particular potentials may   */
@@ -426,28 +435,24 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         /* mvp 5-17-94 */
-        print_spaces(thisAgent, indent);
         print_string(thisAgent, "  -->Grounds:\n");
         xml_begin_tag(thisAgent, kTagGrounds);
-        print_consed_list_of_condition_wmes(thisAgent, grounds_to_print, indent);
+        print_consed_list_of_condition_wmes(thisAgent, grounds_to_print, 0);
         xml_end_tag(thisAgent, kTagGrounds);
         print(thisAgent,  "\n");
-        print_spaces(thisAgent, indent);
         print_string(thisAgent, "\n  -->Potentials:\n");
         xml_begin_tag(thisAgent, kTagPotentials);
-        print_consed_list_of_condition_wmes(thisAgent, pots_to_print, indent);
+        print_consed_list_of_condition_wmes(thisAgent, pots_to_print, 0);
         xml_end_tag(thisAgent, kTagPotentials);
         print(thisAgent,  "\n");
-        print_spaces(thisAgent, indent);
         print_string(thisAgent, "  -->Locals:\n");
         xml_begin_tag(thisAgent, kTagLocals);
-        print_consed_list_of_condition_wmes(thisAgent, locals_to_print, indent);
+        print_consed_list_of_condition_wmes(thisAgent, locals_to_print, 0);
         xml_end_tag(thisAgent, kTagLocals);
         print(thisAgent,  "\n");
-        print_spaces(thisAgent, indent);
         print_string(thisAgent, "  -->Negated:\n");
         xml_begin_tag(thisAgent, kTagNegated);
-        print_consed_list_of_conditions(thisAgent, negateds_to_print, indent);
+        print_consed_list_of_conditions(thisAgent, negateds_to_print, 0);
         xml_end_tag(thisAgent, kTagNegated);
         print(thisAgent,  "\n");
         /* mvp done */
@@ -509,7 +514,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         /* --- if it has a trace at this level, backtrace through it --- */
         if (bt_pref)
         {
-            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->o_ids, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
             /* Check for any CDPS prefs and backtrace through them */
             if (cond->bt.CDPS)
@@ -525,7 +530,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
                     }
                     /* This used to pass in cond instead of NULL, but I think CDPS prefs are
                      * essentially like results in this context, which get NULL in that parameter */
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, 6, p->o_ids, p->rhs_funcs);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->o_ids, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
 
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
@@ -651,7 +656,7 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
                     pot->bt.wme_->grounds_tc = grounds_tc;
                     c->rest = grounds;
                     grounds = c;
-//                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
+                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
 
                     need_another_pass = true;
@@ -659,7 +664,7 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
                 else     /* pot was already in the grounds */
                 {
 #ifndef EBC_MAP_MERGE_DUPE_GROUNDS
-                    dprint(DT_BACKTRACE, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
+                    dprint(DT_UNIFY_SINGLETONS, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
                     pot->bt.wme_->grounds_tc = grounds_tc;
                     c->rest = grounds;
                     grounds = c;
@@ -667,6 +672,7 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
 //                    free_cons(thisAgent, c);
 
+                    add_singleton_unification_if_needed(pot);
                     #endif
 #ifdef EBC_SUPERMERGE
                     cache_constraints_in_cond(pot);
@@ -696,6 +702,33 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
     }
 }
 
+void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
+{
+    /* Need to check if not a proposal */
+    if ((pCond->bt.wme_->attr == thisAgent->operator_symbol) && (pCond->bt.wme_->id->id->isa_goal))
+    {
+        condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
+        assert(last_cond);
+        dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
+        dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
+        if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+        {
+            dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+        }
+        if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
+        {
+            dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+        }
+        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
+        {
+            dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+        }
+    }
+
+}
 /* ---------------------------------------------------------------
                      Trace Ungrounded Potentials
 
@@ -777,7 +810,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level gro
         bt_pref = find_clone_for_level(potential->bt.trace,
                                        static_cast<goal_stack_level>(grounds_level + 1));
 
-        backtrace_through_instantiation(bt_pref->inst, grounds_level, potential, 0, bt_pref->o_ids, bt_pref->rhs_funcs);
+        backtrace_through_instantiation(bt_pref->inst, grounds_level, potential, bt_pref->o_ids, bt_pref->rhs_funcs, potential->inst->explain_depth, BT_Normal);
 
         if (potential->bt.CDPS)
         {
@@ -793,7 +826,7 @@ bool Explanation_Based_Chunker::trace_ungrounded_potentials(goal_stack_level gro
 
                 /* This used to pass in potential instead of NULL, but I think CDPS prefs are
                  * essentially like results in this context, which get NULL in that parameter */
-                backtrace_through_instantiation(p->inst, grounds_level, NULL, 6, p->o_ids, p->rhs_funcs);
+                backtrace_through_instantiation(p->inst, grounds_level, NULL, p->o_ids, p->rhs_funcs, potential->inst->explain_depth, BT_CDPS);
 
                 if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                 {

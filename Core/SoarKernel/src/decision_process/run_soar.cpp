@@ -5,7 +5,7 @@
 
 /*************************************************************************
  *
- *  file:  init_soar.cpp
+ *  file:  run_soar.cpp
  *
  * =======================================================================
  *  Routines for initializing Soar, signal handling (ctrl-c interrupt),
@@ -14,10 +14,9 @@
  * =======================================================================
  */
 
+#include <run_soar.h>
 #include "explain.h"
 #include "io_link.h"
-#include "init_soar.h"
-
 #include "agent.h"
 #include "callback.h"
 #include "consistency.h"
@@ -409,9 +408,7 @@ bool reinitialize_soar(agent* thisAgent)
 
     thisAgent->did_PE = false;    /* RCHONG:  10.11 */
 
-    soar_invoke_callbacks(thisAgent,
-                          BEFORE_INIT_SOAR_CALLBACK,
-                          0);
+    soar_invoke_callbacks(thisAgent, BEFORE_INIT_SOAR_CALLBACK, 0);
 
     /* Stash trace state: */
     cur_TRACE_CONTEXT_DECISIONS_SYSPARAM        = thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM];
@@ -433,46 +430,9 @@ bool reinitialize_soar(agent* thisAgent)
     set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
     set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      false);
 
-    /* Re-init episodic and semantic memory databases */
-    epmem_reinit(thisAgent);
-    smem_reinit(thisAgent);
+    bool ok = reinitialize_agent(thisAgent);
 
-    bool wma_was_enabled = wma_enabled(thisAgent);
-    thisAgent->wma_params->activation->set_value(off);
-
-    rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
-    thisAgent->rl_params->apoptosis->set_value(rl_param_container::apoptosis_none);
-
-    clear_goal_stack(thisAgent);
-
-    if (wma_was_enabled)
-    {
-        thisAgent->wma_params->activation->set_value(on);
-    }
-
-    thisAgent->rl_params->apoptosis->set_value(rl_apoptosis);
-
-    thisAgent->rl_stats->reset();
-    thisAgent->wma_stats->reset();
-    thisAgent->epmem_stats->reset();
-    thisAgent->smem_stats->reset();
-    thisAgent->dyn_counters->clear();
-    thisAgent->ebChunker->reinit();
-    thisAgent->explanationLogger->re_init();
-
-    thisAgent->active_level = 0; /* Signal that everything should be retracted */
-    thisAgent->FIRING_TYPE = IE_PRODS;
-    do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
-
-    bool ok = reset_id_counters(thisAgent);
-    reset_wme_timetags(thisAgent);
-    reset_statistics(thisAgent);
-
-    // JRV: For XML generation
-    xml_reset(thisAgent);
-
-
-    /* RDF 01282003: Reinitializing the various halt and stop flags */
+    /* Reinitializing the various halt and stop flags */
     thisAgent->system_halted = false;
     thisAgent->stop_soar = false;           // voigtjr:  this line doesn't exist in other kernel
     thisAgent->reason_for_stopping = 0;
@@ -481,7 +441,6 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->go_number = 1;
     thisAgent->go_type = GO_DECISION;
 
-    /* kjh (CUSP-B4) begin */
     /* Restore trace state: */
     set_sysparam(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        cur_TRACE_CONTEXT_DECISIONS_SYSPARAM);
     set_sysparam(thisAgent, TRACE_PHASES_SYSPARAM,                   cur_TRACE_PHASES_SYSPARAM);
@@ -491,21 +450,15 @@ bool reinitialize_soar(agent* thisAgent)
     set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
     set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
     set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
-    /* kjh (CUSP-B4) end */
 
-    soar_invoke_callbacks(thisAgent,
-                          AFTER_INIT_SOAR_CALLBACK,
-                          0);
+    soar_invoke_callbacks(thisAgent, AFTER_INIT_SOAR_CALLBACK, 0);
 
-    thisAgent->input_cycle_flag = true;  /* reinitialize flag  AGR REW1 */
-    thisAgent->current_phase = INPUT_PHASE;  /* moved here June 05 from loop below.  KJC */
-
-    /* REW: begin 09.15.96 */
-    thisAgent->FIRING_TYPE = IE_PRODS;  /* KJC 10.05.98 was PE */
+    thisAgent->input_cycle_flag = true;
+    thisAgent->current_phase = INPUT_PHASE;
+    thisAgent->FIRING_TYPE = IE_PRODS;
     thisAgent->did_PE = false;
-    /* REW: end 09.15.96 */
 
-    // reset old stats information
+    /* Reset old stats information */
     stats_close(thisAgent);
     delete thisAgent->stats_db;
     thisAgent->stats_db = new soar_module::sqlite_database();

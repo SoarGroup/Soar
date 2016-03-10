@@ -498,11 +498,11 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             if (thisAgent->o_support_calculation_type == 3)
             {
 
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod->name);
+                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod_name);
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
+                add_to_growable_string(thisAgent, &gs, inst->prod_name->to_string(true));
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
 
@@ -510,11 +510,11 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             }
             else if (thisAgent->o_support_calculation_type == 4)
             {
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod->name);
+                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod_name);
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-                add_to_growable_string(thisAgent, &gs, inst->prod->name->to_string(true));
+                add_to_growable_string(thisAgent, &gs, inst->prod_name->to_string(true));
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
 

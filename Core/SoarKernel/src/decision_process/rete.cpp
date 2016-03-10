@@ -1,3 +1,4 @@
+#include <run_soar.h>
 #include "rete.h"
 
 #include "agent.h"
@@ -8,7 +9,6 @@
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "mem.h"
@@ -894,7 +894,7 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
 #ifdef DEBUG_WATERFALL
-    print_with_symbols(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod->name);
+    print_with_symbols(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod_name);
 #endif
 
     if (msc->inst->match_goal)
@@ -4024,7 +4024,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc->goal = NIL;
 #ifdef DEBUG_WATERFALL
         print_with_symbols(thisAgent, "\n %y is a refracted instantiation",
-                           refracted_inst->prod->name);
+                           refracted_inst->prod_name);
 #endif
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
@@ -6600,7 +6600,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
 
 #ifdef DEBUG_WATERFALL
-        print_with_symbols(thisAgent, "\nRetraction: %y", msc->inst->prod->name);
+        print_with_symbols(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
         print(" is active at level %d\n", msc->level);
 
         {
@@ -8898,7 +8898,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
+                    if ((tmp = in_ms_trace_same_goal(msc->inst->prod_name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
                         tmp->count++;
@@ -8907,7 +8907,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     {
                         tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
-                        tmp->sym = msc->inst->prod->name;
+                        tmp->sym = msc->inst->prod_name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
                         /* Add match goal to the print of the matching production */
@@ -9214,8 +9214,8 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
 
     if (inst->prod)
     {
-        //print_with_symbols  (thisAgent, "%y", inst->prod->name);
-        xml_att_val(thisAgent, kProduction_Name, inst->prod->name);
+        //print_with_symbols  (thisAgent, "%y", inst->prod_name);
+        xml_att_val(thisAgent, kProduction_Name, inst->prod_name);
     }
     else
     {
@@ -9479,7 +9479,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 if (msc->inst->prod)
                 {
-                    if ((tmp = in_ms_trace_same_goal(msc->inst->prod->name,
+                    if ((tmp = in_ms_trace_same_goal(msc->inst->prod_name,
                                                      ms_trace, msc->goal)) != NIL)
                     {
                         tmp->count++;
@@ -9488,7 +9488,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                     {
                         tmp = static_cast<match_set_trace*>(thisAgent->memoryManager->allocate_memory(sizeof(MS_trace),
                                                             MISCELLANEOUS_MEM_USAGE));
-                        tmp->sym = msc->inst->prod->name;
+                        tmp->sym = msc->inst->prod_name;
                         tmp->count = 1;
                         tmp->next = ms_trace;
                         /* Add match goal to the print of the matching production */

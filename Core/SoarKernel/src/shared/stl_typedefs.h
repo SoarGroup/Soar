@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <unordered_set>
 #include <list>
 #include <functional>
 #include <assert.h>
@@ -24,6 +25,7 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
 class sym_grounding_path;
 class condition_record;
 class action_record;
+class instantiation_record;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > condition_list;
@@ -66,10 +68,18 @@ class action_record;
     //typedef std::list< action_record* > action_record_list;
     //typedef std::list< uint64_t > id_list;
     //#endif
-    typedef std::list< condition_record* >                      condition_record_list;
-    typedef std::list< action_record* >                         action_record_list;
-    typedef std::list< uint64_t >                               id_list;
-    typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
+    typedef std::set< instantiation* >                                  inst_set;
+    typedef std::set< instantiation_record* >                           inst_record_set;
+    typedef std::list< instantiation_record* >                          inst_record_list;
+    typedef std::list< inst_record_list* >                              inst_path_list;
+    typedef std::list< condition_record* >                              condition_record_list;
+    typedef std::list< action_record* >                                 action_record_list;
+    typedef std::list< uint64_t >                                       id_list;
+    typedef std::unordered_set< uint64_t >                              id_set;
+    typedef std::unordered_map< uint64_t, uint64_t >                    id_to_id_map_type;
 
+    typedef struct identity_set_struct identity_set_info;
+    typedef std::unordered_map< uint64_t, identity_set_info* >                    id_to_idset_map_type;
+    typedef std::unordered_map< uint64_t, identity_set_info* >::iterator          id_to_idset_map_iter_type;
 
 #endif /* STL_TYPEDEFS_H_ */

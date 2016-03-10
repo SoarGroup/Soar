@@ -1,0 +1,28 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+import sys
+Import('env', 'g_msvs_variant')
+soarcli_env = env.Clone()
+
+if sys.platform == 'linux2':
+    # Following flag fixes a bux in Unbuntu 13.10 that prevents it from
+    # properly linking to the pthread and dl libraries needed by TestCLI
+    soarcli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])
+
+soarcli = soarcli_env.Install('$OUT_DIR', soarcli_env.Program('soar', 'soar_cli.cpp'))
+soarcli_env.Alias('cli', [soarcli])
+
+if 'MSVSProject' in soarcli_env['BUILDERS']:
+
+    soarcli_proj = soarcli_env.MSVSProject(
+        target = '#cli' + soarcli_env['MSVSPROJECTSUFFIX'],
+        srcs = [soarcli_env.File('soar_cli.cpp').srcnode().path],
+        buildtarget = soarcli,
+        variant = g_msvs_variant,
+        auto_build_solution = 0,
+    )
+
+    Import('msvs_projs')
+    msvs_projs.extend([soarcli_proj])

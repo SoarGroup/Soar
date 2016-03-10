@@ -50,16 +50,17 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_DEPENDENCY) || options.test(EXPLAIN_CONSTRAINTS) || options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS)))
+    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
+        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE)))
     {
         print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
     }
     else
     {
-        if (options.test(EXPLAIN_DEPENDENCY))
+            if (options.test(EXPLAIN_FORMATION))
         {
-            thisAgent->explanationLogger->print_dependency_analysis();
+            thisAgent->explanationLogger->print_formation_explanation();
         }
         if (options.test(EXPLAIN_CONSTRAINTS))
         {
@@ -67,33 +68,38 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         }
         if (options.test(EXPLAIN_IDENTITY_SETS))
         {
-            print(thisAgent, "-------------------------------------\n"
-                             "Variable identities --> Identity sets\n"
-                             "-------------------------------------\n");
             thisAgent->explanationLogger->print_identity_set_explanation();
         }
         if (options.test(EXPLAIN_STATS))
         {
             thisAgent->explanationLogger->print_chunk_stats();
         }
-    }
+        if (options.test(EXPLAIN_EXPLANATION_TRACE))
+        {
+            thisAgent->explanationLogger->switch_to_explanation_trace(true);
+        }
+        if (options.test(EXPLAIN_WME_TRACE))
+        {
+            thisAgent->explanationLogger->switch_to_explanation_trace(false);
+        }
+        }
 
     /* Handle global stats command*/
     if (options.test(EXPLAIN_GLOBAL_STATS))
     {
-        thisAgent->explanationLogger->print_explainer_stats();
-        return true;
+            thisAgent->explanationLogger->print_explainer_stats();
+            return true;
     }
 
     /* Handle global stats command*/
     if (options.test(EXPLAIN_LIST_ALL))
     {
-        thisAgent->explanationLogger->print_all_chunks();
-        return true;
+            thisAgent->explanationLogger->print_all_chunks();
+            return true;
     }
 
     /* Handle global stats command*/
-    if (options.test(EXPLAIN_WATCH))
+    if (options.test(EXPLAIN_RECORD))
     {
         if (pStringParameter->empty())
         {
@@ -108,8 +114,8 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     {
         if (pStringParameter->empty())
         {
-            thisAgent->explanationLogger->print_explain_summary();
-            return true;
+                    thisAgent->explanationLogger->print_explain_summary();
+                    return true;
         } else if (pStringParameter2->empty()) {
             return thisAgent->explanationLogger->explain_chunk(pStringParameter);
         } else {

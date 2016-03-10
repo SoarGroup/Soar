@@ -559,25 +559,51 @@ action* Explanation_Based_Chunker::variablize_results_into_actions(preference* r
     {
         return NIL;
     }
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+    uint64_t lO_id = 0;
 
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
 
     if (!result->rhs_funcs.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
+        iter = (*unification_map).find(result->o_ids.id);
+        if (iter != (*unification_map).end())
+        {
+            lO_id = iter->second;
+        } else {
+            lO_id = result->o_ids.id;
+        }
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id);
+//        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->o_ids.id);
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
     }
     if (!result->rhs_funcs.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
+        iter = (*unification_map).find(result->o_ids.attr);
+        if (iter != (*unification_map).end())
+        {
+            lO_id = iter->second;
+        } else {
+            lO_id = result->o_ids.attr;
+        }
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id);
+//        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->o_ids.attr);
     } else {
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
     }
     if (!result->rhs_funcs.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
+        iter = (*unification_map).find(result->o_ids.value);
+        if (iter != (*unification_map).end())
+        {
+            lO_id = iter->second;
+        } else {
+            lO_id = result->o_ids.value;
+        }
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id);
+//        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->o_ids.value);
     } else {
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
     }

@@ -22,7 +22,6 @@
 
 #include "agent.h"
 #include "debug.h"
-#include "init_soar.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "print.h"
@@ -30,6 +29,7 @@
 #include "xml.h"
 
 #include <ctype.h>
+#include <run_soar.h>
 #include <stdlib.h>
 
 /* -------------------------------------------------------------------
@@ -946,6 +946,9 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->o_context_variable = make_variable(thisAgent, "<o>");
 
     thisAgent->fake_instantiation_symbol = make_str_constant(thisAgent, "Fake Instantiation");
+    thisAgent->architecture_inst_symbol = make_str_constant(thisAgent, "Architecture");
+    thisAgent->sti_symbol = make_str_constant(thisAgent, "[STI]");
+
     thisAgent->input_link_symbol = make_str_constant(thisAgent, "input-link");
     thisAgent->output_link_symbol = make_str_constant(thisAgent, "output-link");
 
@@ -1057,6 +1060,8 @@ void release_predefined_symbols(agent* thisAgent)
     release_helper(thisAgent, &(thisAgent->non_numeric_count_symbol));
 
     release_helper(thisAgent, &(thisAgent->fake_instantiation_symbol));
+    release_helper(thisAgent, &(thisAgent->architecture_inst_symbol));
+    release_helper(thisAgent, &(thisAgent->sti_symbol));
 
     release_helper(thisAgent, &(thisAgent->input_link_symbol));
     release_helper(thisAgent, &(thisAgent->output_link_symbol));

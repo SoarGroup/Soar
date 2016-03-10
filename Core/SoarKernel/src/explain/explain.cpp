@@ -24,12 +24,17 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
     enabled = false;
     num_rules_watched = 0;
 
+    print_explanation_trace = true;
+    last_printed_id = 0;
+
     /* Create data structures used for EBC */
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
     chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
+    all_excised_productions = new std::set< production_record* >();
+
 }
 
 void Explanation_Logger::initialize_counters()
@@ -40,13 +45,7 @@ void Explanation_Logger::initialize_counters()
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;
-
-    total_recorded.chunks = 0;
-    total_recorded.instantiations = 0;
-    total_recorded.instantiations_referenced = 0;
-    total_recorded.instantiations_skipped = 0;
-    total_recorded.conditions = 0;
-    total_recorded.actions = 0;
+    id_set_counter = 0;
 
     stats.duplicates = 0;
     stats.unorderable = 0;
@@ -54,16 +53,18 @@ void Explanation_Logger::initialize_counters()
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
     stats.max_chunks = 0;
-    stats.succeeded = 0;
     stats.tested_local_negation = 0;
     stats.merged_conditions = 0;
     stats.chunks_attempted = 0;
+    stats.chunks_succeeded = 0;
+    stats.chunks_reverted = 0;
     stats.justifications_attempted = 0;
-    stats.justifications = 0;
+    stats.justifications_succeeded = 0;
     stats.instantations_backtraced = 0;
     stats.seen_instantations_backtraced = 0;
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
+    stats.grounding_conditions_added = 0;
 
 }
 void Explanation_Logger::clear_explanations()
@@ -71,7 +72,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         symbol_remove_ref(thisAgent, it->first);
         delete it->second;
     }
@@ -81,7 +81,10 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
+        if (it->second->original_production)
+        {
+            it->second->original_production->save_for_justification_explanation = false;
+        }
         delete it->second;
     }
     instantiations->clear();
@@ -89,7 +92,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing condition records...\n");
     for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
     all_conditions->clear();
@@ -97,10 +99,16 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing action records...\n");
     for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
-//        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
         delete it->second;
     }
     all_actions->clear();
+
+    dprint(DT_EXPLAIN, "Explanation logger clearing cached productions...\n");
+    for (std::set< production_record* >::iterator it = (*all_excised_productions).begin(); it != (*all_excised_productions).end(); ++it)
+    {
+        delete (*it);
+    }
+    all_excised_productions->clear();
 }
 
 Explanation_Logger::~Explanation_Logger()
@@ -116,7 +124,6 @@ Explanation_Logger::~Explanation_Logger()
     delete all_conditions;
     delete all_actions;
     delete instantiations;
-
 }
 
 void Explanation_Logger::re_init()
@@ -141,168 +148,174 @@ void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
     }
 
     current_recording_chunk = new chunk_record(thisAgent, chunk_id_count++);
-    total_recorded.chunks++;
 }
 
 void Explanation_Logger::end_chunk_record()
 {
-    current_recording_chunk = NULL;
+    if (current_recording_chunk)
+    {
+        current_recording_chunk->end_chunk_record();
+        current_recording_chunk = NULL;
+    }
 }
 
-void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber)
+void Explanation_Logger::cancel_chunk_record()
 {
-    if (pProduction)
+    if (current_recording_chunk)
     {
-        name = pProduction->name;
-        symbol_add_ref(thisAgent, name);
-        original_production = pProduction;
-//        production_add_ref(original_production);
-        original_production->save_for_justification_explanation = true;
-
-    } else {
-        name = NULL;
-        original_production = NULL;
-        assert(false);
+        delete current_recording_chunk;
+        current_recording_chunk = NULL;
     }
-    conditions         = new condition_record_list;
-    actions            = new action_record_list;
-
-    dprint(DT_EXPLAIN, "Recording conditions...\n");
-    /* Create condition and action records */
-    bool has_backtrace_num = false;
-    for (condition* cond = lhs; cond != NIL; cond = cond->next)
-    {
-        has_backtrace_num = (cond->bt.trace && cond->bt.trace->inst && (cond->bt.trace->inst->backtrace_number == pBacktraceNumber));
-        thisAgent->explanationLogger->add_condition(conditions, cond, has_backtrace_num, 0);
-    }
-
-    dprint(DT_EXPLAIN, "Recording actions...\n");
-
-    action_record* new_action_record;
-    preference* pref;
-    action* lAction;
-    for (pref = results, lAction= rhs; (pref != NIL) && (lAction != NIL); pref = pref->next_result, lAction = lAction->next)
-    {
-        new_action_record = thisAgent->explanationLogger->add_result(pref, lAction);
-        actions->push_back(new_action_record);
-    }
-
-    dprint(DT_EXPLAIN, "Recording base instantiation...\n");
-    /* Might be needed in the case when none of the base instantiation conditions are in the chunk */
-    baseInstantiation = thisAgent->explanationLogger->add_instantiation(pBaseInstantiation, 1);
-
-    dprint(DT_EXPLAIN, "Connecting conditions...\n");
-    /* Now that instantiations in backtrace are guaranteed to be recorded, connect
-     * each condition to the appropriate parent instantiation action record */
-    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
-    {
-        (*it)->connect_to_action();
-    }
-
-    identity_set_mappings = new id_to_id_map_type();
-    (*identity_set_mappings) = (*pIdentitySetMappings);
-
+}
+void Explanation_Logger::delete_condition(uint64_t pCondID)
+{
+    all_conditions->erase(pCondID);
 }
 
-void Explanation_Logger::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation)
+void Explanation_Logger::delete_action(uint64_t pActionID)
+{
+    all_actions->erase(pActionID);
+}
+
+void Explanation_Logger::delete_instantiation(uint64_t pInstID)
+{
+    instantiations->erase(pInstID);
+}
+
+void Explanation_Logger::add_result_instantiations(instantiation* pBaseInst, preference* pResults)
+{
+    if (current_recording_chunk)
+    {
+        for (preference* lResult = pResults; lResult != NIL; lResult = lResult->next_result)
+        {
+            if (lResult->inst != pBaseInst)
+            {
+                current_recording_chunk->result_instantiations->insert(lResult->inst);
+            }
+        }
+    }
+}
+
+void Explanation_Logger::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
 {
     if (current_recording_chunk)
     {
         dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pProduction->name, current_recording_chunk->chunkID, backtrace_number);
-        current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number);
+        current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number, pChunkInstantiation);
         chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
-
-//        production_add_ref(pProduction);
         symbol_add_ref(thisAgent, pProduction->name);
     } else {
         dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
     }
 }
 
-void Explanation_Logger::add_condition(condition_record_list* pCondList, condition* pCond, bool pStopHere, uint64_t bt_depth, bool pMakeNegative)
+condition_record* Explanation_Logger::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
 {
-    dprint(DT_EXPLAIN, "   Creating %s condition: %l\n", (!pStopHere ? "new" : "new terminal"), pCond);
+    dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
 
     if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         increment_counter(condition_id_count);
-        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count, pStopHere, bt_depth);
+        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count);
+        lCondRecord->set_instantiation(pInst);
         if (pMakeNegative)
         {
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;
         }
         all_conditions->insert({lCondRecord->conditionID, lCondRecord});
-        increment_counter(total_recorded.conditions);
         pCondList->push_back(lCondRecord);
+        return lCondRecord;
     }
     else
     {
-        dprint(DT_EXPLAIN, "Recording new conditions for NCC...\n");
+        dprint(DT_EXPLAIN_CONDS, "   Recording new conditions for NCC...\n");
 
         /* Create condition and action records */
         condition_record* new_cond_record;
         for (condition* cond = pCond->data.ncc.top; cond != NIL; cond = cond->next)
         {
-            add_condition(pCondList, cond, pStopHere, bt_depth, true);
+            new_cond_record = add_condition(pCondList, cond, pInst, true);
         }
+        return new_cond_record;
     }
 }
 
-instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t bt_depth)
+instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t pChunkID)
 {
-    ++bt_depth;
-    if (bt_depth > EXPLAIN_MAX_BT_DEPTH)
-    {
-        return NULL;
-    }
+    if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
+
+    bool lIsTerminalInstantiation = false;
+    dprint(DT_EXPLAIN_ADD_INST, "Adding instantiation for i%u (%y).\n",
+        pInst->i_id, pInst->prod_name);
 
     if (pInst->explain_status == explain_unrecorded)
     {
-        bool lIsTerminalInstantiation = false;
-        if ((pInst->backtrace_number == backtrace_number) && (bt_depth < EXPLAIN_MAX_BT_DEPTH))
+
+        /* Instantiations have their backtrace_number marked as the dependency analysis
+         * is performed, so we can use that to determine if this instantiation needs to
+         * be added.
+         *
+         * If it was not in the backtrace (created superstate item that was in bt) or
+         * bt_depth == max, we add this instantiation but set it as a terminal
+         * instantiation.  This puts a cap on the memory used, which can easily cause
+         * issues for example in the count-and-die test agent that creates thousands
+         * of instantiations */
+        if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
         {
-            /* Should not already be recorded */
-//            assert(!get_instantiation(pInst));
-        } else {
-            /* Instantiations have their backtrace_number marked as the dependency analysis
-             * is performed, so we can use that to determine if this instantiation needs to
-             * be added.
-             * If bt_depth == max, we also set as terminal instantiation*/
-            dprint(DT_EXPLAIN, "Backtrace number does not match (%d != %d).  Creating terminal instantiation record for %y (i%u).\n",
-                pInst->backtrace_number, backtrace_number, (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+            dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record...\n",
+                pInst->backtrace_number, backtrace_number);
             lIsTerminalInstantiation = true;
         }
 
         /* Set status flag to recording to handle recursive addition */
         pInst->explain_status = explain_recording;
+        pInst->explain_tc_num = backtrace_number;
+
         instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
-        lInstRecord->record_instantiation_contents(pInst, lIsTerminalInstantiation, bt_depth);
-        increment_counter(total_recorded.instantiations);
-        pInst->explain_status = explain_recorded;
-        dprint(DT_EXPLAIN, "Returning new explanation instantiation record for %y (i%u)\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+        lInstRecord->terminal = lIsTerminalInstantiation;
+        lInstRecord->creating_chunk = pChunkID;
+        dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
+            pInst->i_id, pInst->prod_name);
+        return lInstRecord;
+    } else if ((pInst->explain_status == explain_recorded) && (pInst->explain_tc_num != backtrace_number))
+    {
+        /* Update instantiation*/
+        dprint(DT_EXPLAIN_ADD_INST, "- Updating instantiation record for i%u (%y) that was created explaining a previous chunk.\n", pInst->i_id, pInst->prod_name);
+        if ((pInst->backtrace_number != backtrace_number) || (pInst->explain_depth == EXPLAIN_MAX_BT_DEPTH))
+        {
+            dprint(DT_EXPLAIN_ADD_INST, "- Backtrace number does not match (%d != %d).  Creating terminal instantiation record for i%u (%y).\n",
+                pInst->backtrace_number, backtrace_number, pInst->i_id, pInst->prod_name);
+            lIsTerminalInstantiation = true;
+        }
+        /* Set status flag to recording to handle recursive addition */
+        pInst->explain_status = explain_recording_update;
+        pInst->explain_tc_num = backtrace_number;
+
+        instantiation_record* lInstRecord = get_instantiation(pInst);
+        lInstRecord->terminal = lIsTerminalInstantiation;
+        dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
-        dprint(DT_EXPLAIN, "Currently recording instantiation record for %y (i%u) in a parent call.  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-    } else if (pInst->explain_status == explain_recorded) {
-        dprint(DT_EXPLAIN, "Already recorded instantiation record for %y (i%u).  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
-    } else if (pInst->explain_status == explain_connected) {
-        dprint(DT_EXPLAIN, "Already recorded and connected instantiation record for %y (i%u).  Did not create new record.\n", (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol), pInst->i_id);
+        dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, pInst->prod_name);
+    } else {
+        dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, pInst->prod_name);
+        for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+        {
+            dprint(DT_EXPLAIN_ADD_INST, "i%u (%y)\n", it->second->instantiationID, it->second->production_name);
+        }
     }
-    increment_counter(total_recorded.instantiations_skipped);
     return get_instantiation(pInst);
 }
 
 action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
 {
-    dprint(DT_EXPLAIN, "   Adding result: %p\n", pPref);
     increment_counter(action_id_count);
+    dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
     all_actions->insert({lActionRecord->actionID, lActionRecord});
-
-    increment_counter(total_recorded.actions);
 
     return lActionRecord;
 }
@@ -342,217 +355,6 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
     return NULL;
 }
 
-action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
-{
-    thisAgent               = myAgent;
-    actionID                = pActionID;
-    instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
-    original_pref           = pPref;
-    if (pAction)
-    {
-        variablized_action = copy_action(thisAgent, pAction);
-    } else {
-        variablized_action = NULL;
-    }
-    dprint(DT_EXPLAIN, "Created action record a%u for pref %p (%r ^%r %r)\naction %a", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
-}
-
-action_record::~action_record()
-{
-    dprint(DT_EXPLAIN, "Deleting action record a%u for: %p\n", actionID, instantiated_pref);
-    deallocate_preference(thisAgent, instantiated_pref);
-    deallocate_action_list(thisAgent, variablized_action);
-}
-
-
-chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
-{
-    thisAgent           = myAgent;
-    name                = NULL;
-    conditions          = new condition_record_list;
-    actions             = new action_record_list;
-    chunkID             = pChunkID;
-    baseInstantiation   = NULL;
-    original_production = NULL;
-    stats.constraints_attached = 0;
-    stats.constraints_collected = 0;
-    stats.duplicates = 0;
-    stats.instantations_backtraced = 0;
-    stats.merged_conditions = 0;
-    stats.seen_instantations_backtraced = 0;
-    stats.tested_local_negation = false;
-
-    dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
-}
-
-chunk_record::~chunk_record()
-{
-    dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
-    symbol_remove_ref(thisAgent, name);
-//    production_remove_ref(thisAgent, original_production);
-    delete conditions;
-    delete actions;
-}
-
-void condition_record::connect_to_action()
-{
-    if (parent_instantiation)
-    {
-        assert(cached_pref);
-        parent_action = parent_instantiation->find_rhs_action(cached_pref);
-        assert(parent_action);
-        cached_pref = NULL;
-        dprint(DT_EXPLAIN, "Linked condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
-    } else {
-        dprint(DT_EXPLAIN, "Did not link condition (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
-    }
-}
-
-condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID, bool pStopHere, uint64_t bt_depth)
-{
-    thisAgent = myAgent;
-    conditionID = pCondID;
-    type = pCond->type;
-
-    condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
-    condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
-    condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-
-    /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
-     * we use actual tests if we know it's a literal condition because identifier is STI */
-    if (condition_tests.id->eq_test->data.referent->is_identifier() &&
-        !condition_tests.attr->eq_test->data.referent->is_variable() &&
-        !condition_tests.attr->eq_test->data.referent->is_variable())
-    {
-        matched_wme = new symbol_triple(condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent);
-        symbol_add_ref(thisAgent, matched_wme->id);
-        symbol_add_ref(thisAgent, matched_wme->attr);
-        symbol_add_ref(thisAgent, matched_wme->value);
-    } else {
-        if (pCond->bt.wme_)
-        {
-            matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
-            symbol_add_ref(thisAgent, matched_wme->id);
-            symbol_add_ref(thisAgent, matched_wme->attr);
-            symbol_add_ref(thisAgent, matched_wme->value);
-        } else {
-            matched_wme = NULL;
-        }
-    }
-    if (pCond->bt.level)
-    {
-        wme_level_at_firing = pCond->bt.level;
-    } else if (condition_tests.id->eq_test->data.referent->is_identifier())
-    {
-        assert (condition_tests.id->eq_test->data.referent->id->level);
-        wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
-        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
-    } else {
-        wme_level_at_firing = 0;
-        dprint(DT_EXPLAIN, "No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
-    }
-    if (!pStopHere && pCond->bt.trace)
-    {
-          /* Crude way to print dependency tree */
-//        Output_Manager::Get_OM().set_column_indent(0, (bt_depth * 3));
-//        dprint(DT_REV_BT, "%-%u\n", pCond->bt.trace->inst->i_id);
-
-        parent_instantiation = thisAgent->explanationLogger->add_instantiation(pCond->bt.trace->inst, bt_depth);
-        /* Cache the pref to make it easier to connect this condition to the action that created
-         * the preference later. */
-        cached_pref = parent_instantiation ? pCond->bt.trace : NULL;
-    } else {
-        parent_instantiation = NULL;
-        cached_pref = NULL;
-    }
-    parent_action = NULL;
-}
-
-condition_record::~condition_record()
-{
-    dprint(DT_EXPLAIN, "Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
-    deallocate_test(thisAgent, condition_tests.id);
-    deallocate_test(thisAgent, condition_tests.attr);
-    deallocate_test(thisAgent, condition_tests.value);
-    if (matched_wme)
-    {
-        dprint(DT_EXPLAIN, "Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        symbol_remove_ref(thisAgent, matched_wme->id);
-        symbol_remove_ref(thisAgent, matched_wme->attr);
-        symbol_remove_ref(thisAgent, matched_wme->value);
-        delete matched_wme;
-    }
-}
-
-
-instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
-{
-    thisAgent           = myAgent;
-    instantiationID     = pInst->i_id;
-    match_level         = pInst->match_goal_level;
-    conditions          = new condition_record_list;
-    actions             = new action_record_list;
-    original_production = pInst->prod;
-    production_name     = (pInst->prod ? pInst->prod->name : thisAgent->fake_instantiation_symbol);
-
-    symbol_add_ref(thisAgent, production_name);
-    if (pInst->prod)
-    {
-//        production_add_ref(original_production);
-        original_production->save_for_justification_explanation = true;
-    }
-}
-
-instantiation_record::~instantiation_record()
-{
-    dprint(DT_EXPLAIN, "Deleting instantiation record %y (i%u)\n", production_name, instantiationID);
-    symbol_remove_ref(thisAgent, production_name);
-//    if (original_production)
-//        production_remove_ref(thisAgent, original_production);
-    delete conditions;
-    delete actions;
-}
-
-void instantiation_record::record_instantiation_contents(instantiation* pInst, bool pStopHere, uint64_t bt_depth)
-{
-    dprint(DT_EXPLAIN, "Recording instantiation contents for c%u (%y)\n", pInst->i_id, production_name);
-    ++bt_depth;
-    /* Create condition and action records */
-    for (condition* cond = pInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
-    {
-        thisAgent->explanationLogger->add_condition(conditions, cond, pStopHere, bt_depth);
-    }
-
-    dprint(DT_EXPLAIN, "   -->\n");
-
-    action_record* new_action_record;
-    for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
-    {
-        new_action_record = thisAgent->explanationLogger->add_result(pref);
-        actions->push_front(new_action_record);
-    }
-}
-
-action_record* instantiation_record::find_rhs_action(preference* pPref)
-{
-    action_record_list::iterator iter;
-
-//    dprint(DT_EXPLAIN, "...Looking  for preference action %p...", pPref);
-    for (iter = actions->begin(); iter != actions->end(); ++iter)
-    {
-        if ((*iter)->original_pref == pPref)
-        {
-            dprint(DT_EXPLAIN, "...found RHS action a%u for condition preference %p.\n", (*iter)->get_actionID(), pPref);
-        }
-        return (*iter);
-    }
-    dprint(DT_EXPLAIN, "...did not find pref %p among:\n", pPref);
-    for (iter = actions->begin(); iter != actions->end(); ++iter)
-    {
-            dprint(DT_EXPLAIN, "      %p\n", (*iter)->original_pref);
-    }
-    return NULL;
-}
 
 bool Explanation_Logger::toggle_production_watch(production* pProduction)
 {
@@ -595,9 +397,8 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
         chunk_record* lFoundChunk = get_chunk_record(sym);
         if (lFoundChunk)
         {
-            current_discussed_chunk = lFoundChunk;
-            print_chunk_explanation();
-            return true;
+                    discuss_chunk(lFoundChunk);
+                    return true;
         }
 
         outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
@@ -609,6 +410,55 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
     return false;
 
 }
+
+void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
+{
+    if (current_discussed_chunk != pChunkRecord)
+    {
+        outputManager->printa_sf(thisAgent, "Now explaining %y.\n  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
+        if (current_discussed_chunk)
+        {
+            clear_chunk_from_instantiations();
+        }
+        current_discussed_chunk = pChunkRecord;
+        last_printed_id = 0;
+        current_discussed_chunk->generate_dependency_paths();
+    }
+    print_chunk_explanation();
+
+}
+
+void Explanation_Logger::save_excised_production(production* pProd)
+{
+    dprint(DT_EXPLAIN_CONDS, "Explanation logger adding production record for excised production: %y\n", pProd->name);
+    production_record* lProductionRecord = new production_record(thisAgent, pProd);
+    all_excised_productions->insert(lProductionRecord);
+
+    dprint(DT_EXPLAIN, "...searching %d chunks for excised rule %y...\n", chunks->size(), pProd->name);
+    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    {
+        chunk_record* pChunk = it->second;
+        if (it->second->original_production == pProd)
+        {
+            dprint(DT_EXPLAIN, "Found chunk %u (%y)...\n", it->second->chunkID, it->second->name);
+            it->second->original_production = NULL;
+            it->second->excised_production = lProductionRecord;
+        }
+    }
+
+    dprint(DT_EXPLAIN, "...searching %d instantiations for excised rule %y...\n", instantiations->size(), pProd->name);
+    for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+    {
+        instantiation_record* pInst = it->second;
+        if (it->second->original_production == pProd)
+        {
+            dprint(DT_EXPLAIN, "Found instantiations i%u...\n", it->second->instantiationID);
+            it->second->original_production = NULL;
+            it->second->excised_production = lProductionRecord;
+        }
+    }
+}
+
 bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
 {
     std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
@@ -620,8 +470,7 @@ bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
         return false;
     }
 
-    current_discussed_chunk = iter_chunk->second;
-    print_chunk_explanation();
+    discuss_chunk(iter_chunk->second);
     return true;
 }
 
@@ -635,7 +484,7 @@ bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID
         outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
         return false;
     }
-
+    last_printed_id = pInstID;
     print_instantiation_explanation(iter_inst->second);
     return true;
 }
@@ -686,15 +535,15 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
         {
             outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
         }
-        lSuccess = print_chunk_explanation_for_id(lObjectID);
-    } else if (lFirstChar == 'i')
+            lSuccess = print_chunk_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'i')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {
             outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
         }
-        lSuccess = print_instantiation_explanation_for_id(lObjectID);
-    } else if (lFirstChar == 'l')
+            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+        } else if (lFirstChar == 'l')
     {
         if (!from_string(lObjectID, pObjectIDString->c_str()))
         {
@@ -720,10 +569,48 @@ void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
 {
     assert(duplicate_rule);
     increment_counter(stats.duplicates);
-    dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
-    chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
-    if (lChunkRecord)
+    if (current_recording_chunk)
     {
-        increment_counter(lChunkRecord->stats.duplicates);
+        chunk_record* lChunkRecord = get_chunk_record(duplicate_rule->name);
+        if (lChunkRecord)
+        {
+            dprint(DT_EXPLAIN, "Incrementing stats for duplicate chunk of rule %y.\n", duplicate_rule->name);
+            increment_counter(lChunkRecord->stats.duplicates);
+        }
     }
 };
+
+void Explanation_Logger::increment_stat_grounded(int pNumConds)
+{
+    increment_counter(stats.grounding_conditions_added);
+    if (current_recording_chunk)
+    {
+        dprint(DT_EXPLAIN, "Incrementing stats for %d grounding conditions in rule %y.\n", pNumConds, current_recording_chunk->name);
+        add_to_counter(current_recording_chunk->stats.num_grounding_conditions_added, pNumConds);
+    }
+};
+
+void Explanation_Logger::increment_stat_reverted()
+{
+    increment_counter(stats.chunks_reverted);
+    if (current_recording_chunk)
+    {
+        dprint(DT_EXPLAIN, "Incrementing stats for reverted chunk in rule %y.\n", current_recording_chunk->name);
+        current_recording_chunk->stats.reverted = true;
+    }
+    stats.justifications_attempted--;
+};
+
+void Explanation_Logger::clear_chunk_from_instantiations()
+{
+    instantiation_record* lNewInstRecord;
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+
+        lNewInstRecord = (*it);
+        if (lNewInstRecord->path_to_base)
+        {
+            lNewInstRecord->path_to_base->clear();
+        }
+    }
+}

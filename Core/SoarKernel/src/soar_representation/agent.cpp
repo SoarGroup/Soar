@@ -18,6 +18,7 @@
  */
 
 
+#include <run_soar.h>
 #include "io_link.h"
 #include "agent.h"
 #include "production.h"
@@ -32,7 +33,6 @@
 #include "explain.h"
 #include "exploration.h"
 #include "gsysparam.h"
-#include "init_soar.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "mem.h"
@@ -49,6 +49,7 @@
 #include "symbol.h"
 #include "trace.h"
 #include "working_memory_activation.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #ifndef NO_SVS
@@ -422,6 +423,7 @@ void destroy_soar_agent(agent* delete_agent)
 {
 
     delete delete_agent->explanationLogger;
+    delete_agent->explanationLogger = NULL;
     delete delete_agent->ebChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
 
@@ -554,10 +556,6 @@ void destroy_soar_agent(agent* delete_agent)
 
     dprint_identifiers(DT_ID_LEAKING);
 
-//    // MToDo | I feel like these should be deleted earlier
-//    delete delete_agent->ebChunker;
-//    delete delete_agent->explanationLogger;
-
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)
     {
@@ -585,4 +583,51 @@ void destroy_soar_agent(agent* delete_agent)
 
     /* Free soar agent structure */
     delete delete_agent;
+}
+
+bool reinitialize_agent(agent* thisAgent)
+{
+
+    /* Re-init episodic and semantic memory databases */
+    epmem_reinit(thisAgent);
+    smem_reinit(thisAgent);
+
+    thisAgent->ebChunker->reinit();
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationLogger->re_init();
+    #endif
+
+    bool wma_was_enabled = wma_enabled(thisAgent);
+    thisAgent->wma_params->activation->set_value(off);
+
+    rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
+    thisAgent->rl_params->apoptosis->set_value(rl_param_container::apoptosis_none);
+
+    clear_goal_stack(thisAgent);
+
+    if (wma_was_enabled)
+    {
+        thisAgent->wma_params->activation->set_value(on);
+    }
+
+    thisAgent->rl_params->apoptosis->set_value(rl_apoptosis);
+
+    thisAgent->rl_stats->reset();
+    thisAgent->wma_stats->reset();
+    thisAgent->epmem_stats->reset();
+    thisAgent->smem_stats->reset();
+    thisAgent->dyn_counters->clear();
+
+    thisAgent->active_level = 0; /* Signal that everything should be retracted */
+    thisAgent->FIRING_TYPE = IE_PRODS;
+    do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
+
+    bool ok = reset_id_counters(thisAgent);
+    reset_wme_timetags(thisAgent);
+    reset_statistics(thisAgent);
+
+    // JRV: For XML generation
+    xml_reset(thisAgent);
+
+    return ok;
 }

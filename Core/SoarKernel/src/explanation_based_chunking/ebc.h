@@ -111,8 +111,7 @@ class Explanation_Based_Chunker
         uint64_t get_chunk_count() { return chunk_count; };
         void     set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
         char*    get_chunk_name_prefix() { return chunk_name_prefix; };
-        void     set_chunk_name_prefix(const char* pChunk_name_prefix)
-                 { free(chunk_name_prefix); strcpy(chunk_name_prefix, pChunk_name_prefix); };
+        void     set_chunk_name_prefix(const char* pChunk_name_prefix);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -144,7 +143,6 @@ class Explanation_Based_Chunker
         void reinit();
         void cleanup_for_instantiation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
-        /*MToDo | RL calls this, but not sure if it's really needed.  Check. */
         void clear_variablization_maps();
 
 
@@ -159,7 +157,8 @@ class Explanation_Based_Chunker
         uint64_t            chunks_this_d_cycle;
 
         /* String that every chunk name begins with */
-        char                chunk_name_prefix[kChunkNamePrefixMaxLength];
+        char*               chunk_name_prefix;
+        char*               justification_name_prefix;
 
         /* Variables used by dependency analysis methods */
         ::list*             grounds;
@@ -231,7 +230,7 @@ class Explanation_Based_Chunker
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
                                                         wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
-        Symbol*         generate_chunk_name(instantiation* inst);
+        Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
         void            set_up_rule_name(bool pForChunk);
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
@@ -250,7 +249,6 @@ class Explanation_Based_Chunker
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
-        void            abort();
         void            clean_up();
         void            save_conditions_for_reversal();
         void            revert_chunk_to_instantiation();
@@ -268,22 +266,20 @@ class Explanation_Based_Chunker
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
-                int indent,
                 const identity_triple o_ids_to_replace,
-                const rhs_triple rhs_funcs);
+                const rhs_triple rhs_funcs,
+                uint64_t bt_depth,
+                BTSourceType bt_type);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
-        void unify_identity_for_result_element(preference* result, WME_Field field);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
-        void unify_backtraced_conditions(condition* parent_cond,
-        const identity_triple o_ids_to_replace,
-        const rhs_triple rhs_funcs);
+        void unify_backtraced_conditions(condition* parent_cond, const identity_triple o_ids_to_replace, const rhs_triple rhs_funcs);
+        void add_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv);
-        void unify_identities_for_results(preference* result);
         void merge_conditions(condition* top_cond);
 
         /* Constraint analysis and enforcement methods */

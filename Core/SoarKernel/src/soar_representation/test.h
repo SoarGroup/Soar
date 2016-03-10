@@ -47,10 +47,6 @@ typedef struct test_struct
     test_struct*     eq_test;
     tc_number        tc_num;
     uint64_t         identity;
-    test_struct() : type(NUM_TEST_TYPES), eq_test(NULL), tc_num(0), identity(0)
-    {
-        data.referent = NULL;
-    }
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

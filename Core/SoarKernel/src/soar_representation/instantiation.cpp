@@ -5,12 +5,9 @@
 
 /*************************************************************************
  *
- *  file:  recmem.cpp
+ *  file:  instantiation.cpp
  *
  * =======================================================================
- *
- *             Recognition Memory (Firer and Chunker) Routines
- *                 (Does not include the Rete net)
  *
  * Init_firer() and init_chunker() should be called at startup time, to
  * do initialization.
@@ -711,6 +708,7 @@ void init_instantiation(agent*          thisAgent,
 #endif
             }
         }
+        cond->inst = inst;
     }
 
     if (inst->match_goal)
@@ -779,7 +777,7 @@ void init_instantiation(agent*          thisAgent,
             {
                 print_with_symbols(thisAgent,
                                    "\n*** O-support difference found in production %y",
-                                   inst->prod->name);
+                                   inst->prod_name);
             }
         }
     }
@@ -841,19 +839,26 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->in_ms = true;
     inst->i_id = thisAgent->ebChunker->get_new_inst_id();
     inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
     inst->GDS_evaluated_already = false;
-
+    inst->prod_name = prod ? prod->name : thisAgent->architecture_inst_symbol;
+    symbol_add_ref(thisAgent, inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
-        inst->prod->name, inst->i_id);
+        inst->prod_name, inst->i_id);
+    if (inst->i_id == 201)
+    {
+        dprint(DT_DEBUG, "Found.\n");
+    }
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent,
             "\n   In create_instantiation for instance of rule %y",
-            inst->prod->name);
+            inst->prod_name);
         char buf[256];
         SNPRINTF(buf, 254, "in create_instantiation: %s",
-                 inst->prod->name->to_string(true));
+            inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
 
@@ -886,13 +891,13 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
+        cond->inst = inst;
         if (cond->type == POSITIVE_CONDITION)
         {
             cond->bt.level = cond->bt.wme_->id->id->level;
             cond->bt.trace = cond->bt.wme_->preference;
         }
     }
-
     /* --- print trace info --- */
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
@@ -1074,7 +1079,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     thisAgent->production_being_fired = NIL;
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation() created: \n%5", inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
     thisAgent->ebChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
@@ -1082,7 +1087,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod->name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
 
     if (!thisAgent->system_halted)
     {
@@ -1128,7 +1133,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod ? inst->prod->name : NULL);
+        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod_name);
 
         level = inst->match_goal_level;
 
@@ -1293,6 +1298,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
+    symbol_remove_ref(thisAgent, inst->prod_name);
+
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
     while (riter != inst_list.rend())
@@ -1379,8 +1386,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
      */
     production* prod = inst->prod;
     if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
-        (prod->reference_count > 1) &&
-        !prod->save_for_justification_explanation)
+        (prod->reference_count > 1))
     {
         excise_production(thisAgent, prod, false);
     }
@@ -1432,6 +1438,11 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
     inst->bottom_of_instantiated_conditions = NULL;
+    inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
+    inst->prod_name = thisAgent->fake_instantiation_symbol;
+    symbol_add_ref(thisAgent, inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;
@@ -1478,6 +1489,7 @@ instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set*
             }
             cond->test_for_acceptable_preference = (*c_it)->acceptable;
             cond->bt.wme_ = (*c_it);
+            cond->inst = inst;
 
 #ifndef DO_TOP_LEVEL_REF_CTS
             if (inst->match_goal_level > TOP_GOAL_LEVEL)

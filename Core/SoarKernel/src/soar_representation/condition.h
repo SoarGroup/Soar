@@ -2,6 +2,7 @@
 #define CONDITION_H
 
 #include "kernel.h"
+#include "stl_typedefs.h"
 
 /* -------------------------------------------------------------------
                              Conditions
@@ -40,13 +41,11 @@
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct
 {
-    wme* wme_;                /* the actual wme that was matched */
-    goal_stack_level level;   /* level (at firing time) of the id of the wme */
-    preference* trace;        /* preference for BT, or NIL */
-
+    wme* wme_;                      /* the actual wme that was matched */
+    goal_stack_level level;         /* level (at firing time) of the id of the wme */
+    preference* trace;              /* preference for BT, or NIL */
     ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
-    bt_info_struct() : wme_(NULL), level(0), trace(NULL), CDPS(NULL) {}
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
@@ -84,43 +83,42 @@ typedef struct condition_struct
     bt_info                     bt;             /* backtrace info for top-level positive cond's:
                                                    used by chunking and the rete */
     reorder_info                reorder;        /* used only during reordering */
-    struct condition_struct*    counterpart;    /* only used during chunking */
+    struct condition_struct*    counterpart;    /* pointer from variablized condition to instantiated condtion.
+                                                   Used only during chunking and not guaranteed to exist */
+    instantiation*              inst;           /* ID for the instantiation where this condition
+                                                   came to the grounds from.  This is used by
+                                                   EBC's explain mechanism to properly link
+                                                   the chunk condition to the proper condition
+                                                   in the explanation trace.  We could not used
+                                                   preferences because architectural wme's
+                                                   don't have preferences.  Used only during
+                                                   chunking.*/
+
 } condition;
 
 /* ------------------------ */
 /* Utilities for conditions */
 /* ------------------------ */
 
-/* --- Deallocates a condition (including any NCC's and tests in it). */
-void deallocate_condition(agent* thisAgent, condition*& cond);
+condition*  make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
+uint32_t    hash_condition(agent* thisAgent, condition* cond);
+condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
+condition*  copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
+void        copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
+                         condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
+                         bool pCopyInstantiation = false);
+void        deallocate_condition(agent* thisAgent, condition*& cond);
+void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
-/* --- Deallocates a condition list (including any NCC's and tests in it). */
-void deallocate_condition_list(agent* thisAgent, condition*& cond_list);
+void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
+                                     ::list** var_list, bool add_LTIs = false);
+void        unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
-/* --- Initializes substructures of the given condition to default values. --- */
-condition* make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
+int         condition_count(condition* pCond);
+bool        conditions_are_equal(condition* c1, condition* c2);
+bool        canonical_cond_greater(condition* c1, condition* c2);
 
-/* --- Returns a new copy of the given condition. --- */
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
-
-/* --- Returns a new copy of the given condition without any relational tests --- */
-condition* copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
-
-/* --- Copies the given condition list, returning pointers to the
-   top-most and bottom-most conditions in the new copy. --- */
-void copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
-                         condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
-
-void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                      ::list** var_list, bool add_LTIs = false);
-void unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
-
-/* --- Returns true iff the two conditions are identical. --- */
-bool conditions_are_equal(condition* c1, condition* c2);
-
-/* --- Returns a hash value for the given condition. --- */
-uint32_t hash_condition(agent* thisAgent, condition* cond);
-
-bool canonical_cond_greater(condition* c1, condition* c2);
+void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map = NULL);
+void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map = NULL);
 
 #endif

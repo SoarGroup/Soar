@@ -13,7 +13,7 @@ typedef unsigned char byte;
 /* ------------------------- debug trace channels -----------------------------
  *
  * NOTE: IF YOU ADD A NEW TRACE OR DEBUG MODE, MAKE SURE TO INITIALIZE PREFIX
- *       INFO AND INITIAL VALUE IN Output_Manager::initialize_debug_trace
+ *       INFO AND INITIAL VALUE IN initialize_debug_trace() in debug.cpp
  *
  * ------------------------------------------------------------------------- */
 enum TraceMode
@@ -53,11 +53,24 @@ enum TraceMode
     DT_LINKS = 32,
     DT_EBC_CLEANUP = 33,
     DT_UNKNOWN_LEVEL = 34,
-    DT_EXPLAIN = 35,
-    DT_REV_BT = 36,
-    DT_RETE_PNODE_ADD = 37,
-    DT_GROUND_LTI = 38,
+    DT_RETE_PNODE_ADD = 35,
+    DT_GROUND_LTI = 36,
+    DT_EXPLAIN = 37,
+    DT_EXPLAIN_PATHS = 38,
+    DT_EXPLAIN_ADD_INST = 39,
+    DT_EXPLAIN_CONNECT = 40,
+    DT_EXPLAIN_UPDATE = 41,
+    DT_EXPLAIN_CONDS = 42,
+    DT_EXPLAIN_IDENTITIES = 43,
+    DT_UNIFY_SINGLETONS = 44,
     num_trace_modes
+};
+
+enum BTSourceType {
+    BT_BaseInstantiation,
+    BT_CDPS,
+    BT_ExtraResults,
+    BT_Normal
 };
 
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
@@ -96,8 +109,8 @@ enum EBCFailureType {
 enum EBCExplainStatus {
     explain_unrecorded,
     explain_recording,
-    explain_recorded,
-    explain_connected
+    explain_recording_update,
+    explain_recorded
 };
 
 enum MemoryPoolType

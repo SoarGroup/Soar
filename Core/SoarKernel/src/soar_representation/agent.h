@@ -200,6 +200,8 @@ typedef struct EXPORT agent_struct
     Symbol*             non_numeric_count_symbol; // NLD 11/11
 
     Symbol*             fake_instantiation_symbol;
+    Symbol*             architecture_inst_symbol;
+    Symbol*             sti_symbol;
 
     /* RPM 9/06 begin */
     Symbol*             input_link_symbol;
@@ -858,9 +860,10 @@ inline void push(agent* thisAgent, P item, T*& list_header)
     (list_header) = push_cons_xy298;
 }
 
-extern void     init_soar_agent(agent* thisAgent);
-extern agent* create_soar_agent(char* name);
-extern void    destroy_soar_agent(agent* soar_agent);
+void    init_soar_agent(agent* thisAgent);
+agent*  create_soar_agent(char* name);
+void    destroy_soar_agent(agent* soar_agent);
+bool    reinitialize_agent(agent* thisAgent);
 
 #endif
 
