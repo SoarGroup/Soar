@@ -200,6 +200,8 @@ class Explanation_Based_Chunker
         std::unordered_map< uint64_t, Symbol* >*                                    o_id_to_ovar_debug_map;
         std::unordered_map< uint64_t, uint64_t >*                                   unification_map;
 
+        identity_triple*                                                            local_singleton_superstate_identity;
+
         /* -- Look-up tables for LHS variablization -- */
         std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
         std::unordered_map< Symbol*, Symbol* >*    sym_to_var_map;
@@ -279,6 +281,7 @@ class Explanation_Based_Chunker
         bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
         void unify_backtraced_conditions(condition* parent_cond, const identity_triple o_ids_to_replace, const rhs_triple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
+        void add_local_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv);
         void merge_conditions(condition* top_cond);
 
@@ -325,6 +328,7 @@ class Explanation_Based_Chunker
         void clear_attachment_map();
         void clear_cached_constraints();
         void clear_o_id_substitution_map();
+        void clear_singletons();
         void clear_data();
 
 };

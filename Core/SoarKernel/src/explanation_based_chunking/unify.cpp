@@ -60,15 +60,16 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 
 void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-    uint64_t newID;
-
     assert(pOld_o_id);
     if (pOld_o_id == pNew_o_id)
     {
         dprint(DT_UNIFICATION, "Attempting to unify identical conditions %y[o%u].  Skipping.\n", pNew_o_id);
         return;
     }
+
+    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+    uint64_t newID;
+
     if (pNew_o_id == 0)
     {
         /* Do not check if a unification already exists if we're propagating back a literalization */

@@ -73,7 +73,8 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
         dprint(DT_VM_MAPS, "Created symbol_to_var_map ([%y] and [%y] to new variablization.\n",
                         instantiated_sym, variable);
     }
-    else if (pIdentity)
+//    else
+    if (pIdentity)
     {
 
         /* -- A constant symbol is being variablized, so store variablization info
@@ -83,10 +84,10 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
 
         dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
     }
-    else
-    {
-        assert(false);
-    }
+//    else
+//    {
+//        assert(false);
+//    }
     //  print_variablization_table();
 }
 
@@ -113,14 +114,14 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
 
     dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
 
-    if ((*sym)->is_sti())
-    {
-        var_info = get_variablization_for_sti(*sym);
-    }
-    else
-    {
+//    if ((*sym)->is_sti())
+//    {
+//        var_info = get_variablization_for_sti(*sym);
+//    }
+//    else
+//    {
         var_info = get_variablization_for_identity(pIdentity);
-    }
+//    }
     if (var_info)
     {
         symbol_remove_ref(thisAgent, (*sym));
@@ -180,13 +181,13 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
     /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
      *    instead of their original variable. --  */
 
-    if (rs->referent->is_sti())
-    {
-        dprint(DT_RHS_VARIABLIZATION, "...searching for sti %y in variablization sym table...\n", rs->referent);
-        found_variablization = get_variablization_for_sti(rs->referent);
-    }
-    else
-    {
+//    if (rs->referent->is_sti())
+//    {
+//        dprint(DT_RHS_VARIABLIZATION, "...searching for sti %y in variablization sym table...\n", rs->referent);
+//        found_variablization = get_variablization_for_sti(rs->referent);
+//    }
+//    else
+//    {
         if (rs->o_id)
         {
             dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %y...\n", get_ovar_for_o_id(rs->o_id));
@@ -197,7 +198,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
             dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
             return;
         }
-    }
+//    }
 
 
     if (found_variablization)
@@ -219,9 +220,10 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
             prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
             prefix[1] = 0;
             var = generate_new_variable(thisAgent, prefix);
-
+//            uint64_t lUnboundIdentity = get_or_create_o_id(var, pInstID);
             dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound rhs %y.\n", var);
-            store_variablization(rs->referent, var, 0);
+            assert(rs->o_id);
+            store_variablization(rs->referent, var, rs->o_id);
 
             symbol_remove_ref(thisAgent, rs->referent);
             rs->referent = var;
@@ -306,14 +308,14 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-    if (t->data.referent->is_sti())
-    {
-        found_variablization =  get_variablization_for_sti(t->data.referent);
-    }
-    else
-    {
+//    if (t->data.referent->is_sti())
+//    {
+//        found_variablization =  get_variablization_for_sti(t->data.referent);
+//    }
+//    else
+//    {
         found_variablization =  get_variablization_for_identity(t->identity);
-    }
+//    }
     if (found_variablization)
     {
         // It has been variablized before, so just variablize

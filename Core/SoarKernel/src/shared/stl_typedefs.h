@@ -17,7 +17,7 @@
 
 typedef std::list< symbol_triple* > symbol_triple_list;
 typedef std::list< test_triple* > test_triple_list;
-typedef std::list< test_triple* > test_triple_list;
+typedef std::list< identity_triple* > identity_triple_list;
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;

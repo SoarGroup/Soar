@@ -24,6 +24,16 @@ void Explanation_Based_Chunker::clear_data()
     clear_o_id_substitution_map();
     clear_o_id_to_ovar_debug_map();
     clear_attachment_map();
+    clear_singletons();
+}
+
+void Explanation_Based_Chunker::clear_singletons()
+{
+    if (local_singleton_superstate_identity)
+    {
+        delete local_singleton_superstate_identity;
+        local_singleton_superstate_identity = NULL;
+    }
 }
 
 void Explanation_Based_Chunker::clear_attachment_map()

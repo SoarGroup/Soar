@@ -50,6 +50,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
+    local_singleton_superstate_identity = NULL;
     reinit();
 }
 
@@ -107,6 +108,7 @@ void Explanation_Based_Chunker::reinit()
     m_saved_justification_bottom        = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
+
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
