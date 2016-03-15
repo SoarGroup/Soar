@@ -475,27 +475,27 @@ void Explanation_Based_Chunker::variablize_rl_test(test t)
 }
 
 // creates an action for a template instantiation
-action* Explanation_Based_Chunker::make_variablized_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value)
+action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value)
 {
     action* rhs;
     Symbol* id_sym, *attr_sym, *val_sym, *ref_sym;
     char first_letter;
 
     // get the preference value
-    id_sym = instantiate_rhs_value(thisAgent, pRLAction->id, -1, 's', tok, w);
-    attr_sym = instantiate_rhs_value(thisAgent, pRLAction->attr, id_sym->id->level, 'a', tok, w);
+    id_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->id, -1, 's', tok, w);
+    attr_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->attr, id_sym->id->level, 'a', tok, w);
     first_letter = first_letter_from_symbol(attr_sym);
-    val_sym = instantiate_rhs_value(thisAgent, pRLAction->value, id_sym->id->level, first_letter, tok, w);
-    ref_sym = instantiate_rhs_value(thisAgent, pRLAction->referent, id_sym->id->level, first_letter, tok, w);
+    val_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->value, id_sym->id->level, first_letter, tok, w);
+    ref_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->referent, id_sym->id->level, first_letter, tok, w);
 
     rhs = make_action(thisAgent);
     rhs->type = MAKE_ACTION;
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, rhs_value_to_o_id(pRLAction_Orig->id));
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, rhs_value_to_o_id(pRLAction_Orig->attr));
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, rhs_value_to_o_id(pRLAction_Orig->value));
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction_Orig->referent));
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, rhs_value_to_o_id(pRLAction->id));
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, rhs_value_to_o_id(pRLAction->attr));
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, rhs_value_to_o_id(pRLAction->value));
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
     symbol_remove_ref(thisAgent, id_sym);
@@ -516,7 +516,7 @@ action* Explanation_Based_Chunker::make_variablized_rl_action(action* pRLAction,
     variablize_rhs_symbol(rhs->id);
     variablize_rhs_symbol(rhs->attr);
     variablize_rhs_symbol(rhs->value);
-//    variablize_rhs_symbol(rhs->referent);
+    variablize_rhs_symbol(rhs->referent);
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
     return rhs;

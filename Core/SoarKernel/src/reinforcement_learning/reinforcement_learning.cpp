@@ -561,17 +561,21 @@ void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol
 Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2)
 {
     Symbol* return_val = NULL;
-    action* rhs_actions = NULL;
     // initialize production conditions
     if (my_template_instance->prod->rl_template_conds == NIL)
     {
         condition* c_top;
         condition* c_bottom;
+        action* rhs_actions = NULL;
 
 //        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
+//        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
+        my_template_instance->prod->rl_template_actions = rhs_actions;
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
+        dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);
+        dprint(DT_RL_VARIABLIZATION, "a2: \n%2", a2);
     }
     // initialize production instantiation set
     if (my_template_instance->prod->rl_template_instantiations == NIL)
@@ -598,10 +602,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         if (ins_result.second)
         {
             dprint(DT_RL_VARIABLIZATION, "Insertion succeeded.\n");
-//            Symbol* id, *attr, *value, *referent;
             production* my_template = my_template_instance->prod;
-            action* my_action = my_template->action_list;
-            my_action = rhs_actions;
+            action* my_action = my_template->rl_template_actions;
             char first_letter;
             double init_value = 0;
             condition* cond_top, *cond_bottom;
@@ -633,8 +635,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
 
             // make new action list
-            action* new_action = thisAgent->ebChunker->make_variablized_rl_action(my_action, tok, w, a2, init_value);
-            deallocate_action_list(thisAgent, rhs_actions);
+            action* new_action = thisAgent->ebChunker->variablize_rl_action(my_action, tok, w, a2, init_value);
             // make new production
             thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
             EBCFailureType failure_type = reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false);
@@ -664,7 +665,18 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
             return_val = new_name_symbol;
         } else {
+            rl_symbol_map found_map = (*ins_result.first);
             dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
+            dprint(DT_RL_VARIABLIZATION, "Existing map of size %d\n", found_map.size());
+            for (auto it = found_map.begin(); it != found_map.end(); ++it)
+            {
+                dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
+            }
+            dprint(DT_RL_VARIABLIZATION, "New map of size %d\n", constant_map.size());
+            for (auto it = found_map.begin(); it != found_map.end(); ++it)
+            {
+                dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
+            }
         }
     }
 

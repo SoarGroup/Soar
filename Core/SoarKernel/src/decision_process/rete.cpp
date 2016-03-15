@@ -2836,13 +2836,17 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 }
 
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pOnlySTIs)
 {
 //    test New;
     cons* c;
     Symbol* temp;
 
     if (vn == NIL)
+    {
+        return;
+    }
+    if (pOnlySTIs && !t->data.referent->is_identifier())
     {
         return;
     }
@@ -4415,7 +4419,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebChunker->add_explanation_to_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
             }
 #endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
@@ -4477,7 +4481,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebChunker->add_explanation_to_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else

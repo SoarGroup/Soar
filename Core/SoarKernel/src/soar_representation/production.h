@@ -12,12 +12,12 @@ typedef struct production_struct
     ProductionType                  type;
     Symbol* name;
     struct rete_node_struct*        p_node;                     /* NIL if it's not in the rete */
-    char* original_rule_name;
-    char* documentation;                                        /* pointer to memory block, or NIL */
+    char*                           original_rule_name;
+    char*                           documentation;              /* pointer to memory block, or NIL */
     char*                           filename;                   /* name of source file, or NIL. */
     SupportType                     declared_support;
-    action* action_list;                                        /* RHS actions */
-    ::list* rhs_unbound_variables;                              /* RHS vars not bound on LHS */
+    action*                         action_list;                /* RHS actions */
+    ::list*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     uint64_t                        reference_count;
@@ -48,6 +48,7 @@ typedef struct production_struct
     double rl_gql;                // second value for implementation of GQ(\lambda)
 
     condition* rl_template_conds;
+    action*    rl_template_actions;
     rl_symbol_map_set* rl_template_instantiations;
 } production;
 

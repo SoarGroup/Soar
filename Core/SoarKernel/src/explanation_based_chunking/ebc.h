@@ -92,7 +92,7 @@ class Explanation_Based_Chunker
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */
         void add_explanation_to_condition(rete_node* node, condition* cond,
-                                          wme* w, node_varnames* nvn, uint64_t pI_id,
+                                          node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_instantiation_count() { return inst_id_counter; };
@@ -126,7 +126,7 @@ class Explanation_Based_Chunker
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        action* make_variablized_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value);
+        action* variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value);
 
         /* Debug printing methods */
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -229,8 +229,8 @@ class Explanation_Based_Chunker
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
-        void            add_explanation_to_RL_condition(rete_node* node, condition* cond,
-                                                        wme* w, node_varnames* nvn, uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+        void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
+                                                        uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
         Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
         void            set_up_rule_name(bool pForChunk);

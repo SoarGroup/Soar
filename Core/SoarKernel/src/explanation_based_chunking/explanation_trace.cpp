@@ -41,7 +41,6 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
 
 void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
     condition* cond,
-    wme* w,
     node_varnames* nvn,
     uint64_t pI_id,
     AddAdditionalTestsMode additional_tests)
@@ -64,9 +63,9 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
         {
             dprint(DT_ADD_ADDITIONALS, "adding var names node to original tests:\n");
             dprint_varnames_node(DT_ADD_ADDITIONALS, nvn);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id, true);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id, true);
+            add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id, true);
             dprint(DT_ADD_ADDITIONALS, "Done adding var names to original tests resulting in: %l\n", cond);
         }
 
@@ -110,9 +109,12 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
                     test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                         rt->data.variable_referent.field_num,
                         rt->data.variable_referent.levels_up);
-                    chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
-                    chunk_test->identity = ref_test->identity;
-                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+                    if (ref_test->data.referent->is_identifier())
+                    {
+                        chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+                        chunk_test->identity = ref_test->identity;
+                        dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+                    }
                 }
             }
             if (chunk_test)
@@ -140,14 +142,13 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
 
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
-                                        wme* w,
                                         node_varnames* nvn,
                                         uint64_t pI_id,
                                         AddAdditionalTestsMode additional_tests)
 {
     if (additional_tests == JUST_INEQUALITIES)
     {
-        add_explanation_to_RL_condition(node, cond, w, nvn, pI_id, additional_tests);
+        add_explanation_to_RL_condition(node, cond, nvn, pI_id, additional_tests);
         return;
     }
 

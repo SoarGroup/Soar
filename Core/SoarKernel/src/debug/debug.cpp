@@ -335,6 +335,18 @@ void debug_trace_set(int dt_num, bool pEnable)
     }
 }
 
+void debug_print_rhs(rhs_value rv)
+{
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (!thisAgent)
+    {
+        return;
+    }
+    dprint(DT_DEBUG, "%r\n", rv);
+    Output_Manager::Get_OM().set_output_params_global(true);
+    thisAgent->output_settings->set_output_params_agent(true);
+}
+
 void debug_test(int type)
 {
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();

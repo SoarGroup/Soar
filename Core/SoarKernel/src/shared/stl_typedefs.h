@@ -46,6 +46,8 @@ class instantiation_record;
 
     typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                                                                    wma_pooled_wme_set;
     typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > >                          wma_sym_reference_map;
+    typedef std::map< production*, double, std::less< production* >, soar_module::soar_memory_pool_allocator< std::pair< production*, double > > >                  rl_et_map;
+    typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                                                                        rl_rule_list;
 #else
     typedef std::list< condition* >                 condition_list;
     typedef std::list< Symbol* >                    symbol_list;
@@ -60,6 +62,8 @@ class instantiation_record;
 
     typedef std::set< wme* >                        wma_pooled_wme_set;
     typedef std::map< Symbol*, uint64_t >           wma_sym_reference_map;
+    typedef std::map< production*, double >         rl_et_map;
+    typedef std::list< production* >                rl_rule_list;
 #endif
 
     //#ifdef USE_MEM_POOL_ALLOCATORS
