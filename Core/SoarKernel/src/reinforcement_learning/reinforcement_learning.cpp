@@ -558,20 +558,20 @@ void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol
 }
 
 // builds a template instantiation
-Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w)
+Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2)
 {
     Symbol* return_val = NULL;
-
+    action* rhs_actions = NULL;
     // initialize production conditions
     if (my_template_instance->prod->rl_template_conds == NIL)
     {
         condition* c_top;
         condition* c_bottom;
 
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+//        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
-
     }
     // initialize production instantiation set
     if (my_template_instance->prod->rl_template_instantiations == NIL)
@@ -598,9 +598,10 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         if (ins_result.second)
         {
             dprint(DT_RL_VARIABLIZATION, "Insertion succeeded.\n");
-            Symbol* id, *attr, *value, *referent;
+//            Symbol* id, *attr, *value, *referent;
             production* my_template = my_template_instance->prod;
             action* my_action = my_template->action_list;
+            my_action = rhs_actions;
             char first_letter;
             double init_value = 0;
             condition* cond_top, *cond_bottom;
@@ -631,22 +632,9 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
             dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
 
-            // get the preference value
-            id = instantiate_rhs_value(thisAgent, my_action->id, -1, 's', tok, w);
-            attr = instantiate_rhs_value(thisAgent, my_action->attr, id->id->level, 'a', tok, w);
-            first_letter = first_letter_from_symbol(attr);
-            value = instantiate_rhs_value(thisAgent, my_action->value, id->id->level, first_letter, tok, w);
-            referent = instantiate_rhs_value(thisAgent, my_action->referent, id->id->level, first_letter, tok, w);
-
-            // clean up after yourself :)
-            symbol_remove_ref(thisAgent, id);
-            symbol_remove_ref(thisAgent, attr);
-            symbol_remove_ref(thisAgent, value);
-            symbol_remove_ref(thisAgent, referent);
-
             // make new action list
-            action* new_action = thisAgent->ebChunker->make_variablized_rl_action(id, attr, value, referent);
-
+            action* new_action = thisAgent->ebChunker->make_variablized_rl_action(my_action, tok, w, a2, init_value);
+            deallocate_action_list(thisAgent, rhs_actions);
             // make new production
             thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
             EBCFailureType failure_type = reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false);
@@ -658,15 +646,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
             // set initial expected reward values
             {
-                if (referent->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-                {
-                    init_value = static_cast< double >(referent->ic->value);
-                }
-                else if (referent->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-                {
-                    init_value = referent->fc->value;
-                }
-
                 new_production->rl_ecr = 0.0;
                 new_production->rl_efr = init_value;
                 new_production->rl_gql = 0.0;

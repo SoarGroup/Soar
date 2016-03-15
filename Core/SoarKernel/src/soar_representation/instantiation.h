@@ -17,24 +17,12 @@
    from the rhs function to this preference adding code)*/
 extern wme* glbDeepCopyWMEs;
 
-typedef struct condition_struct condition;
-typedef struct symbol_struct Symbol;
-typedef struct wme_struct wme;
-typedef struct preference_struct preference;
-typedef signed short goal_stack_level;
-typedef uint64_t tc_number;
-typedef signed short goal_stack_level;
-typedef struct agent_struct agent;
-typedef struct preference_struct preference;
-typedef struct instantiation_struct instantiation;
-typedef struct wme_struct wme;
 typedef struct pi_struct
 {
     struct pi_struct* next, *prev;
     instantiation* inst;
 } parent_inst;
 
-typedef char* rhs_value;
 typedef struct instantiation_struct
 {
     struct production_struct*       prod;                   /* used full name of struct because
@@ -58,33 +46,25 @@ typedef struct instantiation_struct
     uint64_t                        explain_depth;
 } instantiation;
 
-/* A dll of instantiations that will be used to determine the gds through
-   a backtracing-style procedure, evaluate_gds in decide.cpp */
+void                init_instantiation_pool(agent* thisAgent);
 
-void init_instantiation_pool(agent* thisAgent);
+void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
+void                init_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
+void                retract_instantiation(agent* thisAgent, instantiation* inst);
+void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
-goal_stack_level get_match_goal(condition* top_cond);
-preference* find_clone_for_level(preference* p, goal_stack_level level);
+goal_stack_level    get_match_goal(condition* top_cond);
+preference*         find_clone_for_level(preference* p, goal_stack_level level);
+void                build_CDPS(agent* thisAgent, instantiation* inst);
+Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
-
-void create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
-instantiation* make_fake_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
-void retract_instantiation(agent* thisAgent, instantiation* inst);
-void deallocate_instantiation(agent* thisAgent, instantiation*& inst);
-
-void init_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
-void build_CDPS(agent* thisAgent, instantiation* inst);
-Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
-
-inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
+inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
-    if ((!(inst)->preferences_generated) && (!(inst)->in_ms))
-    {
-        deallocate_instantiation(thisAgent, inst);
-    }
+    if ((!(inst)->preferences_generated) && (!(inst)->in_ms)) deallocate_instantiation(thisAgent, inst);
 }
 
-
+instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
+preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
 
 /* -------------------------------------------------------------------
                               Instantiations

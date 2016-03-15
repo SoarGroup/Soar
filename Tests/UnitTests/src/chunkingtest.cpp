@@ -16,6 +16,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 #ifdef DO_CHUNKING_TESTS
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_Variablization_Same_Type);
+        CPPUNIT_TEST(STI_with_referents);
         CPPUNIT_TEST(Superstate_Identity_Opaque);
         CPPUNIT_TEST(RHS_Unbound_Multivalue);
         CPPUNIT_TEST(All_Test_Types);
@@ -56,7 +57,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Literalization_with_BT_Constraints2);
         CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
         CPPUNIT_TEST(RL_Variablization);
-//        CPPUNIT_TEST(testChunk43);
 //        CPPUNIT_TEST(testChunk44);
 //        CPPUNIT_TEST(testChunk45);
 //        CPPUNIT_TEST(testChunk46);
@@ -117,7 +117,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Literalization_with_BT_Constraints();
         void Literalization_with_BT_Constraints2();
         void Unify_through_Two_Traces_Four_Deep();
-//        void testChunk43();
+        void STI_with_referents();
 //        void testChunk44();
 //        void testChunk45();
 //        void testChunk46();
@@ -240,7 +240,7 @@ void ChunkTest::STI_Variablization_Same_Type()
 
 void ChunkTest::RHS_Unbound_Multivalue()
 {
-    build_and_check_chunk("RHS_Unbound_Multivalue.soar", 8, 2);
+    build_and_check_chunk("RHS_Unbound_Multivalue.soar", 8, 1);
 }
 
 void ChunkTest::Rete_Bug_Deep_vs_Top()
@@ -405,10 +405,10 @@ void ChunkTest::Unify_through_Two_Traces_Four_Deep()
     build_and_check_chunk("Unify_through_Two_Traces_Four_Deep.soar", 8, 1);
 }
 
-//void ChunkTest::testChunk43()
-//{
-//    build_and_check_chunk("chunk43.soar", 8, 1);
-//}
+void ChunkTest::STI_with_referents()
+{
+    build_and_check_chunk("STI_with_referents.soar", 8, 1);
+}
 //
 //void ChunkTest::testChunk44()
 //{

@@ -94,6 +94,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
     p->o_ids.id = o_ids.id;
     p->o_ids.attr = o_ids.attr;
     p->o_ids.value = o_ids.value;
+    p->o_ids.referent = o_ids.referent;
 
     p->rhs_funcs.id = rhs_funcs.id;
     p->rhs_funcs.attr = rhs_funcs.attr;
@@ -131,11 +132,11 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->o_ids.id = pPref->o_ids.id;
     p->o_ids.attr = pPref->o_ids.attr;
     p->o_ids.value = pPref->o_ids.value;
+    p->o_ids.referent = pPref->o_ids.referent;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
-
 
     /* Don't want this information or have the other things cleaned up*/
     p->inst = NULL;

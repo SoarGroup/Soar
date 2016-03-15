@@ -1325,7 +1325,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
         return;
     }
 
-    instantiation* inst = make_fake_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
 
     for (preference* pref = inst->preferences_generated; pref;)
     {

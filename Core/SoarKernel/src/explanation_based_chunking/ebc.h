@@ -126,7 +126,7 @@ class Explanation_Based_Chunker
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
         void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        action* make_variablized_rl_action(Symbol* id_sym, Symbol* attr_sym, Symbol* val_sym, Symbol* ref_sym);
+        action* make_variablized_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value);
 
         /* Debug printing methods */
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -278,7 +278,6 @@ class Explanation_Based_Chunker
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
-        bool unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond);
         void unify_backtraced_conditions(condition* parent_cond, const identity_triple o_ids_to_replace, const rhs_triple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);

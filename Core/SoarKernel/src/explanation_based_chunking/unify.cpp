@@ -150,98 +150,6 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
     dprint_o_id_substitution_map(DT_UNIFICATION);
 }
 
-bool Explanation_Based_Chunker::unify_backtraced_dupe_conditions(condition* ground_cond, condition* new_cond)
-{
-    if (!m_learning_on) return true;
-
-    dprint(DT_IDENTITY_PROP, "Adding identity mappings for dupe match condition: %l from %l\n", new_cond, ground_cond);
-    test new_cond_id, new_cond_attr, new_cond_value, ground_cond_id, ground_cond_attr, ground_cond_value;
-
-    new_cond_id = new_cond_attr = new_cond_value = NULL;
-    if (new_cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
-    {
-        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-//        return false;
-        new_cond_id = new_cond->data.tests.id_test->eq_test;
-    } else {
-        new_cond_id = new_cond->data.tests.id_test;
-        assert(new_cond_id->type == EQUALITY_TEST);
-    }
-    if (new_cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
-    {
-        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-//        return false;
-        new_cond_attr = new_cond->data.tests.attr_test->eq_test;
-    } else {
-        new_cond_attr = new_cond->data.tests.attr_test;
-        assert(new_cond_attr->type == EQUALITY_TEST);
-    }
-    if (new_cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
-    {
-        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-//        return false;
-        new_cond_value = new_cond->data.tests.value_test->eq_test;
-    } else {
-        new_cond_value = new_cond->data.tests.value_test;
-        assert(new_cond_value->type == EQUALITY_TEST);
-    }
-
-    if (!new_cond_id && !new_cond_attr && !new_cond_value)
-    {
-        dprint(DT_IDENTITY_PROP, "Condition has additional constraints.  Not unifying.\n");
-        return false;
-    }
-
-    bool mismatched_literal = false;
-    ground_cond_id = ground_cond->data.tests.id_test->eq_test;
-    ground_cond_attr = ground_cond->data.tests.attr_test->eq_test;
-    ground_cond_value = ground_cond->data.tests.value_test->eq_test;
-
-    if (!new_cond_id->identity || !ground_cond_id->identity)
-    {
-        if (new_cond_id->identity != ground_cond_id->identity)
-        {
-            mismatched_literal = true;
-        }
-    }
-    if (!mismatched_literal && (!new_cond_attr->identity || !ground_cond_attr->identity))
-    {
-        if (new_cond_attr->identity != ground_cond_attr->identity)
-        {
-            mismatched_literal = true;
-        }
-    }
-    if (!mismatched_literal && (!new_cond_value->identity || !ground_cond_value->identity))
-    {
-        if (new_cond_value->identity != ground_cond_value->identity)
-        {
-            mismatched_literal = true;
-        }
-    }
-
-
-    if (mismatched_literal)
-    {
-        dprint(DT_IDENTITY_PROP, "One of the conditions has a literal not in the other condition.  Not unifying.\n");
-        return false;
-    }
-    /* We now know either both conds are literal or both have identities */
-    if (new_cond_id->identity)
-    {
-        add_identity_unification(new_cond_id->identity, ground_cond_id->identity);
-    }
-    if (new_cond_attr->identity)
-    {
-        add_identity_unification(new_cond_attr->identity, ground_cond_attr->identity);
-    }
-    if (new_cond_value->identity)
-    {
-        add_identity_unification(new_cond_value->identity, ground_cond_value->identity);
-    }
-    dprint_o_id_substitution_map(DT_IDENTITY_PROP);
-    return true;
-}
-
 void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
@@ -275,7 +183,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     lAttr = parent_cond->data.tests.attr_test->eq_test;
     lValue = parent_cond->data.tests.value_test->eq_test;
 
-    if (!lId->data.referent->is_sti() && o_ids_to_replace.id)
+    if (o_ids_to_replace.id)
     {
         if (lId->identity)
         {
@@ -295,7 +203,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
     }
-    if (!lAttr->data.referent->is_sti() && o_ids_to_replace.attr)
+    if (o_ids_to_replace.attr)
     {
         if (lAttr->identity)
         {
@@ -315,7 +223,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lAttr->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
     }
-    if (!lValue->data.referent->is_sti() && o_ids_to_replace.value)
+    if (o_ids_to_replace.value)
     {
         if (lValue->identity)
         {

@@ -411,6 +411,10 @@ rhs_value create_RHS_value(agent* thisAgent,
             {
                 thisAgent->highest_rhs_unboundvar_index = index;
             }
+            if (add_original_vars && pI_id)
+            {
+                lO_id = thisAgent->ebChunker->get_or_create_o_id(sym, pI_id);
+            }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
             dprint(DT_RHS_VALUE, "create_RHS_value: unbound %y o%u\n", sym, lO_id);
@@ -423,10 +427,10 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
         if (add_original_vars && pI_id)
         {
-            lO_id = thisAgent->ebChunker->get_existing_o_id(sym, pI_id);
+            lO_id = thisAgent->ebChunker->get_or_create_o_id(sym, pI_id);
         }
 
-        dprint(DT_RHS_VALUE, "create_RHS_value: previous unbound %y o%u\n", sym, lO_id);
+        dprint(DT_RHS_VALUE, "create_RHS_value: previous unbound %y <o%u> in i%u (%s)\n", sym, lO_id, pI_id, add_original_vars ? "T" : "F");
         return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
     }
 

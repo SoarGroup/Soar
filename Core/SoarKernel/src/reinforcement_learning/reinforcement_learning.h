@@ -266,7 +266,7 @@ extern void rl_revert_template_id(agent* thisAgent);
 //////////////////////////////////////////////////////////
 
 // builds a new Soar-RL rule from a template instantiation
-extern Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w);
+extern Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2);
 
 // adds a test to a condition list for goals or impasses contained within the condition list
 extern void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds);

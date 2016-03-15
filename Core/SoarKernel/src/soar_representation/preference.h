@@ -132,8 +132,8 @@ typedef struct preference_struct
      *    used by the chunker to match up rhs symbols with the correct
      *    lhs one, since the instantiated value is not sufficient. -- */
 
-    identity_triple    o_ids;
-    rhs_triple         rhs_funcs;
+    identity_triple                 o_ids;
+    rhs_triple                      rhs_funcs;
 
     struct slot_struct*             slot;
 
@@ -164,7 +164,7 @@ typedef struct preference_struct
 } preference;
 
 extern preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const identity_triple o_ids = identity_triple(0, 0, 0),
+                                   const identity_triple o_ids = identity_triple(0, 0, 0, 0),
                                    const rhs_triple rhs_funcs = rhs_triple(NULL, NULL, NULL));
 extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);

@@ -4,8 +4,6 @@ srand 23
 learn --on
 learn --only
 
-watch --learn 2
-
 sp {init*state
    (state <s> ^superstate nil)
 -->

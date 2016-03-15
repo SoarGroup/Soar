@@ -2850,7 +2850,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         temp = varnames_to_one_var(vn);
         t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
-        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity, temp->var->name);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     }
     else
     {
@@ -2861,7 +2861,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         {
             temp = static_cast<Symbol*>(c->first);
             t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity, temp->var->name);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
     }
 }

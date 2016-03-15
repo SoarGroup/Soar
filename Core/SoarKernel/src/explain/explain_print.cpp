@@ -320,20 +320,20 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
 //                outputManager->printa_sf(thisAgent, "%-(%g%s^%g %g)%-",
 //                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
 //                    lCond->condition_tests.attr, lCond->condition_tests.value);
-                if (!lCond->matched_wme )
-                {
+//                if (!lCond->matched_wme )
+//                {
                     outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
                         id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                         lCond->condition_tests.attr, lCond->condition_tests.value);
-                } else {
-                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
-                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
-                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
-                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
-                    deallocate_test(thisAgent, temp_sti_test);
-                }
+//                } else {
+//                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
+//                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+//                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
+//                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+//                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
+//                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
+//                    deallocate_test(thisAgent, temp_sti_test);
+//                }
                 deallocate_test(thisAgent, id_test_without_goal_test);
                 deallocate_test(thisAgent, id_test_without_goal_test2);
                 if (currentNegativeCond)
@@ -444,20 +444,20 @@ void Explanation_Logger::print_chunk_explanation()
 //                outputManager->printa_sf(thisAgent, "%-(%g%s^%g %g)%-",
 //                    id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
 //                    lCond->condition_tests.attr, lCond->condition_tests.value);
-                if (!lCond->matched_wme )
-                {
+//                if (!lCond->matched_wme )
+//                {
                     outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
                         id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                         lCond->condition_tests.attr, lCond->condition_tests.value);
-                } else {
-                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
-                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
-                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
-                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
-                    deallocate_test(thisAgent, temp_sti_test);
-                }
+//                } else {
+//                    test temp_sti_test = make_test(thisAgent, thisAgent->sti_symbol, EQUALITY_TEST);
+//                    outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+//                        lCond->matched_wme->id->is_sti() ? temp_sti_test : id_test_without_goal_test2,
+//                      ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+//                      lCond->matched_wme->attr->is_sti() ? temp_sti_test : lCond->condition_tests.attr,
+//                      lCond->matched_wme->value->is_sti() ? temp_sti_test : lCond->condition_tests.value);
+//                    deallocate_test(thisAgent, temp_sti_test);
+//                }
                 deallocate_test(thisAgent, id_test_without_goal_test);
                 deallocate_test(thisAgent, id_test_without_goal_test2);
 

@@ -242,19 +242,8 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
     {
         return;
     }
+    add_symbol_to_tc(thisAgent, t->eq_test->data.referent, tc, id_list, var_list);
 
-    if (t->type == EQUALITY_TEST)
-    {
-        add_symbol_to_tc(thisAgent, t->data.referent, tc, id_list, var_list);
-        return;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            add_test_to_tc(thisAgent, static_cast<test>(c->first), tc, id_list, var_list);
-        }
-    }
 }
 
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
@@ -288,26 +277,7 @@ void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
 
 bool test_is_in_tc(test t, tc_number tc)
 {
-    cons* c;
-
-    if (!t)
-    {
-        return false;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        return t->data.referent->is_in_tc(tc);
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_is_in_tc(static_cast<test>(c->first), tc))
-            {
-                return true;
-            }
-        return false;
-    }
-    return false;
+    return (t && t->eq_test->data.referent->is_in_tc(tc));
 }
 
 bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)

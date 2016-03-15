@@ -13,7 +13,7 @@
 #include "forward.h"
 
 /* Uncomment this to get common compile settings for release version of Soar */
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 /* Experimental setting that forces Soar to consider the attribute element
  * of a wme/pref when incrementing/decrementing link counts, which are use
@@ -23,12 +23,6 @@
 /* Some settings used for EBC.  Do not uncomment. */
 #define EBC_MERGE_CONDITIONS
 #define EBC_ADD_CONSTRAINTS_IDENTITIES
-
-/* Experimental setting for handling ground conditions that match the same wme */
-//#define EBC_MAP_MERGE_DUPE_GROUNDS
-#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
-//#define EBC_SUPERMERGE
-#endif
 
 #ifndef SOAR_RELEASE_VERSION
 

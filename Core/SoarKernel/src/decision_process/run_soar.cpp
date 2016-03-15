@@ -86,10 +86,10 @@ void abort_with_fatal_error(agent* thisAgent, const char* msg)
     xml_generate_error(thisAgent, msg);
     xml_generate_error(thisAgent, warning);
 
-    f = fopen("soar_crash_log.txt", "w");
-    fprintf(f, "%s", msg);
-    fprintf(f, "%s", warning);
-    fclose(f);
+//    f = fopen("soar_crash_log.txt", "w");
+//    fprintf(f, "%s", msg);
+//    fprintf(f, "%s", warning);
+//    fclose(f);
 }
 
 /* -- A version for use when the current agent variable is not available == */
