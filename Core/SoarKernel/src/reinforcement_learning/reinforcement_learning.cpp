@@ -513,174 +513,162 @@ void rl_revert_template_id(agent* thisAgent)
     thisAgent->rl_template_count--;
 }
 
-inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
-{
-    if (p_sym->is_variable() && (i_sym->is_constant() || i_sym->is_lti()))
-    {
-        constants->insert(std::make_pair(p_sym, i_sym));
-    }
-}
-
-void rl_get_test_constant(test p_test, test i_test, rl_symbol_map* constants)
-{
-    if (!p_test) return;
-
-    if (p_test->type == EQUALITY_TEST)
-    {
-        rl_get_symbol_constant(p_test->data.referent, i_test->data.referent, constants);
-    } else if (p_test->type == CONJUNCTIVE_TEST) {
-        rl_get_symbol_constant(p_test->eq_test->data.referent, i_test->eq_test->data.referent, constants);
-        return;
-    }
-}
-
-void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol_map* constants)
-{
-    condition* p_cond = p_conds;
-    condition* i_cond = i_conds;
-
-    while (p_cond)
-    {
-        if ((p_cond->type == POSITIVE_CONDITION) || (p_cond->type == NEGATIVE_CONDITION))
-        {
-            rl_get_test_constant(p_cond->data.tests.id_test, i_cond->data.tests.id_test, constants);
-            rl_get_test_constant(p_cond->data.tests.attr_test, i_cond->data.tests.attr_test, constants);
-            rl_get_test_constant(p_cond->data.tests.value_test, i_cond->data.tests.value_test, constants);
-        }
-        else if (p_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            rl_get_template_constants(p_cond->data.ncc.top, i_cond->data.ncc.top, constants);
-        }
-
-        p_cond = p_cond->next;
-        i_cond = i_cond->next;
-    }
-}
+//inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
+//{
+//    if (p_sym->is_variable() && (i_sym->is_constant() || i_sym->is_lti()))
+//    {
+//        constants->insert(std::make_pair(p_sym, i_sym));
+//    }
+//}
+//
+//void rl_get_test_constant(test p_test, test i_test, rl_symbol_map* constants)
+//{
+//    if (!p_test) return;
+//
+//    if (p_test->type == EQUALITY_TEST)
+//    {
+//        rl_get_symbol_constant(p_test->data.referent, i_test->data.referent, constants);
+//    } else if (p_test->type == CONJUNCTIVE_TEST) {
+//        rl_get_symbol_constant(p_test->eq_test->data.referent, i_test->eq_test->data.referent, constants);
+//        return;
+//    }
+//}
+//
+//void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol_map* constants)
+//{
+//    condition* p_cond = p_conds;
+//    condition* i_cond = i_conds;
+//
+//    while (p_cond)
+//    {
+//        if ((p_cond->type == POSITIVE_CONDITION) || (p_cond->type == NEGATIVE_CONDITION))
+//        {
+//            rl_get_test_constant(p_cond->data.tests.id_test, i_cond->data.tests.id_test, constants);
+//            rl_get_test_constant(p_cond->data.tests.attr_test, i_cond->data.tests.attr_test, constants);
+//            rl_get_test_constant(p_cond->data.tests.value_test, i_cond->data.tests.value_test, constants);
+//        }
+//        else if (p_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+//        {
+//            rl_get_template_constants(p_cond->data.ncc.top, i_cond->data.ncc.top, constants);
+//        }
+//
+//        p_cond = p_cond->next;
+//        i_cond = i_cond->next;
+//    }
+//}
 
 // builds a template instantiation
-Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2)
+Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* rhs_actions)
 {
-    Symbol* return_val = NULL;
-    // initialize production conditions
+    Symbol* new_name_symbol = NULL;
+
     if (my_template_instance->prod->rl_template_conds == NIL)
     {
         condition* c_top;
         condition* c_bottom;
-        action* rhs_actions = NULL;
 
-//        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
-//        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, tok, w, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), &(rhs_actions), JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
         my_template_instance->prod->rl_template_conds = c_top;
-        my_template_instance->prod->rl_template_actions = rhs_actions;
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
         dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);
-        dprint(DT_RL_VARIABLIZATION, "a2: \n%2", a2);
-    }
-    // initialize production instantiation set
-    if (my_template_instance->prod->rl_template_instantiations == NIL)
-    {
-        dprint(DT_RL_VARIABLIZATION, "Creating rl_symbol_map_set because rL-template_instantiations nil.\n");
-        my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
     }
 
+//    // initialize production instantiation set
+//    if (my_template_instance->prod->rl_template_instantiations == NIL)
+//    {
+//        dprint(DT_RL_VARIABLIZATION, "Creating rl_symbol_map_set because rL-template_instantiations nil.\n");
+//        my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
+//    }
+//
+//
+//    // get constants
+//    rl_symbol_map constant_map;
+//    {
+//        dprint(DT_RL_VARIABLIZATION, "Getting template constants.\n");
+//        dprint(DT_RL_VARIABLIZATION, "my_template_instance->prod->rl_template_conds: \n%1", my_template_instance->prod->rl_template_conds);
+//        dprint(DT_RL_VARIABLIZATION, "my_template_instance->top_of_instantiated_conditions: \n%1", my_template_instance->top_of_instantiated_conditions);
+//        rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
+//    }
+//    dprint(DT_RL_VARIABLIZATION, "Inserting into instantiation set.  (constant map empty: %s\n", constant_map.empty() ? "True" : "False");
+//    std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert(constant_map);
+//    if (ins_result.second)
+//    {
 
-    // get constants
-    rl_symbol_map constant_map;
-    {
-        dprint(DT_RL_VARIABLIZATION, "Getting template constants.\n");
-        dprint(DT_RL_VARIABLIZATION, "my_template_instance->prod->rl_template_conds: \n%1", my_template_instance->prod->rl_template_conds);
-        dprint(DT_RL_VARIABLIZATION, "my_template_instance->top_of_instantiated_conditions: \n%1", my_template_instance->top_of_instantiated_conditions);
-        rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
-    }
+        production* my_template = my_template_instance->prod;
+        char first_letter;
+        double init_value = 0;
+        condition* cond_top, *cond_bottom;
 
-    // try to insert into instantiation set
-//    if ( !constant_map.empty() )
-    {
-        dprint(DT_RL_VARIABLIZATION, "Inserting into instantiation set.  (constant map empty: %s\n", constant_map.empty() ? "True" : "False");
-        std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert(constant_map);
-        if (ins_result.second)
+        // make unique production name
+        std::string new_name = "";
+        std::string empty_string = "";
+        std::string temp_id;
+        int new_id;
+        do
         {
-            dprint(DT_RL_VARIABLIZATION, "Insertion succeeded.\n");
-            production* my_template = my_template_instance->prod;
-            action* my_action = my_template->rl_template_actions;
-            char first_letter;
-            double init_value = 0;
-            condition* cond_top, *cond_bottom;
+            new_id = rl_next_template_id(thisAgent);
+            to_string(new_id, temp_id);
+            new_name = ("rl*" + empty_string + my_template->name->sc->name + "*" + temp_id);
+        }
+        while (find_str_constant(thisAgent, new_name.c_str()) != NIL);
+        new_name_symbol = make_str_constant(thisAgent, new_name.c_str());
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
 
-            // make unique production name
-            Symbol* new_name_symbol;
-            std::string new_name = "";
-            std::string empty_string = "";
-            std::string temp_id;
-            int new_id;
-            do
-            {
-                new_id = rl_next_template_id(thisAgent);
-                to_string(new_id, temp_id);
-                new_name = ("rl*" + empty_string + my_template->name->sc->name + "*" + temp_id);
-            }
-            while (find_str_constant(thisAgent, new_name.c_str()) != NIL);
-            new_name_symbol = make_str_constant(thisAgent, new_name.c_str());
+        dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
+        reset_variable_generator(thisAgent, cond_top, NIL);
+        rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
+        thisAgent->ebChunker->variablize_condition_list(cond_top);
+        action* new_action = thisAgent->ebChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
-            // prep conditions
-            copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
-            dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
-            reset_variable_generator(thisAgent, cond_top, NIL);
-            rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-            thisAgent->ebChunker->variablize_rl_condition_list(cond_top);
-
-            dprint(DT_RL_VARIABLIZATION, "Final conditions: \n%1", cond_top);
-
-            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RHS action list:\n");
-
-            // make new action list
-            action* new_action = thisAgent->ebChunker->variablize_rl_action(my_action, tok, w, a2, init_value);
-            // make new production
-            thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-            EBCFailureType failure_type = reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false);
-            assert(failure_type == ebc_success);
-
+        // make new production
+        thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
+        EBCFailureType reorder_result = reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false);
+        if (reorder_result == ebc_success)
+        {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
-            thisAgent->ebChunker->clear_variablization_maps();
-
             // set initial expected reward values
-            {
-                new_production->rl_ecr = 0.0;
-                new_production->rl_efr = init_value;
-                new_production->rl_gql = 0.0;
-            }
+            new_production->rl_ecr = 0.0;
+            new_production->rl_efr = init_value;
+            new_production->rl_gql = 0.0;
+
             dprint(DT_RL_VARIABLIZATION, "Adding new RL production: \n%4", cond_top, new_action);
             // attempt to add to rete, remove if duplicate
             production* duplicate_rule = NULL;
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, duplicate_rule, true) == DUPLICATE_PRODUCTION)
             {
+                dprint(DT_RL_VARIABLIZATION, "Template production is a duplicate of %y: \n%4", duplicate_rule->name, cond_top, new_action);
                 excise_production(thisAgent, new_production, false);
                 rl_revert_template_id(thisAgent);
-
                 new_name_symbol = NULL;
             }
-            deallocate_condition_list(thisAgent, cond_top);
-
-            return_val = new_name_symbol;
-        } else {
-            rl_symbol_map found_map = (*ins_result.first);
-            dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
-            dprint(DT_RL_VARIABLIZATION, "Existing map of size %d\n", found_map.size());
-            for (auto it = found_map.begin(); it != found_map.end(); ++it)
-            {
-                dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
-            }
-            dprint(DT_RL_VARIABLIZATION, "New map of size %d\n", constant_map.size());
-            for (auto it = found_map.begin(); it != found_map.end(); ++it)
-            {
-                dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
-            }
         }
-    }
+        else
+        {
+            dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
+            rl_revert_template_id(thisAgent);
+            symbol_remove_ref(thisAgent, new_name_symbol);
+            new_name_symbol = NULL;
+        }
 
-    return return_val;
+        thisAgent->ebChunker->clear_variablization_maps();
+        deallocate_condition_list(thisAgent, cond_top);
+//    } else {
+//        rl_symbol_map found_map = (*ins_result.first);
+//        dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
+//        dprint(DT_RL_VARIABLIZATION, "Existing map of size %d\n", found_map.size());
+//        for (auto it = found_map.begin(); it != found_map.end(); ++it)
+//        {
+//            dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
+//        }
+//        dprint(DT_RL_VARIABLIZATION, "New map of size %d\n", constant_map.size());
+//        for (auto it = found_map.begin(); it != found_map.end(); ++it)
+//        {
+//            dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
+//        }
+//    }
+
+    return new_name_symbol;
 }
 
 void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds)

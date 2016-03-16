@@ -109,7 +109,7 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
                     test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                         rt->data.variable_referent.field_num,
                         rt->data.variable_referent.levels_up);
-                    if (ref_test->data.referent->is_identifier())
+                    if (ref_test->data.referent->is_sti())
                     {
                         chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
                         chunk_test->identity = ref_test->identity;

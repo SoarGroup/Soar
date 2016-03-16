@@ -855,10 +855,10 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-    if ((inst->i_id == 3) || (inst->i_id == 9))
-    {
-        dprint(DT_DEBUG, "Found.\n");
-    }
+//    if ((inst->i_id == 3) || (inst->i_id == 9))
+//    {
+//        dprint(DT_DEBUG, "Found.\n");
+//    }
     if (thisAgent->soar_verbose_flag == true)
     {
         print_with_symbols(thisAgent,

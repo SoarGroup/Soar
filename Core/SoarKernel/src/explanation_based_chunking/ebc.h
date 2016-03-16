@@ -125,8 +125,8 @@ class Explanation_Based_Chunker
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
-        void variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        action* variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value);
+        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
+        action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Debug printing methods */
         void print_variablization_tables(TraceMode mode, int whichTable = 0);
@@ -298,12 +298,10 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        void variablize_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);
         void variablize_equality_tests(test t);
-        void variablize_rl_test(test chunk_test);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);

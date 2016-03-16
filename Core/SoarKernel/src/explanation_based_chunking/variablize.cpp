@@ -434,59 +434,19 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
 }
 
-void Explanation_Based_Chunker::variablize_rl_test(test t)
-{
-    cons* c;
-    test ct;
-
-    assert(t);
-    dprint(DT_RL_VARIABLIZATION, "%t\n", t);
-
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        dprint(DT_RL_VARIABLIZATION, "Iterating through conjunction list.\n");
-        ct = t;
-        for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            variablize_rl_test(reinterpret_cast<test>(c->first));
-        }
-
-        dprint(DT_RL_VARIABLIZATION, "Done iterating through conjunction list.\n");
-        dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
-
-    }
-    else
-    {
-        if (test_has_referent(t) && (t->data.referent->is_sti()))
-        {
-            dprint(DT_RL_VARIABLIZATION, "Variablizing test type %s with referent %y\n",
-                   test_type_to_string(t->type), t->data.referent);
-            variablize_lhs_symbol(&(t->data.referent), t->identity);
-        }
-        else
-        {
-            dprint(DT_RL_VARIABLIZATION, "Not an STI or a non-variablizable test type.\n");
-
-        }
-    }
-
-    dprint(DT_RL_VARIABLIZATION, "Resulting in  %t\n", t);
-    dprint(DT_RL_VARIABLIZATION, "---------------------------------------\n");
-}
-
 // creates an action for a template instantiation
-action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, action* pRLAction_Orig, double & initial_value)
+action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, double & initial_value)
 {
     action* rhs;
     Symbol* id_sym, *attr_sym, *val_sym, *ref_sym;
     char first_letter;
 
     // get the preference value
-    id_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->id, -1, 's', tok, w);
-    attr_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->attr, id_sym->id->level, 'a', tok, w);
+    id_sym = instantiate_rhs_value(thisAgent, pRLAction->id, -1, 's', tok, w);
+    attr_sym = instantiate_rhs_value(thisAgent, pRLAction->attr, id_sym->id->level, 'a', tok, w);
     first_letter = first_letter_from_symbol(attr_sym);
-    val_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->value, id_sym->id->level, first_letter, tok, w);
-    ref_sym = instantiate_rhs_value(thisAgent, pRLAction_Orig->referent, id_sym->id->level, first_letter, tok, w);
+    val_sym = instantiate_rhs_value(thisAgent, pRLAction->value, id_sym->id->level, first_letter, tok, w);
+    ref_sym = instantiate_rhs_value(thisAgent, pRLAction->referent, id_sym->id->level, first_letter, tok, w);
 
     rhs = make_action(thisAgent);
     rhs->type = MAKE_ACTION;
@@ -520,60 +480,6 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
     return rhs;
-}
-
-void Explanation_Based_Chunker::variablize_rl_condition_list(condition* top_cond, bool pInNegativeCondition)
-{
-
-    dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list for template:\n");
-
-    dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing equality tests in positive conditions...\n");
-
-    if (!pInNegativeCondition)
-    {
-        for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-        {
-            if (cond->type == POSITIVE_CONDITION)
-            {
-                dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
-                dprint(DT_RL_VARIABLIZATION, "Variablizing RL identifier: ");
-//                variablize_rl_test(cond->data.tests.id_test->eq_test);
-                variablize_equality_tests(cond->data.tests.id_test);
-                dprint(DT_RL_VARIABLIZATION, "Variablizing RL attribute: ");
-//                variablize_rl_test(cond->data.tests.attr_test->eq_test);
-                variablize_equality_tests(cond->data.tests.attr_test);
-                dprint(DT_RL_VARIABLIZATION, "Variablizing RL value: ");
-//                variablize_rl_test(cond->data.tests.value_test->eq_test);
-                variablize_equality_tests(cond->data.tests.value_test);
-            }
-        }
-    }
-    dprint(DT_RL_VARIABLIZATION, "Pass 2: Variablizing all other LHS tests via lookup only:\n");
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type == POSITIVE_CONDITION)
-        {
-            dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
-            variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
-            variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
-        }
-        else if (cond->type == NEGATIVE_CONDITION)
-        {
-            dprint_header(DT_RL_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
-            variablize_tests_by_lookup(cond->data.tests.id_test, false);
-            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
-            variablize_tests_by_lookup(cond->data.tests.value_test, false);
-        }
-        else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing RL LHS negative conjunctive condition:\n");
-            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
-            variablize_rl_condition_list(cond->data.ncc.top, false);
-        }
-    }
-
-    dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list for template.\n");
 }
 
 action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result, bool variablize)

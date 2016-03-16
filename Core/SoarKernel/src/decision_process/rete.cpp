@@ -2846,7 +2846,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         return;
     }
-    if (pOnlySTIs && !t->data.referent->is_identifier())
+    if (pOnlySTIs && !t->data.referent->is_sti())
     {
         return;
     }
@@ -8098,7 +8098,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
                 }
             }
             prod->rl_template_conds = NIL;
-            prod->rl_template_instantiations = NIL;
+//            prod->rl_template_instantiations = NIL;
 
             New = make_new_production_node(thisAgent, parent, prod);
             adjust_sharing_factors_from_here_to_top(New, 1);
