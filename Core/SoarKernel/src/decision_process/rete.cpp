@@ -3948,6 +3948,23 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
+        /* MToDo | This is a hack to get around an RL template bug that surfaced
+         *         after we added identity-based STI variablization. For some
+         *         reason, the original template that created the instantiation
+         *         can now qualify as a duplicate of the instance, if that instance
+         *         had no conditions specialized by the match that created it.
+         *         Previously, bottom_node->first_child was null, indicating that
+         *         it was not a duplicate.  Not sure why, but this seems to work
+         *         for now, though it hasn't been well-tested.  (very limited RL
+         *         unit tests as of 3/2016)
+         *
+         *         Note that we check ignore_rhs because that is false when the
+         *         parser calls this function.  By checking its value, Soar should
+         *         still detect duplicate templates that are added.  */
+        if (ignore_rhs && (p_node->b.p.prod->type == TEMPLATE_PRODUCTION_TYPE))
+        {
+            continue;
+        }
         /* --- duplicate production found --- */
         duplicate_rule = p_node->b.p.prod;
         if (warn_on_duplicates)
