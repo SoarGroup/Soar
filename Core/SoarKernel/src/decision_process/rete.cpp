@@ -8115,7 +8115,6 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
                 }
             }
             prod->rl_template_conds = NIL;
-//            prod->rl_template_instantiations = NIL;
 
             New = make_new_production_node(thisAgent, parent, prod);
             adjust_sharing_factors_from_here_to_top(New, 1);

@@ -573,7 +573,6 @@ production* make_production(agent*          thisAgent,
         }
     }
     p->rl_template_conds = NIL;
-//    p->rl_template_instantiations = NIL;
 
     rl_update_template_tracking(thisAgent, name->sc->name);
 
@@ -608,11 +607,6 @@ void deallocate_production(agent* thisAgent, production* prod)
     {
         deallocate_condition_list(thisAgent, prod->rl_template_conds);
     }
-//    if (prod->rl_template_instantiations)
-//    {
-//        delete prod->rl_template_instantiations;
-//    }
-
     thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 

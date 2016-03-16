@@ -513,50 +513,6 @@ void rl_revert_template_id(agent* thisAgent)
     thisAgent->rl_template_count--;
 }
 
-//inline void rl_get_symbol_constant(Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants)
-//{
-//    if (p_sym->is_variable() && (i_sym->is_constant() || i_sym->is_lti()))
-//    {
-//        constants->insert(std::make_pair(p_sym, i_sym));
-//    }
-//}
-//
-//void rl_get_test_constant(test p_test, test i_test, rl_symbol_map* constants)
-//{
-//    if (!p_test) return;
-//
-//    if (p_test->type == EQUALITY_TEST)
-//    {
-//        rl_get_symbol_constant(p_test->data.referent, i_test->data.referent, constants);
-//    } else if (p_test->type == CONJUNCTIVE_TEST) {
-//        rl_get_symbol_constant(p_test->eq_test->data.referent, i_test->eq_test->data.referent, constants);
-//        return;
-//    }
-//}
-//
-//void rl_get_template_constants(condition* p_conds, condition* i_conds, rl_symbol_map* constants)
-//{
-//    condition* p_cond = p_conds;
-//    condition* i_cond = i_conds;
-//
-//    while (p_cond)
-//    {
-//        if ((p_cond->type == POSITIVE_CONDITION) || (p_cond->type == NEGATIVE_CONDITION))
-//        {
-//            rl_get_test_constant(p_cond->data.tests.id_test, i_cond->data.tests.id_test, constants);
-//            rl_get_test_constant(p_cond->data.tests.attr_test, i_cond->data.tests.attr_test, constants);
-//            rl_get_test_constant(p_cond->data.tests.value_test, i_cond->data.tests.value_test, constants);
-//        }
-//        else if (p_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
-//        {
-//            rl_get_template_constants(p_cond->data.ncc.top, i_cond->data.ncc.top, constants);
-//        }
-//
-//        p_cond = p_cond->next;
-//        i_cond = i_cond->next;
-//    }
-//}
-
 // builds a template instantiation
 Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* rhs_actions)
 {
@@ -572,27 +528,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
         dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);
     }
-
-//    // initialize production instantiation set
-//    if (my_template_instance->prod->rl_template_instantiations == NIL)
-//    {
-//        dprint(DT_RL_VARIABLIZATION, "Creating rl_symbol_map_set because rL-template_instantiations nil.\n");
-//        my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
-//    }
-//
-//
-//    // get constants
-//    rl_symbol_map constant_map;
-//    {
-//        dprint(DT_RL_VARIABLIZATION, "Getting template constants.\n");
-//        dprint(DT_RL_VARIABLIZATION, "my_template_instance->prod->rl_template_conds: \n%1", my_template_instance->prod->rl_template_conds);
-//        dprint(DT_RL_VARIABLIZATION, "my_template_instance->top_of_instantiated_conditions: \n%1", my_template_instance->top_of_instantiated_conditions);
-//        rl_get_template_constants(my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &(constant_map));
-//    }
-//    dprint(DT_RL_VARIABLIZATION, "Inserting into instantiation set.  (constant map empty: %s\n", constant_map.empty() ? "True" : "False");
-//    std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert(constant_map);
-//    if (ins_result.second)
-//    {
 
         production* my_template = my_template_instance->prod;
         char first_letter;
@@ -653,20 +588,6 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         thisAgent->ebChunker->clear_variablization_maps();
         deallocate_condition_list(thisAgent, cond_top);
-//    } else {
-//        rl_symbol_map found_map = (*ins_result.first);
-//        dprint(DT_RL_VARIABLIZATION, "Insertion failed!\n");
-//        dprint(DT_RL_VARIABLIZATION, "Existing map of size %d\n", found_map.size());
-//        for (auto it = found_map.begin(); it != found_map.end(); ++it)
-//        {
-//            dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
-//        }
-//        dprint(DT_RL_VARIABLIZATION, "New map of size %d\n", constant_map.size());
-//        for (auto it = found_map.begin(); it != found_map.end(); ++it)
-//        {
-//            dprint(DT_RL_VARIABLIZATION, "%y -> %y", it->first, it->second);
-//        }
-//    }
 
     return new_name_symbol;
 }
