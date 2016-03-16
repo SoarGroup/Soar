@@ -338,7 +338,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
             add_identities_in_test(thisAgent, static_cast<test>(c->first), static_cast<test>(c2->first), pID_Set, pID_Set_Map);
         }
     } else if (test_has_referent(pTest)) {
-        if (pTest->identity && !pInstantiatedTest->data.referent->is_sti())
+        if (pTest->identity)
         {
             if (pID_Set->find(pTest->identity) == pID_Set->end())
             {

@@ -79,7 +79,7 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
 
-    #define dprint_variablization_tables(mode, ...) thisAgent->ebChunker->print_variablization_tables (mode , ##__VA_ARGS__)
+    #define dprint_variablization_table(mode) thisAgent->ebChunker->print_variablization_table (mode)
     #define dprint_tables(mode) thisAgent->ebChunker->print_tables (mode)
     #define dprint_o_id_tables(mode) thisAgent->ebChunker->print_o_id_tables (mode)
     #define dprint_attachment_points(mode) thisAgent->ebChunker->print_attachment_points (mode)
@@ -108,7 +108,7 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
     #define dprint_varnames_node(mode, var_names_node) ((void)0)
     #define dprint_all_inst(mode) ((void)0)
 
-    #define dprint_variablization_tables(mode, ...) ((void)0)
+    #define dprint_variablization_table(mode, ...) ((void)0)
     #define dprint_tables(mode) ((void)0)
     #define dprint_o_id_tables(mode) ((void)0)
     #define dprint_attachment_points(mode) ((void)0)

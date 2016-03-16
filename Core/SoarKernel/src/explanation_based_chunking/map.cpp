@@ -50,17 +50,6 @@ void Explanation_Based_Chunker::clear_attachment_map()
 
 void Explanation_Based_Chunker::clear_variablization_maps()
 {
-
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing symbol->variablization map...\n");
-    /* -- Clear symbol->variablization map -- */
-    for (std::unordered_map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
-    {
-        dprint(DT_VM_MAPS, "Clearing %y -> %y\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, it->first);
-        symbol_remove_ref(thisAgent, it->second);
-    }
-    sym_to_var_map->clear();
-
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
     /* -- Clear grounding_id->variablization map -- */
     for (std::unordered_map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)

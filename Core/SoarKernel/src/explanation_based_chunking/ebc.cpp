@@ -30,7 +30,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     outputManager = &Output_Manager::Get_OM();
 
     /* Create data structures used for EBC */
-    sym_to_var_map = new std::unordered_map< Symbol*, Symbol* >();
     o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
     rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
     o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
@@ -57,7 +56,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 Explanation_Based_Chunker::~Explanation_Based_Chunker()
 {
     clear_data();
-    delete sym_to_var_map;
     delete o_id_to_var_map;
     delete constraints;
     delete attachment_points;

@@ -165,33 +165,18 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 }
 /* -- A utility function to print all data stored in the variablization manager.  Used only for debugging -- */
 
-void Explanation_Based_Chunker::print_variablization_tables(TraceMode mode, int whichTable)
+void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    if ((whichTable == 0) || (whichTable == 1) || (whichTable == 3))
+    outputManager->printa_sf(thisAgent, "== Identity Set -> Variablization ==\n");
+    if (o_id_to_var_map->size() == 0)
     {
-        outputManager->printa_sf(thisAgent, "== Symbol -> Variablization ==\n");
-        if (sym_to_var_map->size() == 0)
-        {
-            outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-        }
-        for (std::unordered_map< Symbol*, Symbol* >::iterator it = (*sym_to_var_map).begin(); it != (*sym_to_var_map).end(); ++it)
-        {
-            outputManager->printa_sf(thisAgent, "%y -> %y\n", it->first, it->second);
-        }
+        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
-    if ((whichTable == 0) || (whichTable == 2) || (whichTable == 3))
+    for (std::unordered_map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
-        outputManager->printa_sf(thisAgent, "== O_ID -> Variablization ==\n");
-        if (o_id_to_var_map->size() == 0)
-        {
-            outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-        }
-        for (std::unordered_map< uint64_t, Symbol* >::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
-        {
-            outputManager->printa_sf(thisAgent, "o%u -> %y\n", it->first, it->second);
-        }
+        outputManager->printa_sf(thisAgent, "o%u -> %y\n", it->first, it->second);
     }
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
@@ -199,6 +184,6 @@ void Explanation_Based_Chunker::print_variablization_tables(TraceMode mode, int 
 void Explanation_Based_Chunker::print_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    print_variablization_tables(mode);
+    print_variablization_table(mode);
     print_o_id_tables(mode);
 }

@@ -400,8 +400,7 @@ void debug_test(int type)
         }
         case 6:
         {
-            dprint_variablization_tables(DT_DEBUG);
-            dprint_variablization_tables(DT_DEBUG, 1);
+            dprint_variablization_table(DT_DEBUG);
             dprint_o_id_tables(DT_DEBUG);
             dprint_attachment_points(DT_DEBUG);
             dprint_constraints(DT_DEBUG);

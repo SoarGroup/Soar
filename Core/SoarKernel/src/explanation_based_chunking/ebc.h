@@ -129,7 +129,7 @@ class Explanation_Based_Chunker
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Debug printing methods */
-        void print_variablization_tables(TraceMode mode, int whichTable = 0);
+        void print_variablization_table(TraceMode mode);
         void print_tables(TraceMode mode);
         void print_o_id_tables(TraceMode mode);
         void print_attachment_points(TraceMode mode);
@@ -204,7 +204,6 @@ class Explanation_Based_Chunker
 
         /* -- Look-up tables for LHS variablization -- */
         std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
-        std::unordered_map< Symbol*, Symbol* >*    sym_to_var_map;
 
         std::list< constraint* >* constraints;
         std::unordered_map< uint64_t, attachment_point* >* attachment_points;
@@ -305,8 +304,7 @@ class Explanation_Based_Chunker
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
-        Symbol* get_variablization_for_identity(uint64_t index_id);
-        Symbol* get_variablization_for_sti(Symbol* index_sym);
+        Symbol* get_variablization(uint64_t index_id);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
