@@ -94,12 +94,6 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                 get_ovar_for_o_id(pNew_o_id), pNew_o_id, get_ovar_for_o_id(iter->second), iter->second,
                 get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
             newID = iter->second;
-            iter = (*unification_map).find(pOld_o_id);
-            if ((iter != (*unification_map).end()) && (iter->second == newID))
-            {
-                dprint(DT_UNIFICATION, "The unification %y[o%u] -> %y[o%u] already exists.  Skipping.\n", get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(newID), newID);
-                return;
-            }
         }
     }
 
@@ -122,7 +116,12 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                 dprint(DT_UNIFICATION, "Literalizing something already literalized o%u.  Skipping %y[o%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             }
         } else {
-            if (newID == 0)
+            if (newID == existing_mapping)
+            {
+                dprint(DT_UNIFICATION, "The unification %y[o%u] -> %y[o%u] already exists.  Skipping.\n", get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(newID), newID);
+                return;
+            }
+            else if (newID == 0)
             {
                 /* The existing identity we're literalizing is already unified with another identity from
                  * a different trace.  So, literalize the identity, that it is already remapped to.*/
