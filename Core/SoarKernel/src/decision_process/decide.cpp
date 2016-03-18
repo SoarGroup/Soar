@@ -2107,135 +2107,6 @@ void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
 }
 
 /* ------------------------------------------------------------------
-            Fake Preferences for Goal ^Item Augmentations
-
-   When we backtrace through a (goal ^item) augmentation, we want
-   to backtrace to the acceptable preference wme in the supercontext
-   corresponding to that ^item.  A slick way to do this automagically
-   is to set the backtracing preference pointer on the (goal ^item)
-   wme to be a "fake" preference for a "fake" instantiation.  The
-   instantiation has as its LHS a list of one condition, which matched
-   the acceptable preference wme in the supercontext.
-
-   Make_fake_preference_for_goal_item() builds such a fake preference
-   and instantiation, given a pointer to the supergoal and the
-   acceptable/require preference for the value, and returns a pointer
-   to the fake preference.  *** for Soar 8.3, we changed the fake
-   preference to be ACCEPTABLE instead of REQUIRE.  This could
-   potentially break some code, but it avoids the BUGBUG condition
-   that can occur when you have a REQUIRE lower in the stack than an
-   ACCEPTABLE but the goal stack gets popped while the WME backtrace
-   still points to the REQUIRE, instead of the higher ACCEPTABLE.
-   See the section above on Preference Semantics.  It also allows
-   the GDS to backtrace through ^items properly.
-
-   Remove_fake_preference_for_goal_item() is called to clean up the
-   fake stuff once the (goal ^item) wme is no longer needed.
------------------------------------------------------------------- */
-
-preference* make_fake_preference_for_goal_item(agent* thisAgent,
-        Symbol* goal,
-        preference* cand)
-{
-    slot* s;
-    wme* ap_wme;
-    instantiation* inst;
-    preference* pref;
-    condition* cond;
-
-    /* --- find the acceptable preference wme we want to backtrace to --- */
-    s = cand->slot;
-    for (ap_wme = s->acceptable_preference_wmes; ap_wme != NIL; ap_wme = ap_wme->next)
-        if (ap_wme->value == cand->value)
-        {
-            break;
-        }
-    if (!ap_wme)
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg,
-                "decide.c: Internal error: couldn't find acceptable pref wme\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-
-    /* --- make the fake instantiation --- */
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
-    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
-
-    /* --- make the fake condition --- */
-    cond = make_condition(thisAgent);
-    cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
-    cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
-    cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
-
-    /* --- make the fake preference --- */
-    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
-                           cand->value, NIL,
-                           identity_triple(
-                               thisAgent->ebChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
-                               0,
-                               cond->data.tests.value_test->identity));
-    symbol_add_ref(thisAgent, pref->id);
-    symbol_add_ref(thisAgent, pref->attr);
-    symbol_add_ref(thisAgent, pref->value);
-    insert_at_head_of_dll(goal->id->preferences_from_goal, pref,
-                          all_of_goal_next, all_of_goal_prev);
-    pref->on_goal_list = true;
-    preference_add_ref(pref);
-
-    pref->inst = inst;
-    pref->inst_next = pref->inst_prev = NIL;
-
-    /* -- Fill in the fake instantiation info -- */
-    inst->preferences_generated = pref;
-    inst->prod = NIL;
-    inst->next = inst->prev = NIL;
-    inst->rete_token = NIL;
-    inst->rete_wme = NIL;
-    inst->match_goal = goal;
-    inst->match_goal_level = goal->id->level;
-    inst->reliable = true;
-    inst->backtrace_number = 0;
-    inst->in_ms = false;
-    inst->explain_status = explain_unrecorded;
-    inst->explain_depth = 0;
-    inst->explain_tc_num = 0;
-    inst->prod_name = thisAgent->fake_instantiation_symbol;
-    symbol_add_ref(thisAgent, inst->prod_name);
-
-    /* -- Fill in fake condition info -- */
-    cond->type = POSITIVE_CONDITION;
-    inst->top_of_instantiated_conditions = cond;
-    inst->bottom_of_instantiated_conditions = cond;
-
-    cond->test_for_acceptable_preference = true;
-    cond->bt.wme_ = ap_wme;
-    cond->inst = inst;
-#ifdef DO_TOP_LEVEL_REF_CTS
-    wme_add_ref(ap_wme);
-#else
-    if (inst->match_goal_level > TOP_GOAL_LEVEL)
-    {
-        wme_add_ref(ap_wme);
-    }
-#endif
-    cond->bt.level = ap_wme->id->id->level;
-
-    thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
-
-    /* --- return the fake preference --- */
-    return pref;
-}
-
-void remove_fake_preference_for_goal_item(agent* thisAgent, preference* pref)
-{
-    preference_remove_ref(thisAgent, pref);  /* everything else happens automatically */
-}
-
-/* ------------------------------------------------------------------
                        Update Impasse Items
 
    This routine updates the set of ^item wmes on a goal or attribute
@@ -2320,7 +2191,8 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
 
                     if (id->id->isa_goal)
                     {
-                        remove_fake_preference_for_goal_item(thisAgent, w->preference);
+                        /* Remove fake preference for goal item */
+                        preference_remove_ref(thisAgent, w->preference);
                     }
 
                     remove_wme_from_wm(thisAgent, w);
@@ -2346,7 +2218,7 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
 
             if (id->id->isa_goal)
             {
-                bt_pref = make_fake_preference_for_goal_item(thisAgent, id, cand);
+                bt_pref = make_architectural_instantiation_for_impasse_item(thisAgent, id, cand);
             }
             else
             {
@@ -2357,7 +2229,8 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
             {
                 if (id->id->isa_goal)
                 {
-                    remove_fake_preference_for_goal_item(thisAgent, cand->value->decider_wme->preference);
+                    /* Remove fake preference for goal item */
+                    preference_remove_ref(thisAgent, cand->value->decider_wme->preference);
                 }
 
                 cand->value->decider_wme->preference = bt_pref;

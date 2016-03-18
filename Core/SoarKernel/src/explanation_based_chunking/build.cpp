@@ -1158,6 +1158,7 @@ void Explanation_Based_Chunker::clean_up ()
     clear_cached_constraints();
     clear_o_id_substitution_map();
     clear_attachment_map();
+    clear_singletons();
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     local_timer.stop();

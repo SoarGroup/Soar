@@ -92,6 +92,7 @@ chunk_record::~chunk_record()
     if (backtraced_inst_records) delete backtraced_inst_records;
     if (backtraced_instantiations) delete backtraced_instantiations;
     if (identity_analysis) delete identity_analysis;
+    dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)

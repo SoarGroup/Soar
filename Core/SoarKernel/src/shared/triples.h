@@ -26,8 +26,9 @@ typedef struct identity_triple_struct
         uint64_t id;
         uint64_t attr;
         uint64_t value;
+        uint64_t referent;
 
-        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0): id(new_id), attr(new_attr), value(new_value) {}
+        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_triple;
 
 typedef struct rhs_triple_struct

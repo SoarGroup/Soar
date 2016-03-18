@@ -2836,7 +2836,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 }
 
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id)
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pOnlySTIs)
 {
 //    test New;
     cons* c;
@@ -2846,11 +2846,15 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         return;
     }
+    if (pOnlySTIs && !t->data.referent->is_sti())
+    {
+        return;
+    }
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
         t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
-        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from one_var.\n", t->identity, temp->var->name);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     }
     else
     {
@@ -2861,7 +2865,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         {
             temp = static_cast<Symbol*>(c->first);
             t->identity = thisAgent->ebChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %s from varlist!\n", t->identity, temp->var->name);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
     }
 }
@@ -3944,6 +3948,23 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
+        /* MToDo | This is a hack to get around an RL template bug that surfaced
+         *         after we added identity-based STI variablization. For some
+         *         reason, the original template that created the instantiation
+         *         can now qualify as a duplicate of the instance, if that instance
+         *         had no conditions specialized by the match that created it.
+         *         Previously, bottom_node->first_child was null, indicating that
+         *         it was not a duplicate.  Not sure why, but this seems to work
+         *         for now, though it hasn't been well-tested.  (very limited RL
+         *         unit tests as of 3/2016)
+         *
+         *         Note that we check ignore_rhs because that is false when the
+         *         parser calls this function.  By checking its value, Soar should
+         *         still detect duplicate templates that are added.  */
+        if (ignore_rhs && (p_node->b.p.prod->type == TEMPLATE_PRODUCTION_TYPE))
+        {
+            continue;
+        }
         /* --- duplicate production found --- */
         duplicate_rule = p_node->b.p.prod;
         if (warn_on_duplicates)
@@ -4415,7 +4436,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebChunker->add_explanation_to_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
             }
 #endif
             dprint(DT_NCC_VARIABLIZATION, "%l", cond);
@@ -4477,7 +4498,7 @@ void rete_node_to_conditions(agent* thisAgent,
 #ifdef EBC_ADD_CONSTRAINTS_IDENTITIES
             if (additional_tests != DONT_EXPLAIN)
             {
-                thisAgent->ebChunker->add_explanation_to_condition(node, cond, w, nvn, pI_id, additional_tests);
+                thisAgent->ebChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
                 dprint(DT_NCC_VARIABLIZATION, "-> RETE 3a Need to add originals.  After add_additional_tests_and_originals: %l\n", cond);
             }
             else
@@ -8094,7 +8115,6 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
                 }
             }
             prod->rl_template_conds = NIL;
-            prod->rl_template_instantiations = NIL;
 
             New = make_new_production_node(thisAgent, parent, prod);
             adjust_sharing_factors_from_here_to_top(New, 1);

@@ -76,8 +76,6 @@ using namespace soar_TraceNames;
    the grounds.
 ==================================================================== */
 
-#ifndef EBC_MAP_MERGE_DUPE_GROUNDS
-// Add everything
 void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
     if ((cond)->bt.wme_->grounds_tc != grounds_tc)
@@ -91,34 +89,6 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
     }
     push(thisAgent, (cond), grounds);
 }
-#else
-void Explanation_Based_Chunker::add_to_grounds(condition* cond)
-{
-    if ((cond)->bt.wme_->grounds_tc != grounds_tc)
-    {
-        (cond)->bt.wme_->grounds_tc = grounds_tc;
-        push(thisAgent, (cond), grounds);
-        /* Store a pointer to the cond in the wme, so that we can cache
-         * constraints and add identity mappings for any future conditions
-         * that match that wme */
-        cond->bt.wme_->chunker_bt_last_ground_cond = cond;
-    } else {
-        /* Should skip if we don't need to learn */
-        dprint(DT_BACKTRACE, "Marked condition found when adding to grounds.  Not adding.\n", cond);
-        condition* last_cond = cond->bt.wme_->chunker_bt_last_ground_cond;
-#ifdef EBC_SUPERMERGE
-        cache_constraints_in_cond(cond);
-        unify_backtraced_dupe_conditions(last_cond, cond);
-#else
-        if (!unify_backtraced_dupe_conditions(last_cond, cond))
-        {
-            push(thisAgent, (cond), grounds);
-            cond->bt.wme_->chunker_bt_last_ground_cond = cond;
-        }
-#endif
-    }
-}
-#endif
 
 void Explanation_Based_Chunker::add_to_potentials(condition* cond)
 {
@@ -137,6 +107,7 @@ void Explanation_Based_Chunker::add_to_locals(condition* cond)
         (cond)->bt.wme_->locals_tc = locals_tc;
         (cond)->bt.wme_->chunker_bt_pref = (cond)->bt.trace;
     }
+    add_local_singleton_unification_if_needed(cond);
     push(thisAgent, (cond), locals);
 }
 
@@ -663,29 +634,14 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
                 }
                 else     /* pot was already in the grounds */
                 {
-#ifndef EBC_MAP_MERGE_DUPE_GROUNDS
                     dprint(DT_UNIFY_SINGLETONS, "Moving potential to grounds. (note wme already marked in grounds): %l\n", pot);
-                    pot->bt.wme_->grounds_tc = grounds_tc;
                     c->rest = grounds;
                     grounds = c;
-//                    pot->bt.wme_->chunker_bt_last_ground_cond = pot;
                     add_cond_to_tc(thisAgent, pot, tc, NIL, NIL);
-//                    free_cons(thisAgent, c);
-
                     add_singleton_unification_if_needed(pot);
-                    #endif
-#ifdef EBC_SUPERMERGE
-                    cache_constraints_in_cond(pot);
-#endif
-#ifdef EBC_MAP_MERGE_DUPE_GROUNDS
-                    condition* last_cond = pot->bt.wme_->chunker_bt_last_ground_cond;
-                    dprint(DT_BACKTRACE, "Not moving potential to grounds b/c wme already marked: %l\n", pot);
-                    dprint(DT_BACKTRACE, " Other cond val: %l\n", pot->bt.wme_->chunker_bt_last_ground_cond);
-                    if (unify_backtraced_dupe_conditions(last_cond, pot))
-                    {
-                        free_cons(thisAgent, c);
-                    }
-#endif
+                    /* This used to delete the pot.  We keep it now amd add to tc, but I don't think we need another pass because
+                     * symbols in bt_wme already had the right tc, and this potential should have the same symbols in its
+                     * equality tests. */
                 }
             }
             else
@@ -702,32 +658,72 @@ void Explanation_Based_Chunker::trace_grounded_potentials()
     }
 }
 
-void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
+/* Requires: pCond is a local condition */
+void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condition* pCond)
 {
-    /* Need to check if not a proposal */
-    if ((pCond->bt.wme_->attr == thisAgent->operator_symbol) && (pCond->bt.wme_->id->id->isa_goal))
+    if (pCond->bt.wme_->id->id->isa_goal)
     {
-        condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-        assert(last_cond);
-        dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
-        dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
-        if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+        if (pCond->bt.wme_->attr == thisAgent->superstate_symbol)
         {
-            dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
-            add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
-        }
-        if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
-        {
-            dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
-            add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
-        }
-        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
-        {
-            dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-            add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            if (!local_singleton_superstate_identity)
+            {
+                dprint(DT_UNIFY_SINGLETONS, "Storing identities for local singleton wme: %l\n", pCond);
+                local_singleton_superstate_identity = new identity_triple(pCond->data.tests.id_test->eq_test->identity,
+                    pCond->data.tests.attr_test->eq_test->identity, pCond->data.tests.value_test->eq_test->identity);
+            } else {
+                dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
+                if (pCond->data.tests.id_test->eq_test->identity || local_singleton_superstate_identity->id)
+                {
+                    dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+                    add_identity_unification(pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+                }
+                if (pCond->data.tests.attr_test->eq_test->identity || local_singleton_superstate_identity->attr)
+                {
+                    dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+                    add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+                }
+                if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity->value)
+                {
+                    dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
+                    add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
+                }
+            }
         }
     }
+}
 
+/* Requires: pCond is being added to grounds and is the second condition being added to grounds
+ *           that matched a given wme, which guarantees chunker_bt_last_ground_cond points to the
+ *           first condition that matched. */
+void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
+{
+    /* MToDo:  Do we need to check if not a proposal?  This seems to already not unify proposals. */
+    if (pCond->bt.wme_->id->id->isa_goal)
+    {
+        if ((pCond->bt.wme_->attr == thisAgent->operator_symbol) ||
+            (pCond->bt.wme_->attr == thisAgent->superstate_symbol))
+        {
+            condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
+            assert(last_cond);
+            dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
+            dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
+            if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+            {
+                dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            }
+            if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
+            {
+                dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            }
+            if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
+            {
+                dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            }
+        }
+    }
 }
 /* ---------------------------------------------------------------
                      Trace Ungrounded Potentials

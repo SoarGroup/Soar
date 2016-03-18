@@ -1,7 +1,7 @@
-sp {answer*chunk*justification-1*snc*t5-1
-    (state <s1> ^topstate <s1>)
-    (<s1> ^superstate nil)
+sp {answer*justify*condition-match*elaborate*matching-argument-object*snc*t5-0*snc*t5-1
+    (state <s1> ^superstate nil)
     (<s1> ^condition <c4>)
+    (<s1> ^topstate <s2>)
     (<c4> ^result <n1>)
     (<c4> ^name <c1>)
     (<n1> ^type <c1>)
@@ -9,7 +9,8 @@ sp {answer*chunk*justification-1*snc*t5-1
     (<n1> ^id <c2>)
     (<c4> ^result { <> <n1> <n2> })
     -->
-    (<s1> ^result <o1> +)
+    (<s2> ^result <o1> +)
     (<o1> ^object <n1> +)
     (<o1> ^object <n2> +)
 }
+

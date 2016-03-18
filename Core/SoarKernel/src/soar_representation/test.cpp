@@ -490,23 +490,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             }
             if (considerIdentity)
             {
-                if (t1->data.referent->is_sti())
-                {
-                    if (!t2->data.referent->is_sti())
-                    {
-                        /* -- An identifier and something else -- */
-                        return false;
-                    }
-                    else
-                    {
-                        /* -- Two identifiers -- */
-                        return true;
-                    }
-                }
-                else
-                {
-                    return (t1->identity == t2->identity);
-                }
+                return (t1->identity == t2->identity);
             }
             return true;
         }

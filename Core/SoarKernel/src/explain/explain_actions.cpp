@@ -36,6 +36,7 @@ action_record::~action_record()
     {
         delete identities_used;
     }
+    dprint(DT_EXPLAIN_CONDS, "   Done deleting action record a%u\n", actionID);
 }
 
 void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pIDSet)
