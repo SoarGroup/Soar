@@ -140,57 +140,62 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u).\n",
-        rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
-    /* -- identifiers and unbound vars (which are instantiated as identifiers) are indexed by their symbol
-     *    instead of their original variable. --  */
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u).\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
 
     if (rs->o_id)
     {
         dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %u (%y)...\n", rs->o_id, get_ovar_for_o_id(rs->o_id));
         found_variablization = get_variablization(rs->o_id);
-        if (!found_variablization)
-        {
-            if (rs->referent->is_sti())
-            {
-                /* -- First instance of an unbound rhs var -- */
-                dprint(DT_RHS_VARIABLIZATION, "...is unbound variable.\n");
-                prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
-                prefix[1] = 0;
-                var = generate_new_variable(thisAgent, prefix);
-                dprint(DT_RHS_VARIABLIZATION, "...created new variable and identity for unbound rhs %y = %y [%u].\n", rs->referent, var, rs->o_id);
-                store_variablization(rs->referent, var, rs->o_id);
-                found_variablization = var;
-            }
-            else
-            {
-                dprint(DT_RHS_VARIABLIZATION, "...has an identity not found on LHS.  Not variablizing!\n");
-                dprint_variablization_table(DT_RHS_VARIABLIZATION);
-                return;
-            }
-        }
     }
     else
     {
-        dprint(DT_RHS_VARIABLIZATION, "...is a literal constant.  Not variablizing!\n");
-        return;
+        if (rs->referent->is_sti())
+        {
+            dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or local.\n");
+            /* This a symbol created in the local state that is being used in a result
+             * for a superstate, so we generate an identity for it as if it were a RHS
+             * unbound var.  (Real rhs unbound vars get an identity when instantiated.) */
+            auto it = identities_for_rhs_substate_symbols->find(rs->referent);
+            if (it != identities_for_rhs_substate_symbols->end())
+            {
+                rs->o_id = it->second;
+                found_variablization = get_variablization(rs->o_id);
+                dprint(DT_RHS_VARIABLIZATION, "...found previously generated local copy identity %u.\n", rs->o_id);
+            } else {
+                prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
+                prefix[1] = 0;
+                var = generate_new_variable(thisAgent, prefix);
+                rs->o_id = get_or_create_o_id(var, m_chunk_new_i_id);;
+                dprint(DT_RHS_VARIABLIZATION, "...created new variable and identity for substate symbol %y = %y [%u].\n", rs->referent, var, rs->o_id);
+                store_variablization(rs->referent, var, rs->o_id);
+                found_variablization = var;
+                identities_for_rhs_substate_symbols->insert({rs->referent, rs->o_id});
+            }
+        }
     }
-
-
+    if (!found_variablization && rs->referent->is_sti())
+    {
+        /* -- First instance of an unbound rhs var -- */
+        dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
+        prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
+        prefix[1] = 0;
+        var = generate_new_variable(thisAgent, prefix);
+        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
+        store_variablization(rs->referent, var, rs->o_id);
+        found_variablization = var;
+    }
     if (found_variablization)
     {
-        /* --- Grounded symbol that has been variablized before--- */
-        dprint(DT_RHS_VARIABLIZATION, "... found existing variablization %y.\n", found_variablization);
+        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
         symbol_remove_ref(thisAgent, rs->referent);
         rs->referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
-        return;
-    } else {
-        /* -- Either the variablization manager has never seen this symbol or symbol is ungrounded symbol or literal constant.
-         *    Both cases return 0. -- */
+    }
+    else
+    {
         assert(!rs->referent->is_sti());
-        /* -- RHS constant with an original variable that does not map onto a LHS condition.  Do not variablize. -- */
-        dprint(DT_RHS_VARIABLIZATION, "...matched a constant with an ungrounded variable that that did not appear on the LHS.  Not variablizing.\n");
+        dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
+        dprint_variablization_table(DT_RHS_VARIABLIZATION);
     }
 }
 
@@ -427,16 +432,19 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     }
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
+
     variablize_rhs_symbol(rhs->id);
     variablize_rhs_symbol(rhs->attr);
     variablize_rhs_symbol(rhs->value);
     variablize_rhs_symbol(rhs->referent);
+    identities_for_rhs_substate_symbols->clear();
+
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
     return rhs;
 }
 
-action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result, bool variablize)
+action* Explanation_Based_Chunker::variablize_result_into_actions(preference* result, bool variablize)
 {
     action* a;
 
@@ -521,4 +529,10 @@ action* Explanation_Based_Chunker::variablize_results_into_actions(preference* r
 
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
+}
+action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result, bool variablize)
+{
+    action* returnAction = variablize_result_into_actions(result, variablize);
+    identities_for_rhs_substate_symbols->clear();
+    return returnAction;
 }

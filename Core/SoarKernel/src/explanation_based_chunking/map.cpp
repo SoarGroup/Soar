@@ -25,6 +25,7 @@ void Explanation_Based_Chunker::clear_data()
     clear_o_id_to_ovar_debug_map();
     clear_attachment_map();
     clear_singletons();
+    identities_for_rhs_substate_symbols->clear();
 }
 
 void Explanation_Based_Chunker::clear_singletons()
@@ -65,7 +66,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
 void Explanation_Based_Chunker::clear_o_id_to_ovar_debug_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
-    o_id_to_ovar_debug_map->clear();
+    id_to_rule_sym_debug_map->clear();
 }
 
 void Explanation_Based_Chunker::clear_o_id_substitution_map()
@@ -78,7 +79,7 @@ void Explanation_Based_Chunker::clear_o_id_substitution_map()
 void Explanation_Based_Chunker::clear_rulesym_to_identity_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
-    rulesym_to_identity_map->clear();
+    id_to_id_set_map->clear();
 }
 
 uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
@@ -89,8 +90,8 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
     //        dprint(DT_VM_MAPS, "...Looking  for instantiation id %u\n", inst_id);
     assert(orig_var && pI_id);
 
-    iter_sym = rulesym_to_identity_map->find(pI_id);
-    if (iter_sym != rulesym_to_identity_map->end())
+    iter_sym = id_to_id_set_map->find(pI_id);
+    if (iter_sym != id_to_id_set_map->end())
     {
         //    dprint(DT_VM_MAPS, "...Found.  Looking for symbol %y\n", orig_var);
         iter_inst = iter_sym->second.find(orig_var);
@@ -108,10 +109,7 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
 
 void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 {
-//    assert(m_learning_on || rulesym_to_identity_map->size() == 0);
-//    assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
-//    if (!m_learning_on) return;
-    if ((rulesym_to_identity_map->size() == 0) || (o_id_to_ovar_debug_map->size() == 0)) return;
+    if ((id_to_id_set_map->size() == 0) || (id_to_rule_sym_debug_map->size() == 0)) return;
 
     dprint(DT_EBC_CLEANUP, "Cleaning up after creating instantiation %u\n", pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
@@ -121,17 +119,17 @@ void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 
     std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
     std::unordered_map< Symbol*, uint64_t >::iterator iter_inst;
-    iter_sym = rulesym_to_identity_map->find(pI_id);
-    if (iter_sym != rulesym_to_identity_map->end())
+    iter_sym = id_to_id_set_map->find(pI_id);
+    if (iter_sym != id_to_id_set_map->end())
     {
         for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
         {
-            o_id_to_ovar_debug_map->erase(iter_inst->second);
+            id_to_rule_sym_debug_map->erase(iter_inst->second);
         }
     }
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 #endif
-    rulesym_to_identity_map->erase(pI_id);
+    id_to_id_set_map->erase(pI_id);
 //    dprint_ovar_to_o_id_map(DT_EBC_CLEANUP);
     dprint(DT_EBC_CLEANUP, "Done cleaning up after creating instantiation %u\n-------\n", pI_id);
 }
@@ -139,23 +137,21 @@ void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)
 {
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-//    assert(m_learning_on || rulesym_to_identity_map->size() == 0);
-//    assert(m_learning_on || o_id_to_ovar_debug_map->size() == 0);
-    if ((rulesym_to_identity_map->size() == 0) || (o_id_to_ovar_debug_map->size() == 0)) return;
+    if ((id_to_id_set_map->size() == 0) || (id_to_rule_sym_debug_map->size() == 0)) return;
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
     std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >::iterator iter_sym;
     std::unordered_map< Symbol*, uint64_t >::iterator iter_inst;
-    iter_sym = rulesym_to_identity_map->find(pI_id);
-    if (iter_sym != rulesym_to_identity_map->end())
+    iter_sym = id_to_id_set_map->find(pI_id);
+    if (iter_sym != id_to_id_set_map->end())
     {
         for (iter_inst = iter_sym->second.begin(); iter_inst != iter_sym->second.end(); ++iter_inst)
         {
-            o_id_to_ovar_debug_map->erase(iter_inst->second);
+            id_to_rule_sym_debug_map->erase(iter_inst->second);
         }
     }
-    rulesym_to_identity_map->erase(pI_id);
+    id_to_id_set_map->erase(pI_id);
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
     dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
 #endif
@@ -170,9 +166,9 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
     if (!existing_o_id)
     {
         increment_counter(ovar_id_counter);
-        (*rulesym_to_identity_map)[pI_id][orig_var] = ovar_id_counter;
+        (*id_to_id_set_map)[pI_id][orig_var] = ovar_id_counter;
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-        (*o_id_to_ovar_debug_map)[ovar_id_counter] = orig_var;
+        (*id_to_rule_sym_debug_map)[ovar_id_counter] = orig_var;
 #endif
         dprint(DT_IDENTITY_PROP, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
@@ -190,8 +186,8 @@ Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
     if (!m_learning_on) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
-    std::unordered_map< uint64_t, Symbol* >::iterator iter = o_id_to_ovar_debug_map->find(o_id);
-    if (iter != o_id_to_ovar_debug_map->end())
+    std::unordered_map< uint64_t, Symbol* >::iterator iter = id_to_rule_sym_debug_map->find(o_id);
+    if (iter != id_to_rule_sym_debug_map->end())
     {
 //        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);
         return iter->second;

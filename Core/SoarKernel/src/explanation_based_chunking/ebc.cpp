@@ -31,8 +31,9 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Create data structures used for EBC */
     o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
-    rulesym_to_identity_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
-    o_id_to_ovar_debug_map = new std::unordered_map< uint64_t, Symbol* >();
+    id_to_id_set_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
+    id_to_rule_sym_debug_map = new std::unordered_map< uint64_t, Symbol* >();
+    identities_for_rhs_substate_symbols = new std::unordered_map< Symbol *, uint64_t >();
     constraints = new std::list< constraint* >;
     attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
     unification_map = new std::unordered_map< uint64_t, uint64_t >();
@@ -60,9 +61,10 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete constraints;
     delete attachment_points;
     delete cond_merge_map;
-    delete rulesym_to_identity_map;
+    delete id_to_id_set_map;
     delete unification_map;
-    delete o_id_to_ovar_debug_map;
+    delete id_to_rule_sym_debug_map;
+    delete identities_for_rhs_substate_symbols;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);

@@ -196,10 +196,10 @@ class Explanation_Based_Chunker
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
 
-        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    rulesym_to_identity_map;
-        std::unordered_map< uint64_t, Symbol* >*                                    o_id_to_ovar_debug_map;
+        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    id_to_id_set_map;
+        std::unordered_map< uint64_t, Symbol* >*                                    id_to_rule_sym_debug_map;
         std::unordered_map< uint64_t, uint64_t >*                                   unification_map;
-
+        std::unordered_map< Symbol*, uint64_t >*                                    identities_for_rhs_substate_symbols;
         identity_triple*                                                            local_singleton_superstate_identity;
 
         /* -- Look-up tables for LHS variablization -- */
@@ -297,6 +297,7 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
+        action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val);

@@ -27,7 +27,7 @@ void condition_record::connect_to_action()
 
 void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
 {
-//    dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
+    //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
     if (!matched_wme)
     {
         set_matched_wme_for_cond(pCond);
@@ -104,7 +104,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
 
     /* Cache the pref to make it easier to connect this condition to the action that created
      * the preference later. Tricky because NCs and NCCs have neither and architectural
-     * may have niether */
+     * may have neither */
     cached_pref = pCond->bt.trace;
     cached_wme = pCond->bt.wme_;
     if (pCond->bt.trace)
@@ -113,7 +113,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     } else {
         parent_instantiation = NULL;
     }
-    dprint(DT_EXPLAIN_CONDS, "   Created condition %u DONE.\n", conditionID);
+    dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
 }
 
 condition_record::~condition_record()
@@ -135,6 +135,7 @@ condition_record::~condition_record()
     {
         delete path_to_base;
     }
+    dprint(DT_EXPLAIN_CONDS, "   Done deleting condition record c%u\n", conditionID);
 }
 
 bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)

@@ -143,6 +143,7 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
         thisAgent->outputManager->set_print_test_format(true, false);
         if (print_explanation_trace)
         {
+            /* We use pRhs to deallocate actions at end, and rhs to iterate through actions */
             if (pRhs)
             {
                 rhs = pRhs;
@@ -159,6 +160,7 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
                     }
                 } else {
                     p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
+                    pRhs = rhs;
                 }
             }
         }
@@ -195,7 +197,7 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
         if (print_explanation_trace)
         {
             /* If top exists, we generated conditions here and must deallocate. */
-            if (pRhs || top) deallocate_action_list(thisAgent, rhs);
+            if (pRhs) deallocate_action_list(thisAgent, pRhs);
             if (top) deallocate_condition_list(thisAgent, top);
         }
         thisAgent->outputManager->clear_print_test_format();

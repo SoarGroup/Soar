@@ -53,6 +53,7 @@ instantiation_record::~instantiation_record()
     symbol_remove_ref(thisAgent, production_name);
     delete conditions;
     delete actions;
+    dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);
     if (path_to_base)
     {
         delete path_to_base;
