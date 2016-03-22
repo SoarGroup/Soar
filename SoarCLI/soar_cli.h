@@ -46,10 +46,12 @@ class InputThread : public soar_thread::Thread
         virtual void Run()
         {
             soar_thread::Lock* lock;
+            bool lReadCmdResult = false;
             while (!this->m_QuitNow && std::cin.good())
             {
-                std::getline(std::cin, line);
-                if (std::cin.bad())
+                lReadCmdResult = readcmd(line);
+//                std::getline(std::cin, line);
+                if (!lReadCmdResult || std::cin.bad())
                 {
                     break;
                 }
@@ -64,7 +66,79 @@ class InputThread : public soar_thread::Thread
                 delete lock;
             }
         }
+        bool totalnesting(std::string line, int& result)
+        {
+            int nesting = 0;
+            size_t p = line.find_first_of("{}|");
 
+            while (p != std::string::npos)
+            {
+                switch (line[p])
+                {
+                    case '{':
+                        ++nesting;
+                        break;
+                    case '}':
+                        --nesting;
+                        break;
+                    case '|':
+                        // skip over quoted string
+                        while (true)
+                        {
+                            p = line.find_first_of('|', p + 1);
+                            if (p == std::string::npos)
+                            {
+                                // error, no closing quote pipe on line
+                                return false;
+                            }
+                            if (line[p - 1] != '\\')
+                            {
+                                break;
+                            }
+                        }
+                        break;
+                }
+                p = line.find_first_of("{}|", p + 1);
+            }
+            result = nesting;
+            return true;
+        }
+        bool readcmd(std::string& result)
+        {
+            int nestlvl, i, n;
+            std::string line;
+            std::stringstream cmd;
+
+            nestlvl = 0;
+            while (std::getline(std::cin, line))
+            {
+                if (!totalnesting(line, n))
+                {
+                    return false;
+                }
+                nestlvl += n;
+                cmd << line << std::endl;
+                if (nestlvl < 0)
+                {
+                    return false;
+                }
+                else if (nestlvl == 0)
+                {
+                    break;
+                }
+            }
+
+            if (nestlvl > 0)
+            {
+                return false;
+            }
+            result = cmd.str();
+            if (!result.empty() && result[result.size() - 1] == '\n')
+            {
+                result.erase(result.size() - 1);
+            }
+            return true;
+        }
         /**
          * Get a line of input, block until it is received.
          * @param[out] Buffer to copy the line of input to.
