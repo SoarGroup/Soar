@@ -5,7 +5,7 @@
 
 /*************************************************************************
  *
- *  file:  soar_module.h
+ *  file:  mempool_allocator.h
  *
  * =======================================================================
  */
@@ -89,10 +89,18 @@ namespace soar_module
 #endif
                              , const void* = 0)
             {
-                assert(n == 1);
-                assert(mem_pool && memory_manager);
+//                assert(n == 1);
+                assert(memory_manager);
                 pointer t;
-                memory_manager->allocate_with_pool_ptr(mem_pool, &t);
+                if (n == 1)
+                {
+                    assert(mem_pool);
+                    memory_manager->allocate_with_pool_ptr(mem_pool, &t);
+                } else {
+                    memory_pool* lMem_pool = memory_manager->get_memory_pool(n*sizeof(value_type));
+                    assert(lMem_pool);
+                    memory_manager->allocate_with_pool_ptr(lMem_pool, &t);
+                }
                 assert(t);
                 return t;
             }
@@ -103,11 +111,18 @@ namespace soar_module
 #endif
                            )
             {
-                assert(n == 1);
+//                assert(n == 1);
                 assert(memory_manager && mem_pool);
                 if (p)
                 {
-                    memory_manager->free_with_pool_ptr(mem_pool, p);
+                    if (n == 1)
+                    {
+                        memory_manager->free_with_pool_ptr(mem_pool, p);
+                    } else {
+                        memory_pool* lMem_pool = memory_manager->get_memory_pool(n*sizeof(value_type));
+                        assert(lMem_pool);
+                        memory_manager->free_with_pool_ptr(lMem_pool, p);
+                     }
                 }
             }
 
