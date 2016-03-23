@@ -34,9 +34,9 @@ void Explanation_Based_Chunker::merge_values_in_conds(condition* pDestCond, cond
 
 condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
 {
-    std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >::iterator iter_id;
-    std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> >::iterator iter_attr;
-    std::unordered_map< Symbol*, condition*>::iterator iter_value;
+    triple_merge_map::iterator          iter_id;
+    sym_to_sym_to_cond_map::iterator    iter_attr;
+    sym_to_cond_map::iterator           iter_value;
 
     dprint(DT_MERGE, "...looking for id equality test %y\n", pCond->data.tests.id_test->eq_test->data.referent);
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);

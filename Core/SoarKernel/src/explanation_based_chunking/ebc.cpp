@@ -30,14 +30,14 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     outputManager = &Output_Manager::Get_OM();
 
     /* Create data structures used for EBC */
-    o_id_to_var_map = new std::unordered_map< uint64_t, Symbol* >();
-    id_to_id_set_map = new std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >();
-    id_to_rule_sym_debug_map = new std::unordered_map< uint64_t, Symbol* >();
-    identities_for_rhs_substate_symbols = new std::unordered_map< Symbol *, uint64_t >();
-    constraints = new std::list< constraint* >;
-    attachment_points = new std::unordered_map< uint64_t, attachment_point* >();
-    unification_map = new std::unordered_map< uint64_t, uint64_t >();
-    cond_merge_map = new std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >();
+    o_id_to_var_map = new id_to_sym_map_type();
+    instantiation_identities = new inst_to_id_map_type();
+    id_to_rule_sym_debug_map = new id_to_sym_map_type();
+    identities_for_rhs_substate_symbols = new sym_to_id_map_type();
+    constraints = new constraint_list();
+    attachment_points = new attachment_points_map_type();
+    unification_map = new id_to_id_map_type();
+    cond_merge_map = new triple_merge_map();
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
@@ -61,7 +61,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete constraints;
     delete attachment_points;
     delete cond_merge_map;
-    delete id_to_id_set_map;
+    delete instantiation_identities;
     delete unification_map;
     delete id_to_rule_sym_debug_map;
     delete identities_for_rhs_substate_symbols;

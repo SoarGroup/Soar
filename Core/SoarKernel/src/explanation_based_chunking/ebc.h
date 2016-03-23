@@ -196,21 +196,20 @@ class Explanation_Based_Chunker
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */
 
-        std::unordered_map< uint64_t, std::unordered_map< Symbol*, uint64_t > >*    id_to_id_set_map;
-        std::unordered_map< uint64_t, Symbol* >*                                    id_to_rule_sym_debug_map;
-        std::unordered_map< uint64_t, uint64_t >*                                   unification_map;
-        std::unordered_map< Symbol*, uint64_t >*                                    identities_for_rhs_substate_symbols;
-        identity_triple*                                                            local_singleton_superstate_identity;
+        inst_to_id_map_type*            instantiation_identities;
+        id_to_sym_map_type*             o_id_to_var_map;
+        id_to_sym_map_type*             id_to_rule_sym_debug_map;
 
-        /* -- Look-up tables for LHS variablization -- */
-        std::unordered_map< uint64_t, Symbol* >*   o_id_to_var_map;
+        id_to_id_map_type*              unification_map;
+        sym_to_id_map_type*             identities_for_rhs_substate_symbols;
+        identity_triple*                local_singleton_superstate_identity;
 
-        std::list< constraint* >* constraints;
-        std::unordered_map< uint64_t, attachment_point* >* attachment_points;
+        constraint_list*                constraints;
+        attachment_points_map_type*     attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
-        std::unordered_map< Symbol*, std::unordered_map< Symbol*, std::unordered_map< Symbol*, condition*> > >* cond_merge_map;
+        triple_merge_map*               cond_merge_map;
 
         /* -- A counter for variablization and instantiation id's. 0 is the default
          *    value and not considered a valid id. -- */
