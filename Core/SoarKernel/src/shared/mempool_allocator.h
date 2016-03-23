@@ -83,13 +83,8 @@ namespace soar_module
                     mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
             }
 
-            pointer allocate(size_type
-#ifndef NDEBUG
-                             n
-#endif
-                             , const void* = 0)
+            pointer allocate(size_type n, const void* = 0)
             {
-//                assert(n == 1);
                 assert(memory_manager);
                 pointer t;
                 if (n == 1)
@@ -105,13 +100,8 @@ namespace soar_module
                 return t;
             }
 
-            void deallocate(void* p, size_type
-#ifndef NDEBUG
-                            n
-#endif
-                           )
+            void deallocate(void* p, size_type n)
             {
-//                assert(n == 1);
                 assert(memory_manager && mem_pool);
                 if (p)
                 {
