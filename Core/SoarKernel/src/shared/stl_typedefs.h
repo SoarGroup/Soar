@@ -49,7 +49,7 @@ typedef struct identity_set_struct identity_set_info;
     typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
 
     typedef std::unordered_set< uint64_t, std::hash< uint64_t >,  std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< uint64_t > >                                        id_set;
+                       soar_module::soar_memory_pool_allocator_n< uint64_t > >                                        id_set;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
     typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                    wme_set;
@@ -76,27 +76,27 @@ typedef struct identity_set_struct identity_set_info;
                       soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > >                   wma_sym_reference_map;
 
     typedef std::unordered_map< uint64_t, uint64_t, std::hash< uint64_t >, std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< std::pair< uint64_t const, uint64_t> > >             id_to_id_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair< uint64_t const, uint64_t> > >             id_to_id_map_type;
     typedef std::unordered_map< const Symbol*, uint64_t, std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-                       soar_module::soar_memory_pool_allocator< std::pair<const Symbol* const, uint64_t> > >        sym_to_id_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, uint64_t> > >        sym_to_id_map_type;
     typedef std::unordered_map< uint64_t, Symbol*, std::hash< uint64_t >,  std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< std::pair<uint64_t const, Symbol* > > >             id_to_sym_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, Symbol* > > >             id_to_sym_map_type;
     typedef std::unordered_map< uint64_t, identity_set_info*, std::hash< uint64_t >, std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< std::pair<uint64_t const, identity_set_info* > > >  id_to_idset_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, identity_set_info* > > >  id_to_idset_map_type;
     typedef std::unordered_map< uint64_t, attachment_point*, std::hash< uint64_t >, std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< std::pair<uint64_t const, attachment_point* > > >   attachment_points_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, attachment_point* > > >   attachment_points_map_type;
     typedef std::unordered_map< uint64_t, sym_to_id_map_type, std::hash< uint64_t >, std::equal_to< uint64_t >,
-                       soar_module::soar_memory_pool_allocator< std::pair<const uint64_t, sym_to_id_map_type > > >  inst_to_id_map_type;
+                       soar_module::soar_memory_pool_allocator_n< std::pair<const uint64_t, sym_to_id_map_type > > >  inst_to_id_map_type;
 
     typedef std::unordered_map< const Symbol*, condition*,
             std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-            soar_module::soar_memory_pool_allocator< std::pair<const Symbol* const, condition* > > >                sym_to_cond_map;
+            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, condition* > > >                sym_to_cond_map;
     typedef std::unordered_map< const Symbol*, sym_to_cond_map,
             std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-            soar_module::soar_memory_pool_allocator< std::pair<const Symbol* const, sym_to_cond_map > > >           sym_to_sym_to_cond_map;
+            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, sym_to_cond_map > > >           sym_to_sym_to_cond_map;
     typedef std::unordered_map< const Symbol*, sym_to_sym_to_cond_map,
             std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-            soar_module::soar_memory_pool_allocator< std::pair<const Symbol* const, sym_to_sym_to_cond_map > > >    triple_merge_map;
+            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, sym_to_sym_to_cond_map > > >    triple_merge_map;
 
 #else
     typedef std::list< condition* >                             condition_list;

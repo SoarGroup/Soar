@@ -24,6 +24,7 @@
 #include <functional>
 #include <assert.h>
 #include <cmath>
+#include <iostream>
 
 // separates this functionality
 // just for Soar modules
@@ -85,7 +86,114 @@ namespace soar_module
 
             pointer allocate(size_type n, const void* = 0)
             {
-                assert(memory_manager);
+//                assert(memory_manager);
+            	assert (n==1);
+                pointer t;
+                assert(mem_pool);
+                memory_manager->allocate_with_pool_ptr(mem_pool, &t);
+                assert(t);
+                return t;
+            }
+
+            void deallocate(void* p, size_type n)
+            {
+//                assert(memory_manager && mem_pool);
+                if (p)
+                {
+                	assert (n==1);
+                	memory_manager->free_with_pool_ptr(mem_pool, p);
+                }
+            }
+
+            void construct(pointer p, const_reference val)
+            {
+                new(p) T(val);
+            }
+
+            void destroy(pointer p)
+            {
+                p->~T();
+            }
+
+            size_type max_size() const
+            {
+                return static_cast< size_type >(-1);
+            }
+
+            const_pointer address(const_reference r) const
+            {
+                return &r;
+            }
+
+            pointer address(reference r) const
+            {
+                return &r;
+            }
+
+            template <class U>
+            struct rebind
+            {
+                typedef soar_memory_pool_allocator<U> other;
+            };
+
+
+        private:
+//            agent* thisAgent;
+            Memory_Manager* memory_manager;
+            memory_pool* mem_pool;
+
+    };
+
+    template <class T>
+    class soar_memory_pool_allocator_n
+    {
+        public:
+            typedef T           value_type;
+            typedef size_t      size_type;
+            typedef ptrdiff_t   difference_type;
+
+            typedef T*          pointer;
+            typedef const T*    const_pointer;
+
+            typedef T&          reference;
+            typedef const T&    const_reference;
+
+        public:
+            soar_memory_pool_allocator_n() : mem_pool(NULL), memory_manager(NULL)
+            {
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
+            }
+
+            soar_memory_pool_allocator_n(agent* new_agent): mem_pool(NULL), memory_manager(NULL)
+            {
+                // useful for debugging
+                // std::string temp_this( typeid( value_type ).name() );
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
+            }
+
+            soar_memory_pool_allocator_n(const soar_memory_pool_allocator_n& obj): mem_pool(NULL), memory_manager(NULL)
+            {
+                // useful for debugging
+                // std::string temp_this( typeid( value_type ).name() );
+                memory_manager = &(Memory_Manager::Get_MPM());
+                mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
+            }
+
+            template <class _other>
+            soar_memory_pool_allocator_n(const soar_memory_pool_allocator_n<_other>& other): mem_pool(NULL), memory_manager(NULL)
+            {
+                // useful for debugging
+                // std::string temp_this( typeid( T ).name() );
+                // std::string temp_other( typeid( _other ).name() );
+                    memory_manager = &(Memory_Manager::Get_MPM());
+                    mem_pool = memory_manager->get_memory_pool(sizeof(value_type));
+            }
+
+            pointer allocate(size_type n, const void* = 0)
+            {
+//                assert(memory_manager);
                 pointer t;
                 if (n == 1)
                 {
@@ -93,16 +201,17 @@ namespace soar_module
                     memory_manager->allocate_with_pool_ptr(mem_pool, &t);
                 } else {
                     memory_pool* lMem_pool = memory_manager->get_memory_pool(n*sizeof(value_type));
-                    assert(lMem_pool);
+//                    assert(lMem_pool);
                     memory_manager->allocate_with_pool_ptr(lMem_pool, &t);
                 }
+//                std::cout << "Dynamic memory pool allocation of size " << n << " * " << sizeof(value_type) << " requested!" << std::endl;
                 assert(t);
                 return t;
             }
 
             void deallocate(void* p, size_type n)
             {
-                assert(memory_manager && mem_pool);
+//                assert(memory_manager && mem_pool);
                 if (p)
                 {
                     if (n == 1)
@@ -144,12 +253,12 @@ namespace soar_module
             template <class U>
             struct rebind
             {
-                typedef soar_memory_pool_allocator<U> other;
+                typedef soar_memory_pool_allocator_n<U> other;
             };
 
 
         private:
-            agent* thisAgent;
+//            agent* thisAgent;
             Memory_Manager* memory_manager;
             memory_pool* mem_pool;
 
