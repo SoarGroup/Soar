@@ -263,7 +263,10 @@ namespace soar_module
             memory_pool* mem_pool;
 
     };
-
+    template<class T> bool operator==(const soar_memory_pool_allocator_n<T>&, const soar_memory_pool_allocator_n<T>&) { return true; }
+    template<class T> bool operator!=(const soar_memory_pool_allocator_n<T>&, const soar_memory_pool_allocator_n<T>&) { return false; }
+    template<class T> bool operator==(const soar_memory_pool_allocator<T>&, const soar_memory_pool_allocator<T>&) { return true; }
+    template<class T> bool operator!=(const soar_memory_pool_allocator<T>&, const soar_memory_pool_allocator<T>&) { return false; }
 #endif
 }
 #endif

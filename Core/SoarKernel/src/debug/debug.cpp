@@ -12,16 +12,17 @@
 
 ------------------------------------------------------------------ */
 
-#include "ebc.h"
-#include "condition.h"
 #include "debug.h"
+
 #include "agent.h"
-#include "test.h"
+#include "condition.h"
+#include "ebc.h"
 #include "episodic_memory.h"
-#include "soar_module.h"
 #include "lexer.h"
-#include "soar_instance.h"
 #include "print.h"
+#include "soar_module.h"
+#include "soar_instance.h"
+#include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
 

@@ -32,13 +32,9 @@
 
 #include "kernel.h"
 
-#include <stdio.h>  // Needed for FILE token below
-#include <string.h>     // Needed for strlen, etc. below
-#include <string>
 #include <unordered_map>
 
 #ifndef _WIN32
-#include <strings.h>
 #include <stdlib.h> // malloc
 #endif // !_WIN32
 
