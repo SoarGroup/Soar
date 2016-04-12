@@ -156,7 +156,8 @@ public class FoldingTextView extends AbstractComboView implements
 
     public Color getBackgroundColor()
     {
-        return m_Frame.m_White;
+        return getMainFrame().getDisplay()
+            .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
 
     protected void updateButtonState()
