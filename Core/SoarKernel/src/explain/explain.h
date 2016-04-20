@@ -352,23 +352,23 @@ class Explanation_Logger
         void                    print_condition_explanation(uint64_t pCondID);
         void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
+
         void                    visualize_chunk_explanation();
         void                    visualize_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
         void                    visualize_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
         void 					viz_action(action* pAction, uint64_t pNodeID);
-        void 					viz_action_record(action_record* pActionRecord, action* pAction);
         void 					viz_preference(preference* pPref, uint64_t pNodeID);
-        void viz_graph_start();
-        void viz_graph_end();
-        void viz_rule_start(Symbol* pName, uint64_t node_id);
-        void viz_rule_end();
-        void viz_NCC_start();
-        void viz_NCC_end();
-        void viz_seperator();
-        void viz_text_record(const char* pMsg);
-        void viz_condition_record(condition_record* pCond);
-        void viz_condition(condition_record* pCondRecord, condition* pCond);
+        void 					viz_graph_start();
+        void 					viz_graph_end();
+        void 					viz_rule_start(Symbol* pName, uint64_t node_id);
+        void 					viz_rule_end();
+        void 					viz_NCC_start();
+        void 					viz_NCC_end();
+        void 					viz_seperator();
+        void 					viz_text_record(const char* pMsg);
+        void 					viz_condition_record(condition_record* pCond);
+        void 					viz_condition(condition_record* pCondRecord, condition* pCond);
         bool                    is_condition_related(condition_record* pCondRecord);
 
         void                    delete_condition(uint64_t pCondID);
@@ -383,6 +383,9 @@ class Explanation_Logger
 
         /* Statistics on learning performed so far */
         chunking_stats      stats;
+
+        /* A string buffer for the visualization command */
+        std::string			graphviz_output;
 
         /* These maps store all of the records the logger keeps */
         std::unordered_map< Symbol*, chunk_record* >*           chunks;

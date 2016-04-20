@@ -21,7 +21,7 @@ void Explanation_Logger::visualize_last_output()
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
     }
-
+    outputManager->printa(thisAgent, graphviz_output.c_str());
 }
 
 
@@ -47,46 +47,47 @@ void Explanation_Logger::visualize_chunk_explanation()
 
 void Explanation_Logger::viz_graph_start()
 {
-	outputManager->printa(thisAgent, "digraph g {\n"
+	graphviz_output.clear();
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "digraph g {\n"
 			"   graph [ rankdir = \"LR\" splines = \"spline\"];\n"
 			"   node [fontsize = \"16\" shape = \"record\"];\n"
 			"   edge [];\n");
 }
 void Explanation_Logger::viz_graph_end()
 {
-	outputManager->printa(thisAgent, "}");
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "}");
 }
 
 void Explanation_Logger::viz_rule_start(Symbol* pName, uint64_t node_id)
 {
-	outputManager->printa_sf(thisAgent, "   rule%u [\n      label = \"<rule-name> %y |\n", node_id, pName);
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "   rule%u [\n      label = \"<rule-name> %y |\n", node_id, pName);
 }
 
 void Explanation_Logger::viz_rule_end()
 {
-	outputManager->printa(thisAgent, "\"\n];\n");
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "\"\n];\n");
 
 }
 
 void Explanation_Logger::viz_NCC_start()
 {
-	outputManager->printa(thisAgent, "              -{ |\n");
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "              -{ |\n");
 
 }
 
 void Explanation_Logger::viz_NCC_end()
 {
-	outputManager->printa(thisAgent, "              } |\n");
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "              } |\n");
 }
 
 void Explanation_Logger::viz_seperator()
 {
-	outputManager->printa(thisAgent, "              ----\\> |\n");
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "              ----\\> |\n");
 }
 
 void Explanation_Logger::viz_text_record(const char* pMsg)
 {
-	outputManager->printa_sf(thisAgent, "%s |", pMsg);
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "%s |", pMsg);
 }
 
 void Explanation_Logger::viz_condition_record(condition_record* pCond)
@@ -94,8 +95,7 @@ void Explanation_Logger::viz_condition_record(condition_record* pCond)
     bool removed_goal_test, removed_impasse_test;
 
     test id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, pCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-//    { <f1a> S3 | <f1b> superstate | <f1> S1 } |
-	outputManager->printa_sf(thisAgent, "              { <c%ua> %t |%s<c%ub> %t | <c%uc> %t } ",
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "              { <c%ua> %t |%s<c%ub> %t | <c%uc> %t } ",
 			pCond->conditionID, id_test_without_goal_test, ((pCond->type == NEGATIVE_CONDITION) ? " -" : " "),
 			pCond->conditionID, pCond->condition_tests.attr, pCond->conditionID, pCond->condition_tests.value);
     deallocate_test(thisAgent, id_test_without_goal_test);
@@ -107,8 +107,7 @@ void Explanation_Logger::viz_condition(condition_record* pCondRecord, condition*
 
     test id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, pCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
     test id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, pCondRecord->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-//    { <f1a> S3 | <f1b> superstate | <f1> S1 } |
-	outputManager->printa_sf(thisAgent, "              { <c%ua> %o %g |%s<c%ub> %o %g| <c%uc> %o %g}",
+	outputManager->sprinta_sf(thisAgent, graphviz_output, "              { <c%ua> %o %g |%s<c%ub> %o %g| <c%uc> %o %g}",
 			pCondRecord->conditionID, id_test_without_goal_test, id_test_without_goal_test2,
 			((pCondRecord->type == NEGATIVE_CONDITION) ? " -" : " "),
 			pCondRecord->conditionID, pCond->data.tests.attr_test, pCondRecord->condition_tests.attr,
@@ -122,48 +121,48 @@ void Explanation_Logger::viz_preference(preference* pPref, uint64_t pNodeID)
 {
 	if (!print_explanation_trace)
 	{
-		outputManager->printa_sf(thisAgent, "              { <a%ua> %y | <a%ub> %y ", pNodeID, pPref->id, pNodeID, pPref->attr);
+		outputManager->sprinta_sf(thisAgent, graphviz_output, "              { <a%ua> %y | <a%ub> %y ", pNodeID, pPref->id, pNodeID, pPref->attr);
 		if (preference_is_binary(pPref->type))
         {
-        	outputManager->printa_sf(thisAgent, "| <a%uc1> %y | <a%uc> %c %y } ", pNodeID, pPref->value, pNodeID, preference_to_char(pPref->type), pPref->referent);
+        	outputManager->sprinta_sf(thisAgent, graphviz_output, "| <a%uc1> %y | <a%uc> %c %y } ", pNodeID, pPref->value, pNodeID, preference_to_char(pPref->type), pPref->referent);
         } else {
-        	outputManager->printa_sf(thisAgent, "| <a%uc> %y %c } ", pNodeID, pPref->value, preference_to_char(pPref->type));
+        	outputManager->sprinta_sf(thisAgent, graphviz_output, "| <a%uc> %y %c } ", pNodeID, pPref->value, preference_to_char(pPref->type));
         }
 	} else {
-		outputManager->printa_sf(thisAgent, "              { <a%ua> ", pNodeID);
+		outputManager->sprinta_sf(thisAgent, graphviz_output, "              { <a%ua> ", pNodeID);
 		if (pPref->o_ids.id)
 		{
-			outputManager->printa_sf(thisAgent, "%u", pPref->o_ids.id);
+			outputManager->sprinta_sf(thisAgent, graphviz_output, "%u", pPref->o_ids.id);
 		} else {
-			outputManager->printa_sf(thisAgent, "%y", pPref->id);
+			outputManager->sprinta_sf(thisAgent, graphviz_output, "%y", pPref->id);
 		}
-		outputManager->printa_sf(thisAgent, " | <a%ub> ", pNodeID);
+		outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%ub> ", pNodeID);
 		if (pPref->o_ids.attr)
 		{
-			outputManager->printa_sf(thisAgent, "%u", pPref->o_ids.attr);
+			outputManager->sprinta_sf(thisAgent, graphviz_output, "%u", pPref->o_ids.attr);
 		} else {
-			outputManager->printa_sf(thisAgent, "%y", pPref->attr);
+			outputManager->sprinta_sf(thisAgent, graphviz_output, "%y", pPref->attr);
 		}
 		if (preference_is_binary(pPref->type))
         {
 			if (pPref->o_ids.value)
 			{
-				outputManager->printa_sf(thisAgent, " | <a%uc1> %u", pNodeID, pPref->o_ids.value);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc1> %u", pNodeID, pPref->o_ids.value);
 			} else {
-				outputManager->printa_sf(thisAgent, " | <a%uc1> %y", pNodeID, pPref->value);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc1> %y", pNodeID, pPref->value);
 			}
 			if (pPref->o_ids.referent)
 			{
-				outputManager->printa_sf(thisAgent, " | <a%uc> %u } ", pNodeID, preference_to_char(pPref->type), pPref->referent);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc> %u } ", pNodeID, preference_to_char(pPref->type), pPref->referent);
 			} else {
-				outputManager->printa_sf(thisAgent, " | <a%uc> %c %y } ", pNodeID, preference_to_char(pPref->type), pPref->referent);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc> %c %y } ", pNodeID, preference_to_char(pPref->type), pPref->referent);
 			}
         } else {
 			if (pPref->o_ids.value)
 			{
-				outputManager->printa_sf(thisAgent, " | <a%uc> %u } ", pNodeID, pPref->o_ids.value);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc> %u } ", pNodeID, pPref->o_ids.value);
 			} else {
-				outputManager->printa_sf(thisAgent, " | <a%uc> %y } ", pNodeID, pPref->value);
+				outputManager->sprinta_sf(thisAgent, graphviz_output, " | <a%uc> %y } ", pNodeID, pPref->value);
 			}
         }
 	}
@@ -199,37 +198,10 @@ void Explanation_Logger::viz_action(action* pAction, uint64_t pNodeID)
         	vizActionString << "<a" << pNodeID << "c> " << destString << preference_to_char(pAction->preference_type) << " }";
         }
     }
-    outputManager->printa(thisAgent, vizActionString.str().c_str());
+    outputManager->sprinta_sf(thisAgent, graphviz_output, vizActionString.str().c_str());
     destString.clear();
     vizActionString.clear();
 }
-
-void Explanation_Logger::viz_action_record(action_record* pActionRecord, action* pAction)
-{
-//    { <f1a> S3 | <f1b> superstate | <f1> S1 } |
-
-//    if (!print_explanation_trace)
-//    {
-//        outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
-//    	outputManager->printa_sf(thisAgent, "              { <c%ua> %t |%s<c%ub> %t | <c%uc> %t } ",
-//    			pActionRecord->actionID, pCond->condition_tests.id,
-//    			pActionRecord->actionID, pCond->condition_tests.attr,
-//    			pActionRecord->actionID, pCond->condition_tests.value);
-//    } else {
-//        thisAgent->outputManager->set_print_test_format(true, false);
-//        outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//        thisAgent->outputManager->set_print_test_format(false, true);
-//        rhs_value rt = rhs->value;
-//
-//        if (lAction->variablized_action)
-//        {
-//            outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
-//        } else {
-//            outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-//        }
-//    }
-}
-
 
 void Explanation_Logger::visualize_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs)
 {
@@ -269,37 +241,18 @@ void Explanation_Logger::visualize_action_list(action_record_list* pActionRecord
             if (!print_explanation_trace)
             {
             	viz_preference(lAction->instantiated_pref, lAction->actionID);
-//                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else {
             	viz_action(rhs, lAction->actionID);
-//            	outputManager->printa_sf(thisAgent, " (from action rhs)\n");
-                outputManager->printa(thisAgent, "\n");
-//                thisAgent->outputManager->set_print_test_format(true, false);
-//                outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//                thisAgent->outputManager->set_print_test_format(false, true);
-//                rhs_value rt = rhs->value;
+                outputManager->sprinta_sf(thisAgent, graphviz_output, "\n");
 
                 if (lAction->variablized_action)
                 {
                 	viz_action(lAction->variablized_action, lAction->actionID);
-//                	outputManager->printa_sf(thisAgent, " (from variablized action)\n");
-                    outputManager->printa(thisAgent, "\n");
-//                    outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
+                    outputManager->sprinta_sf(thisAgent, graphviz_output, "\n");
                 } else {
                 	viz_preference(lAction->instantiated_pref, lAction->actionID);
-//                	outputManager->printa_sf(thisAgent, " (from preference)\n");
-                    outputManager->printa(thisAgent, "\n");
-//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+                    outputManager->sprinta_sf(thisAgent, graphviz_output, "\n");
                 }
-//                if (print_explanation_trace)
-//                {
-//                    thisAgent->outputManager->set_print_test_format(false, true);
-//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-//                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//                } else {
-//                    outputManager->printa(thisAgent, "\n");
-//                }
-//                outputManager->printa(thisAgent, "\n");
                 rhs = rhs->next;
             }
         }
@@ -369,7 +322,7 @@ void Explanation_Logger::visualize_instantiation_explanation(instantiation_recor
             ++lConditionCount;
             if (lConditionCount > 1)
             {
-                outputManager->printa(thisAgent, "| \n");
+                outputManager->sprinta_sf(thisAgent, graphviz_output, "| \n");
             }
             if (lInNegativeConditions)
             {
@@ -414,7 +367,7 @@ void Explanation_Logger::visualize_instantiation_explanation(instantiation_recor
         {
         	viz_NCC_end();
         } else {
-            outputManager->printa(thisAgent, "\n");
+            outputManager->sprinta_sf(thisAgent, graphviz_output, "\n");
         }
         viz_seperator();
         visualize_action_list(pInstRecord->actions, pInstRecord->original_production, rhs);
