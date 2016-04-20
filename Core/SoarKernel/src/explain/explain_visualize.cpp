@@ -12,18 +12,23 @@
 #include "test.h"
 #include "working_memory.h"
 #include "output_manager.h"
+#include <regex>
 
 void Explanation_Logger::visualize_last_output()
 {
+	graphviz_output.clear();
     if (!last_printed_id)
     {
         visualize_chunk_explanation();
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
     }
+    // Should be combined into one command
+    graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "\\<");
+    graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "\\>");
     outputManager->printa(thisAgent, graphviz_output.c_str());
+	graphviz_output.clear();
 }
-
 
 bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pInstID)
 {
@@ -47,7 +52,6 @@ void Explanation_Logger::visualize_chunk_explanation()
 
 void Explanation_Logger::viz_graph_start()
 {
-	graphviz_output.clear();
 	outputManager->sprinta_sf(thisAgent, graphviz_output, "digraph g {\n"
 			"   graph [ rankdir = \"LR\" splines = \"spline\"];\n"
 			"   node [fontsize = \"16\" shape = \"record\"];\n"
