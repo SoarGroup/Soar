@@ -173,6 +173,7 @@ namespace cli
                 EXPLAIN_RECORD,
                 EXPLAIN_STATS,
                 EXPLAIN_WME_TRACE,
+				EXPLAIN_VISUALIZE,
                 EXPLAIN_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;

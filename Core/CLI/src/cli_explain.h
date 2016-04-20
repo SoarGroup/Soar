@@ -52,6 +52,7 @@ namespace cli
                     {'r', "record",                 OPTARG_OPTIONAL},
                     {'s', "stats",                  OPTARG_NONE},
                     {'t', "time",                   OPTARG_REQUIRED},
+                    {'v', "visualize",              OPTARG_NONE},
                     {'w', "wme-trace",              OPTARG_OPTIONAL},
                     {0, 0,                          OPTARG_NONE}
                 };
@@ -107,6 +108,10 @@ namespace cli
                             options.set(Cli::EXPLAIN_STATS);
                             break;
 
+                        case 'v':
+                            options.set(Cli::EXPLAIN_VISUALIZE);
+                            break;
+
                         case 'w':
                             options.set(Cli::EXPLAIN_WME_TRACE);
                             break;
@@ -127,6 +132,7 @@ namespace cli
                 }
                 if (options.test(Cli::EXPLAIN_ALL) ||
                     options.test(Cli::EXPLAIN_ONLY_SPECIFIC) ||
+                    options.test(Cli::EXPLAIN_VISUALIZE) ||
                     options.test(Cli::EXPLAIN_LIST_ALL))
                 {
                     if ((options.count() != 1) || (num_args > 0))

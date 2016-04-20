@@ -14,6 +14,7 @@
 #include "src/explain/explain_instantiations.cpp"
 #include "src/explain/explain_print.cpp"
 #include "src/explain/explain_productions.cpp"
+#include "src/explain/explain_visualize.cpp"
 #include "src/explain/explain.cpp"
 #include "src/explanation_based_chunking/backtrace.cpp"
 #include "src/explanation_based_chunking/build.cpp"

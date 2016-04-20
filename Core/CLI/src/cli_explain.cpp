@@ -51,7 +51,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     }
     /* Handle options that required a currently discussed chunk/justification */
     if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
-        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE)))
+        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE) || options.test(EXPLAIN_VISUALIZE)))
     {
         print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
@@ -82,7 +82,22 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         {
             thisAgent->explanationLogger->switch_to_explanation_trace(false);
         }
+        if (options.test(EXPLAIN_VISUALIZE))
+        {
+            thisAgent->explanationLogger->visualize_last_output();
+//			PrintCLIMessage_Header("Launching visualization of wmg...", 40);
+//			std::string filename("/Users/mazzin/Soar/SoarSandbox/soar_last_output.dot");
+//			const char *vinit[] = {"consolidate", "c"};
+//			std::vector< std::string > argv(vinit, end(vinit));
+//			result = CommandLineInterface::DoCommandToFile( LOG_NEW, filename, argv);
+//			if ( !result )
+//			{
+//	        	return SetError( "MemCon| print_table returned an error.");
+//			}
+//			system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_last_output.dot -o /Users/mazzin/Soar/SoarSandbox/soar_last_output.svg");
+//			system("open /Users/mazzin/Soar/SoarSandbox/soar_last_output.svg");
         }
+    }
 
     /* Handle global stats command*/
     if (options.test(EXPLAIN_GLOBAL_STATS))

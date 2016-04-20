@@ -125,6 +125,7 @@ class Output_Manager
 {
         friend class OM_DB;
         friend class cli::CommandLineInterface;
+        friend class Explanation_Logger;
 
     public:
         static Output_Manager& Get_OM()
