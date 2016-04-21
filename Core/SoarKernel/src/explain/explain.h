@@ -356,9 +356,9 @@ class Explanation_Logger
         void                    visualize_chunk_explanation();
         void                    visualize_instantiation_explanation(instantiation_record* pInstRecord);
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
-        void                    visualize_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
-        void 					viz_action(action* pAction, uint64_t pNodeID);
-        void 					viz_preference(preference* pPref, uint64_t pNodeID);
+        void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
+        void 					viz_et_action(action* pAction, action* pVariablizedAction, preference* pPref, uint64_t pNodeID);
+        void 					viz_wt_preference(preference* pPref, uint64_t pNodeID);
         void 					viz_graph_start();
         void 					viz_graph_end();
         void 					viz_rule_start(Symbol* pName, uint64_t node_id);
@@ -366,9 +366,16 @@ class Explanation_Logger
         void 					viz_NCC_start();
         void 					viz_NCC_end();
         void 					viz_seperator();
+        void 					viz_record_seperator(bool pLeftJustify = true);
+        void 					viz_record_start();
+        void 					viz_record_end(bool pLeftJustify = true);
         void 					viz_text_record(const char* pMsg);
-        void 					viz_condition_record(condition_record* pCond);
-        void 					viz_condition(condition_record* pCondRecord, condition* pCond);
+        void					viz_et_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort);
+        void 					viz_wt_condition(condition_record* pCond);
+        void 					viz_et_condition(condition_record* pCondRecord, condition* pCond);
+        void 					viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID);
+        void					viz_add_port(char pTypeChar, uint64_t pNodeID, bool pIsLeftPort);
+
         bool                    is_condition_related(condition_record* pCondRecord);
 
         void                    delete_condition(uint64_t pCondID);

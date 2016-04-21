@@ -237,7 +237,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
 //            sprinta_sf(thisAgent, destString, " [%y/o%u]",
 //                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
 //                rsym->o_id);
-            sprinta_sf(thisAgent, destString, "[%u]", rsym->o_id);
+            sprinta_sf(thisAgent, destString, " (%u)", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -252,9 +252,8 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             {
                 destString += sym->to_string(false);
             } else {
-                destString += '#';
+                destString += "[STI-RETE]";
             }
-            destString += "[STI-RETE]";
         }
         else
         {
