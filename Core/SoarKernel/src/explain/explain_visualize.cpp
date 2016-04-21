@@ -231,7 +231,7 @@ void Explanation_Logger::viz_et_condition(condition_record* pCondRecord, conditi
 		graphviz_output += "| ";
 	}
 	viz_et_test(pCond->data.tests.value_test, pCondRecord->condition_tests.value, pCondRecord->conditionID, false, true);
-	if (pCond->data.tests.attr_test->type != CONJUNCTIVE_TEST)
+	if (pCond->data.tests.value_test->type != CONJUNCTIVE_TEST)
 	{
 		viz_record_end();
 	} else {
