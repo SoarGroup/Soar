@@ -321,7 +321,8 @@ public class TextTraceView extends AbstractComboView
 
     public Color getBackgroundColor()
     {
-        return getMainFrame().m_White;
+        return getMainFrame().getDisplay()
+          .getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
 
     public boolean canBePrimeWindow()

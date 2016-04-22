@@ -26,8 +26,8 @@ public abstract class AbstractSingleTextView extends AbstractTextView
 {
     public Color getBackgroundColor()
     {
-        if (!m_UpdateOnStop)
-            return getMainFrame().m_White;
+//        if (!m_UpdateOnStop)
+//            return getMainFrame().m_White;
 
         // Default to standard background color
         return getMainFrame().getDisplay().getSystemColor(
