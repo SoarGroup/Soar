@@ -381,20 +381,12 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         {
             lCond = (*it);
             ++lConditionCount;
-            if (lInNegativeConditions)
+            if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
             {
-                if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
-                {
-                    outputManager->printa(thisAgent, "     }\n");
-                    lInNegativeConditions = false;
-                }
-            } else {
-                if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
-                {
-                    outputManager->printa(thisAgent, "     -{\n");
-                    lInNegativeConditions = true;
-                }
+            	outputManager->printa(thisAgent, "     -{\n");
+            	lInNegativeConditions = true;
             }
+
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
             /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */
@@ -415,16 +407,6 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
 					lCond->condition_tests.attr, lCond->condition_tests.value);
             deallocate_test(thisAgent, id_test_without_goal_test);
             deallocate_test(thisAgent, id_test_without_goal_test2);
-            if (currentNegativeCond)
-            {
-            	currentNegativeCond = currentNegativeCond->next;
-            } else {
-            	current_cond = current_cond->next;
-            }
-            if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
-            {
-            	currentNegativeCond = current_cond->data.ncc.top;
-            }
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
             outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
@@ -438,6 +420,22 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             	outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
             } else {
             	outputManager->printa_sf(thisAgent, "%-N/A%-");
+            }
+            if (currentNegativeCond)
+            {
+            	currentNegativeCond = currentNegativeCond->next;
+            	if (!currentNegativeCond)
+            	{
+                	current_cond = current_cond->next;
+                    outputManager->printa(thisAgent, "\n     }");
+                    lInNegativeConditions = false;
+            	}
+            } else {
+            	current_cond = current_cond->next;
+            }
+            if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
+            {
+            	currentNegativeCond = current_cond->data.ncc.top;
             }
             outputManager->printa(thisAgent, "\n");
         }
