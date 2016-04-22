@@ -84,6 +84,7 @@ class condition_record
         ~condition_record();
 
         void        connect_to_action();
+        void        viz_connect_to_action();
         void        create_identity_paths(const inst_record_list* pInstPath);
         bool        contains_identity_from_set(const id_set* pIDs);
         void        set_path_to_base(inst_record_list* pPath)
@@ -157,6 +158,7 @@ class instantiation_record
         void                    create_identity_paths(const inst_record_list* pInstPath);
         condition_record*       find_condition_for_chunk(preference* pPref, wme* pWME);
         action_record*          find_rhs_action(preference* pPref);
+        void					viz_connect_conditions();
         void                    delete_instantiation();
 
         instantiation*          cached_inst;
@@ -251,6 +253,7 @@ class Explanation_Logger
         friend class instantiation_record;
         friend class chunk_record;
         friend class condition_record;
+        friend class CommandLineInterface;
 
     public:
         bool                    get_enabled() { return enabled; }
@@ -310,6 +313,8 @@ class Explanation_Logger
         void print_involved_instantiations();
         void switch_to_explanation_trace(bool pEnableExplanationTrace);
         void visualize_last_output();
+        void escape_graphviz_chars();
+
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -353,9 +358,11 @@ class Explanation_Logger
         void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
 
+        void					visualize_explanation_trace();
         void                    visualize_chunk_explanation();
-        void                    visualize_instantiation_explanation(instantiation_record* pInstRecord);
+        void                    viz_instantiation(instantiation_record* pInstRecord);
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
+        void 					clear_visualization();
         void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
         void 					viz_et_action(action* pAction, action* pVariablizedAction, preference* pPref, uint64_t pNodeID);
         void 					viz_wt_preference(preference* pPref, uint64_t pNodeID);
@@ -375,7 +382,7 @@ class Explanation_Logger
         void 					viz_et_condition(condition_record* pCondRecord, condition* pCond);
         void 					viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID);
         void					viz_add_port(char pTypeChar, uint64_t pNodeID, bool pIsLeftPort);
-
+        void 					viz_port(uint64_t pSrcRuleID, uint64_t pSrcActionID, uint64_t pTargetRuleID, uint64_t pTargetCondID);
         bool                    is_condition_related(condition_record* pCondRecord);
 
         void                    delete_condition(uint64_t pCondID);

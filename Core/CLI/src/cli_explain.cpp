@@ -22,6 +22,7 @@
 #include "misc.h"
 #include "print.h"
 
+#include <string>
 using namespace cli;
 using namespace sml;
 
@@ -85,17 +86,25 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         if (options.test(EXPLAIN_VISUALIZE))
         {
             thisAgent->explanationLogger->visualize_last_output();
-//			PrintCLIMessage_Header("Launching visualization of wmg...", 40);
-//			std::string filename("/Users/mazzin/Soar/SoarSandbox/soar_last_output.dot");
-//			const char *vinit[] = {"consolidate", "c"};
-//			std::vector< std::string > argv(vinit, end(vinit));
-//			result = CommandLineInterface::DoCommandToFile( LOG_NEW, filename, argv);
-//			if ( !result )
-//			{
-//	        	return SetError( "MemCon| print_table returned an error.");
-//			}
-//			system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_last_output.dot -o /Users/mazzin/Soar/SoarSandbox/soar_last_output.svg");
-//			system("open /Users/mazzin/Soar/SoarSandbox/soar_last_output.svg");
+			PrintCLIMessage_Header("Opening visualization...", 40);
+		    std::string filename("/Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
+		    if (!DoCLog(LOG_NEW, &filename, 0, true))
+		    {
+		        return false;
+		    }
+
+		    if (!DoCLog(LOG_ADD, 0, &thisAgent->explanationLogger->graphviz_output, true))
+		    {
+		        return false;
+		    }
+
+		    if (!DoCLog(LOG_CLOSE, 0, 0, true))
+		    {
+		        return false;
+		    }
+		    thisAgent->explanationLogger->clear_visualization();
+			system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
+			system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
         }
     }
 

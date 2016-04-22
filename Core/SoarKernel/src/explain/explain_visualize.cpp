@@ -16,22 +16,74 @@
 
 void Explanation_Logger::visualize_last_output()
 {
+	visualize_explanation_trace();
+	return;
 	graphviz_output.clear();
+    viz_graph_start();
     if (!last_printed_id)
     {
         visualize_chunk_explanation();
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
     }
-    /* Note that we temporarily use ≤ and ≥ for graphviz < > that don't need to be escaped */
+    viz_graph_end();
+    escape_graphviz_chars();
+    outputManager->printa(thisAgent, graphviz_output.c_str());
+}
+
+void Explanation_Logger::escape_graphviz_chars()
+{
+    /* Note that we temporarily use #@ and @# for graphviz < > that don't need to be escaped */
     /* MToDo | Should be combined into one regex command.  */
     graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "\\<");
     graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "\\>");
     graphviz_output = std::regex_replace(graphviz_output, std::regex("@#"), "<");
     graphviz_output = std::regex_replace(graphviz_output, std::regex("#@"), ">");
-    outputManager->printa(thisAgent, graphviz_output.c_str());
-	graphviz_output.clear();
+
 }
+void Explanation_Logger::clear_visualization()
+{
+    	graphviz_output.clear();
+}
+void Explanation_Logger::viz_port(uint64_t pSrcRuleID, uint64_t pSrcActionID, uint64_t pTargetRuleID, uint64_t pTargetCondID)
+{
+	//	rule4:a_23_r -> rule2:c_1_l
+	graphviz_output += "   rule";
+	graphviz_output += std::to_string(pSrcRuleID);
+	graphviz_output += ":a_";
+	graphviz_output += std::to_string(pSrcActionID);
+	graphviz_output += "_r -#@ rule";
+	graphviz_output += std::to_string(pTargetRuleID);
+	graphviz_output += ":c_";
+	graphviz_output += std::to_string(pTargetCondID);
+	graphviz_output += "_l\n";
+}
+
+void Explanation_Logger::visualize_explanation_trace()
+{
+	graphviz_output.clear();
+    viz_graph_start();
+
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+    	viz_instantiation((*it));
+    	graphviz_output += "\n";
+    }
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+    	(*it)->viz_connect_conditions();
+    }
+//	current_discussed_chunk->baseInstantiation->viz_connect_conditions();
+//    for (auto it = current_discussed_chunk->result_inst_records->begin(); it != current_discussed_chunk->result_inst_records->end(); it++)
+//    {
+//    	(*it)->viz_connect_conditions();
+//    }
+
+    viz_graph_end();
+    escape_graphviz_chars();
+    outputManager->printa(thisAgent, graphviz_output.c_str());
+}
+
 
 bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pInstID)
 {
@@ -44,7 +96,7 @@ bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pIn
         return false;
     }
     last_printed_id = pInstID;
-    visualize_instantiation_explanation(iter_inst->second);
+    viz_instantiation(iter_inst->second);
     return true;
 }
 
@@ -446,7 +498,7 @@ void Explanation_Logger::viz_action_list(action_record_list* pActionRecords, pro
     }
 }
 
-void Explanation_Logger::visualize_instantiation_explanation(instantiation_record* pInstRecord)
+void Explanation_Logger::viz_instantiation(instantiation_record* pInstRecord)
 {
     if (pInstRecord->conditions->empty())
     {
@@ -463,8 +515,6 @@ void Explanation_Logger::visualize_instantiation_explanation(instantiation_recor
         test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         bool removed_goal_test, removed_impasse_test;
 
-        viz_graph_start();
-
         if (print_explanation_trace)
         {
             if (!pInstRecord->original_production || !pInstRecord->original_production->p_node)
@@ -477,7 +527,7 @@ void Explanation_Logger::visualize_instantiation_explanation(instantiation_recor
                     assert(rhs);
                 } else {
                     print_explanation_trace = false;
-                    visualize_instantiation_explanation(pInstRecord);
+                    viz_instantiation(pInstRecord);
                     print_explanation_trace = true;
                     return;
                 }
@@ -557,7 +607,6 @@ void Explanation_Logger::visualize_instantiation_explanation(instantiation_recor
             deallocate_condition_list(thisAgent, top);
         }
         viz_rule_end();
-        viz_graph_end();
     }
 }
 

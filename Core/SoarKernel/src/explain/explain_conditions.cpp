@@ -25,6 +25,17 @@ void condition_record::connect_to_action()
 //    cached_pref = NULL;
 }
 
+void condition_record::viz_connect_to_action()
+{
+	if (parent_instantiation)
+	{
+		assert(parent_action);
+		assert(my_instantiation);
+		thisAgent->explanationLogger->viz_port(parent_instantiation->get_instantiationID(),
+				parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
+	}
+}
+
 void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
 {
     //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);

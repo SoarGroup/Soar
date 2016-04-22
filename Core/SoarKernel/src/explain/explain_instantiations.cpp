@@ -74,10 +74,6 @@ void instantiation_record::delete_instantiation()
 
 void instantiation_record::record_instantiation_contents()
 {
-    if (cached_inst->i_id == 589)
-    {
-        dprint(DT_EXPLAIN, "Found. %d\n", condition_count(cached_inst->top_of_instantiated_conditions));
-    }
     dprint(DT_EXPLAIN_ADD_INST, "- Recording instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Create condition and action records */
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
@@ -85,9 +81,16 @@ void instantiation_record::record_instantiation_contents()
         condition_record* lCondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, this);
         lCondRecord->connect_to_action();
     }
-    if (cached_inst->i_id == 589)
+}
+
+
+void instantiation_record::viz_connect_conditions()
+{
+    condition_record* lCondRecord;
+    for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
-        dprint(DT_EXPLAIN, "Found. %d\n", conditions->size());
+        lCondRecord = (*it);
+        lCondRecord->viz_connect_to_action();
     }
 }
 
