@@ -95,7 +95,7 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
         iter_sym = iter_inst->second.find(orig_var);
         if (iter_sym != iter_inst->second.end())
         {
-            dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_inst->second);
+            dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
             return iter_sym->second;
         }
     }
