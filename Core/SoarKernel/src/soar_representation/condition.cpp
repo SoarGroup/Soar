@@ -16,6 +16,7 @@
 
 #include "agent.h"
 #include "explain.h"
+#include "identity_record.h"
 #include "debug.h"
 #include "test.h"
 #include "memory_manager.h"

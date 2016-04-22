@@ -1,14 +1,20 @@
 #include "explain.h"
+
+#include "action_record.h"
+#include "condition_record.h"
+#include "instantiation_record.h"
+#include "production_record.h"
+
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
-#include "output_manager.h"
 #include "working_memory.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */

@@ -1,4 +1,11 @@
+#include "chunk_record.h"
+
 #include "explain.h"
+#include "action_record.h"
+#include "identity_record.h"
+#include "instantiation_record.h"
+
+#include "condition_record.h"
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
@@ -231,4 +238,158 @@ void chunk_record::end_chunk_record()
         backtraced_instantiations->clear();
         result_instantiations->clear();
     }
+}
+
+void chunk_record::print_for_explanation_trace()
+{
+	Output_Manager* outputManager = thisAgent->outputManager;
+
+    outputManager->set_column_indent(0, 7);
+    outputManager->set_column_indent(1, 60);
+    outputManager->set_column_indent(2, 110);
+
+    outputManager->printa_sf(thisAgent, "Explanation Trace %-Using variable identity IDs   %-Shortest Path to Result Instantiation\n\n");
+    outputManager->printa_sf(thisAgent, "sp {%y\n", name);
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+    }
+    else
+    {
+        condition_record* lCond;
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        outputManager->set_print_test_format(true, false);
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+            ++lConditionCount;
+            if (lInNegativeConditions)
+            {
+                if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    outputManager->printa(thisAgent, "     }\n");
+                    lInNegativeConditions = false;
+                }
+            } else {
+                if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    outputManager->printa(thisAgent, "     -{\n");
+                    lInNegativeConditions = true;
+                }
+            }
+            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+
+            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
+            		id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+					lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+            		id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+					lCond->condition_tests.attr, lCond->condition_tests.value);
+            deallocate_test(thisAgent, id_test_without_goal_test);
+            deallocate_test(thisAgent, id_test_without_goal_test2);
+
+            thisAgent->explanationLogger->print_path_to_base(lCond->get_path_to_base(), true);
+        }
+        if (lInNegativeConditions)
+        {
+            outputManager->printa(thisAgent, "     }\n");
+        }
+    }
+    outputManager->printa(thisAgent, "      -->\n");
+
+    /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
+    thisAgent->explanationLogger->print_action_list(actions, original_production, NULL, excised_production);
+    outputManager->printa(thisAgent, "}\n");
+    thisAgent->explanationLogger->print_footer(true);
+}
+
+void chunk_record::print_for_wme_trace()
+{
+	Output_Manager* outputManager = thisAgent->outputManager;
+
+    outputManager->set_column_indent(0, 7);
+    outputManager->set_column_indent(1, 60);
+    outputManager->set_column_indent(2, 110);
+    outputManager->printa_sf(thisAgent, "Working Memory Trace %-Instantiation that created matched WME\n\n");
+    outputManager->printa_sf(thisAgent, "sp {%y\n", name);
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+    }
+    else
+    {
+        condition_record* lCond;
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        outputManager->set_print_test_format(true, false);
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+            ++lConditionCount;
+            if (lInNegativeConditions)
+            {
+                if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    outputManager->printa(thisAgent, "     }\n");
+                    lInNegativeConditions = false;
+                }
+            } else {
+                if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                	outputManager->printa(thisAgent, "     -{\n");
+                	lInNegativeConditions = true;
+                }
+            }
+            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+
+            if (lCond->matched_wme)
+            {
+            	outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
+            			lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+            } else {
+            	outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+            }
+            if (lCond->matched_wme != NULL)
+            {
+            	instantiation_record* lInstRecord = lCond->get_instantiation();
+            	bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
+            	if (lInstRecord)
+            	{
+            		outputManager->printa_sf(thisAgent, "%-i %u (%y)\n",
+            				lInstRecord->instantiationID,
+							lInstRecord->production_name);
+            	} else if (lCond->type == POSITIVE_CONDITION)
+            	{
+            		outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+            	} else {
+            		outputManager->printa_sf(thisAgent, "%-N/A%-");
+            	}
+            } else {
+            	outputManager->printa(thisAgent, "\n");
+            }
+        }
+        if (lInNegativeConditions)
+        {
+        	outputManager->printa(thisAgent, "     }\n");
+        }
+    }
+    outputManager->printa(thisAgent, "      -->\n");
+
+    /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
+    thisAgent->explanationLogger->print_action_list(actions, original_production, NULL, excised_production);
+    outputManager->printa(thisAgent, "}\n");
+    thisAgent->explanationLogger->print_footer(true);
 }

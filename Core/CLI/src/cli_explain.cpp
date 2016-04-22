@@ -104,6 +104,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
 		    }
 		    thisAgent->explanationLogger->clear_visualization();
 			system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
+			//system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
 			system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
         }
     }

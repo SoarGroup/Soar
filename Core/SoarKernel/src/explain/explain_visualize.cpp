@@ -1,8 +1,15 @@
-#include "debug.h"
-#include "ebc.h"
 #include "explain.h"
+
+#include "action_record.h"
+#include "condition_record.h"
+#include "identity_record.h"
+#include "instantiation_record.h"
+#include "production_record.h"
+
 #include "agent.h"
 #include "condition.h"
+#include "debug.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -12,6 +19,7 @@
 #include "test.h"
 #include "working_memory.h"
 #include "output_manager.h"
+
 #include <regex>
 
 void Explanation_Logger::visualize_last_output()

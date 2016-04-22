@@ -1,4 +1,8 @@
+#include "condition_record.h"
+
 #include "explain.h"
+#include "action_record.h"
+#include "instantiation_record.h"
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
@@ -176,6 +180,8 @@ bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSe
                     return true;
                 }
             }
+            return false;
+            break;
 
         default:  /* relational tests other than equality */
             return false;

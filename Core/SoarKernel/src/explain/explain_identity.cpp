@@ -1,4 +1,9 @@
+#include "identity_record.h"
+
 #include "explain.h"
+
+#include "instantiation_record.h"
+
 #include "agent.h"
 #include "condition.h"
 #include "debug.h"
