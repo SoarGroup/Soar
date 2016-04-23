@@ -11,6 +11,7 @@
 
 #include "cli_Commands.h"
 #include "cli_explain.h"
+#include "cli_visualize.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -111,6 +112,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::UnaliasCommand(*this));
     m_Parser.AddCommand(new cli::VerboseCommand(*this));
     m_Parser.AddCommand(new cli::VersionCommand(*this));
+    m_Parser.AddCommand(new cli::VisualizeCommand(*this));
     m_Parser.AddCommand(new cli::WaitSNCCommand(*this));
     m_Parser.AddCommand(new cli::WarningsCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));
@@ -452,6 +454,11 @@ bool CommandLineInterface::SetError(const std::string& error)
 
 bool CommandLineInterface::AppendError(const std::string& error)
 {
+    if (!m_Result.str().empty())
+        if (m_Result.str().at(m_Result.str().length() - 1) != '\n')
+        {
+            m_Result << std::endl;
+        }
     m_Result << error;
     m_LastError.append(error);
     return false;

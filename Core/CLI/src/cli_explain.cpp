@@ -52,9 +52,9 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     }
     /* Handle options that required a currently discussed chunk/justification */
     if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
-        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE) || options.test(EXPLAIN_VISUALIZE)))
+        options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE)))
     {
-        print(thisAgent, "Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
+        SetError("Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
         return false;
     }
     else
@@ -82,30 +82,6 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
         if (options.test(EXPLAIN_WME_TRACE))
         {
             thisAgent->explanationLogger->switch_to_explanation_trace(false);
-        }
-        if (options.test(EXPLAIN_VISUALIZE))
-        {
-            thisAgent->explanationLogger->visualize_last_output();
-			PrintCLIMessage_Header("Opening visualization...", 40);
-		    std::string filename("/Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
-		    if (!DoCLog(LOG_NEW, &filename, 0, true))
-		    {
-		        return false;
-		    }
-
-		    if (!DoCLog(LOG_ADD, 0, &thisAgent->explanationLogger->graphviz_output, true))
-		    {
-		        return false;
-		    }
-
-		    if (!DoCLog(LOG_CLOSE, 0, 0, true))
-		    {
-		        return false;
-		    }
-		    thisAgent->explanationLogger->clear_visualization();
-			system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
-			system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
-			system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
         }
     }
 
@@ -149,7 +125,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     } else {
         if (!pStringParameter->empty())
         {
-            print(thisAgent, "Those options cannot take additional arguments.  Ignoring.\n");
+            SetError("Those options cannot take additional arguments.  Ignoring.\n");
             return false;
         }
     }

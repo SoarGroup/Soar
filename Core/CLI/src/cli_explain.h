@@ -29,11 +29,12 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: explain [--all | --only-specific ]\n"
-                       "        explain --watch [rule name]"
-                       "        explain [chunk name]"
-                       "        explain [--dependency-analysis | --constraints | --global-stats | --identity | --stats ]"
-                       "        explain [instantiation | condition | chunk] [id number]\n";
+                return "Syntax: explain [ --all | --only-specific ]\n"
+                       "        explain --record <rule-name>\n"
+                       "        explain [instantiation | condition | chunk] <id number>\n"
+                       "        explain <chunk name>\n"
+                       "        explain [ explanation-trace | wme-trace ]\n"
+                       "        explain [--formation | --constraints | --global-stats | --identity | --stats ]\n";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -51,8 +52,6 @@ namespace cli
                     {'o', "only-specific",          OPTARG_NONE},
                     {'r', "record",                 OPTARG_OPTIONAL},
                     {'s', "stats",                  OPTARG_NONE},
-                    {'t', "time",                   OPTARG_REQUIRED},
-                    {'v', "visualize",              OPTARG_NONE},
                     {'w', "wme-trace",              OPTARG_OPTIONAL},
                     {0, 0,                          OPTARG_NONE}
                 };
@@ -63,7 +62,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        return cli.SetError(opt.GetError().c_str());
+                        cli.SetError(opt.GetError().c_str());
+                    	return cli.AppendError(GetSyntax());
                     }
                     ;
                     if (opt.GetOption() == -1)
@@ -108,10 +108,6 @@ namespace cli
                             options.set(Cli::EXPLAIN_STATS);
                             break;
 
-                        case 'v':
-                            options.set(Cli::EXPLAIN_VISUALIZE);
-                            break;
-
                         case 'w':
                             options.set(Cli::EXPLAIN_WME_TRACE);
                             break;
@@ -128,16 +124,17 @@ namespace cli
 
                 if (num_args > 2)
                 {
-                    return cli.SetError("The explain command cannot take that many arguments.");
+                    cli.SetError("The explain command cannot take that many arguments.");
+                	return cli.AppendError(GetSyntax());
                 }
                 if (options.test(Cli::EXPLAIN_ALL) ||
                     options.test(Cli::EXPLAIN_ONLY_SPECIFIC) ||
-                    options.test(Cli::EXPLAIN_VISUALIZE) ||
                     options.test(Cli::EXPLAIN_LIST_ALL))
                 {
                     if ((options.count() != 1) || (num_args > 0))
                     {
-                        return cli.SetError("That explain options cannot be used with other options.");
+                        cli.SetError("That explain option cannot be used with other options.");
+                    	return cli.AppendError(GetSyntax());
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }
@@ -151,7 +148,8 @@ namespace cli
                 {
                     if (num_args > 0)
                     {
-                        return cli.SetError("That explain options cannot take additional arguments.");
+                        cli.SetError("That explain option cannot take additional arguments.");
+                    	return cli.AppendError(GetSyntax());
                     }
                     return cli.DoExplain(options, &arg, &arg2);
                 }
@@ -160,7 +158,8 @@ namespace cli
                 {
                     if ((options.count() != 1) || (num_args > 0))
                     {
-                        return cli.SetError("Please specify only a rule name, for example 'explain -r myRule'.");
+                        cli.SetError("Please specify only a rule name, for example 'explain -r myRule'.");
+                    	return cli.AppendError(GetSyntax());
                     }
                     return cli.DoExplain(options, &lWatchArgument, &arg2);
                 }
@@ -173,7 +172,11 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
-                return cli.DoExplain(options, &arg, &arg2);
+                if (!cli.DoExplain(options, &arg, &arg2))
+                {
+                	return cli.AppendError(GetSyntax());
+                }
+                return true;
             }
 
         private:

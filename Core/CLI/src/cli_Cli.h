@@ -19,6 +19,7 @@ namespace cli
             virtual ~Cli() {}
 
             virtual bool SetError(const std::string& error) = 0;
+            virtual bool AppendError(const std::string& error) = 0;
 
             /**
              * @brief add-wme command
@@ -173,7 +174,6 @@ namespace cli
                 EXPLAIN_RECORD,
                 EXPLAIN_STATS,
                 EXPLAIN_WME_TRACE,
-				EXPLAIN_VISUALIZE,
                 EXPLAIN_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
@@ -674,6 +674,29 @@ namespace cli
              * @param pSetting The waitsnc setting, true to turn on, false to turn off,
              *        pass 0 (null) to query
              */
+            enum eVisualizeOptions
+            {
+            	VISUALIZE_EXPLAIN,
+				VISUALIZE_WM,
+				VISUALIZE_EPMEM,
+				VISUALIZE_SMEM,
+                VISUALIZE_FILENAME,
+				VISUALIZE_PRINT_TO_SCREEN,
+				VISUALIZE_IMAGE_LAUNCH,
+				VISUALIZE_RAW_LAUNCH,
+				VISUALIZE_NUM_OPTIONS, // must be last
+            };
+            typedef std::bitset<EXPLAIN_NUM_OPTIONS> VisualizeBitset;
+            /**
+             * @brief explain command
+             * @param pProduction Pointer to involved production. Pass 0 (null) for
+             *        query
+             * @param condition A number representing the condition number to explain,
+             *        0 for production name, -1 for full,
+             *        this argument ignored if pProduction is 0 (null)
+             */
+            virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2) = 0;
+
             virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
 
             /**

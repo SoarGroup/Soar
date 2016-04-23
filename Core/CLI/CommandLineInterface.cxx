@@ -71,6 +71,7 @@
 #include "src/cli_unalias.cpp"
 #include "src/cli_verbose.cpp"
 #include "src/cli_version.cpp"
+#include "src/cli_visualize.cpp"
 #include "src/cli_waitsnc.cpp"
 #include "src/cli_warnings.cpp"
 #include "src/cli_watch.cpp"

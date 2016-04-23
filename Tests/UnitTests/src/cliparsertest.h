@@ -13,6 +13,10 @@ class CliAdapter : public cli::Cli
         {
             return false;
         };
+        virtual bool AppendError(const std::string& error)
+        {
+        	return false;
+        }
         virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable)
         {
             return false;
@@ -294,6 +298,10 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoVersion()
+        {
+            return false;
+        }
+        virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2)
         {
             return false;
         }
