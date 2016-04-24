@@ -35,17 +35,21 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
 	/* Handle options that enable/disable recording of chunk formation */
 	if (options.test(VISUALIZE_IMAGE_LAUNCH))
 	{
-		//          thisAgent->outputManager->print_visualization_file();
-		print(thisAgent, "Toggled image launch.\n");
+		thisAgent->outputManager->toggle_viz_launch_img_enabled();
+		print(thisAgent, "Graphviz visualization image%swill be shown.\n",
+				thisAgent->outputManager->is_viz_launch_img_enabled() ? " " : " not ");
 	}
 	if (options.test(VISUALIZE_PRINT_TO_SCREEN))
 	{
-		print(thisAgent, "Toggled screen printing.\n");
+		thisAgent->outputManager->toggle_viz_print_enabled();
+		print(thisAgent, "Graphviz visualization output will%sbe printed to the screen.\n",
+				thisAgent->outputManager->is_viz_print_enabled() ? " " : " not ");
 	}
 	if (options.test(VISUALIZE_RAW_LAUNCH))
 	{
-		//          thisAgent->outputManager->print_visualization_file();
-		print(thisAgent, "Toggled raw viz file launch.\n");
+		thisAgent->outputManager->toggle_viz_launch_gv_enabled();
+		print(thisAgent, "Graphviz visualization file will%sbe launched in editor.\n",
+				thisAgent->outputManager->is_viz_launch_gv_enabled() ? " " : " not ");
 	}
 
 	if (options.test(VISUALIZE_FILENAME))
@@ -185,9 +189,19 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
 					return SetError("Error:  Could not close file!\n");
 				}
 				thisAgent->explanationLogger->clear_visualization();
-				system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
-				system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
-				system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
+				if (thisAgent->outputManager->is_viz_launch_img_enabled())
+				{
+					system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
+					system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
+				}
+				if (thisAgent->outputManager->is_viz_launch_gv_enabled())
+				{
+					system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
+				}
+				if (thisAgent->outputManager->is_viz_print_enabled())
+				{
+					PrintCLIMessage(thisAgent->explanationLogger->graphviz_output.c_str());
+				}
 			}
 		}
 	} else {
