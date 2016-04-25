@@ -10,20 +10,14 @@
 #include "condition.h"
 #include "debug.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
-#include "output_manager.h"
+#include "visualize.h"
 #include "working_memory.h"
-
-//    auto it = current_discussed_chunk->dependency_paths->find(pCondRecord);
-//    if (it != current_discussed_chunk->dependency_paths->end())
-//    {
-//
-//    }
-//for (auto it = pUnconnected_LTIs->begin(); it != pUnconnected_LTIs->end(); it++)
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {
@@ -260,7 +254,7 @@ void chunk_record::print_for_explanation_trace()
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        test id_test_without_goal_test = NULL;
         bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_print_test_format(true, false);
@@ -286,15 +280,13 @@ void chunk_record::print_for_explanation_trace()
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
             id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
-            id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
             		id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
 					lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-            		id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+            		id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
 					lCond->condition_tests.attr, lCond->condition_tests.value);
             deallocate_test(thisAgent, id_test_without_goal_test);
-            deallocate_test(thisAgent, id_test_without_goal_test2);
 
             thisAgent->explanationLogger->print_path_to_base(lCond->get_path_to_base(), true);
         }
@@ -392,4 +384,73 @@ void chunk_record::print_for_wme_trace()
     thisAgent->explanationLogger->print_action_list(actions, original_production, NULL, excised_production);
     outputManager->printa(thisAgent, "}\n");
     thisAgent->explanationLogger->print_footer(true);
+}
+
+void chunk_record::visualize()
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    condition_record* lCond;
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+        assert(false);
+    }
+    else
+    {
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        thisAgent->outputManager->set_print_test_format(false, true);
+        visualizer->viz_rule_start(name, chunkID, viz_chunk_record);
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+
+            ++lConditionCount;
+            if (lConditionCount > 1)
+                visualizer->viz_record_line_end();
+
+            if (lInNegativeConditions)
+            {
+                if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    visualizer->viz_NCC_end();
+                    lInNegativeConditions = false;
+                }
+            } else {
+                if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    visualizer->viz_NCC_start();
+                    lInNegativeConditions = true;
+                }
+            }
+            if (thisAgent->explanationLogger->print_explanation_trace)
+            {
+                visualizer->viz_et_chunk_condition(lCond);
+            } else {
+                visualizer->viz_wt_chunk_condition(lCond);
+            }
+        }
+        if (lInNegativeConditions)
+        {
+            visualizer->viz_NCC_end();
+        } else {
+            visualizer->viz_record_line_end();
+        }
+        visualizer->viz_seperator();
+        thisAgent->explanationLogger->viz_action_list(actions, original_production);
+        visualizer->viz_rule_end();
+    }
+
+    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+    {
+        lCond = (*it);
+        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), this->chunkID, lCond->get_conditionID());
+    }
+
 }

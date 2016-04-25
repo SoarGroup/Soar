@@ -22,6 +22,7 @@ class instantiation_record;
 typedef struct constraint_struct constraint;
 typedef struct attachment_struct attachment_point;
 typedef struct identity_set_struct identity_set_info;
+typedef struct aug_struct augmentation;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
@@ -146,5 +147,8 @@ typedef std::unordered_map< uint64_t, sym_to_id_map_type >  inst_to_id_map_type;
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
+
+typedef std::unordered_set< augmentation* >                     augmentation_set;
+typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 
 #endif /* STL_TYPEDEFS_H_ */

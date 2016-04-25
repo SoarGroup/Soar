@@ -48,6 +48,7 @@
 #include "stats.h"
 #include "symbol.h"
 #include "trace.h"
+#include "visualize.h"
 #include "working_memory_activation.h"
 #include "working_memory.h"
 #include "xml.h"
@@ -292,6 +293,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->ebChunker = new Explanation_Based_Chunker(thisAgent);
     thisAgent->explanationLogger = new Explanation_Logger(thisAgent);
     thisAgent->outputManager = &Output_Manager::Get_OM();
+    thisAgent->visualizer = new GraphViz_Visualizer(thisAgent);
 
     /* Initializing all the timer structures */
     // Timers must be initialized after sysparams
@@ -426,6 +428,8 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->explanationLogger = NULL;
     delete delete_agent->ebChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
+
+    delete delete_agent->visualizer;
 
     // cleanup exploration
     for (int i = 0; i < EXPLORATION_PARAMS; i++)

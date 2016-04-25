@@ -43,6 +43,7 @@ class chunk_record
 
         void					print_for_explanation_trace();
         void					print_for_wme_trace();
+        void					visualize();
 
     private:
         agent*                  thisAgent;

@@ -455,18 +455,15 @@ void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
             clear_chunk_from_instantiations();
         }
         current_discussed_chunk = pChunkRecord;
-        last_printed_id = 0;
         current_discussed_chunk->generate_dependency_paths();
     }
+    last_printed_id = 0;
     print_chunk_explanation();
 
 }
 
 void Explanation_Logger::save_excised_production(production* pProd)
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
-
     dprint(DT_EXPLAIN, "Explanation logger adding production record for excised production: %y\n", pProd->name);
     production_record* lProductionRecord = new production_record(thisAgent, pProd);
     all_excised_productions->insert(lProductionRecord);
@@ -495,8 +492,6 @@ void Explanation_Logger::save_excised_production(production* pProd)
         }
     }
     dprint(DT_EXPLAIN, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
-    //debug_trace_set(DT_ID_LEAKING, false);
-    //debug_trace_set(DT_EXPLAIN, false);
 }
 
 bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)

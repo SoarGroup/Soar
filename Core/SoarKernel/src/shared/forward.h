@@ -57,6 +57,7 @@ class Output_Manager;
 class Explanation_Logger;
 class Soar_Instance;
 class AgentOutput_Info;
+class GraphViz_Visualizer;
 class debug_param_container;
 class Output_Manager;
 class Explanation_Based_Chunker;

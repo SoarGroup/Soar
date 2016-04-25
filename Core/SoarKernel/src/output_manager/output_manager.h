@@ -126,6 +126,7 @@ class Output_Manager
         friend class OM_DB;
         friend class cli::CommandLineInterface;
         friend class Explanation_Logger;
+        friend class GraphViz_Visualizer;
 
     public:
         static Output_Manager& Get_OM()
@@ -158,7 +159,6 @@ class Output_Manager
         /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
         bool m_print_actual, m_print_identity;
         bool m_print_actual_effective, m_print_identity_effective;
-        bool m_viz_print, m_viz_launch_image, m_viz_launch_gv;
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
@@ -321,12 +321,6 @@ class Output_Manager
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
 
-        bool is_viz_print_enabled() { return m_viz_print; }
-        bool is_viz_launch_img_enabled() { return m_viz_launch_image; }
-        bool is_viz_launch_gv_enabled() { return m_viz_launch_gv; }
-        void toggle_viz_print_enabled() { if (m_viz_print) m_viz_print = false; else m_viz_print = true; }
-        void toggle_viz_launch_img_enabled() { if (m_viz_launch_image) m_viz_launch_image = false; else m_viz_launch_image = true; }
-        void toggle_viz_launch_gv_enabled() { if (m_viz_launch_gv) m_viz_launch_gv = false; else m_viz_launch_gv = true; }
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
         void display_soar_error(agent* thisAgent, SoarError pErrorType, int64_t pSysParam = 0);

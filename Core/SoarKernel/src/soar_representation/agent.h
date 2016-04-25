@@ -157,7 +157,7 @@ typedef struct EXPORT agent_struct
     Memory_Manager*             memoryManager;
     Output_Manager*             outputManager;
     Explanation_Logger*         explanationLogger;
-
+    GraphViz_Visualizer*        visualizer;
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at

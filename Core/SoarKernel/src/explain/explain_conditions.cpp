@@ -13,6 +13,7 @@
 #include "symbol.h"
 #include "test.h"
 #include "output_manager.h"
+#include "visualize.h"
 #include "working_memory.h"
 
 void condition_record::connect_to_action()
@@ -35,7 +36,7 @@ void condition_record::viz_connect_to_action()
 	{
 		assert(parent_action);
 		assert(my_instantiation);
-		thisAgent->explanationLogger->viz_port(parent_instantiation->get_instantiationID(),
+		thisAgent->visualizer->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
 				parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
 	}
 }

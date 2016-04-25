@@ -73,6 +73,14 @@ enum BTSourceType {
     BT_Normal
 };
 
+enum visualizationObjectType {
+    viz_inst_record,
+    viz_chunk_record,
+    viz_simple_inst,
+    viz_id_and_augs,
+    viz_wme
+};
+
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
                     GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT
                   };

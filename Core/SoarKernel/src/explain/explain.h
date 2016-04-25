@@ -115,8 +115,6 @@ class Explanation_Logger
         void print_involved_instantiations();
         void switch_to_explanation_trace(bool pEnableExplanationTrace);
         void visualize_last_output();
-        void escape_graphviz_chars();
-
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -162,31 +160,12 @@ class Explanation_Logger
 
         void					visualize_explanation_trace();
         void                    visualize_chunk_explanation();
+        bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
         void                    viz_instantiation(instantiation_record* pInstRecord);
+        void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
+
         void                    viz_et_instantiation(instantiation_record* pInstRecord);
         void                    viz_wm_instantiation(instantiation_record* pInstRecord);
-        bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
-        void 					clear_visualization();
-        void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
-        void 					viz_et_action(action* pAction, action* pVariablizedAction, preference* pPref, uint64_t pNodeID);
-        void 					viz_wt_preference(preference* pPref, uint64_t pNodeID);
-        void 					viz_graph_start();
-        void 					viz_graph_end();
-        void 					viz_rule_start(Symbol* pName, uint64_t node_id);
-        void 					viz_rule_end();
-        void 					viz_NCC_start();
-        void 					viz_NCC_end();
-        void 					viz_seperator();
-        void 					viz_record_seperator(bool pLeftJustify = true);
-        void 					viz_record_start();
-        void 					viz_record_end(bool pLeftJustify = true);
-        void 					viz_text_record(const char* pMsg);
-        void					viz_et_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort);
-        void 					viz_wt_condition(condition_record* pCond);
-        void 					viz_et_condition(condition_record* pCondRecord, condition* pCond);
-        void 					viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID);
-        void					viz_add_port(char pTypeChar, uint64_t pNodeID, bool pIsLeftPort);
-        void 					viz_port(uint64_t pSrcRuleID, uint64_t pSrcActionID, uint64_t pTargetRuleID, uint64_t pTargetCondID);
         bool                    is_condition_related(condition_record* pCondRecord);
 
         void                    delete_condition(uint64_t pCondID);
@@ -201,9 +180,6 @@ class Explanation_Logger
 
         /* Statistics on learning performed so far */
         chunking_stats      stats;
-
-        /* A string buffer for the visualization command */
-        std::string			graphviz_output;
 
         /* These maps store all of the records the logger keeps */
         std::unordered_map< Symbol*, chunk_record* >*           chunks;

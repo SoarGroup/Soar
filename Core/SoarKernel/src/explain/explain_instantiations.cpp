@@ -452,7 +452,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         }
         outputManager->printa(thisAgent, "\n");
 
-        if (thisAgent->explanationLogger->print_explanation_trace && original_production && original_production->p_node)
+        if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
         }
