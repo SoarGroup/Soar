@@ -74,13 +74,21 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
             //        	thisAgent->outputManager->set_visualization_file();
         }
     }
-
     /* Handle non-option visualize commands for rules and Soar data structures */
     if (!options.any())
     {
         if (pStringParameter->empty())
         {
-            return SetError("Please specify what you want to visualize.\n");
+            PrintCLIMessage_Header("Visualization Settings", 40);
+            PrintCLIMessage_Section("Launch", 40);
+            PrintCLIMessage_Justify("Filename:", "soar_visualization", 40);
+            PrintCLIMessage_Justify("Screen output:", (thisAgent->visualizer->is_viz_print_enabled() ? "Yes" : "No"), 40);
+            PrintCLIMessage_Justify("SVG image viewer:", (thisAgent->visualizer->is_viz_launch_img_enabled() ? "Yes" : "No"), 40);
+            PrintCLIMessage_Justify("Raw GraphVis file:", (thisAgent->visualizer->is_viz_launch_gv_enabled() ? "Yes" : "No"), 40);
+            PrintCLIMessage_Section("Presentation Options", 40);
+            PrintCLIMessage_Justify("Only print instantiation name:", (thisAgent->visualizer->is_simple_inst_enabled() ? "Yes" : "No"), 40);
+            PrintCLIMessage_Justify("Include learned chunk in trace:", (thisAgent->visualizer->is_include_chunk_enabled() ? "Yes" : "No"), 40);
+            PrintCLIMessage("");
         } else {
             char lFirstChar = pStringParameter->at(0);
             char lSecondChar = (pStringParameter->length() > 1 ? pStringParameter->at(1) : 0);
