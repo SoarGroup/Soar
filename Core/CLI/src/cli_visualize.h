@@ -36,7 +36,9 @@ namespace cli
                        "                  options:  --filename <path>     (default \"$SOAR_HOME\\soar_visualization.svg\")\n"
                        "                            --print               (default off)\n"
                        "                            --image-launch        (default off)\n"
-                       "                            --raw-launch          (default off)\n";
+                       "                            --raw-launch          (default off)\n"
+                       "                            --chunk               (default off)\n"
+                       "                            --simple              (default off)\n";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -44,10 +46,12 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
+                    {'c', "chunk",                      OPTARG_NONE},
                     {'f', "filename",                   OPTARG_REQUIRED},
                     {'i', "image-launch",               OPTARG_NONE},
                     {'p', "print",                      OPTARG_NONE},
                     {'r', "raw-launch",                 OPTARG_NONE},
+                    {'s', "simple",                     OPTARG_NONE},
                     {0, 0,                              OPTARG_NONE}
                 };
 
@@ -67,6 +71,11 @@ namespace cli
                     }
                     switch (opt.GetOption())
                     {
+                        case 'c':
+                            options.set(Cli::VISUALIZE_INCLUDE_CHUNK);
+                            lfileName = opt.GetOptionArgument();
+                            break;
+
                         case 'f':
                             options.set(Cli::VISUALIZE_FILENAME);
                             lfileName = opt.GetOptionArgument();
@@ -82,6 +91,10 @@ namespace cli
 
                         case 'r':
                             options.set(Cli::VISUALIZE_RAW_LAUNCH);
+                            break;
+
+                        case 's':
+                            options.set(Cli::VISUALIZE_SIMPLE);
                             break;
                     }
                 }
@@ -106,6 +119,7 @@ namespace cli
                 if (options.test(Cli::VISUALIZE_FILENAME) ||
                     options.test(Cli::VISUALIZE_IMAGE_LAUNCH) ||
                     options.test(Cli::VISUALIZE_PRINT_TO_SCREEN) ||
+                    options.test(Cli::VISUALIZE_SIMPLE) ||
                     options.test(Cli::VISUALIZE_RAW_LAUNCH))
                 {
                     if (num_args > 0)

@@ -162,6 +162,7 @@ class Explanation_Logger
         void                    visualize_chunk_explanation();
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
         void                    viz_instantiation(instantiation_record* pInstRecord);
+        void                    viz_simple_instantiation(instantiation_record* pInstRecord);
         void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
 
         void                    viz_et_instantiation(instantiation_record* pInstRecord);

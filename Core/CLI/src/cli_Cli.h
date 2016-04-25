@@ -684,6 +684,8 @@ namespace cli
 				VISUALIZE_PRINT_TO_SCREEN,
 				VISUALIZE_IMAGE_LAUNCH,
 				VISUALIZE_RAW_LAUNCH,
+				VISUALIZE_SIMPLE,
+				VISUALIZE_INCLUDE_CHUNK,
 				VISUALIZE_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<EXPLAIN_NUM_OPTIONS> VisualizeBitset;

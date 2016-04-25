@@ -37,15 +37,18 @@ void Explanation_Logger::visualize_last_output()
 
 void Explanation_Logger::visualize_explanation_trace()
 {
+    if (thisAgent->visualizer->is_include_chunk_enabled())
+    {
+        visualize_chunk_explanation();
+    }
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
     	viz_instantiation((*it));
     }
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
-    	(*it)->viz_connect_conditions();
+        (*it)->viz_connect_conditions();
     }
-    visualize_chunk_explanation();
 }
 
 
@@ -130,12 +133,23 @@ void Explanation_Logger::viz_action_list(action_record_list* pActionRecords, pro
 
 void Explanation_Logger::viz_instantiation(instantiation_record* pInstRecord)
 {
-    if (print_explanation_trace)
-	{
-    	viz_et_instantiation(pInstRecord);
-	} else {
-		viz_wm_instantiation(pInstRecord);
-	}
+    if (thisAgent->visualizer->is_simple_inst_enabled())
+    {
+        viz_simple_instantiation(pInstRecord);
+    } else {
+        if (print_explanation_trace)
+        {
+            viz_et_instantiation(pInstRecord);
+        } else {
+            viz_wm_instantiation(pInstRecord);
+        }
+    }
+}
+
+void Explanation_Logger::viz_simple_instantiation(instantiation_record* pInstRecord)
+{
+    thisAgent->visualizer->viz_rule_start(pInstRecord->production_name, pInstRecord->instantiationID, viz_simple_inst);
+    thisAgent->visualizer->viz_rule_end();
 }
 
 void Explanation_Logger::viz_wm_instantiation(instantiation_record* pInstRecord)

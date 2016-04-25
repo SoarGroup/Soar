@@ -52,6 +52,18 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         print(thisAgent, "Graphviz visualization file will%sbe launched in editor.\n",
             thisAgent->visualizer->is_viz_launch_gv_enabled() ? " " : " not ");
     }
+    if (options.test(VISUALIZE_SIMPLE))
+    {
+        thisAgent->visualizer->toggle_simple_inst_enabled();
+        print(thisAgent, "Graphviz visualization file will%sinclude complete instantiation information.\n",
+            !thisAgent->visualizer->is_simple_inst_enabled() ? " " : " not ");
+    }
+    if (options.test(VISUALIZE_INCLUDE_CHUNK))
+    {
+        thisAgent->visualizer->toggle_include_chunk_enabled();
+        print(thisAgent, "Graphviz visualization file will%sinclude chunk in visualized trace.\n",
+            thisAgent->visualizer->is_include_chunk_enabled() ? " " : " not ");
+    }
 
     if (options.test(VISUALIZE_FILENAME))
     {
