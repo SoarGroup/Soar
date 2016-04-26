@@ -35,9 +35,12 @@ class instantiation_record
         condition_record*       find_condition_for_chunk(preference* pPref, wme* pWME);
         action_record*          find_rhs_action(preference* pPref);
 
-        void					print_for_explanation_trace(bool printFooter);
-        void					print_for_wme_trace(bool printFooter);
-        void					viz_connect_conditions();
+        void                    print_for_explanation_trace(bool printFooter);
+        void                    print_for_wme_trace(bool printFooter);
+        void                    viz_et_instantiation();
+        void                    viz_wm_instantiation();
+        void                    viz_simple_instantiation();
+        void                    viz_connect_conditions();
         void                    delete_instantiation();
 
         instantiation*          cached_inst;
@@ -60,3 +63,5 @@ class instantiation_record
 };
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLAIN_INSTANTIATION_RECORD_H_ */
+
+

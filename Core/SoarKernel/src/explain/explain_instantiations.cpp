@@ -17,6 +17,7 @@
 #include "symbol.h"
 #include "test.h"
 #include "output_manager.h"
+#include "visualize.h"
 #include "working_memory.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
@@ -458,3 +459,176 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         }
     }
 }
+
+void instantiation_record::viz_simple_instantiation()
+{
+    thisAgent->visualizer->viz_rule_start(production_name, instantiationID, viz_simple_inst);
+    thisAgent->visualizer->viz_rule_end();
+}
+
+
+void instantiation_record::viz_wm_instantiation()
+{
+
+    Output_Manager* outputManager = thisAgent->outputManager;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    condition_record* lCond;
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+        assert(false);
+    }
+    else
+    {
+        condition_record* lCond;
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        action* rhs;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        thisAgent->outputManager->set_print_test_format(false, true);
+        thisAgent->visualizer->viz_rule_start(production_name, instantiationID, viz_inst_record);
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+
+            ++lConditionCount;
+            if (lConditionCount > 1)
+                visualizer->viz_record_line_end();
+
+            if (lInNegativeConditions)
+            {
+                if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    thisAgent->visualizer->viz_NCC_end();
+                    lInNegativeConditions = false;
+                }
+            } else {
+                if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+                {
+                    thisAgent->visualizer->viz_NCC_start();
+                    lInNegativeConditions = true;
+                }
+            }
+
+            thisAgent->visualizer->viz_wt_condition(lCond);
+        }
+        if (lInNegativeConditions)
+        {
+            thisAgent->visualizer->viz_NCC_end();
+        } else {
+            thisAgent->visualizer->viz_record_line_end();
+        }
+        thisAgent->visualizer->viz_seperator();
+        thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
+        thisAgent->visualizer->viz_rule_end();
+    }
+}
+
+void instantiation_record::viz_et_instantiation()
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+        assert(false);
+    }
+    else
+    {
+        condition_record* lCond;
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        action* rhs;
+        condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
+        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        bool removed_goal_test, removed_impasse_test;
+
+        if (!original_production || !original_production->p_node)
+        {
+            if (excised_production)
+            {
+                top = excised_production->get_lhs();
+                rhs = excised_production->get_rhs();
+                assert(top);
+                assert(rhs);
+            } else {
+                thisAgent->explanationLogger->print_explanation_trace = false;
+                viz_wm_instantiation();
+                thisAgent->explanationLogger->print_explanation_trace = true;
+                return;
+            }
+        } else {
+            p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
+        }
+        current_cond = top;
+        if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            currentNegativeCond = current_cond->data.ncc.top;
+        } else {
+            currentNegativeCond = NULL;
+        }
+        outputManager->set_print_test_format(true, false);
+
+        thisAgent->visualizer->viz_rule_start(production_name, instantiationID, viz_inst_record);
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+            ++lConditionCount;
+            if (lConditionCount > 1)
+            {
+                thisAgent->visualizer->viz_record_line_end();
+            }
+
+            if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
+            {
+                thisAgent->visualizer->viz_NCC_start();
+                lInNegativeConditions = true;
+            }
+
+            /* Get the next condition from the explanation trace.  This is tricky because NCCs are condition lists within condition lists */
+            if (currentNegativeCond)
+            {
+                print_cond = currentNegativeCond;
+            } else {
+                print_cond = current_cond;
+            }
+            thisAgent->visualizer->viz_et_condition(lCond, print_cond);
+            if (currentNegativeCond)
+            {
+                currentNegativeCond = currentNegativeCond->next;
+                if (!currentNegativeCond)
+                {
+                    current_cond = current_cond->next;
+                    thisAgent->visualizer->viz_NCC_end();
+                    lInNegativeConditions = false;
+                }
+            } else {
+                current_cond = current_cond->next;
+            }
+            if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
+            {
+                currentNegativeCond = current_cond->data.ncc.top;
+            }
+        }
+        if (lInNegativeConditions)
+        {
+            thisAgent->visualizer->viz_NCC_end();
+        } else {
+            thisAgent->visualizer->viz_record_line_end();
+        }
+        thisAgent->visualizer->viz_seperator();
+        thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
+        if (original_production && original_production->p_node)
+        {
+            deallocate_condition_list(thisAgent, top);
+        }
+        thisAgent->visualizer->viz_rule_end();
+    }
+}
+
