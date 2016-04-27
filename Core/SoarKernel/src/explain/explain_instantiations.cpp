@@ -463,7 +463,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
 void instantiation_record::viz_simple_instantiation()
 {
     thisAgent->visualizer->viz_rule_start(production_name, instantiationID, viz_simple_inst);
-    thisAgent->visualizer->viz_rule_end();
+    thisAgent->visualizer->viz_rule_end(viz_simple_inst);
 }
 
 
@@ -513,8 +513,7 @@ void instantiation_record::viz_wm_instantiation()
                     lInNegativeConditions = true;
                 }
             }
-
-            thisAgent->visualizer->viz_wt_condition(lCond);
+            thisAgent->visualizer->viz_condition_record_for_instantiation(lCond);
         }
         if (lInNegativeConditions)
         {
@@ -524,7 +523,7 @@ void instantiation_record::viz_wm_instantiation()
         }
         thisAgent->visualizer->viz_seperator();
         thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
-        thisAgent->visualizer->viz_rule_end();
+        thisAgent->visualizer->viz_rule_end(viz_inst_record);
     }
 }
 
@@ -598,7 +597,7 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            thisAgent->visualizer->viz_et_condition(lCond, print_cond);
+            thisAgent->visualizer->viz_combo_condition(lCond, print_cond, true);
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;
@@ -628,7 +627,7 @@ void instantiation_record::viz_et_instantiation()
         {
             deallocate_condition_list(thisAgent, top);
         }
-        thisAgent->visualizer->viz_rule_end();
+        thisAgent->visualizer->viz_rule_end(viz_inst_record);
     }
 }
 

@@ -945,7 +945,7 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->s_context_variable = make_variable(thisAgent, "<s>");
     thisAgent->o_context_variable = make_variable(thisAgent, "<o>");
 
-    thisAgent->fake_instantiation_symbol = make_str_constant(thisAgent, "Fake Instantiation");
+    thisAgent->fake_instantiation_symbol = make_str_constant(thisAgent, "Memory System Instantiation");
     thisAgent->architecture_inst_symbol = make_str_constant(thisAgent, "Architecture");
     thisAgent->sti_symbol = make_str_constant(thisAgent, "[STI]");
 

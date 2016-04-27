@@ -429,12 +429,13 @@ void chunk_record::visualize()
                     lInNegativeConditions = true;
                 }
             }
-            if (thisAgent->explanationLogger->print_explanation_trace)
-            {
-                visualizer->viz_et_chunk_condition(lCond);
-            } else {
-                visualizer->viz_wt_chunk_condition(lCond);
-            }
+            visualizer->viz_condition_record(lCond, thisAgent->explanationLogger->print_explanation_trace);
+//            if (thisAgent->explanationLogger->print_explanation_trace)
+//            {
+//                visualizer->viz_et_chunk_condition(lCond);
+//            } else {
+//                visualizer->viz_wt_chunk_condition(lCond);
+//            }
         }
         if (lInNegativeConditions)
         {
@@ -444,7 +445,7 @@ void chunk_record::visualize()
         }
         visualizer->viz_seperator();
         thisAgent->explanationLogger->viz_action_list(actions, original_production);
-        visualizer->viz_rule_end();
+        visualizer->viz_rule_end(viz_chunk_record);
     }
 
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
