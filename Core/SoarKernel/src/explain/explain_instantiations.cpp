@@ -129,8 +129,8 @@ action_record* instantiation_record::find_rhs_action(preference* pPref)
         if ((*iter)->original_pref == pPref)
         {
             dprint(DT_EXPLAIN_CONDS, "...found RHS action a%u for condition preference %p.\n", (*iter)->get_actionID(), pPref);
+            return (*iter);
         }
-        return (*iter);
     }
     dprint(DT_EXPLAIN_CONNECT, "...did not find pref %p among:\n", pPref);
     for (iter = actions->begin(); iter != actions->end(); ++iter)
@@ -497,7 +497,7 @@ void instantiation_record::viz_wm_instantiation()
 
             ++lConditionCount;
             if (lConditionCount > 1)
-                visualizer->viz_record_line_end();
+                visualizer->viz_endl();
 
             if (lInNegativeConditions)
             {
@@ -520,7 +520,7 @@ void instantiation_record::viz_wm_instantiation()
         {
             thisAgent->visualizer->viz_NCC_end();
         } else {
-            thisAgent->visualizer->viz_record_line_end();
+            thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
         thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
@@ -582,7 +582,7 @@ void instantiation_record::viz_et_instantiation()
             ++lConditionCount;
             if (lConditionCount > 1)
             {
-                thisAgent->visualizer->viz_record_line_end();
+                thisAgent->visualizer->viz_endl();
             }
 
             if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
@@ -620,7 +620,7 @@ void instantiation_record::viz_et_instantiation()
         {
             thisAgent->visualizer->viz_NCC_end();
         } else {
-            thisAgent->visualizer->viz_record_line_end();
+            thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
         thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);

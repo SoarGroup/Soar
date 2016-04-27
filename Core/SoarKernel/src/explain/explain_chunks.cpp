@@ -413,7 +413,7 @@ void chunk_record::visualize()
 
             ++lConditionCount;
             if (lConditionCount > 1)
-                visualizer->viz_record_line_end();
+                visualizer->viz_endl();
 
             if (lInNegativeConditions)
             {
@@ -440,7 +440,7 @@ void chunk_record::visualize()
         {
             visualizer->viz_NCC_end();
         } else {
-            visualizer->viz_record_line_end();
+            visualizer->viz_endl();
         }
         visualizer->viz_seperator();
         thisAgent->explanationLogger->viz_action_list(actions, original_production);

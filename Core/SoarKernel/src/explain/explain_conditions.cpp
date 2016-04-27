@@ -32,13 +32,13 @@ void condition_record::connect_to_action()
 
 void condition_record::viz_connect_to_action()
 {
-	if (parent_instantiation)
-	{
-		assert(parent_action);
-		assert(my_instantiation);
-		thisAgent->visualizer->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
-				parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
-	}
+    if (parent_instantiation)
+    {
+        assert(parent_action);
+        assert(my_instantiation);
+        thisAgent->visualizer->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
+            parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
+    }
 }
 
 void condition_record::update_condition(condition* pCond, instantiation_record* pInst)

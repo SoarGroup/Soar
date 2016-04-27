@@ -26,7 +26,6 @@ void Explanation_Logger::visualize_last_output()
 	thisAgent->visualizer->viz_graph_start();
     if (!last_printed_id)
     {
-//        visualize_chunk_explanation();
         visualize_explanation_trace();
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
@@ -39,7 +38,7 @@ void Explanation_Logger::visualize_explanation_trace()
 {
     if (thisAgent->visualizer->is_include_chunk_enabled())
     {
-        visualize_chunk_explanation();
+        current_discussed_chunk->visualize();
     }
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
@@ -65,11 +64,6 @@ bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pIn
     last_printed_id = pInstID;
     viz_instantiation(iter_inst->second);
     return true;
-}
-
-void Explanation_Logger::visualize_chunk_explanation()
-{
-		current_discussed_chunk->visualize();
 }
 
 void Explanation_Logger::viz_instantiation(instantiation_record* pInstRecord)
@@ -125,7 +119,7 @@ void Explanation_Logger::viz_action_list(action_record_list* pActionRecords, pro
             ++lActionCount;
             if (lActionCount <= lNumRecords)
             {
-                thisAgent->visualizer->viz_record_line_end();
+                thisAgent->visualizer->viz_endl();
             }
             if (!print_explanation_trace)
             {
