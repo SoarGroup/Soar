@@ -498,24 +498,24 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
             c_vrblz->inst = cc->cond->inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
-            }
-            else
+        }
+        else
+        {
+            /* --- not in TC, so discard the condition --- */
+
+            if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
             {
-                /* --- not in TC, so discard the condition --- */
+                // this chunk will be overgeneral! don't create it
 
-                if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
-                {
-                    // this chunk will be overgeneral! don't create it
-
-                    // SBW 5/07
-                    // report what local negations are preventing the chunk,
-                    // and set flags like we saw a ^quiescence t so it won't be created
-                    report_local_negation(cc->cond);    // in backtrace.cpp
-                    m_reliable = false;
-                }
-                thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
-                has_local_negation = true;
+                // SBW 5/07
+                // report what local negations are preventing the chunk,
+                // and set flags like we saw a ^quiescence t so it won't be created
+                report_local_negation(cc->cond);    // in backtrace.cpp
+                m_reliable = false;
             }
+            has_local_negation = true;
+        }
+        thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
     }
 
     #ifdef BUILD_WITH_EXPLAINER

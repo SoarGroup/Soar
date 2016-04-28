@@ -72,9 +72,6 @@ if compiler == 'g++':
         clone.Append(CPPFLAGS = ['-fvisibility=default'])
     clone.Append(CPPFLAGS = '-Wno-unused -fno-strict-aliasing'.split())
 
-if sys.platform == 'darwin':
-    clone.Append(SHLINKFLAGS = ' -framework JavaVM')
-
 name = 'Java_sml_ClientInterface'
 interface = clone.File(name + '.i')
 wrapper = clone.File(name + '_wrap.cpp')
@@ -84,6 +81,11 @@ classdir = clone.Dir('classes')
 jar = clone.File('sml.jar')
 java_target = 'sml_java'
 fake_java_target = '#fake_java_target'
+
+if sys.platform == 'darwin':
+    install_name = os.path.join('@loader_path', name + '.jnilib')
+    clone.Append(SHLINKFLAGS = ' -install_name ' + install_name)
+    clone.Append(SHLINKFLAGS = ' -framework JavaVM')
 
 # This builder will insert extra dependencies during the COMPILATION stage
 # adapted from http://scons.org/wiki/DynamicSourceGenerator
