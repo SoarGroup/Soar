@@ -55,6 +55,7 @@ class Explanation_Logger
         friend class instantiation_record;
         friend class chunk_record;
         friend class condition_record;
+        friend class action_record;
         friend class CommandLineInterface;
 
     public:
@@ -161,7 +162,6 @@ class Explanation_Logger
         void					visualize_explanation_trace();
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
         void                    viz_instantiation(instantiation_record* pInstRecord);
-        void                    viz_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL);
 
         bool                    is_condition_related(condition_record* pCondRecord);
 

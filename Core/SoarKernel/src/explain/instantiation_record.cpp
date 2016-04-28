@@ -513,7 +513,7 @@ void instantiation_record::viz_wm_instantiation()
                     lInNegativeConditions = true;
                 }
             }
-            thisAgent->visualizer->viz_condition_record_for_instantiation(lCond);
+            lCond->visualize_for_wm_trace();
         }
         if (lInNegativeConditions)
         {
@@ -522,7 +522,7 @@ void instantiation_record::viz_wm_instantiation()
             thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
-        thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
+        action_record::viz_action_list(thisAgent, actions, original_production, rhs);
         thisAgent->visualizer->viz_rule_end(viz_inst_record);
     }
 }
@@ -597,7 +597,7 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            thisAgent->visualizer->viz_combo_condition(lCond, print_cond, true);
+            lCond->visualize_for_explanation_trace(print_cond);
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;
@@ -622,7 +622,7 @@ void instantiation_record::viz_et_instantiation()
             thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
-        thisAgent->explanationLogger->viz_action_list(actions, original_production, rhs);
+        action_record::viz_action_list(thisAgent, actions, original_production, rhs);
         if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);

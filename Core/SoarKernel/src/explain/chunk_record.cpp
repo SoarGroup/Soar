@@ -429,7 +429,7 @@ void chunk_record::visualize()
                     lInNegativeConditions = true;
                 }
             }
-            visualizer->viz_condition_record(lCond, thisAgent->explanationLogger->print_explanation_trace);
+            lCond->visualize_for_chunk();
 //            if (thisAgent->explanationLogger->print_explanation_trace)
 //            {
 //                visualizer->viz_et_chunk_condition(lCond);
@@ -444,7 +444,7 @@ void chunk_record::visualize()
             visualizer->viz_endl();
         }
         visualizer->viz_seperator();
-        thisAgent->explanationLogger->viz_action_list(actions, original_production);
+        action_record::viz_action_list(thisAgent, actions, original_production);
         visualizer->viz_rule_end(viz_chunk_record);
     }
 

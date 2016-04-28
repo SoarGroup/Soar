@@ -15,6 +15,7 @@
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
+#include "visualize.h"
 #include "working_memory.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
@@ -649,3 +650,62 @@ void Explanation_Logger::clear_chunk_from_instantiations()
         }
     }
 }
+
+void Explanation_Logger::visualize_last_output()
+{
+    thisAgent->visualizer->viz_graph_start();
+    if (!last_printed_id)
+    {
+        visualize_explanation_trace();
+    } else {
+        visualize_instantiation_explanation_for_id(last_printed_id);
+    }
+    thisAgent->visualizer->viz_graph_end();
+}
+
+void Explanation_Logger::visualize_explanation_trace()
+{
+    if (thisAgent->visualizer->is_include_chunk_enabled())
+    {
+        current_discussed_chunk->visualize();
+    }
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+        viz_instantiation((*it));
+    }
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+        (*it)->viz_connect_conditions();
+    }
+}
+
+bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pInstID)
+{
+    std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
+
+    iter_inst = instantiations->find(pInstID);
+    if (iter_inst == instantiations->end())
+    {
+        outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
+        return false;
+    }
+    last_printed_id = pInstID;
+    viz_instantiation(iter_inst->second);
+    return true;
+}
+
+void Explanation_Logger::viz_instantiation(instantiation_record* pInstRecord)
+{
+    if (thisAgent->visualizer->is_simple_inst_enabled())
+    {
+        pInstRecord->viz_simple_instantiation();
+    } else {
+        if (print_explanation_trace)
+        {
+            pInstRecord->viz_et_instantiation();
+        } else {
+            pInstRecord->viz_wm_instantiation();
+        }
+    }
+}
+

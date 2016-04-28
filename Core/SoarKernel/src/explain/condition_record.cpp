@@ -215,3 +215,147 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
     }
 
 }
+
+void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
+{
+    cons* c, *c2;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
+        for (c = pTest->data.conjunct_list, c2 = pTestIdentity->data.conjunct_list; c != NIL; c = c->rest, c2 = c2->rest)
+        {
+            assert(c2);
+            visualizer->viz_record_start();
+            viz_combo_test(static_cast<test>(c->first), static_cast<test>(c2->first), pNode_id, false, false, false, false, printIdentity);
+            visualizer->viz_record_end();
+            visualizer->viz_endl();
+        }
+        visualizer->viz_table_end();
+        visualizer->viz_table_element_end();
+        visualizer->viz_endl();
+    } else {
+        if (printInitialPort || printFinalPort)
+        {
+            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort);
+        } else {
+            visualizer->viz_table_element_start();
+        }
+        if (isAttribute)
+        {
+            if (isNegative)
+            {
+                visualizer->graphviz_output += "-^";
+            } else {
+                visualizer->graphviz_output += "^";
+            }
+        }
+        if (printIdentity && pTestIdentity->identity)
+        {
+            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTestIdentity->identity);
+        } else {
+            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
+        }
+        visualizer->viz_table_element_end();
+    }
+}
+
+void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
+{
+    cons* c;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
+        for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            visualizer->viz_record_start();
+            viz_matched_test(static_cast<test>(c->first), pMatchedWME, pNode_id, false, false, false, false, printIdentity);
+            visualizer->viz_record_end();
+            visualizer->viz_endl();
+        }
+        visualizer->viz_table_end();
+        visualizer->viz_table_element_end();
+        visualizer->viz_endl();
+    } else {
+        if (printInitialPort || printFinalPort)
+        {
+            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort);
+        } else {
+            visualizer->viz_table_element_start();
+        }
+        if (isAttribute)
+        {
+            if (isNegative)
+            {
+                visualizer->graphviz_output += "-^";
+            } else {
+                visualizer->graphviz_output += "^";
+            }
+        }
+        if (printIdentity || !pMatchedWME || (pTest->type != EQUALITY_TEST))
+        {
+            if (pTest->identity)
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTest->identity);
+            } else {
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
+            }
+        } else {
+            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%y ", pMatchedWME);
+        }
+        visualizer->viz_table_element_end();
+    }
+}
+
+/* This is only called for instantiated conditions in the wme trace.
+ *
+ * Note:  This may cause a bad vizgraph if attribute of NC is a conjunct.  The minus
+ *        sign would be outside the brackets of the nested records for the conjunct. */
+void condition_record::visualize_for_wm_trace()
+{
+
+    bool removed_goal_test, removed_impasse_test;
+    test id_test_without_goal_test ;
+
+    thisAgent->visualizer->viz_record_start();
+    id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+    viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false);
+    deallocate_test(thisAgent, id_test_without_goal_test);
+    viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false);
+    viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false);
+    thisAgent->visualizer->viz_record_end();
+}
+
+void condition_record::visualize_for_chunk()
+{
+    bool removed_goal_test, removed_impasse_test;
+    test id_test_without_goal_test ;
+
+    thisAgent->visualizer->viz_record_start();
+    id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+    viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationLogger->print_explanation_trace);
+    deallocate_test(thisAgent, id_test_without_goal_test);
+    viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationLogger->print_explanation_trace);
+    viz_matched_test(condition_tests.value, matched_wme ? matched_wme->value : NULL, conditionID, false, true, false, false, thisAgent->explanationLogger->print_explanation_trace);
+    thisAgent->visualizer->viz_record_end();
+}
+
+void condition_record::visualize_for_explanation_trace(condition* pCond)
+{
+    bool removed_goal_test, removed_impasse_test;
+
+    test id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, pCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
+    test id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+
+    thisAgent->visualizer->viz_record_start();
+    viz_combo_test(id_test_without_goal_test, id_test_without_goal_test2, conditionID, true, false, false, false, true);
+    deallocate_test(thisAgent, id_test_without_goal_test);
+    deallocate_test(thisAgent, id_test_without_goal_test2);
+    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true);
+    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true);
+    thisAgent->visualizer->viz_record_end();
+}
+

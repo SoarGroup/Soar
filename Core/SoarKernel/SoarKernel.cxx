@@ -11,7 +11,6 @@
 #include "src/explain/chunk_record.cpp"
 #include "src/explain/condition_record.cpp"
 #include "src/explain/explain_print.cpp"
-#include "src/explain/explain_visualize.cpp"
 #include "src/explain/explain.cpp"
 #include "src/explain/identity_record.cpp"
 #include "src/explain/instantiation_record.cpp"

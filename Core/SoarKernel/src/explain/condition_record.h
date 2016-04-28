@@ -25,6 +25,14 @@ class condition_record
         condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
         ~condition_record();
 
+        uint64_t                        get_conditionID()   { return conditionID; };
+        goal_stack_level                get_level()         { return wme_level_at_firing; };
+        instantiation_record*           get_parent_inst()   { return parent_instantiation; };
+        instantiation_record*           get_instantiation() { return my_instantiation; };
+        inst_record_list*               get_path_to_base()  { return path_to_base; };
+        preference*                     get_cached_pref()   { return cached_pref; };
+        wme*                            get_cached_wme()    { return cached_wme; };
+
         void        connect_to_action();
         void        viz_connect_to_action();
         void        create_identity_paths(const inst_record_list* pInstPath);
@@ -38,13 +46,12 @@ class condition_record
         void        set_matched_wme_for_cond(condition* pCond);
         void        update_condition(condition* pCond, instantiation_record* pInst);
 
-        uint64_t                        get_conditionID()   { return conditionID; };
-        goal_stack_level                get_level()         { return wme_level_at_firing; };
-        instantiation_record*           get_parent_inst()   { return parent_instantiation; };
-        instantiation_record*           get_instantiation() { return my_instantiation; };
-        inst_record_list*               get_path_to_base()  { return path_to_base; };
-        preference*                     get_cached_pref()   { return cached_pref; };
-        wme*                            get_cached_wme()    { return cached_wme; };
+        void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
+        void        visualize_for_wm_trace();
+        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
+        void        visualize_for_chunk();
+        void        visualize_for_explanation_trace(condition* pCond);
+
 
     private:
         agent* thisAgent;

@@ -127,6 +127,7 @@ class Output_Manager
         friend class cli::CommandLineInterface;
         friend class Explanation_Logger;
         friend class GraphViz_Visualizer;
+        friend class action_record;
 
     public:
         static Output_Manager& Get_OM()

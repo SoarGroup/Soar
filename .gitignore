@@ -491,7 +491,7 @@ local.properties
 .texlipse
 
 ### Soar ###
-out*/
+out/
 build*/
 /.sconf_temp/
 /.externalToolBuilders/
