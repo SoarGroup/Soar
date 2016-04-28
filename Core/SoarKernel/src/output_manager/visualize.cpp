@@ -77,18 +77,40 @@ void ID_Augmentation_Map::visualize_wm()
     add_current_wm();
 
     augmentation_set* lAugSet;
-    Symbol* sym;
-    thisAgent->outputManager->printa_sf(thisAgent, "Size %d\n", id_augmentations->size());
+    Symbol* lIDSym;
+    augmentation* lAug;
+
+    std::string graphviz_connections;
+
+
     for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%y: ", it->first);
+        thisAgent->visualizer->viz_rule_start(it->first, 0, viz_id_and_augs);
+        lIDSym = it->first;
         lAugSet = it->second;
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%y=%y,", (*it2)->attr, (*it2)->value);
+            lAug = (*it2);
+            if (lAug->value->is_identifier() && (lAug->attr != thisAgent->superstate_symbol))
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\" -#@ \"%y\" [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
+
+            } else {
+                thisAgent->visualizer->viz_record_start();
+                thisAgent->visualizer->viz_table_element_start();
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->attr);
+                thisAgent->visualizer->viz_table_element_end();
+                thisAgent->visualizer->viz_table_element_start();
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->value);
+                thisAgent->visualizer->viz_table_element_end();
+                thisAgent->visualizer->viz_record_end();
+                thisAgent->visualizer->viz_endl();
+            }
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "\n");
+        thisAgent->visualizer->viz_rule_end(viz_id_and_augs);
+        thisAgent->visualizer->viz_endl();
     }
+    thisAgent->visualizer->graphviz_output += graphviz_connections;
 }
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
@@ -111,7 +133,9 @@ void GraphViz_Visualizer::visualize_wm()
     graphviz_output.clear();
 
     ID_Augmentation_Map* wme_map = new ID_Augmentation_Map(thisAgent);
+    viz_graph_start();
     wme_map->visualize_wm();
+    viz_graph_end();
     delete wme_map;
 }
 
@@ -156,11 +180,12 @@ void GraphViz_Visualizer::viz_rule_start(Symbol* pName, uint64_t node_id, visual
             break;
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "   id%u [\n"
-                "      label = @#", node_id);
+                "   \"%y\" [\n"
+                "      penwidth = \"0\"\n"
+                "      label = @#", pName);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                @#TR#@ @#TD COLSPAN=\"3\"#@%y (i %u)@#/TD#@ @#/TR#@\n", pName, node_id);
+                "                @#TR#@ @#TD COLSPAN=\"3\"#@%y@#/TD#@ @#/TR#@\n", pName);
             break;
         case viz_simple_inst:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
@@ -283,7 +308,7 @@ void GraphViz_Visualizer::viz_endl()
 void GraphViz_Visualizer::escape_graphviz_chars()
 {
     /* Note that we temporarily use #@ and @# for graphviz < > that don't need to be escaped */
-    /* MToDo | Should be combined into one regex command.  */
+    /* MToDo | Should find a better way.  */
     graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "&lt;");
     graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "&gt;");
     graphviz_output = std::regex_replace(graphviz_output, std::regex("@#"), "<");

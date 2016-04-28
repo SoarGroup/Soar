@@ -430,12 +430,6 @@ void chunk_record::visualize()
                 }
             }
             lCond->visualize_for_chunk();
-//            if (thisAgent->explanationLogger->print_explanation_trace)
-//            {
-//                visualizer->viz_et_chunk_condition(lCond);
-//            } else {
-//                visualizer->viz_wt_chunk_condition(lCond);
-//            }
         }
         if (lInNegativeConditions)
         {

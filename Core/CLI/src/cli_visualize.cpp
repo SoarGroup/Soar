@@ -182,6 +182,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
             if (options.test(Cli::VISUALIZE_WM))
             {
                 thisAgent->visualizer->visualize_wm();
+                lValidVisualizationGenerated = true;
             }
             if (lValidVisualizationGenerated)
             {
