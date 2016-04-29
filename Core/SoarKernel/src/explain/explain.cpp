@@ -82,10 +82,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-        if (it->second->original_production)
-        {
-            it->second->original_production->save_for_justification_explanation = false;
-        }
         symbol_remove_ref(thisAgent, it->first);
         delete it->second;
     }
@@ -95,10 +91,6 @@ void Explanation_Logger::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
-        if (it->second->original_production)
-        {
-            it->second->original_production->save_for_justification_explanation = false;
-        }
         delete it->second;
     }
     instantiations->clear();

@@ -62,6 +62,10 @@ instantiation_record::~instantiation_record()
     delete conditions;
     delete actions;
     dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);
+    if (original_production)
+    {
+        original_production->save_for_justification_explanation = false;
+    }
     if (path_to_base)
     {
         delete path_to_base;

@@ -85,6 +85,10 @@ chunk_record::~chunk_record()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
 //    production_remove_ref(thisAgent, original_production);
+    if (original_production)
+    {
+        original_production->save_for_justification_explanation = false;
+    }
     if (name) symbol_remove_ref(thisAgent, name);
     if (conditions) delete conditions;
     if (actions) delete actions;
