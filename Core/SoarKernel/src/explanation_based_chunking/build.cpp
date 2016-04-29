@@ -563,7 +563,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     condition* cc;
     tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
-    Symbol* id;
+    Symbol* id, *id_vrblz;
     test t;
 
     tc = get_new_tc_number(thisAgent);
@@ -574,13 +574,16 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
             continue;
         }
         id = cc->data.tests.id_test->eq_test->data.referent;
+        id_vrblz = cc->counterpart->data.tests.id_test->eq_test->data.referent;
         if ((id->id->isa_goal || id->id->isa_impasse) &&
-                (id->tc_num != tc))
+                (id_vrblz->tc_num != tc))
         {
             /* We add the goal test to the counterpart, which is the variablized condition list */
             t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cc->counterpart->data.tests.id_test), t);
-            id->tc_num = tc;
+            t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            add_test(thisAgent, &(cc->data.tests.id_test), t);
+            id_vrblz->tc_num = tc;
         }
     }
 }
