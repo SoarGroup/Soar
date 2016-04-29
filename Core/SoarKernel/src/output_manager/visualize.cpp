@@ -28,91 +28,6 @@
 
 #include <regex>
 
-ID_Augmentation_Map::ID_Augmentation_Map(agent* myAgent)
-{
-    thisAgent = myAgent;
-    id_augmentations = new sym_to_aug_map();
-}
-
-ID_Augmentation_Map::~ID_Augmentation_Map()
-{
-    reset();
-    delete id_augmentations;
-}
-
-void ID_Augmentation_Map::add_triple(Symbol* id, Symbol* attr, Symbol* value)
-{
-    augmentation* lNewAugmentation = new augmentation();
-    lNewAugmentation->attr = attr;
-    lNewAugmentation->value = value;
-    auto it = id_augmentations->find(id);
-    if (it == id_augmentations->end())
-    {
-        (*id_augmentations)[id] = new augmentation_set();
-    }
-    augmentation_set* lNewAugSet = (*id_augmentations)[id];
-    lNewAugSet->insert(lNewAugmentation);
-}
-
-void ID_Augmentation_Map::add_current_wm()
-{
-    wme* w;
-    for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
-    {
-        add_triple(w->id, w->attr, w->value);
-    }
-}
-
-void ID_Augmentation_Map::reset()
-{
-    for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
-    {
-        delete it->second;
-    }
-    id_augmentations->clear();
-}
-void ID_Augmentation_Map::visualize_wm()
-{
-    reset();
-    add_current_wm();
-
-    augmentation_set* lAugSet;
-    Symbol* lIDSym;
-    augmentation* lAug;
-
-    std::string graphviz_connections;
-
-
-    for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
-    {
-        thisAgent->visualizer->viz_rule_start(it->first, 0, viz_id_and_augs);
-        lIDSym = it->first;
-        lAugSet = it->second;
-        for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
-        {
-            lAug = (*it2);
-            if (lAug->value->is_identifier() && (lAug->attr != thisAgent->superstate_symbol))
-            {
-                thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\" -#@ \"%y\" [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
-
-            } else {
-                thisAgent->visualizer->viz_record_start();
-                thisAgent->visualizer->viz_table_element_start();
-                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->attr);
-                thisAgent->visualizer->viz_table_element_end();
-                thisAgent->visualizer->viz_table_element_start();
-                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->value);
-                thisAgent->visualizer->viz_table_element_end();
-                thisAgent->visualizer->viz_record_end();
-                thisAgent->visualizer->viz_endl();
-            }
-        }
-        thisAgent->visualizer->viz_rule_end(viz_id_and_augs);
-        thisAgent->visualizer->viz_endl();
-    }
-    thisAgent->visualizer->graphviz_output += graphviz_connections;
-}
-
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
@@ -132,22 +47,28 @@ void GraphViz_Visualizer::visualize_wm()
 {
     graphviz_output.clear();
 
-    ID_Augmentation_Map* wme_map = new ID_Augmentation_Map(thisAgent);
-    viz_graph_start();
-    wme_map->visualize_wm();
+    WM_Visualization_Map* wme_map = new WM_Visualization_Map(thisAgent);
+    viz_graph_start(false);
+    wme_map->visualize_wm_as_linked_records();
     viz_graph_end();
     delete wme_map;
 }
 
-void GraphViz_Visualizer::viz_graph_start()
+void GraphViz_Visualizer::viz_graph_start(bool pLeftRight)
 {
     graphviz_output.clear();
 
     graphviz_output +=  "digraph g {\n"
-        "   graph [ rankdir = \"LR\" splines = \"spline\"];\n"
-        "   node [fontsize = \"16\"];\n"
+        "   node [shape = \"box\" fontsize = \"16\"];\n"
         "   edge [];\n";
+    if (pLeftRight)
+    {
+        graphviz_output +=  "   graph [ rankdir = \"LR\" splines = \"polyline\"];\n";
+    } else {
+        graphviz_output +=  "   graph [ rankdir = \"TD\" splines = \"polyline\"];\n";
+    }
 }
+
 void GraphViz_Visualizer::viz_graph_end()
 {
     graphviz_output += "}\n";
@@ -155,7 +76,7 @@ void GraphViz_Visualizer::viz_graph_end()
     escape_graphviz_chars();
 }
 
-void GraphViz_Visualizer::viz_rule_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
 {
     switch (objectType)
     {
@@ -172,7 +93,7 @@ void GraphViz_Visualizer::viz_rule_start(Symbol* pName, uint64_t node_id, visual
         case viz_chunk_record:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   chunk%u [\n"
-                "      shape = \"box\"  style = \"dashed, bold, rounded\"\n"
+                "      style = \"dashed, bold, rounded\"\n"
                 "      label = @#", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
@@ -195,9 +116,16 @@ void GraphViz_Visualizer::viz_rule_start(Symbol* pName, uint64_t node_id, visual
             break;
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "   rule%u [\n"
+                "   \"%y\" [\n"
                 "      shape = \"box\" style = \"rounded\"\n"
-                "      label = \"%y (i %u)", node_id, pName, node_id);
+                "      label = \"%y", pName, pName);
+            break;
+
+        case viz_wme_terminal:
+            outputManager->sprinta_sf(thisAgent, graphviz_output,
+                "   \"%y\" [\n"
+                "      shape = \"circle\" style = \"rounded\"\n"
+                "      label = \"%y", pName, pName);
             break;
 
         default:
@@ -207,7 +135,7 @@ void GraphViz_Visualizer::viz_rule_start(Symbol* pName, uint64_t node_id, visual
 
 }
 
-void GraphViz_Visualizer::viz_rule_end(visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
 {
     switch (objectType)
     {
@@ -324,13 +252,24 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
-    graphviz_output += ":a_";
-    graphviz_output += std::to_string(pSrcActionID);
-    graphviz_output += "_r -#@ rule";
+    if (thisAgent->visualizer->is_simple_inst_enabled())
+    {
+        graphviz_output += ":e";
+    } else {
+        graphviz_output += ":a_";
+        graphviz_output += std::to_string(pSrcActionID);
+        graphviz_output += "_r ";
+    }
+    graphviz_output += "-#@ rule";
     graphviz_output += std::to_string(pTargetRuleID);
-    graphviz_output += ":c_";
-    graphviz_output += std::to_string(pTargetCondID);
-    graphviz_output += "_l\n";
+    if (thisAgent->visualizer->is_simple_inst_enabled())
+    {
+        graphviz_output += ":w\n";
+    } else {
+        graphviz_output += ":c_";
+        graphviz_output += std::to_string(pTargetCondID);
+        graphviz_output += "_l\n";
+    }
 }
 
 void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID, uint64_t pTargetCondID)

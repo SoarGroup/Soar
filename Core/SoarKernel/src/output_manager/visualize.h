@@ -17,17 +17,18 @@ typedef struct aug_struct
         Symbol* value;
 } augmentation;
 
-class ID_Augmentation_Map
+class WM_Visualization_Map
 {
     public:
 
-        ID_Augmentation_Map(agent* myAgent);
-        ~ID_Augmentation_Map();
+        WM_Visualization_Map(agent* myAgent);
+        ~WM_Visualization_Map();
 
         void reset();
         void add_triple(Symbol* id, Symbol* attr, Symbol* value);
         void add_current_wm();
-        void visualize_wm();
+        void visualize_wm_as_linked_records();
+        void visualize_wm_as_graph();
 
     private:
 
@@ -59,10 +60,10 @@ class GraphViz_Visualizer
         void toggle_include_chunk_enabled() { if (m_include_chunk) m_include_chunk = false; else m_include_chunk = true; }
 
         /* Utility graphviz printing functions */
-        void                viz_graph_start();
+        void                viz_graph_start(bool pLeftRight = true);
         void                viz_graph_end();
-        void                viz_rule_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType);
-        void                viz_rule_end(visualizationObjectType objectType);
+        void                viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType);
+        void                viz_object_end(visualizationObjectType objectType);
         void                viz_table_start();
         void                viz_table_end();
         void                viz_NCC_start();

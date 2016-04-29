@@ -78,7 +78,8 @@ enum visualizationObjectType {
     viz_chunk_record,
     viz_simple_inst,
     viz_id_and_augs,
-    viz_wme
+    viz_wme,
+    viz_wme_terminal
 };
 
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,

@@ -240,7 +240,7 @@ void chunk_record::end_chunk_record()
 
 void chunk_record::print_for_explanation_trace()
 {
-	Output_Manager* outputManager = thisAgent->outputManager;
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     outputManager->set_column_indent(0, 7);
     outputManager->set_column_indent(1, 60);
@@ -285,11 +285,11 @@ void chunk_record::print_for_explanation_trace()
 
             id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
-            		id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-					lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-            		id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-					lCond->condition_tests.attr, lCond->condition_tests.value);
+                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value);
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             thisAgent->explanationLogger->print_path_to_base(lCond->get_path_to_base(), true);
@@ -309,7 +309,7 @@ void chunk_record::print_for_explanation_trace()
 
 void chunk_record::print_for_wme_trace()
 {
-	Output_Manager* outputManager = thisAgent->outputManager;
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     outputManager->set_column_indent(0, 7);
     outputManager->set_column_indent(1, 60);
@@ -345,41 +345,41 @@ void chunk_record::print_for_wme_trace()
             } else {
                 if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
                 {
-                	outputManager->printa(thisAgent, "     -{\n");
-                	lInNegativeConditions = true;
+                    outputManager->printa(thisAgent, "     -{\n");
+                    lInNegativeConditions = true;
                 }
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
             if (lCond->matched_wme)
             {
-            	outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
-            			lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
+                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
             } else {
-            	outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
             }
             if (lCond->matched_wme != NULL)
             {
-            	instantiation_record* lInstRecord = lCond->get_instantiation();
-            	bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
-            	if (lInstRecord)
-            	{
-            		outputManager->printa_sf(thisAgent, "%-i %u (%y)\n",
-            				lInstRecord->instantiationID,
-							lInstRecord->production_name);
-            	} else if (lCond->type == POSITIVE_CONDITION)
-            	{
-            		outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
-            	} else {
-            		outputManager->printa_sf(thisAgent, "%-N/A%-");
-            	}
+                instantiation_record* lInstRecord = lCond->get_instantiation();
+                bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
+                if (lInstRecord)
+                {
+                    outputManager->printa_sf(thisAgent, "%-i %u (%y)\n",
+                        lInstRecord->instantiationID,
+                        lInstRecord->production_name);
+                } else if (lCond->type == POSITIVE_CONDITION)
+                {
+                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                } else {
+                    outputManager->printa_sf(thisAgent, "%-N/A%-");
+                }
             } else {
-            	outputManager->printa(thisAgent, "\n");
+                outputManager->printa(thisAgent, "\n");
             }
         }
         if (lInNegativeConditions)
         {
-        	outputManager->printa(thisAgent, "     }\n");
+            outputManager->printa(thisAgent, "     }\n");
         }
     }
     outputManager->printa(thisAgent, "      -->\n");
@@ -409,7 +409,7 @@ void chunk_record::visualize()
         bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
-        visualizer->viz_rule_start(name, chunkID, viz_chunk_record);
+        visualizer->viz_object_start(name, chunkID, viz_chunk_record);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -443,7 +443,7 @@ void chunk_record::visualize()
         }
         visualizer->viz_seperator();
         action_record::viz_action_list(thisAgent, actions, original_production);
-        visualizer->viz_rule_end(viz_chunk_record);
+        visualizer->viz_object_end(viz_chunk_record);
     }
 
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)

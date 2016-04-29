@@ -34,6 +34,7 @@
 #include "src/output_manager/print.cpp"
 #include "src/output_manager/soar_to_string.cpp"
 #include "src/output_manager/visualize.cpp"
+#include "src/output_manager/visualize_wm.cpp"
 #include "src/parsing/lexer.cpp"
 #include "src/parsing/parser.cpp"
 #include "src/reinforcement_learning/exploration.cpp"
