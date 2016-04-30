@@ -38,23 +38,23 @@ void Explanation_Logger::print_formation_explanation()
     outputManager->printa_sf(thisAgent, "The formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
 
     outputManager->printa_sf(thisAgent, "   (1) At time %u, rule '%y' matched (i %u) \n"
-                                        "       and created results in a superstate.\n\n",
+        "       and created results in a superstate.\n\n",
         current_discussed_chunk->time_formed,
         current_discussed_chunk->baseInstantiation->production_name,
         current_discussed_chunk->baseInstantiation->instantiationID);
 
     outputManager->printa(thisAgent, "   (2) Conditions of base instantiations and any relevant operator selection knowledge\n"
-                                        "       are backtraced through to determine what superstate knowledge was tested and\n"
-                                        "       should appear in the chunk.\n\n");
+        "       are backtraced through to determine what superstate knowledge was tested and\n"
+        "       should appear in the chunk.\n\n");
     outputManager->printa(thisAgent,    "   (3) EBC analyzes the how variables are used in the explanation trace to determine \n"
-                                        "       sets of elements that share the same semantics.  (explain -i)\n\n");
+        "       sets of elements that share the same semantics.  (explain -i)\n\n");
     outputManager->printa(thisAgent,    "   (4) EBC constraint analysis is performed to determine all constraints on the \n"
-                                        "       values of variables in (3) that were required by problem-solving (explain -c).\n\n");
+        "       values of variables in (3) that were required by problem-solving (explain -c).\n\n");
     outputManager->printa(thisAgent,    "   (5) The mappings determined by the identity set analysis are used to variablize\n"
-                                        "       conditions collected in (2) and constraints collected in (4).  (explain -i)\n\n");
+        "       conditions collected in (2) and constraints collected in (4).  (explain -i)\n\n");
     outputManager->printa(thisAgent,    "   (6) Generalized constraints from (5) are added and final chunk conditions are\n"
-                                        "       polished by pruning unnecessary tests and merging appropriate conditions.\n"
-                                        "       Statistics on polishing are available.  (explain -c) (explain -s)\n\n");
+        "       polished by pruning unnecessary tests and merging appropriate conditions.\n"
+        "       Statistics on polishing are available.  (explain -c) (explain -s)\n\n");
     outputManager->printa_sf(thisAgent, "------------------------------------------------------------------------------------\n\n");
 
     outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results in Step (2)\n\n",
@@ -100,11 +100,11 @@ void Explanation_Logger::print_footer(bool pPrintDiscussedChunkCommands)
 
 bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
 {
-//    if ((pCondRecord->condition_tests.id->eq_test->identity == current_explained_ids.id) ||
-//        (pCondRecord->condition_tests.attr->eq_test->identity == current_explained_ids.id) ||
-//        (pCondRecord->condition_tests.value->eq_test->identity == current_explained_ids.id))
-//    {
-//    }
+    //    if ((pCondRecord->condition_tests.id->eq_test->identity == current_explained_ids.id) ||
+    //        (pCondRecord->condition_tests.attr->eq_test->identity == current_explained_ids.id) ||
+    //        (pCondRecord->condition_tests.value->eq_test->identity == current_explained_ids.id))
+    //    {
+    //    }
     return false;
 }
 
@@ -191,14 +191,14 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
                 } else {
                     outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
                 }
-//                if (print_explanation_trace)
-//                {
-//                    thisAgent->outputManager->set_print_test_format(false, true);
-//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-//                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//                } else {
-//                    outputManager->printa(thisAgent, "\n");
-//                }
+                //                if (print_explanation_trace)
+                //                {
+                //                    thisAgent->outputManager->set_print_test_format(false, true);
+                //                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+                //                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
+                //                } else {
+                //                    outputManager->printa(thisAgent, "\n");
+                //                }
                 rhs = rhs->next;
             }
         }
@@ -213,12 +213,12 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
 }
 void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {
-	if (print_explanation_trace)
-	{
-		pInstRecord->print_for_explanation_trace(printFooter);
-	} else {
-		pInstRecord->print_for_wme_trace(printFooter);
-	}
+    if (print_explanation_trace)
+    {
+        pInstRecord->print_for_explanation_trace(printFooter);
+    } else {
+        pInstRecord->print_for_wme_trace(printFooter);
+    }
 }
 
 void Explanation_Logger::print_chunk_explanation()
@@ -226,11 +226,11 @@ void Explanation_Logger::print_chunk_explanation()
     assert(current_discussed_chunk);
 
     if (print_explanation_trace)
-	{
-    	current_discussed_chunk->print_for_explanation_trace();
-	} else {
-		current_discussed_chunk->print_for_wme_trace();
-	}
+    {
+        current_discussed_chunk->print_for_explanation_trace();
+    } else {
+        current_discussed_chunk->print_for_wme_trace();
+    }
 }
 
 void Explanation_Logger::print_explain_summary()

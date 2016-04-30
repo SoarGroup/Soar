@@ -648,27 +648,41 @@ void Explanation_Logger::visualize_last_output()
     thisAgent->visualizer->viz_graph_start();
     if (!last_printed_id)
     {
-        visualize_explanation_trace();
+        current_discussed_chunk->visualize();
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
     }
     thisAgent->visualizer->viz_graph_end();
 }
 
-void Explanation_Logger::visualize_explanation_trace()
+void Explanation_Logger::visualize_instantiation_graph()
 {
-    if (thisAgent->visualizer->is_include_chunk_enabled())
-    {
-        current_discussed_chunk->visualize();
-    }
+    thisAgent->visualizer->viz_graph_start();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
-        viz_instantiation((*it));
+        (*it)->visualize();
     }
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
         (*it)->viz_connect_conditions();
     }
+    thisAgent->visualizer->viz_graph_end();
+}
+
+void Explanation_Logger::visualize_contributors()
+{
+    bool old_Simple_Setting = thisAgent->visualizer->is_simple_inst_enabled();
+    thisAgent->visualizer->viz_graph_start();
+    current_discussed_chunk->visualize();
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+        (*it)->visualize();
+    }
+    for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
+    {
+        (*it)->viz_connect_conditions();
+    }
+    thisAgent->visualizer->viz_graph_end();
 }
 
 bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pInstID)
@@ -682,22 +696,9 @@ bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pIn
         return false;
     }
     last_printed_id = pInstID;
-    viz_instantiation(iter_inst->second);
+    (iter_inst->second)->visualize();
     return true;
 }
 
-void Explanation_Logger::viz_instantiation(instantiation_record* pInstRecord)
-{
-    if (thisAgent->visualizer->is_simple_inst_enabled())
-    {
-        pInstRecord->viz_simple_instantiation();
-    } else {
-        if (print_explanation_trace)
-        {
-            pInstRecord->viz_et_instantiation();
-        } else {
-            pInstRecord->viz_wm_instantiation();
-        }
-    }
-}
+
 

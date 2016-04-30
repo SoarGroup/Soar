@@ -56,7 +56,7 @@ class GraphViz_Visualizer
         void toggle_viz_print_enabled() { if (m_viz_print) m_viz_print = false; else m_viz_print = true; }
         void toggle_viz_launch_img_enabled() { if (m_viz_launch_image) m_viz_launch_image = false; else m_viz_launch_image = true; }
         void toggle_viz_launch_gv_enabled() { if (m_viz_launch_gv) m_viz_launch_gv = false; else m_viz_launch_gv = true; }
-        void toggle_simple_inst_enabled() { if (m_simple_inst) m_simple_inst = false; else m_simple_inst = true; }
+        void set_simple_inst_enabled(bool pOn) { m_simple_inst = pOn; }
         void toggle_include_chunk_enabled() { if (m_include_chunk) m_include_chunk = false; else m_include_chunk = true; }
 
         /* Utility graphviz printing functions */

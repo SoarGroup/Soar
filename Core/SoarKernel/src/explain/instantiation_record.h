@@ -21,6 +21,7 @@ class instantiation_record
         friend class chunk_record;
 
     public:
+
         instantiation_record(agent* myAgent, instantiation* pInst);
         ~instantiation_record();
 
@@ -37,15 +38,14 @@ class instantiation_record
 
         void                    print_for_explanation_trace(bool printFooter);
         void                    print_for_wme_trace(bool printFooter);
-        void                    viz_et_instantiation();
-        void                    viz_wm_instantiation();
-        void                    viz_simple_instantiation();
-        void                    viz_connect_conditions();
+        void                    visualize();
+
         void                    delete_instantiation();
 
         instantiation*          cached_inst;
 
     private:
+
         agent* thisAgent;
         uint64_t                instantiationID;
         Symbol*                 production_name;
@@ -60,6 +60,12 @@ class instantiation_record
 
         condition_record_list*  conditions;
         action_record_list*     actions;
+
+        void                    viz_et_instantiation();
+        void                    viz_wm_instantiation();
+        void                    viz_simple_instantiation();
+        void                    viz_connect_conditions();
+
 };
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLAIN_INSTANTIATION_RECORD_H_ */

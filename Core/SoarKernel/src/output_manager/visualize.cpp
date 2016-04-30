@@ -49,7 +49,12 @@ void GraphViz_Visualizer::visualize_wm()
 
     WM_Visualization_Map* wme_map = new WM_Visualization_Map(thisAgent);
     viz_graph_start(false);
-    wme_map->visualize_wm_as_linked_records();
+    if (m_simple_inst)
+    {
+        wme_map->visualize_wm_as_graph();
+    } else {
+        wme_map->visualize_wm_as_linked_records();
+    }
     viz_graph_end();
     delete wme_map;
 }

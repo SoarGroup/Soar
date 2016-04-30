@@ -635,3 +635,17 @@ void instantiation_record::viz_et_instantiation()
     }
 }
 
+void instantiation_record::visualize()
+{
+    if (thisAgent->visualizer->is_simple_inst_enabled())
+    {
+        viz_simple_instantiation();
+    } else {
+        if (thisAgent->explanationLogger->print_explanation_trace)
+        {
+            viz_et_instantiation();
+        } else {
+            viz_wm_instantiation();
+        }
+    }
+}

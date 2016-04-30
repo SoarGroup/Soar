@@ -29,16 +29,18 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: visualize [options]\n"
-                	   "        visualize explanation [options]\n"
-                       "        visualize [ wm | smem | epmem] [id] [options]\n"
-                 	   "                  id:       [soar-id | time-step]\n"
-                       "                  options:  --filename <path>     (default \"$SOAR_HOME\\soar_visualization.svg\")\n"
+                return "Syntax: visualize [ last | instantiations | contributors]  (from explain command analysis)\n"
+                       "        visualize [ wm | smem | epmem] [id]       (from current state of memory)\n\n"
+                       "                  options:  --architectural-links (default off)"
+                       "                            --depth <number>\n"
+                       "                            --editor-launch       (default off)\n"
+                       "                            --filename <path>     (default \"$SOAR_HOME\\soar_visualization.svg\")\n"
+                       "                            --generate-image      (default off)\n"
+                       "                            --line-style          (default polyline)\n"
+                       "                            --object-style        (simple/complex, default simple)\n"
                        "                            --print               (default off)\n"
-                       "                            --image-launch        (default off)\n"
-                       "                            --raw-launch          (default off)\n"
-                       "                            --chunk               (default off)\n"
-                       "                            --simple              (default off)\n";
+                       "                            --use-same-file       (default on)\n"
+                       "                            --viewer-launch       (default on)\n";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -46,17 +48,23 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'c', "chunk",                      OPTARG_NONE},
+                    {'a', "architectural-links",        OPTARG_NONE},
+                    {'d', "depth",                      OPTARG_REQUIRED},
+                    {'e', "editor-launch",              OPTARG_NONE},
                     {'f', "filename",                   OPTARG_REQUIRED},
-                    {'i', "image-launch",               OPTARG_NONE},
+                    {'g', "generate-image",             OPTARG_NONE},
+                    {'l', "line-style",                 OPTARG_REQUIRED},
+                    {'o', "object-style",               OPTARG_REQUIRED},
                     {'p', "print",                      OPTARG_NONE},
-                    {'r', "raw-launch",                 OPTARG_NONE},
-                    {'s', "simple",                     OPTARG_NONE},
+                    {'u', "use-same-file",              OPTARG_NONE},
+                    {'v', "viewer-launch",              OPTARG_NONE},
                     {0, 0,                              OPTARG_NONE}
                 };
 
                 Cli::VisualizeBitset options(0);
-                std::string lfileName;
+                std::string lfileName, lLineStyle, lObjectStyle;
+                int lDepth;
+
                 for (;;)
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
@@ -71,9 +79,21 @@ namespace cli
                     }
                     switch (opt.GetOption())
                     {
-                        case 'c':
-                            options.set(Cli::VISUALIZE_INCLUDE_CHUNK);
-                            lfileName = opt.GetOptionArgument();
+                        case 'a':
+                            options.set(Cli::VISUALIZE_ARCH_SHOW);
+                            break;
+
+                        case 'd':
+                            if (!from_string(lDepth, opt.GetOptionArgument()) || (lDepth < 0))
+                            {
+                                cli.SetError("Invalid depth value.");
+                                return cli.AppendError(GetSyntax());
+                            }
+                            options.set(Cli::VISUALIZE_DEPTH);
+                            break;
+
+                        case 'e':
+                            options.set(Cli::VISUALIZE_LAUNCH_EDITOR);
                             break;
 
                         case 'f':
@@ -81,20 +101,30 @@ namespace cli
                             lfileName = opt.GetOptionArgument();
                             break;
 
-                        case 'i':
-                            options.set(Cli::VISUALIZE_IMAGE_LAUNCH);
+                        case 'g':
+                            options.set(Cli::VISUALIZE_GENERATE_IMAGE);
+                            break;
+
+                        case 'l':
+                            options.set(Cli::VISUALIZE_STYLE_LINE);
+                            lLineStyle = opt.GetOptionArgument();
+                            break;
+
+                        case 'o':
+                            options.set(Cli::VISUALIZE_STYLE_OBJECT);
+                            lObjectStyle = opt.GetOptionArgument();
                             break;
 
                         case 'p':
                             options.set(Cli::VISUALIZE_PRINT_TO_SCREEN);
                             break;
 
-                        case 'r':
-                            options.set(Cli::VISUALIZE_RAW_LAUNCH);
+                        case 'u':
+                            options.set(Cli::VISUALIZE_USE_SAME_FILE);
                             break;
 
-                        case 's':
-                            options.set(Cli::VISUALIZE_SIMPLE);
+                        case 'v':
+                            options.set(Cli::VISUALIZE_LAUNCH_VIEWER);
                             break;
                     }
                 }
@@ -107,38 +137,38 @@ namespace cli
                     cli.SetError("The visualize command cannot take that many arguments.");
                 	return cli.AppendError(GetSyntax());
                 }
-                if (options.test(Cli::VISUALIZE_FILENAME))
-                {
-                    if (options.count() != 1)
-                    {
-                        return cli.SetError("That visualize option cannot be changed while issuing a visualize command.");
-                    }
-                    return cli.DoVisualize(options, &arg, &arg2);
-                }
-
-                if (options.test(Cli::VISUALIZE_FILENAME) ||
-                    options.test(Cli::VISUALIZE_IMAGE_LAUNCH) ||
-                    options.test(Cli::VISUALIZE_PRINT_TO_SCREEN) ||
-                    options.test(Cli::VISUALIZE_SIMPLE) ||
-                    options.test(Cli::VISUALIZE_RAW_LAUNCH))
-                {
-                    if (num_args > 0)
-                    {
-                        cli.SetError("That visualize options cannot take additional arguments.\n");
-                    	return cli.AppendError(GetSyntax());
-                    }
-                    return cli.DoVisualize(options, &arg, &arg2);
-                }
-
-                if (options.test(Cli::VISUALIZE_FILENAME))
-                {
-                    if ((options.count() != 1) || (num_args > 0))
-                    {
-                        cli.SetError("Please specify only a filename, for example 'visualize -f myFile'.");
-                    	return cli.AppendError(GetSyntax());
-                    }
-                    return cli.DoVisualize(options, &lfileName, &arg2);
-                }
+//                if (options.test(Cli::VISUALIZE_FILENAME))
+//                {
+//                    if (options.count() != 1)
+//                    {
+//                        return cli.SetError("That visualize option cannot be changed while issuing a visualize command.");
+//                    }
+//                    return cli.DoVisualize(options, &arg, &arg2);
+//                }
+//
+//                if (options.test(Cli::VISUALIZE_FILENAME) ||
+//                    options.test(Cli::VISUALIZE_STYLE_OBJECT) ||
+//                    options.test(Cli::VISUALIZE_PRINT_TO_SCREEN) ||
+//                    options.test(Cli::VISUALIZE_STYLE_LINE) ||
+//                    options.test(Cli::VISUALIZE_LAUNCH_EDITOR))
+//                {
+//                    if (num_args > 0)
+//                    {
+//                        cli.SetError("That visualize options cannot take additional arguments.\n");
+//                    	return cli.AppendError(GetSyntax());
+//                    }
+//                    return cli.DoVisualize(options, &arg, &arg2);
+//                }
+//
+//                if (options.test(Cli::VISUALIZE_FILENAME))
+//                {
+//                    if ((options.count() != 1) || (num_args > 0))
+//                    {
+//                        cli.SetError("Please specify only a filename, for example 'visualize -f myFile'.");
+//                    	return cli.AppendError(GetSyntax());
+//                    }
+//                    return cli.DoVisualize(options, &lfileName, &arg2);
+//                }
 
                 if (num_args > 0)
                 {
@@ -148,7 +178,7 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
-                if (!cli.DoVisualize(options, &arg, &arg2))
+                if (!cli.DoVisualize(options, &arg, &arg2, &lfileName, &lLineStyle, &lObjectStyle))
                 {
                 	return cli.AppendError(GetSyntax());
                 }

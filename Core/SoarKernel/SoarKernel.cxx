@@ -1,3 +1,4 @@
+#include <repair.cpp>
 #include "src/debug/debug_stacktrace.cpp"
 #include "src/debug/debug.cpp"
 #include "src/decision_process/consistency.cpp"
@@ -17,7 +18,6 @@
 #include "src/explain/production_record.cpp"
 #include "src/explanation_based_chunking/backtrace.cpp"
 #include "src/explanation_based_chunking/build.cpp"
-#include "src/explanation_based_chunking/connect_conditions.cpp"
 #include "src/explanation_based_chunking/constraints.cpp"
 #include "src/explanation_based_chunking/ebc.cpp"
 #include "src/explanation_based_chunking/explanation_trace.cpp"

@@ -115,7 +115,10 @@ class Explanation_Logger
         void print_constraints_enforced();
         void print_involved_instantiations();
         void switch_to_explanation_trace(bool pEnableExplanationTrace);
+
         void visualize_last_output();
+        void visualize_instantiation_graph();
+        void visualize_contributors();
 
         Explanation_Logger(agent* myAgent);
         ~Explanation_Logger();
@@ -159,9 +162,7 @@ class Explanation_Logger
         void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
 
-        void					visualize_explanation_trace();
         bool                    visualize_instantiation_explanation_for_id(uint64_t pInstID);
-        void                    viz_instantiation(instantiation_record* pInstRecord);
 
         bool                    is_condition_related(condition_record* pCondRecord);
 

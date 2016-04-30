@@ -26,6 +26,7 @@
 #include "production.h"
 #include "rete.h"
 #include "rhs.h"
+#include "run_soar.h"
 #include "soar_TraceNames.h"
 #include "slot.h"
 #include "symbol.h"
@@ -37,7 +38,6 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
-#include <run_soar.h>
 
 using namespace soar_TraceNames;
 
@@ -637,6 +637,38 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
         }
     dprint(DT_MERGE, "Result:\n");
     dprint_noprefix(DT_MERGE, "%1", *dest_inst_top);
+}
+
+
+/* Before calling make_production, we must call this function to make sure
+ * the production is valid.  This was separated out so EBC can try to fix
+ * unconnected conditions caused by LTI being at a higher level. */
+
+bool Explanation_Based_Chunker::reorder_and_validate_chunk()
+{
+    /* This is called for justifications even though it does nothing because in the future
+     * we might want to fix a justification that has conditions unconnected to
+     * a state.  Chunks that have such variablized conditions seem to be able to
+     * corrupt the rete, but we don't know if justifications can as well.  While we
+     * could ground those conditions like we do with chunks to be safe, we're not doing
+     * that right now because it will introduce a high computational cost that may
+     * not be necessary.*/
+
+    if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
+    {
+        symbol_list* unconnected_syms = new symbol_list();
+
+        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
+
+        if (lFailureType == ebc_failed_unconnected_conditions)
+        {
+            generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
+            return reorder_and_validate_chunk();
+        }
+        delete unconnected_syms;
+        return (lFailureType == ebc_success);
+    }
+    return true;
 }
 
 /* --------------------------------------------------------------------

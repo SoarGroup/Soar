@@ -676,19 +676,25 @@ namespace cli
              */
             enum eVisualizeOptions
             {
-            	VISUALIZE_EXPLAIN,
-				VISUALIZE_WM,
-				VISUALIZE_EPMEM,
-				VISUALIZE_SMEM,
+                VISUALIZE_EXPLAIN_LAST,
+                VISUALIZE_EXPLAIN_IG,
+                VISUALIZE_EXPLAIN_CONTRIBUTORS,
+                VISUALIZE_WM,
+                VISUALIZE_EPMEM,
+                VISUALIZE_SMEM,
+                VISUALIZE_ARCH_SHOW,
+                VISUALIZE_DEPTH,
                 VISUALIZE_FILENAME,
-				VISUALIZE_PRINT_TO_SCREEN,
-				VISUALIZE_IMAGE_LAUNCH,
-				VISUALIZE_RAW_LAUNCH,
-				VISUALIZE_SIMPLE,
-				VISUALIZE_INCLUDE_CHUNK,
-				VISUALIZE_NUM_OPTIONS, // must be last
+                VISUALIZE_GENERATE_IMAGE,
+                VISUALIZE_LAUNCH_VIEWER,
+                VISUALIZE_LAUNCH_EDITOR,
+                VISUALIZE_STYLE_LINE,
+                VISUALIZE_STYLE_OBJECT,
+                VISUALIZE_PRINT_TO_SCREEN,
+                VISUALIZE_USE_SAME_FILE,
+                VISUALIZE_NUM_OPTIONS, // must be last
             };
-            typedef std::bitset<EXPLAIN_NUM_OPTIONS> VisualizeBitset;
+            typedef std::bitset<VISUALIZE_NUM_OPTIONS> VisualizeBitset;
             /**
              * @brief explain command
              * @param pProduction Pointer to involved production. Pass 0 (null) for
@@ -697,7 +703,7 @@ namespace cli
              *        0 for production name, -1 for full,
              *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2) = 0;
+            virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2, const std::string* lfileName, const std::string* lLineStyle, const std::string* lObjectStyle) = 0;
 
             virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
 
