@@ -37,7 +37,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     m_viz_launch_gv = false;
     m_simple_inst = true;
     m_include_arch = false;
-    m_use_same_file = false;
+    m_use_same_file = true;
     m_generate_img = true;
     m_line_style = "polyline";
     m_filename_prefix = "soar_visualization";

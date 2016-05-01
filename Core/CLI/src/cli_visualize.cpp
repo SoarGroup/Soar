@@ -51,12 +51,12 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
     if (check_boolean_option(thisAgent, VISUALIZE_GENERATE_IMAGE, options, pSettings, thisAgent->visualizer->is_generate_img_enabled()))
     {
         thisAgent->visualizer->set_generate_img_enabled(pSettings.test(VISUALIZE_GENERATE_IMAGE));
-        print(thisAgent, "Visualizer will%salways generate an image.\n", thisAgent->visualizer->is_generate_img_enabled() ? " " : " not ");
+        print(thisAgent, "Visualizer will%sgenerate an image of visualization and save it to disk.\n", thisAgent->visualizer->is_generate_img_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_USE_SAME_FILE, options, pSettings, thisAgent->visualizer->is_use_same_file_enabled()))
     {
         thisAgent->visualizer->set_use_same_file_enabled(pSettings.test(VISUALIZE_USE_SAME_FILE));
-        print(thisAgent, "Visualizer will%suse overwrite the same file for each visualization.\n", thisAgent->visualizer->is_use_same_file_enabled() ? " " : " not ");
+        print(thisAgent, "Visualizer will%soverwrite the same file for each visualization.\n", thisAgent->visualizer->is_use_same_file_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_LAUNCH_VIEWER, options, pSettings, thisAgent->visualizer->is_viz_launch_img_enabled()))
     {
@@ -307,7 +307,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         PrintCLIMessage_Section("File", 50);
         PrintCLIMessage_Justify("Generate image file (-g):", (thisAgent->visualizer->is_generate_img_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Justify("Image type (-i):", thisAgent->visualizer->get_image_type(), 50);
-        PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizer->is_include_arch_enabled() ? "Yes" : "No"), 50);
+        PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizer->is_use_same_file_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Justify("Filename prefix (-f):", thisAgent->visualizer->get_filename(), 50);
         PrintCLIMessage_Section("Presentation", 50);
         PrintCLIMessage_Justify("Object style (-o):", (thisAgent->visualizer->is_simple_inst_enabled() ? "simple" : "complex"), 50);
