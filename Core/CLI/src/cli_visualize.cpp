@@ -27,78 +27,89 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2, const std::string* pFileName, const std::string* pLineStyle, const std::string* pObjectStyle)
+bool check_boolean_option(agent* thisAgent, size_t pWhichBit, Cli::VisualizeBitset options, Cli::VisualizeBitset pNewSettings, bool pCurrentSetting)
+{
+    if (options.test(pWhichBit))
+    {
+        if (pCurrentSetting == pNewSettings.test(pWhichBit))
+        {
+            print(thisAgent, "Visualization setting is already %s.\n", pCurrentSetting ? "enabled" : "disabled");
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType)
 {
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    std::string lSystemCommand;
     bool lReturn_Value = false;
 
-    /* Handle options that enable/disable recording of chunk formation */
-    if (options.test(VISUALIZE_GENERATE_IMAGE))
+    if (check_boolean_option(thisAgent, VISUALIZE_GENERATE_IMAGE, options, pSettings, thisAgent->visualizer->is_generate_img_enabled()))
     {
-        //        thisAgent->visualizer->toggle_viz_gen_img_enabled();
-        //        print(thisAgent, "Graphviz visualization image will%sbe generated.\n",
-        //            thisAgent->visualizer->is_viz_gen_img_enabled() ? " " : " not ");
+        thisAgent->visualizer->set_generate_img_enabled(pSettings.test(VISUALIZE_GENERATE_IMAGE));
+        print(thisAgent, "Visualizer will%salways generate an image.\n", thisAgent->visualizer->is_generate_img_enabled() ? " " : " not ");
     }
-    if (options.test(VISUALIZE_USE_SAME_FILE))
+    if (check_boolean_option(thisAgent, VISUALIZE_USE_SAME_FILE, options, pSettings, thisAgent->visualizer->is_use_same_file_enabled()))
     {
-        //        thisAgent->visualizer->toggle_use_same_file_enabled();
-        //        print(thisAgent, "Graphviz visualization will%suse the same filename every time.\n",
-        //            thisAgent->visualizer->is_use_same_file_enabled() ? " " : " not ");
+        thisAgent->visualizer->set_use_same_file_enabled(pSettings.test(VISUALIZE_USE_SAME_FILE));
+        print(thisAgent, "Visualizer will%suse overwrite the same file for each visualization.\n", thisAgent->visualizer->is_use_same_file_enabled() ? " " : " not ");
     }
-    if (options.test(VISUALIZE_LAUNCH_VIEWER))
+    if (check_boolean_option(thisAgent, VISUALIZE_LAUNCH_VIEWER, options, pSettings, thisAgent->visualizer->is_viz_launch_img_enabled()))
     {
-        thisAgent->visualizer->toggle_viz_launch_img_enabled();
-        print(thisAgent, "Graphviz visualization image%swill be launched in viewer.\n",
-            thisAgent->visualizer->is_viz_launch_img_enabled() ? " " : " not ");
+        thisAgent->visualizer->set_viz_launch_img_enabled(pSettings.test(VISUALIZE_LAUNCH_VIEWER));
+        print(thisAgent, "Visualizer will%sopen image in viewer.\n", thisAgent->visualizer->is_viz_launch_img_enabled() ? " " : " not ");
     }
-    if (options.test(VISUALIZE_LAUNCH_EDITOR))
+    if (check_boolean_option(thisAgent, VISUALIZE_LAUNCH_EDITOR, options, pSettings, thisAgent->visualizer->is_viz_launch_gv_enabled()))
     {
-        thisAgent->visualizer->toggle_viz_launch_gv_enabled();
-        print(thisAgent, "Graphviz visualization file will%sbe launched in editor.\n",
-            thisAgent->visualizer->is_viz_launch_gv_enabled() ? " " : " not ");
+        thisAgent->visualizer->set_viz_launch_gv_enabled(pSettings.test(VISUALIZE_LAUNCH_EDITOR));
+        print(thisAgent, "Visualizer will%sopen GraphViz file in editor.\n", thisAgent->visualizer->is_viz_launch_gv_enabled() ? " " : " not ");
     }
-    if (options.test(VISUALIZE_STYLE_LINE) && !pLineStyle->empty())
+    if (check_boolean_option(thisAgent, VISUALIZE_PRINT_TO_SCREEN, options, pSettings, thisAgent->visualizer->is_viz_print_enabled()))
     {
-        //        print(thisAgent, "Graphviz visualization line style set to %s.\n", lLineStyle->c_str());
-        //        thisAgent->visualizer->set_line_style(lLineStyle);
+        thisAgent->visualizer->set_viz_print_enabled(pSettings.test(VISUALIZE_PRINT_TO_SCREEN));
+        print(thisAgent, "Graphviz visualization output will%sbe printed to the screen.\n", thisAgent->visualizer->is_viz_print_enabled() ? " " : " not ");
     }
-    if (options.test(VISUALIZE_STYLE_OBJECT) && !pObjectStyle->empty())
+    if (check_boolean_option(thisAgent, VISUALIZE_ARCH_SHOW, options, pSettings, thisAgent->visualizer->is_include_arch_enabled()))
     {
-        if (!strcmp(pObjectStyle->c_str(),"simple"))
+        thisAgent->visualizer->set_include_arch_enabled(pSettings.test(VISUALIZE_ARCH_SHOW));
+        print(thisAgent, "Graphviz visualizations will%sinclude architectural links.\n", thisAgent->visualizer->is_include_arch_enabled() ? " " : " not ");
+    }
+    if (check_boolean_option(thisAgent, VISUALIZE_ONLY_RULE_NAME, options, pSettings, thisAgent->visualizer->is_simple_inst_enabled()))
+    {
+        thisAgent->visualizer->set_simple_inst_enabled(pSettings.test(VISUALIZE_ONLY_RULE_NAME));
+        if (thisAgent->visualizer->is_simple_inst_enabled())
         {
-            thisAgent->visualizer->set_simple_inst_enabled(true);
-        } else if (!strcmp(pObjectStyle->c_str(),"complex")) {
             thisAgent->visualizer->set_simple_inst_enabled(false);
+            print(thisAgent, "Visualizer will print rule condition, actions and any relevant meta information.\n");
+        } else {
+            thisAgent->visualizer->set_simple_inst_enabled(true);
+            print(thisAgent, "Visualizer will only print the name of rules.\n");
         }
-        print(thisAgent, "Graphviz visualization object style set to %s.\n", pObjectStyle->c_str());
-    }
-    if (options.test(VISUALIZE_PRINT_TO_SCREEN))
-    {
-        thisAgent->visualizer->toggle_viz_print_enabled();
-        print(thisAgent, "Graphviz visualization output will%sbe printed to the screen.\n",
-            thisAgent->visualizer->is_viz_print_enabled() ? " " : " not ");
     }
     if (options.test(VISUALIZE_STYLE_LINE))
     {
+        print(thisAgent, "Visualizer will connect lines using GraphViz style '%s'.\n", pLineStyle.c_str());
+        thisAgent->visualizer->set_line_style(pLineStyle);
     }
-    if (options.test(VISUALIZE_ARCH_SHOW))
+    if (options.test(VISUALIZE_FILENAME))
     {
-        //        thisAgent->visualizer->toggle_show_arch_links_enabled();
-        //        print(thisAgent, "Graphviz visualization file will%sinclude architectural links.\n",
-        //            thisAgent->visualizer->is_show_arch_links_enabled() ? " " : " not ");
+        print(thisAgent, "Visualizer wil name Graphviz files using prefix %s.\n", pFileName.c_str());
+        thisAgent->visualizer->set_filename(pFileName);
+    }
+    if (options.test(VISUALIZE_IMAGE_TYPE))
+    {
+        print(thisAgent, "Visualizer will use DOT to generate images of type %s.\n", pFileName.c_str());
+        thisAgent->visualizer->set_image_type(pImageType);
     }
 
-    if (options.test(VISUALIZE_FILENAME) && !pFileName->empty())
+    if (!pObject.empty())
     {
-        //        	thisAgent->outputManager->set_visualization_file();
-    }
-
-    if (!pObject->empty())
-    {
-
-        char lFirstChar = pObject->at(0);
-        char lSecondChar = (pObject->length() > 1 ? pObject->at(1) : 0);
+        char lFirstChar = pObject.at(0);
+        char lSecondChar = (pObject.length() > 1 ? pObject.at(1) : 0);
         switch (lFirstChar)
         {
             case 'c':
@@ -130,7 +141,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         bool lValidVisualizationGenerated = false;
         if (options.test(Cli::VISUALIZE_EXPLAIN_LAST))
         {
-            if (!pObject2->empty())
+            if (!pObject2.empty())
             {
                 return SetError("Explanation visualization cannot take an additional argument.\n");
             }
@@ -144,7 +155,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         }
         if (options.test(Cli::VISUALIZE_EXPLAIN_IG))
         {
-            if (!pObject2->empty())
+            if (!pObject2.empty())
             {
                 return SetError("Explanation visualization cannot take an additional argument.\n");
             }
@@ -158,7 +169,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         }
         if (options.test(Cli::VISUALIZE_EXPLAIN_CONTRIBUTORS))
         {
-            if (!pObject2->empty())
+            if (!pObject2.empty())
             {
                 return SetError("Explanation visualization cannot take an additional argument.\n");
             }
@@ -172,7 +183,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         }
         if (options.test(Cli::VISUALIZE_EPMEM)) {
             uint64_t lEpID;
-            if (pObject2->empty() || !from_string(lEpID, pObject2->c_str()))
+            if (pObject2.empty() || !from_string(lEpID, pObject2.c_str()))
             {
                 return SetError("Please specify the episode id you want to visualize.\n");
             }
@@ -188,9 +199,9 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
             // visualizing the store requires an open semantic database
             smem_attach(thisAgent);
 
-            if (!pObject2->empty())
+            if (!pObject2.empty())
             {
-                soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pObject2->c_str());
+                soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pObject2.c_str());
                 if (lexeme.type == IDENTIFIER_LEXEME)
                 {
                     if (thisAgent->smem_db->get_status() == soar_module::connected)
@@ -233,7 +244,9 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
                 return SetError("Visualization produced nothing.");
             }
             PrintCLIMessage_Header("Opening visualization...", 40);
-            std::string filename("/Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
+            std::string filename(thisAgent->visualizer->get_filename());
+            filename += ".gv";
+
             if (!DoCLog(LOG_NEW, &filename, 0, true))
             {
                 thisAgent->visualizer->clear_visualization();
@@ -251,14 +264,32 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
                 thisAgent->visualizer->clear_visualization();
                 return SetError("Error:  Could not close file!\n");
             }
+            if (thisAgent->visualizer->is_generate_img_enabled() || thisAgent->visualizer->is_viz_launch_img_enabled())
+            {
+                lSystemCommand = "dot -T";
+                lSystemCommand += thisAgent->visualizer->get_image_type();
+                lSystemCommand += ' ';
+                lSystemCommand += thisAgent->visualizer->get_filename();
+                lSystemCommand += ".gv -o ";
+                lSystemCommand += thisAgent->visualizer->get_filename();
+                lSystemCommand += '.';
+                lSystemCommand += thisAgent->visualizer->get_image_type();
+                system(lSystemCommand.c_str());
+            }
             if (thisAgent->visualizer->is_viz_launch_img_enabled())
             {
-                system("dot -Tsvg /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv -o /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
-                system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.svg");
+                lSystemCommand = "open ";
+                lSystemCommand += thisAgent->visualizer->get_filename();
+                lSystemCommand += '.';
+                lSystemCommand += thisAgent->visualizer->get_image_type();
+                system(lSystemCommand.c_str());
             }
             if (thisAgent->visualizer->is_viz_launch_gv_enabled())
             {
-                system("open /Users/mazzin/Soar/SoarSandbox/soar_visualization.gv");
+                lSystemCommand = "open ";
+                lSystemCommand += thisAgent->visualizer->get_filename();
+                lSystemCommand += ".gv";
+                system(lSystemCommand.c_str());
             }
             if (thisAgent->visualizer->is_viz_print_enabled())
             {
@@ -274,12 +305,14 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, const std::strin
         PrintCLIMessage_Justify("Launch viewer (-v):", (thisAgent->visualizer->is_viz_launch_img_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Justify("Launch editor (-e):", (thisAgent->visualizer->is_viz_launch_gv_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Section("File", 50);
-        PrintCLIMessage_Justify("Generate image file (-g):", (thisAgent->visualizer->is_viz_print_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizer->is_viz_print_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Filename prefix (-f):", "soar_visualization", 50);
+        PrintCLIMessage_Justify("Generate image file (-g):", (thisAgent->visualizer->is_generate_img_enabled() ? "Yes" : "No"), 50);
+        PrintCLIMessage_Justify("Image type (-i):", thisAgent->visualizer->get_image_type(), 50);
+        PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizer->is_include_arch_enabled() ? "Yes" : "No"), 50);
+        PrintCLIMessage_Justify("Filename prefix (-f):", thisAgent->visualizer->get_filename(), 50);
         PrintCLIMessage_Section("Presentation", 50);
         PrintCLIMessage_Justify("Object style (-o):", (thisAgent->visualizer->is_simple_inst_enabled() ? "simple" : "complex"), 50);
-        PrintCLIMessage_Justify("Line style (-l):", (thisAgent->visualizer->is_include_chunk_enabled() ? "Yes" : "No"), 50);
+        PrintCLIMessage_Justify("Line style (-l):", thisAgent->visualizer->get_line_style(), 50);
+        PrintCLIMessage_Justify("Include architectural links (-a):", (thisAgent->visualizer->is_include_arch_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage("");
     }
     return true;

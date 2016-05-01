@@ -36,7 +36,12 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     m_viz_launch_image = true;
     m_viz_launch_gv = false;
     m_simple_inst = true;
-    m_include_chunk = false;
+    m_include_arch = false;
+    m_use_same_file = false;
+    m_generate_img = true;
+    m_line_style = "polyline";
+    m_filename_prefix = "soar_visualization";
+    m_image_type = "svg";
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
@@ -68,10 +73,13 @@ void GraphViz_Visualizer::viz_graph_start(bool pLeftRight)
         "   edge [];\n";
     if (pLeftRight)
     {
-        graphviz_output +=  "   graph [ rankdir = \"LR\" splines = \"polyline\"];\n";
+        graphviz_output +=  "   graph [ rankdir = \"LR\" ";
     } else {
-        graphviz_output +=  "   graph [ rankdir = \"TD\" splines = \"polyline\"];\n";
+        graphviz_output +=  "   graph [ rankdir = \"TD\" ";
     }
+    graphviz_output +=  "splines = \"";
+    graphviz_output += m_line_style;
+    graphviz_output +=  "\"];\n";
 }
 
 void GraphViz_Visualizer::viz_graph_end()

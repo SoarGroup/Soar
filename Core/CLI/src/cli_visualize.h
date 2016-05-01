@@ -31,38 +31,54 @@ namespace cli
             {
                 return "Syntax: visualize [ last | instantiations | contributors]  (from explain command analysis)\n"
                        "        visualize [ wm | smem | epmem] [id]       (from current state of memory)\n\n"
-                       "                  options:  --architectural-links (default off)"
-                       "                            --depth <number>\n"
-                       "                            --editor-launch       (default off)\n"
-                       "                            --filename <path>     (default \"$SOAR_HOME\\soar_visualization.svg\")\n"
-                       "                            --generate-image      (default off)\n"
-                       "                            --line-style          (default polyline)\n"
-                       "                            --object-style        (simple/complex, default simple)\n"
-                       "                            --print               (default off)\n"
-                       "                            --use-same-file       (default on)\n"
-                       "                            --viewer-launch       (default on)\n";
+                       "                  options:  --architectural-links [yes | no]    (default off)\n"
+                       "                            --depth <number>                    (default 0 = all)\n"
+                       "                            --editor-launch [yes | no]          (default off)\n"
+                       "                            --filename <path>                   (default \"soar_visualization\")\n"
+                       "                            --generate-image [yes | no]         (default off)\n"
+                       "                            --image-type <type>                 (default svg)\n"
+                       "                            --line-style <style>                (default polyline)\n"
+                       "                            --only-show-rule-name [yes | no]    (default yes)\n"
+                       "                            --print [yes | no]                  (default off)\n"
+                       "                            --use-same-file [yes | no]          (default on)\n"
+                       "                            --viewer-launch [yes | no]          (default on)\n";
             }
 
+            bool validate_yes_no(const std::string& pString, size_t pWhichBit, Cli::VisualizeBitset& enabledBitset, Cli::VisualizeBitset& settingsBitset)
+            {
+                if (pString.empty()) return false;
+                char lChar = pString.at(0);
+                if ( (lChar != 'y') && (lChar != 'n'))
+                {
+                    cli.SetError("Option value must be 'yes' or 'no'.");
+                    cli.AppendError(GetSyntax());
+                    return false;
+                }
+                settingsBitset.set(pWhichBit, lChar == 'y');
+                enabledBitset.set(pWhichBit);
+                return true;
+            }
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'a', "architectural-links",        OPTARG_NONE},
+                    {'a', "architectural-links",        OPTARG_REQUIRED},
                     {'d', "depth",                      OPTARG_REQUIRED},
-                    {'e', "editor-launch",              OPTARG_NONE},
+                    {'e', "editor-launch",              OPTARG_REQUIRED},
                     {'f', "filename",                   OPTARG_REQUIRED},
-                    {'g', "generate-image",             OPTARG_NONE},
+                    {'g', "generate-image",             OPTARG_REQUIRED},
+                    {'i', "image-type",                 OPTARG_REQUIRED},
                     {'l', "line-style",                 OPTARG_REQUIRED},
-                    {'o', "object-style",               OPTARG_REQUIRED},
-                    {'p', "print",                      OPTARG_NONE},
-                    {'u', "use-same-file",              OPTARG_NONE},
-                    {'v', "viewer-launch",              OPTARG_NONE},
+                    {'o', "only-show-rule-name",        OPTARG_REQUIRED},
+                    {'p', "print",                      OPTARG_REQUIRED},
+                    {'u', "use-same-file",              OPTARG_REQUIRED},
+                    {'v', "viewer-launch",              OPTARG_REQUIRED},
                     {0, 0,                              OPTARG_NONE}
                 };
 
-                Cli::VisualizeBitset options(0);
-                std::string lfileName, lLineStyle, lObjectStyle;
+                Cli::VisualizeBitset options(0), boolSettings(0);
+                std::string lfileName, lLineStyle, lImageType;
                 int lDepth;
 
                 for (;;)
@@ -80,7 +96,8 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            options.set(Cli::VISUALIZE_ARCH_SHOW);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_ARCH_SHOW, options, boolSettings))
+                                return false;
                             break;
 
                         case 'd':
@@ -93,7 +110,8 @@ namespace cli
                             break;
 
                         case 'e':
-                            options.set(Cli::VISUALIZE_LAUNCH_EDITOR);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_LAUNCH_EDITOR, options, boolSettings))
+                                return false;
                             break;
 
                         case 'f':
@@ -102,7 +120,13 @@ namespace cli
                             break;
 
                         case 'g':
-                            options.set(Cli::VISUALIZE_GENERATE_IMAGE);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_GENERATE_IMAGE, options, boolSettings))
+                                return false;
+                            break;
+
+                        case 'i':
+                            options.set(Cli::VISUALIZE_IMAGE_TYPE);
+                            lImageType = opt.GetOptionArgument();
                             break;
 
                         case 'l':
@@ -111,20 +135,23 @@ namespace cli
                             break;
 
                         case 'o':
-                            options.set(Cli::VISUALIZE_STYLE_OBJECT);
-                            lObjectStyle = opt.GetOptionArgument();
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_ONLY_RULE_NAME, options, boolSettings))
+                                return false;
                             break;
 
                         case 'p':
-                            options.set(Cli::VISUALIZE_PRINT_TO_SCREEN);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_PRINT_TO_SCREEN, options, boolSettings))
+                                return false;
                             break;
 
                         case 'u':
-                            options.set(Cli::VISUALIZE_USE_SAME_FILE);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_USE_SAME_FILE, options, boolSettings))
+                                return false;
                             break;
 
                         case 'v':
-                            options.set(Cli::VISUALIZE_LAUNCH_VIEWER);
+                            if (!validate_yes_no(opt.GetOptionArgument(), Cli::VISUALIZE_LAUNCH_VIEWER, options, boolSettings))
+                                return false;
                             break;
                     }
                 }
@@ -137,38 +164,6 @@ namespace cli
                     cli.SetError("The visualize command cannot take that many arguments.");
                 	return cli.AppendError(GetSyntax());
                 }
-//                if (options.test(Cli::VISUALIZE_FILENAME))
-//                {
-//                    if (options.count() != 1)
-//                    {
-//                        return cli.SetError("That visualize option cannot be changed while issuing a visualize command.");
-//                    }
-//                    return cli.DoVisualize(options, &arg, &arg2);
-//                }
-//
-//                if (options.test(Cli::VISUALIZE_FILENAME) ||
-//                    options.test(Cli::VISUALIZE_STYLE_OBJECT) ||
-//                    options.test(Cli::VISUALIZE_PRINT_TO_SCREEN) ||
-//                    options.test(Cli::VISUALIZE_STYLE_LINE) ||
-//                    options.test(Cli::VISUALIZE_LAUNCH_EDITOR))
-//                {
-//                    if (num_args > 0)
-//                    {
-//                        cli.SetError("That visualize options cannot take additional arguments.\n");
-//                    	return cli.AppendError(GetSyntax());
-//                    }
-//                    return cli.DoVisualize(options, &arg, &arg2);
-//                }
-//
-//                if (options.test(Cli::VISUALIZE_FILENAME))
-//                {
-//                    if ((options.count() != 1) || (num_args > 0))
-//                    {
-//                        cli.SetError("Please specify only a filename, for example 'visualize -f myFile'.");
-//                    	return cli.AppendError(GetSyntax());
-//                    }
-//                    return cli.DoVisualize(options, &lfileName, &arg2);
-//                }
 
                 if (num_args > 0)
                 {
@@ -178,7 +173,7 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
-                if (!cli.DoVisualize(options, &arg, &arg2, &lfileName, &lLineStyle, &lObjectStyle))
+                if (!cli.DoVisualize(options, boolSettings, arg, arg2, lfileName, lLineStyle, lImageType))
                 {
                 	return cli.AppendError(GetSyntax());
                 }

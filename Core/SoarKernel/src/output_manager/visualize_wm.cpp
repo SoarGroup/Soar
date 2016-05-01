@@ -118,7 +118,7 @@ void WM_Visualization_Map::visualize_wm_as_graph()
 
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!w->preference) continue;
+        if (!thisAgent->visualizer->is_include_arch_enabled() && !w->preference) continue;
         if (w->id->tc_num != tc)
         {
             thisAgent->visualizer->viz_object_start(w->id, 0, viz_wme);
@@ -133,7 +133,12 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->visualizer->viz_endl();
             w->value->tc_num = tc;
         }
-        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -#@ \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+        if (w->attr != thisAgent->superstate_symbol)
+        {
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -#@ \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+        } else {
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -#@ \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+        }
     }
 
 }

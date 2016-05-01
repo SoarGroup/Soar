@@ -684,14 +684,15 @@ namespace cli
                 VISUALIZE_SMEM,
                 VISUALIZE_ARCH_SHOW,
                 VISUALIZE_DEPTH,
+                VISUALIZE_LAUNCH_EDITOR,
                 VISUALIZE_FILENAME,
                 VISUALIZE_GENERATE_IMAGE,
-                VISUALIZE_LAUNCH_VIEWER,
-                VISUALIZE_LAUNCH_EDITOR,
+                VISUALIZE_IMAGE_TYPE,
                 VISUALIZE_STYLE_LINE,
-                VISUALIZE_STYLE_OBJECT,
+                VISUALIZE_ONLY_RULE_NAME,
                 VISUALIZE_PRINT_TO_SCREEN,
                 VISUALIZE_USE_SAME_FILE,
+                VISUALIZE_LAUNCH_VIEWER,
                 VISUALIZE_NUM_OPTIONS, // must be last
             };
             typedef std::bitset<VISUALIZE_NUM_OPTIONS> VisualizeBitset;
@@ -703,7 +704,7 @@ namespace cli
              *        0 for production name, -1 for full,
              *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2, const std::string* lfileName, const std::string* lLineStyle, const std::string* lObjectStyle) = 0;
+            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType) = 0;
 
             virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
 

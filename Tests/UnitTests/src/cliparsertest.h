@@ -301,7 +301,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoVisualize(VisualizeBitset options, const std::string* pObject, const std::string* pObject2, const std::string* pFileName, const std::string* pLineStyle, const std::string* pObjectStyle)
+        virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType)
         {
             return false;
         }
