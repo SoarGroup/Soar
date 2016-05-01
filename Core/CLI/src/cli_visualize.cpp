@@ -41,7 +41,7 @@ bool check_boolean_option(agent* thisAgent, size_t pWhichBit, Cli::VisualizeBits
     return false;
 }
 
-bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType)
+bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth)
 {
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
@@ -194,7 +194,6 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         if (options.test(Cli::VISUALIZE_SMEM))
         {
             smem_lti_id lti_id = NIL;
-            unsigned int depth = 1;
 
             // visualizing the store requires an open semantic database
             smem_attach(thisAgent);
@@ -207,11 +206,6 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                     if (thisAgent->smem_db->get_status() == soar_module::connected)
                     {
                         lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
-                        /* Need to add another parameter to logic first */
-                        //                          if ((lti_id != NIL) && pVal)
-                        //                          {
-                        //                              from_c_string(depth, pVal->c_str());
-                        //                          }
                     }
                 }
 
@@ -227,7 +221,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
             }
             else
             {
-                smem_visualize_lti(thisAgent, lti_id, depth, &thisAgent->visualizer->graphviz_output);
+                smem_visualize_lti(thisAgent, lti_id, pDepth, &thisAgent->visualizer->graphviz_output);
             }
             lValidVisualizationGenerated = true;
         }

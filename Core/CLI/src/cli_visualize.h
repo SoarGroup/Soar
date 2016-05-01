@@ -79,7 +79,7 @@ namespace cli
 
                 Cli::VisualizeBitset options(0), boolSettings(0);
                 std::string lfileName, lLineStyle, lImageType;
-                int lDepth;
+                int lDepth = 0;
 
                 for (;;)
                 {
@@ -173,7 +173,7 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
-                if (!cli.DoVisualize(options, boolSettings, arg, arg2, lfileName, lLineStyle, lImageType))
+                if (!cli.DoVisualize(options, boolSettings, arg, arg2, lfileName, lLineStyle, lImageType, lDepth))
                 {
                 	return cli.AppendError(GetSyntax());
                 }

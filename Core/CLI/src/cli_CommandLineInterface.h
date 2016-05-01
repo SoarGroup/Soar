@@ -184,7 +184,7 @@ namespace cli
             virtual bool DoUnalias(std::vector<std::string>& argv);
             virtual bool DoVerbose(bool* pSetting = 0);
             virtual bool DoVersion();
-            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType);
+            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth);
             virtual bool DoWaitSNC(bool* pSetting = 0);
             virtual bool DoWarnings(bool* pSetting = 0);
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
