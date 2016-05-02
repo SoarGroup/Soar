@@ -198,7 +198,6 @@ if compiler == 'g++':
         cflags.append('-DNO_SVS')
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
-        cflags.append('-Wunknown-escape-sequence')
         if GetOption('opt'):
             cflags.extend(['-O3', '-DNDEBUG'])
         else:
