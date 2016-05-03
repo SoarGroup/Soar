@@ -56,7 +56,7 @@ class Explanation_Logger
         friend class chunk_record;
         friend class condition_record;
         friend class action_record;
-        friend class CommandLineInterface;
+        friend class cli::CommandLineInterface;
 
     public:
         bool                    get_enabled() { return enabled; }
