@@ -26,8 +26,6 @@
 #include "test.h"
 #include "working_memory.h"
 
-#include <regex>
-
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
@@ -248,15 +246,120 @@ void GraphViz_Visualizer::viz_endl()
 
 void GraphViz_Visualizer::escape_graphviz_chars()
 {
-    /* Note that we temporarily use #@ and @# for graphviz < > that don't need to be escaped */
-    /* MToDo | Should find a better way.  */
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "&lt;");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "&gt;");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("@#"), "<");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("#@"), ">");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\$"), "\{");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\%"), "\}");
+
+    if (graphviz_output.empty()) return;
+
+    char last_char = 0;
+    std::string finalString;
+
+    for(char &c : graphviz_output)
+    {
+        switch (c)
+        {
+            case '<':
+                if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = 0;
+                }
+                finalString += "&lt;";
+                break;
+            case '>':
+                if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = 0;
+                }
+                finalString += "&gt;";
+                break;
+            case '@':
+                if (last_char == '#')
+                {
+                    finalString += '>';
+                    last_char = 0;
+                } else if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = c;
+                } else {
+                    last_char = c;
+                }
+                break;
+            case '#':
+                if (last_char == '@')
+                {
+                    finalString += '<';
+                    last_char = 0;
+                } else if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = c;
+                } else {
+                    last_char = c;
+                }
+                break;
+            case '\\':
+                if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = c;
+                } else {
+                    last_char = c;
+                }
+                break;
+            case '$':
+                if (last_char == '\\')
+                {
+                    finalString += "\\{";
+                    last_char = 0;
+                } else if (last_char)
+                {
+                    finalString += last_char;
+                    finalString += c;
+                    last_char = 0;
+                } else {
+                    finalString += c;
+                }
+                break;
+            case '%':
+                if (last_char == '\\')
+                {
+                    finalString += "\\}";
+                    last_char = 0;
+                } else if (last_char)
+                {
+                    finalString += last_char;
+                    finalString += c;
+                    last_char = 0;
+                } else {
+                    finalString += c;
+                }
+                break;
+            default:
+                if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = 0;
+                }
+                finalString += c;
+                break;
+        }
+    }
+//    -#@
+    graphviz_output = finalString;
 }
+
+//void GraphViz_Visualizer::escape_graphviz_chars()
+//{
+//    /* Note that we temporarily use #@ and @# for graphviz < > that don't need to be escaped */
+//    /* MToDo | Should find a better way.  */
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "&lt;");
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "&gt;");
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex("@#"), "<");
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex("#@"), ">");
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\$"), "\{");
+//    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\%"), "\}");
+//}
 void GraphViz_Visualizer::clear_visualization()
 {
         graphviz_output.clear();
