@@ -202,7 +202,7 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
-void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w)
+void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -224,7 +224,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
     {
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
-        if (this->m_print_actual_effective || (!rsym->o_id))
+        if (this->m_print_actual_effective || (!pEmptyStringForNullIdentity && (!rsym->o_id)))
         {
             if (rsym->referent)
             {
@@ -234,9 +234,6 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             }
         }
         if (m_print_identity_effective && rsym->o_id) {
-//            sprinta_sf(thisAgent, destString, " [%y/o%u]",
-//                thisAgent->ebChunker->get_ovar_for_o_id(rsym->o_id),
-//                rsym->o_id);
             sprinta_sf(thisAgent, destString, " (%u)", rsym->o_id);
         }
     }
@@ -277,7 +274,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w);
+            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w, false);
         }
         destString += ')';
     }
@@ -290,22 +287,22 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     {
         if (m_pre_string) destString += m_pre_string;
         destString += "(rhs_function ";
-        rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
+        rhs_value_to_string(thisAgent, a->value, destString);
         destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';
-        rhs_value_to_string(thisAgent, a->id, destString, NULL, NULL);
+        rhs_value_to_string(thisAgent, a->id, destString);
         destString += " ^";
-        rhs_value_to_string(thisAgent, a->attr, destString, NULL, NULL);
+        rhs_value_to_string(thisAgent, a->attr, destString);
         destString += ' ';
-        rhs_value_to_string(thisAgent, a->value, destString, NULL, NULL);
+        rhs_value_to_string(thisAgent, a->value, destString);
         destString += " ";
         destString += preference_to_char(a->preference_type);
         if (a->referent)
         {
             destString += " ";
-            rhs_value_to_string(thisAgent, a->referent, destString, NULL, NULL);
+            rhs_value_to_string(thisAgent, a->referent, destString);
         }
         destString += ')';
     }

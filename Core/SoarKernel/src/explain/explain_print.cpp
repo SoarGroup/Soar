@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "instantiation.h"
 #include "preference.h"
+#include "print.h"
 #include "production.h"
 #include "rete.h"
 #include "rhs.h"
@@ -180,25 +181,26 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
             {
                 outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else {
-                thisAgent->outputManager->set_print_test_format(true, false);
-                outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-                thisAgent->outputManager->set_print_test_format(false, true);
-                rhs_value rt = rhs->value;
-
-                if (lAction->variablized_action)
-                {
-                    outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
-                } else {
-                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-                }
-                //                if (print_explanation_trace)
-                //                {
-                //                    thisAgent->outputManager->set_print_test_format(false, true);
-                //                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-                //                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-                //                } else {
-                //                    outputManager->printa(thisAgent, "\n");
-                //                }
+                lAction->print_action(rhs, lActionCount);
+//                thisAgent->outputManager->set_print_test_format(true, false);
+//                outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
+//                thisAgent->outputManager->set_print_test_format(false, true);
+//                rhs_value rt = rhs->value;
+//
+//                if (lAction->variablized_action)
+//                {
+//                    outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
+//                } else {
+//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+//                }
+//                //                if (print_explanation_trace)
+//                //                {
+//                //                    thisAgent->outputManager->set_print_test_format(false, true);
+//                //                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
+//                //                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
+//                //                } else {
+//                //                    outputManager->printa(thisAgent, "\n");
+//                //                }
                 rhs = rhs->next;
             }
         }
@@ -210,6 +212,43 @@ void Explanation_Logger::print_action_list(action_record_list* pActionRecords, p
         }
         thisAgent->outputManager->clear_print_test_format();
     }
+}
+void action_record::print_action(action* pAction, int lActionCount)
+{
+    std::string tempString;
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    if (pAction->type == FUNCALL_ACTION)
+    {
+        tempString = "";
+        outputManager->rhs_value_to_string(thisAgent, pAction->value, tempString, NULL, NULL, true);
+        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
+    } else {
+        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
+        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, true);
+        outputManager->printa(thisAgent, " ^");
+        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, true);
+        outputManager->printa(thisAgent, " ");
+        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, true);
+        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
+        if (pAction->referent)
+        {
+            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, true);
+        }
+        outputManager->printa_sf(thisAgent, ")%-(");
+        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, false);
+        outputManager->printa(thisAgent, " ^");
+        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, false);
+        outputManager->printa(thisAgent, " ");
+        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, false);
+        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
+        if (pAction->referent)
+        {
+            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, false);
+        }
+        outputManager->printa(thisAgent, ")\n");
+    }
+    tempString.clear();
 }
 void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {

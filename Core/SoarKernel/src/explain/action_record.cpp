@@ -8,6 +8,7 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
+#include "production_record.h"
 #include "rete.h"
 #include "rhs.h"
 #include "symbol.h"
@@ -109,30 +110,78 @@ id_set* action_record::get_identities()
     return identities_used;
 }
 
+
+void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, bool printActual)
+{
+    std::string tempString;
+    bool identity_printed = false;
+
+    if (!printActual)
+    {
+        if (pRHS_variablized_value)
+        {
+            if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
+            {
+                tempString = "";
+                thisAgent->outputManager->set_print_test_format(false, true);
+                thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_variablized_value, tempString, NULL, NULL, true);
+                thisAgent->outputManager->set_print_test_format(true, false);
+                if (!tempString.empty())
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
+                    identity_printed = true;
+                }
+            }
+        }
+        if (!identity_printed && pID)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
+            identity_printed = true;
+        }
+    }
+    if (printActual || !identity_printed)
+    {
+        tempString = "";
+        thisAgent->outputManager->set_print_test_format(true, false);
+        thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_value, tempString, NULL, NULL);
+        thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+    }
+}
+
+
 void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID)
 {
     std::string tempString;
+    bool identity_printed = false;
     tempString = "";
     thisAgent->outputManager->set_print_test_format(true, false);
     thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_value, tempString, NULL, NULL);
     thisAgent->visualizer->graphviz_output += tempString;
     if (pRHS_variablized_value)
     {
-        tempString = "";
-        thisAgent->outputManager->set_print_test_format(false, true);
-        thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_variablized_value, tempString, NULL, NULL);
-        if (!tempString.empty())
+        if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
         {
-            thisAgent->visualizer->graphviz_output += tempString;
+            tempString = "";
+            thisAgent->outputManager->set_print_test_format(false, true);
+            thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_variablized_value, tempString, NULL, NULL, true);
+            thisAgent->outputManager->set_print_test_format(true, false);
+            if (!tempString.empty())
+            {
+                thisAgent->visualizer->graphviz_output += " (";
+                thisAgent->visualizer->graphviz_output += tempString;
+                thisAgent->visualizer->graphviz_output += ')';
+                identity_printed = true;
+            }
         }
-    } else if (pID) {
+    }
+    if (!identity_printed && pID) {
         thisAgent->visualizer->graphviz_output += " (";
         thisAgent->visualizer->graphviz_output += std::to_string(pID);
         thisAgent->visualizer->graphviz_output += ')';
     }
 }
 
-void action_record::viz_action_list(agent* thisAgent, action_record_list* pActionRecords, production* pOriginalRule, action* pRhs)
+void action_record::viz_action_list(agent* thisAgent, action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
 {
     if (pActionRecords->empty())
     {
@@ -155,8 +204,16 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
             } else {
                 if (!pOriginalRule || !pOriginalRule->p_node)
                 {
-                    thisAgent->visualizer->viz_text_record("No RETE rule");
-                    return;
+                    if (pExcisedRule)
+                    {
+                        rhs = pExcisedRule->get_rhs();
+                        assert(rhs);
+                    } else {
+                        thisAgent->visualizer->viz_record_start();
+                        thisAgent->visualizer->viz_text_record("No RETE rule");
+                        thisAgent->visualizer->viz_record_end();
+                        return;
+                    }
                 } else {
                     p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
                     pRhs = rhs;

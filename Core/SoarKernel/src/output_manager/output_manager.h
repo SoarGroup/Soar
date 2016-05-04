@@ -187,7 +187,7 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NIL, wme* w = NIL);
+        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string_brief(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);

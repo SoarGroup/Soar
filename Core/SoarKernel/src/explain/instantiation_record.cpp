@@ -526,7 +526,7 @@ void instantiation_record::viz_wm_instantiation()
             thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
-        action_record::viz_action_list(thisAgent, actions, original_production, rhs);
+        action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
         thisAgent->visualizer->viz_object_end(viz_inst_record);
     }
 }
@@ -626,7 +626,7 @@ void instantiation_record::viz_et_instantiation()
             thisAgent->visualizer->viz_endl();
         }
         thisAgent->visualizer->viz_seperator();
-        action_record::viz_action_list(thisAgent, actions, original_production, rhs);
+        action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
         if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
