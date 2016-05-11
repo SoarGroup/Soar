@@ -472,9 +472,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
-            }
-            else
-            {
+		}
+		else
+		{
             /* --- not in TC, so discard the condition --- */
 
             if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
@@ -488,8 +488,9 @@ void build_chunk_conds_for_grounds_and_add_negateds(agent* thisAgent,
                 *reliable = false;
             }
 
-            thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
+            
         }
+		thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
     }
 
     if (prev_vrblz)
@@ -1215,8 +1216,9 @@ void chunk_instantiation(agent* thisAgent, instantiation* inst, instantiation** 
         deallocate_action_list(thisAgent, rhs);
         rhs = NULL;
         // We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
-        thisAgent->stop_soar = true;
-        thisAgent->system_halted = true;
+		//JK doesn't crash but gets here
+        //thisAgent->stop_soar = true;
+        //thisAgent->system_halted = true;
 
         goto chunking_abort;
     }
