@@ -91,7 +91,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
             lAug = (*it2);
             if (lAug->value->is_identifier() && (lAug->attr != thisAgent->superstate_symbol))
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -#@ \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
+                thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
                 thisAgent->visualizer->viz_record_start();
                 thisAgent->visualizer->viz_table_element_start();
@@ -135,9 +135,9 @@ void WM_Visualization_Map::visualize_wm_as_graph()
         }
         if (w->attr != thisAgent->superstate_symbol)
         {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -#@ \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         } else {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -#@ \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         }
     }
 

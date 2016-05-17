@@ -83,11 +83,9 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         thisAgent->visualizer->set_simple_inst_enabled(pSettings.test(VISUALIZE_ONLY_RULE_NAME));
         if (thisAgent->visualizer->is_simple_inst_enabled())
         {
-            thisAgent->visualizer->set_simple_inst_enabled(false);
-            print(thisAgent, "Visualizer will print rule condition, actions and any relevant meta information.\n");
-        } else {
-            thisAgent->visualizer->set_simple_inst_enabled(true);
             print(thisAgent, "Visualizer will only print the name of rules.\n");
+        } else {
+            print(thisAgent, "Visualizer will print rule condition, actions and any relevant meta information.\n");
         }
     }
     if (options.test(VISUALIZE_STYLE_LINE))
@@ -304,7 +302,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizer->is_use_same_file_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Justify("Filename prefix (-f):", thisAgent->visualizer->get_filename(), 50);
         PrintCLIMessage_Section("Presentation", 50);
-        PrintCLIMessage_Justify("Object style (-o):", (thisAgent->visualizer->is_simple_inst_enabled() ? "simple" : "complex"), 50);
+        PrintCLIMessage_Justify("Only print rule name of instantiation (-o):", (thisAgent->visualizer->is_simple_inst_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage_Justify("Line style (-l):", thisAgent->visualizer->get_line_style(), 50);
         PrintCLIMessage_Justify("Include architectural links (-a):", (thisAgent->visualizer->is_include_arch_enabled() ? "Yes" : "No"), 50);
         PrintCLIMessage("");
