@@ -26,8 +26,6 @@
 #include "test.h"
 #include "working_memory.h"
 
-#include <regex>
-
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
@@ -97,29 +95,29 @@ void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visu
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
                 "      penwidth = \"0\"\n"
-                "      label = @#", node_id);
+                "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                @#TR#@ @#TD COLSPAN=\"3\"#@Instantiation (i %u) of rule@#BR/#@%y@#/TD#@ @#/TR#@\n", node_id, pName);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%y\xF3/TD\xF2 \xF3/TR\xF2\n", node_id, pName);
             break;
 
         case viz_chunk_record:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   chunk%u [\n"
                 "      style = \"dashed, bold, rounded\"\n"
-                "      label = @#", node_id);
+                "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                @#TR#@ @#TD COLSPAN=\"3\"#@%y (i %u)@#/TD#@ @#/TR#@\n", pName, node_id);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%y (i %u)\xF3/TD\xF2 \xF3/TR\xF2\n", pName, node_id);
             break;
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%y\" [\n"
                 "      penwidth = \"0\"\n"
-                "      label = @#", pName);
+                "      label = \xF3", pName);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                @#TR#@ @#TD COLSPAN=\"3\"#@%y@#/TD#@ @#/TR#@\n", pName);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%y\xF3/TD\xF2 \xF3/TR\xF2\n", pName);
             break;
         case viz_simple_inst:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
@@ -156,7 +154,7 @@ void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
         case viz_chunk_record:
         case viz_id_and_augs:
             viz_table_end();
-            graphviz_output += "              #@\n   ];\n\n";
+            graphviz_output += "              \xF2\n   ];\n\n";
             break;
 
         case viz_simple_inst:
@@ -172,35 +170,35 @@ void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
 
 void GraphViz_Visualizer::viz_record_start()
 {
-    graphviz_output += "                @#TR#@ ";
+    graphviz_output += "                \xF3TR\xF2 ";
 }
 
 void GraphViz_Visualizer::viz_record_end(bool pLeftJustify)
 {
     if (pLeftJustify)
-        graphviz_output +=  " @#/TR#@";
+        graphviz_output +=  " \xF3/TR\xF2";
     else
-        graphviz_output +=  " @#/TR#@";
+        graphviz_output +=  " \xF3/TR\xF2";
 }
 void GraphViz_Visualizer::viz_table_start()
 {
     outputManager->sprinta_sf(thisAgent, graphviz_output,
-        "@#TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\"#@\n");
+        "\xF3TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"4\"\xF2\n");
 }
 
 void GraphViz_Visualizer::viz_table_end()
 {
-    graphviz_output += "              @#/TABLE#@\n";
+    graphviz_output += "              \xF3/TABLE\xF2\n";
 }
 
 void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort)
 {
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                @#TD PORT=\"%c_%u%cs\"#@ ",
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD PORT=\"%c_%u%cs\"\xF2 ",
             pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                @#TD#@ ");
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD\xF2 ");
     }
     viz_table_start();
 }
@@ -209,36 +207,36 @@ void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeCh
 {
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "@#TD PORT=\"%c_%u%s\"#@ ",
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD PORT=\"%c_%u%s\"\xF2 ",
             pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "@#TD#@ ");
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD\xF2 ");
     }
 }
 
 void GraphViz_Visualizer::viz_table_element_end()
 {
-    outputManager->sprinta_sf(thisAgent, graphviz_output, "@#/TD#@");
+    outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3/TD\xF2");
 }
 
 void GraphViz_Visualizer::viz_text_record(const char* pMsg)
 {
-    outputManager->sprinta_sf(thisAgent, graphviz_output, "@#TD#@ %s @#/TD#@", pMsg);
+    outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD\xF2 %s \xF3/TD\xF2", pMsg);
 }
 
 void GraphViz_Visualizer::viz_NCC_start()
 {
-    graphviz_output +=  "                @#TR#@ @#TD COLSPAN=\"3\" ALIGN=\"LEFT\"#@ -\$ @#/TD#@ @#/TR#@\n";
+    graphviz_output +=  "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" ALIGN=\"LEFT\"\xF2 -\xE3 \xF3/TD\xF2 \xF3/TR\xF2\n";
 }
 
 void GraphViz_Visualizer::viz_NCC_end()
 {
-    graphviz_output +=  "                @#TR#@ @#TD COLSPAN=\"3\" ALIGN=\"LEFT\"#@ \% @#/TD#@ @#/TR#@\n";
+    graphviz_output +=  "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" ALIGN=\"LEFT\"\xF2 \xE1 \xF3/TD\xF2 \xF3/TR\xF2\n";
 }
 
 void GraphViz_Visualizer::viz_seperator()
 {
-    graphviz_output +=  "                @#TR#@ @#TD COLSPAN=\"3\"#@ ----> @#/TD#@ @#/TR#@";
+    graphviz_output +=  "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2 ----> \xF3/TD\xF2 \xF3/TR\xF2";
 }
 
 void GraphViz_Visualizer::viz_endl()
@@ -248,15 +246,47 @@ void GraphViz_Visualizer::viz_endl()
 
 void GraphViz_Visualizer::escape_graphviz_chars()
 {
-    /* Note that we temporarily use #@ and @# for graphviz < > that don't need to be escaped */
-    /* MToDo | Should find a better way.  */
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("<"), "&lt;");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex(">"), "&gt;");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("@#"), "<");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("#@"), ">");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\$"), "\{");
-    graphviz_output = std::regex_replace(graphviz_output, std::regex("\\%"), "\}");
+
+    if (graphviz_output.empty()) return;
+
+    char last_char = 0;
+    std::string finalString;
+
+    for(char &c : graphviz_output)
+    {
+        switch (c)
+        {
+            case '<':
+                finalString += "&lt;";
+                break;
+            case '>':
+                finalString += "&gt;";
+                break;
+            case '\xF3':
+                finalString += "<";
+                break;
+            case '\xF2':
+                finalString += ">";
+                break;
+            case '\xE3':
+                finalString += "{";
+                break;
+            case '\xE1':
+                finalString += "}";
+                break;
+            default:
+                if (last_char)
+                {
+                    finalString += last_char;
+                    last_char = 0;
+                }
+                finalString += c;
+                break;
+        }
+    }
+    graphviz_output = finalString;
 }
+
 void GraphViz_Visualizer::clear_visualization()
 {
         graphviz_output.clear();
@@ -273,7 +303,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
         graphviz_output += std::to_string(pSrcActionID);
         graphviz_output += "_r ";
     }
-    graphviz_output += "-#@ rule";
+    graphviz_output += "-\xF2 rule";
     graphviz_output += std::to_string(pTargetRuleID);
     if (thisAgent->visualizer->is_simple_inst_enabled())
     {
@@ -289,7 +319,7 @@ void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
-    graphviz_output += " -#@ chunk";
+    graphviz_output += " -\xF2 chunk";
     graphviz_output += std::to_string(pTargetRuleID);
     graphviz_output += ":c_";
     graphviz_output += std::to_string(pTargetCondID);

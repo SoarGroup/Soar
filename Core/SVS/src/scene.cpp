@@ -735,9 +735,14 @@ std::string scene::parse_query(const std::string& query) const
         cmd = fields[0];
         fields.erase(fields.begin());
         
+
         if (cmd == "obj-info")
         {
             errfield = parse_object_query(fields, result, error);
+        }
+        else if (cmd == "list-all-objs")
+        {
+            errfield = parse_list_all_objects_query(fields, result, error);
         }
         else if (cmd == "objs-with-flag")
         {
@@ -762,7 +767,6 @@ std::string scene::parse_query(const std::string& query) const
     }
     return output;
 }
-
 int scene::parse_object_query(std::vector<std::string>& f, std::string& result, std::string& error) const
 {
     if (f.size() == 0)
@@ -792,12 +796,31 @@ int scene::parse_object_query(std::vector<std::string>& f, std::string& result, 
     ss << " t " << tags.size();
     for (tag_map::const_iterator i = tags.begin(); i != tags.end(); i++)
     {
-        ss << "   " << i->first << " = " << i->second;
+        ss << " " << i->first << " " << i->second;
     }
     
     result = ss.str();
     return -1;
 }
+
+int scene::parse_list_all_objects_query(std::vector<std::string>& f, std::string& result, std::string& error) const
+{
+    vector<const sgnode*> nodes;
+    this->get_all_nodes(nodes);
+
+    stringstream ss;
+    ss << "objs " << nodes.size();
+
+    for (vector<const sgnode*>::const_iterator i = nodes.begin(); i != nodes.end(); i++)
+    {
+        ss << " " << (*i)->get_id();
+    }
+    
+    result = ss.str();
+    
+    return -1;
+}
+
 
 int scene::parse_objects_with_flag_query(std::vector<std::string>& f, std::string& result, std::string& error) const
 {

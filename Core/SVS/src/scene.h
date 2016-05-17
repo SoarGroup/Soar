@@ -84,6 +84,7 @@ class scene : public sgnode_listener, public cliproxy
         void cli_clear(const std::vector<std::string>& args, std::ostream& os);
         
         int parse_object_query(std::vector<std::string>& f, std::string& result, std::string& error) const;
+        int parse_list_all_objects_query(std::vector<std::string>& f, std::string& result, std::string& error) const;
         int parse_objects_with_flag_query(std::vector<std::string>& f, std::string& result, std::string& error) const;
 };
 
