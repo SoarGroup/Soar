@@ -117,7 +117,7 @@ class Explanation_Based_Chunker
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         bool max_chunks_reached;
-        void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; };
+        void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
         ::list*             chunk_free_problem_spaces;
@@ -155,6 +155,7 @@ class Explanation_Based_Chunker
         uint64_t            chunk_count;
         uint64_t            justification_count;
         uint64_t            chunks_this_d_cycle;
+        uint64_t            justifications_this_d_cycle;
 
         /* String that every chunk name begins with */
         char*               chunk_name_prefix;

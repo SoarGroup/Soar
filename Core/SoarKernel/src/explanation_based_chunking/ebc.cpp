@@ -173,13 +173,16 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     std::string lImpasseName;
     std::stringstream lName;
     char* rule_prefix;
+    uint64_t rule_number;
     chunkNameFormats chunkNameFormat = Get_Chunk_Name_Format();
 
     if (pIsChunk)
     {
         rule_prefix = chunk_name_prefix;
+        rule_number = chunks_this_d_cycle;
     } else {
         rule_prefix = justification_name_prefix;
+        rule_number = justifications_this_d_cycle;
     }
 
     lowest_result_level = thisAgent->top_goal->id->level;
@@ -253,7 +256,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
             }
             increment_counter(chunk_count);
             lName << rule_prefix << "-" << chunk_count << "*" <<
-                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << chunks_this_d_cycle;
+                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << rule_number;
 
             break;
         }
@@ -303,7 +306,8 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
 
             if (inst->prod)
             {
-                if (strstr(inst->prod_name->sc->name, rule_prefix) == inst->prod_name->sc->name)
+                if ((strstr(inst->prod_name->sc->name, rule_prefix) == inst->prod_name->sc->name) &&
+                    (strstr(inst->prod_name->sc->name, "-multi") == inst->prod_name->sc->name))
                 {
                     /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
                     lName << "-multi";
@@ -314,7 +318,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
             {
                 lName << "*" << lImpasseName;
             }
-            lName << "*t" << thisAgent->d_cycle_count << "-" << chunks_this_d_cycle;
+            lName << "*t" << thisAgent->d_cycle_count << "-" << rule_number;
         }
     }
     lImpasseName.erase();

@@ -853,6 +853,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     }
     else
     {
+        justifications_this_d_cycle++;
         m_prod_name = generate_chunk_name(m_inst, pForChunk);
 //        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
