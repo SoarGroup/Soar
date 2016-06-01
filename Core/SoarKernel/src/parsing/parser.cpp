@@ -2310,7 +2310,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
             lexer.get_lexeme();
             continue;
         }
-        if (!strcmp(lexer.current_lexeme.string(), ":explain-chunks"))
+        if (!strcmp(lexer.current_lexeme.string(), ":explain"))
         {
             explain_chunks = true;
             lexer.get_lexeme();
