@@ -333,12 +333,21 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        cons *c, *c2;
-        for (c = pTest->data.conjunct_list, c2 = pInstantiatedTest->data.conjunct_list; c != NULL && c2 != NULL; c = c->rest, c2 = c2->rest)
-        {
-            add_identities_in_test(thisAgent, static_cast<test>(c->first), static_cast<test>(c2->first), pID_Set, pID_Set_Map);
-        }
-    } else if (test_has_referent(pTest)) {
+            pTest = pTest->eq_test;
+    }
+    if (pInstantiatedTest->type == CONJUNCTIVE_TEST)
+    {
+        pInstantiatedTest = pInstantiatedTest->eq_test;
+    }
+//    if (pTest->type == CONJUNCTIVE_TEST)
+//    {
+//        cons *c, *c2;
+//        for (c = pTest->data.conjunct_list, c2 = pInstantiatedTest->data.conjunct_list; c != NULL && c2 != NULL; c = c->rest, c2 = c2->rest)
+//        {
+//            add_identities_in_test(thisAgent, static_cast<test>(c->first), static_cast<test>(c2->first), pID_Set, pID_Set_Map);
+//        }
+//    } else
+    if (test_has_referent(pTest)) {
         if (pTest->identity)
         {
             if (pID_Set->find(pTest->identity) == pID_Set->end())
