@@ -99,7 +99,7 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
             return true;
     }
 
-    /* Handle global stats command*/
+    /* Handle record command*/
     if (options.test(EXPLAIN_RECORD))
     {
         if (pStringParameter->empty())

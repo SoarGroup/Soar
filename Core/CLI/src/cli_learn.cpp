@@ -145,7 +145,6 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
     {
         set_sysparam(thisAgent, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, true);
         PrintCLIMessage("Learn| desirability-prefs = on");
-        PrintCLIMessage("Learn| Learning through desirability prefs may have issues in 9.5 beta.  Use at your own risk.");
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES))
