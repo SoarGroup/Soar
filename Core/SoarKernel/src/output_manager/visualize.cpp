@@ -33,7 +33,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     m_viz_print = false;
     m_viz_launch_image = true;
     m_viz_launch_gv = false;
-    m_simple_inst = true;
+    m_simple_inst = false;
     m_include_arch = false;
     m_use_same_file = true;
     m_generate_img = true;
