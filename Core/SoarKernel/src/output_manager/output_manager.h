@@ -324,7 +324,8 @@ class Output_Manager
 
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
-        void display_soar_error(agent* thisAgent, SoarError pErrorType, int64_t pSysParam = 0);
+        void display_soar_warning(agent* thisAgent, SoarError pErrorType, int64_t pSysParam = 0);
+        void display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
 
         /* -- Should be moved elsewhere -- */
         void debug_find_and_print_sym(char* find_string);

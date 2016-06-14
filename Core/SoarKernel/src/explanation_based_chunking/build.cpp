@@ -658,15 +658,31 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     {
         symbol_list* unconnected_syms = new symbol_list();
 
-        EBCFailureType lFailureType = reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
 
-        if (lFailureType == ebc_failed_unconnected_conditions)
+        if (m_failure_type != ebc_success)
         {
-            generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
-            return reorder_and_validate_chunk();
+            thisAgent->outputManager->printa(thisAgent, "Incorrect rule learned:\n");
+            print_current_built_rule();
+
+            if (m_failure_type == ebc_failed_unconnected_conditions)
+            {
+                thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
+                generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
+                delete unconnected_syms;
+                if (reorder_and_validate_chunk())
+                {
+                    thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repaired);
+                    return true;
+                } else {
+                    thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_chunk);
+                    return false;
+                }
+            }
+
+            delete unconnected_syms;
+            return false;
         }
-        delete unconnected_syms;
-        return (lFailureType == ebc_success);
     }
     return true;
 }
@@ -807,12 +823,6 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
-    print_with_symbols(thisAgent, "\nWarning:  Chunk learned is invalid:\n\nsp {%y\n", m_prod_name);
-    print_condition_list(thisAgent, m_vrblz_top, 4, false);
-    print(thisAgent, "\n  -->\n");
-    print_action_list(thisAgent, m_rhs, 4, false);
-    thisAgent->outputManager->display_soar_error(thisAgent, ebc_error_invalid_chunk);
-
     /* Change to justification naming */
     symbol_remove_ref(thisAgent, m_prod_name);
     set_up_rule_name(false);
@@ -829,11 +839,7 @@ void Explanation_Based_Chunker::revert_chunk_to_instantiation()
     m_rhs = variablize_results_into_actions(m_results, false);
     add_goal_or_impasse_tests();
 
-    print_with_symbols(thisAgent, "\nCreating the following justification instead:\n\nsp {%y\n", m_prod_name);
-    print_condition_list(thisAgent, m_vrblz_top, 4, false);
-    print(thisAgent, "\n  -->\n");
-    print_action_list(thisAgent, m_rhs, 4, false);
-    print(thisAgent, "\n}\n\n");
+    print_current_built_rule();
 }
 
 void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
@@ -959,6 +965,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     m_inst = inst;
     m_chunk_new_i_id = 0;
+    m_failure_type = ebc_success;
+
     if (!can_learn_from_instantiation()) { m_inst = NULL; return; }
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
@@ -985,7 +993,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
     if (chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
     {
-        thisAgent->outputManager->display_soar_error(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_max_chunks();
@@ -1020,7 +1028,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
     if (!m_inst_top)
     {
-        thisAgent->outputManager->display_soar_error(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_no_grounds();
         thisAgent->explanationLogger->cancel_chunk_record();
@@ -1082,18 +1090,17 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             if (m_prod)
             {
                 dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
+                thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_reverted_chunk);
+
                 /* MToDo | Make this an option to interrrupt when an explanation is made*/
                 //thisAgent->stop_soar = true;
+
                 #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationLogger->increment_stat_reverted();
                 #endif
             }
         } else {
-            print_with_symbols(thisAgent, "\nWarning: Soar was not able to create a valid justification for a result:\n\nsp {%y\n", m_prod_name);
-            print_condition_list(thisAgent, m_vrblz_top, 2, false);
-            print(thisAgent, "\n  -->\n   ");
-            print_action_list(thisAgent, m_rhs, 3, false);
-            thisAgent->outputManager->display_soar_error(thisAgent, ebc_error_invalid_justification);
+            thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_justification);
 
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER

@@ -116,6 +116,7 @@ class Explanation_Based_Chunker
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
+        void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
         bool max_chunks_reached;
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
@@ -127,6 +128,9 @@ class Explanation_Based_Chunker
          * template instances.  We make these two methods public to support that. */
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
+
+        /* Methods for printing in Soar trace */
+        void print_current_built_rule();
 
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
@@ -144,7 +148,6 @@ class Explanation_Based_Chunker
         void cleanup_for_instantiation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         void clear_variablization_maps();
-
 
     private:
 
@@ -192,7 +195,7 @@ class Explanation_Based_Chunker
         condition*          m_saved_justification_bottom;
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
-
+        EBCFailureType      m_failure_type;
         /* -- The following are tables used by the variablization manager during
          *    instantiation creation, backtracing and chunk formation.  The data
          *    they store is temporary and cleared after use. -- */

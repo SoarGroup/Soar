@@ -20,6 +20,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "ebc.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
@@ -140,15 +141,21 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     }
 
     if (remaining_actions)
-    {
+    {   /* --- there are remaining_actions but none can be legally added --- */
+
         dprint_header(DT_REORDERER, PrintAfter, "Remaining action list:\n%2", remaining_actions);
-        /* --- there are remaining_actions but none can be legally added --- */
-        print(thisAgent,  "\nError: Could not re-order actions of production %s --\n",
-              thisAgent->name_of_production_being_reordered);
-        print(thisAgent, "       They either contain variables or long-term identifiers\n");
-        print(thisAgent, "       that are not tested in a positive condition on the\n");
-        print(thisAgent, "       LHS (negative conditions don't count) or it tries to\n");
-        print(thisAgent, "       pass an unbound variable as an argument to a function.\n");
+
+        std::string unSymString("");
+        action* lAction;
+        thisAgent->outputManager->set_print_indents("        ");
+        for (lAction = remaining_actions; lAction; lAction = lAction->next)
+        {
+            thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
+        }
+        thisAgent->outputManager->set_print_indents();
+        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
+        thisAgent->ebChunker->set_failure_type(ebc_failed_reordering_rhs);
+
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -1489,39 +1496,17 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
 
     if (ungrounded_syms && ungrounded_syms->size() > 0)
     {
-        print(thisAgent,
-            "\n\nWarning:  In rule %s,\n", thisAgent->name_of_production_being_reordered);
-        print(thisAgent,
-            "          The following identifiers are not connected to any goal state or \n"
-            "          impasse, either directly in a condition or indirectly through other\n"
-            "          conditions:");
-        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++) {
-            print_with_symbols(thisAgent, " %y", (*it));
-        }
-        print_with_symbols(thisAgent,
-            "\n\n   Note:  While this may not be occurring in this case, Soar does not\n"
-                "          consider the attribute element when determining whether one\n"
-                "          condition is connected to another. Using  Soar identifiers as\n"
-                "          attributes may work but is not fully supported.\n\n");
+        std::string unSymString;
+        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
+            unSymString += (*it)->to_string(true);
+            if (++it != ungrounded_syms->end())
+            {
+                unSymString += ", ";
+            }
 
-        // XML geneneration
-        growable_string gs = make_blank_growable_string(thisAgent);
-        add_to_growable_string(thisAgent, &gs, "\nWarning:  In rule ");
-        add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-        add_to_growable_string(thisAgent, &gs,
-            ",\n          The following identifiers are not connected to any goal state or \n"
-            "          impasse, either directly in a condition or indirectly through other\n"
-            "          conditions:");
-        for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++) {
-            add_to_growable_string(thisAgent, &gs, (*it)->to_string(true));
-            add_to_growable_string(thisAgent, &gs, " ");
         }
-        add_to_growable_string(thisAgent, &gs, "\n\n   Note:  While this may not be occurring in this case, Soar does not\n"
-            "          consider the attribute element when determining whether one\n"
-            "          condition is connected to another. Using  Soar identifiers as\n"
-            "          attributes may work but is not fully supported.\n\n");
-        xml_generate_warning(thisAgent, text_of_growable_string(gs));
-        free_growable_string(thisAgent, gs);
+        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
+        thisAgent->ebChunker->set_failure_type(ebc_failed_unconnected_conditions);
         return false;
     }
 
@@ -1552,9 +1537,8 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
 
     if (!roots)
     {
-        print(thisAgent,  "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "        None of the conditions reference a state.\n");
-        /* hmmm... most people aren't going to understand this error message */
+        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
+        thisAgent->ebChunker->set_failure_type(ebc_failed_no_roots);
         return false;
     }
 
@@ -1563,7 +1547,14 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool 
     remove_vars_requiring_bindings(thisAgent, *lhs_top);
     free_list(thisAgent, roots);
 
-    return check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent));
+    if (!check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent)))
+    {
+        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
+        thisAgent->ebChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
+        return false;
+    }
+
+    return true;
 }
 
 void init_reorderer(agent* thisAgent)     /* called from init_production_utilities() */

@@ -15,6 +15,24 @@
 #include "print.h"
 #include "debug.h"
 
+void Explanation_Based_Chunker::print_current_built_rule()
+{
+    if (m_prod_name)
+    {
+        print_with_symbols(thisAgent, "\nsp {%y\n", m_prod_name);
+    }
+    if (m_vrblz_top)
+    {
+        print_condition_list(thisAgent, m_vrblz_top, 2, false);
+    }
+    if (m_rhs)
+    {
+        print(thisAgent, "\n  -->\n   ");
+        print_action_list(thisAgent, m_rhs, 3, false);
+    }
+    print(thisAgent, "}\n\n");
+}
+
 void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;

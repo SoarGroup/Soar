@@ -100,6 +100,9 @@ enum SoarError {
     ebc_error_max_chunks,
     ebc_error_invalid_chunk,
     ebc_error_invalid_justification,
+    ebc_error_reverted_chunk,
+    ebc_error_repairing,
+    ebc_error_repaired,
     ebc_error_no_conditions,
 };
 
@@ -111,6 +114,8 @@ enum EBCTraceType {
 
 enum EBCFailureType {
     ebc_success,
+    ebc_failed_no_roots,
+    ebc_failed_negative_relational_test_bindings,
     ebc_failed_reordering_rhs,
     ebc_failed_unconnected_conditions
 };

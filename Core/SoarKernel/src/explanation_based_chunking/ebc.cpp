@@ -46,6 +46,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     chunkNameFormat = ruleFormat;
     max_chunks_reached = false;
+    m_failure_type = ebc_success;
 
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
@@ -108,7 +109,7 @@ void Explanation_Based_Chunker::reinit()
     m_saved_justification_bottom        = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
-
+    m_failure_type                      = ebc_success;
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
@@ -127,7 +128,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
-            message << "\nWill not attempt to learn a new rule because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
+            message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
@@ -141,7 +142,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
-            message << "\nWill not attempt to learn a new rule because state " << inst->match_goal->to_string() << " was not flagged for learning";
+            message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }

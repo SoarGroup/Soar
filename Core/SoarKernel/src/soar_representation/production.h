@@ -10,7 +10,7 @@
 typedef struct production_struct
 {
     ProductionType                  type;
-    Symbol* name;
+    Symbol*                         name;
     struct rete_node_struct*        p_node;                     /* NIL if it's not in the rete */
     char*                           original_rule_name;
     char*                           documentation;              /* pointer to memory block, or NIL */
@@ -66,7 +66,7 @@ typedef struct multi_attributes_struct
     struct multi_attributes_struct* next;
 } multi_attribute;
 
-extern void init_production_utilities(agent* thisAgent);
+void init_production_utilities(agent* thisAgent);
 
 /* --------------------------------------------------------------------
                       Transitive Closure Utilities
@@ -109,14 +109,14 @@ extern void init_production_utilities(agent* thisAgent);
 
 tc_number get_new_tc_number(agent* thisAgent);
 
-extern void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
+void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
                       ::list** id_list, ::list** var_list);
-extern void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
+void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
                     ::list** id_list, ::list** var_list);
-extern void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
+void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
                       ::list** id_list, ::list** var_list);
-extern bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
-extern bool action_is_in_tc(action* a, tc_number tc);
+bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
+bool action_is_in_tc(action* a, tc_number tc);
 
 /* --------------------------------------------------------------------
                          Variable Generator
@@ -135,10 +135,10 @@ extern bool action_is_in_tc(action* a, tc_number tc);
    name.  The prefix string should not include the opening "<".
 -------------------------------------------------------------------- */
 
-extern void reset_variable_generator(agent* thisAgent,
+void reset_variable_generator(agent* thisAgent,
                               condition* conds_with_vars_to_avoid,
                               action* actions_with_vars_to_avoid);
-extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
+Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -168,24 +168,24 @@ extern Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
     say.  Normally deallocate_production() should be invoked only via
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
-extern EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
+bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                                        condition**   lhs_top,
                                                        action**      rhs_top,
                                                        bool          reorder_nccs,
                                                        bool          collect_ungroundeds = false,
                                                        symbol_list*  ungrounded_syms = NULL);
 
-extern production* make_production(agent* thisAgent, ProductionType type,
+production* make_production(agent* thisAgent, ProductionType type,
                                    Symbol* name, char* original_rule_name,
                                    condition** lhs_top, action** rhs_top,
                                    bool reorder_nccs, preference* results);
 
-extern void deallocate_production(agent* thisAgent, production* prod);
-extern void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
-extern void excise_all_productions_of_type(agent* thisAgent,
+void deallocate_production(agent* thisAgent, production* prod);
+void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
+void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign);
-extern void excise_all_productions(agent* thisAgent,
+void excise_all_productions(agent* thisAgent,
                             bool print_sharp_sign);
 
 inline void production_add_ref(production* p)

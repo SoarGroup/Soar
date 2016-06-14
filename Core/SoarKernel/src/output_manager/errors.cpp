@@ -16,12 +16,61 @@
 #include "agent.h"
 #include "xml.h"
 
-void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, int64_t pSysParam)
+void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1, const char* pString2)
+{
+    if (!thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) return;
+    switch (pErrorType)
+    {
+        case ebc_failed_reordering_rhs:
+        {
+            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa_sf(thisAgent,"        %s\n\n", pString1);
+            printa(thisAgent,     "        RHS actions either (a) contain variables/long-term identifiers\n"
+                                  "        that are not tested in a positive condition on the LHS\n"
+                                  "        (negative conditions don't count) or (b) pass an unbound \n"
+                                  "        variable as an argument to a RHS function.\n");
+            printa_sf(thisAgent,"\nProblem RHS Actions:\n%s\n", pString2);
+            break;
+        }
+        case ebc_failed_unconnected_conditions:
+        {
+            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa_sf(thisAgent,"        %s\n\n", pString1);
+            printa(thisAgent,   "          A LHS condition is not connected to a goal.  This is \n"
+                                "          likely caused by a condition in a matched rule that tested either\n"
+                                "          (a) a long-term identifier retrieved in the sub-state that also \n"
+                                "          exists in a super-state or (b) a working memory element that was \n"
+                                "          created in the sub-state and then later linked to a WME in the \n"
+                                "          super-state at some intermediate point during problem-solving.\n\n");
+            printa_sf(thisAgent,"\nUnconnected identifiers: %s\n", pString2);
+            break;
+        }
+        case ebc_failed_no_roots:
+        {
+            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa_sf(thisAgent,"        %s\n\n", pString1);
+            printa(   thisAgent,  "        None of the conditions reference a goal state.\n");
+
+        }
+        case ebc_failed_negative_relational_test_bindings:
+        {
+            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa_sf(thisAgent,"        %s\n\n", pString1);
+            printa(thisAgent,  "        Unbound relational test in negative condition of rule \n");
+
+        }
+        default:
+        {
+            printa(thisAgent, "\nError:  Unspecified chunking failure. That's weird.  Should report.\n");
+            printa_sf(thisAgent, "        %s\n\n", pString1);
+        }
+    }
+}
+
+void Output_Manager::display_soar_warning(agent* thisAgent, SoarError pErrorType, int64_t pSysParam)
 {
     if ( (pSysParam > 0) && !thisAgent->sysparams[pSysParam])
     {
-        printa(thisAgent, "Warning: Setting off.\n");
-        xml_generate_warning(thisAgent, "Warning: Setting off.");
         return;
     }
 
@@ -29,51 +78,44 @@ void Output_Manager::display_soar_error(agent* thisAgent, SoarError pErrorType, 
     {
         case ebc_error_max_chunks:
         {
-            printa(thisAgent, "Warning: We've formed the maximum number of chunks.  Skipping opportunity to learn new rule.\n");
-            xml_generate_warning(thisAgent, "Warning: We've formed the maximum number of chunks.  Skipping opportunity to learn new rule.");
+            printa(thisAgent, "Warning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_invalid_chunk:
         {
-            printa(thisAgent, "\nCould not create production for variablized rule. Creating justification instead.\n");
-            printa(thisAgent, "\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-            printa(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-            printa(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-            printa(thisAgent, "through the local state.\n");
-            xml_generate_warning(thisAgent, "\nCould not create production for variablized rule. Creating justification instead.\n");
-            xml_generate_warning(thisAgent, "\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-            xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-            xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-            xml_generate_warning(thisAgent, "through the local state.\n\n");
+            printa(thisAgent, "...repair failed...\n");
             break;
         }
         case ebc_error_invalid_justification:
         {
-            printa(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-            printa(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-            printa(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-            printa(thisAgent, "through the local state.\n");
-            xml_generate_warning(thisAgent, "\nnUnable to reorder this chunk.\n");
-            xml_generate_warning(thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
-            xml_generate_warning(thisAgent, "manual, subsection \"revising the substructure of a previous result\". Check\n");
-            xml_generate_warning(thisAgent, "that the rules are not revising substructure of a result matched only\n");
-            xml_generate_warning(thisAgent, "through the local state.\n");
+            printa(thisAgent, "Warning:  Chunking produced an invalid justification.  Ignoring.\n");
+            break;
+        }
+        case ebc_error_repairing:
+        {
+            printa(thisAgent, "...attempting to repair rule.\n");
+            break;
+        }
+        case ebc_error_repaired:
+        {
+            printa(thisAgent, "...repair succeeded.\n");
+            break;
+        }
+        case ebc_error_reverted_chunk:
+        {
+            printa(thisAgent, "\n...successfully generated justification for failed chunk.\n");
             break;
         }
         case ebc_error_no_conditions:
         {
-            printa(thisAgent, "Warning: Chunk/justification has no conditions.  Soar cannot learn a rule for\n");
-            printa(thisAgent, "         the results created from this substate. To avoid this issue, the agent\n");
-            printa(thisAgent, "         needs to positively test at least one item in the superstate.\n");
-            xml_generate_warning(thisAgent, "Warning: Chunk/justification has no conditions.  Soar cannot learn a rule for");
-            xml_generate_warning(thisAgent, "         the results created by this substate. To avoid this issue, the agent");
-            xml_generate_warning(thisAgent, "         needs to positively test at least one item in the superstate.");
+            printa(thisAgent, "Warning: Chunking has produced a rule with no conditions.  Ignoring.\n");
+            printa(thisAgent, "         To avoid this issue, the problem-solving in the substate must\n");
+            printa(thisAgent, "         positively test at least one item in the superstate.\n");
             break;
         }
         default:
         {
-            printa(thisAgent, "Warning: Unspecified error. That's weird.  Should report.\n");
-            xml_generate_warning(thisAgent, "Warning: Unspecified error. That's weird.  Should report.");
+            printa(thisAgent, "Warning: Unspecified soar error. That's weird.  Should report.\n");
         }
     }
 }

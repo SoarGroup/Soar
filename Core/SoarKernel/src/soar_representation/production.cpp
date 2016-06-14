@@ -457,12 +457,12 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
  * so EBC can first try to fix unconnected conditions before creating
  * the production. */
 
-EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
-                                                condition**   lhs_top,
-                                                action**      rhs_top,
-                                                bool          reorder_nccs,
-                                                bool          collect_ungroundeds,
-                                                symbol_list*  ungrounded_syms)
+bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
+                                      condition**   lhs_top,
+                                      action**      rhs_top,
+                                      bool          reorder_nccs,
+                                      bool          collect_ungroundeds,
+                                      symbol_list*  ungrounded_syms)
 {
     tc_number tc;
 
@@ -472,14 +472,14 @@ EBCFailureType reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
     if (! reorder_action_list(thisAgent, rhs_top, tc))
     {
-        return ebc_failed_reordering_rhs;
+        return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, collect_ungroundeds, ungrounded_syms))
     {
-        return ebc_failed_unconnected_conditions;
+        return false;
     }
 
-    return ebc_success;
+    return true;
 }
 
 production* make_production(agent*          thisAgent,
