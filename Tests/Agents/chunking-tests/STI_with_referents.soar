@@ -32,7 +32,8 @@ sp {propose-level1-c
 
 sp {make-chunk
     (state <s> ^superstate <ts>)
-    (<ts> ^operator { <> <o2> <o1> } + <o2> +)
+    (<ts> ^operator { <> <o2> <o1> } + 
+                    <o2> +)
     (<o2> ^name winner)
 -->
     (<ts> ^operator <o2> > <o1>)
