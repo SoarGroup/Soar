@@ -504,7 +504,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         {
             lO_id = iter->second;
         } else {
-            lO_id = result->o_ids.value;
+            lO_id = result->o_ids.referent;
         }
         a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
     }
