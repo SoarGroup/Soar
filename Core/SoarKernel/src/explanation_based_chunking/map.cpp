@@ -25,7 +25,6 @@ void Explanation_Based_Chunker::clear_data()
     clear_o_id_to_ovar_debug_map();
     clear_attachment_map();
     clear_singletons();
-    identities_for_rhs_substate_symbols->clear();
 }
 
 void Explanation_Based_Chunker::clear_singletons()

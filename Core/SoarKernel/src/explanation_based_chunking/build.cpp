@@ -56,17 +56,17 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, uint64_t linked_id)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         if (((sym)->id->level >= m_results_match_goal_level) &&
                 ((sym)->tc_num != m_results_tc))
         {
-            add_results_for_id(sym);
+            add_results_for_id(sym, linked_id);
         }
 }
 
-void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
+void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t linked_id)
 {
     preference* p;
 
@@ -124,16 +124,19 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref)
     /* --- add this preference to the result list --- */
     pref->next_result = m_results;
     m_results = pref;
-
+    if (pref->o_ids.id && linked_id)
+    {
+        add_identity_unification(pref->o_ids.id, linked_id);
+    }
     /* --- follow transitive closure through value, referent links --- */
-    add_results_if_needed(pref->value);
+    add_results_if_needed(pref->value, pref->o_ids.value);
     if (preference_is_binary(pref->type))
     {
-        add_results_if_needed(pref->referent);
+        add_results_if_needed(pref->referent, pref->o_ids.referent);
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
+void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_id)
 {
     slot* s;
     preference* pref;
@@ -144,17 +147,17 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
     /* --- scan through all preferences and wmes for all slots for this id --- */
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
-        add_results_if_needed(w->value);
+        add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
     }
     for (s = id->id->slots; s != NIL; s = s->next)
     {
         for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
         {
-            add_pref_to_results(pref);
+            add_pref_to_results(pref, linked_id);
         }
         for (w = s->wmes; w != NIL; w = w->next)
         {
-            add_results_if_needed(w->value);
+            add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
         }
     } /* end of for slots loop */
     /* --- now scan through extra prefs and look for any with this id --- */
@@ -163,7 +166,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id)
     {
         if (pref->id == id)
         {
-            add_pref_to_results(pref);
+            add_pref_to_results(pref, linked_id);
         }
     }
 }
@@ -177,14 +180,16 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
     m_results_tc = get_new_tc_number(thisAgent);
     m_extra_results = m_inst->preferences_generated;
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
+    {
         if ((pref->id->id->level < m_results_match_goal_level) &&
                 (pref->id->tc_num != m_results_tc))
         {
-            add_pref_to_results(pref);
+            add_pref_to_results(pref, 0);
             dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
         } else {
             dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, m_results_match_goal_level);
         }
+    }
 }
 
 action* Explanation_Based_Chunker::copy_action_list(action* actions)
@@ -985,7 +990,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         return;
     }
 
-    dprint_header(DT_MILESTONES, PrintBoth, "Learning EBC rule for firing of %s (i%u)\n", m_inst->prod_name, m_inst->i_id);
+    dprint_header(DT_MILESTONES, PrintBoth, "Learning EBC rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
+    dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     m_reliable = true;
     m_inst_top = m_inst_bottom = m_vrblz_top = NULL;

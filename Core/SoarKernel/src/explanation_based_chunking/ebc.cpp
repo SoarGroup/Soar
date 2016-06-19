@@ -33,7 +33,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     o_id_to_var_map = new id_to_sym_map_type();
     instantiation_identities = new inst_to_id_map_type();
     id_to_rule_sym_debug_map = new id_to_sym_map_type();
-    identities_for_rhs_substate_symbols = new sym_to_id_map_type();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map_type();
     unification_map = new id_to_id_map_type();
@@ -65,7 +64,6 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete instantiation_identities;
     delete unification_map;
     delete id_to_rule_sym_debug_map;
-    delete identities_for_rhs_substate_symbols;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);

@@ -205,7 +205,6 @@ class Explanation_Based_Chunker
         id_to_sym_map_type*             id_to_rule_sym_debug_map;
 
         id_to_id_map_type*              unification_map;
-        sym_to_id_map_type*             identities_for_rhs_substate_symbols;
         identity_triple*                local_singleton_superstate_identity;
 
         constraint_list*                constraints;
@@ -239,9 +238,9 @@ class Explanation_Based_Chunker
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
-        void            add_pref_to_results(preference* pref);
-        void            add_results_for_id(Symbol* id);
-        void            add_results_if_needed(Symbol* sym);
+        void            add_pref_to_results(preference* pref, uint64_t linked_id);
+        void            add_results_for_id(Symbol* id, uint64_t linked_id);
+        void            add_results_if_needed(Symbol* sym, uint64_t linked_id);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
         void            create_initial_chunk_condition_lists();

@@ -151,26 +151,9 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
     {
         if (rs->referent->is_sti())
         {
-            dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or local.\n");
-            /* This a symbol created in the local state that is being used in a result
-             * for a superstate, so we generate an identity for it as if it were a RHS
-             * unbound var.  (Real rhs unbound vars get an identity when instantiated.) */
-            auto it = identities_for_rhs_substate_symbols->find(rs->referent);
-            if (it != identities_for_rhs_substate_symbols->end())
-            {
-                rs->o_id = it->second;
-                found_variablization = get_variablization(rs->o_id);
-                dprint(DT_RHS_VARIABLIZATION, "...found previously generated local copy identity %u.\n", rs->o_id);
-            } else {
-                prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
-                prefix[1] = 0;
-                var = generate_new_variable(thisAgent, prefix);
-                rs->o_id = get_or_create_o_id(var, m_chunk_new_i_id);;
-                dprint(DT_RHS_VARIABLIZATION, "...created new variable and identity for substate symbol %y = %y [%u].\n", rs->referent, var, rs->o_id);
-                store_variablization(rs->referent, var, rs->o_id);
-                found_variablization = var;
-                identities_for_rhs_substate_symbols->insert({rs->referent, rs->o_id});
-            }
+            /* I think this can only occur now when trying to variablize a locally promoted STI. */
+            dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
+            return;
         }
     }
     if (!found_variablization && rs->referent->is_sti())
@@ -437,7 +420,6 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     variablize_rhs_symbol(rhs->attr);
     variablize_rhs_symbol(rhs->value);
     variablize_rhs_symbol(rhs->referent);
-    identities_for_rhs_substate_symbols->clear();
 
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
@@ -530,9 +512,10 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
 }
+
 action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result, bool variablize)
 {
+    dprint_o_id_substitution_map(DT_RHS_VARIABLIZATION);
     action* returnAction = variablize_result_into_actions(result, variablize);
-    identities_for_rhs_substate_symbols->clear();
     return returnAction;
 }
