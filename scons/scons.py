@@ -2,7 +2,7 @@
 #
 # SCons - a Software Constructor
 #
-# Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 The SCons Foundation
+# Copyright (c) 2001 - 2016 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -23,20 +23,21 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-__revision__ = "src/script/scons.py  2013/03/03 09:48:35 garyo"
+__revision__ = "src/script/scons.py rel_2.5.0:3544:95d356f188a3 2016/04/09 14:38:50 bdbaddog"
 
-__version__ = "2.3.0"
+__version__ = "2.5.0"
 
-__build__ = ""
+__build__ = "rel_2.5.0:3544:95d356f188a3[MODIFIED]"
 
-__buildsys__ = "reepicheep"
+__buildsys__ = "ubuntu1404-32bit"
 
-__date__ = "2013/03/03 09:48:35"
+__date__ = "2016/04/09 14:38:50"
 
-__developer__ = "garyo"
+__developer__ = "bdbaddog"
 
 import os
 import sys
+
 
 ##############################################################################
 # BEGIN STANDARD SCons SCRIPT HEADER
@@ -72,6 +73,11 @@ libs = []
 if "SCONS_LIB_DIR" in os.environ:
     libs.append(os.environ["SCONS_LIB_DIR"])
 
+# - running from source takes priority (since 2.3.2), excluding SCONS_LIB_DIR settings
+script_path = os.path.abspath(os.path.dirname(__file__))
+source_path = os.path.join(script_path, '..', 'engine')
+libs.append(source_path)
+
 local_version = 'scons-local-' + __version__
 local = 'scons-local'
 if script_dir:
@@ -85,6 +91,8 @@ scons_version = 'scons-%s' % __version__
 # preferred order of scons lookup paths
 prefs = []
 
+
+# - running from egg check
 try:
     import pkg_resources
 except ImportError:
@@ -180,13 +188,12 @@ sys.path = libs + sys.path
 if __name__ == "__main__":
     try:
         import SCons.Script
-    except:
-        ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'engine')
-        if os.path.exists(ROOT):
-            sys.path += [ROOT]
-            print("SCons import failed. Trying to run from source directory")
-        import SCons.Script
-  
+    except ImportError:
+        print("SCons import failed. Unable to find engine files in:")
+        for path in libs:
+            print("  %s" % path)
+        raise
+
     # this does all the work, and calls sys.exit
     # with the proper exit status when done.
     SCons.Script.main()
