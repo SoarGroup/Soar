@@ -439,6 +439,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
 
     a = make_action(thisAgent);
     a->type = MAKE_ACTION;
+    a->preference_type = result->type;
 
     if (!result->rhs_funcs.id)
     {
@@ -506,8 +507,6 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
-
-    a->preference_type = result->type;
 
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;
