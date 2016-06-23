@@ -153,6 +153,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         PrintCLIMessage("Learn| desirability-prefs = off");
     }
 
+    thisAgent->ebChunker->update_learning_on();
     return true;
 }
 

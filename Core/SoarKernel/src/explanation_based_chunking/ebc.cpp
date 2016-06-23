@@ -69,6 +69,10 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     free_memory_block_for_string(thisAgent, justification_name_prefix);
 
 }
+void Explanation_Based_Chunker::update_learning_on()
+{
+    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+}
 
 void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
 {

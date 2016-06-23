@@ -84,6 +84,7 @@ class Explanation_Based_Chunker
         /* For the cli learn command */
         chunkNameFormats    Get_Chunk_Name_Format() {return chunkNameFormat;};
         void                Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
+        void                update_learning_on();
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
