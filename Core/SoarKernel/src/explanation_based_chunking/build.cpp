@@ -58,18 +58,24 @@ using namespace soar_TraceNames;
 ===================================================================== */
 void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, uint64_t linked_id)
 {
+    dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y (parent identity %u)", sym, linked_id);
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-        if (((sym)->id->level >= m_results_match_goal_level) &&
-                ((sym)->tc_num != m_results_tc))
+    {
+        if (((sym)->id->level >= m_results_match_goal_level) && ((sym)->tc_num != m_results_tc))
         {
             add_results_for_id(sym, linked_id);
+            return;
         }
+        dprint(DT_EXTRA_RESULTS, "...wrong level or not result.\n");
+    }
+    dprint(DT_EXTRA_RESULTS, "...not identifier.\n");
 }
 
 void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t linked_id)
 {
     preference* p;
 
+    dprint(DT_EXTRA_RESULTS, "Attempting to add pref to results: %p \n", pref);
     /* --- if an equivalent pref is already a result, don't add this one --- */
     for (p = m_results; p != NIL; p = p->next_result)
     {
@@ -120,6 +126,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
         }
         pref = p;
     }
+    dprint(DT_EXTRA_RESULTS, "...not a duplicate and at correct level (or clone found.)\n");
 
     /* --- add this preference to the result list --- */
     pref->next_result = m_results;
@@ -127,6 +134,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     if (pref->o_ids.id && linked_id)
     {
         add_identity_unification(pref->o_ids.id, linked_id);
+        dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->o_ids.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */
     add_results_if_needed(pref->value, pref->o_ids.value);
@@ -145,21 +153,26 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_i
     id->tc_num = m_results_tc;
 
     /* --- scan through all preferences and wmes for all slots for this id --- */
+    dprint(DT_EXTRA_RESULTS, "...iterating through input wmes...\n");
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
         add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
     }
+    dprint(DT_EXTRA_RESULTS, "...iterating through slots...\n");
     for (s = id->id->slots; s != NIL; s = s->next)
     {
+        dprint(DT_EXTRA_RESULTS, "...iterating through prefs of slot...\n");
         for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
         {
             add_pref_to_results(pref, linked_id);
         }
+        dprint(DT_EXTRA_RESULTS, "...iterating through wmes of slot...\n");
         for (w = s->wmes; w != NIL; w = w->next)
         {
             add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
         }
     } /* end of for slots loop */
+    dprint(DT_EXTRA_RESULTS, "...iterating through extra results looking for id...\n");
     /* --- now scan through extra prefs and look for any with this id --- */
     for (pref = m_extra_results; pref != NIL;
             pref = pref->inst_next)
@@ -185,9 +198,8 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
                 (pref->id->tc_num != m_results_tc))
         {
             add_pref_to_results(pref, 0);
-            dprint(DT_VARIABLIZATION_MANAGER, "Pref %p added to results.\n", pref);
         } else {
-            dprint(DT_VARIABLIZATION_MANAGER, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, m_results_match_goal_level);
+            dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, m_results_match_goal_level);
         }
     }
 }

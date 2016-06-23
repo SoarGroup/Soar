@@ -478,55 +478,55 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                            action* rule_action,
                            condition* cond)
 {
-    Symbol* id, *attr, *value, *referent;
+    Symbol* lId, *lAttr, *lValue, *lReferent;
     char first_letter;
 
     if (a->type == FUNCALL_ACTION)
     {
-        value = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
-        if (value)
+        lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
+        if (lValue)
         {
-            symbol_remove_ref(thisAgent, value);
+            symbol_remove_ref(thisAgent, lValue);
         }
         return NIL;
     }
 
-    attr = NIL;
-    value = NIL;
-    referent = NIL;
-    id = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
-    if (!id)
+    lAttr = NIL;
+    lValue = NIL;
+    lReferent = NIL;
+    lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
+    if (!lId)
     {
         goto abort_execute_action;
     }
-    if (!id->is_identifier())
+    if (!lId->is_identifier())
     {
         print_with_symbols(thisAgent,
                            "Error: RHS makes a preference for %y (not an identifier)\n",
-                           id);
+                           lId);
         goto abort_execute_action;
     }
 
-    attr = instantiate_rhs_value(thisAgent, a->attr, id->id->level, 'a', tok, w);
-    if (!attr)
+    lAttr = instantiate_rhs_value(thisAgent, a->attr, lId->id->level, 'a', tok, w);
+    if (!lAttr)
     {
         goto abort_execute_action;
     }
 
-    first_letter = first_letter_from_symbol(attr);
+    first_letter = first_letter_from_symbol(lAttr);
 
-    value = instantiate_rhs_value(thisAgent, a->value, id->id->level,
+    lValue = instantiate_rhs_value(thisAgent, a->value, lId->id->level,
                                   first_letter, tok, w);
-    if (!value)
+    if (!lValue)
     {
         goto abort_execute_action;
     }
 
     if (preference_is_binary(a->preference_type))
     {
-        referent = instantiate_rhs_value(thisAgent, a->referent, id->id->level,
+        lReferent = instantiate_rhs_value(thisAgent, a->referent, lId->id->level,
                                          first_letter, tok, w);
-        if (!referent)
+        if (!lReferent)
         {
             goto abort_execute_action;
         }
@@ -534,11 +534,11 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     if (((a->preference_type != ACCEPTABLE_PREFERENCE_TYPE)
             && (a->preference_type != REJECT_PREFERENCE_TYPE))
-            && (!(id->id->isa_goal && (attr == thisAgent->operator_symbol))))
+            && (!(lId->id->isa_goal && (lAttr == thisAgent->operator_symbol))))
     {
         print_with_symbols(thisAgent,
                            "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.",
-                           id, attr);
+                           lId, lAttr);
         goto abort_execute_action;
     }
     /* Populate identity and rhs_function stuff */
@@ -602,26 +602,26 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             oid_referent = 0;
         }
     }
-    return make_preference(thisAgent, a->preference_type, id, attr, value, referent,
+    return make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent,
                            identity_triple(oid_id, oid_attr, oid_value, oid_referent),
                            rhs_triple(f_id, f_attr, f_value));
 
 abort_execute_action: /* control comes here when some error occurred */
-    if (id)
+    if (lId)
     {
-        symbol_remove_ref(thisAgent, id);
+        symbol_remove_ref(thisAgent, lId);
     }
-    if (attr)
+    if (lAttr)
     {
-        symbol_remove_ref(thisAgent, attr);
+        symbol_remove_ref(thisAgent, lAttr);
     }
-    if (value)
+    if (lValue)
     {
-        symbol_remove_ref(thisAgent, value);
+        symbol_remove_ref(thisAgent, lValue);
     }
-    if (referent)
+    if (lReferent)
     {
-        symbol_remove_ref(thisAgent, referent);
+        symbol_remove_ref(thisAgent, lReferent);
     }
     return NIL;
 }

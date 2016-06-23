@@ -63,6 +63,7 @@ enum TraceMode
     DT_EXPLAIN_CONDS = 42,
     DT_EXPLAIN_IDENTITIES = 43,
     DT_UNIFY_SINGLETONS = 44,
+    DT_EXTRA_RESULTS = 45,
     num_trace_modes
 };
 
