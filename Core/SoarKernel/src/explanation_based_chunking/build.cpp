@@ -686,12 +686,14 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             {
                 thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
                 generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
-                delete unconnected_syms;
-                if (reorder_and_validate_chunk())
+                unconnected_syms->clear();
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms))
                 {
+                    delete unconnected_syms;
                     thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repaired);
                     return true;
                 } else {
+                    delete unconnected_syms;
                     thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_chunk);
                     return false;
                 }
@@ -943,21 +945,17 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             #ifdef BUILD_WITH_EXPLAINER
-                    thisAgent->explanationLogger->increment_stat_justification_did_not_match();
-            thisAgent->explanationLogger->cancel_chunk_record();
-                    #endif
+                thisAgent->explanationLogger->increment_stat_justification_did_not_match();
+                thisAgent->explanationLogger->cancel_chunk_record();
+            #endif
             excise_production(thisAgent, m_prod, false);
         } else {
+            /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.*/
             #ifdef BUILD_WITH_EXPLAINER
-                    thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
-            assert(m_prod);
-            thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
-                    #endif
-            /* MToDo | Why don't we excise the chunk here like we do non-matching
-             * justifications? It doesn't seem like either case of non-matching rule
-             * should be possible unless a chunking or gds problem has occurred.
-             * Can we even get here?  Let's see.*/
-            assert(false);
+                thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
+                assert(m_prod);
+                thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+            #endif
         }
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");

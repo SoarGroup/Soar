@@ -72,8 +72,8 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_IDENTITY_PROP].enabled =               true;
     //    mode_info[DT_UNIFICATION].enabled =                 true;
     //    mode_info[DT_CONSTRAINTS].enabled =                 true;
-    //    mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
-    //    mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
+//        mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
+//        mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
     //    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
     //    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
     //    mode_info[DT_UNGROUNDED_STI].enabled =              true;
@@ -89,7 +89,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_LINKS].enabled =                       true;
     //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
     //    mode_info[DT_RETE_PNODE_ADD].enabled =              true;
-    //    mode_info[DT_GROUND_LTI].enabled =                  true;
+//        mode_info[DT_GROUND_LTI].enabled =                  true;
 
     //    mode_info[DT_EXPLAIN].enabled =                     true;
     //    mode_info[DT_EXPLAIN_DEP].enabled =                 true;
@@ -99,7 +99,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_EXPLAIN_CONDS].enabled =               true;
         //    mode_info[DT_EXPLAIN_IDENTITIES].enabled =               true;
         //    mode_info[DT_UNIFY_SINGLETONS].enabled =               true;
-        //    mode_info[DT_EXTRA_RESULTS].enabled =               true;
+//            mode_info[DT_EXTRA_RESULTS].enabled =               true;
         //
     }
 }
