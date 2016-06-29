@@ -65,24 +65,6 @@ sp {make-chunk-4
          ^more-math (* <sum> <a> <b> <c>))
 }
 
-# These have issues
-#sp {apply-intermediate2
-#   (state <s> ^operator <o>
-#              ^superstate <ss>)
-#   (<ss> ^x <x> ^y <y> ^z <z>)
-#-->
-#   (<s> ^(+ <x> <y>) (+ 2 <z>))
-#   }
-#
-#sp {make-chunk5
-#   (state <s> ^operator <o>
-#              ^{ > 1 <attr> } { < 200 <sum> }
-#              ^superstate <ss>)
-#   (<ss> ^x <x>)
-#-->
-#   (<ss> ^result2 (* <sum> <x>))
-#   }
-
 sp {apply*test-done
    (state <s> ^result <r>)
 -->

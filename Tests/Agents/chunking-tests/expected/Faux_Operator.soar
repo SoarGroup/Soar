@@ -1,0 +1,27 @@
+sp {answer*propose-real-operator3*onc*t4-5
+    (state <s1> ^done2 true)
+    (<s1> ^superstate nil)
+    -->
+    (<s1> ^operator <o1> +)
+    (<s1> ^operator <o1> >)
+    (<o1> ^name real-operator2 +)
+}
+
+sp {answer*apply-faux-operator2*onc*t2-2
+    (state <s1> ^operator <o1>)
+    (<o1> ^name real-operator)
+    (<s1> ^top-struct <t1>)
+    -->
+    (<t1> ^operator <o2> +)
+    (<o2> ^name faux-operator +)
+}
+
+sp {answer*apply-faux-operator*onc*t2-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name real-operator)
+    (<s1> ^top-struct <t1>)
+    -->
+    (<t1> ^foo <f1> +)
+    (<f1> ^name faux-operator +)
+    (<s1> ^done true +)
+}

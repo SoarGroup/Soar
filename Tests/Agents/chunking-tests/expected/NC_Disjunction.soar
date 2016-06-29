@@ -1,0 +1,7 @@
+sp {answer*apply*snc*t3-1
+    (state <s2> ^superstate <s1>)
+    (<s2> -^structure-type { << V VP >> <s*1> })
+    (<s1> ^superstate nil)
+    -->
+    (<s2> ^result <v1> +)
+}

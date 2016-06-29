@@ -1,0 +1,7 @@
+sp {answer*make*chunk*result_on_op*onc*t2-1
+    (state <s1> ^superstate nil)
+    (<s1> ^foo <c1>)
+    (<s1> ^operator <o1>)
+    -->
+    (<o1> ^foo <c1> +)
+}

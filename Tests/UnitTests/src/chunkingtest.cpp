@@ -57,12 +57,26 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Literalization_with_BT_Constraints2);
         CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
         CPPUNIT_TEST(RL_Variablization);
-//        CPPUNIT_TEST(testChunk44);
-//        CPPUNIT_TEST(testChunk45);
-//        CPPUNIT_TEST(testChunk46);
-//        CPPUNIT_TEST(testChunk47);
-//        CPPUNIT_TEST(testChunk48);
-//        CPPUNIT_TEST(testChunk49);
+        CPPUNIT_TEST(Chunked_Justification_with_extras);
+        CPPUNIT_TEST(No_Topstate_Match);
+        CPPUNIT_TEST(Repair_NOR_Temporal_Constraint);
+        CPPUNIT_TEST(RHS_Math);
+        CPPUNIT_TEST(Ungrounded_LTI);
+        CPPUNIT_TEST(Promoted_STI);
+        CPPUNIT_TEST(Chunk_RL_Proposal);
+        CPPUNIT_TEST(NC_Disjunction);
+        CPPUNIT_TEST(RHS_Math_Mixed);
+        CPPUNIT_TEST(RHS_Math_Abs);
+        CPPUNIT_TEST(Reorderer_Bad_Conjunction);
+        CPPUNIT_TEST(Opaque_State_Barrier);
+        CPPUNIT_TEST(Unify_Ambiguous_Output);
+        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
+        CPPUNIT_TEST(Faux_Operator);
+        CPPUNIT_TEST(Smem_Chunk_Direct);
+        CPPUNIT_TEST(SMem_Chunked_Query);
+        CPPUNIT_TEST(Result_On_Operator);
+        CPPUNIT_TEST(Unify_Children_Results);
+        CPPUNIT_TEST(Blocks_World_Hierarchical);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -118,13 +132,26 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Literalization_with_BT_Constraints2();
         void Unify_through_Two_Traces_Four_Deep();
         void STI_with_referents();
-//        void testChunk44();
-//        void testChunk45();
-//        void testChunk46();
-//        void testChunk47();
-//        void testChunk48();
-//        void testChunk49();
-
+        void Chunked_Justification_with_extras();
+        void No_Topstate_Match();
+        void Repair_NOR_Temporal_Constraint();
+        void RHS_Math();
+        void Ungrounded_LTI();
+        void Promoted_STI();
+        void Chunk_RL_Proposal();
+        void NC_Disjunction();
+        void RHS_Math_Mixed();
+        void RHS_Math_Abs();
+        void Reorderer_Bad_Conjunction();
+        void Opaque_State_Barrier();
+        void Unify_Ambiguous_Output();
+        void Faux_Smem_Operator_RHS();
+        void Faux_Operator();
+        void Smem_Chunk_Direct();
+        void SMem_Chunked_Query();
+        void Result_On_Operator();
+        void Unify_Children_Results();
+        void Blocks_World_Hierarchical();
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
         bool succeeded;
@@ -409,33 +436,89 @@ void ChunkTest::STI_with_referents()
 {
     build_and_check_chunk("STI_with_referents.soar", 8, 1);
 }
-//
-//void ChunkTest::testChunk44()
-//{
-//    build_and_check_chunk("chunk44.soar", 8, 1);
-//}
-//
-//void ChunkTest::testChunk45()
-//{
-//    build_and_check_chunk("chunk45.soar", 8, 1);
-//}
-//
-//void ChunkTest::testChunk46()
-//{
-//    build_and_check_chunk("chunk46.soar", 8, 1);
-//}
-//
-//void ChunkTest::testChunk47()
-//{
-//    build_and_check_chunk("chunk47.soar", 8, 1);
-//}
-//
-//void ChunkTest::testChunk48()
-//{
-//    build_and_check_chunk("chunk48.soar", 8, 1);
-//}
-//
-//void ChunkTest::testChunk49()
-//{
-//    build_and_check_chunk("chunk49.soar", 8, 1);
-//}
+void ChunkTest::Chunked_Justification_with_extras()
+{
+    build_and_check_chunk("STI_with_referents.soar", 8, 1);
+}
+void ChunkTest::No_Topstate_Match()
+{
+    build_and_check_chunk("No_Topstate_Match.soar", 8, 1);
+}
+
+void ChunkTest::Repair_NOR_Temporal_Constraint()
+{
+    // Change to 2 chunks expected after rule repair fixed
+    build_and_check_chunk("Repair_NOR_Temporal_Constraint.soar", 8, 1);
+}
+
+void ChunkTest::RHS_Math()
+{
+    build_and_check_chunk("RHS_Math.soar", 8, 2);
+}
+
+void ChunkTest::Ungrounded_LTI()
+{
+    build_and_check_chunk("Ungrounded_LTI.soar", 8, 1);
+}
+
+void ChunkTest::Promoted_STI()
+{
+    build_and_check_chunk("Promoted_STI.soar", 8, 1);
+}
+
+void ChunkTest::Chunk_RL_Proposal()
+{
+    build_and_check_chunk("Chunk_RL_Proposal.soar", 8, 1);
+}
+void ChunkTest::NC_Disjunction()
+{
+    build_and_check_chunk("NC_Disjunction.soar", 8, 1);
+}
+void ChunkTest::RHS_Math_Mixed()
+{
+    build_and_check_chunk("RHS_Math_Mixed.soar", 8, 4);
+}
+void ChunkTest::RHS_Math_Abs()
+{
+    build_and_check_chunk("RHS_Math_Abs.soar", 8, 3);
+}
+void ChunkTest::Reorderer_Bad_Conjunction()
+{
+    build_and_check_chunk("Reorderer_Bad_Conjunction.soar", 8, 1);
+}
+void ChunkTest::Opaque_State_Barrier()
+{
+    build_and_check_chunk("Opaque_State_Barrier.soar", 8, 1);
+}
+void ChunkTest::Unify_Ambiguous_Output()
+{
+    build_and_check_chunk("Unify_Ambiguous_Output.soar", 8, 1);
+}
+void ChunkTest::Faux_Smem_Operator_RHS()
+{
+    build_and_check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1);
+}
+void ChunkTest::Faux_Operator()
+{
+    build_and_check_chunk("Faux_Operator.soar", 8, 3);
+}
+void ChunkTest::Smem_Chunk_Direct()
+{
+    build_and_check_chunk("Smem_Chunk_Direct.soar", 8, 2);
+}
+void ChunkTest::SMem_Chunked_Query()
+{
+    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 1);
+}
+void ChunkTest::Result_On_Operator()
+{
+    build_and_check_chunk("Result_On_Operator.soar", 8, 1);
+}
+void ChunkTest::Unify_Children_Results()
+{
+    build_and_check_chunk("Unify_Children_Results.soar", 8, 1);
+}
+void ChunkTest::Blocks_World_Hierarchical()
+{
+    build_and_check_chunk("Blocks_World_Hierarchical.soar", 23, 16);
+}

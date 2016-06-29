@@ -1,0 +1,5 @@
+sp {answer*apply*snc*t2-1
+    (state <s1> ^superstate nil ^item2 <c1> ^item1 <c2>)
+    -->
+    (<s1> ^result <c2> +)
+}
