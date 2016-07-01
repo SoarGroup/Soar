@@ -23,45 +23,47 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
     {
         case ebc_failed_reordering_rhs:
         {
-            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
-            printa_sf(thisAgent,"        %s\n\n", pString1);
-            printa(thisAgent,     "        RHS actions either (a) contain variables/long-term identifiers\n"
-                                  "        that are not tested in a positive condition on the LHS\n"
-                                  "        (negative conditions don't count) or (b) pass an unbound \n"
-                                  "        variable as an argument to a RHS function.\n");
+            printa(thisAgent,"\nChunking has created an invalid rule:\n");
+            printa_sf(thisAgent,"   %s\n\n", pString1);
+            printa(thisAgent,     "   RHS actions contain variables/long-term identifiers\n"
+                                  "   that are not tested in a positive condition on the LHS.\n\n"
+                                  "   Note:  Negative conditions don't count.  This error may also\n"
+                                  "          occur if you pass an unbound variable as an argument \n"
+                                  "          to a RHS function.\n");
             printa_sf(thisAgent,"\nProblem RHS Actions:\n%s\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:
         {
-            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
-            printa_sf(thisAgent,"        %s\n\n", pString1);
-            printa(thisAgent,   "          A LHS condition is not connected to a goal.  This is \n"
-                                "          likely caused by a condition in a matched rule that tested either\n"
-                                "          (a) a long-term identifier retrieved in the sub-state that also \n"
-                                "          exists in a super-state or (b) a working memory element that was \n"
-                                "          created in the sub-state and then later linked to a WME in the \n"
-                                "          super-state at some intermediate point during problem-solving.\n\n");
+            printa(thisAgent,"\nChunking has created an invalid rule:\n");
+            printa_sf(thisAgent,"   %s\n\n", pString1);
+            printa(thisAgent,   "   A LHS condition is not connected to a goal.  This is likely caused \n"
+                                "   by a condition in a matched rule that tested either\n"
+                                "      (a) a long-term identifier retrieved in the sub-state that also \n"
+                                "          exists in a super-state or "
+                                "      (b) a working memory element that was created in the sub-state \n"
+                                "          and then later linked to a WME in the super-state at some \n"
+                                "          intermediate point during problem-solving.\n\n");
             printa_sf(thisAgent,"\nUnconnected identifiers: %s\n", pString2);
             break;
         }
         case ebc_failed_no_roots:
         {
-            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa(thisAgent,"\nChunking has created an invalid rule:\n");
             printa_sf(thisAgent,"        %s\n\n", pString1);
             printa(   thisAgent,  "        None of the conditions reference a goal state.\n");
-
+            break;
         }
         case ebc_failed_negative_relational_test_bindings:
         {
-            printa(thisAgent,"\nError:  Chunking has created an incorrect rule:\n");
+            printa(thisAgent,"\nChunking has created an invalid rule:\n");
             printa_sf(thisAgent,"        %s\n\n", pString1);
             printa(thisAgent,  "        Unbound relational test in negative condition of rule \n");
-
+            break;
         }
         default:
         {
-            printa(thisAgent, "\nError:  Unspecified chunking failure. That's weird.  Should report.\n");
+            printa(thisAgent, "\nUnspecified chunking failure. That's weird.  Should report.\n");
             printa_sf(thisAgent, "        %s\n\n", pString1);
         }
     }
