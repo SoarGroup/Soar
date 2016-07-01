@@ -94,6 +94,16 @@ namespace sml
     };
 }
 
+std::string get_soarlib_path()
+{
+    std::string h = libraryPath;
+    if (h.find_last_of("/\\") != h.size() - 1)
+    {
+        h += '/';
+    }
+    return h;
+}
+
 Agent::Agent(Kernel* pKernel, char const* pName)
 {
     m_Kernel = pKernel ;
