@@ -1459,6 +1459,30 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
     return return_val;
 }
 
+/* I don't know how important the inline was for Nate to include it, so I just made a copy
+   of that function for use in other files. */
+smem_lti_id smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id)
+{
+    if ((id->is_identifier()) &&
+            (id->id->smem_lti == NIL))
+    {
+        // try to find existing lti
+        id->id->smem_lti = smem_lti_get_id(thisAgent, id->id->name_letter, id->id->name_number);
+
+        // if doesn't exist, add
+        if (id->id->smem_lti == NIL)
+        {
+            id->id->smem_lti = smem_lti_add_id(thisAgent, id->id->name_letter, id->id->name_number);
+
+            id->id->smem_time_id = thisAgent->epmem_stats->time->get_value();
+            id->id->smem_valid = thisAgent->epmem_validation;
+            epmem_schedule_promotion(thisAgent, id);
+        }
+    }
+
+    return id->id->smem_lti;
+}
+
 // makes a non-long-term identifier into a long-term identifier
 inline smem_lti_id smem_lti_soar_add(agent* thisAgent, Symbol* id)
 {

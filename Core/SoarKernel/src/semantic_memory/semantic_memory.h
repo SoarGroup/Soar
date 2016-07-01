@@ -477,6 +477,7 @@ extern bool smem_valid_production(condition* lhs_top, action* rhs_top);
 
 extern smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_number);
 extern Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level);
+extern smem_lti_id smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id);
 
 extern void smem_reset(agent* thisAgent, Symbol* state);
 extern void smem_reset_id_counters(agent* thisAgent);

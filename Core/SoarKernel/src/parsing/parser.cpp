@@ -335,6 +335,10 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         case IDENTIFIER_LEXEME:
             if (!allow_lti)
             {
+                /* This seems to only be set when being called by the watch wme cli command.  It looks
+                 * like the logic in that command could easily be altered so that this abort is not
+                 * necessary.  The watch command should just fail.  I don't see any reason to completely shut down
+                 * Soar. */
                 char msg[BUFFER_MSG_SIZE];
                 strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -346,19 +350,22 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 
                 if (lti_id == NIL)
                 {
-                    dprint(DT_PARSER, "Could not find LTI @%s%i.\n", lexeme->id_letter, lexeme->id_number);
-                    char msg[BUFFER_MSG_SIZE];
-                    strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
-                    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                    abort_with_fatal_error(thisAgent, msg);
+                    newSymbol = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
+                    if (newSymbol == NIL)
+                    {
+                        newSymbol = make_new_identifier(thisAgent, lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
+                    } else {
+                        symbol_add_ref(thisAgent, newSymbol);
+                    }
+                    smem_lti_soar_promote_STI(thisAgent, newSymbol);
                 }
                 else
                 {
                     newSymbol =  smem_lti_soar_make(thisAgent, lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
                     push(thisAgent, (newSymbol), thisAgent->parser_syms);
                     dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
-                    return newSymbol;
                 }
+                return newSymbol;
             }
             break;
         default:
@@ -2082,22 +2089,23 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
 
         if (lti_id == NIL)
         {
-            char msg[BUFFER_MSG_SIZE];
-            strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
+            var = find_identifier(thisAgent, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
+            if (var == NIL)
+            {
+                var = make_new_identifier(thisAgent, lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
+            } else {
+                symbol_add_ref(thisAgent, var);
+            }
+            smem_lti_soar_promote_STI(thisAgent, var);
         }
         else
         {
             var = smem_lti_soar_make(thisAgent, lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-            /* I don't think we need to add these two here to the parser clean up list.  It seems it cleans it up at the end --*/
-            // push (thisAgent, (var), thisAgent->parser_syms);
         }
     }
     else
     {
         var = make_variable(thisAgent, lexer->current_lexeme.string());
-//    push (thisAgent, (var), thisAgent->parser_syms);
     }
 
     lexer->get_lexeme();
