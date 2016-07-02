@@ -354,16 +354,12 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                     if (newSymbol == NIL)
                     {
                         newSymbol = make_new_identifier(thisAgent, lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
-                    } else {
-                        symbol_add_ref(thisAgent, newSymbol);
+                        newSymbol->reference_count--;
                     }
-                    smem_lti_soar_promote_STI(thisAgent, newSymbol);
                 }
                 else
                 {
                     newSymbol =  smem_lti_soar_make(thisAgent, lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
-                    push(thisAgent, (newSymbol), thisAgent->parser_syms);
-                    dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
                 }
                 return newSymbol;
             }
@@ -2093,10 +2089,8 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
             if (var == NIL)
             {
                 var = make_new_identifier(thisAgent, lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
-            } else {
-                symbol_add_ref(thisAgent, var);
+                var->reference_count--;
             }
-            smem_lti_soar_promote_STI(thisAgent, var);
         }
         else
         {

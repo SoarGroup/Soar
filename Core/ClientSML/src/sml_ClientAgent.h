@@ -23,7 +23,7 @@
 #include <utility>  // For std::pair
 
 /* Returns the path to the soar dll.  Hijacks code used by SpawnDebugger */
-std::string get_soarlib_path();
+EXPORT std::string get_soarlib_path();
 
 namespace soarxml
 {

@@ -1419,20 +1419,19 @@ smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_nu
 {
     smem_lti_id return_val = NIL;
 
-    // getting lti ids requires an open semantic database
-    smem_attach(thisAgent);
+    if (thisAgent->smem_db->get_status() != soar_module::disconnected)
+    {   // getting lti ids requires an open semantic database
+        // soar_letter=? AND number=?
+        thisAgent->smem_stmts->lti_get->bind_int(1, static_cast<uint64_t>(name_letter));
+        thisAgent->smem_stmts->lti_get->bind_int(2, static_cast<uint64_t>(name_number));
 
-    // soar_letter=? AND number=?
-    thisAgent->smem_stmts->lti_get->bind_int(1, static_cast<uint64_t>(name_letter));
-    thisAgent->smem_stmts->lti_get->bind_int(2, static_cast<uint64_t>(name_number));
+        if (thisAgent->smem_stmts->lti_get->execute() == soar_module::row)
+        {
+            return_val = thisAgent->smem_stmts->lti_get->column_int(0);
+        }
 
-    if (thisAgent->smem_stmts->lti_get->execute() == soar_module::row)
-    {
-        return_val = thisAgent->smem_stmts->lti_get->column_int(0);
+        thisAgent->smem_stmts->lti_get->reinitialize();
     }
-
-    thisAgent->smem_stmts->lti_get->reinitialize();
-
     return return_val;
 }
 
