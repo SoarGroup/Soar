@@ -19,6 +19,7 @@
 #include "sml_AgentSML.h"
 #include "sml_Events.h"
 #include "misc.h"
+#include "lexer.h"
 
 #include <algorithm>
 
@@ -230,7 +231,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         {
             this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
         }
-        
+        agent* thisAgent = m_pAgentSML->GetSoarAgent();
+        thisAgent->LTIs_sourced->promote_LTIs_sourced(thisAgent);
         if (m_pSourceOptions && !m_pSourceOptions->test(SOURCE_DISABLE))
         {
             PrintSourceSummary(m_NumTotalProductionsSourced, m_TotalExcisedDuringSource, m_NumTotalProductionsIgnored);

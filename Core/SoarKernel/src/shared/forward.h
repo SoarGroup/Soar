@@ -62,6 +62,7 @@ class debug_param_container;
 class Output_Manager;
 class Explanation_Based_Chunker;
 class Memory_Manager;
+class LTI_Promotion_Set;
 class wma_param_container;
 class wma_stat_container;
 class wma_timer_container;

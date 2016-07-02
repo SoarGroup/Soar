@@ -18,12 +18,7 @@
  */
 
 
-#include <run_soar.h>
-#include "io_link.h"
 #include "agent.h"
-#include "production.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "callback.h"
 #include "debug.h"
 #include "decide.h"
@@ -34,14 +29,20 @@
 #include "exploration.h"
 #include "gsysparam.h"
 #include "instantiation.h"
+#include "io_link.h"
 #include "lexer.h"
 #include "mem.h"
 #include "memory_manager.h"
 #include "output_manager.h"
+#include "parser.h"
 #include "print.h"
+#include "production.h"
 #include "instantiation.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
+#include "rhs.h"
+#include "rhs_functions.h"
+#include "run_soar.h"
 #include "semantic_memory.h"
 #include "soar_instance.h"
 #include "soar_module.h"
@@ -398,6 +399,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->smem_db = new soar_module::sqlite_database();
 
     thisAgent->smem_validation = 0;
+    thisAgent->LTIs_sourced = new LTI_Promotion_Set();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     thisAgent->smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
@@ -491,6 +493,7 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->smem_timers;
 
     delete delete_agent->smem_db;
+    delete delete_agent->LTIs_sourced;
 
 #ifndef NO_SVS
     delete delete_agent->svs;
@@ -595,6 +598,7 @@ bool reinitialize_agent(agent* thisAgent)
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
     smem_reinit(thisAgent);
+    thisAgent->LTIs_sourced->clear();
 
     thisAgent->ebChunker->reinit();
     #ifdef BUILD_WITH_EXPLAINER

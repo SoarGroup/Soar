@@ -350,12 +350,15 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 
                 if (lti_id == NIL)
                 {
+                    /* An identifier was found in a rule that is not yet in smem.  We store
+                     * the identifier in a list so that we can add it to smem later, after we
+                     * know the current source command is complete */
                     newSymbol = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
                     if (newSymbol == NIL)
                     {
                         newSymbol = make_new_identifier(thisAgent, lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
-                        newSymbol->reference_count--;
                     }
+                    thisAgent->LTIs_sourced->add_lexed_LTI(newSymbol);
                 }
                 else
                 {
@@ -2085,12 +2088,15 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
 
         if (lti_id == NIL)
         {
+            /* An identifier was found in a rule that is not yet in smem.  We store
+             * the identifier in a list so that we can add it to smem later, after we
+             * know the current source command is complete */
             var = find_identifier(thisAgent, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
             if (var == NIL)
             {
                 var = make_new_identifier(thisAgent, lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
-                var->reference_count--;
             }
+            thisAgent->LTIs_sourced->add_lexed_LTI(var);
         }
         else
         {
@@ -2433,19 +2439,20 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     return p;
 }
 
-/* =================================================================
-                          Init Parser
+void LTI_Promotion_Set::promote_LTIs_sourced(agent* thisAgent)
+{
+    smem_lti_id lti_id;
+    Symbol* lSym;
 
-   This routine initializes the parser.  At present, all it does is
-   set up the help screens for the LHS and RHS grammars.
-================================================================= */
-
-/*
-  This is not longer used.
-
-void init_parser (void) {
-  add_help (thisAgent, "lhs-grammar", help_on_lhs_grammar);
-  add_help (thisAgent, "rhs-grammar", help_on_rhs_grammar);
+    if (!LTIs_Lexed->empty())
+    {
+        smem_attach(thisAgent);
+        for (auto it = LTIs_Lexed->begin(); it != LTIs_Lexed->end(); it++)
+        {
+            lSym = *it;
+            dprint(DT_PARSER_PROMOTE, "Promoting LTI found in sourced production %y.\n", lSym);
+            smem_lti_soar_promote_STI(thisAgent, lSym);
+        }
+        LTIs_Lexed->clear();
+    }
 }
-*/
-

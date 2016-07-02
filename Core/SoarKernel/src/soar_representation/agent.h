@@ -270,6 +270,8 @@ typedef struct EXPORT agent_struct
     Symbol*             smem_sym_math_query_max;
     Symbol*             smem_sym_math_query_min;
 
+    // Used by the parser to promote LTIs in rules after database is loaded
+    LTI_Promotion_Set*  LTIs_sourced;
 
     /* ----------------------- Symbol table stuff -------------------------- */
 

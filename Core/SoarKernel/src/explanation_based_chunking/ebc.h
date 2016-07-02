@@ -215,8 +215,7 @@ class Explanation_Based_Chunker
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         triple_merge_map*               cond_merge_map;
 
-        /* -- A counter for variablization and instantiation id's. 0 is the default
-         *    value and not considered a valid id. -- */
+        /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
 

@@ -64,6 +64,7 @@ enum TraceMode
     DT_EXPLAIN_IDENTITIES = 43,
     DT_UNIFY_SINGLETONS = 44,
     DT_EXTRA_RESULTS = 45,
+    DT_PARSER_PROMOTE = 46,
     num_trace_modes
 };
 
