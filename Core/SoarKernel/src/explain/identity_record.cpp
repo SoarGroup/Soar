@@ -6,7 +6,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "ebc.h"
 #include "instantiation.h"
 #include "preference.h"
@@ -16,6 +15,7 @@
 #include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 
 

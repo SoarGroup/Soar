@@ -27,7 +27,6 @@
 #include "assert.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug.h"
 #include "decide.h"
 #include "ebc.h"
 #include "instantiation.h"
@@ -54,6 +53,7 @@
 #include <stdlib.h>
 #include <string> // SBW 8/4/08
 #include <list>
+#include "../debug_code/dprint.h"
 
 using namespace soar_TraceNames;
 

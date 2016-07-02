@@ -14,7 +14,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "ebc.h"
 #include "explain.h"
 #include "instantiation.h"
@@ -30,6 +29,7 @@
 #include <ctype.h>
 #include <run_soar.h>
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 void init_production_utilities(agent* thisAgent)
 {

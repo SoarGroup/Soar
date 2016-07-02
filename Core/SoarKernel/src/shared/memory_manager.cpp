@@ -1,7 +1,6 @@
 #include "mem.h"
 #include "agent.h"
 #include "print.h"
-#include "debug.h"
 #include "sml_Names.h"
 #include "stats.h"
 
@@ -10,6 +9,7 @@
 #include <run_soar.h>
 #include "memory_manager.h"
 #include <iostream>
+#include "../debug_code/dprint.h"
 
 /* ====================================================================
 

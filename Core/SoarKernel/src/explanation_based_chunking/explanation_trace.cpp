@@ -13,7 +13,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
@@ -24,6 +23,7 @@
 #include "working_memory.h"
 
 #include <assert.h>
+#include "../debug_code/dprint.h"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,

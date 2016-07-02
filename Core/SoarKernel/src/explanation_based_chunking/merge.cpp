@@ -11,10 +11,10 @@
 #include "agent.h"
 #include "assert.h"
 #include "condition.h"
-#include "debug.h"
 #include "instantiation.h"
 #include "print.h"
 #include "test.h"
+#include "../debug_code/dprint.h"
 
 void Explanation_Based_Chunker::clear_merge_map()
 {

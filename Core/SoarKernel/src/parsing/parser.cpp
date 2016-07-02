@@ -16,7 +16,6 @@
 
 #include "parser.h"
 
-#include "debug.h"
 #include "symbol.h"
 #include "condition.h"
 #include "production.h"
@@ -35,6 +34,7 @@
 #include <ctype.h>
 #include <run_soar.h>
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 using soar::Lexer;
 using soar::Lexeme;

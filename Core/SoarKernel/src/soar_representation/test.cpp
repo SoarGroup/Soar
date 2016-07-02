@@ -9,7 +9,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "ebc.h"
 #include "output_manager.h"
 #include "instantiation.h"
@@ -21,6 +20,7 @@
 
 #include <assert.h>
 #include <run_soar.h>
+#include "../debug_code/dprint.h"
 
 /* =================================================================
 

@@ -15,7 +15,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "explain.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -31,6 +30,7 @@
 #include "xml.h"
 
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 
 using namespace soar_TraceNames;

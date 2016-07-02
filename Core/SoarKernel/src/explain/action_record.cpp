@@ -3,7 +3,6 @@
 #include "explain.h"
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -16,6 +15,7 @@
 #include "output_manager.h"
 #include "visualize.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {

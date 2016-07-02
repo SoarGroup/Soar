@@ -14,7 +14,7 @@
 //
 #include "agent.h"
 //#include "condition.h"
-//#include "debug.h"
+//#include "dprint.h"
 //#include "ebc.h"
 //#include "instantiation.h"
 #include "output_manager.h"

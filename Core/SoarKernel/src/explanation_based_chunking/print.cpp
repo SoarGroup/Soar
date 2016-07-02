@@ -13,7 +13,8 @@
 #include "working_memory.h"
 #include "output_manager.h"
 #include "print.h"
-#include "debug.h"
+
+#include "../debug_code/dprint.h"
 
 void Explanation_Based_Chunker::print_current_built_rule()
 {

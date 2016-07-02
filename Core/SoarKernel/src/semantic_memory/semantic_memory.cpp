@@ -16,7 +16,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "decide.h"
 #include "ebc.h"
 #include "instantiation.h"
@@ -39,6 +38,7 @@
 #include <ctype.h>
 #include <fstream>
 #include <algorithm>
+#include "../debug_code/dprint.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

@@ -5,7 +5,6 @@
 #include "assert.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -28,6 +27,7 @@
 
 #include <sstream>
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 /*************************************************************************
  *

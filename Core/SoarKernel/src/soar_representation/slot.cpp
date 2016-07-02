@@ -12,13 +12,13 @@
 #include "slot.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "decide.h"
 #include "mem.h"
 #include "preference.h"
 #include "symbol.h"
 
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 /* **********************************************************************
 

@@ -8,7 +8,6 @@
 #include "condition_record.h"
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
@@ -18,6 +17,7 @@
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {

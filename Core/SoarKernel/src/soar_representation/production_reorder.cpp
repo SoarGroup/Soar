@@ -24,13 +24,13 @@
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
-#include "debug.h"
 #include "mem.h"
 #include "print.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 /* *********************************************************************
 

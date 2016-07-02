@@ -23,7 +23,6 @@
 #include "assert.h"
 #include "condition.h"
 #include "consistency.h"
-#include "debug.h"
 #include "decision_manipulation.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -43,6 +42,8 @@
 #include "soar_module.h"
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 #include "soar_TraceNames.h"
+
+#include "../debug_code/dprint.h"
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif

@@ -15,7 +15,6 @@
 
 #include "kernel.h"
 
-#include "debug.h"
 #include "lexer.h"
 #include "soar_db.h"
 

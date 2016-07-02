@@ -17,7 +17,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "decide.h"
 #include "explain.h"
 #include "instantiation.h"
@@ -38,6 +37,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include "../debug_code/dprint.h"
 
 using namespace soar_TraceNames;
 

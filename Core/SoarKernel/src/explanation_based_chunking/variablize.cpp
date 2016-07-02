@@ -13,9 +13,9 @@
 #include "assert.h"
 #include "test.h"
 #include "print.h"
-#include "debug.h"
 #include "rhs.h"
 #include "xml.h"
+#include "../debug_code/dprint.h"
 
 Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {

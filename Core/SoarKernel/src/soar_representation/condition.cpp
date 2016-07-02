@@ -17,9 +17,9 @@
 #include "agent.h"
 #include "explain.h"
 #include "identity_record.h"
-#include "debug.h"
 #include "test.h"
 #include "memory_manager.h"
+#include "../debug_code/dprint.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).

@@ -12,10 +12,10 @@
 
 #include "output_manager.h"
 
-#include "debug.h"
 #include "callback.h"
 #include "print.h"
 #include "agent.h"
+#include "../debug_code/debug.h"
 
 bool is_DT_mode_enabled(TraceMode mode) { return Output_Manager::Get_OM().is_debug_mode_enabled(mode); }
 

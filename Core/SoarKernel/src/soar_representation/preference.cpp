@@ -1,7 +1,6 @@
 #include "preference.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "decide.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -13,6 +12,7 @@
 #include "working_memory_activation.h"
 
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 /* ======================================================================
         Preference Memory routines

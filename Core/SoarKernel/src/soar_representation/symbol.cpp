@@ -21,7 +21,6 @@
 #include "symbol.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "print.h"
@@ -31,6 +30,7 @@
 #include <ctype.h>
 #include <run_soar.h>
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 /* -------------------------------------------------------------------
                            Hash Functions
@@ -545,7 +545,22 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 void deallocate_symbol(agent* thisAgent, Symbol*& sym)
 {
 
-//    dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
+    #ifdef DEBUG_TRACE_REFCOUNT_FOR
+        std::string strName(sym->to_string());
+        if (strName == DEBUG_TRACE_REFCOUNT_FOR)
+        {
+            std::string caller_string = get_stacktrace("dea_sym");
+//            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+            if (is_DT_mode_enabled(DT_ID_LEAKING))
+            {
+                std::cout << "DA | " << strName.c_str() << " |" << sym->reference_count << " | " << caller_string.c_str() << "\n";
+            }
+        }
+    #else
+//        dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
+//        std::string caller_string = get_stacktrace("dea_sym");
+//            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+    #endif
 
     switch (sym->symbol_type)
     {

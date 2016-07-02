@@ -23,13 +23,12 @@
 #include "decide.h"
 #include "preference.h"
 #include "condition.h"
-#include "debug.h"
-
 #include <cstdlib>
 #include <cmath>
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "../debug_code/dprint.h"
 
 /////////////////////////////////////////////////////
 // Parameters

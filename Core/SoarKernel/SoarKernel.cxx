@@ -1,6 +1,5 @@
-#include <repair.cpp>
-#include "src/debug/debug_stacktrace.cpp"
-#include "src/debug/debug.cpp"
+#include "src/debug_code/debug.cpp"
+#include "src/debug_code/debug_stacktrace.cpp"
 #include "src/decision_process/consistency.cpp"
 #include "src/decision_process/decide.cpp"
 #include "src/decision_process/decision_manipulation.cpp"
@@ -24,6 +23,7 @@
 #include "src/explanation_based_chunking/map.cpp"
 #include "src/explanation_based_chunking/merge.cpp"
 #include "src/explanation_based_chunking/print.cpp"
+#include "src/explanation_based_chunking/repair.cpp"
 #include "src/explanation_based_chunking/unify.cpp"
 #include "src/explanation_based_chunking/variablize.cpp"
 #include "src/interface/callback.cpp"
@@ -64,3 +64,4 @@
 #include "src/soar_representation/test.cpp"
 #include "src/soar_representation/working_memory_activation.cpp"
 #include "src/soar_representation/working_memory.cpp"
+

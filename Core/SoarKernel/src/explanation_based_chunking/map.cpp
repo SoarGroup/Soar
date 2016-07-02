@@ -12,7 +12,8 @@
 #include "test.h"
 #include "working_memory.h"
 #include "print.h"
-#include "debug.h"
+
+#include "../debug_code/dprint.h"
 
 void Explanation_Based_Chunker::clear_data()
 {

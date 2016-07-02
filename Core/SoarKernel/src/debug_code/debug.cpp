@@ -12,7 +12,7 @@
 
 ------------------------------------------------------------------ */
 
-#include "debug.h"
+#include "../debug_code/debug.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -29,12 +29,13 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include "../debug_code/dprint.h"
 
 /* -- For stack trace printing (works on Mac.  Not sure about other platforms) --*/
 #ifdef DEBUG_MAC_STACKTRACE
 #include <execinfo.h>
 #include <cxxabi.h>
-#include <debug_stacktrace.h>
+#include "../debug_code/debug_stacktrace.h"
 #endif
 
 using namespace soar_module;
@@ -166,6 +167,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     debug_set_mode_info(mode_info, false);
 #endif
 }
+
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
     epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());

@@ -16,7 +16,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "decide.h"
 #include "ebc.h"
 #include "instantiation.h"
@@ -29,6 +28,7 @@
 #include "xml.h"
 #include "working_memory_activation.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 namespace soar_module
 {

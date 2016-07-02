@@ -14,7 +14,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "ebc.h"
 #include "instantiation.h"
 #include "output_manager.h"
@@ -25,6 +24,7 @@
 #include "rhs.h"
 #include "test.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {

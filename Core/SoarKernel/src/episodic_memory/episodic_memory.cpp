@@ -11,7 +11,6 @@
 
 #include "agent.h"
 #include "decide.h"
-#include "debug.h"
 #include "ebc.h"
 #include "instantiation.h"
 #include "preference.h"
@@ -30,6 +29,7 @@
 #include <fstream>
 #include <set>
 #include <climits>
+#include "../debug_code/dprint.h"
 
 
 //////////////////////////////////////////////////////////

@@ -5,7 +5,6 @@
 #include "instantiation_record.h"
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "production.h"
@@ -15,6 +14,7 @@
 #include "output_manager.h"
 #include "visualize.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 void condition_record::connect_to_action()
 {

@@ -1,7 +1,6 @@
 #include "working_memory.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -15,6 +14,7 @@
 #include "xml.h"
 
 #include <stdlib.h>
+#include "../debug_code/dprint.h"
 
 using namespace soar_TraceNames;
 

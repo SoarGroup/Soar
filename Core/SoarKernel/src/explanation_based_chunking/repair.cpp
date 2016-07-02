@@ -3,12 +3,12 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "debug.h"
 #include "explain.h"
 #include "preference.h"
 #include "slot.h"
 #include "test.h"
 #include "working_memory.h"
+#include "../debug_code/dprint.h"
 
 wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnected_LTI)
 {
