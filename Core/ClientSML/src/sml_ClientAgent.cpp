@@ -1534,7 +1534,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 #ifdef _MSC_VER
         GetCurrentDirectory(4096, buffer);
 #else
-        getcwd(buffer, 4096);
+        buffer = getcwd(buffer, 4096);
 #endif
         
         std::string debuggerPath = buffer;

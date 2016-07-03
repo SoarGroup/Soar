@@ -250,7 +250,7 @@ env.Replace(
     LINKFLAGS=lnflags,
     CPPPATH=[
         '#Core/shared',
-        '#Core/SoarKernel/src/debug',
+        '#Core/SoarKernel/src/debug_code',
         '#Core/SoarKernel/src/decision_process',
         '#Core/SoarKernel/src/episodic_memory',
         '#Core/SoarKernel/src/explain',
