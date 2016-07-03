@@ -43,7 +43,7 @@
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 #include "soar_TraceNames.h"
 
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 #ifndef NO_SVS
 #include "svs_interface.h"
 #endif

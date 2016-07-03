@@ -19,7 +19,7 @@
 #include "identity_record.h"
 #include "test.h"
 #include "memory_manager.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).

@@ -29,7 +29,7 @@
 #include <ctype.h>
 #include <run_soar.h>
 #include <stdlib.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void init_production_utilities(agent* thisAgent)
 {

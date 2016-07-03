@@ -15,7 +15,7 @@
 #include "print.h"
 #include "rhs.h"
 #include "xml.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {

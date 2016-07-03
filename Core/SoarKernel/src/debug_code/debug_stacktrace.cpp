@@ -41,7 +41,7 @@
  * - rlyeh ~~ listening to Long Distance Calling / Metulsky Curse Revisited
  */
 
-#include "../debug_code/debug_stacktrace.h"
+#include "debug_stacktrace.h"
 
 #ifdef DEBUG_MAC_STACKTRACE
 #ifndef WIN32

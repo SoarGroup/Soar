@@ -12,7 +12,7 @@
 
 ------------------------------------------------------------------ */
 
-#include "../debug_code/debug.h"
+#include "debug.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -29,13 +29,13 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* -- For stack trace printing (works on Mac.  Not sure about other platforms) --*/
 #ifdef DEBUG_MAC_STACKTRACE
 #include <execinfo.h>
 #include <cxxabi.h>
-#include "../debug_code/debug_stacktrace.h"
+#include "debug_stacktrace.h"
 #endif
 
 using namespace soar_module;

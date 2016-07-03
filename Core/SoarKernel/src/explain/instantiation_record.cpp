@@ -18,7 +18,7 @@
 #include "output_manager.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {

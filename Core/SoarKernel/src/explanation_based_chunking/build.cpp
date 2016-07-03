@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 using namespace soar_TraceNames;
 

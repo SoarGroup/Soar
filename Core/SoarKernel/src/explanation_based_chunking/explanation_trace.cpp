@@ -23,7 +23,7 @@
 #include "working_memory.h"
 
 #include <assert.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,

@@ -16,7 +16,7 @@
 #include "working_memory.h"
 #include "rhs.h"
 
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 bool Explanation_Based_Chunker::in_null_identity_set(test t)
 {

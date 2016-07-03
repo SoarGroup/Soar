@@ -15,7 +15,7 @@
 #include "output_manager.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {

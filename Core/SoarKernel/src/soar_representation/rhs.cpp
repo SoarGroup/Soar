@@ -19,7 +19,7 @@
 #include "test.h"
 
 #include <stdlib.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 test var_test_bound_in_reconstructed_conds(
     agent* thisAgent,

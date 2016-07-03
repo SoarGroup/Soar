@@ -15,7 +15,7 @@
 #include "working_memory.h"
 #include "print.h"
 #include "condition.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {

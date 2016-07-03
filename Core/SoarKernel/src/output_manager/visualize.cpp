@@ -24,7 +24,7 @@
 #include "rhs.h"
 #include "test.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {

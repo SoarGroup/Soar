@@ -17,7 +17,7 @@
 #include "preference.h"
 #include "rhs.h"
 #include "test.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);

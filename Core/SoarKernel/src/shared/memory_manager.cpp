@@ -9,7 +9,7 @@
 #include <run_soar.h>
 #include "memory_manager.h"
 #include <iostream>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* ====================================================================
 

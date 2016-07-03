@@ -14,7 +14,7 @@
 #include "output_manager.h"
 #include "print.h"
 
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void Explanation_Based_Chunker::print_current_built_rule()
 {

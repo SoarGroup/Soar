@@ -16,7 +16,7 @@
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900

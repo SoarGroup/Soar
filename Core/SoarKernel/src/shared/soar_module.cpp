@@ -28,7 +28,7 @@
 #include "xml.h"
 #include "working_memory_activation.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 namespace soar_module
 {

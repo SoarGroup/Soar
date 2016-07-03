@@ -17,7 +17,7 @@
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {

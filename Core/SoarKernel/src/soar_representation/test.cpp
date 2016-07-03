@@ -20,7 +20,7 @@
 
 #include <assert.h>
 #include <run_soar.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* =================================================================
 

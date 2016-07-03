@@ -19,7 +19,7 @@
 #include "test.h"
 #include "working_memory.h"
 #include "output_manager.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void Explanation_Logger::switch_to_explanation_trace(bool pEnableExplanationTrace)
 {

@@ -14,7 +14,7 @@
 #include "instantiation.h"
 #include "print.h"
 #include "test.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void Explanation_Based_Chunker::clear_merge_map()
 {

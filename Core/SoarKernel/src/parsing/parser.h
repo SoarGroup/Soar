@@ -23,7 +23,7 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 void        init_parser(void);
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result);

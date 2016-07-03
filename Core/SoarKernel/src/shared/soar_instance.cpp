@@ -14,7 +14,7 @@
 #include "sml_Client.h"
 #include "sml_AgentSML.h"
 #include "agent.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 Soar_Instance::Soar_Instance() :
     m_Kernel(NULL)

@@ -30,7 +30,7 @@
 #include "xml.h"
 
 #include <stdlib.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 
 using namespace soar_TraceNames;

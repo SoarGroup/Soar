@@ -15,7 +15,7 @@
 #include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 
 

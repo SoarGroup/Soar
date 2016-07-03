@@ -53,7 +53,7 @@
 #include <stdlib.h>
 #include <string> // SBW 8/4/08
 #include <list>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 using namespace soar_TraceNames;
 

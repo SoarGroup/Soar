@@ -12,7 +12,7 @@
 #include "working_memory_activation.h"
 
 #include <stdlib.h>
-#include "../debug_code/dprint.h"
+#include "dprint.h"
 
 /* ======================================================================
         Preference Memory routines
