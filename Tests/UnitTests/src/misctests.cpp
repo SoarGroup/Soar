@@ -93,6 +93,10 @@ void MiscTest::setUp()
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
 
+    /* Sets Soar's output settings to what the unit tests expect.  Prevents
+     * debug trace code from being output and causing some tests to appear to fail. */
+    configure_for_unit_tests();
+
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
 }

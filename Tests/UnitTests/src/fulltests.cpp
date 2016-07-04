@@ -229,7 +229,7 @@ void FullTests::runTest()
     // destroy agent and kernel
     destroySoar();
 }
-
+#include "debug.h"
 void FullTests::createSoar()
 {
     CPPUNIT_ASSERT(m_pKernel == NULL);
@@ -254,6 +254,10 @@ void FullTests::createSoar()
 
     CPPUNIT_ASSERT(m_pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(m_pKernel->GetLastErrorDescription(), !m_pKernel->HadError());
+
+    /* Sets Soar's output settings to what the unit tests expect.  Prevents
+     * debug trace code from being output and causing some tests to appear to fail. */
+    configure_for_unit_tests();
 
     if (m_Options.test(VERBOSE))
     {
@@ -285,6 +289,7 @@ void FullTests::createSoar()
     CPPUNIT_ASSERT_MESSAGE("set-stop-phase --before --input", m_pAgent->GetLastCommandLineResult());
 
     CPPUNIT_ASSERT(m_pKernel->GetNumberAgents() == 1);
+
 
     m_pKernel->SetAutoCommit(!m_Options.test(AUTO_COMMIT_DISABLED)) ;
 }

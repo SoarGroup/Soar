@@ -68,6 +68,8 @@ class EXPORT Soar_Instance
         };
 
         void CLI_Debug_Print(const char* text);
+        void configure_for_unit_tests() { m_launched_by_unit_test = true; }
+        bool was_run_from_unit_test() { return m_launched_by_unit_test; };
 
     private:
 
@@ -77,9 +79,10 @@ class EXPORT Soar_Instance
         Soar_Instance(Soar_Instance const&) {};
         void operator=(Soar_Instance const&) {};
 
-        sml::Kernel*             m_Kernel;
-        Output_Manager*          m_Output_Manager;
+        sml::Kernel*            m_Kernel;
+        Output_Manager*         m_Output_Manager;
         Memory_Manager*         m_Memory_Manager;
+        bool                    m_launched_by_unit_test;
 
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
@@ -95,5 +98,6 @@ class EXPORT Soar_Instance
 
 EXPORT Soar_Instance* getSoarInstance();
 EXPORT Output_Manager* getOM();
+EXPORT void configure_for_unit_tests();
 
 #endif /* SOARINSTANCE_H_ */

@@ -127,6 +127,10 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
     CPPUNIT_ASSERT(pKernel != NULL);
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
 
+    /* Sets Soar's output settings to what the unit tests expect.  Prevents
+     * debug trace code from being output and causing some tests to appear to fail. */
+    configure_for_unit_tests();
+
     pKernel->SetAutoCommit(options.test(kOpt_AUTO_COMMIT_ENABLED)) ;
 
     // Set this to true to give us lots of extra debug information on remote clients

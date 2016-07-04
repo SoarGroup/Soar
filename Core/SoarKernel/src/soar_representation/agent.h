@@ -151,8 +151,6 @@ typedef struct EXPORT agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
 
-    Symbol*             current_production_name;
-
     Explanation_Based_Chunker*  ebChunker;
     Memory_Manager*             memoryManager;
     Output_Manager*             outputManager;

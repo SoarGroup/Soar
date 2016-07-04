@@ -1,8 +1,3 @@
-/*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION.
- *************************************************************************/
-
 /*------------------------------------------------------------------
                        debug.h
 
@@ -20,9 +15,7 @@
 #define SOARDEBUG_H
 
 #include "kernel.h"
-
 #include "soar_module.h"
-
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 /* --------------------------------------------------------------------------*/

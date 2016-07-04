@@ -55,6 +55,10 @@ int SimpleListener::run()
         return 1;
     }
     
+    /* Sets Soar's output settings to what the unit tests expect.  Prevents
+     * debug trace code from being output and causing some tests to appear to fail. */
+    configure_for_unit_tests();
+
     //std::cout << "SimpleListener alive." << std::endl;
     
     pKernel->SetConnectionInfo("listener", "ready", "ready");

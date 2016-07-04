@@ -195,7 +195,11 @@ void MultiAgentTest::doTest()
 {
     sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread();
     CPPUNIT_ASSERT_MESSAGE(pKernel->GetLastErrorDescription(), !pKernel->HadError());
-    
+
+    /* Sets Soar's output settings to what the unit tests expect.  Prevents
+     * debug trace code from being output and causing some tests to appear to fail. */
+    configure_for_unit_tests();
+
     // We'll require commits, just so we're testing that path
     pKernel->SetAutoCommit(false) ;
     

@@ -137,7 +137,12 @@ class CPPUNIT_NS
                         catch (CPPUnit_Assert_Failure& caf)
                         {
                             result.tell(false);
-                            std::cerr << caf.what() << std::endl;
+                            /* The following line will print out the result of the last command, which can
+                             * have some error info, but seems to have a lot of incidental output.
+                             * These errors aren't that useful and can be distractingly large.  If there's
+                             * a problem, we always have to manually run the test agent anyway and can see
+                             * what is really going on. */
+//                            std::cerr << caf.what() << std::endl;
                         }
                         this->tearDown();
                         delete tt->second;
@@ -181,7 +186,7 @@ class CPPUNIT_NS
         {
                 void tell(const bool& result)
                 {
-                    std::cout << " : " << (result ? "OK" : "FAILED") << std::endl;
+                    std::cout << " : " << (result ? "OK" : "<=--- FAILED ---=>") << std::endl;
                 }
         };
 

@@ -159,7 +159,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
-    mode_info[DT_PARSER_PROMOTE].prefix =                strdup("ExtraRes| ");
+    mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
 
 #ifdef DEBUG_OUTPUT_ON
     debug_set_mode_info(mode_info, true);
@@ -324,7 +324,7 @@ std::string get_stacktrace(const char* prefix)
 void debug_trace_set(int dt_num, bool pEnable)
 {
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-    if (!thisAgent)
+    if (!thisAgent || Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
     {
         return;
     }
@@ -334,10 +334,14 @@ void debug_trace_set(int dt_num, bool pEnable)
         {
              Output_Manager::Get_OM().set_output_params_global(pEnable);
              thisAgent->output_settings->set_output_params_agent(pEnable);
-             dprint(DT_DEBUG, "Debug output test statement...\n");
+             if (pEnable)
+             {
+                 dprint(DT_DEBUG, "...testing debug trace output.\n");
+             }
              return;
+        } else {
+            Output_Manager::Get_OM().set_output_mode(dt_num, pEnable);
         }
-        Output_Manager::Get_OM().set_output_mode(dt_num, pEnable);
     }
 }
 

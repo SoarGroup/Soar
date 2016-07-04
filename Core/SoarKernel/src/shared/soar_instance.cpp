@@ -16,9 +16,10 @@
 #include "agent.h"
 #include "dprint.h"
 
-Soar_Instance::Soar_Instance() :
-    m_Kernel(NULL)
+Soar_Instance::Soar_Instance()
 {
+    m_Kernel = NULL;
+    m_launched_by_unit_test = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
     dprint_header(DT_SOAR_INSTANCE, PrintBoth, "= Soar instance created =\n");
@@ -230,6 +231,16 @@ void Soar_Instance::CLI_Debug_Print(const char* text)
     this->m_Output_Manager->debug_print(DT_CLI_LIBRARIES, text);
 }
 
+void configure_for_unit_tests()
+{
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    Soar_Instance::Get_Soar_Instance().configure_for_unit_tests();
+    Output_Manager::Get_OM().set_output_params_global(false);
+    if (thisAgent)
+    {
+        thisAgent->output_settings->set_output_params_agent(false);
+    }
+}
 
 /* -- The following is a bit of a hack used to get Tcl access
  *    to Soar data structures via SWIG proxy functions. -- */

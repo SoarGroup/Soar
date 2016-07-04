@@ -12,10 +12,11 @@
 
 #include "output_manager.h"
 
-#include "callback.h"
-#include "print.h"
 #include "agent.h"
+#include "callback.h"
 #include "debug.h"
+#include "print.h"
+#include "soar_instance.h"
 
 bool is_DT_mode_enabled(TraceMode mode) { return Output_Manager::Get_OM().is_debug_mode_enabled(mode); }
 
@@ -31,7 +32,7 @@ AgentOutput_Info::AgentOutput_Info()
 }
 
 void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
-    if (pDebugEnabled)
+    if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
     {
         callback_mode = false;
         stdout_mode = true;
@@ -51,7 +52,7 @@ void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
 
 
 void Output_Manager::set_output_params_global(bool pDebugEnabled){
-    if (pDebugEnabled)
+    if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
     {
         m_print_actual = true;
         m_print_identity = true;
