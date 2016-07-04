@@ -154,22 +154,28 @@ bool Lexer::determine_type_of_constituent_string () {
         return (errno == 0);
     }
 
-    if (get_allow_ids() && possible_id) {
-        // long term identifiers start with @
-        unsigned lti_index = 0;
-        if (current_lexeme.lex_string[lti_index] == '@') {
+    if (possible_id && get_allow_ids())
+        {
+            // long term identifiers start with @
+            unsigned lti_index = 0;
+            if (current_lexeme.lex_string[lti_index] == '@') {
+                lti_index += 1;
+            }
+            current_lexeme.id_letter = static_cast<char>(toupper(current_lexeme.lex_string[lti_index]));
             lti_index += 1;
-        }
-        current_lexeme.id_letter = static_cast<char>(toupper(current_lexeme.lex_string[lti_index]));
-        lti_index += 1;
-        errno = 0;
-        current_lexeme.type = IDENTIFIER_LEXEME;
-        if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[lti_index]))) {
-            print (thisAgent, "Error: bad number for identifier (probably too large)\n");
-            print_location_of_most_recent_lexeme();
-            current_lexeme.id_number = 0;
-            errno = 1;
-        }
+            errno = 0;
+            current_lexeme.type = IDENTIFIER_LEXEME;
+            if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[lti_index]))) {
+                print (thisAgent, "Error: bad number for identifier (probably too large)\n");
+                print_location_of_most_recent_lexeme();
+                current_lexeme.id_number = 0;
+                errno = 1;
+                this->lex_error = true;
+            }
+//        } else {
+//            errno = 1;
+//            this->lex_error = true;
+//        }
         return (errno == 0);
     }
 
@@ -454,7 +460,7 @@ void Lexer::lex_quote () {
   table) based on the first character of the lexeme.
 ====================================================================== */
 
-void Lexer::get_lexeme () {
+bool Lexer::get_lexeme () {
 
   current_lexeme.lex_string = "";
 
@@ -462,10 +468,19 @@ void Lexer::get_lexeme () {
 
   // dispatch to lexer routine by first character in lexeme
   record_position_of_start_of_lexeme();
+  lex_error = false;
   if (current_char!=EOF)
     (this->*lexer_routines[static_cast<unsigned char>(current_char)])();
   else
     lex_eof();
+  if (lex_error)
+  {
+      print(thisAgent,  "Parsing error.\n");
+      // Doesn't do anything any more it seems
+      // lexer->print_location_of_most_recent_lexeme();
+      return false;
+  }
+  return true;
 }
 
 void Lexer::consume_whitespace_and_comments()
@@ -760,6 +775,7 @@ Lexer::Lexer(agent* agent, const char* string)
     current_char = ' ';
     parentheses_level = 0;
     allow_ids = true;
+    lex_error = false;
 
     //Initializing lexeme
     current_lexeme = Lexeme();

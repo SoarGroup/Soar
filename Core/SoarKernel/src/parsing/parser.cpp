@@ -308,31 +308,32 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         {
             newSymbol = make_str_constant(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
+            dprint(DT_PARSER, "Adding str lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
             newSymbol = make_variable(thisAgent, lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
+            dprint(DT_PARSER, "Adding var lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case INT_CONSTANT_LEXEME:
         {
             newSymbol = make_int_constant(thisAgent, lexeme->int_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
+            dprint(DT_PARSER, "Adding int lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case FLOAT_CONSTANT_LEXEME:
         {
             newSymbol =  make_float_constant(thisAgent, lexeme->float_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding lexeme to parser strings %y\n", newSymbol);
+            dprint(DT_PARSER, "Adding float lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
+            dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
             if (!allow_lti)
             {
                 /* This seems to only be set when being called by the watch wme cli command.  It looks
@@ -353,6 +354,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                     /* An identifier was found in a rule that is not yet in smem.  We store
                      * the identifier in a list so that we can add it to smem later, after we
                      * know the current source command is complete */
+                    dprint(DT_PARSER_PROMOTE, "Identifier %c%d found (%s).\n", lexeme->id_letter, lexeme->id_number, allow_lti ? "true" : "false");
                     newSymbol = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
                     if (newSymbol == NIL)
                     {
@@ -412,37 +414,37 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
     {
         case EQUAL_LEXEME:
             test_type = EQUALITY_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case NOT_EQUAL_LEXEME:
             test_type = NOT_EQUAL_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case LESS_LEXEME:
             test_type = LESS_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case GREATER_LEXEME:
             test_type = GREATER_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case LESS_EQUAL_LEXEME:
             test_type = LESS_OR_EQUAL_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case GREATER_EQUAL_LEXEME:
             test_type = GREATER_OR_EQUAL_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case LESS_EQUAL_GREATER_LEXEME:
             test_type = SAME_TYPE_TEST;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
             break;
         case STR_CONSTANT_LEXEME:
         case INT_CONSTANT_LEXEME:
@@ -467,7 +469,11 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
         case VARIABLE_LEXEME:
         case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme())
+            {
+                symbol_remove_ref(thisAgent, referent);
+                return NULL;
+            }
             t = make_test(thisAgent, referent, test_type);
             symbol_remove_ref(thisAgent, referent);
             return t;
@@ -496,7 +502,8 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
-    lexer->get_lexeme();
+
+    if (!lexer->get_lexeme()) return NULL;
 
     t = make_test(thisAgent, NIL, DISJUNCTION_TEST);
 
@@ -508,7 +515,12 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
             case INT_CONSTANT_LEXEME:
             case FLOAT_CONSTANT_LEXEME:
                 push(thisAgent, make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false), t->data.disjunction_list);
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme())
+                {
+                    print(thisAgent,  "Expected constant or >> while reading disjunction test\n");
+                    deallocate_test(thisAgent, t);
+                    return NULL;
+                }
                 break;
             default:
                 print(thisAgent,  "Expected constant or >> while reading disjunction test\n");
@@ -517,7 +529,8 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
                 return NIL;
         }
     }
-    lexer->get_lexeme();  /* consume the >> */
+    /* consume the >> */
+    if (!lexer->get_lexeme()) return NULL;
     t->data.disjunction_list =
         destructively_reverse_list(t->data.disjunction_list);
     return t;
@@ -554,21 +567,28 @@ test parse_test(agent* thisAgent, Lexer* lexer)
         return parse_simple_test(thisAgent, lexer);
     }
     /* --- parse and return conjunctive test --- */
-    lexer->get_lexeme();
+    if (!lexer->get_lexeme()) return NULL;
+
     t = NULL;
     do
     {
         temp = parse_simple_test(thisAgent, lexer);
         if (!temp)
         {
-            deallocate_test(thisAgent, t);
+            if (t)
+            {
+                deallocate_test(thisAgent, t);
+            }
             return NIL;
         }
         add_test(thisAgent, &t, temp);
     }
     while (lexer->current_lexeme.type != R_BRACE_LEXEME);
-    lexer->get_lexeme(); /* consume the "}" */
-
+    if (!lexer->get_lexeme()) 
+    {
+        deallocate_test(thisAgent, t);
+        return NULL;
+    }
     if (t->type == CONJUNCTIVE_TEST)
     {
         t->data.conjunct_list =
@@ -807,7 +827,12 @@ condition* parse_value_test_star(agent* thisAgent, Lexer* lexer, char first_lett
         if (lexer->current_lexeme.type == PLUS_LEXEME)
         {
             acceptable = true;
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme())
+            {
+                deallocate_condition_list(thisAgent, first_c);
+                deallocate_test(thisAgent, value_test);
+                return NULL;
+            }
         }
         /* --- build condition using the new value test --- */
         c = make_condition(thisAgent);
@@ -853,7 +878,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type == MINUS_LEXEME)
     {
         negate_it = true;
-        lexer->get_lexeme();
+        if (!lexer->get_lexeme()) return NULL;
     }
 
     /* --- read up arrow --- */
@@ -863,7 +888,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
-    lexer->get_lexeme();
+    if (!lexer->get_lexeme()) return NULL;
 
     first_c = NIL;
     last_c = NIL;
@@ -883,7 +908,8 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     id_test_to_use = NIL;
     while (lexer->current_lexeme.type == PERIOD_LEXEME)
     {
-        lexer->get_lexeme();  /* consume the "." */
+        /* consume the "." */
+        if (!lexer->get_lexeme()) return NULL;
         /* --- setup for next attribute in path:  make a dummy variable,
            create a new condition in the path --- */
         c = make_condition(thisAgent);
@@ -980,7 +1006,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
-    lexer->get_lexeme();
+    if (!lexer->get_lexeme()) return NULL;
 
     /* --- look for goal/impasse indicator --- */
     if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
@@ -988,13 +1014,21 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         if (!strcmp(lexer->current_lexeme.string(), "state"))
         {
             id_goal_impasse_test = make_test(thisAgent, NIL, GOAL_ID_TEST);
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme())
+            {
+                deallocate_test(thisAgent, id_goal_impasse_test);
+                return NULL;
+            }
             first_letter_if_no_id_given = 's';
         }
         else if (!strcmp(lexer->current_lexeme.string(), "impasse"))
         {
             id_goal_impasse_test = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme())
+            {
+                deallocate_test(thisAgent, id_goal_impasse_test);
+                return NULL;
+            }
             first_letter_if_no_id_given = 'i';
         }
         else
@@ -1080,7 +1114,8 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
     /* --- if no <attr_value_tests> are given, create a dummy one --- */
     if (lexer->current_lexeme.type == R_PAREN_LEXEME)
     {
-        lexer->get_lexeme();       /* consume the right parenthesis */
+        /* consume the right parenthesis */
+        if (!lexer->get_lexeme()) return NULL;
         c = make_condition( thisAgent,
                             NULL,
                             make_placeholder_test(thisAgent, 'a'),
@@ -1112,7 +1147,12 @@ condition* parse_tail_of_conds_for_one_id(agent* thisAgent, Lexer* lexer)
     }
 
     /* --- reached the end of the condition --- */
-    lexer->get_lexeme();       /* consume the right parenthesis */
+    /* consume the right parenthesis */
+    if (!lexer->get_lexeme())
+    {
+        deallocate_condition_list(thisAgent, first_c);
+        return NULL;
+    }
 
     return first_c;
 }
@@ -1192,14 +1232,18 @@ condition* parse_cond(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type == MINUS_LEXEME)
     {
         negate_it = true;
-        lexer->get_lexeme();
+        if (!lexer->get_lexeme()) return NULL;
     }
 
     /* --- parse <positive_cond> --- */
     if (lexer->current_lexeme.type == L_BRACE_LEXEME)
     {
         /* --- read conjunctive condition --- */
-        lexer->get_lexeme();
+        if (!lexer->get_lexeme())
+        {
+            if (c) deallocate_condition_list(thisAgent, c);
+            return NULL;
+        }
         c = parse_cond_plus(thisAgent, lexer);
         if (!c)
         {
@@ -1212,7 +1256,12 @@ condition* parse_cond(agent* thisAgent, Lexer* lexer)
             deallocate_condition_list(thisAgent, c);
             return NIL;
         }
-        lexer->get_lexeme();  /* consume the R_BRACE */
+        /* consume the R_BRACE */
+        if (!lexer->get_lexeme())
+        {
+            if (c) deallocate_condition_list(thisAgent, c);
+            return NULL;
+        }
     }
     else
     {
@@ -1447,7 +1496,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     allocate_cons(thisAgent, &fl);
     fl->first = rf;
     prev_c = fl;
-    lexer->get_lexeme(); /* consume function name, advance to argument list */
+    /* consume function name, advance to argument list */
+    if (!lexer->get_lexeme()) return NULL;
     num_args = 0;
     while (lexer->current_lexeme.type != R_PAREN_LEXEME)
     {
@@ -1476,7 +1526,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         return NIL;
     }
 
-    lexer->get_lexeme();  /* consume the right parenthesis */
+    /* consume the right parenthesis */
+    if (!lexer->get_lexeme()) return NULL;
     return funcall_list_to_rhs_value(fl);
 }
 
@@ -1497,7 +1548,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
 
     if (lexer->current_lexeme.type == L_PAREN_LEXEME)
     {
-        lexer->get_lexeme();
+        if (!lexer->get_lexeme()) return NULL;
         return parse_function_call_after_lparen(thisAgent, lexer, false);
     }
 
@@ -1513,7 +1564,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
         // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
         rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
-        lexer->get_lexeme();
+        if (!lexer->get_lexeme()) return NULL;
         return rv;
     }
     print(thisAgent,  "Illegal value for RHS value\n");
@@ -1585,34 +1636,34 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
     {
 
         case PLUS_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return ACCEPTABLE_PREFERENCE_TYPE;
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return ACCEPTABLE_PREFERENCE_TYPE;
             }
             return ACCEPTABLE_PREFERENCE_TYPE;
 
         case MINUS_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return REJECT_PREFERENCE_TYPE;
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return REJECT_PREFERENCE_TYPE;
             }
             return REJECT_PREFERENCE_TYPE;
 
         case EXCLAMATION_POINT_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return REQUIRE_PREFERENCE_TYPE;
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return REQUIRE_PREFERENCE_TYPE;
             }
             return REQUIRE_PREFERENCE_TYPE;
 
         case TILDE_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return PROHIBIT_PREFERENCE_TYPE;
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return PROHIBIT_PREFERENCE_TYPE;
             }
             return PROHIBIT_PREFERENCE_TYPE;
 
@@ -1625,7 +1676,7 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
          ****************************************************************************/
 
         case GREATER_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return BETTER_PREFERENCE_TYPE;
             if ((lexer->current_lexeme.type != COMMA_LEXEME) &&
                     (lexer->current_lexeme.type != R_PAREN_LEXEME) &&
                     (lexer->current_lexeme.type != UP_ARROW_LEXEME) &&
@@ -1636,12 +1687,12 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
             /* --- forced unary preference --- */
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return BEST_PREFERENCE_TYPE;
             }
             return BEST_PREFERENCE_TYPE;
 
         case EQUAL_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return ACCEPTABLE_PREFERENCE_TYPE;
             if ((lexer->current_lexeme.type != COMMA_LEXEME) &&
                     (lexer->current_lexeme.type != R_PAREN_LEXEME) &&
                     (lexer->current_lexeme.type != UP_ARROW_LEXEME) &&
@@ -1662,12 +1713,12 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
             /* --- forced unary preference --- */
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return UNARY_INDIFFERENT_PREFERENCE_TYPE;
             }
             return UNARY_INDIFFERENT_PREFERENCE_TYPE;
 
         case LESS_LEXEME:
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return WORSE_PREFERENCE_TYPE;
             if ((lexer->current_lexeme.type != COMMA_LEXEME) &&
                     (lexer->current_lexeme.type != R_PAREN_LEXEME) &&
                     (lexer->current_lexeme.type != UP_ARROW_LEXEME) &&
@@ -1678,7 +1729,7 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
             /* --- forced unary preference --- */
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme()) return WORST_PREFERENCE_TYPE;
             }
             return WORST_PREFERENCE_TYPE;
 
@@ -1726,7 +1777,7 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
            comma. */
         if (lexer->current_lexeme.type == COMMA_LEXEME)
         {
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
         }
     }
 
@@ -1743,7 +1794,11 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
             }
             if (lexer->current_lexeme.type == COMMA_LEXEME)
             {
-                lexer->get_lexeme();
+                if (!lexer->get_lexeme())
+                {
+                    deallocate_action_list(thisAgent, prev_a);
+                    return NULL;
+                }
             }
         }
         else
@@ -1832,7 +1887,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
            comma. */
         if (lexer->current_lexeme.type == COMMA_LEXEME)
         {
-            lexer->get_lexeme();
+            if (!lexer->get_lexeme()) return NULL;
         }
     }
 
@@ -1948,7 +2003,9 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     }
     old_id = id;
 
-    lexer->get_lexeme(); /* consume up-arrow, advance to attribute */
+    /* consume up-arrow, advance to attribute */
+    if (!lexer->get_lexeme()) return NULL;
+
     attr = parse_rhs_value(thisAgent, lexer);
     if (! attr)
     {
@@ -1963,7 +2020,8 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     /*  allow dot notation "." in RHS attribute path  10/15/98 KJC */
     while (lexer->current_lexeme.type == PERIOD_LEXEME)
     {
-        lexer->get_lexeme(); /* consume the "."  */
+        /* consume the "."  */
+        if (!lexer->get_lexeme()) return NULL;
 
         /* set up for next attribute in path: make dummy variable,
            and create new action in the path */
@@ -2063,7 +2121,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
-    lexer->get_lexeme();
+    if (!lexer->get_lexeme()) return NULL;
 
     // Check for long term identifier notation
     bool id_lti = parse_lti(thisAgent, lexer);
@@ -2091,6 +2149,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
             /* An identifier was found in a rule that is not yet in smem.  We store
              * the identifier in a list so that we can add it to smem later, after we
              * know the current source command is complete */
+            dprint(DT_PARSER_PROMOTE, "RHS Identifier %c%d found (%s).\n", lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, lexer->get_allow_ids() ? "true" : "false");
             var = find_identifier(thisAgent, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
             if (var == NIL)
             {
@@ -2108,7 +2167,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         var = make_variable(thisAgent, lexer->current_lexeme.string());
     }
 
-    lexer->get_lexeme();
+    if (!lexer->get_lexeme()) return NULL;
     all_actions = NIL;
     while (lexer->current_lexeme.type != R_PAREN_LEXEME)
     {
@@ -2126,7 +2185,8 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
             return NIL;
         }
     }
-    lexer->get_lexeme();  /* consume the right parenthesis */
+    /* consume the right parenthesis */
+    if (!lexer->get_lexeme()) return NULL;
     symbol_remove_ref(thisAgent, var);
     return all_actions;
 }
@@ -2139,10 +2199,10 @@ bool parse_lti(agent* thisAgent, Lexer* lexer)
         {
             bool saved = lexer->get_allow_ids();
             lexer->set_allow_ids(true);
-            lexer->get_lexeme();
+            bool lexSuccess = lexer->get_lexeme();
             lexer->set_allow_ids(saved);
+            return lexSuccess;
         }
-        return true;
 
         default:
             break;
@@ -2215,6 +2275,29 @@ action* destructively_reverse_action_list(action* a)
     return prev;
 }
 
+void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentation = NULL , condition** lhs_top = NULL, action** rhs = NULL)
+{
+    if (name)
+    {
+        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
+        symbol_remove_ref(thisAgent, name);
+        name = NULL;
+    }
+    if (documentation && *documentation)
+    {
+        free_memory_block_for_string(thisAgent, *documentation);
+    }
+    if (lhs_top && *lhs_top)
+    {
+        deallocate_condition_list(thisAgent, *lhs_top);
+        *lhs_top = NULL;
+    }
+    if (rhs && *rhs)
+    {
+        deallocate_action_list(thisAgent, *rhs);
+        *rhs = NULL;
+    }
+}
 
 /* =================================================================
                         Parse Production
@@ -2228,31 +2311,35 @@ action* destructively_reverse_action_list(action* a)
 ================================================================= */
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result)
 {
-    Symbol*         name;
-    char*           documentation;
-    condition       *lhs, *lhs_top, *lhs_bottom;
-    action*         rhs;
-    production*     p;
+    Symbol*         name = NULL;
+    char*           documentation = NULL;
+    condition       *lhs = NULL, *lhs_top = NULL, *lhs_bottom = NULL;
+    action*         rhs = NULL;
+    production*     p = NULL;
     SupportType     declared_support;
     ProductionType  prod_type;
 
     Lexer lexer(thisAgent, prod_string);
     lexer.set_allow_ids(false);
-    lexer.get_lexeme();
+    bool lexSuccess = lexer.get_lexeme();
 
     bool rhs_okay, interrupt_on_match, explain_chunks;
 
     reset_placeholder_variable_generator(thisAgent);
 
     /* --- read production name --- */
-    if (lexer.current_lexeme.type != STR_CONSTANT_LEXEME)
+    if (!lexSuccess || lexer.current_lexeme.type != STR_CONSTANT_LEXEME)
     {
         print(thisAgent,  "Expected symbol for production name\n");
         lexer.print_location_of_most_recent_lexeme();
         return NIL;
     }
     name = make_str_constant(thisAgent, lexer.current_lexeme.string());
-    lexer.get_lexeme();
+    if (!lexer.get_lexeme())
+    {
+        abort_parse_production(thisAgent, name);
+        return NULL;
+    }
 
     /* --- if there's already a prod with this name, excise it --- */
     if (name->sc->production)
@@ -2264,7 +2351,11 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     if (lexer.current_lexeme.type == QUOTED_STRING_LEXEME)
     {
         documentation = make_memory_block_for_string(thisAgent, lexer.current_lexeme.string());
-        lexer.get_lexeme();
+        if (!lexer.get_lexeme())
+        {
+            abort_parse_production(thisAgent, name, &documentation);
+            return NULL;
+        }
     }
     else
     {
@@ -2285,43 +2376,71 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         if (!strcmp(lexer.current_lexeme.string(), ":o-support"))
         {
             declared_support = DECLARED_O_SUPPORT;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":i-support"))
         {
             declared_support = DECLARED_I_SUPPORT;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":chunk"))
         {
             prod_type = CHUNK_PRODUCTION_TYPE;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":default"))
         {
             prod_type = DEFAULT_PRODUCTION_TYPE;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":template"))
         {
             prod_type = TEMPLATE_PRODUCTION_TYPE;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":interrupt"))
         {
             interrupt_on_match = true;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         if (!strcmp(lexer.current_lexeme.string(), ":explain"))
         {
             explain_chunks = true;
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme())
+            {
+                abort_parse_production(thisAgent, name, &documentation);
+                return NULL;
+            }
             continue;
         }
         break;
@@ -2332,13 +2451,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     lhs = parse_lhs(thisAgent, &lexer);
     if (!lhs)
     {
-        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        if (documentation)
-        {
-            free_memory_block_for_string(thisAgent, documentation);
-        }
-        symbol_remove_ref(thisAgent, name);
-        thisAgent->current_production_name = NIL;
+        abort_parse_production(thisAgent, name, &documentation);
         return NIL;
     }
 
@@ -2347,31 +2460,21 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     {
         print(thisAgent,  "Expected --> in production\n");
         lexer.print_location_of_most_recent_lexeme();
-        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        if (documentation)
-        {
-            free_memory_block_for_string(thisAgent, documentation);
-        }
-        symbol_remove_ref(thisAgent, name);
-        thisAgent->current_production_name = NIL;
-        deallocate_condition_list(thisAgent, lhs);
+        abort_parse_production(thisAgent, name, &documentation, &lhs);
         return NIL;
     }
-    lexer.get_lexeme();
+    if (!lexer.get_lexeme())
+    {
+        abort_parse_production(thisAgent, name, &documentation, &lhs);
+        return NULL;
+    }
 
     /* --- read the RHS --- */
     dprint(DT_PARSER, "Parsing RHS\n");
     rhs_okay = parse_rhs(thisAgent, &lexer, &rhs);
     if (!rhs_okay)
     {
-        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        if (documentation)
-        {
-            free_memory_block_for_string(thisAgent, documentation);
-        }
-        symbol_remove_ref(thisAgent, name);
-        thisAgent->current_production_name = NIL;
-        deallocate_condition_list(thisAgent, lhs);
+        abort_parse_production(thisAgent, name, &documentation, &lhs);
         return NIL;
     }
     rhs = destructively_reverse_action_list(rhs);
@@ -2389,15 +2492,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     thisAgent->name_of_production_being_reordered = name->sc->name;
     if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true))
     {
-        if (documentation)
-        {
-            free_memory_block_for_string(thisAgent, documentation);
-        }
-        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        symbol_remove_ref(thisAgent, name);
-        thisAgent->current_production_name = NIL;
-        deallocate_condition_list(thisAgent, lhs_top);
-        deallocate_action_list(thisAgent, rhs);
+        abort_parse_production(thisAgent, name, &documentation, &lhs, &rhs);
         return NIL;
     }
 
@@ -2437,6 +2532,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     }
 
     return p;
+
 }
 
 void LTI_Promotion_Set::promote_LTIs_sourced(agent* thisAgent)

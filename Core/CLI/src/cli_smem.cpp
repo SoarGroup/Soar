@@ -202,10 +202,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             const char* pAttr_c_str = pAttr->c_str();
             soar::Lexer lexer(thisAgent, pAttr_c_str);
-            lexer.get_lexeme();
+            if (!lexer.get_lexeme()) return SetError("Value not found.");
             if (lexer.current_lexeme.type == AT_LEXEME)
             {
-                lexer.get_lexeme();
+                if (!lexer.get_lexeme()) return SetError("Nothing found after @");
             }
             if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
             {

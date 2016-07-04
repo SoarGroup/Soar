@@ -107,7 +107,7 @@ namespace soar
         /**
          * Read the input and set the current lexeme.
          */
-        void get_lexeme();
+        bool get_lexeme();
 
         /**
          * Return a single lexeme created from the input string;
@@ -196,7 +196,7 @@ namespace soar
         static lex_func_ptr lexer_routines[256];
         //initializes all lexing structures once at startup
         static bool init ();
-
+        bool lex_error;
         /**
          * Get the next character from the current input file
          * and put it into the member variable current_char.
