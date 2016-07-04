@@ -8,22 +8,21 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
+#include "cli_Commands.h"
 #include "cli_CommandLineInterface.h"
 
-#include <fstream>
-
-#include "cli_Commands.h"
-#include "sml_StringOps.h"
-#include "sml_Names.h"
-#include "sml_AgentSML.h"
-#include "sml_Events.h"
+#include "agent.h"
 #include "misc.h"
 #include "lexer.h"
+#include "sml_AgentSML.h"
+#include "sml_Events.h"
+#include "sml_Names.h"
+#include "sml_StringOps.h"
+#include "sml_Utils.h"
 
 #include <algorithm>
-
 #include <assert.h>
+#include <fstream>
 
 using namespace cli;
 using namespace sml;
