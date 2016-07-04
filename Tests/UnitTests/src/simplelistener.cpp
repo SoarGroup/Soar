@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "sml_Utils.h"
+#include "soar_instance.h"
 
 extern bool g_Cancel;
 
