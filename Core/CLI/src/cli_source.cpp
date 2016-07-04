@@ -18,9 +18,9 @@
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "sml_Events.h"
+#include "agent.h"
 #include "misc.h"
 #include "lexer.h"
-#include "agent.h"
 #include "parser.h"
 
 #include <algorithm>
