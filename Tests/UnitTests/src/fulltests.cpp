@@ -15,6 +15,7 @@
 #include "thread_Event.h"
 #include "kernel.h"
 #include "soarversion.h"
+#include "soar_instance.h"
 
 #include "handlers.h"
 
@@ -229,7 +230,7 @@ void FullTests::runTest()
     // destroy agent and kernel
     destroySoar();
 }
-#include "debug.h"
+
 void FullTests::createSoar()
 {
     CPPUNIT_ASSERT(m_pKernel == NULL);

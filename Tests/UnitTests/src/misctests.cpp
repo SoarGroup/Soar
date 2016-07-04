@@ -75,6 +75,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MiscTest);
 #include "sml_Client.h"
 #include "sml_Names.h"
 #include "Export.h"
+#include "soar_instance.h"
 
 #include <string>
 #include <iostream>

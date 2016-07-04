@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "sml_Client.h"
+#include "soar_instance.h"
 
 class MultiAgentTest : public CPPUNIT_NS::TestCase
 {

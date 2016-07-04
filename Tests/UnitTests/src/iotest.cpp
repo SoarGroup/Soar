@@ -12,6 +12,7 @@
 #include "sml_Utils.h"
 #include "thread_Event.h"
 #include "sml_Names.h"
+#include "soar_instance.h"
 
 enum eKernelOptions
 {

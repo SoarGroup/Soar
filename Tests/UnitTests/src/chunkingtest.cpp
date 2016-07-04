@@ -5,6 +5,7 @@
 #include "handlers.h"
 #include "kernel.h"
 #include "sml_Events.h"
+#include "soar_instance.h"
 
 
 //IMPORTANT:  DON'T USE THE VARIABLE success.  It is declared globally in another test suite and we don't own it here.
@@ -187,7 +188,7 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
         }
     }
 }
-#include "soar_instance.h"
+
 void ChunkTest::setUp()
 {
     pKernel = 0;
