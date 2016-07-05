@@ -23,6 +23,7 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
+#include "repair.h"
 #include "rete.h"
 #include "rhs.h"
 #include "run_soar.h"
@@ -673,9 +674,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        ungrounded_symbol_list* unconnected_syms = new symbol_list();
+        ungrounded_symbol_list* unconnected_syms = new ungrounded_symbol_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms);
 
         if (m_failure_type != ebc_success)
         {
@@ -686,20 +687,21 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             {
                 thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
                 generate_grounding_conditions(unconnected_syms, m_chunk_new_i_id);
-                unconnected_syms->clear();
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms))
+                delete_ungrounded_symbol_list(&unconnected_syms);
+                unconnected_syms = new ungrounded_symbol_list();
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
-                    delete unconnected_syms;
+                    delete_ungrounded_symbol_list(&unconnected_syms);
                     thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repaired);
                     return true;
                 } else {
-                    delete unconnected_syms;
+                    delete_ungrounded_symbol_list(&unconnected_syms);
                     thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_chunk);
                     return false;
                 }
             }
 
-            delete unconnected_syms;
+            delete_ungrounded_symbol_list(&unconnected_syms);
             return false;
         }
     }

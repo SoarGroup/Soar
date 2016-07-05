@@ -37,4 +37,6 @@ class sym_grounding_path
         wme_list*   wme_path;
 };
 
+void delete_ungrounded_symbol_list(ungrounded_symbol_list** unconnected_syms);
+
 #endif /* CONNECT_CONDITIONS_H_ */

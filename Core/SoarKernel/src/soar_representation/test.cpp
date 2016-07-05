@@ -14,6 +14,7 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
+#include "repair.h"
 #include "rete.h"
 #include "symbol.h"
 #include "working_memory.h"
@@ -241,8 +242,8 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
-     *    during chunking.  We did not copy the test or increment the refcount, so we
-     *    don't need to decrease the refcount here. -- */
+     *    which was all over the kernel.  We did not copy the test or increment the
+     *    refcount, so we don't need to decrease the refcount here. -- */
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
@@ -699,30 +700,46 @@ void add_all_variables_in_test(agent* thisAgent, test t,
 void add_bound_variables_in_test(agent* thisAgent, test t,
                                  tc_number tc, list** var_list, bool add_LTIs)
 {
-    cons* c;
     Symbol* referent;
 
-    if (!t)
-    {
-        return;
-    }
+    if (!t) return;
 
-    if (t->type == EQUALITY_TEST)
+    referent = t->eq_test->data.referent;
+    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
     {
-        referent = t->data.referent;
-        if (referent->is_variable() || (add_LTIs && referent->is_lti()))
-        {
-            referent->mark_if_unmarked(thisAgent, tc, var_list);
-        }
-        return;
+        referent->mark_if_unmarked(thisAgent, tc, var_list);
     }
-    else if (t->type == CONJUNCTIVE_TEST)
+    return;
+}
+
+void mark_if_unmarked_ungrounded_list(agent* thisAgent, Symbol* pSym, Symbol* pSym_counterpart, uint64_t pIdentity, tc_number tc, ungrounded_symbol_list* var_list)
+{
+    if (pSym->tc_num != tc)
     {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        pSym->tc_num = tc;
+        if (var_list)
         {
-            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, add_LTIs);
+            ungrounded_sym* lNewUngroundedSym = new ungrounded_sym();
+            lNewUngroundedSym->vrblz_sym = pSym;
+            lNewUngroundedSym->identity = pIdentity;
+            lNewUngroundedSym->matched_sym = pSym_counterpart;
+            var_list->push_back(lNewUngroundedSym);
         }
     }
+}
+
+void add_bound_variables_in_test_with_identity(agent* thisAgent, test t, test t_counterpart,  tc_number tc, ungrounded_symbol_list* var_list, bool add_LTIs)
+{
+    Symbol* referent;
+
+    if (!t) return;
+
+    referent = t->eq_test->data.referent;
+    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
+    {
+        mark_if_unmarked_ungrounded_list(thisAgent, referent, t ? t->eq_test->data.referent : NULL, t->identity, tc, var_list);
+    }
+    return;
 }
 
 /* -----------------------------------------------------------------

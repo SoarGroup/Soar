@@ -10,6 +10,22 @@
 #include "working_memory.h"
 #include "dprint.h"
 
+
+void delete_ungrounded_symbol_list(ungrounded_symbol_list** unconnected_syms)
+{
+    ungrounded_symbol_list* lSyms = *unconnected_syms;
+    for (auto it = lSyms->begin(); it != lSyms->end(); it++)
+    {
+        if ((*it)->vrblz_sym)
+        {
+            (*it)->vrblz_sym->tc_num = 0;
+        }
+        delete (*it);
+    }
+    delete (*unconnected_syms);
+    (*unconnected_syms) = NULL;
+}
+
 wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnected_LTI)
 {
     sym_grounding_path_list ids_to_walk;
@@ -124,6 +140,8 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
     std::unordered_map< Symbol*, uint64_t >::iterator iter_sym;
     uint64_t lIdentity;
     Symbol* lTargetSym;
+    ungrounded_sym* lUngroundedSymInfo;
+    wme* lWME;
 
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->increment_stat_grounded(lConditionWMEs.size());
@@ -133,8 +151,10 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
     /* Generate connecting wme's for each unconnected LTI and add to a set */
     for (auto it = pUnconnected_LTIs->begin(); it != pUnconnected_LTIs->end(); it++)
     {
-        lTargetSym = *it;
-        lCond = find_cond_for_unconnected_var(m_vrblz_top, (*it));
+        lUngroundedSymInfo = *it;
+        lTargetSym = lUngroundedSymInfo->vrblz_sym;
+        lCond = find_cond_for_unconnected_var(m_vrblz_top, lTargetSym);
+        return;
         ltiEqTest = lCond->data.tests.id_test->eq_test;
         ltiMatchEqTest = lCond->counterpart->data.tests.id_test->eq_test;
         dprint(DT_GROUND_LTI, "...searching for WMEs for %y...\n", ltiMatchEqTest->data.referent);
@@ -143,9 +163,9 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
         for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
         {
             wme* lWME = (*it);
-            lConditionWMEs.insert((*it));
+            lConditionWMEs.insert(lWME);
             lti_to_identity_map[ltiMatchEqTest->data.referent] = ltiEqTest->identity;
-            dprint(DT_GROUND_LTI, "Adding wme to connecting condition wme set: (%y ^%y %y)\n", (*it)->id, (*it)->attr, (*it)->value);
+            dprint(DT_GROUND_LTI, "Adding wme to connecting condition wme set: (%y ^%y %y)\n", lWME->id, lWME->attr, lWME->value);
             dprint(DT_GROUND_LTI, "   identities: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
         }
     }
@@ -156,21 +176,21 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
 
 //    prev_cond = first_cond = NULL;
 
-    dprint(DT_GROUND_LTI, "Final set: \n");
+    dprint(DT_GROUND_LTI, "Final set of WMEs to connect all unconnected LTIs: \n");
     for (auto it = lConditionWMEs.begin(); it != lConditionWMEs.end(); it++)
     {
-        dprint(DT_GROUND_LTI, "Creating condition for %u: (%y ^%y %y)\n", (*it)->timetag, (*it)->id, (*it)->attr, (*it)->value);
-        wme* lWME = (*it);
+        lWME = (*it);
+        dprint(DT_GROUND_LTI, "Creating condition for %u: (%y ^%y %y)\n", lWME->timetag, lWME->id, lWME->attr, lWME->value);
         dprint(DT_GROUND_LTI, "   identities: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
         new_cond = make_condition(thisAgent,
-            make_test(thisAgent, (*it)->id, EQUALITY_TEST),
-            make_test(thisAgent, (*it)->attr, EQUALITY_TEST),
-            make_test(thisAgent, (*it)->value, EQUALITY_TEST));
-        new_cond->test_for_acceptable_preference = (*it)->acceptable;
-        new_cond->bt.wme_ = (*it);
-        new_cond->bt.level = (*it)->id->id->level;
-        new_cond->bt.trace = (*it)->preference;
-        new_cond->inst = (*it)->preference->inst;
+            make_test(thisAgent, lWME->id, EQUALITY_TEST),
+            make_test(thisAgent, lWME->attr, EQUALITY_TEST),
+            make_test(thisAgent, lWME->value, EQUALITY_TEST));
+        new_cond->test_for_acceptable_preference = lWME->acceptable;
+        new_cond->bt.wme_ = lWME;
+        new_cond->bt.level = lWME->id->id->level;
+        new_cond->bt.trace = lWME->preference;
+        new_cond->inst = lWME->preference->inst;
 
         /* In other functions we only add a reference if the instantiation match goal level is
          * not the top level.  We don't have that value yet, so I'm going to try to use the level
@@ -179,7 +199,7 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
         if (new_cond->bt.level > TOP_GOAL_LEVEL)
 #endif
         {
-            wme_add_ref((*it));
+            wme_add_ref(lWME);
         }
 
         if (new_cond->bt.trace)
@@ -195,12 +215,12 @@ void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_
         assert(new_cond->bt.wme_->preference = new_cond->bt.trace);
 
         /* Copy in any identities for the LTI that was used in the unconnected conditions */
-        iter_sym = lti_to_identity_map.find((*it)->id);
+        iter_sym = lti_to_identity_map.find(lWME->id);
         if (iter_sym != lti_to_identity_map.end())
         {
             new_cond->data.tests.id_test->identity = iter_sym->second;
         }
-        iter_sym = lti_to_identity_map.find((*it)->value);
+        iter_sym = lti_to_identity_map.find(lWME->value);
         if (iter_sym != lti_to_identity_map.end())
         {
             new_cond->data.tests.value_test->identity = iter_sym->second;
