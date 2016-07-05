@@ -12,21 +12,39 @@
 #include "enums.h"
 #include "forward.h"
 
-/* Uncomment this to get common compile settings for release version of Soar */
-//#define SOAR_RELEASE_VERSION
+/* Defining SOAR_RELEASE_VERSION will:
+ *
+ * 1 -  Remove debug trace statements
+ * 2 -  Soar will not re-direct all printing output from callbacks to cout
+ *         (useful for debugging, keeps things in the right order)
+ * 3 -  Use a union for type-specific Symbol pointers (artifact of refactoring)
+ * 4 -  Soar will exit if init-soar fails due to identifiers that were not deallocated
+ * 5 -  Chunking debug information that maps identities to variables will NOT be cached
+ * 6 -  Memory pools and memory pool allocators will be turned on (if disabled below)
+ * 7 -  Debugging #defines below will be disabled
+ *
+ * Note:  The default build is optimized, so NDEBUG will be true.  When we see
+ *        this, we define SOAR_RELEASE_VERSION to true.
+ *
+ *        (use --dbg for debug build)
+ * */
 
-/* Experimental setting that forces Soar to consider the attribute element
- * of a wme/pref when incrementing/decrementing link counts, which are use
- * for garbage collection. */
-//    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+/* =============================== */
+// #define SOAR_RELEASE_VERSION
 
-/* Some settings used for EBC.  Do not uncomment. */
-#define EBC_MERGE_CONDITIONS
-#define EBC_ADD_CONSTRAINTS_IDENTITIES
+#ifdef NDEBUG
+    #define SOAR_RELEASE_VERSION
+#endif
+/* =============================== */
 
 #ifndef SOAR_RELEASE_VERSION
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+
+    /* Experimental setting that forces Soar to consider the attribute element
+     * of a wme/pref when incrementing/decrementing link counts, which are use
+     * for garbage collection. */
+    //    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     //#define DEBUG_EPMEM_SQL
@@ -34,14 +52,14 @@
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
      *    but not tested. Does not work on Windows. -- */
-//    #define DEBUG_MAC_STACKTRACE
+    //#define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
      *    the debug database -- */
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-//    #define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+    //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL

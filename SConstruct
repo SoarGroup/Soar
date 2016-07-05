@@ -16,7 +16,7 @@ import shutil
 
 join = os.path.join
 
-SOAR_VERSION = "9.5.0"
+SOAR_VERSION = "9.5.1"
 
 soarversionFile = open('soarversion', 'w')
 print >> soarversionFile, SOAR_VERSION
@@ -24,8 +24,7 @@ soarversionFile.close()
 
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-#DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
-DEF_TARGETS = 'kernel cli tests'.split()
+DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
 
 print "================================================================================"
 print "Soar", SOAR_VERSION, "scons build script started."
@@ -34,7 +33,7 @@ print "   kernel cli sml_python sml_tcl sml_java debugger tests headers tclsoarl
 print "Default targets:"
 print "   kernel cli sml_java debugger headers"
 print "Settings available:"
-print "   --opt, --static, --out, --build, --no-scu, --verbose"
+print "   --dbg, --static, --out, --build, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
 print "   --no-svs --no-kernel-scu --no-cli-scu"
 print "================================================================================"
@@ -117,7 +116,7 @@ def InstallDir(env, tgt, src, globstring="*"):
     return targets
 
 def InstallDLLs(env):
-  if sys.platform == 'win32' and GetOption('opt'):
+  if sys.platform == 'win32' and not GetOption('dbg'):
     indlls = Glob(os.environ['VCINSTALLDIR'] + 'redist\\' + cl_target_arch() + '\\Microsoft.VC*.CRT\*')
     outdir = os.path.realpath(GetOption('outdir')) + '\\'
     if os.path.isfile(outdir):
@@ -144,7 +143,7 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
-AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
+AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
@@ -160,7 +159,7 @@ env = Environment(
     ENV=os.environ.copy(),
     SCU=GetOption('scu'),
     NO_SCU_KERNEL=GetOption('no_scu_kernel'),
-	NO_SCU_CLI=GetOption('no_scu_cli'),
+    NO_SCU_CLI=GetOption('no_scu_cli'),
     BUILD_DIR=GetOption('build-dir'),
     OUT_DIR=os.path.realpath(GetOption('outdir')),
     SOAR_VERSION=SOAR_VERSION,
@@ -198,10 +197,10 @@ if compiler == 'g++':
         cflags.append('-DNO_SVS')
     if GetOption('defflags'):
         cflags.append('-Wreturn-type')
-        if GetOption('opt'):
-            cflags.extend(['-O3', '-DNDEBUG'])
-        else:
+        if GetOption('dbg'):
             cflags.extend(['-g'])
+        else:
+            cflags.extend(['-O3', '-DNDEBUG'])
 
         gcc_ver = gcc_version(env['CXX'])
         # check if the compiler supports -fvisibility=hidden (GCC >= 4)
@@ -233,11 +232,11 @@ elif compiler == 'msvc':
     if GetOption('nosvs'):
         cflags.extend(' /D NO_SVS'.split())
     if GetOption('defflags'):
-        if GetOption('opt'):
-            cflags.extend(' /MD /O2 /D NDEBUG'.split())
-        else:
+        if GetOption('dbg'):
             cflags.extend(' /MDd /Z7 /DEBUG'.split())
             lnflags.extend(['/DEBUG'])
+        else:
+            cflags.extend(' /MD /O2 /D NDEBUG'.split())
 
         if GetOption('static'):
             cflags.extend(['/D', 'STATIC_LINKED'])
@@ -303,15 +302,15 @@ if 'MSVSSolution' in env['BUILDERS']:
     Export('msvs_projs')
 
     if (cl_target_architecture == 'x64'):
-        if GetOption('opt'):
-            g_msvs_variant = 'Release|x64'
-        else:
+        if GetOption('dbg'):
             g_msvs_variant = 'Debug|x64'
-    else:
-        if GetOption('opt'):
-            g_msvs_variant = 'Release|Win32'
         else:
+            g_msvs_variant = 'Release|x64'
+    else:
+        if GetOption('dbg'):
             g_msvs_variant = 'Debug|Win32'
+        else:
+            g_msvs_variant = 'Release|Win32'
 
 Export('g_msvs_variant')
 

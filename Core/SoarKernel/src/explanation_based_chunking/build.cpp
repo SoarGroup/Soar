@@ -1072,10 +1072,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
         reset_variable_generator(thisAgent, m_vrblz_top, NIL);
         variablize_condition_list(m_vrblz_top);
-        dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing conditions and relational constraints: \n%6", m_vrblz_top, m_results);
-        #ifdef EBC_MERGE_CONDITIONS
+        dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing: \n%6", m_vrblz_top, m_results);
         merge_conditions(m_vrblz_top);
-        #endif
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", m_vrblz_top, m_results);
     }
 
