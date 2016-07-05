@@ -462,7 +462,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
                                       bool          collect_ungroundeds,
-                                      symbol_list*  ungrounded_syms)
+                           ungrounded_symbol_list*  ungrounded_syms)
 {
     tc_number tc;
 
@@ -470,7 +470,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
 
-    if (! reorder_action_list(thisAgent, rhs_top, tc))
+    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
     {
         return false;
     }

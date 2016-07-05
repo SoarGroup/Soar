@@ -105,7 +105,7 @@ void Output_Manager::display_soar_warning(agent* thisAgent, SoarError pErrorType
         }
         case ebc_error_reverted_chunk:
         {
-            printa(thisAgent, "\n...successfully generated justification for failed chunk.\n");
+            printa(thisAgent, "\n...successfully generated justification instead:\n");
             break;
         }
         case ebc_error_no_conditions:

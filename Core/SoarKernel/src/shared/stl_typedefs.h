@@ -23,11 +23,13 @@ typedef struct constraint_struct constraint;
 typedef struct attachment_struct attachment_point;
 typedef struct identity_set_struct identity_set_info;
 typedef struct aug_struct augmentation;
+typedef struct ungrounded_sym_struct ungrounded_sym;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
+    typedef std::list< ungrounded_sym*, soar_module::soar_memory_pool_allocator< ungrounded_sym* > >                ungrounded_symbol_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
     typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
@@ -93,6 +95,7 @@ typedef struct aug_struct augmentation;
 #else
     typedef std::list< condition* >                             condition_list;
     typedef std::list< Symbol* >                                symbol_list;
+    typedef std::list< ungrounded_sym* >                        ungrounded_symbol_list;
     typedef std::list< sym_grounding_path* >                    sym_grounding_path_list;
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< instantiation_record* >                  inst_record_list;

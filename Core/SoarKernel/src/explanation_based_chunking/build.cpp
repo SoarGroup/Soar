@@ -673,7 +673,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        symbol_list* unconnected_syms = new symbol_list();
+        ungrounded_symbol_list* unconnected_syms = new symbol_list();
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
 
@@ -682,10 +682,10 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             thisAgent->outputManager->printa(thisAgent, "Incorrect rule learned:\n");
             print_current_built_rule();
 
-            if (m_failure_type == ebc_failed_unconnected_conditions)
+            if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
             {
                 thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
-                generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
+                generate_grounding_conditions(unconnected_syms, m_chunk_new_i_id);
                 unconnected_syms->clear();
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms))
                 {
@@ -858,7 +858,6 @@ void Explanation_Based_Chunker::revert_chunk_to_instantiation()
     m_rhs = variablize_results_into_actions(m_results, false);
     add_goal_or_impasse_tests();
 
-    print_current_built_rule();
 }
 
 void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
@@ -1105,8 +1104,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
             if (m_prod)
             {
-                dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
                 thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_reverted_chunk);
+                print_current_built_rule();
 
                 /* MToDo | Make this an option to interrrupt when an explanation is made*/
                 //thisAgent->stop_soar = true;

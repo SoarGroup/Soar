@@ -316,8 +316,8 @@ class Explanation_Based_Chunker
 
         /* Condition to state connecting methods */
         wme_list*   find_wmes_to_ground_lti(Symbol* targetLTI);
-        void        generate_conditions_to_ground_lti(symbol_list* pUnconnected_LTIs, uint64_t pInstID);
-        condition*  find_lti_that_matched_var(condition* pCondList, Symbol* pUnconnected_LTI);
+        void        generate_grounding_conditions(ungrounded_symbol_list* pUnconnected_LTIs, uint64_t pInstID);
+        condition*  find_cond_for_unconnected_var(condition* pCondList, Symbol* pUnconnected_LTI);
 
         /* Clean-up methods */
         void clear_merge_map();

@@ -74,7 +74,7 @@
 bool legal_to_execute_action(action* a, tc_number tc);
 
 bool reorder_action_list(agent* thisAgent, action** action_list,
-                         tc_number lhs_tc)
+                         tc_number lhs_tc, ungrounded_symbol_list* ungrounded_syms)
 {
     list* new_bound_vars;
     action* remaining_actions;
@@ -147,11 +147,22 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
         std::string unSymString("");
         action* lAction;
+        Symbol* lSym;
         thisAgent->outputManager->set_print_indents("        ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
+            if (rhs_value_is_symbol(lAction->id))
+            {
+                lSym = rhs_value_to_symbol(lAction->id);
+                assert(ungrounded_syms && lSym);
+                ungrounded_sym* lNewUngroundedSym = new ungrounded_sym();
+                lNewUngroundedSym->vrblz_sym = lSym;
+                lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
+                ungrounded_syms->push_back(lNewUngroundedSym);
+            }
         }
+
         thisAgent->outputManager->set_print_indents();
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->ebChunker->set_failure_type(ebc_failed_reordering_rhs);
@@ -807,7 +818,7 @@ list* collect_root_variables(agent* thisAgent,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
                              bool collect_ungroundeds,
-                             symbol_list* ungrounded_syms)
+                             ungrounded_symbol_list* ungrounded_syms)
 {
 
     list* new_vars_from_value_slot;
@@ -862,6 +873,13 @@ list* collect_root_variables(agent* thisAgent,
                 if (collect_ungroundeds)
                 {
                     assert(ungrounded_syms);
+
+                    /* May want to make new_vars_ an ungrounded list so that we can store identity and match
+                    ungrounded_sym* lNewUngroundedSym = new ungrounded_sym();
+                    lNewUngroundedSym->vrblz_sym = lSym;
+                    lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
+                    ungrounded_syms->push_back(lNewUngroundedSym);
+
                     ungrounded_syms->push_back(static_cast<Symbol*>(c->first));
                 }
             }
@@ -1485,7 +1503,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool collect_ungroundeds, symbol_list* ungrounded_syms)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool collect_ungroundeds, ungrounded_symbol_list* ungrounded_syms)
 {
     tc_number tc;
     list* roots;

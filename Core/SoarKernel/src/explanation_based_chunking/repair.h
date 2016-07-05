@@ -4,6 +4,17 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
+typedef struct ungrounded_sym_struct {
+        Symbol*     matched_sym;
+        Symbol*     vrblz_sym;
+        uint64_t    identity;
+        ungrounded_sym_struct() {
+            matched_sym = NULL;
+            vrblz_sym = NULL;
+            identity = 0;
+        }
+} ungrounded_sym;
+
 class sym_grounding_path
 {
     public:

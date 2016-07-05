@@ -16,7 +16,7 @@ wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnecte
     sym_grounding_path* lCurrentPath = NULL, *lNewPath = NULL;
     wme_list* final_path = NULL;
 
-    dprint(DT_GROUND_LTI, "Finding path to connect LTI %y to a goal state.\n", pUnconnected_LTI);
+    dprint(DT_GROUND_LTI, "Finding path to connect LTI %y to a goal state.  Level is %d.\n", pUnconnected_LTI, pUnconnected_LTI->id->level);
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
@@ -25,6 +25,9 @@ wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnecte
     {
         g = g->id->lower_goal;
     }
+    dprint(DT_GROUND_LTI, "...goal %y found for level %d.\n", pUnconnected_LTI, pUnconnected_LTI->id->level);
+
+    /* Add superstate links */
 
     lNewPath = new sym_grounding_path(g);
     ids_to_walk.push_back(lNewPath);
@@ -39,7 +42,7 @@ wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnecte
 
         if (!final_path) /* We keep iterating after we find the final path, so that  */
         {                /* we can delete the rest of the sym_grounding_path objects */
-//            dprint(DT_GROUND_LTI, "Adding IDs from slots of %y to walk list to find %y...\n", lCurrentPath->get_root(), pUnconnected_LTI);
+            dprint(DT_GROUND_LTI, "Adding IDs from slots of %y to walk list to find %y...\n", lCurrentPath->get_root(), pUnconnected_LTI);
             for (slot* s = lCurrentPath->get_root()->id->slots; s != NIL; s = s->next)
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
@@ -54,7 +57,7 @@ wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnecte
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
-//                            dprint(DT_GROUND_LTI, "      - Adding path through (%y ^%y %y)\n", w->id, w->attr, w->value);
+                            dprint(DT_GROUND_LTI, "      - Adding path through (%y ^%y %y)\n", w->id, w->attr, w->value);
                             ids_to_walk.push_back(lNewPath);
                         }
                     }
@@ -69,7 +72,7 @@ wme_list* Explanation_Based_Chunker::find_wmes_to_ground_lti(Symbol* pUnconnecte
     return final_path;
 }
 
-condition* Explanation_Based_Chunker::find_lti_that_matched_var(condition* pCondList, Symbol* pUnconnected_LTI)
+condition* Explanation_Based_Chunker::find_cond_for_unconnected_var(condition* pCondList, Symbol* pUnconnected_LTI)
 {
     /* The re-orderer does not give us the matched LTI.  It returns a list of
      * variables that aren't connected, so we need to find a condition that
@@ -111,7 +114,7 @@ inline void add_cond_to_lists(condition** c, condition** prev, condition** first
     *prev = *c;
 }
 
-void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* pUnconnected_LTIs, uint64_t pInstID)
+void Explanation_Based_Chunker::generate_grounding_conditions(ungrounded_symbol_list* pUnconnected_LTIs, uint64_t pInstID)
 {
 
     test ltiEqTest = NULL, ltiMatchEqTest = NULL;
@@ -120,24 +123,32 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
     std::unordered_map< Symbol*, uint64_t > lti_to_identity_map;
     std::unordered_map< Symbol*, uint64_t >::iterator iter_sym;
     uint64_t lIdentity;
+    Symbol* lTargetSym;
 
-    /* Generate connecting wme's for each unconnected LTI and add to a set */
-    for (auto it = pUnconnected_LTIs->begin(); it != pUnconnected_LTIs->end(); it++)
-    {
-        lCond = find_lti_that_matched_var(m_vrblz_top, (*it));
-        ltiEqTest = lCond->data.tests.id_test->eq_test;
-        ltiMatchEqTest = lCond->counterpart->data.tests.id_test->eq_test;
-        wme_list* l_WMEPath = find_wmes_to_ground_lti(ltiMatchEqTest->data.referent);
-        for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
-        {
-            lConditionWMEs.insert((*it));
-            lti_to_identity_map[ltiMatchEqTest->data.referent] = ltiEqTest->identity;
-            dprint(DT_GROUND_LTI, "Adding wme to connecting condition wme set: (%y ^%y %y)\n", (*it)->id, (*it)->attr, (*it)->value);
-        }
-    }
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->increment_stat_grounded(lConditionWMEs.size());
     #endif
+
+    dprint(DT_GROUND_LTI, "Searching for WMEs to ground unconnected LTI...\n");
+    /* Generate connecting wme's for each unconnected LTI and add to a set */
+    for (auto it = pUnconnected_LTIs->begin(); it != pUnconnected_LTIs->end(); it++)
+    {
+        lTargetSym = *it;
+        lCond = find_cond_for_unconnected_var(m_vrblz_top, (*it));
+        ltiEqTest = lCond->data.tests.id_test->eq_test;
+        ltiMatchEqTest = lCond->counterpart->data.tests.id_test->eq_test;
+        dprint(DT_GROUND_LTI, "...searching for WMEs for %y...\n", ltiMatchEqTest->data.referent);
+        wme_list* l_WMEPath = find_wmes_to_ground_lti(ltiMatchEqTest->data.referent);
+        dprint(DT_GROUND_LTI, "...Adding found wme's to set...\n");
+        for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
+        {
+            wme* lWME = (*it);
+            lConditionWMEs.insert((*it));
+            lti_to_identity_map[ltiMatchEqTest->data.referent] = ltiEqTest->identity;
+            dprint(DT_GROUND_LTI, "Adding wme to connecting condition wme set: (%y ^%y %y)\n", (*it)->id, (*it)->attr, (*it)->value);
+            dprint(DT_GROUND_LTI, "   identities: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
+        }
+    }
     /* Create conditions based on set of wme's compiled */
     condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
     while (prev_cond->next != NULL)
@@ -149,6 +160,8 @@ void Explanation_Based_Chunker::generate_conditions_to_ground_lti(symbol_list* p
     for (auto it = lConditionWMEs.begin(); it != lConditionWMEs.end(); it++)
     {
         dprint(DT_GROUND_LTI, "Creating condition for %u: (%y ^%y %y)\n", (*it)->timetag, (*it)->id, (*it)->attr, (*it)->value);
+        wme* lWME = (*it);
+        dprint(DT_GROUND_LTI, "   identities: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
         new_cond = make_condition(thisAgent,
             make_test(thisAgent, (*it)->id, EQUALITY_TEST),
             make_test(thisAgent, (*it)->attr, EQUALITY_TEST),

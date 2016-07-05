@@ -173,7 +173,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                                        action**      rhs_top,
                                                        bool          reorder_nccs,
                                                        bool          collect_ungroundeds = false,
-                                                       symbol_list*  ungrounded_syms = NULL);
+                                            ungrounded_symbol_list*  ungrounded_syms = NULL);
 
 production* make_production(agent* thisAgent, ProductionType type,
                                    Symbol* name, char* original_rule_name,
