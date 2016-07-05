@@ -10,16 +10,16 @@
 
 #include "output_manager.h"
 
-//#if !defined(SOAR_RELEASE_VERSION) && defined(DEBUG_OUTPUT_ON)
-    /* Not checking DEBUG_OUTPUT_ON anymore so that dprint is defined and we can turn debug output on
-     * and off at runtime.  Downside is that we can have debug printing secretly slowing things down
-     * if people forget to define SOAR_RELEASE_VERSION is defined in kernel.h */
 
-/* ----------------------------------------------------------------------------
- * Comment the following line out to start with settings that are equivalent to
- * standard Soar printing.  To completely compile out debug statements, make
- * sure SOAR_RELEASE_VERSION is defined in kernel.h */
-//#define DEBUG_OUTPUT_ON
+#ifndef SOAR_RELEASE_VERSION
+    /* ----------------------------------------------------------------------------
+     * Commenting out this setting will disable dprint statements globally
+     *
+     * To completely compile out debug statements, use --opt or uncomment out line
+     * that defines SOAR_RELEASE_VERSION in kernel.h
+     * ---------------------------------------------------------------------------- */
+    #define DEBUG_OUTPUT_ON
+#endif
 
 #if !defined(SOAR_RELEASE_VERSION)
 
