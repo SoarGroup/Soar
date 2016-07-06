@@ -15,7 +15,7 @@
 #include <cmath>
 
 
-class sym_grounding_path;
+class Path_to_Goal_State;
 class condition_record;
 class action_record;
 class instantiation_record;
@@ -23,19 +23,19 @@ typedef struct constraint_struct constraint;
 typedef struct attachment_struct attachment_point;
 typedef struct identity_set_struct identity_set_info;
 typedef struct aug_struct augmentation;
-typedef struct ungrounded_sym_struct ungrounded_sym;
+typedef struct matched_identity_struct matched_identity;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
-    typedef std::list< ungrounded_sym*, soar_module::soar_memory_pool_allocator< ungrounded_sym* > >                ungrounded_symbol_list;
+    typedef std::list< matched_identity*, soar_module::soar_memory_pool_allocator< matched_identity* > >                ungrounded_symbol_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
     typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
     typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
-    typedef std::list< sym_grounding_path*, soar_module::soar_memory_pool_allocator<sym_grounding_path*> >          sym_grounding_path_list;
+    typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
     typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                        rl_rule_list;
     typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
@@ -95,8 +95,8 @@ typedef struct ungrounded_sym_struct ungrounded_sym;
 #else
     typedef std::list< condition* >                             condition_list;
     typedef std::list< Symbol* >                                symbol_list;
-    typedef std::list< ungrounded_sym* >                        ungrounded_symbol_list;
-    typedef std::list< sym_grounding_path* >                    sym_grounding_path_list;
+    typedef std::list< matched_identity* >                        ungrounded_symbol_list;
+    typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
     typedef std::list< inst_record_list* >                      inst_path_list;

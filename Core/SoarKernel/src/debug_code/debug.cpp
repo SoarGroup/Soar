@@ -90,7 +90,7 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
     //    mode_info[DT_LINKS].enabled =                       true;
     //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
     //    mode_info[DT_RETE_PNODE_ADD].enabled =              true;
-//        mode_info[DT_GROUND_LTI].enabled =                  true;
+//        mode_info[DT_REPAIR].enabled =                      true;
 
     //    mode_info[DT_EXPLAIN].enabled =                     true;
     //    mode_info[DT_EXPLAIN_DEP].enabled =                 true;
@@ -149,7 +149,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
-    mode_info[DT_GROUND_LTI].prefix =                   strdup("Grnd LTI| ");
+    mode_info[DT_REPAIR].prefix =                       strdup("Grnd LTI| ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
     mode_info[DT_EXPLAIN_PATHS].prefix =                strdup("EIDPaths| ");
     mode_info[DT_EXPLAIN_ADD_INST].prefix =             strdup("EAddInst| ");

@@ -686,7 +686,8 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
             {
                 thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
-                generate_grounding_conditions(unconnected_syms, m_chunk_new_i_id);
+                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level);
+                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms, m_chunk_new_i_id);
                 delete_ungrounded_symbol_list(&unconnected_syms);
                 unconnected_syms = new ungrounded_symbol_list();
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
@@ -704,6 +705,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             delete_ungrounded_symbol_list(&unconnected_syms);
             return false;
         }
+        delete_ungrounded_symbol_list(&unconnected_syms);
     }
     return true;
 }

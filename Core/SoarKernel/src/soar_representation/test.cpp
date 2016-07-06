@@ -712,32 +712,24 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     return;
 }
 
-void mark_if_unmarked_ungrounded_list(agent* thisAgent, Symbol* pSym, Symbol* pSym_counterpart, uint64_t pIdentity, tc_number tc, ungrounded_symbol_list* var_list)
-{
-    if (pSym->tc_num != tc)
-    {
-        pSym->tc_num = tc;
-        if (var_list)
-        {
-            ungrounded_sym* lNewUngroundedSym = new ungrounded_sym();
-            lNewUngroundedSym->vrblz_sym = pSym;
-            lNewUngroundedSym->identity = pIdentity;
-            lNewUngroundedSym->matched_sym = pSym_counterpart;
-            var_list->push_back(lNewUngroundedSym);
-        }
-    }
-}
-
-void add_bound_variables_in_test_with_identity(agent* thisAgent, test t, test t_counterpart,  tc_number tc, ungrounded_symbol_list* var_list, bool add_LTIs)
+void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, ungrounded_symbol_list* var_list, bool add_LTIs)
 {
     Symbol* referent;
 
-    if (!t) return;
-
-    referent = t->eq_test->data.referent;
-    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
+    if (pSym->is_variable() || (add_LTIs && pSym->is_lti()))
     {
-        mark_if_unmarked_ungrounded_list(thisAgent, referent, t ? t->eq_test->data.referent : NULL, t->identity, tc, var_list);
+        if (pSym->tc_num != tc)
+        {
+            pSym->tc_num = tc;
+            if (var_list)
+            {
+                matched_identity* lNewUngroundedSym = new matched_identity();
+                lNewUngroundedSym->sym = pSym;
+                lNewUngroundedSym->identity = pIdentity;
+                lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;
+                var_list->push_back(lNewUngroundedSym);
+            }
+        }
     }
     return;
 }

@@ -76,6 +76,8 @@ typedef struct backtrace_struct
 
 class Explanation_Based_Chunker
 {
+        friend class Repair_Manager;
+
     public:
 
         Explanation_Based_Chunker(agent* myAgent);
@@ -174,7 +176,6 @@ class Explanation_Based_Chunker
         tc_number           locals_tc;
         tc_number           potentials_tc;
         tc_number           backtrace_number;
-        tc_number           ground_lti_tc;
         bool                quiescence_t_flag;
 
         /* Variables used by result building methods */
@@ -313,11 +314,6 @@ class Explanation_Based_Chunker
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void        merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition*  get_previously_seen_cond(condition* pCond);
-
-        /* Condition to state connecting methods */
-        wme_list*   find_wmes_to_ground_lti(Symbol* targetLTI);
-        void        generate_grounding_conditions(ungrounded_symbol_list* pUnconnected_LTIs, uint64_t pInstID);
-        condition*  find_cond_for_unconnected_var(condition* pCondList, Symbol* pUnconnected_LTI);
 
         /* Clean-up methods */
         void clear_merge_map();
