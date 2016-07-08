@@ -674,7 +674,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        ungrounded_symbol_list* unconnected_syms = new ungrounded_symbol_list();
+        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms);
 
@@ -689,7 +689,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms, m_chunk_new_i_id);
                 delete_ungrounded_symbol_list(&unconnected_syms);
-                unconnected_syms = new ungrounded_symbol_list();
+                unconnected_syms = new symbol_with_match_list();
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
                     delete_ungrounded_symbol_list(&unconnected_syms);
@@ -972,7 +972,6 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
     preference* pref;
-    condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
     bool variablize;
     bool lChunkValidated = false;
 
@@ -1139,14 +1138,14 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 
-    reorder_instantiated_conditions(m_vrblz_top, &inst_lhs_top, &inst_lhs_bottom);
 
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+    m_chunk_inst->top_of_instantiated_conditions    = NULL;
+    m_chunk_inst->bottom_of_instantiated_conditions = NULL;
+    reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     symbol_add_ref(thisAgent, m_chunk_inst->prod_name);
-    m_chunk_inst->top_of_instantiated_conditions    = inst_lhs_top;
-    m_chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
     m_chunk_inst->GDS_evaluated_already             = false;
     m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;

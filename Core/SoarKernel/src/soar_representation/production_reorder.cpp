@@ -75,7 +75,7 @@
 bool legal_to_execute_action(action* a, tc_number tc);
 
 bool reorder_action_list(agent* thisAgent, action** action_list,
-                         tc_number lhs_tc, ungrounded_symbol_list* ungrounded_syms)
+                         tc_number lhs_tc, symbol_with_match_list* ungrounded_syms)
 {
     list* new_bound_vars;
     action* remaining_actions;
@@ -157,7 +157,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                matched_identity* lNewUngroundedSym = new matched_identity();
+                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                 lNewUngroundedSym->sym = lSym;
                 lNewUngroundedSym->matched_sym = lSym;
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
@@ -820,11 +820,11 @@ list* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
-                             ungrounded_symbol_list* ungrounded_syms)
+                             symbol_with_match_list* ungrounded_syms)
 {
 
-    ungrounded_symbol_list* new_vars_from_value_slot = new ungrounded_symbol_list();
-    ungrounded_symbol_list* new_vars_from_id_slot = new ungrounded_symbol_list();
+    symbol_with_match_list* new_vars_from_value_slot = new symbol_with_match_list();
+    symbol_with_match_list* new_vars_from_id_slot = new symbol_with_match_list();
     condition* cond;
     bool found_goal_impasse_test;
 
@@ -899,12 +899,12 @@ list* collect_root_variables(agent* thisAgent,
             {
                 if (ungrounded_syms)
                 {
-                    matched_identity* lNewUngroundedSym = new matched_identity();
-                    matched_identity* lOldMatchedSym = (*it);
-                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  (*it)->sym, (*it)->identity);
+                    symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                    symbol_with_match* lOldMatchedSym = (*it);
                     lNewUngroundedSym->sym = (*it)->sym;
                     lNewUngroundedSym->matched_sym = (*it)->matched_sym;
                     lNewUngroundedSym->identity = (*it)->identity;
+                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->matched_sym, lNewUngroundedSym->sym, lNewUngroundedSym->identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
@@ -1534,7 +1534,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, ungrounded_symbol_list* ungrounded_syms)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms)
 {
     tc_number tc;
     list* roots;

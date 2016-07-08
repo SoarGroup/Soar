@@ -461,7 +461,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                           ungrounded_symbol_list*  ungrounded_syms)
+                           symbol_with_match_list*  ungrounded_syms)
 {
     tc_number tc;
 

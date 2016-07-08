@@ -23,13 +23,13 @@ typedef struct constraint_struct constraint;
 typedef struct attachment_struct attachment_point;
 typedef struct identity_set_struct identity_set_info;
 typedef struct aug_struct augmentation;
-typedef struct matched_identity_struct matched_identity;
+typedef struct symbol_with_match_struct symbol_with_match;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
-    typedef std::list< matched_identity*, soar_module::soar_memory_pool_allocator< matched_identity* > >                ungrounded_symbol_list;
+    typedef std::list< symbol_with_match*, soar_module::soar_memory_pool_allocator< symbol_with_match* > >          symbol_with_match_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
     typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
@@ -95,7 +95,7 @@ typedef struct matched_identity_struct matched_identity;
 #else
     typedef std::list< condition* >                             condition_list;
     typedef std::list< Symbol* >                                symbol_list;
-    typedef std::list< matched_identity* >                        ungrounded_symbol_list;
+    typedef std::list< symbol_with_match* >                        symbol_with_match_list;
     typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
@@ -145,6 +145,7 @@ typedef std::unordered_map< uint64_t, Symbol* >             id_to_sym_map_type;
 typedef std::unordered_map< uint64_t, identity_set_info* >  id_to_idset_map_type;
 typedef std::unordered_map< uint64_t, attachment_point* >   attachment_points_map_type;
 typedef std::unordered_map< Symbol*, uint64_t >             sym_to_id_map_type;
+typedef std::unordered_map< Symbol*, Symbol* >              sym_to_sym_map_type;
 typedef std::unordered_map< uint64_t, sym_to_id_map_type >  inst_to_id_map_type;
 
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
