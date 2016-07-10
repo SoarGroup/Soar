@@ -45,7 +45,7 @@
 #include <map>
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "S2"
+#define DEBUG_TRACE_REFCOUNT_FOR "S9"
 
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;

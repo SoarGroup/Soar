@@ -139,6 +139,10 @@ void deallocate_action_list(agent* thisAgent, action* actions)
             {
                 deallocate_rhs_value(thisAgent, a->referent);
             }
+            if (a->matched_id) deallocate_rhs_value(thisAgent, a->matched_id);
+            if (a->matched_attr) deallocate_rhs_value(thisAgent, a->matched_attr);
+            if (a->matched_value) deallocate_rhs_value(thisAgent, a->matched_value);
+            if (a->matched_referent) deallocate_rhs_value(thisAgent, a->matched_referent);
         }
         thisAgent->memoryManager->free_with_pool(MP_action, a);
     }
@@ -324,6 +328,10 @@ action* make_action(agent* thisAgent)
     new_action->attr = NIL;
     new_action->value = NIL;
     new_action->referent = NIL;
+    new_action->matched_id = NIL;
+    new_action->matched_attr = NIL;
+    new_action->matched_value = NIL;
+    new_action->matched_referent = NIL;
     return new_action;
 }
 
@@ -346,6 +354,10 @@ action* copy_action(agent* thisAgent, action* pAction)
         {
             new_action->referent = copy_rhs_value(thisAgent, pAction->referent);
         }
+        if (new_action->matched_id) new_action->matched_id = copy_rhs_value(thisAgent, pAction->matched_id);;
+        if (new_action->matched_attr) new_action->matched_attr = copy_rhs_value(thisAgent, pAction->matched_attr);;
+        if (new_action->matched_value) new_action->matched_value = copy_rhs_value(thisAgent, pAction->matched_value);;
+        if (new_action->matched_referent) new_action->matched_referent = copy_rhs_value(thisAgent, pAction->matched_referent);;
     }
     return new_action;
 }

@@ -133,7 +133,7 @@ class Explanation_Based_Chunker
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
-        void print_current_built_rule();
+        void print_current_built_rule(const char* pHeader);
 
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
@@ -303,7 +303,7 @@ class Explanation_Based_Chunker
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
-        void variablize_rhs_symbol(rhs_value pRhs_val);
+        void variablize_rhs_symbol(rhs_value pRhs_val, rhs_value* pCachedMatchValue = NULL);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);

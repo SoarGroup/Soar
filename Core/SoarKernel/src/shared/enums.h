@@ -98,14 +98,13 @@ enum top_level_phase { INPUT_PHASE = 0,
                        NUM_PHASE_TYPES
                      };
 
-enum SoarError {
+enum SoarCannedMessageType {
     ebc_error_max_chunks,
     ebc_error_invalid_chunk,
     ebc_error_invalid_justification,
-    ebc_error_reverted_chunk,
-    ebc_error_repairing,
-    ebc_error_repaired,
     ebc_error_no_conditions,
+    ebc_progress_repairing,
+    ebc_progress_repaired,
 };
 
 enum EBCTraceType {

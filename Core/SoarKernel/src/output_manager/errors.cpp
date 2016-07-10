@@ -69,14 +69,14 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
     }
 }
 
-void Output_Manager::display_soar_warning(agent* thisAgent, SoarError pErrorType, int64_t pSysParam)
+void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageType pMessageType, int64_t pSysParam)
 {
     if ( (pSysParam > 0) && !thisAgent->sysparams[pSysParam])
     {
         return;
     }
 
-    switch (pErrorType)
+    switch (pMessageType)
     {
         case ebc_error_max_chunks:
         {
@@ -93,19 +93,14 @@ void Output_Manager::display_soar_warning(agent* thisAgent, SoarError pErrorType
             printa(thisAgent, "Warning:  Chunking produced an invalid justification.  Ignoring.\n");
             break;
         }
-        case ebc_error_repairing:
+        case ebc_progress_repairing:
         {
             printa(thisAgent, "...attempting to repair rule.\n");
             break;
         }
-        case ebc_error_repaired:
+        case ebc_progress_repaired:
         {
             printa(thisAgent, "...repair succeeded.\n");
-            break;
-        }
-        case ebc_error_reverted_chunk:
-        {
-            printa(thisAgent, "\n...successfully generated justification instead:\n");
             break;
         }
         case ebc_error_no_conditions:

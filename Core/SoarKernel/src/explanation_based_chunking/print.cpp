@@ -16,11 +16,15 @@
 
 #include "dprint.h"
 
-void Explanation_Based_Chunker::print_current_built_rule()
+void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {
+    if (pHeader)
+    {
+        outputManager->printa_sf(thisAgent, "\n%s\n\n", pHeader);
+    }
     if (m_prod_name)
     {
-        print_with_symbols(thisAgent, "\nsp {%y\n", m_prod_name);
+        outputManager->printa_sf(thisAgent, "\nsp {%y\n", m_prod_name);
     }
     if (m_vrblz_top)
     {
@@ -28,10 +32,10 @@ void Explanation_Based_Chunker::print_current_built_rule()
     }
     if (m_rhs)
     {
-        print(thisAgent, "\n  -->\n   ");
+        outputManager->printa(thisAgent, "\n  -->\n   ");
         print_action_list(thisAgent, m_rhs, 3, false);
     }
-    print(thisAgent, "}\n\n");
+    outputManager->printa_sf(thisAgent, "}\n\n");
 }
 
 void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)

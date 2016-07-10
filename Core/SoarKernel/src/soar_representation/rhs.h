@@ -76,6 +76,10 @@ typedef struct action_struct
     rhs_value               attr;
     rhs_value               value;   /* for FUNCALL_ACTION's, this holds the funcall */
     rhs_value               referent;
+    rhs_value               matched_id;
+    rhs_value               matched_attr;
+    rhs_value               matched_value;   /* for FUNCALL_ACTION's, this holds the funcall */
+    rhs_value               matched_referent;
     SupportType             support;
     bool                    already_in_tc;  /* used only by compile-time o-support calcs */
     struct action_struct*   next;

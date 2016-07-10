@@ -57,12 +57,12 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
 
         if (!final_path) /* We keep iterating after we find the final path, so that  */
         {                /* we can delete the rest of the sym_grounding_path objects */
-            dprint(DT_REPAIR, "Walk list += IDs from slots of %y to find %y...\n", lCurrentPath->get_root(), pNonOperationalSym);
+//            dprint(DT_REPAIR, "Walk list += IDs from slots of %y to find %y...\n", lCurrentPath->get_root(), pNonOperationalSym);
             for (slot* s = lCurrentPath->get_root()->id->slots; s != NIL; s = s->next)
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                 {
-                    if (w->value->is_identifier() && (w->value->tc_num != ground_lti_tc))
+                    if (w->preference && w->value->is_identifier() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
                         lNewPath = new Path_to_Goal_State(w->value, lCurrentPath->get_path(), w);
@@ -72,7 +72,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
-                            dprint(DT_REPAIR, "      - Adding wme (%y ^%y %y)\n", w->id, w->attr, w->value);
+                            dprint(DT_REPAIR, "      - Adding wme (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
                             ids_to_walk.push_back(lNewPath);
                         }
                     }
@@ -86,28 +86,6 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     assert(final_path);
     return final_path;
 }
-
-condition* Repair_Manager::find_cond_for_unconnected_var(condition* pCondList, Symbol* pUnconnected_LTI)
-{
-    /* The re-orderer does not give us the matched LTI.  It returns a list of
-     * variables that aren't connected, so we need to find a condition that
-     * contains the variables, so that we can get the LTI and
-     * identity information we need to generate connecting conditions */
-    for (condition* cond = pCondList; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != POSITIVE_CONDITION)
-        {
-            continue;
-        }
-        if (cond->data.tests.id_test->eq_test->data.referent == pUnconnected_LTI)
-        {
-            return cond;
-            break;
-        }
-    }
-    return NULL;
-}
-
 
 inline void add_cond_to_lists(condition** c, condition** prev, condition** first)
 {
@@ -134,7 +112,6 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     dprint(DT_REPAIR, "...adding state link WMEs: \n");
     Symbol* g, *last_goal = NULL;
     wme* w;
-//    condition* new_cond;
 
     g = thisAgent->bottom_goal;
     while (g->id->level > pTargetGoal)
@@ -147,7 +124,6 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
                 if (w->attr == thisAgent->superstate_symbol)
                 {
                     m_repair_WMEs.insert(w);
-//                    new_cond = make_condition_from_wme(w);
                     dprint_noprefix(DT_REPAIR, "Adding wme for superstate link: %w \n", w);
                 }
             }
@@ -157,10 +133,10 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     }
 }
 
-void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* lUngroundedSym)
+void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
 {
-    dprint(DT_REPAIR, "...searching for path to goal for %y [%y/%u]...\n", lUngroundedSym->matched_sym, lUngroundedSym->sym, lUngroundedSym->identity);
-    wme_list* l_WMEPath = find_path_to_goal_for_symbol(lUngroundedSym->matched_sym);
+    dprint(DT_REPAIR, "...searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
+    wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->matched_sym);
     dprint(DT_REPAIR, "...search complete.  Adding %d wme's to set...\n", l_WMEPath->size());
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
     {
@@ -170,10 +146,11 @@ void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* lUngroundedSym)
     }
 
 }
-Repair_Manager::Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level)
+Repair_Manager::Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID)
 {
     thisAgent = myAgent;
     m_match_goal_level = p_goal_level;
+    m_chunk_ID = p_chunk_ID;
 }
 
 Repair_Manager::~Repair_Manager()
@@ -181,32 +158,34 @@ Repair_Manager::~Repair_Manager()
 
 }
 
-void Repair_Manager::add_var_for_sym(Symbol* pSym, Symbol* pVar)
+void Repair_Manager::variablize_connecting_sti(test pTest)
 {
-    m_sym_to_var_map[pSym] = pVar;
-}
+    assert(pTest && pTest->type == EQUALITY_TEST);
 
-void Repair_Manager::variablize_connecting_sti(Symbol*& pSym)
-{
-    char* prefix;
-    Symbol* var;
+    char prefix[2];
+    Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
+    uint64_t lMatchedIdentity = 0;
+
+    assert(lMatchedSym->is_identifier());
 
     /* Copy in any identities for the LTI that was used in the unconnected conditions */
     std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
-    iter_sym = m_sym_to_var_map.find(pSym);
+    std::unordered_map< Symbol*, uint64_t >::iterator iter_id;
+
+    iter_sym = m_sym_to_var_map.find(lMatchedSym);
     if (iter_sym == m_sym_to_var_map.end())
     {
         /* Create a new variable.  If constant is being variablized just used
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if (pSym->is_identifier())
+        if (lMatchedSym->is_identifier())
         {
-            char prefix_char = static_cast<char>(tolower(pSym->id->name_letter));
-            if (((prefix_char == 's') || (prefix_char == 'S')) && !pSym->id->isa_goal)
+            char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
+            if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
             {
                 prefix[0] = 'c';
-            } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !pSym->id->isa_operator) {
+            } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lMatchedSym->id->isa_operator) {
                 prefix[0] = 'c';
             } else {
                 prefix[0] = prefix_char;
@@ -217,21 +196,24 @@ void Repair_Manager::variablize_connecting_sti(Symbol*& pSym)
             prefix[0] = 'c';
         }
         prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
+        lNewVar = generate_new_variable(thisAgent, prefix);
+        lMatchedIdentity = thisAgent->ebChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
 
-        m_sym_to_var_map[pSym] = var;
-        symbol_remove_ref(thisAgent, pSym);
-        pSym = var;
-
-        /* We may want to set up a fake identity here, but I don't think it will be used
-         * after this point, so no point. */
     }
     else
     {
-        symbol_remove_ref(thisAgent, pSym);
-        pSym = iter_sym->second;
-        symbol_add_ref(thisAgent, pSym);
+        lNewVar = iter_sym->second;
+        symbol_add_ref(thisAgent, lNewVar);
+        iter_id = m_sym_to_id_map.find(lMatchedSym);
+        /* Always added in pairs.  Should use a single map */
+        assert(iter_id != m_sym_to_id_map.end());
+        lMatchedIdentity = iter_id->second;
     }
+
+    add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
+    pTest->data.referent = lNewVar;
+    pTest->identity = lMatchedIdentity;
+    symbol_remove_ref(thisAgent, lMatchedSym);
 }
 
 
@@ -277,6 +259,14 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
     return new_cond;
 }
 
+void Repair_Manager::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
+{
+    dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
+    m_sym_to_var_map[pSym] = pVar;
+    m_sym_to_id_map[pSym] = pIdentity;
+    assert(!pVar->is_variable() || pIdentity);
+}
+
 void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc)
 {
     assert(pCondList);
@@ -295,8 +285,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->data.tests.id_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->counterpart && lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_variable())
                     {
-                        dprint(DT_REPAIR, "Adding state variablization found for %y -> %y\n", lCond->data.tests.id_test->eq_test->data.referent, lCond->counterpart->data.tests.id_test->eq_test->data.referent);
-                        m_sym_to_var_map[lCond->data.tests.id_test->eq_test->data.referent] = lCond->counterpart->data.tests.id_test->eq_test->data.referent;
+                        add_variablization(lCond->data.tests.id_test->eq_test->data.referent, lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
                     }
                 }
             } else {
@@ -307,8 +296,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->data.tests.id_test->eq_test->data.referent->is_variable())
                     {
-                        dprint(DT_REPAIR, "Adding state variablization found for %y -> %y\n", lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->data.referent);
-                        m_sym_to_var_map[lCond->counterpart->data.tests.id_test->eq_test->data.referent] = lCond->data.tests.id_test->eq_test->data.referent;
+                        add_variablization(lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
                     }
                 }
             }
@@ -319,8 +307,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->data.tests.value_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->counterpart && lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_variable())
                     {
-                        dprint(DT_REPAIR, "Adding state variablization found for %y -> %y\n", lCond->data.tests.value_test->eq_test->data.referent, lCond->counterpart->data.tests.value_test->eq_test->data.referent);
-                        m_sym_to_var_map[lCond->data.tests.value_test->eq_test->data.referent] = lCond->counterpart->data.tests.value_test->eq_test->data.referent;
+                        add_variablization(lCond->data.tests.value_test->eq_test->data.referent, lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
                     }
                 }
             } else {
@@ -331,8 +318,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->data.tests.value_test->eq_test->data.referent->is_variable())
                     {
-                        dprint(DT_REPAIR, "Adding state variablization found for %y -> %y\n", lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->data.referent);
-                        m_sym_to_var_map[lCond->counterpart->data.tests.value_test->eq_test->data.referent] = lCond->data.tests.value_test->eq_test->data.referent;
+                        add_variablization(lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
                     }
                 }
             }
@@ -340,11 +326,12 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
     }
 }
 
-void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, symbol_with_match_list* p_dangling_syms, uint64_t pInstID)
+void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, symbol_with_match_list* p_dangling_syms)
 {
-    symbol_with_match* lUngroundedSymInfo;
+    symbol_with_match* lDanglingSymInfo;
     wme* lWME;
     goal_stack_level targetLevel;
+
 
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationLogger->increment_stat_grounded(m_repair_WMEs.size());
@@ -354,16 +341,20 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     dprint(DT_VARIABLIZATION_MANAGER, "- Variablized cond: \n%1", m_vrblz_top);
     dprint(DT_CONSTRAINTS, "\n- Instantiated conds :\n%1", m_inst_top, NULL);
 
-    /* Generate connecting wme's for each unconnected LTI and add to a set */
+    /* Determine the highest level of a dangling sym.  We need to add conditions
+     * for all (state ^superstate state) wme's between that level and the match
+     * level that are not already in the rule. We also add the identity-based
+     * variablizations for these dangling symbols so that the repair conditions
+     * connect to the real ones correctly */
+    dprint(DT_REPAIR, "Determining highest dangling level and adding starting variablizations...\n");
     targetLevel = thisAgent->bottom_goal->id->level;
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
-        lUngroundedSymInfo = *it;
-        if(lUngroundedSymInfo->matched_sym->id->level < targetLevel)
+        lDanglingSymInfo = *it;
+        if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
         {
-            targetLevel = lUngroundedSymInfo->matched_sym->id->level;
-            dprint(DT_REPAIR, "Adding state variablization found for %y -> %y\n", lUngroundedSymInfo->matched_sym, lUngroundedSymInfo->sym);
-            m_sym_to_var_map[lUngroundedSymInfo->matched_sym] = lUngroundedSymInfo->sym;
+            targetLevel = lDanglingSymInfo->matched_sym->id->level;
+            add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
         }
     }
 
@@ -377,8 +368,8 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     /* Generate connecting wme's for each unconnected LTI and add to a set */
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
-        lUngroundedSymInfo = *it;
-        add_path_to_goal_WMEs(lUngroundedSymInfo);
+        lDanglingSymInfo = *it;
+        add_path_to_goal_WMEs(lDanglingSymInfo);
     }
 
     /* Create conditions based on set of wme's compiled */
@@ -400,8 +391,10 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
         new_inst_cond->counterpart = new_cond;
         dprint(DT_REPAIR, "Variablizing condition %l.\n", new_cond);
         /* Variablize and add to condition list */
-        variablize_connecting_sti(new_cond->data.tests.id_test->data.referent);
-        variablize_connecting_sti(new_cond->data.tests.value_test->data.referent);
+        variablize_connecting_sti(new_cond->data.tests.id_test);
+        variablize_connecting_sti(new_cond->data.tests.value_test);
+        new_cond->counterpart->data.tests.id_test->identity = new_cond->data.tests.id_test->identity;
+        new_cond->counterpart->data.tests.value_test->identity = new_cond->data.tests.value_test->identity;
         dprint(DT_REPAIR, "Variablized condition %l.\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
 

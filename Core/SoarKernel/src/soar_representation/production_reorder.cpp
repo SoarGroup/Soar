@@ -159,7 +159,12 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 assert(ungrounded_syms && lSym);
                 symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                 lNewUngroundedSym->sym = lSym;
-                lNewUngroundedSym->matched_sym = lSym;
+                if (lSym->is_identifier())
+                {
+                    lNewUngroundedSym->matched_sym = lSym;
+                } else {
+                    lNewUngroundedSym->matched_sym = rhs_value_to_symbol(lAction->matched_id);
+                }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
                 dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/? [%u]\n",  lNewUngroundedSym->sym,  lNewUngroundedSym->identity);
                 ungrounded_syms->push_back(lNewUngroundedSym);
