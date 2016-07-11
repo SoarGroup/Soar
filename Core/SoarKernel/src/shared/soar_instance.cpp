@@ -22,7 +22,6 @@ Soar_Instance::Soar_Instance()
     m_launched_by_unit_test = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
-    dprint_header(DT_SOAR_INSTANCE, PrintBoth, "= Soar instance created =\n");
 }
 
 void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
