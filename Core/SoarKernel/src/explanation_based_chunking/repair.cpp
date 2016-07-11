@@ -11,16 +11,23 @@
 #include "dprint.h"
 
 
-void delete_ungrounded_symbol_list(symbol_with_match_list** unconnected_syms)
+void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** unconnected_syms)
 {
     symbol_with_match_list* lSyms = *unconnected_syms;
+    symbol_with_match* lSym;
+
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
-        if ((*it)->sym)
+        lSym = (*it);
+        if (lSym->sym)
         {
-            (*it)->sym->tc_num = 0;
+            lSym->sym->tc_num = 0;
         }
-        delete (*it);
+//        if (lSym->matched_sym)
+//        {
+//            symbol_remove_ref(thisAgent, &lSym->matched_sym);
+//        }
+        delete lSym;
     }
     delete (*unconnected_syms);
     (*unconnected_syms) = NULL;
@@ -213,7 +220,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
     pTest->identity = lMatchedIdentity;
-    symbol_remove_ref(thisAgent, lMatchedSym);
+    symbol_remove_ref(thisAgent, &lMatchedSym);
 }
 
 

@@ -89,7 +89,7 @@ chunk_record::~chunk_record()
     {
         original_production->save_for_justification_explanation = false;
     }
-    if (name) symbol_remove_ref(thisAgent, name);
+    if (name) symbol_remove_ref(thisAgent, &name);
     if (conditions) delete conditions;
     if (actions) delete actions;
     if (result_instantiations) delete result_instantiations;

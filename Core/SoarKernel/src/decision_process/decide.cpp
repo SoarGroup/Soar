@@ -456,7 +456,7 @@ void do_promotion(agent* thisAgent)
         thisAgent->promoted_ids = thisAgent->promoted_ids->rest;
         free_cons(thisAgent, c);
         promote_id_and_tc(thisAgent, to, to->id->promotion_level);
-        symbol_remove_ref(thisAgent, to);
+        symbol_remove_ref(thisAgent, &to);
     }
 }
 
@@ -824,7 +824,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             dc = id->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
-            symbol_remove_ref(thisAgent, id);
+            symbol_remove_ref(thisAgent, &id);
             id->id->unknown_level = NIL;
             id->id->level = thisAgent->walk_level;
             id->id->promotion_level = thisAgent->walk_level;
@@ -919,7 +919,7 @@ void do_demotion(agent* thisAgent)
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, id);
+        symbol_remove_ref(thisAgent, &id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 
@@ -974,7 +974,7 @@ void do_demotion(agent* thisAgent)
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, id);
+        symbol_remove_ref(thisAgent, &id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 }
@@ -2016,7 +2016,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 
             Symbol* my_time_sym = make_int_constant(thisAgent, my_time);
             id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
-            symbol_remove_ref(thisAgent, my_time_sym);
+            symbol_remove_ref(thisAgent, &my_time_sym);
         }
 
         id->id->smem_header = make_new_identifier(thisAgent, 'S', level);
@@ -2104,7 +2104,7 @@ void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
     remove_wme_list_from_wm(thisAgent, id->id->impasse_wmes);
     id->id->impasse_wmes = NIL;
     post_link_removal(thisAgent, NIL, id);   /* remove the special link */
-    symbol_remove_ref(thisAgent, id);
+    symbol_remove_ref(thisAgent, &id);
 }
 
 /* ------------------------------------------------------------------
@@ -2246,7 +2246,7 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
         {
             count_sym = make_int_constant(thisAgent, static_cast< int64_t >(item_count));
             add_impasse_wme(thisAgent, id, loop_count_sym, count_sym, NIL);
-            symbol_remove_ref(thisAgent, count_sym);
+            symbol_remove_ref(thisAgent, &count_sym);
         }
     }
 }
@@ -2789,21 +2789,21 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
     goal->id->rl_info->prev_op_rl_rules->~rl_rule_list();
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
-    symbol_remove_ref(thisAgent, goal->id->reward_header);
+    symbol_remove_ref(thisAgent, &goal->id->reward_header);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
 
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
-    symbol_remove_ref(thisAgent, goal->id->epmem_cmd_header);
-    symbol_remove_ref(thisAgent, goal->id->epmem_result_header);
-    symbol_remove_ref(thisAgent, goal->id->epmem_header);
+    symbol_remove_ref(thisAgent, &goal->id->epmem_cmd_header);
+    symbol_remove_ref(thisAgent, &goal->id->epmem_result_header);
+    symbol_remove_ref(thisAgent, &goal->id->epmem_header);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
     goal->id->smem_info->smem_wmes->~smem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
-    symbol_remove_ref(thisAgent, goal->id->smem_cmd_header);
-    symbol_remove_ref(thisAgent, goal->id->smem_result_header);
-    symbol_remove_ref(thisAgent, goal->id->smem_header);
+    symbol_remove_ref(thisAgent, &goal->id->smem_cmd_header);
+    symbol_remove_ref(thisAgent, &goal->id->smem_result_header);
+    symbol_remove_ref(thisAgent, &goal->id->smem_header);
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
 #ifndef NO_SVS
@@ -2825,7 +2825,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->ebChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
-    symbol_remove_ref(thisAgent, goal);
+    symbol_remove_ref(thisAgent, &goal);
 
     if (goal->id->level <= thisAgent->substate_break_level)
     {

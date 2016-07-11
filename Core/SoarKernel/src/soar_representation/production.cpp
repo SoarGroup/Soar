@@ -425,7 +425,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
         }
         /* -- A variable with that name already existed.  make_variable just returned it and
          *    incremented its refcount, so reverse that refcount addition and try again. -- */
-        symbol_remove_ref(thisAgent, New);
+        symbol_remove_ref(thisAgent, &New);
     }
 
     New->var->current_binding_value = NIL;
@@ -590,7 +590,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
-    symbol_remove_ref(thisAgent, prod->name);
+    symbol_remove_ref(thisAgent, &prod->name);
     free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {

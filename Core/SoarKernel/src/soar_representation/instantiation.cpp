@@ -464,10 +464,12 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     }
 
     /* --- scan through arglist, dereference symbols and deallocate conses --- */
+    Symbol* lSym;
     for (c = arglist; c != NIL; c = c->rest)
         if (c->first)
         {
-            symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first));
+            lSym = static_cast<Symbol *>(c->first);
+            symbol_remove_ref(thisAgent, &lSym);
         }
     free_list(thisAgent, arglist);
 
@@ -486,7 +488,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
         if (lValue)
         {
-            symbol_remove_ref(thisAgent, lValue);
+            symbol_remove_ref(thisAgent, &lValue);
         }
         return NIL;
     }
@@ -609,19 +611,19 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 abort_execute_action: /* control comes here when some error occurred */
     if (lId)
     {
-        symbol_remove_ref(thisAgent, lId);
+        symbol_remove_ref(thisAgent, &lId);
     }
     if (lAttr)
     {
-        symbol_remove_ref(thisAgent, lAttr);
+        symbol_remove_ref(thisAgent, &lAttr);
     }
     if (lValue)
     {
-        symbol_remove_ref(thisAgent, lValue);
+        symbol_remove_ref(thisAgent, &lValue);
     }
     if (lReferent)
     {
-        symbol_remove_ref(thisAgent, lReferent);
+        symbol_remove_ref(thisAgent, &lReferent);
     }
     return NIL;
 }
@@ -1289,12 +1291,12 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         cond_stack.pop_back();
 
         /* --- dereference component symbols --- */
-        symbol_remove_ref(thisAgent, temp->bt.trace->id);
-        symbol_remove_ref(thisAgent, temp->bt.trace->attr);
-        symbol_remove_ref(thisAgent, temp->bt.trace->value);
+        symbol_remove_ref(thisAgent, &temp->bt.trace->id);
+        symbol_remove_ref(thisAgent, &temp->bt.trace->attr);
+        symbol_remove_ref(thisAgent, &temp->bt.trace->value);
         if (preference_is_binary(temp->bt.trace->type))
         {
-            symbol_remove_ref(thisAgent, temp->bt.trace->referent);
+            symbol_remove_ref(thisAgent, &temp->bt.trace->referent);
         }
 
         if (temp->bt.trace->wma_o_set)
@@ -1306,7 +1308,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
-    symbol_remove_ref(thisAgent, inst->prod_name);
+    symbol_remove_ref(thisAgent, &inst->prod_name);
 
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();

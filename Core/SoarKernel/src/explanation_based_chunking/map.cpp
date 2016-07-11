@@ -57,7 +57,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     for (id_to_sym_map_type::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, it->second);
+        symbol_remove_ref(thisAgent, &it->second);
     }
     o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing o_id_to_var_map data.\n");

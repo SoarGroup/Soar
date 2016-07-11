@@ -196,12 +196,12 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* --- dereference component symbols --- */
-    symbol_remove_ref(thisAgent, pref->id);
-    symbol_remove_ref(thisAgent, pref->attr);
-    symbol_remove_ref(thisAgent, pref->value);
+    symbol_remove_ref(thisAgent, &pref->id);
+    symbol_remove_ref(thisAgent, &pref->attr);
+    symbol_remove_ref(thisAgent, &pref->value);
     if (preference_is_binary(pref->type))
     {
-        symbol_remove_ref(thisAgent, pref->referent);
+        symbol_remove_ref(thisAgent, &pref->referent);
     }
     if (pref->wma_o_set)
     {

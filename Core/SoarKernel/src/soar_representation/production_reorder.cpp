@@ -409,7 +409,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             var = generate_new_variable(thisAgent, "dummy-");
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
-            symbol_remove_ref(thisAgent, var);
+            symbol_remove_ref(thisAgent, &var);
             thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
             old_sts = saved;
@@ -567,7 +567,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             {
                 tests_to_restore = next_st;
             }
-            symbol_remove_ref(thisAgent, st->var);
+            symbol_remove_ref(thisAgent, &st->var);
             thisAgent->memoryManager->free_with_pool(MP_saved_test, st);
         }
         else
@@ -875,7 +875,7 @@ list* collect_root_variables(agent* thisAgent,
     }
 
     /* --- unmark everything we just marked --- */
-    delete_ungrounded_symbol_list(&new_vars_from_value_slot);
+    delete_ungrounded_symbol_list(thisAgent, &new_vars_from_value_slot);
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
         (*it)->sym->tc_num = 0;
@@ -921,7 +921,7 @@ list* collect_root_variables(agent* thisAgent,
     {
         push(thisAgent, (*it)->sym, returnList);
     }
-    delete_ungrounded_symbol_list(&new_vars_from_id_slot);
+    delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
     return returnList;
 }
 

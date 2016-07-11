@@ -843,7 +843,7 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
     //RPM 9/06: removed symbol ref so symbol is released properly
     Symbol* tmp = make_str_constant(m_agent, szName);
     remove_rhs_function(m_agent, tmp);
-    symbol_remove_ref(m_agent, tmp);
+    symbol_remove_ref(m_agent, &tmp);
 }
 
 char const* AgentSML::GetValueType(int type)

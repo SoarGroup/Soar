@@ -157,7 +157,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
     }
 
     // DJP-FREE: The name reference needs to be released now the function is gone
-    symbol_remove_ref(thisAgent, name);
+    symbol_remove_ref(thisAgent, &name);
 }
 
 /* ====================================================================

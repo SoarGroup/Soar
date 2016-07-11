@@ -1817,9 +1817,11 @@ void epmem_clear_transient_structures(agent* thisAgent)
     thisAgent->epmem_id_ref_counts->clear();
     thisAgent->epmem_wme_adds->clear();
 
+    Symbol* lSym;
     for (epmem_symbol_set::iterator p_it = thisAgent->epmem_promotions->begin(); p_it != thisAgent->epmem_promotions->end(); p_it++)
     {
-        symbol_remove_ref(thisAgent, (*p_it));
+        lSym = (*p_it);
+        symbol_remove_ref(thisAgent, &lSym);
     }
     thisAgent->epmem_promotions->clear();
 }
@@ -3255,14 +3257,15 @@ void epmem_new_episode(agent* thisAgent)
 
         // all in-place lti promotions
         {
+            Symbol* lSym;
             for (epmem_symbol_set::iterator p_it = thisAgent->epmem_promotions->begin(); p_it != thisAgent->epmem_promotions->end(); p_it++)
             {
                 if (((*p_it)->id->smem_time_id == time_counter) && ((*p_it)->id->smem_valid == thisAgent->epmem_validation))
                 {
                     _epmem_promote_id(thisAgent, (*p_it), time_counter);
                 }
-
-                symbol_remove_ref(thisAgent, (*p_it));
+                lSym = (*p_it);
+                symbol_remove_ref(thisAgent, &lSym);
             }
             thisAgent->epmem_promotions->clear();
         }
@@ -3290,7 +3293,7 @@ void epmem_new_episode(agent* thisAgent)
                 state = state->id->higher_goal;
             }
 
-            symbol_remove_ref(thisAgent, my_time_sym);
+            symbol_remove_ref(thisAgent, &my_time_sym);
         }
 
         // clear add/remove maps
@@ -3364,7 +3367,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
 
         if (!existing_identifier)
         {
-            symbol_remove_ref(thisAgent, id_p->second.first);
+            symbol_remove_ref(thisAgent, &id_p->second.first);
         }
     }
     else
@@ -3387,7 +3390,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
             }
 
             epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, value);
-            symbol_remove_ref(thisAgent, value);
+            symbol_remove_ref(thisAgent, &value);
 
             ids->insert(std::make_pair(child_n_id, std::make_pair(value, !((value->id->impasse_wmes) || (value->id->input_wmes) || (value->id->slots)))));
         }
@@ -3447,7 +3450,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
     }
 
     epmem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->epmem_sym_retrieved, retrieved_header);
-    symbol_remove_ref(thisAgent, retrieved_header);
+    symbol_remove_ref(thisAgent, &retrieved_header);
 
     // add *-id wme's
     {
@@ -3455,11 +3458,11 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
 
         my_meta = make_int_constant(thisAgent, static_cast<int64_t>(memory_id));
         epmem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->epmem_sym_memory_id, my_meta);
-        symbol_remove_ref(thisAgent, my_meta);
+        symbol_remove_ref(thisAgent, &my_meta);
 
         my_meta = make_int_constant(thisAgent, static_cast<int64_t>(thisAgent->epmem_stats->time->get_value()));
         epmem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->epmem_sym_present_id, my_meta);
-        symbol_remove_ref(thisAgent, my_meta);
+        symbol_remove_ref(thisAgent, &my_meta);
     }
 
     // install memory
@@ -3540,7 +3543,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                         num_wmes++;
                     }
 
-                    symbol_remove_ref(thisAgent, attr);
+                    symbol_remove_ref(thisAgent, &attr);
                 }
                 else
                 {
@@ -3591,7 +3594,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                                 num_wmes++;
                             }
 
-                            symbol_remove_ref(thisAgent, orphan->attribute);
+                            symbol_remove_ref(thisAgent, &orphan->attribute);
 
                             delete orphan;
                         }
@@ -3615,7 +3618,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                     orphan = orphans.front();
                     orphans.pop();
 
-                    symbol_remove_ref(thisAgent, orphan->attribute);
+                    symbol_remove_ref(thisAgent, &orphan->attribute);
 
                     delete orphan;
                 }
@@ -3654,8 +3657,8 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                     epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent.first, attr, value);
                     num_wmes++;
 
-                    symbol_remove_ref(thisAgent, attr);
-                    symbol_remove_ref(thisAgent, value);
+                    symbol_remove_ref(thisAgent, &attr);
+                    symbol_remove_ref(thisAgent, &value);
                 }
             }
             my_q->reinitialize();
@@ -5154,19 +5157,19 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             // cue size
             temp_sym = make_int_constant(thisAgent, leaf_literals.size());
             epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_cue_size, temp_sym);
-            symbol_remove_ref(thisAgent, temp_sym);
+            symbol_remove_ref(thisAgent, &temp_sym);
             // match cardinality
             temp_sym = make_int_constant(thisAgent, best_cardinality);
             epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_match_cardinality, temp_sym);
-            symbol_remove_ref(thisAgent, temp_sym);
+            symbol_remove_ref(thisAgent, &temp_sym);
             // match score
             temp_sym = make_float_constant(thisAgent, best_score);
             epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_match_score, temp_sym);
-            symbol_remove_ref(thisAgent, temp_sym);
+            symbol_remove_ref(thisAgent, &temp_sym);
             // normalized match score
             temp_sym = make_float_constant(thisAgent, best_score / perfect_score);
             epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_normalized_match_score, temp_sym);
-            symbol_remove_ref(thisAgent, temp_sym);
+            symbol_remove_ref(thisAgent, &temp_sym);
             // status
             epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_success, pos_query);
             if (neg_query)
@@ -5179,7 +5182,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                 // graph match
                 temp_sym = make_int_constant(thisAgent, (best_graph_matched ? 1 : 0));
                 epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_graph_match, temp_sym);
-                symbol_remove_ref(thisAgent, temp_sym);
+                symbol_remove_ref(thisAgent, &temp_sym);
 
                 // mapping
                 if (best_graph_matched)
@@ -5188,7 +5191,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     // mapping identifier
                     Symbol* mapping = make_new_identifier(thisAgent, 'M', level);
                     epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_result_header, thisAgent->epmem_sym_graph_match_mapping, mapping);
-                    symbol_remove_ref(thisAgent, mapping);
+                    symbol_remove_ref(thisAgent, &mapping);
 
                     for (epmem_literal_node_pair_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++)
                     {
@@ -5197,7 +5200,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                             // create the node
                             temp_sym = make_new_identifier(thisAgent, 'N', level);
                             epmem_buffer_add_wme(thisAgent, meta_wmes, mapping, thisAgent->epmem_sym_graph_match_mapping_node, temp_sym);
-                            symbol_remove_ref(thisAgent, temp_sym);
+                            symbol_remove_ref(thisAgent, &temp_sym);
                             // point to the cue identifier
                             epmem_buffer_add_wme(thisAgent, meta_wmes, temp_sym, thisAgent->epmem_sym_graph_match_mapping_cue, (*iter).first->value_sym);
                             // save the mapping point for the episode
@@ -6092,9 +6095,9 @@ void epmem_respond_to_cmd(agent* thisAgent)
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, (*mw_it)->id);
-                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, (*mw_it)->value);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -6102,9 +6105,9 @@ void epmem_respond_to_cmd(agent* thisAgent)
 
                     for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, (*mw_it)->id);
-                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, (*mw_it)->value);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
 
                         delete(*mw_it);
                     }

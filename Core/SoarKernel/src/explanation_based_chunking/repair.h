@@ -37,7 +37,7 @@ class Path_to_Goal_State
         wme_list*   wme_path;
 };
 
-void delete_ungrounded_symbol_list(symbol_with_match_list** unconnected_syms);
+void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** unconnected_syms);
 
 class Repair_Manager
 {

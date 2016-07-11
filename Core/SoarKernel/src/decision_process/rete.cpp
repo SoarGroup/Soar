@@ -1788,15 +1788,15 @@ void remove_ref_to_alpha_mem(agent* thisAgent, alpha_mem* am)
     remove_from_hash_table(thisAgent, ht, am);
     if (am->id)
     {
-        symbol_remove_ref(thisAgent, am->id);
+        symbol_remove_ref(thisAgent, &am->id);
     }
     if (am->attr)
     {
-        symbol_remove_ref(thisAgent, am->attr);
+        symbol_remove_ref(thisAgent, &am->attr);
     }
     if (am->value)
     {
-        symbol_remove_ref(thisAgent, am->value);
+        symbol_remove_ref(thisAgent, &am->value);
     }
     while (am->right_mems)
     {
@@ -2409,7 +2409,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
 
         if (test_is_constant_relational_test(rt->type))
         {
-            symbol_remove_ref(thisAgent, rt->data.constant_referent);
+            symbol_remove_ref(thisAgent, &rt->data.constant_referent);
         }
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
@@ -2760,7 +2760,7 @@ void deallocate_varnames(agent* thisAgent, varnames* vn)
     if (varnames_is_one_var(vn))
     {
         sym = varnames_to_one_var(vn);
-        symbol_remove_ref(thisAgent, sym);
+        symbol_remove_ref(thisAgent, &sym);
     }
     else
     {
@@ -3811,7 +3811,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         if (find_var_location(sym, static_cast<rete_node_level>(bottom_depth + 1), &var_loc))
         {
             /* --- Yes, replace it with reteloc --- */
-            symbol_remove_ref(thisAgent, sym);
+            symbol_remove_ref(thisAgent, &sym);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
         }
         else
@@ -3830,7 +3830,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
                 index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
             }
             *rv = unboundvar_to_rhs_value(index);
-            symbol_remove_ref(thisAgent, sym);
+            symbol_remove_ref(thisAgent, &sym);
         }
         return;
     }
@@ -7176,7 +7176,7 @@ void reteload_free_symbol_table(agent* thisAgent)
 
     for (i = 0; i < thisAgent->reteload_num_syms; i++)
     {
-        symbol_remove_ref(thisAgent, (*(thisAgent->reteload_symbol_table + i)));
+        symbol_remove_ref(thisAgent, &(*(thisAgent->reteload_symbol_table + i)));
     }
     thisAgent->memoryManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }

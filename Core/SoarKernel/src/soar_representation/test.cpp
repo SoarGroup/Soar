@@ -235,9 +235,9 @@ void deallocate_test(agent* thisAgent, test t)
             break;
         default: /* relational tests other than equality */
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-            symbol_remove_ref(thisAgent, t->data.referent);
+            symbol_remove_ref(thisAgent, &t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, t->data.referent);
+            symbol_remove_ref(thisAgent, &t->data.referent);
 #endif
             break;
     }
@@ -789,7 +789,7 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
     prefix[1] = 0;
     New = generate_new_variable(thisAgent, prefix);
     eq_test = make_test(thisAgent, New, EQUALITY_TEST);
-    symbol_remove_ref (thisAgent, New);
+    symbol_remove_ref (thisAgent, &New);
     add_test(thisAgent, t, eq_test);
 }
 

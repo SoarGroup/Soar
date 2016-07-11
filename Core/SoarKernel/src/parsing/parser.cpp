@@ -101,7 +101,7 @@ test make_placeholder_test(agent* thisAgent, char first_letter)
 {
     Symbol* new_var = make_placeholder_var(thisAgent, first_letter);
     test new_test = make_test(thisAgent, new_var, EQUALITY_TEST);
-    symbol_remove_ref(thisAgent, new_var);
+    symbol_remove_ref(thisAgent, &new_var);
     return new_test;
 }
 
@@ -154,7 +154,7 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         dprint(DT_PARSER, "Substituting for placeholder %y with existing %y.\n", (*sym), (*sym)->var->current_binding_value);
     }
     var = (*sym)->var->current_binding_value;
-    symbol_remove_ref(thisAgent, (*sym));
+    symbol_remove_ref(thisAgent, &(*sym));
     *sym = var;
     if (!just_created)
     {
@@ -471,11 +471,11 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
             if (!lexer->get_lexeme())
             {
-                symbol_remove_ref(thisAgent, referent);
+                symbol_remove_ref(thisAgent, &referent);
                 return NULL;
             }
             t = make_test(thisAgent, referent, test_type);
-            symbol_remove_ref(thisAgent, referent);
+            symbol_remove_ref(thisAgent, &referent);
             return t;
 
         default:
@@ -2049,7 +2049,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
         /* Remove references for dummy var used to represent dot notation links */
         deallocate_rhs_value(thisAgent, attr);
-        symbol_remove_ref(thisAgent, new_var);
+        symbol_remove_ref(thisAgent, &new_var);
 
         /* if there was a "." then there must be another attribute
            set id for next action and get the next attribute */
@@ -2180,14 +2180,14 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         else
         {
-            symbol_remove_ref(thisAgent, var);
+            symbol_remove_ref(thisAgent, &var);
             deallocate_action_list(thisAgent, all_actions);
             return NIL;
         }
     }
     /* consume the right parenthesis */
     if (!lexer->get_lexeme()) return NULL;
-    symbol_remove_ref(thisAgent, var);
+    symbol_remove_ref(thisAgent, &var);
     return all_actions;
 }
 
@@ -2280,7 +2280,7 @@ void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentatio
     if (name)
     {
         print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        symbol_remove_ref(thisAgent, name);
+        symbol_remove_ref(thisAgent, &name);
         name = NULL;
     }
     if (documentation && *documentation)

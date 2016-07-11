@@ -689,28 +689,28 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 //debug_trace_set(DT_ID_LEAKING, true);
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
-                delete_ungrounded_symbol_list(&unconnected_syms);
+                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 unconnected_syms = new symbol_with_match_list();
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
-                    delete_ungrounded_symbol_list(&unconnected_syms);
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
                     print_current_built_rule("Repaired rule:");
                     //debug_trace_set(DT_ID_LEAKING, false);
                     return true;
                 } else {
-                    delete_ungrounded_symbol_list(&unconnected_syms);
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
                     //debug_trace_set(DT_ID_LEAKING, false);
                     return false;
                 }
             }
 
-            delete_ungrounded_symbol_list(&unconnected_syms);
+            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
             //debug_trace_set(DT_ID_LEAKING, false);
             return false;
         }
-        delete_ungrounded_symbol_list(&unconnected_syms);
+        delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
     }
     //debug_trace_set(DT_ID_LEAKING, false);
     return true;
@@ -853,7 +853,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
     /* Change to justification naming */
-    symbol_remove_ref(thisAgent, m_prod_name);
+    symbol_remove_ref(thisAgent, &m_prod_name);
     set_up_rule_name(false);
 
     /* Clean up */
@@ -1143,7 +1143,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 
-
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
@@ -1200,7 +1199,7 @@ void Explanation_Based_Chunker::clean_up ()
     if (m_prod_name)
     {
         dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", m_prod_name);
-        symbol_remove_ref(thisAgent, m_prod_name);
+        symbol_remove_ref(thisAgent, &m_prod_name);
     }
     if (m_saved_justification_top)
     {
