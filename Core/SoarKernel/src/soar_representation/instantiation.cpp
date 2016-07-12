@@ -105,7 +105,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
         cond->bt.CDPS = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
-            if (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM])
+            if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK])
             {
                 if (cond->bt.trace->slot->CDPS)
                 {
@@ -879,7 +879,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     AddAdditionalTestsMode additional_test_mode;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-    } else if (thisAgent->sysparams[LEARNING_ON_SYSPARAM])
+    } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         additional_test_mode = ALL_ORIGINALS;
     } else  {

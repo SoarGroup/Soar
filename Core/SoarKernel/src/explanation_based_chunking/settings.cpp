@@ -2,56 +2,89 @@
 #include "agent.h"
 #include "ebc.h"
 
-ebc_param_container::ebc_param_container(agent* new_agent): soar_module::param_container(new_agent)
+#define setting_on(s) pEBC_settings[s] ? on : off
+
+ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[]): soar_module::param_container(new_agent)
 {
+
+    /* Set up the settings array that is used for quick access */
+    pEBC_settings[SETTING_EBC_LEARNING_ON] = false;
+    pEBC_settings[SETTING_EBC_ALWAYS] = false;
+    pEBC_settings[SETTING_EBC_NEVER] = true;
+    pEBC_settings[SETTING_EBC_ONLY] = false;
+    pEBC_settings[SETTING_EBC_EXCEPT] = false;
+    pEBC_settings[SETTING_EBC_BOTTOM_ONLY] = true;
+    pEBC_settings[SETTING_EBC_INTERRUPT] = false;
+    pEBC_settings[SETTING_EBC_IGNORE_DNB] = true;
+    pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] = true;
+    pEBC_settings[SETTING_EBC_CONSTRAINTS] = true;
+    pEBC_settings[SETTING_EBC_RHS_VRBLZ] = true;
+    pEBC_settings[SETTING_EBC_OSK] = false;
+    pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
+    pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
+    pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] = false;
+    pEBC_settings[SETTING_EBC_MERGE] = true;
+    pEBC_settings[SETTING_EBC_USER_SINGLETONS] = false;
+    pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_OSK] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_PROB] = false;
+    pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
+
     // enabled
     enabled = new soar_module::constant_param<EBCLearnChoices>("learn", ebc_never, new soar_module::f_predicate<EBCLearnChoices>());
+    enabled->add_mapping(ebc_always, "enabled");
+    enabled->add_mapping(ebc_always, "on");
     enabled->add_mapping(ebc_always, "all");
-    enabled->add_mapping(ebc_never, "never");
+    enabled->add_mapping(ebc_never, "disabled");
+    enabled->add_mapping(ebc_never, "off");
+    enabled->add_mapping(ebc_never, "none");
     enabled->add_mapping(ebc_only, "only");
     enabled->add_mapping(ebc_except, "all-except");
     add(enabled);
 
-    bottom_level_only = new soar_module::boolean_param("bottom-only", on, new soar_module::f_predicate<boolean>());
+    bottom_level_only = new soar_module::boolean_param("bottom-only", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
     add(bottom_level_only);
-    interrupt_on_chunk = new soar_module::boolean_param("interrupt", on, new soar_module::f_predicate<boolean>());
+    interrupt_on_chunk = new soar_module::boolean_param("interrupt", setting_on(SETTING_EBC_INTERRUPT), new soar_module::f_predicate<boolean>());
     add(interrupt_on_chunk);
-    ignore_dnb = new soar_module::boolean_param("ignore-dnb", on, new soar_module::f_predicate<boolean>());
+    ignore_dnb = new soar_module::boolean_param("ignore-dnb", setting_on(SETTING_EBC_IGNORE_DNB), new soar_module::f_predicate<boolean>());
     add(ignore_dnb);
 
     // mechanisms
-    mechanism_identity_analysis = new soar_module::boolean_param("variablize-identity", on, new soar_module::f_predicate<boolean>());
+    mechanism_identity_analysis = new soar_module::boolean_param("variablize-identity", setting_on(SETTING_EBC_IDENTITY_VRBLZ), new soar_module::f_predicate<boolean>());
     add(mechanism_identity_analysis);
-    mechanism_variablize_rhs_funcs = new soar_module::boolean_param("variablize-rhs-funcs", on, new soar_module::f_predicate<boolean>());
+    mechanism_variablize_rhs_funcs = new soar_module::boolean_param("variablize-rhs-funcs", setting_on(SETTING_EBC_RHS_VRBLZ), new soar_module::f_predicate<boolean>());
     add(mechanism_variablize_rhs_funcs);
-    mechanism_constraints = new soar_module::boolean_param("enforce-constraints", on, new soar_module::f_predicate<boolean>());
+    mechanism_constraints = new soar_module::boolean_param("enforce-constraints", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
     add(mechanism_constraints);
-    mechanism_OSK = new soar_module::boolean_param("add-osk", off, new soar_module::f_predicate<boolean>());
+    mechanism_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_OSK), new soar_module::f_predicate<boolean>());
     add(mechanism_OSK);
-    mechanism_repair_rhs = new soar_module::boolean_param("repair-rhs", on, new soar_module::f_predicate<boolean>());
+    mechanism_repair_rhs = new soar_module::boolean_param("repair-rhs", setting_on(SETTING_EBC_REPAIR_RHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_rhs);
-    mechanism_repair_lhs = new soar_module::boolean_param("repair-lhs", on, new soar_module::f_predicate<boolean>());
+    mechanism_repair_lhs = new soar_module::boolean_param("repair-lhs", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_lhs);
-    mechanism_promotion_tracking = new soar_module::boolean_param("repair-rhs-promotion", on, new soar_module::f_predicate<boolean>());
+    mechanism_promotion_tracking = new soar_module::boolean_param("repair-rhs-promotion", setting_on(SETTING_EBC_REPAIR_PROMOTION), new soar_module::f_predicate<boolean>());
     add(mechanism_promotion_tracking);
-    mechanism_merge = new soar_module::boolean_param("merge", on, new soar_module::f_predicate<boolean>());
+    mechanism_merge = new soar_module::boolean_param("merge", setting_on(SETTING_EBC_MERGE), new soar_module::f_predicate<boolean>());
     add(mechanism_merge);
-    mechanism_user_singletons = new soar_module::boolean_param("user-singletons", on, new soar_module::f_predicate<boolean>());
+    mechanism_user_singletons = new soar_module::boolean_param("user-singletons", setting_on(SETTING_EBC_USER_SINGLETONS), new soar_module::f_predicate<boolean>());
     add(mechanism_user_singletons);
 
-    allow_missing_negative_reasoning = new soar_module::boolean_param("allow-local-negative-reasoning", on, new soar_module::f_predicate<boolean>());
+    allow_missing_negative_reasoning = new soar_module::boolean_param("allow-local-negative-reasoning", setting_on(SETTING_EBC_ALLOW_LOCAL_NEGATIONS), new soar_module::f_predicate<boolean>());
     add(allow_missing_negative_reasoning);
-    allow_missing_OSK = new soar_module::boolean_param("allow-missing-osk", on, new soar_module::f_predicate<boolean>());
+    allow_missing_OSK = new soar_module::boolean_param("allow-missing-osk", setting_on(SETTING_EBC_ALLOW_OSK), new soar_module::f_predicate<boolean>());
     add(allow_missing_OSK);
-    allow_smem_knowledge = new soar_module::boolean_param("allow-smem", on, new soar_module::f_predicate<boolean>());
+    allow_smem_knowledge = new soar_module::boolean_param("allow-memory-subsystems", setting_on(SETTING_EBC_ALLOW_OPAQUE), new soar_module::f_predicate<boolean>());
     add(allow_smem_knowledge);
-    allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", off, new soar_module::f_predicate<boolean>());
+    allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
     add(allow_probabilistic_operators);
-    allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", on, new soar_module::f_predicate<boolean>());
+    allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
     add(allow_multiple_prefs);
-    allow_temporal_constraint = new soar_module::boolean_param("allow-pre-existing-ltm", on, new soar_module::f_predicate<boolean>());
+    allow_temporal_constraint = new soar_module::boolean_param("allow-pre-existing-ltm", setting_on(SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT), new soar_module::f_predicate<boolean>());
     add(allow_temporal_constraint);
-    allow_local_promotion = new soar_module::boolean_param("allow-local-promotion", on, new soar_module::f_predicate<boolean>());
+    allow_local_promotion = new soar_module::boolean_param("allow-local-promotion", setting_on(SETTING_EBC_ALLOW_LOCAL_PROMOTION), new soar_module::f_predicate<boolean>());
     add(allow_local_promotion);
 
 }

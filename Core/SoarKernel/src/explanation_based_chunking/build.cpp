@@ -521,7 +521,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         {
             /* --- not in TC, so discard the condition --- */
 
-            if (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == false)
+            if (ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] == false)
             {
                 // this chunk will be overgeneral! don't create it
 

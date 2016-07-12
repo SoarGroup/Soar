@@ -94,6 +94,14 @@ namespace cli
                     case 0:
                     default:
                         // no options
+//                        if (!opt.CheckNumNonOptArgs(1, 1))
+//                        {
+//                            return cli.DoChunk(option, &(argv[2]));
+//                        }
+//                        if (!opt.CheckNumNonOptArgs(2, 2))
+//                        {
+//                            return cli.DoChunk(option, &(argv[2]));
+//                        }
                         break;
                     case 'g':
                     {

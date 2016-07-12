@@ -209,12 +209,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM] = false;
 #endif /* ATTENTION_LAPSE */
 
-    // voigtjr:  turning learning off by default
-    thisAgent->sysparams[LEARNING_ON_SYSPARAM] = false;
-
-    thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] = false;  /* AGR MVL1 */
-    thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] = false;  /* KJC 8/96 */
-    thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] = true;
     thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
@@ -222,11 +216,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
 
-    // JRV: Chunk through local negations by default
-    thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] = true;
-
-    // MMA: Chunk through evaluation rules off by default
-    thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] = false;
 
     thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }

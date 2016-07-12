@@ -57,45 +57,38 @@ typedef struct agent_struct agent;
 /* ====== Max Chunks === */
 #define MAX_CHUNKS_SYSPARAM                      18
 #define RESPOND_TO_LOAD_ERRORS_SYSPARAM          19
-/* ====== Sysparams for control of learning === */
-#define LEARNING_ON_SYSPARAM                     20
-#define LEARNING_ONLY_SYSPARAM                   21
-#define LEARNING_EXCEPT_SYSPARAM                 22
-#define LEARNING_ALL_GOALS_SYSPARAM              23
 /* ====== User Select === */
-#define USER_SELECT_MODE_SYSPARAM                24
+#define USER_SELECT_MODE_SYSPARAM                20
 /* ====== Print Warnings === */
-#define PRINT_WARNINGS_SYSPARAM                  25
-#define PRINT_ALIAS_SYSPARAM                     26
+#define PRINT_WARNINGS_SYSPARAM                  21
+#define PRINT_ALIAS_SYSPARAM                     22
 /* ====== Whether to print out aliases as they're defined === */
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         27
-#define REAL_TIME_SYSPARAM                       28
-#define ATTENTION_LAPSE_ON_SYSPARAM              29
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         23
+#define REAL_TIME_SYSPARAM                       24
+#define ATTENTION_LAPSE_ON_SYSPARAM              25
 /* limit number of cycles in run_til_output */
-#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           30
-#define TRACE_INDIFFERENT_SYSPARAM               31
-#define TIMERS_ENABLED                           32
-#define MAX_GOAL_DEPTH                           33
+#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           26
+#define TRACE_INDIFFERENT_SYSPARAM               27
+#define TIMERS_ENABLED                           28
+#define MAX_GOAL_DEPTH                           29
 /* generate warning and event if memory usage exceeds this value */
-#define MAX_MEMORY_USAGE_SYSPARAM                34
+#define MAX_MEMORY_USAGE_SYSPARAM                30
 /* auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM              35
+#define USER_SELECT_REDUCE_SYSPARAM              31
 /* Soar-RL trace information */
-#define TRACE_RL_SYSPARAM                        36
+#define TRACE_RL_SYSPARAM                        32
 /* Chunk through local negations */
-#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM   37
-#define TRACE_WATERFALL_SYSPARAM                 38
-#define TRACE_WMA_SYSPARAM                       39
-#define TRACE_EPMEM_SYSPARAM                     40
-#define TRACE_SMEM_SYSPARAM                      41
-#define TRACE_GDS_SYSPARAM                       42
+#define TRACE_WATERFALL_SYSPARAM                 33
+#define TRACE_WMA_SYSPARAM                       34
+#define TRACE_EPMEM_SYSPARAM                     35
+#define TRACE_SMEM_SYSPARAM                      36
+#define TRACE_GDS_SYSPARAM                       37
 /* Break on long decision cycle time */
-#define DECISION_CYCLE_MAX_USEC_INTERRUPT        43
+#define DECISION_CYCLE_MAX_USEC_INTERRUPT        38
 /* Chunk over evaluation rules in subgoals */
-#define CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM  44
-#define TRACE_PARSER 45
+#define TRACE_PARSER                             39
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  45
+#define HIGHEST_SYSPARAM_NUMBER                  40
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

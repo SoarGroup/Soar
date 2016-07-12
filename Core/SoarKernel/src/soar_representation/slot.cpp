@@ -13,12 +13,13 @@
 
 #include "agent.h"
 #include "decide.h"
+#include "dprint.h"
+#include "ebc.h"
 #include "mem.h"
 #include "preference.h"
 #include "symbol.h"
 
 #include <stdlib.h>
-#include "dprint.h"
 
 /* **********************************************************************
 
@@ -219,7 +220,7 @@ void remove_garbage_slots(agent* thisAgent)
         /* --- deallocate the slot --- */
         dprint(DT_DEALLOCATES, "Deallocating slot %y ^%y.\n", s->id, s->attr);
         /* MMA 9-2012 */
-        if (s->CDPS && thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM])
+        if (s->CDPS && thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK])
         {
             clear_CDPS(thisAgent, s);
         }

@@ -34,23 +34,23 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
     {
         if (!m_RawOutput)
         {
-            AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY]  ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] ? sml_Names::kTrue : sml_Names::kFalse);
+            AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY]  ? sml_Names::kTrue : sml_Names::kFalse);
         }
         PrintCLIMessage_Header("Learn Settings", 40);
-        PrintCLIMessage_Justify("learning:", (thisAgent->sysparams[LEARNING_ON_SYSPARAM] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("only:", (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("except:", (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("all-levels:", (thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("local-negations:", (thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("desirability-prefs:", (thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("learning:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("only:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY]  ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("except:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("all-levels:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY]  ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("local-negations:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] ? "on" : "off"), 40);
+        PrintCLIMessage_Justify("desirability-prefs:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] ? "on" : "off"), 40);
 
         if (options.test(LEARN_LIST))
         {
             std::string output;
-            if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM])
+            if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] )
             {
                 PrintCLIMessage_Section("Only Learning In States", 40);
                 if (!thisAgent->ebChunker->chunky_problem_spaces)
@@ -65,7 +65,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
                         output.clear();
                     }
                 }
-            } else if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM])
+            } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT])
             {
                 PrintCLIMessage_Section("Learning in All States Except", 40);
                 if (!thisAgent->ebChunker->chunky_problem_spaces)
@@ -87,69 +87,69 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
 
     if (options.test(LEARN_ONLY))
     {
-        set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
-        set_sysparam(thisAgent, LEARNING_ONLY_SYSPARAM, true);
-        set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = true;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         PrintCLIMessage("Learn| only = on");
     }
 
     if (options.test(LEARN_EXCEPT))
     {
-        set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
-        set_sysparam(thisAgent, LEARNING_ONLY_SYSPARAM, false);
-        set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, true);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
         PrintCLIMessage("Learn| except = on");
     }
 
     if (options.test(LEARN_ENABLE))
     {
-        set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, true);
-        set_sysparam(thisAgent, LEARNING_ONLY_SYSPARAM, false);
-        set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         PrintCLIMessage("Learn| learning = on");
     }
 
     if (options.test(LEARN_DISABLE))
     {
-        set_sysparam(thisAgent, LEARNING_ON_SYSPARAM, false);
-        set_sysparam(thisAgent, LEARNING_ONLY_SYSPARAM, false);
-        set_sysparam(thisAgent, LEARNING_EXCEPT_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         PrintCLIMessage("Learn| learning = off");
     }
 
     if (options.test(LEARN_ALL_LEVELS))
     {
-        set_sysparam(thisAgent, LEARNING_ALL_GOALS_SYSPARAM, true);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = false;
         PrintCLIMessage("Learn| all-levels = on");
     }
 
     if (options.test(LEARN_BOTTOM_UP))
     {
-        set_sysparam(thisAgent, LEARNING_ALL_GOALS_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = true;
         PrintCLIMessage("Learn| all-levels = off");
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS))
     {
-        set_sysparam(thisAgent, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
         PrintCLIMessage("Learn| local-negations = on");
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS))
     {
-        set_sysparam(thisAgent, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = false;
         PrintCLIMessage("Learn| local-negations = off");
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_EVALUATION_RULES))
     {
-        set_sysparam(thisAgent, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, true);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] = true;
         PrintCLIMessage("Learn| desirability-prefs = on");
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES))
     {
-        set_sysparam(thisAgent, CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM, false);
+        thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] = false;
         PrintCLIMessage("Learn| desirability-prefs = off");
     }
 

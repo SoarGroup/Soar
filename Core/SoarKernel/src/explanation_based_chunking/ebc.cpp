@@ -30,6 +30,10 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
+    /* Create the parameter object where the cli settings are stored.
+     * This also initializes the ebc_settings array */
+    ebc_params = new ebc_param_container(thisAgent, ebc_settings);
+
     /* Create data structures used for EBC */
     o_id_to_var_map = new id_to_sym_map_type();
     instantiation_identities = new inst_to_id_map_type();
@@ -42,7 +46,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
-    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
     m_learning_on_for_instantiation = m_learning_on;
 
     chunkNameFormat = ruleFormat;
@@ -54,7 +58,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     local_singleton_superstate_identity = NULL;
 
-    ebc_params = new ebc_param_container(thisAgent);
 
     reinit();
 }
@@ -77,7 +80,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 }
 void Explanation_Based_Chunker::update_learning_on()
 {
-    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
 }
 
 void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
@@ -122,7 +125,7 @@ void Explanation_Based_Chunker::reinit()
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
 {
-    m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
 
     if (!m_learning_on || (inst->match_goal_level == TOP_GOAL_LEVEL))
     {
@@ -130,7 +133,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
+    if (ebc_settings[SETTING_EBC_EXCEPT] &&
             member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
@@ -144,7 +147,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+    if (ebc_settings[SETTING_EBC_ONLY]  &&
             !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
@@ -161,7 +164,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     /* allow_bottom_up_chunks will be false if a chunk was already
        learned in a lower goal
      */
-    if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] &&
+    if (ebc_settings[SETTING_EBC_BOTTOM_ONLY]  &&
             !inst->match_goal->id->allow_bottom_up_chunks)
     {
         m_learning_on_for_instantiation = false;

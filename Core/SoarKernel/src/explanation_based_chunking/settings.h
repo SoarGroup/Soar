@@ -38,7 +38,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* allow_temporal_constraint;
         soar_module::boolean_param* allow_local_promotion;
 
-        ebc_param_container(agent* new_agent);
+        ebc_param_container(agent* new_agent, bool pEBC_settings[]);
         void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam);
 };
 

@@ -60,7 +60,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         PrintCLIMessage_Item("Tests retrieved LTM that already exists in higher goal", thisAgent->ebChunker->ebc_params->allow_temporal_constraint, 61);
         PrintCLIMessage_Item("Creates a result by augmenting a previous result", thisAgent->ebChunker->ebc_params->allow_local_promotion, 61);
 
-        if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM])
+        if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] )
         {
             PrintCLIMessage_Section("Only Learning In States", 61);
             if (!thisAgent->ebChunker->chunky_problem_spaces)
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
                     tempString.clear();
                 }
             }
-        } else if (thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM])
+        } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT])
         {
             PrintCLIMessage_Section("Learning in All States Except", 61);
             if (!thisAgent->ebChunker->chunky_problem_spaces)
