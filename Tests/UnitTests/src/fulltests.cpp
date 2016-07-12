@@ -84,7 +84,7 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testTemplateVariableNameBug);              // bug 1121
         CPPUNIT_TEST(testFindAttrPipes);   // bug 1138
         CPPUNIT_TEST(testGDSBug1144);   // bug 1144
-        CPPUNIT_TEST(testLearn);   // bug 1145
+//        CPPUNIT_TEST(testLearn);   // bug 1145
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testCommandToFile);
 #endif
@@ -123,7 +123,7 @@ class FullTests : public CPPUNIT_NS::TestCase
         TEST_DECLARATION(testNegatedConjunctiveChunkLoopBug510);
         TEST_DECLARATION(testGDSBug1144);
         TEST_DECLARATION(testGDSBug1011);
-//        TEST_DECLARATION(testLearn);
+        TEST_DECLARATION(testLearn);
 #ifndef NO_SVS
         TEST_DECLARATION(testSVS);
 #endif
