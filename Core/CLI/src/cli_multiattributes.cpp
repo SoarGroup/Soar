@@ -96,7 +96,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
         if (maList->symbol == s)
         {
             maList->value = n;
-            symbol_remove_ref(thisAgent, s);
+            symbol_remove_ref(thisAgent, &s);
             return true;
         }
 

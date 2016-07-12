@@ -134,7 +134,7 @@ void init_soar_agent(agent* thisAgent)
         evaluate_object_sym = make_str_constant(thisAgent, "evaluate-object");
         add_trace_format(thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
                          "%id (evaluate-object %o[object])");
-        symbol_remove_ref(thisAgent, evaluate_object_sym);
+        symbol_remove_ref(thisAgent, &evaluate_object_sym);
     }
     /* --- add default stack trace formats --- */
     add_trace_format(thisAgent, true, FOR_STATES_TF, NIL,
@@ -525,7 +525,7 @@ void destroy_soar_agent(agent* delete_agent)
             curmattr = curmattr->next)
     {
 
-        symbol_remove_ref(delete_agent, curmattr->symbol);
+        symbol_remove_ref(delete_agent, &(curmattr->symbol));
 
         delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
         lastmattr = curmattr;

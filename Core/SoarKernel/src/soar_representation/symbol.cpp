@@ -557,7 +557,7 @@ void deallocate_symbol(agent* thisAgent, Symbol*& sym)
             }
         }
     #else
-//        dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
+        dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
 //        std::string caller_string = get_stacktrace("dea_sym");
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
@@ -888,16 +888,13 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
 void deallocate_symbol_list_removing_references(agent* thisAgent, list*& sym_list)
 {
     cons* c;
-
+    Symbol* lSym;
     while (sym_list)
     {
         c = sym_list;
         sym_list = sym_list->rest;
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-        symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first));
-#else
-        symbol_remove_ref(thisAgent, static_cast<Symbol*>(c->first));
-#endif
+        lSym = static_cast<Symbol*>(c->first);
+        symbol_remove_ref(thisAgent, &lSym);
         free_cons(thisAgent, c);
     }
     sym_list = NULL;
@@ -1032,7 +1029,7 @@ void create_predefined_symbols(agent* thisAgent)
 
 inline void release_helper(agent* thisAgent, Symbol** sym)
 {
-    symbol_remove_ref(thisAgent, (*sym));
+    symbol_remove_ref(thisAgent, &(*sym));
     *sym = 0;
 }
 

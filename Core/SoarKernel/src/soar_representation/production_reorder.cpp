@@ -21,6 +21,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
+#include "repair.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
@@ -74,7 +75,7 @@
 bool legal_to_execute_action(action* a, tc_number tc);
 
 bool reorder_action_list(agent* thisAgent, action** action_list,
-                         tc_number lhs_tc)
+                         tc_number lhs_tc, symbol_with_match_list* ungrounded_syms)
 {
     list* new_bound_vars;
     action* remaining_actions;
@@ -147,10 +148,27 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
         std::string unSymString("");
         action* lAction;
+        Symbol* lSym;
         thisAgent->outputManager->set_print_indents("        ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
+            if (ungrounded_syms && rhs_value_is_symbol(lAction->id))
+            {
+                lSym = rhs_value_to_symbol(lAction->id);
+                assert(ungrounded_syms && lSym);
+                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                lNewUngroundedSym->sym = lSym;
+                if (lSym->is_identifier())
+                {
+                    lNewUngroundedSym->matched_sym = lSym;
+                } else {
+                    lNewUngroundedSym->matched_sym = thisAgent->ebChunker->get_match_for_rhs_var(lSym);
+                }
+                lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
+                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/? [%u]\n",  lNewUngroundedSym->sym,  lNewUngroundedSym->identity);
+                ungrounded_syms->push_back(lNewUngroundedSym);
+            }
         }
         thisAgent->outputManager->set_print_indents();
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
@@ -391,7 +409,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             var = generate_new_variable(thisAgent, "dummy-");
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
-            symbol_remove_ref(thisAgent, var);
+            symbol_remove_ref(thisAgent, &var);
             thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
             old_sts = saved;
@@ -496,7 +514,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             case IMPASSE_ID_TEST:
                 if (! is_id_field)
                 {
-                    break;    /* goal/impasse tests only go in id fields */
+                    /* goal/impasse tests only go in id fields */
+                    break;
                 }
             /* ... otherwise fall through to the next case below ... */
             case DISJUNCTION_TEST:
@@ -548,7 +567,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             {
                 tests_to_restore = next_st;
             }
-            symbol_remove_ref(thisAgent, st->var);
+            symbol_remove_ref(thisAgent, &st->var);
             thisAgent->memoryManager->free_with_pool(MP_saved_test, st);
         }
         else
@@ -806,41 +825,66 @@ list* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
-                             bool collect_ungroundeds,
-                             symbol_list* ungrounded_syms)
+                             symbol_with_match_list* ungrounded_syms)
 {
 
-    list* new_vars_from_value_slot;
-    list* new_vars_from_id_slot;
-    cons* c;
+    symbol_with_match_list* new_vars_from_value_slot = new symbol_with_match_list();
+    symbol_with_match_list* new_vars_from_id_slot = new symbol_with_match_list();
     condition* cond;
     bool found_goal_impasse_test;
 
-    /* --- find everthing that's in the value slot of some condition --- */
-    new_vars_from_value_slot = NIL;
-    for (cond = cond_list; cond != NIL; cond = cond->next)
-        if (cond->type == POSITIVE_CONDITION)
-            add_bound_variables_in_test(thisAgent, cond->data.tests.value_test, tc,
-                                        &new_vars_from_value_slot);
+    /* The following find alls soar identifiers in the identifier element
+     * that aren't in a value element */
 
-    /* --- now see what else we can add by throwing in the id slot --- */
-    new_vars_from_id_slot = NIL;
+    Symbol* lSym, *lMatchedSym;
+    uint64_t lIdentity;
+
+    /* --- find everthing that's in the value slot of some condition --- */
     for (cond = cond_list; cond != NIL; cond = cond->next)
+    {
         if (cond->type == POSITIVE_CONDITION)
-            add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc,
-                                        &new_vars_from_id_slot);
+        {
+            if (cond->data.tests.value_test->eq_test->data.referent->is_variable())
+            {
+                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.value_test->eq_test->data.referent : cond->data.tests.value_test->eq_test->data.referent;
+            } else {
+                lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
+            }
+            lSym = cond->data.tests.value_test->eq_test->data.referent;
+            assert (lSym && lMatchedSym);
+            lIdentity = cond->data.tests.value_test->eq_test->identity;
+            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot, false);
+        }
+    }
+    /* --- now see what else we can add by throwing in the id slot --- */
+    for (cond = cond_list; cond != NIL; cond = cond->next)
+    {
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            if (cond->data.tests.id_test->eq_test->data.referent->is_variable())
+            {
+                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.id_test->eq_test->data.referent : cond->data.tests.id_test->eq_test->data.referent;
+            } else {
+                lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
+            }
+            lSym = cond->data.tests.id_test->eq_test->data.referent;
+            assert (lSym && lMatchedSym);
+            lIdentity = cond->data.tests.id_test->eq_test->identity;
+            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot, false);
+        }
+    }
 
     /* --- unmark everything we just marked --- */
-    unmark_variables_and_free_list(thisAgent, new_vars_from_value_slot);
-    for (c = new_vars_from_id_slot; c != NIL; c = c->rest)
+    delete_ungrounded_symbol_list(thisAgent, &new_vars_from_value_slot);
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        static_cast<Symbol*>(c->first)->tc_num = 0;
+        (*it)->sym->tc_num = 0;
     }
 
     /* --- make sure each root var has some condition with goal/impasse --- */
     if (allow_printing_warnings && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
     {
-        for (c = new_vars_from_id_slot; c != NIL; c = c->rest)
+        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
             found_goal_impasse_test = false;
             for (cond = cond_list; cond != NIL; cond = cond->next)
@@ -849,9 +893,8 @@ list* collect_root_variables(agent* thisAgent,
                 {
                     continue;
                 }
-                if (cond->data.tests.id_test->eq_test->data.referent == static_cast<symbol_struct*>(c->first))
-                    if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,
-                            true, true))
+                if (cond->data.tests.id_test->eq_test->data.referent == (*it)->sym)
+                    if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
                     {
                         found_goal_impasse_test = true;
                         break;
@@ -859,16 +902,27 @@ list* collect_root_variables(agent* thisAgent,
             }
             if (! found_goal_impasse_test)
             {
-                if (collect_ungroundeds)
+                if (ungrounded_syms)
                 {
-                    assert(ungrounded_syms);
-                    ungrounded_syms->push_back(static_cast<Symbol*>(c->first));
+                    symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                    symbol_with_match* lOldMatchedSym = (*it);
+                    lNewUngroundedSym->sym = (*it)->sym;
+                    lNewUngroundedSym->matched_sym = (*it)->matched_sym;
+                    lNewUngroundedSym->identity = (*it)->identity;
+                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->matched_sym, lNewUngroundedSym->sym, lNewUngroundedSym->identity);
+                    ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
         }
     }
 
-    return new_vars_from_id_slot;
+    list* returnList = NULL;
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
+    {
+        push(thisAgent, (*it)->sym, returnList);
+    }
+    delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
+    return returnList;
 }
 
 /* =====================================================================
@@ -1485,20 +1539,20 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, bool collect_ungroundeds, symbol_list* ungrounded_syms)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms)
 {
     tc_number tc;
     list* roots;
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, collect_ungroundeds, ungrounded_syms);
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, ungrounded_syms);
 
     if (ungrounded_syms && ungrounded_syms->size() > 0)
     {
         std::string unSymString;
         for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
-            unSymString += (*it)->to_string(true);
+            unSymString += (*it)->sym->to_string(true);
             if (++it != ungrounded_syms->end())
             {
                 unSymString += ", ";

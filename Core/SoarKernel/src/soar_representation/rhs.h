@@ -88,6 +88,7 @@ typedef struct binding_structure
 } Binding;
 
 extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
+extern rhs_value copy_rhs_value_no_refcount(agent* thisAgent, rhs_value rv);
 
 extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
 extern void deallocate_action_list(agent* thisAgent, action* actions);

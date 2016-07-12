@@ -231,8 +231,8 @@ void remove_garbage_slots(agent* thisAgent)
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, s->changed);
         }
         remove_from_dll(s->id->id->slots, s, next, prev);
-        symbol_remove_ref(thisAgent, s->id);
-        symbol_remove_ref(thisAgent, s->attr);
+        symbol_remove_ref(thisAgent, &s->id);
+        symbol_remove_ref(thisAgent, &s->attr);
         if (s->wma_val_references != NIL)
         {
             s->wma_val_references->~wma_sym_reference_map();

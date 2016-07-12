@@ -80,9 +80,11 @@ void Explanation_Logger::clear_explanations()
     //debug_trace_set(DT_EXPLAIN, true);
 
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
+    Symbol* lSym;
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-        symbol_remove_ref(thisAgent, it->first);
+        lSym = it->first;
+        symbol_remove_ref(thisAgent, &lSym);
         delete it->second;
     }
     chunks->clear();

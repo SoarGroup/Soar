@@ -927,7 +927,7 @@ bool remove_trace_format(agent* thisAgent,
         deallocate_trace_format_list(thisAgent, tr->format);
         remove_from_hash_table(thisAgent, ht, tr);
         thisAgent->memoryManager->free_memory(tr, MISCELLANEOUS_MEM_USAGE);
-        symbol_remove_ref(thisAgent, name_restriction);
+        symbol_remove_ref(thisAgent, &name_restriction);
         return true;
     }
     /* --- no name restriction --- */

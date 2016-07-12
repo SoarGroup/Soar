@@ -184,7 +184,7 @@ Symbol* get_io_float_constant(agent* thisAgent, double value)
 
 void release_io_symbol(agent* thisAgent, Symbol* sym)
 {
-    symbol_remove_ref(thisAgent, sym);
+    symbol_remove_ref(thisAgent, &sym);
 }
 
 wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
@@ -612,7 +612,7 @@ void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
             id->id->associated_output_links = c->rest;
         }
         free_cons(thisAgent, c);
-        symbol_remove_ref(thisAgent, id);
+        symbol_remove_ref(thisAgent, &id);
     }
 }
 

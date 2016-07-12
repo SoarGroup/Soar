@@ -23,6 +23,7 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
+#include "repair.h"
 #include "rete.h"
 #include "rhs.h"
 #include "run_soar.h"
@@ -660,6 +661,7 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
 /* Before calling make_production, we must call this function to make sure
  * the production is valid.  This was separated out so EBC can try to fix
  * unconnected conditions caused by LTI being at a higher level. */
+extern void debug_trace_set(int dt_num, bool pEnable);
 
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
@@ -673,36 +675,44 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        symbol_list* unconnected_syms = new symbol_list();
+        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms);
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms);
 
         if (m_failure_type != ebc_success)
         {
-            thisAgent->outputManager->printa(thisAgent, "Incorrect rule learned:\n");
-            print_current_built_rule();
+            print_current_built_rule("Incorrect rule learned:");
 
-            if (m_failure_type == ebc_failed_unconnected_conditions)
+            if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
             {
-                thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repairing);
-                generate_conditions_to_ground_lti(unconnected_syms, m_chunk_new_i_id);
-                unconnected_syms->clear();
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, true, unconnected_syms))
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
+                //debug_trace_set(DT_ID_LEAKING, true);
+                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
+                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
+                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                unconnected_syms = new symbol_with_match_list();
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
-                    delete unconnected_syms;
-                    thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_repaired);
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
+                    print_current_built_rule("Repaired rule:");
+                    //debug_trace_set(DT_ID_LEAKING, false);
                     return true;
                 } else {
-                    delete unconnected_syms;
-                    thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_chunk);
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
+                    //debug_trace_set(DT_ID_LEAKING, false);
                     return false;
                 }
             }
 
-            delete unconnected_syms;
+            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+            //debug_trace_set(DT_ID_LEAKING, false);
             return false;
         }
+        delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
     }
+    //debug_trace_set(DT_ID_LEAKING, false);
     return true;
 }
 
@@ -843,7 +853,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
     /* Change to justification naming */
-    symbol_remove_ref(thisAgent, m_prod_name);
+    symbol_remove_ref(thisAgent, &m_prod_name);
     set_up_rule_name(false);
 
     /* Clean up */
@@ -858,7 +868,6 @@ void Explanation_Based_Chunker::revert_chunk_to_instantiation()
     m_rhs = variablize_results_into_actions(m_results, false);
     add_goal_or_impasse_tests();
 
-    print_current_built_rule();
 }
 
 void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
@@ -969,7 +978,6 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
     preference* pref;
-    condition* inst_lhs_top = 0, *inst_lhs_bottom = 0;
     bool variablize;
     bool lChunkValidated = false;
 
@@ -1009,7 +1017,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
     if (chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]))
     {
-        thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationLogger->increment_stat_max_chunks();
@@ -1044,7 +1052,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
     if (!m_inst_top)
     {
-        thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationLogger->increment_stat_no_grounds();
         thisAgent->explanationLogger->cancel_chunk_record();
@@ -1090,6 +1098,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
     lChunkValidated = reorder_and_validate_chunk();
+    clear_rhs_var_to_match_map();
 
     if (!lChunkValidated)
     {
@@ -1103,8 +1112,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
             if (m_prod)
             {
-                dprint(DT_VARIABLIZATION_MANAGER, "Successfully generated justification for failed chunk.\n");
-                thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_reverted_chunk);
+                print_current_built_rule("Adding the following justification instead:");
 
                 /* MToDo | Make this an option to interrrupt when an explanation is made*/
                 //thisAgent->stop_soar = true;
@@ -1114,7 +1122,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
                 #endif
             }
         } else {
-            thisAgent->outputManager->display_soar_warning(thisAgent, ebc_error_invalid_justification);
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification);
 
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
@@ -1136,14 +1144,13 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 
-    reorder_instantiated_conditions(m_vrblz_top, &inst_lhs_top, &inst_lhs_bottom);
-
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+    m_chunk_inst->top_of_instantiated_conditions    = NULL;
+    m_chunk_inst->bottom_of_instantiated_conditions = NULL;
+    reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     symbol_add_ref(thisAgent, m_chunk_inst->prod_name);
-    m_chunk_inst->top_of_instantiated_conditions    = inst_lhs_top;
-    m_chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
     m_chunk_inst->GDS_evaluated_already             = false;
     m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
@@ -1193,7 +1200,7 @@ void Explanation_Based_Chunker::clean_up ()
     if (m_prod_name)
     {
         dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", m_prod_name);
-        symbol_remove_ref(thisAgent, m_prod_name);
+        symbol_remove_ref(thisAgent, &m_prod_name);
     }
     if (m_saved_justification_top)
     {

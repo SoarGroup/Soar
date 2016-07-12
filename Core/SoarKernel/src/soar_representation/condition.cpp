@@ -339,14 +339,6 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
     {
         pInstantiatedTest = pInstantiatedTest->eq_test;
     }
-//    if (pTest->type == CONJUNCTIVE_TEST)
-//    {
-//        cons *c, *c2;
-//        for (c = pTest->data.conjunct_list, c2 = pInstantiatedTest->data.conjunct_list; c != NULL && c2 != NULL; c = c->rest, c2 = c2->rest)
-//        {
-//            add_identities_in_test(thisAgent, static_cast<test>(c->first), static_cast<test>(c2->first), pID_Set, pID_Set_Map);
-//        }
-//    } else
     if (test_has_referent(pTest)) {
         if (pTest->identity)
         {
@@ -355,7 +347,6 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                 pID_Set->insert(pTest->identity);
                 if (pID_Set_Map)
                 {
-//                    dprint(DT_EXPLAIN_IDENTITIES, "Adding identity mapping %u -> %u", pTest->identity, id_set_counter);
                     identity_set_info* lNewIDSet = new identity_set_info();
                     if (pTest->data.referent->is_variable())
                     {
@@ -369,8 +360,6 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                     pID_Set_Map->insert({pTest->identity, lNewIDSet});
                 }
             }
-//        } else {
-//            dprint(DT_EXPLAIN_IDENTITIES, "Skipping identity for %t because %u or %y.\n", pTest, pTest->identity, pInstantiatedTest->data.referent);
         }
     }
 }

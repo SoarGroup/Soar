@@ -37,6 +37,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     attachment_points = new attachment_points_map_type();
     unification_map = new id_to_id_map_type();
     cond_merge_map = new triple_merge_map();
+    rhs_var_to_match_map = new sym_to_sym_map_type();
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
@@ -64,6 +65,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete instantiation_identities;
     delete unification_map;
     delete id_to_rule_sym_debug_map;
+    delete rhs_var_to_match_map;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);

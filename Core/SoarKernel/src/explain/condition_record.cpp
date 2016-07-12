@@ -142,9 +142,9 @@ condition_record::~condition_record()
     if (matched_wme)
     {
         dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        symbol_remove_ref(thisAgent, matched_wme->id);
-        symbol_remove_ref(thisAgent, matched_wme->attr);
-        symbol_remove_ref(thisAgent, matched_wme->value);
+        symbol_remove_ref(thisAgent, &matched_wme->id);
+        symbol_remove_ref(thisAgent, &matched_wme->attr);
+        symbol_remove_ref(thisAgent, &matched_wme->value);
         delete matched_wme;
     }
     if (path_to_base)

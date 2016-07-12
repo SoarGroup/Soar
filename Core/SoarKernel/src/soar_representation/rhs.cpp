@@ -66,7 +66,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
         dprint_noprefix(DT_RHS_VALUE, "%y(o%u)\n", r->referent, r->o_id);
         if (r->referent)
         {
-            symbol_remove_ref(thisAgent, r->referent);
+            symbol_remove_ref(thisAgent, &r->referent);
         }
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
@@ -113,6 +113,41 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
 }
 
 
+rhs_value copy_rhs_value_no_refcount(agent* thisAgent, rhs_value rv)
+{
+    cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
+    list* fl=NULL, *new_fl=NULL;
+
+    if (rhs_value_is_reteloc(rv))
+    {
+        return rv;
+    } else if (rhs_value_is_unboundvar(rv))
+    {
+        return rv;
+    } else if (!rv) {
+        return NULL;
+    } else if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        allocate_cons(thisAgent, &new_fl);
+        new_fl->first = fl->first;
+        prev_new_c = new_fl;
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            allocate_cons(thisAgent, &new_c);
+            new_c->first = copy_rhs_value_no_refcount(thisAgent, static_cast<char*>(c->first));
+            prev_new_c->rest = new_c;
+            prev_new_c = new_c;
+        }
+        prev_new_c->rest = NIL;
+        return funcall_list_to_rhs_value(new_fl);
+    }
+    else
+    {
+        rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+        return allocate_rhs_value_for_symbol_no_refcount(thisAgent, r->referent, r->o_id);
+    }
+}
 /* ----------------------------------------------------------------
    Deallocates the given action (singly-linked) list.
 ---------------------------------------------------------------- */
@@ -450,13 +485,8 @@ rhs_value create_RHS_value(agent* thisAgent,
                                             first_letter,
                                             pI_id,
                                             add_original_vars);
-//            uint64_t test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
-//            rhs_symbol test_rsym = rhs_value_to_rhs_symbol(static_cast<char*>(new_c->first));
-//            test_oid  = test_rsym->o_id;
-//            test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
-//            dprint(DT_RHS_VARIABLIZATION, "%fRHS Value1 is %r\n", static_cast<char*>(c->first));
         }
         prev_new_c->rest = NIL;
         return funcall_list_to_rhs_value(new_fl);

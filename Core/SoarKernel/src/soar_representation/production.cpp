@@ -425,7 +425,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
         }
         /* -- A variable with that name already existed.  make_variable just returned it and
          *    incremented its refcount, so reverse that refcount addition and try again. -- */
-        symbol_remove_ref(thisAgent, New);
+        symbol_remove_ref(thisAgent, &New);
     }
 
     New->var->current_binding_value = NIL;
@@ -461,8 +461,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                                      bool          collect_ungroundeds,
-                                      symbol_list*  ungrounded_syms)
+                           symbol_with_match_list*  ungrounded_syms)
 {
     tc_number tc;
 
@@ -470,11 +469,11 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
 
-    if (! reorder_action_list(thisAgent, rhs_top, tc))
+    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
     {
         return false;
     }
-    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, collect_ungroundeds, ungrounded_syms))
+    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
     {
         return false;
     }
@@ -591,7 +590,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
-    symbol_remove_ref(thisAgent, prod->name);
+    symbol_remove_ref(thisAgent, &prod->name);
     free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {

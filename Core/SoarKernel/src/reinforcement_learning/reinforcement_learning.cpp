@@ -580,7 +580,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         {
             dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
-            symbol_remove_ref(thisAgent, new_name_symbol);
+            symbol_remove_ref(thisAgent, &new_name_symbol);
             new_name_symbol = NULL;
         }
 
@@ -943,7 +943,8 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     }
 
                     // Change value of rule
-                    symbol_remove_ref(thisAgent, rhs_value_to_symbol(prod->action_list->referent));
+                    Symbol* lSym = rhs_value_to_symbol(prod->action_list->referent);
+                    symbol_remove_ref(thisAgent, &lSym);
 
                     // No refcount needed here because make_float_constant will increase
                     prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined), 0);
@@ -1004,7 +1005,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         {
                             for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
                             {
-                                symbol_remove_ref(thisAgent, pref->referent);
+                                symbol_remove_ref(thisAgent, &pref->referent);
                                 pref->referent = make_float_constant(thisAgent, new_combined);
                             }
                         }

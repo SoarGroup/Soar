@@ -58,7 +58,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
-    symbol_remove_ref(thisAgent, production_name);
+    symbol_remove_ref(thisAgent, &production_name);
     delete conditions;
     delete actions;
     dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);

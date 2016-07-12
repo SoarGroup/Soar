@@ -54,7 +54,7 @@ enum TraceMode
     DT_EBC_CLEANUP = 33,
     DT_UNKNOWN_LEVEL = 34,
     DT_RETE_PNODE_ADD = 35,
-    DT_GROUND_LTI = 36,
+    DT_REPAIR = 36,
     DT_EXPLAIN = 37,
     DT_EXPLAIN_PATHS = 38,
     DT_EXPLAIN_ADD_INST = 39,
@@ -98,14 +98,13 @@ enum top_level_phase { INPUT_PHASE = 0,
                        NUM_PHASE_TYPES
                      };
 
-enum SoarError {
+enum SoarCannedMessageType {
     ebc_error_max_chunks,
     ebc_error_invalid_chunk,
     ebc_error_invalid_justification,
-    ebc_error_reverted_chunk,
-    ebc_error_repairing,
-    ebc_error_repaired,
     ebc_error_no_conditions,
+    ebc_progress_repairing,
+    ebc_progress_repaired,
 };
 
 enum EBCTraceType {

@@ -342,9 +342,9 @@ void deallocate_wme(agent* thisAgent, wme* w)
         wma_remove_decay_element(thisAgent, w);
     }
 
-    symbol_remove_ref(thisAgent, w->id);
-    symbol_remove_ref(thisAgent, w->attr);
-    symbol_remove_ref(thisAgent, w->value);
+    symbol_remove_ref(thisAgent, &w->id);
+    symbol_remove_ref(thisAgent, &w->attr);
+    symbol_remove_ref(thisAgent, &w->value);
 
     thisAgent->memoryManager->free_with_pool(MP_wme, w);
     thisAgent->num_existing_wmes--;

@@ -45,7 +45,7 @@
 #include <map>
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "S2"
+#define DEBUG_TRACE_REFCOUNT_FOR "O3"
 
 typedef signed short goal_stack_level;
 typedef struct instantiation_struct instantiation;
@@ -515,13 +515,13 @@ inline void symbol_add_ref(agent* thisAgent, Symbol* x)
     (x)->reference_count++;
 }
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-#define symbol_remove_ref(thisAgent, sym) \
+#define symbol_remove_ref(thisAgent, &sym) \
     ({debug_store_refcount(sym, false); \
         symbol_remove_ref_func(thisAgent, sym);})
 
-inline void symbol_remove_ref_func(agent* thisAgent, Symbol* x)
+inline void symbol_remove_ref_func(agent* thisAgent, Symbol*& x)
 #else
-inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
+inline void symbol_remove_ref(agent* thisAgent, Symbol** x)
 #endif
 {
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
@@ -531,24 +531,25 @@ inline void symbol_remove_ref(agent* thisAgent, Symbol* x)
 //    std::cout << "REMOVE-REF " << x->to_string() << "->" <<  ((x)->reference_count - 1) << "\n";
 #endif
 //    assert((x)->reference_count > 0);
-    (x)->reference_count--;
+    (*x)->reference_count--;
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
-    std::string strName(x->to_string());
+    std::string strName((*x)->to_string());
     if (strName == DEBUG_TRACE_REFCOUNT_FOR)
     {
         std::string caller_string = get_stacktrace("remove_ref");
-//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), x->reference_count, caller_string.c_str());
+//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), (*x)->reference_count, caller_string.c_str());
         if (is_DT_mode_enabled(DT_ID_LEAKING))
         {
-            std::cout << "-- | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+            std::cout << "-- | " << strName.c_str() << " | " << (*x)->reference_count << " | " << caller_string.c_str() << "\n";
         }
     }
 #endif
 
-    if ((x)->reference_count == 0)
+    if ((*x)->reference_count == 0)
     {
-        deallocate_symbol(thisAgent, x);
+        deallocate_symbol(thisAgent, (*x));
+        (*x) = NULL;
     }
 }
 

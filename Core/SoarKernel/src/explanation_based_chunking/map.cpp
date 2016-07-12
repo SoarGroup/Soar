@@ -17,7 +17,7 @@
 
 void Explanation_Based_Chunker::clear_data()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Clearing all variablization manager maps.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Clearing all chunking maps.\n");
     clear_cached_constraints();
     clear_variablization_maps();
     clear_merge_map();
@@ -47,38 +47,39 @@ void Explanation_Based_Chunker::clear_attachment_map()
         thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
     }
     attachment_points->clear();
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing attachment data.\n");
 }
 
 void Explanation_Based_Chunker::clear_variablization_maps()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing grounding_id->variablization map...\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_to_var_map map...\n");
     /* -- Clear grounding_id->variablization map -- */
     for (id_to_sym_map_type::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, it->second);
+        symbol_remove_ref(thisAgent, &it->second);
     }
     o_id_to_var_map->clear();
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing variablization data.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing o_id_to_var_map data.\n");
 }
 
 
 void Explanation_Based_Chunker::clear_o_id_to_ovar_debug_map()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing id_to_rule_sym_debug_map...\n");
     id_to_rule_sym_debug_map->clear();
 }
 
 void Explanation_Based_Chunker::clear_o_id_substitution_map()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing unification_map...\n");
     unification_map->clear();
 }
 
 
 void Explanation_Based_Chunker::clear_rulesym_to_identity_map()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing ovar_to_o_id_map...\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing instantiation_identities...\n");
     instantiation_identities->clear();
 }
 
@@ -172,6 +173,25 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
         return ovar_id_counter;
     } else {
         return existing_o_id;
+    }
+}
+
+Symbol* Explanation_Based_Chunker::get_match_for_rhs_var(Symbol* pRHS_var)
+{
+    sym_to_sym_map_type::iterator iter = rhs_var_to_match_map->find(pRHS_var);
+    if (iter != rhs_var_to_match_map->end())
+    {
+        return iter->second;
+    }
+    return NULL;
+}
+
+void Explanation_Based_Chunker::add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym)
+{
+    Symbol* lSym = get_match_for_rhs_var(pRHS_var);
+    if (!lSym)
+    {
+        (*rhs_var_to_match_map)[pRHS_var] = pMatched_sym;
     }
 }
 

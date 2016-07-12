@@ -78,7 +78,7 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
     var_info = get_variablization(pIdentity);
     if (var_info)
     {
-        symbol_remove_ref(thisAgent, (*sym));
+        symbol_remove_ref(thisAgent, &(*sym));
         *sym = var_info;
         symbol_add_ref(thisAgent, var_info);
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
@@ -112,13 +112,13 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
 
         store_variablization((*sym), var, pIdentity);
 
-        symbol_remove_ref(thisAgent, *sym);
+        symbol_remove_ref(thisAgent, &*sym);
         *sym = var;
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
 }
 
-void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
+void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
 {
     char prefix[2];
     Symbol* var;
@@ -132,7 +132,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS value %r\n", static_cast<char*>(c->first));
-            variablize_rhs_symbol(static_cast<char*>(c->first));
+            variablize_rhs_symbol(static_cast<char*>(c->first), pShouldCachedMatchValue);
             dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
         }
         return;
@@ -170,7 +170,12 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val)
     if (found_variablization)
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
-        symbol_remove_ref(thisAgent, rs->referent);
+        dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
+        if (pShouldCachedMatchValue)
+        {
+            add_matched_sym_for_rhs_var(found_variablization, rs->referent);
+        }
+        symbol_remove_ref(thisAgent, &rs->referent);
         rs->referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
     }
@@ -258,7 +263,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, t->data.referent);
+        symbol_remove_ref(thisAgent, &t->data.referent);
         t->data.referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
     }
@@ -400,10 +405,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
-    symbol_remove_ref(thisAgent, id_sym);
-    symbol_remove_ref(thisAgent, attr_sym);
-    symbol_remove_ref(thisAgent, val_sym);
-    symbol_remove_ref(thisAgent, ref_sym);
+    symbol_remove_ref(thisAgent, &id_sym);
+    symbol_remove_ref(thisAgent, &attr_sym);
+    symbol_remove_ref(thisAgent, &val_sym);
+    symbol_remove_ref(thisAgent, &ref_sym);
 
     if (ref_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -416,7 +421,7 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
 
-    variablize_rhs_symbol(rhs->id);
+    variablize_rhs_symbol(rhs->id, true);
     variablize_rhs_symbol(rhs->attr);
     variablize_rhs_symbol(rhs->value);
     variablize_rhs_symbol(rhs->referent);
@@ -498,7 +503,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-        variablize_rhs_symbol(a->id);
+        variablize_rhs_symbol(a->id, true);
         variablize_rhs_symbol(a->attr);
         variablize_rhs_symbol(a->value);
         if (preference_is_binary(result->type))

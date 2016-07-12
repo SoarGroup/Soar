@@ -71,7 +71,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
         // In any case, we are done using the return value
         //if(pReturn != 0)
         //{
-        //  symbol_remove_ref(thisAgent, pReturn) ;
+        //  symbol_remove_ref(thisAgent, &pReturn) ;
         //}
     }
     else

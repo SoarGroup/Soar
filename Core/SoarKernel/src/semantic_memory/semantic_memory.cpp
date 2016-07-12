@@ -1405,6 +1405,7 @@ bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
 {
     Symbol* id = static_cast<symbol_struct*>(item);
 
+    dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
     if (id->id->smem_lti != NIL)
     {
         uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
@@ -2093,7 +2094,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // remove a single ref count AFTER the wme
         // is added (such as to not deallocate the symbol
         // prematurely)
-        symbol_remove_ref(thisAgent, lti);
+        symbol_remove_ref(thisAgent, &lti);
     }
 
     bool triggered = false;
@@ -2146,8 +2147,8 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
-            symbol_remove_ref(thisAgent, attr_sym);
-            symbol_remove_ref(thisAgent, value_sym);
+            symbol_remove_ref(thisAgent, &attr_sym);
+            symbol_remove_ref(thisAgent, &value_sym);
         }
         expand_q->reinitialize();
 
@@ -3316,7 +3317,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
         {
             smem_slot_map::iterator s;
             smem_slot::iterator v;
-
+            Symbol* lSym;
             // iterate over slots
             while (!chunk->slots->empty())
             {
@@ -3331,7 +3332,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
                         // de-allocation of value is dependent upon type
                         if ((*v)->val_const.val_type == value_const_t)
                         {
-                            symbol_remove_ref(thisAgent, (*v)->val_const.val_value);
+                            symbol_remove_ref(thisAgent, &(*v)->val_const.val_value);
                         }
                         else
                         {
@@ -3347,7 +3348,8 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
                 }
 
                 // deallocate attribute for each corresponding value
-                symbol_remove_ref(thisAgent, s->first);
+                lSym = s->first;
+                symbol_remove_ref(thisAgent, &lSym);
 
                 chunk->slots->erase(s);
             }
@@ -3624,7 +3626,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                                 if (first_value && !s->empty())
                                 {
                                     // in the case of a repeated attribute, remove ref here to avoid leak
-                                    symbol_remove_ref(thisAgent, chunk_attr);
+                                    symbol_remove_ref(thisAgent, &chunk_attr);
                                 }
                                 s->push_back(chunk_value);
 
@@ -4129,12 +4131,12 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, delete_wme->value);
+                symbol_remove_ref(thisAgent, &delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, s->attr);
+            symbol_remove_ref(thisAgent, &s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         root_cue_id->id->slots = NIL;
@@ -4145,18 +4147,18 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, delete_wme->value);
+                symbol_remove_ref(thisAgent, &delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, s->attr);
+            symbol_remove_ref(thisAgent, &s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         negative_cues->id->slots = NIL;
 
-        symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
-        symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
+        symbol_remove_ref(thisAgent, &root_cue_id);//gets rid of cue id.
+        symbol_remove_ref(thisAgent, &negative_cues);//gets rid of negative cues id.
     }
 
     return good_cue;
@@ -4482,12 +4484,12 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
         symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
         for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
-            symbol_remove_ref(thisAgent, (*triple_iterator)->id);
-            symbol_remove_ref(thisAgent, (*triple_iterator)->attr);
-            symbol_remove_ref(thisAgent, (*triple_iterator)->value);
+            symbol_remove_ref(thisAgent, &(*triple_iterator)->id);
+            symbol_remove_ref(thisAgent, &(*triple_iterator)->attr);
+            symbol_remove_ref(thisAgent, &(*triple_iterator)->value);
             delete *triple_iterator;
         }
-        symbol_remove_ref(thisAgent, lti);
+        symbol_remove_ref(thisAgent, &lti);
     }
     return good_command;
 }
@@ -4866,9 +4868,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, (*mw_it)->id);
-                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, (*mw_it)->value);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4876,9 +4878,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, (*mw_it)->id);
-                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, (*mw_it)->value);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4927,8 +4929,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // add one to the mirrors stat
                 thisAgent->smem_stats->mirrors->set_value(thisAgent->smem_stats->mirrors->get_value() + 1);
             }
+            Symbol* lSym = (*it);
 
-            symbol_remove_ref(thisAgent, (*it));
+            symbol_remove_ref(thisAgent, &lSym);
         }
 
         // commit transaction (if not lazy)

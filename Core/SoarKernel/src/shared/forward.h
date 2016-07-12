@@ -52,6 +52,7 @@ typedef struct wma_decay_element_struct wma_decay_element;
 typedef uint64_t wma_reference;
 typedef struct wme_struct wme;
 typedef byte wme_trace_type;
+typedef struct symbol_with_match_struct symbol_with_match;
 
 class Output_Manager;
 class Explanation_Logger;

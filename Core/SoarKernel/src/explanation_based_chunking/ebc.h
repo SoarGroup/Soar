@@ -76,6 +76,8 @@ typedef struct backtrace_struct
 
 class Explanation_Based_Chunker
 {
+        friend class Repair_Manager;
+
     public:
 
         Explanation_Based_Chunker(agent* myAgent);
@@ -101,6 +103,7 @@ class Explanation_Based_Chunker
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
+        Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -131,7 +134,7 @@ class Explanation_Based_Chunker
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
-        void print_current_built_rule();
+        void print_current_built_rule(const char* pHeader);
 
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
@@ -174,7 +177,6 @@ class Explanation_Based_Chunker
         tc_number           locals_tc;
         tc_number           potentials_tc;
         tc_number           backtrace_number;
-        tc_number           ground_lti_tc;
         bool                quiescence_t_flag;
 
         /* Variables used by result building methods */
@@ -214,6 +216,10 @@ class Explanation_Based_Chunker
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         triple_merge_map*               cond_merge_map;
+
+        /* Used by repair manager if it needs to find original matched value for
+         * variablized rhs item. */
+        sym_to_sym_map_type*            rhs_var_to_match_map;
 
         /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
@@ -302,7 +308,7 @@ class Explanation_Based_Chunker
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
-        void variablize_rhs_symbol(rhs_value pRhs_val);
+        void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
@@ -314,11 +320,6 @@ class Explanation_Based_Chunker
         void        merge_values_in_conds(condition* pDestCond, condition* pSrcCond);
         condition*  get_previously_seen_cond(condition* pCond);
 
-        /* Condition to state connecting methods */
-        wme_list*   find_wmes_to_ground_lti(Symbol* targetLTI);
-        void        generate_conditions_to_ground_lti(symbol_list* pUnconnected_LTIs, uint64_t pInstID);
-        condition*  find_lti_that_matched_var(condition* pCondList, Symbol* pUnconnected_LTI);
-
         /* Clean-up methods */
         void clear_merge_map();
         void clear_o_id_to_ovar_debug_map();
@@ -328,6 +329,9 @@ class Explanation_Based_Chunker
         void clear_o_id_substitution_map();
         void clear_singletons();
         void clear_data();
+
+        void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
+        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
 };
 

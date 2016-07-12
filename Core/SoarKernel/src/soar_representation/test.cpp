@@ -14,6 +14,7 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
+#include "repair.h"
 #include "rete.h"
 #include "symbol.h"
 #include "working_memory.h"
@@ -234,15 +235,15 @@ void deallocate_test(agent* thisAgent, test t)
             break;
         default: /* relational tests other than equality */
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-            symbol_remove_ref(thisAgent, t->data.referent);
+            symbol_remove_ref(thisAgent, &t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, t->data.referent);
+            symbol_remove_ref(thisAgent, &t->data.referent);
 #endif
             break;
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
-     *    during chunking.  We did not copy the test or increment the refcount, so we
-     *    don't need to decrease the refcount here. -- */
+     *    which was all over the kernel.  We did not copy the test or increment the
+     *    refcount, so we don't need to decrease the refcount here. -- */
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
@@ -699,30 +700,38 @@ void add_all_variables_in_test(agent* thisAgent, test t,
 void add_bound_variables_in_test(agent* thisAgent, test t,
                                  tc_number tc, list** var_list, bool add_LTIs)
 {
-    cons* c;
     Symbol* referent;
 
-    if (!t)
-    {
-        return;
-    }
+    if (!t) return;
 
-    if (t->type == EQUALITY_TEST)
+    referent = t->eq_test->data.referent;
+    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
     {
-        referent = t->data.referent;
-        if (referent->is_variable() || (add_LTIs && referent->is_lti()))
-        {
-            referent->mark_if_unmarked(thisAgent, tc, var_list);
-        }
-        return;
+        referent->mark_if_unmarked(thisAgent, tc, var_list);
     }
-    else if (t->type == CONJUNCTIVE_TEST)
+    return;
+}
+
+void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list, bool add_LTIs)
+{
+    Symbol* referent;
+
+    if (pSym->is_variable() || (add_LTIs && pSym->is_lti()))
     {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        if (pSym->tc_num != tc)
         {
-            add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, add_LTIs);
+            pSym->tc_num = tc;
+            if (var_list)
+            {
+                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                lNewUngroundedSym->sym = pSym;
+                lNewUngroundedSym->identity = pIdentity;
+                lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;
+                var_list->push_back(lNewUngroundedSym);
+            }
         }
     }
+    return;
 }
 
 /* -----------------------------------------------------------------
@@ -780,7 +789,7 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
     prefix[1] = 0;
     New = generate_new_variable(thisAgent, prefix);
     eq_test = make_test(thisAgent, New, EQUALITY_TEST);
-    symbol_remove_ref (thisAgent, New);
+    symbol_remove_ref (thisAgent, &New);
     add_test(thisAgent, t, eq_test);
 }
 

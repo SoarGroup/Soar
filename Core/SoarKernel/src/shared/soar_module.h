@@ -506,7 +506,8 @@ namespace soar_module
             {
                 for (std::set<Symbol*>::iterator p = my_set->begin(); p != my_set->end(); p++)
                 {
-                    symbol_remove_ref(thisAgent, (*p));
+                    Symbol* lSym = (*p);
+                    symbol_remove_ref(thisAgent, &lSym);
                 }
 
                 delete my_set;
@@ -576,7 +577,7 @@ namespace soar_module
 
                     if (test_sym != my_sym)
                     {
-                        symbol_remove_ref(thisAgent, my_sym);
+                        symbol_remove_ref(thisAgent, &my_sym);
                     }
                 }
 
@@ -593,8 +594,8 @@ namespace soar_module
                     my_set->erase(p);
 
                     // remove for now and when added to the set
-                    symbol_remove_ref(thisAgent, my_sym);
-                    symbol_remove_ref(thisAgent, my_sym);
+                    symbol_remove_ref(thisAgent, &my_sym);
+                    symbol_remove_ref(thisAgent, &my_sym);
 
                     // regenerate value from scratch
                     value->clear();

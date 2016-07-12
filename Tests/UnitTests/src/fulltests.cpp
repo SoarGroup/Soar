@@ -123,7 +123,7 @@ class FullTests : public CPPUNIT_NS::TestCase
         TEST_DECLARATION(testNegatedConjunctiveChunkLoopBug510);
         TEST_DECLARATION(testGDSBug1144);
         TEST_DECLARATION(testGDSBug1011);
-        TEST_DECLARATION(testLearn);
+//        TEST_DECLARATION(testLearn);
 #ifndef NO_SVS
         TEST_DECLARATION(testSVS);
 #endif
