@@ -1098,6 +1098,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
     lChunkValidated = reorder_and_validate_chunk();
+    clear_rhs_var_to_match_map();
 
     if (!lChunkValidated)
     {

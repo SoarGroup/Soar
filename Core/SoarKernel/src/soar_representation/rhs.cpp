@@ -174,10 +174,6 @@ void deallocate_action_list(agent* thisAgent, action* actions)
             {
                 deallocate_rhs_value(thisAgent, a->referent);
             }
-            if (a->matched_id) deallocate_rhs_value(thisAgent, a->matched_id);
-            if (a->matched_attr) deallocate_rhs_value(thisAgent, a->matched_attr);
-            if (a->matched_value) deallocate_rhs_value(thisAgent, a->matched_value);
-            if (a->matched_referent) deallocate_rhs_value(thisAgent, a->matched_referent);
         }
         thisAgent->memoryManager->free_with_pool(MP_action, a);
     }
@@ -363,10 +359,6 @@ action* make_action(agent* thisAgent)
     new_action->attr = NIL;
     new_action->value = NIL;
     new_action->referent = NIL;
-    new_action->matched_id = NIL;
-    new_action->matched_attr = NIL;
-    new_action->matched_value = NIL;
-    new_action->matched_referent = NIL;
     return new_action;
 }
 
@@ -389,10 +381,6 @@ action* copy_action(agent* thisAgent, action* pAction)
         {
             new_action->referent = copy_rhs_value(thisAgent, pAction->referent);
         }
-        if (new_action->matched_id) new_action->matched_id = copy_rhs_value(thisAgent, pAction->matched_id);;
-        if (new_action->matched_attr) new_action->matched_attr = copy_rhs_value(thisAgent, pAction->matched_attr);;
-        if (new_action->matched_value) new_action->matched_value = copy_rhs_value(thisAgent, pAction->matched_value);;
-        if (new_action->matched_referent) new_action->matched_referent = copy_rhs_value(thisAgent, pAction->matched_referent);;
     }
     return new_action;
 }
@@ -497,13 +485,8 @@ rhs_value create_RHS_value(agent* thisAgent,
                                             first_letter,
                                             pI_id,
                                             add_original_vars);
-//            uint64_t test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
-//            rhs_symbol test_rsym = rhs_value_to_rhs_symbol(static_cast<char*>(new_c->first));
-//            test_oid  = test_rsym->o_id;
-//            test_oid = rhs_value_to_o_id(static_cast<char*>(new_c->first));
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
-//            dprint(DT_RHS_VARIABLIZATION, "%fRHS Value1 is %r\n", static_cast<char*>(c->first));
         }
         prev_new_c->rest = NIL;
         return funcall_list_to_rhs_value(new_fl);

@@ -103,6 +103,7 @@ class Explanation_Based_Chunker
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
         uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
+        Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -216,6 +217,10 @@ class Explanation_Based_Chunker
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
         triple_merge_map*               cond_merge_map;
 
+        /* Used by repair manager if it needs to find original matched value for
+         * variablized rhs item. */
+        sym_to_sym_map_type*            rhs_var_to_match_map;
+
         /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
@@ -303,7 +308,7 @@ class Explanation_Based_Chunker
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
         void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
-        void variablize_rhs_symbol(rhs_value pRhs_val, rhs_value* pCachedMatchValue = NULL);
+        void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
@@ -324,6 +329,9 @@ class Explanation_Based_Chunker
         void clear_o_id_substitution_map();
         void clear_singletons();
         void clear_data();
+
+        void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
+        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
 };
 

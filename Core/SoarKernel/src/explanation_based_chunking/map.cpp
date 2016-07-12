@@ -176,6 +176,25 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
     }
 }
 
+Symbol* Explanation_Based_Chunker::get_match_for_rhs_var(Symbol* pRHS_var)
+{
+    sym_to_sym_map_type::iterator iter = rhs_var_to_match_map->find(pRHS_var);
+    if (iter != rhs_var_to_match_map->end())
+    {
+        return iter->second;
+    }
+    return NULL;
+}
+
+void Explanation_Based_Chunker::add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym)
+{
+    Symbol* lSym = get_match_for_rhs_var(pRHS_var);
+    if (!lSym)
+    {
+        (*rhs_var_to_match_map)[pRHS_var] = pMatched_sym;
+    }
+}
+
 Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
 {
 #ifndef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS

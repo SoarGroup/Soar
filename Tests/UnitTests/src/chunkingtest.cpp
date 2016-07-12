@@ -186,6 +186,10 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
             outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
             throw CPPUnit_Assert_Failure(outStringStream.str());
         }
+        /* This can be uncommented to check for symbol refcount leaks.  Must comment out
+         * configure_for_unit_tests() below so that it will abort if there is a leak.  If
+         * debug output is printing, make sure SOAR_RELEASE_MODE is defined in kernel.h */
+        pAgent->ExecuteCommandLineXML("init-soar", &response);
     }
 }
 

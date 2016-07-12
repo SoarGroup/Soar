@@ -118,7 +118,7 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
     }
 }
 
-void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, rhs_value* pCachedMatchValue)
+void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
 {
     char prefix[2];
     Symbol* var;
@@ -132,7 +132,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, rhs_va
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS value %r\n", static_cast<char*>(c->first));
-            variablize_rhs_symbol(static_cast<char*>(c->first));
+            variablize_rhs_symbol(static_cast<char*>(c->first), pShouldCachedMatchValue);
             dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
         }
         return;
@@ -171,18 +171,13 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, rhs_va
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
         dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
-        if (pCachedMatchValue)
+        if (pShouldCachedMatchValue)
         {
-            (*pCachedMatchValue) = copy_rhs_value_no_refcount(thisAgent, pRhs_val);
-//            symbol_remove_ref(thisAgent, &rs->referent);
+            add_matched_sym_for_rhs_var(found_variablization, rs->referent);
         }
         symbol_remove_ref(thisAgent, &rs->referent);
         rs->referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
-        if (pCachedMatchValue)
-        {
-            dprint(DT_DEBUG, "(2)... refcount for matched symbol %y: %u\n", rhs_value_to_rhs_symbol(*pCachedMatchValue)->referent, rhs_value_to_rhs_symbol(*pCachedMatchValue)->referent->reference_count);
-        }
     }
     else
     {
@@ -426,10 +421,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
 
-    variablize_rhs_symbol(rhs->id, &(rhs->matched_id));
-    variablize_rhs_symbol(rhs->attr, &(rhs->matched_id));
-    variablize_rhs_symbol(rhs->value, &(rhs->matched_id));
-    variablize_rhs_symbol(rhs->referent, &(rhs->matched_id));
+    variablize_rhs_symbol(rhs->id, true);
+    variablize_rhs_symbol(rhs->attr);
+    variablize_rhs_symbol(rhs->value);
+    variablize_rhs_symbol(rhs->referent);
 
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
@@ -508,12 +503,12 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
         dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-        variablize_rhs_symbol(a->id, &(a->matched_id));
-        variablize_rhs_symbol(a->attr, &(a->matched_attr));
-        variablize_rhs_symbol(a->value, &(a->matched_value));
+        variablize_rhs_symbol(a->id, true);
+        variablize_rhs_symbol(a->attr);
+        variablize_rhs_symbol(a->value);
         if (preference_is_binary(result->type))
         {
-            variablize_rhs_symbol(a->referent, &(a->matched_referent));
+            variablize_rhs_symbol(a->referent);
         }
         dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }

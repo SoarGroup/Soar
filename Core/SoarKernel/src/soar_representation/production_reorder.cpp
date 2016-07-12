@@ -163,7 +163,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 {
                     lNewUngroundedSym->matched_sym = lSym;
                 } else {
-                    lNewUngroundedSym->matched_sym = rhs_value_to_symbol(lAction->matched_id);
+                    lNewUngroundedSym->matched_sym = thisAgent->ebChunker->get_match_for_rhs_var(lSym);
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
                 dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/? [%u]\n",  lNewUngroundedSym->sym,  lNewUngroundedSym->identity);
