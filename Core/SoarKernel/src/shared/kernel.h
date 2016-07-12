@@ -30,7 +30,7 @@
  * */
 
 /* =============================== */
-// #define SOAR_RELEASE_VERSION
+ #define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -52,7 +52,7 @@
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
      *    but not tested. Does not work on Windows. -- */
-    #define DEBUG_MAC_STACKTRACE
+//    #define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
      *    the debug database -- */

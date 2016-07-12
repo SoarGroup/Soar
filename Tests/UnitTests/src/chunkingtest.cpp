@@ -79,6 +79,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Result_On_Operator);
         CPPUNIT_TEST(Unify_Children_Results);
         CPPUNIT_TEST(Blocks_World_Hierarchical);
+        CPPUNIT_TEST(Crazy_Unconnected);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -154,6 +155,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Result_On_Operator();
         void Unify_Children_Results();
         void Blocks_World_Hierarchical();
+        void Crazy_Unconnected();
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
         bool succeeded;
@@ -189,7 +191,7 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
         /* This can be uncommented to check for symbol refcount leaks.  Must comment out
          * configure_for_unit_tests() below so that it will abort if there is a leak.  If
          * debug output is printing, make sure SOAR_RELEASE_MODE is defined in kernel.h */
-        pAgent->ExecuteCommandLineXML("init-soar", &response);
+//        pAgent->ExecuteCommandLineXML("init-soar", &response);
     }
 }
 
@@ -459,7 +461,7 @@ void ChunkTest::No_Topstate_Match()
 void ChunkTest::Repair_NOR_Temporal_Constraint()
 {
     // Change to 2 chunks expected after rule repair fixed
-    build_and_check_chunk("Repair_NOR_Temporal_Constraint.soar", 8, 1);
+    build_and_check_chunk("Repair_NOR_Temporal_Constraint.soar", 8, 3);
 }
 
 void ChunkTest::RHS_Math()
@@ -507,7 +509,7 @@ void ChunkTest::Unify_Ambiguous_Output()
 }
 void ChunkTest::Faux_Smem_Operator_RHS()
 {
-    build_and_check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1);
+    build_and_check_chunk("Faux_Smem_Operator_RHS.soar", 8, 2);
 }
 void ChunkTest::Faux_Operator()
 {
@@ -532,4 +534,8 @@ void ChunkTest::Unify_Children_Results()
 void ChunkTest::Blocks_World_Hierarchical()
 {
     build_and_check_chunk("Blocks_World_Hierarchical.soar", 23, 16);
+}
+void ChunkTest::Crazy_Unconnected()
+{
+    build_and_check_chunk("Crazy_Unconnected.soar", 14, 7);
 }
