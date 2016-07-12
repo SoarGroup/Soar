@@ -52,6 +52,13 @@ namespace cli
              */
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0) = 0;
 
+
+           /**
+             * @brief chunk command
+             * @param options The various options set on the command line
+             */
+            virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+
             /**
              * @brief cli command
              */
@@ -278,7 +285,7 @@ namespace cli
             };
             typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
 
-            /**
+           /**
              * @brief learn command
              * @param options The various options set on the command line
              */

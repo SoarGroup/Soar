@@ -3,6 +3,7 @@
 #include "src/cli_allocate.cpp"
 #include "src/cli_captureinput.cpp"
 #include "src/cli_cd.cpp"
+#include "src/cli_chunk.cpp"
 #include "src/cli_chunknameformat.cpp"
 #include "src/cli_cli_extension.cpp"
 #include "src/cli_clog.cpp"

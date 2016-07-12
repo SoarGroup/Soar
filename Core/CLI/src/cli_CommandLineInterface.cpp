@@ -11,6 +11,7 @@
 
 #include "cli_Commands.h"
 #include "cli_explain.h"
+#include "cli_chunk.h"
 #include "cli_visualize.h"
 
 // SML includes
@@ -47,6 +48,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::AllocateCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
+    m_Parser.AddCommand(new cli::ChunkCommand(*this));
     m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
     m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));

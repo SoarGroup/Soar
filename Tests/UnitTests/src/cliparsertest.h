@@ -37,6 +37,10 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
+        virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0)
+        {
+            return false;
+        }
         virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
         {
             return false;

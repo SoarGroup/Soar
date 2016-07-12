@@ -74,6 +74,7 @@ class epmem_timer_container;
 class epmem_common_statement_container;
 class epmem_graph_statement_container;
 class rl_stat_container;
+class ebc_param_container;
 
 namespace sml
 {

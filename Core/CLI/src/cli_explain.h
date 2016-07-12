@@ -63,7 +63,7 @@ namespace cli
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         cli.SetError(opt.GetError().c_str());
-                    	return cli.AppendError(GetSyntax());
+                        return cli.AppendError(GetSyntax());
                     }
                     ;
                     if (opt.GetOption() == -1)

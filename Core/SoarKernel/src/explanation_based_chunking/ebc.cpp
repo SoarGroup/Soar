@@ -16,6 +16,7 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "rhs.h"
+#include "settings.h"
 #include "test.h"
 #include "dprint.h"
 
@@ -52,6 +53,9 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
     local_singleton_superstate_identity = NULL;
+
+    ebc_params = new ebc_param_container(thisAgent);
+
     reinit();
 }
 
@@ -120,7 +124,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
 {
     m_learning_on = thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 
-    if ((thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0) || (inst->match_goal_level == TOP_GOAL_LEVEL))
+    if (!m_learning_on || (inst->match_goal_level == TOP_GOAL_LEVEL))
     {
         m_learning_on_for_instantiation = false;
         return false;
