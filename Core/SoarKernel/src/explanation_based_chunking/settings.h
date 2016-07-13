@@ -18,7 +18,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::constant_param<EBCLearnChoices>* enabled;
         soar_module::boolean_param* bottom_level_only;
         soar_module::boolean_param* interrupt_on_chunk;
-        soar_module::boolean_param* ignore_dnb;
+        soar_module::boolean_param* utility_mode;
 
         soar_module::boolean_param* mechanism_identity_analysis;
         soar_module::boolean_param* mechanism_variablize_rhs_funcs;
@@ -32,15 +32,15 @@ class ebc_param_container: public soar_module::param_container
 
         soar_module::boolean_param* allow_missing_negative_reasoning;
         soar_module::boolean_param* allow_missing_OSK;
-        soar_module::boolean_param* allow_smem_knowledge;
+        soar_module::boolean_param* allow_opaque_knowledge;
         soar_module::boolean_param* allow_probabilistic_operators;
         soar_module::boolean_param* allow_multiple_prefs;
         soar_module::boolean_param* allow_temporal_constraint;
         soar_module::boolean_param* allow_local_promotion;
 
         ebc_param_container(agent* new_agent, bool pEBC_settings[]);
+        void update_params(bool pEBC_settings[]);
         void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam);
 };
-
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_SETTINGS_H_ */

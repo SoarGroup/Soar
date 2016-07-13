@@ -201,7 +201,7 @@ Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
     return NULL;
 #else
     if (o_id == 0) return NULL;
-    if (!m_learning_on) return NULL;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
     id_to_sym_map_type::iterator iter = id_to_rule_sym_debug_map->find(o_id);

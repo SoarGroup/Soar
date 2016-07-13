@@ -33,7 +33,7 @@ bool Explanation_Based_Chunker::in_null_identity_set(test t)
 
 void Explanation_Based_Chunker::unify_identity(test t)
 {
-    if (!m_learning_on) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
     if (iter != (*unification_map).end())
     {
@@ -177,7 +177,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
                                                          const identity_triple o_ids_to_replace,
                                                          const rhs_triple rhs_funcs)
 {
-    if (!m_learning_on) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     test lId = 0, lAttr = 0, lValue = 0;
     lId = parent_cond->data.tests.id_test->eq_test;
     lAttr = parent_cond->data.tests.attr_test->eq_test;

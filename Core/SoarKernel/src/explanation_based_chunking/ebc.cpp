@@ -46,8 +46,8 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
-    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
-    m_learning_on_for_instantiation = m_learning_on;
+    ebc_settings[SETTING_EBC_LEARNING_ON] = ebc_settings[SETTING_EBC_LEARNING_ON];
+    m_learning_on_for_instantiation = ebc_settings[SETTING_EBC_LEARNING_ON];
 
     chunkNameFormat = ruleFormat;
     max_chunks_reached = false;
@@ -80,7 +80,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 }
 void Explanation_Based_Chunker::update_learning_on()
 {
-    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
+    ebc_settings[SETTING_EBC_LEARNING_ON] = ebc_settings[SETTING_EBC_LEARNING_ON];
 }
 
 void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
@@ -125,9 +125,7 @@ void Explanation_Based_Chunker::reinit()
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
 {
-    m_learning_on = ebc_settings[SETTING_EBC_LEARNING_ON];
-
-    if (!m_learning_on || (inst->match_goal_level == TOP_GOAL_LEVEL))
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || (inst->match_goal_level == TOP_GOAL_LEVEL))
     {
         m_learning_on_for_instantiation = false;
         return false;

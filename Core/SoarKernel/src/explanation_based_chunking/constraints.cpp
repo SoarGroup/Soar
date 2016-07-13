@@ -80,7 +80,7 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 
 void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 {
-    if (!m_learning_on) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     cache_constraints_in_test(c->data.tests.id_test);
     cache_constraints_in_test(c->data.tests.attr_test);
@@ -259,7 +259,7 @@ void Explanation_Based_Chunker::prune_redundant_constraints()
 
 void Explanation_Based_Chunker::add_additional_constraints()
 {
-    if (!m_learning_on) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;

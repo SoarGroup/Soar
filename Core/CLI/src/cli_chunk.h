@@ -29,11 +29,13 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "Syntax:  chunk [--set <option> <value> | --get <option> | --help | --history | --stats]\n"
-                        "                      learn  [ always | never | only | except ]\n"
+                return  "Syntax:  chunk always | never | only | all-except\n"
+                        "                      [ --help    | -? ]\n"
+                        "                      [ --history | -h ]\n"
+                        "                      [ --stats   | -s ]\n"
                         "                      bottom-only                     [ on | off ]\n"
                         "                      interrupt                       [ on | off ]\n"
-                        "                      ignore-dnb                      [ on | off ]\n"
+                        "                      record-utility                  [ on | off ]\n"
                         "                      variablize-identity             [ on | off ]\n"
                         "                      enforce-constraints             [ on | off ]\n"
                         "                      add-osk                         [ on | off ]\n"
@@ -43,7 +45,7 @@ namespace cli
                         "                      repair-rhs-promotion            [ on | off ]\n"
                         "                      merge                           [ on | off ]\n"
                         "                      user-singletons                 [ on | off ]\n"
-                        "                      allow-local-negative-reasoning  [ on | off ]\n"
+                        "                      allow-local-negations           [ on | off ]\n"
                         "                      allow-missing-osk               [ on | off ]\n"
                         "                      allow-smem                      [ on | off ]\n"
                         "                      allow-uncertain-operators       [ on | off ]\n"
@@ -57,10 +59,8 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'g', "get",        OPTARG_NONE},
                     {'h', "history",    OPTARG_NONE},
-                    {'s', "set",        OPTARG_NONE},
-                    {'S', "stats",      OPTARG_NONE},
+                    {'s', "stats",      OPTARG_NONE},
                     {'?', "help",      OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
@@ -94,28 +94,17 @@ namespace cli
                     case 0:
                     default:
                         // no options
-//                        if (!opt.CheckNumNonOptArgs(1, 1))
-//                        {
-//                            return cli.DoChunk(option, &(argv[2]));
-//                        }
-//                        if (!opt.CheckNumNonOptArgs(2, 2))
-//                        {
-//                            return cli.DoChunk(option, &(argv[2]));
-//                        }
-                        break;
-                    case 'g':
-                    {
-                        // case: get requires one non-option argument
-                        if (!opt.CheckNumNonOptArgs(1, 1))
+                        if (opt.CheckNumNonOptArgs(1, 1))
                         {
-                            cli.SetError(opt.GetError().c_str());
-                            return cli.AppendError(GetSyntax());
+                            return cli.DoChunk('G', &(argv[1]));
                         }
-
-                        return cli.DoChunk(option, &(argv[2]));
-                    }
+                        if (opt.CheckNumNonOptArgs(2, 2))
+                        {
+                            return cli.DoChunk('S', &(argv[1]), &(argv[2]));
+                        }
+                        break;
                     case 'h':
-                    case 'S':
+                    case 's':
                         if (!opt.CheckNumNonOptArgs(0, 0))
                         {
                             cli.SetError(opt.GetError().c_str());
@@ -123,25 +112,14 @@ namespace cli
                         }
 
                         return cli.DoChunk(option);
-                    case 's':
-                    {
-                        // case: set requires two non-option arguments
-                        if (!opt.CheckNumNonOptArgs(2, 2))
-                        {
-                            cli.SetError(opt.GetError().c_str());
-                            return cli.AppendError(GetSyntax());
-                        }
-
-                        return cli.DoChunk(option, &(argv[2]), &(argv[3]));
-                    }
                     case '?':
                     {
                         return cli.SetError(GetSyntax());
                     }
                 }
 
-                // bad: no option, but more than one argument
-                if (argv.size() > 1)
+                // bad: no option, but more than two argument
+                if (argv.size() > 3)
                 {
                     return cli.SetError("Too many arguments.");
                 }

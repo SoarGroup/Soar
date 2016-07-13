@@ -182,6 +182,7 @@ class Explanation_Based_Chunker
         bool                quiescence_t_flag;
 
         /* Variables used by result building methods */
+        bool                m_learning_on_for_instantiation;
         instantiation*      m_inst;
         preference*         m_results;
         goal_stack_level    m_results_match_goal_level;
@@ -227,8 +228,6 @@ class Explanation_Based_Chunker
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
 
-        bool m_learning_on_for_instantiation;
-        bool m_learning_on;
         chunkNameFormats chunkNameFormat;
 
         tc_number tc_num_found;
@@ -298,7 +297,7 @@ class Explanation_Based_Chunker
         void add_additional_constraints();
         bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
-        void reset_constraint_found_tc_num() { if (!m_learning_on) return; tc_num_found = get_new_tc_number(thisAgent); };
+        void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);

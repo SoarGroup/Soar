@@ -32,127 +32,100 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (options.none() || options.test(LEARN_LIST))
     {
-        if (!m_RawOutput)
-        {
-            AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY]  ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] ? sml_Names::kTrue : sml_Names::kFalse);
-            AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY]  ? sml_Names::kTrue : sml_Names::kFalse);
-        }
-        PrintCLIMessage_Header("Learn Settings", 40);
-        PrintCLIMessage_Justify("learning:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("only:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY]  ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("except:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("all-levels:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY]  ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("local-negations:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] ? "on" : "off"), 40);
-        PrintCLIMessage_Justify("desirability-prefs:", (thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] ? "on" : "off"), 40);
-
-        if (options.test(LEARN_LIST))
-        {
-            std::string output;
-            if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] )
-            {
-                PrintCLIMessage_Section("Only Learning In States", 40);
-                if (!thisAgent->ebChunker->chunky_problem_spaces)
-                {
-                    PrintCLIMessage("No current learning states.\n");
-                } else
-                {
-                    for (cons* c = thisAgent->ebChunker->chunky_problem_spaces; c != NIL; c = c->rest)
-                    {
-                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
-                        PrintCLIMessage(output.c_str());
-                        output.clear();
-                    }
-                }
-            } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT])
-            {
-                PrintCLIMessage_Section("Learning in All States Except", 40);
-                if (!thisAgent->ebChunker->chunky_problem_spaces)
-                {
-                    PrintCLIMessage("Currently learning in all states.\n");
-                } else
-                {
-                    for (cons* c = thisAgent->ebChunker->chunk_free_problem_spaces; c != NIL; c = c->rest)
-                    {
-                        thisAgent->outputManager->sprinta_sf(thisAgent, output, "%y\n", static_cast<Symbol*>(c->first));
-                        PrintCLIMessage(output.c_str());
-                        output.clear();
-                    }
-                }
-            }
-        }
+        std::string tempstr1(""), tempstr2("");
+        DoChunk();
+        PrintCLIMessage("Warning:  'learn' has been deprecated.  New corresponding command is: chunk");
         return true;
     }
 
     if (options.test(LEARN_ONLY))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = true;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-        PrintCLIMessage("Learn| only = on");
+        std::string tempstr1("learn"), tempstr2("only");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_EXCEPT))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
-        PrintCLIMessage("Learn| except = on");
+        std::string tempstr1("learn"), tempstr2("all-except");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_ENABLE))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-        PrintCLIMessage("Learn| learning = on");
+        std::string tempstr1("learn"), tempstr2("on");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_DISABLE))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-        PrintCLIMessage("Learn| learning = off");
+        std::string tempstr1("learn"), tempstr2("off");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_ALL_LEVELS))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = false;
-        PrintCLIMessage("Learn| all-levels = on");
+        std::string tempstr1("bottom-only"), tempstr2("off");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_BOTTOM_UP))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = true;
-        PrintCLIMessage("Learn| all-levels = off");
+        std::string tempstr1("bottom-only"), tempstr2("on");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
-        PrintCLIMessage("Learn| local-negations = on");
+        std::string tempstr1("allow-local-negations"), tempstr2("on");
+        DoChunk('S', &tempstr1, &tempstr2);
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = false;
-        PrintCLIMessage("Learn| local-negations = off");
+        std::string tempstr1("allow-local-negations"), tempstr2("off");
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_ENABLE_THROUGH_EVALUATION_RULES))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] = true;
-        PrintCLIMessage("Learn| desirability-prefs = on");
+        std::string tempstr1("add-osk"), tempstr2("on");
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
     if (options.test(LEARN_DISABLE_THROUGH_EVALUATION_RULES))
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] = false;
-        PrintCLIMessage("Learn| desirability-prefs = off");
+        std::string tempstr1("add-osk"), tempstr2("off");
+        std::ostringstream tempstrstream;
+        tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr1 << " " << tempstr2;
+        PrintCLIMessage(tempstrstream.str().c_str());
     }
 
+    thisAgent->ebChunker->ebc_params->update_params(thisAgent->ebChunker->ebc_settings);
     thisAgent->ebChunker->update_learning_on();
     return true;
 }
