@@ -21,6 +21,7 @@
 #include "agent.h"
 #include "print.h"
 #include "ebc.h"
+#include "explain.h"
 #include "settings.h"
 #include "output_manager.h"
 
@@ -150,12 +151,10 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 's')
     {
-
-        PrintCLIMessage_Header("Stats", 40);
-
+        thisAgent->explanationLogger->print_global_stats();
         return true;
     }
-    else if (pOp == 's')
+    else if (pOp == 'h')
     {
 
         PrintCLIMessage_Header("History", 40);

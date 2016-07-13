@@ -107,6 +107,7 @@ class Explanation_Logger
         bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
         void print_explainer_stats();
+        void print_global_stats();
         void print_chunk_stats();
         void print_all_watched_rules();
         void print_all_chunks();

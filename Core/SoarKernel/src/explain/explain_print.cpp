@@ -327,42 +327,53 @@ void Explanation_Logger::print_all_chunks()
     print_chunk_list(0);
 }
 
-void Explanation_Logger::print_explainer_stats()
+void Explanation_Logger::print_global_stats()
 {
-    outputManager->set_column_indent(0, 50);
-
-    outputManager->printa_sf(thisAgent, "%f-------------------------\n");
-    outputManager->printa_sf(thisAgent, "EBC Executions Statistics\n");
-    outputManager->printa_sf(thisAgent, "-------------------------\n");
+    outputManager->set_column_indent(0, 60);
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "            Explanation-Based Chunking Statistics\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Chunks attempted                           %-%u\n", stats.chunks_attempted);
     outputManager->printa_sf(thisAgent, "Chunks successfully built                  %-%u\n", stats.chunks_succeeded);
     outputManager->printa_sf(thisAgent, "Chunk failures reverted to justifications  %-%u\n", stats.chunks_reverted);
 
-    outputManager->printa_sf(thisAgent, "Justifications attempted                   %-%u\n", stats.justifications_attempted);
+    outputManager->printa_sf(thisAgent, "\nJustifications attempted                   %- %u\n", stats.justifications_attempted);
     outputManager->printa_sf(thisAgent, "Justifications successfully built          %-%u\n", stats.justifications_succeeded);
 
     outputManager->printa_sf(thisAgent, "\nInstantiations built                     %- %u\n", thisAgent->ebChunker->get_instantiation_count());
     outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %-%u\n", stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Instantiations backtraced through twice    %-%u\n", stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Instantiations re-visited                  %-%u\n", stats.seen_instantations_backtraced);
 
     outputManager->printa_sf(thisAgent, "\nConditions merged                        %- %u\n", stats.merged_conditions);
     outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Grounding conditions generated             %-%u\n", stats.grounding_conditions_added);
+    outputManager->printa_sf(thisAgent, "Conditions added during repair             %-%u\n", stats.grounding_conditions_added);
 
-    outputManager->printa_sf(thisAgent, "\n----------------------\n");
-    outputManager->printa_sf(thisAgent, "EBC Failure Statistics\n");
-    outputManager->printa_sf(thisAgent, "----------------------\n");
+    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "             Potential Generality Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "Rule repaired by adding conditions         %-%u\n", stats.tested_local_negation);
 
-    outputManager->printa_sf(thisAgent, "Duplicate chunk already existed            %-%u\n", stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Chunk tested local negation                %-%u\n", stats.tested_local_negation);
-    outputManager->printa_sf(thisAgent, "Could not re-order chunk                   %-%u\n", stats.unorderable);
-    outputManager->printa_sf(thisAgent, "Chunk had no grounds                       %-%u\n", stats.no_grounds);
+    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "Used negated reasoning about substate      %-%u\n", stats.tested_local_negation);
+
+    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "Actions/condition not connected to goal    %-%u\n", stats.unorderable);
     outputManager->printa_sf(thisAgent, "Already reached max-chunks                 %-%u\n", stats.max_chunks);
+    outputManager->printa_sf(thisAgent, "Duplicate of existing rule                 %-%u\n", stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Backtracing produced no conditions         %-%u\n", stats.no_grounds);
     outputManager->printa_sf(thisAgent, "Chunk formed did not match WM              %-%u\n", stats.chunk_did_not_match);
     outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
+}
 
-    outputManager->printa_sf(thisAgent, "\n------------------------\n");
+void Explanation_Logger::print_explainer_stats()
+{
+    outputManager->set_column_indent(0, 50);
+    outputManager->printa_sf(thisAgent, "------------------------\n");
     outputManager->printa_sf(thisAgent, "EBC Explainer Statistics\n");
     outputManager->printa_sf(thisAgent, "------------------------\n");
     outputManager->printa_sf(thisAgent, "Chunks records                             %-%d\n", chunks->size());
