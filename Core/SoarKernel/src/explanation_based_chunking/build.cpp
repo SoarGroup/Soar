@@ -18,7 +18,8 @@
 #include "agent.h"
 #include "condition.h"
 #include "decide.h"
-#include "explain.h"
+#include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -38,7 +39,6 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
-#include "dprint.h"
 
 using namespace soar_TraceNames;
 

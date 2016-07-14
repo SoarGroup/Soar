@@ -35,7 +35,7 @@
 #include "output_manager.h"
 
 #include <ctype.h>
-#include <run_soar.h>
+#include "run_soar.h"
 #include <stdlib.h>
 
 using namespace soar_TraceNames;

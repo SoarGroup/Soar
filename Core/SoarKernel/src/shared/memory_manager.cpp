@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <run_soar.h>
+#include "run_soar.h"
 #include "memory_manager.h"
 #include <iostream>
 #include "dprint.h"

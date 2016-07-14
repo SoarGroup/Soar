@@ -6,7 +6,7 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "portability.h"
 
 #include "sml_Utils.h"

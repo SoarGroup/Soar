@@ -8,7 +8,7 @@
 #include "ebc.h"
 #include "agent.h"
 #include "instantiation.h"
-#include "assert.h"
+#include <assert.h>
 #include "test.h"
 #include "working_memory.h"
 #include "print.h"

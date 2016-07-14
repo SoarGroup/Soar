@@ -35,7 +35,7 @@
  * =======================================================================
  */
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "rhs_functions.h"
 
 #include "agent.h"

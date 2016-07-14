@@ -289,7 +289,7 @@
 		4D51084B1B2B42DA0009AABC /* episodic_memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107EC1B2B42DA0009AABC /* episodic_memory.cpp */; };
 		4D51084C1B2B42DA0009AABC /* episodic_memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107ED1B2B42DA0009AABC /* episodic_memory.h */; };
 		4D51084D1B2B42DA0009AABC /* explain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107EE1B2B42DA0009AABC /* explain.cpp */; };
-		4D51084E1B2B42DA0009AABC /* explain.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107EF1B2B42DA0009AABC /* explain.h */; };
+		4D51084E1B2B42DA0009AABC /* explanation_memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107EF1B2B42DA0009AABC /* explanation_memory.h */; };
 		4D51084F1B2B42DA0009AABC /* exploration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5107F01B2B42DA0009AABC /* exploration.cpp */; };
 		4D5108501B2B42DA0009AABC /* exploration.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107F11B2B42DA0009AABC /* exploration.h */; };
 		4D5108511B2B42DA0009AABC /* gsysparam.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5107F21B2B42DA0009AABC /* gsysparam.h */; };
@@ -869,7 +869,7 @@
 		4D5107EC1B2B42DA0009AABC /* episodic_memory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = episodic_memory.cpp; sourceTree = "<group>"; };
 		4D5107ED1B2B42DA0009AABC /* episodic_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = episodic_memory.h; sourceTree = "<group>"; };
 		4D5107EE1B2B42DA0009AABC /* explain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = explain.cpp; sourceTree = "<group>"; };
-		4D5107EF1B2B42DA0009AABC /* explain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = explain.h; sourceTree = "<group>"; };
+		4D5107EF1B2B42DA0009AABC /* explanation_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = explanation_memory.h; sourceTree = "<group>"; };
 		4D5107F01B2B42DA0009AABC /* exploration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exploration.cpp; sourceTree = "<group>"; };
 		4D5107F11B2B42DA0009AABC /* exploration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = exploration.h; sourceTree = "<group>"; };
 		4D5107F21B2B42DA0009AABC /* gsysparam.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gsysparam.h; sourceTree = "<group>"; };
@@ -1617,7 +1617,7 @@
 				4D5107EC1B2B42DA0009AABC /* episodic_memory.cpp */,
 				4D5107ED1B2B42DA0009AABC /* episodic_memory.h */,
 				4D5107EE1B2B42DA0009AABC /* explain.cpp */,
-				4D5107EF1B2B42DA0009AABC /* explain.h */,
+				4D5107EF1B2B42DA0009AABC /* explanation_memory.h */,
 				4D5107F01B2B42DA0009AABC /* exploration.cpp */,
 				4D5107F11B2B42DA0009AABC /* exploration.h */,
 				4D5107F21B2B42DA0009AABC /* gsysparam.h */,
@@ -2109,7 +2109,7 @@
 				4D51079E1B2B42C80009AABC /* sml_AgentOutputFlusher.h in Headers */,
 				4D51086F1B2B42DA0009AABC /* reinforcement_learning.h in Headers */,
 				4D51070F1B2B42B60009AABC /* sml_ArgMap.h in Headers */,
-				4D51084E1B2B42DA0009AABC /* explain.h in Headers */,
+				4D51084E1B2B42DA0009AABC /* explanation_memory.h in Headers */,
 				4D5107D41B2B42D30009AABC /* portability.h in Headers */,
 				4D51084A1B2B42DA0009AABC /* enums.h in Headers */,
 				4DB5C1D61B407F9100D5CFD9 /* memory_manager.h in Headers */,

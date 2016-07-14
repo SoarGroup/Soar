@@ -9,9 +9,9 @@
 #define EBC_EXPLAIN_H_
 
 #include "kernel.h"
-#include "stl_typedefs.h"
 
 #include "chunk_record.h"
+#include "stl_typedefs.h"
 
 #include <list>
 #include <set>
@@ -19,14 +19,6 @@
 #include <list>
 #include <cstdlib>
 #include <string>
-
-class chunk_record;
-class instantiation_record;
-class chunk_record;
-class condition_record;
-class action_record;
-class production_record;
-class identity_record;
 
 typedef struct chunking_stats_struct {
         uint64_t            duplicates;

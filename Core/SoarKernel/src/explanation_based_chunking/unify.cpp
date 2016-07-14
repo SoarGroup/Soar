@@ -10,7 +10,7 @@
 #include "instantiation.h"
 #include "condition.h"
 #include "preference.h"
-#include "assert.h"
+#include <assert.h>
 #include "test.h"
 #include "print.h"
 #include "working_memory.h"

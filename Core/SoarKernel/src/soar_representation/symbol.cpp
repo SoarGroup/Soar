@@ -21,16 +21,17 @@
 #include "symbol.h"
 
 #include "agent.h"
+#include "dprint.h"
+#include "lexer.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "print.h"
 #include "production.h"
+#include "run_soar.h"
 #include "xml.h"
 
 #include <ctype.h>
-#include <run_soar.h>
 #include <stdlib.h>
-#include "dprint.h"
 
 /* -------------------------------------------------------------------
                            Hash Functions

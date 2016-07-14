@@ -24,7 +24,7 @@
 #include "instantiation.h"
 
 #include "agent.h"
-#include "assert.h"
+#include <assert.h>
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"

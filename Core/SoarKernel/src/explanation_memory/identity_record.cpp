@@ -1,9 +1,4 @@
 #include "identity_record.h"
-
-#include "explain.h"
-
-#include "instantiation_record.h"
-
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
@@ -16,6 +11,9 @@
 #include "output_manager.h"
 #include "working_memory.h"
 #include "dprint.h"
+#include "explanation_memory.h"
+#include "instantiation_record.h"
+#include "explanation_memory.h"
 
 
 

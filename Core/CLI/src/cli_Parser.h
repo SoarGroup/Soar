@@ -8,7 +8,7 @@
 
 #include "cli_Aliases.h"
 #include "tokenizer.h"
-#include "assert.h"
+#include <assert.h>
 
 namespace cli
 {

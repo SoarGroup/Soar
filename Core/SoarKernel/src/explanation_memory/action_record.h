@@ -5,8 +5,8 @@
  *      Author: mazzin
  */
 
-#ifndef CORE_SOARKERNEL_SRC_EXPLAIN_ACTION_RECORD_H_
-#define CORE_SOARKERNEL_SRC_EXPLAIN_ACTION_RECORD_H_
+#ifndef CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_ACTION_RECORD_H_
+#define CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_ACTION_RECORD_H_
 
 #include "kernel.h"
 #include "stl_typedefs.h"
@@ -42,4 +42,4 @@ class action_record
         uint64_t                actionID;
 };
 
-#endif /* CORE_SOARKERNEL_SRC_EXPLAIN_ACTION_RECORD_H_ */
+#endif /* CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_ACTION_RECORD_H_ */

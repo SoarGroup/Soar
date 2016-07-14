@@ -13,7 +13,7 @@
 #include "sml_ClientWMElement.h"
 #include "sml_Names.h"
 #include "thread_Event.h"
-#include "kernel.h"
+//#include "kernel.h"
 #include "soarversion.h"
 #include "soar_instance.h"
 

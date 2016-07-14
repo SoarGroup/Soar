@@ -17,7 +17,7 @@
 #include "print.h"
 
 #include <assert.h>
-#include <run_soar.h>
+#include "run_soar.h"
 #include <stdlib.h>
 
 /* ====================================================================

@@ -14,12 +14,13 @@
 #include "cli_Commands.h"
 
 #include "agent.h"
+#include "debug.h"
 #include "misc.h"
 #include "output_manager.h"
+#include "output_settings.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "soar_instance.h"
-#include "../../SoarKernel/src/debug_code/debug.h"
 
 using namespace cli;
 using namespace sml;

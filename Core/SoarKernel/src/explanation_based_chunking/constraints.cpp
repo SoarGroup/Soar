@@ -5,17 +5,17 @@
  *      Author: mazzin
  */
 
-#include "explain.h"
 #include "ebc.h"
 
 #include "agent.h"
 #include "instantiation.h"
-#include "assert.h"
+#include <assert.h>
 #include "test.h"
 #include "working_memory.h"
 #include "print.h"
 #include "condition.h"
 #include "dprint.h"
+#include "explanation_memory.h"
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {

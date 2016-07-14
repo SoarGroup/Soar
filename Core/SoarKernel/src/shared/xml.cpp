@@ -23,7 +23,7 @@
 #include "xml.h"
 
 #include "agent.h"
-#include "assert.h"
+#include <assert.h>
 #include "callback.h"
 #include "ElementXML.h"
 #include "print.h"

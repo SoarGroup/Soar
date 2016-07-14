@@ -12,29 +12,28 @@
  * (or NIL if any error occurred).
  * =======================================================================
  */
-
-
 #include "parser.h"
 
-#include "symbol.h"
-#include "condition.h"
-#include "production.h"
-#include "mem.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "agent.h"
-#include "explain.h"
+#include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
+#include "lexer.h"
+#include "mem.h"
 #include "print.h"
-#include "rete.h"
-#include "xml.h"
+#include "production.h"
 #include "reinforcement_learning.h"
+#include "rete.h"
+#include "rhs_functions.h"
+#include "rhs.h"
+#include "run_soar.h"
 #include "semantic_memory.h"
+#include "symbol.h"
 #include "test.h"
+#include "xml.h"
 
 #include <ctype.h>
-#include <run_soar.h>
 #include <stdlib.h>
-#include "dprint.h"
 
 using soar::Lexer;
 using soar::Lexeme;
@@ -52,7 +51,6 @@ using soar::Lexeme;
    (names without funky characters), making sure the real variables
    don't occur anywhere else in the production.
 ================================================================= */
-
 
 void reset_placeholder_variable_generator(agent* thisAgent)
 {

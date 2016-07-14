@@ -10,16 +10,15 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
-
-#include "sml_Names.h"
-#include "sml_AgentSML.h"
-#include "sml_KernelSML.h"
 
 #include "agent.h"
 #include "exploration.h"
+#include "lexer.h"
 #include "print.h"
+#include "sml_Names.h"
+#include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
 #include "slot.h"
 #include "trace.h"
 #include "working_memory.h"

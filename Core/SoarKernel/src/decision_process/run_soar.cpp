@@ -14,19 +14,20 @@
  * =======================================================================
  */
 
-#include <run_soar.h>
-#include "explain.h"
-#include "io_link.h"
+#include "run_soar.h"
+
 #include "agent.h"
 #include "callback.h"
 #include "consistency.h"
 #include "decide.h"
 #include "episodic_memory.h"
 #include "ebc.h"
+#include "explanation_memory.h"
 #include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "instantiation.h"
+#include "io_link.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "semantic_memory.h"
@@ -37,6 +38,7 @@
 #include "working_memory_activation.h"
 #include "working_memory.h"
 #include "xml.h"
+
 
 #ifndef NO_SVS
 #include "svs_interface.h"

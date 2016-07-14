@@ -14,7 +14,7 @@
  *
  * =======================================================================
  */
-#include <run_soar.h>
+#include "run_soar.h"
 #include "production.h"
 #include "production_reorder.h"
 

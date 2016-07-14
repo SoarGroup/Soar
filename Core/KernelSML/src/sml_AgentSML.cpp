@@ -19,10 +19,14 @@
 #include "sml_KernelSML.h"
 #include "sml_RhsFunction.h"
 
-#include "KernelHeaders.h"
-#include "xml.h"
+#include "agent.h"
+#include "decide.h"
+#include "io_link.h"
+#include "rhs_functions.h"
 #include "soar_rand.h"
 #include "soar_instance.h"
+#include "working_memory.h"
+#include "xml.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls

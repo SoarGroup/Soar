@@ -1,8 +1,8 @@
-#include <run_soar.h>
+#include "run_soar.h"
 #include "rete.h"
 
 #include "agent.h"
-#include "assert.h"
+#include <assert.h>
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"

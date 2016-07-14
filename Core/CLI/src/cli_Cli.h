@@ -1,15 +1,12 @@
 #ifndef CLI_CLI_H
 #define CLI_CLI_H
 
+#include "sml_Events.h"
 #include <bitset>
 #include <stdint.h>
+#include <vector>
 
 typedef uint64_t epmem_time_id;
-//#enum ni_mode;
-//#namespace sml
-//#{
-//#    enum smlPhase;
-//#}
 
 namespace cli
 {
@@ -379,7 +376,8 @@ namespace cli
              * @param query true to query
              * @param mode The new mode, ignored on query
              */
-            virtual bool DoNumericIndifferentMode(bool query, const ni_mode mode) = 0;
+
+            virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM) = 0;
 
             /**
              * @brief o-support-mode command

@@ -3,12 +3,13 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "explain.h"
 #include "preference.h"
 #include "slot.h"
 #include "test.h"
 #include "working_memory.h"
 #include "dprint.h"
+
+#include "explanation_memory.h"
 
 
 void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** unconnected_syms)

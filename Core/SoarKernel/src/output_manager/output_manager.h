@@ -15,8 +15,8 @@
 
 #include "kernel.h"
 
-#include "lexer.h"
-#include "soar_db.h"
+#include <assert.h>
+#include <string>
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000
@@ -56,69 +56,6 @@ class AgentOutput_Info
         int  printer_output_column;
         void set_output_params_agent(bool pDebugEnabled);
 } ;
-
-class OM_Parameters: public soar_module::param_container
-{
-    public:
-
-        OM_Parameters();
-
-        // storage
-        soar_module::constant_param<soar_module::db_choices>* database;
-        soar_module::string_param* path;
-        soar_module::boolean_param* lazy_commit;
-        soar_module::boolean_param* append_db;
-
-        // performance
-        soar_module::constant_param<soar_module::page_choices>* page_size;
-        soar_module::integer_param* cache_size;
-        soar_module::constant_param<soar_module::opt_choices>* opt;
-
-};
-
-class OM_DB: public soar_module::sqlite_statement_container
-{
-    public:
-
-        OM_DB(soar_module::sqlite_database* pDebugDB);
-        virtual ~OM_DB();
-
-        void print_db(MessageType msgType, const char* prefix, const char* msg);
-        void create_db();
-        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
-
-    private:
-        soar_module::sqlite_database*    m_Debug_DB;
-        Output_Manager*                  m_OM;
-
-        soar_module::sqlite_statement*   begin, *commit, *rollback;
-        soar_module::sqlite_statement*   add_message_id;
-        soar_module::sqlite_statement*   add_debug_message;
-        soar_module::sqlite_statement*   add_trace_message;
-        soar_module::sqlite_statement*   add_refcnt_message;
-        soar_module::sqlite_statement*   add_refcnt_problem;
-        soar_module::sqlite_statement*   generate_symbols_seen;
-        soar_module::sqlite_statement*   count_refs;
-        soar_module::sqlite_statement*   add_refcnt_totals;
-        soar_module::sqlite_statement*   get_entries_for_symbol;
-
-        int64_t                         message_count;
-
-        void create_tables();
-        void create_indices();
-        void create_statements();
-        void drop_tables();
-        void init_tables();
-        void clear();
-        void init_db();
-        void close_db();
-        void switch_to_memory_db(std::string& buf);
-
-        void compile_refcount_summary();
-
-        void increment_message_count(MessageType msgType);
-
-};
 
 class Output_Manager
 {
@@ -222,7 +159,7 @@ class Output_Manager
         void sprint_sf(std::string &destString, const char* format, ...);
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
-        void store_refcount(Symbol* sym, const char* callers, bool isAdd) { m_db->store_refcount(sym, callers, isAdd); }
+        void store_refcount(Symbol* sym, const char* callers, bool isAdd);
 
         /* Versions that will check debug mode and only print if set */
         void debug_print(TraceMode mode, const char* msg);

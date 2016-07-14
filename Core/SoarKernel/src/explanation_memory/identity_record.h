@@ -5,8 +5,8 @@
  *      Author: mazzin
  */
 
-#ifndef CORE_SOARKERNEL_SRC_EXPLAIN_IDENTITY_RECORD_H_
-#define CORE_SOARKERNEL_SRC_EXPLAIN_IDENTITY_RECORD_H_
+#ifndef CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_IDENTITY_RECORD_H_
+#define CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_IDENTITY_RECORD_H_
 
 #include "kernel.h"
 #include "stl_typedefs.h"
@@ -42,4 +42,4 @@ class identity_record
         void    print_original_ebc_mappings();
 };
 
-#endif /* CORE_SOARKERNEL_SRC_EXPLAIN_IDENTITY_RECORD_H_ */
+#endif /* CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_IDENTITY_RECORD_H_ */

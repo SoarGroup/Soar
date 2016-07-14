@@ -27,7 +27,11 @@
 #include "sml_TagCommand.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
-#include "KernelHeaders.h"
+
+#include "agent.h"
+#include "io_link.h"
+#include "working_memory.h"
+#include "xml.h"
 
 #include <iostream>
 #include <fstream>
@@ -36,7 +40,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <sstream>
-#include "xml.h"
+
 #ifdef _MSC_VER
     #include <Windows.h>
 #endif

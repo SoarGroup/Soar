@@ -14,6 +14,7 @@
 #include "sml_Names.h"
 
 #include "agent.h"
+#include "ebc.h"
 #include "sml_AgentSML.h"
 
 using namespace cli;

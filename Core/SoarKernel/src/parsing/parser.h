@@ -21,9 +21,9 @@
 #define PARSER_H
 
 #include "kernel.h"
-#include "stl_typedefs.h"
 
 #include "dprint.h"
+#include "stl_typedefs.h"
 
 void        init_parser(void);
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result);

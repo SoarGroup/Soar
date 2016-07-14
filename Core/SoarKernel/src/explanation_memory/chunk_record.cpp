@@ -1,11 +1,4 @@
 #include "chunk_record.h"
-
-#include "explain.h"
-#include "action_record.h"
-#include "identity_record.h"
-#include "instantiation_record.h"
-
-#include "condition_record.h"
 #include "agent.h"
 #include "condition.h"
 #include "instantiation.h"
@@ -18,6 +11,12 @@
 #include "visualize.h"
 #include "working_memory.h"
 #include "dprint.h"
+#include "action_record.h"
+#include "condition_record.h"
+#include "explanation_memory.h"
+#include "identity_record.h"
+#include "instantiation_record.h"
+#include "explanation_memory.h"
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {

@@ -10,16 +10,15 @@
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
 
+#include "agent.h"
+#include "lexer.h"
+#include "misc.h"
+#include "semantic_memory.h"
+#include "slot.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-#include "slot.h"
-
-#include "semantic_memory.h"
-#include "agent.h"
-#include "misc.h"
 
 using namespace cli;
 using namespace sml;

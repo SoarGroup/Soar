@@ -11,6 +11,12 @@
 #ifndef COMMAND_LINE_INTERFACE_H
 #define COMMAND_LINE_INTERFACE_H
 
+#include "cli_Cli.h"
+#include "cli_Parser.h"
+#include "Export.h"
+#include "sml_KernelCallback.h"
+#include "sml_Events.h"
+
 #include <vector>
 #include <string>
 #include <stack>
@@ -19,14 +25,6 @@
 #include <list>
 #include <sstream>
 #include <cstdlib>
-
-#include "sml_KernelCallback.h"
-#include "sml_Events.h"
-#include "kernel.h"
-#include "cli_Cli.h"
-#include "cli_Parser.h"
-#include "Export.h"
-#include "lexer.h"
 
 namespace soar_module
 {
@@ -151,7 +149,7 @@ namespace cli
             virtual bool DoMaxNilOutputCycles(const int n = 0);
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
-            virtual bool DoNumericIndifferentMode(bool query, const ni_mode mode);
+            virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
             virtual bool DoOSupportMode(int mode = -1);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
@@ -322,6 +320,9 @@ namespace cli
 *
 ===============================
 */
+namespace soar {
+    class Lexeme;
+}
 extern bool read_id_or_context_var_from_string(agent* thisAgent, const char* the_lexeme, Symbol** result_id);
 extern Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme);
 

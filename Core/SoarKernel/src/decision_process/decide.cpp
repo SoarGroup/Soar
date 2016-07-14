@@ -16,11 +16,11 @@
  */
 
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "decide.h"
 
 #include "agent.h"
-#include "assert.h"
+#include <assert.h>
 #include "condition.h"
 #include "consistency.h"
 #include "decision_manipulation.h"

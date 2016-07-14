@@ -27,7 +27,7 @@ typedef struct wme_struct wme;
 #include "sml_StringListener.h"
 #include "sml_Utils.h"
 #include "sml_Events.h"
-#include <run_soar.h>
+#include "run_soar.h"
 #include "soar_instance.h"
 
 namespace soar_thread

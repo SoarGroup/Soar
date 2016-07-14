@@ -24,9 +24,12 @@
 #include "sml_Connection.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
-#include "KernelHeaders.h"
 
-#include "assert.h"
+#include "instantiation.h"
+#include "production.h"
+#include "symbol.h"
+
+#include <assert.h>
 
 using namespace sml ;
 

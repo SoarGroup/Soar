@@ -1151,7 +1151,7 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory.h">
       <Filter>Source Files\SoarKernel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\explain.h">
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory.h">
       <Filter>Source Files\SoarKernel</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Core\SoarKernel\src\exploration.h">

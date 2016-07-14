@@ -20,7 +20,7 @@
 #include "working_memory.h"
 
 #include <assert.h>
-#include <run_soar.h>
+#include "run_soar.h"
 #include "dprint.h"
 
 /* =================================================================

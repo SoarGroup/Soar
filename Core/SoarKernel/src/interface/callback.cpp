@@ -22,7 +22,7 @@
  * =======================================================================
  */
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "callback.h"
 
 #include "agent.h"

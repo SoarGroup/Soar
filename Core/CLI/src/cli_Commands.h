@@ -2,11 +2,11 @@
 #define CLI_COMMANDS_H
 
 #include "cli_Parser.h"
-#include "misc.h"
 #include "cli_Options.h"
-#include "kernel.h"
-#include "sml_Events.h"
 #include "cli_Cli.h"
+
+#include "misc.h"
+#include "sml_Events.h"
 
 namespace cli
 {
@@ -2264,7 +2264,7 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                ni_mode mode = NUMERIC_INDIFFERENT_MODE_AVG;
+                bool usesAvgNIM = true;
                 bool query = true;
 
                 for (;;)
@@ -2282,11 +2282,11 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            mode = NUMERIC_INDIFFERENT_MODE_AVG;
+                            usesAvgNIM = true;
                             query = false;
                             break;
                         case 's':
-                            mode = NUMERIC_INDIFFERENT_MODE_SUM;
+                            usesAvgNIM = false;
                             query = false;
                             break;
                     }
@@ -2298,7 +2298,7 @@ namespace cli
                     return cli.SetError(GetSyntax());
                 }
 
-                return cli.DoNumericIndifferentMode(query, mode);
+                return cli.DoNumericIndifferentMode(query, usesAvgNIM);
             }
 
         private:

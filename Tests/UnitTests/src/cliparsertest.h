@@ -165,7 +165,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoNumericIndifferentMode(bool query, const ni_mode mode)
+        virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM)
         {
             return false;
         }

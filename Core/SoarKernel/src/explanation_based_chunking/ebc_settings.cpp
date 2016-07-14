@@ -1,4 +1,5 @@
-#include "settings.h"
+#include "ebc_settings.h"
+
 #include "agent.h"
 #include "ebc.h"
 

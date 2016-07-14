@@ -18,7 +18,11 @@
 #include "sml_TagWme.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
-#include "KernelHeaders.h"
+
+#include "agent.h"
+#include "symbol.h"
+#include "io_link.h"
+#include "working_memory.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls

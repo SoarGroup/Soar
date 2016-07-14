@@ -17,8 +17,7 @@
 
 #include "kernel.h"
 
-#include "stdint.h"
-
+#include <stdint.h>
 #include <string>
 
 /**

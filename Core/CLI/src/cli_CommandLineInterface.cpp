@@ -22,12 +22,13 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 #include "XMLTrace.h"
-#include "KernelHeaders.h"
 
 #include "agent.h"
-#include "slot.h"
-#include "xml.h"
+#include "print.h"
 #include "lexer.h"
+#include "slot.h"
+#include "working_memory.h"
+#include "xml.h"
 
 using namespace cli;
 using namespace sml;

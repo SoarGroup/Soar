@@ -19,7 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoNumericIndifferentMode(bool query, const ni_mode mode)
+bool CommandLineInterface::DoNumericIndifferentMode(bool query, bool usesAvgNIM)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (query)
@@ -48,7 +48,7 @@ bool CommandLineInterface::DoNumericIndifferentMode(bool query, const ni_mode mo
     }
     else // !query
     {
-        thisAgent->numeric_indifferent_mode = mode;
+        thisAgent->numeric_indifferent_mode = usesAvgNIM ? NUMERIC_INDIFFERENT_MODE_AVG : NUMERIC_INDIFFERENT_MODE_SUM;
     }
     
     return true;

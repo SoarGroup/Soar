@@ -15,7 +15,6 @@
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
-#include "explain.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "print.h"
@@ -27,9 +26,11 @@
 #include "test.h"
 
 #include <ctype.h>
-#include <run_soar.h>
+#include "run_soar.h"
 #include <stdlib.h>
 #include "dprint.h"
+
+#include "explanation_memory.h"
 
 void init_production_utilities(agent* thisAgent)
 {

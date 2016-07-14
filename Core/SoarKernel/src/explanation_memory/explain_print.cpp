@@ -1,13 +1,5 @@
 #include "ebc.h"
 
-#include "explain.h"
-
-#include "action_record.h"
-#include "condition_record.h"
-#include "identity_record.h"
-#include "instantiation_record.h"
-#include "production_record.h"
-
 #include "agent.h"
 #include "condition.h"
 #include "instantiation.h"
@@ -20,6 +12,12 @@
 #include "working_memory.h"
 #include "output_manager.h"
 #include "dprint.h"
+#include "action_record.h"
+#include "condition_record.h"
+#include "explanation_memory.h"
+#include "identity_record.h"
+#include "instantiation_record.h"
+#include "production_record.h"
 
 void Explanation_Memory::switch_to_explanation_trace(bool pEnableExplanationTrace)
 {

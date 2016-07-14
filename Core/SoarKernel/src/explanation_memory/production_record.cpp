@@ -1,10 +1,11 @@
 #include "production_record.h"
 
-#include "explain.h"
 #include "condition.h"
 #include "production.h"
 #include "rhs.h"
 #include "rete.h"
+#include "explanation_memory.h"
+#include "explanation_memory.h"
 
 production_record::production_record(agent* pAgent, production* pProd)
 {

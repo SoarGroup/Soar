@@ -18,7 +18,7 @@
  *
  */
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "consistency.h"
 
 #include "agent.h"

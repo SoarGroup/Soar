@@ -15,7 +15,6 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "explain.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "memory_manager.h"
@@ -31,6 +30,8 @@
 
 #include <stdlib.h>
 #include "dprint.h"
+
+#include "explanation_memory.h"
 
 
 using namespace soar_TraceNames;

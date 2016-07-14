@@ -1,13 +1,11 @@
 #include "action_record.h"
 
-#include "explain.h"
 #include "agent.h"
 #include "condition.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "production_record.h"
 #include "rete.h"
 #include "rhs.h"
 #include "symbol.h"
@@ -16,6 +14,9 @@
 #include "visualize.h"
 #include "working_memory.h"
 #include "dprint.h"
+#include "explanation_memory.h"
+#include "production_record.h"
+#include "explanation_memory.h"
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {

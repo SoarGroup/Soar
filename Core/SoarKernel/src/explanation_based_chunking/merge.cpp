@@ -5,16 +5,16 @@
  *      Author: mazzin
  */
 
-#include "explain.h"
 #include "ebc.h"
 
 #include "agent.h"
-#include "assert.h"
+#include <assert.h>
 #include "condition.h"
 #include "instantiation.h"
 #include "print.h"
 #include "test.h"
 #include "dprint.h"
+#include "explanation_memory.h"
 
 void Explanation_Based_Chunker::clear_merge_map()
 {

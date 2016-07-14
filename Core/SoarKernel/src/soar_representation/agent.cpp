@@ -20,11 +20,13 @@
 
 #include "agent.h"
 #include "callback.h"
+#include "debug.h"
 #include "decide.h"
 #include "decision_manipulation.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "episodic_memory.h"
-#include "explain.h"
+#include "explanation_memory.h"
 #include "exploration.h"
 #include "gsysparam.h"
 #include "instantiation.h"
@@ -52,8 +54,6 @@
 #include "working_memory_activation.h"
 #include "working_memory.h"
 #include "xml.h"
-#include "debug.h"
-#include "dprint.h"
 
 #ifndef NO_SVS
 #include "svs_interface.h"

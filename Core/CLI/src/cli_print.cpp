@@ -10,22 +10,23 @@
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
+
+#include "agent.h"
+#include "decide.h"
+#include "gsysparam.h"
+#include "lexer.h"
+#include "memory_manager.h"
+#include "output_manager.h"
+#include "print.h"
+#include "rhs.h"
+#include "slot.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
 #include "sml_Utils.h"
-
-#include "agent.h"
-#include "gsysparam.h"
-#include "xml.h"
-#include "print.h"
-#include "slot.h"
 #include "trace.h"
 #include "working_memory.h"
-#include "rhs.h"
-#include "decide.h"
-#include "output_manager.h"
-#include "memory_manager.h"
+#include "xml.h"
 
 using namespace cli;
 using namespace sml;

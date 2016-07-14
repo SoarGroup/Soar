@@ -6,12 +6,6 @@
  */
 #include "visualize.h"
 
-#include "action_record.h"
-#include "condition_record.h"
-#include "identity_record.h"
-#include "instantiation_record.h"
-#include "production_record.h"
-
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
@@ -25,6 +19,11 @@
 #include "test.h"
 #include "working_memory.h"
 #include "dprint.h"
+#include "action_record.h"
+#include "condition_record.h"
+#include "identity_record.h"
+#include "instantiation_record.h"
+#include "production_record.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {

@@ -83,7 +83,7 @@ def vc_version():
     print 'cannot identify compiler version'
     Exit(1)
 
-#run cl (MSVC compiler) and return the target architecture (x64 or x86)
+# run cl (MSVC compiler) and return the target architecture (x64 or x86)
 def cl_target_arch():
     cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
     for line in cl.stdout:
@@ -124,7 +124,7 @@ def InstallDLLs(env):
     if not os.path.exists(outdir):
         os.mkdir(outdir)
     for dll in indlls:
-      #print 'copy "' + dll.rstr() + '" "' + outdir + '"'
+      # print 'copy "' + dll.rstr() + '" "' + outdir + '"'
       shutil.copy(dll.rstr(), outdir)
 
 Export('InstallDir')
@@ -252,7 +252,7 @@ env.Replace(
         '#Core/SoarKernel/src/debug_code',
         '#Core/SoarKernel/src/decision_process',
         '#Core/SoarKernel/src/episodic_memory',
-        '#Core/SoarKernel/src/explain',
+        '#Core/SoarKernel/src/explanation_memory',
         '#Core/SoarKernel/src/explanation_based_chunking',
         '#Core/SoarKernel/src/interface',
         '#Core/SoarKernel/src/output_manager',

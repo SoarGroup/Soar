@@ -11,19 +11,20 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "agent.h"
+#include "condition.h"
+#include "explanation_memory.h"
+#include "lexer.h"
+#include "misc.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
 #include "sml_Utils.h"
-
-#include "agent.h"
-#include "condition.h"
-#include "explain.h"
-#include "misc.h"
 #include "print.h"
 #include "visualize.h"
 
 #include <string>
+
 using namespace cli;
 using namespace sml;
 

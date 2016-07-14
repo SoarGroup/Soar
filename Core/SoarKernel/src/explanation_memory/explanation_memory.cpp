@@ -1,22 +1,21 @@
-#include "explain.h"
+#include "explanation_memory.h"
 
 #include "action_record.h"
-#include "condition_record.h"
-#include "instantiation_record.h"
-#include "production_record.h"
-
 #include "agent.h"
+#include "condition_record.h"
 #include "condition.h"
+#include "dprint.h"
+#include "instantiation_record.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
+#include "production_record.h"
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "dprint.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900

@@ -8,20 +8,19 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
 
+#include "agent.h"
+#include "ebc.h"
+#include "ebc_settings.h"
+#include "gsysparam.h"
+#include "sml_Utils.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
 #include "sml_KernelSML.h"
-#include "gsysparam.h"
-#include "agent.h"
-#include "print.h"
-#include "ebc.h"
 #include "output_manager.h"
+#include "print.h"
 
 using namespace cli;
 using namespace sml;

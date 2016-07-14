@@ -16,6 +16,8 @@
 #include "callback.h"
 #include "debug.h"
 #include "dprint.h"
+#include "output_settings.h"
+#include "output_db.h"
 #include "print.h"
 #include "soar_instance.h"
 
@@ -207,6 +209,11 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             }
         }
     }
+}
+
+void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd)
+{
+    m_db->store_refcount(sym, callers, isAdd);
 }
 
 OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)

@@ -26,7 +26,7 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
-#include "assert.h"
+#include <assert.h>
 
 using namespace sml ;
 

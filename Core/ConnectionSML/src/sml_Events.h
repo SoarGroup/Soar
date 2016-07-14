@@ -40,8 +40,6 @@
 #ifndef SML_EVENT_ID_H
 #define SML_EVENT_ID_H
 
-//#include "sml_ClientEvents.h"
-
 #include <map>
 #include <string>
 #include <assert.h>

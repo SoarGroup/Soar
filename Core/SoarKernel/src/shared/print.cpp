@@ -13,7 +13,7 @@
  * =======================================================================
  */
 
-#include <run_soar.h>
+#include "run_soar.h"
 #include "print.h"
 
 #include "agent.h"

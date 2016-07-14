@@ -26,13 +26,13 @@
 
 #include "thread_Lock.h"
 #include "thread_Thread.h"
+#include "symbol.h"
+#include "working_memory.h"
 
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <stdlib.h>
-
-#include "KernelHeaders.h"
 
 using namespace sml ;
 

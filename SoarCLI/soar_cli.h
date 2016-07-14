@@ -5,13 +5,13 @@
  * object-oriented implementation of test cli with the additional features of
  * multicli (which was based on mincli) */
 
-#include "kernel.h"
+//#include "kernel.h"
 
+#include "ElementXML.h"
 #include "sml_Client.h"
 #include "thread_Thread.h"
 #include "thread_Lock.h"
 #include "thread_Event.h"
-#include "ElementXML.h"
 
 #include <vector>
 #include <string>

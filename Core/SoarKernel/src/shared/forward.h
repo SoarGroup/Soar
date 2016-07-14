@@ -61,6 +61,8 @@ class AgentOutput_Info;
 class GraphViz_Visualizer;
 class debug_param_container;
 class Output_Manager;
+class OM_Parameters;
+class OM_DB;
 class Explanation_Based_Chunker;
 class Memory_Manager;
 class LTI_Promotion_Set;
@@ -75,6 +77,13 @@ class epmem_common_statement_container;
 class epmem_graph_statement_container;
 class rl_stat_container;
 class ebc_param_container;
+class chunk_record;
+class instantiation_record;
+class chunk_record;
+class condition_record;
+class action_record;
+class production_record;
+class identity_record;
 
 namespace sml
 {

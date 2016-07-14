@@ -5,8 +5,8 @@
  *      Author: mazzin
  */
 
-#ifndef CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_SETTINGS_H_
-#define CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_SETTINGS_H_
+#ifndef CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_SETTINGS_H_
+#define CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_SETTINGS_H_
 
 #include "kernel.h"
 #include "soar_module.h"
@@ -53,4 +53,4 @@ class ebc_param_container: public soar_module::param_container
         void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam = NULL, soar_module::integer_param* pChangedIntParam = NULL);
 };
 
-#endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_SETTINGS_H_ */
+#endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_SETTINGS_H_ */

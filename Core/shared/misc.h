@@ -13,7 +13,7 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-#include "kernel.h"
+#include "portability.h"
 
 #include <iomanip>
 #include <sstream>

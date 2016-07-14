@@ -1,11 +1,4 @@
 #include "instantiation_record.h"
-
-#include "explain.h"
-
-#include "action_record.h"
-#include "condition_record.h"
-#include "production_record.h"
-
 #include "agent.h"
 #include "condition.h"
 #include "instantiation.h"
@@ -19,6 +12,11 @@
 #include "visualize.h"
 #include "working_memory.h"
 #include "dprint.h"
+#include "action_record.h"
+#include "condition_record.h"
+#include "explanation_memory.h"
+#include "production_record.h"
+#include "explanation_memory.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {

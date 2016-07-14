@@ -379,7 +379,7 @@
     <ClInclude Include="..\..\..\Core\SoarKernel\src\decision_manipulation.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\enums.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\episodic_memory.h" />
-    <ClInclude Include="..\..\..\Core\SoarKernel\src\explain.h" />
+    <ClInclude Include="..\..\..\Core\SoarKernel\src\explanation_memory.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\exploration.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\gsysparam.h" />
     <ClInclude Include="..\..\..\Core\SoarKernel\src\init_soar.h" />

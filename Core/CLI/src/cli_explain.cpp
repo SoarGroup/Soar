@@ -18,11 +18,12 @@
 
 #include "agent.h"
 #include "condition.h"
-#include "explain.h"
+#include "explanation_memory.h"
 #include "misc.h"
 #include "print.h"
 
 #include <string>
+
 using namespace cli;
 using namespace sml;
 

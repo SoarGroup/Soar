@@ -4,13 +4,10 @@
  *************************************************************************/
 
 /*------------------------------------------------------------------
-             output_manager_print.cpp
-
-   @brief output_manager_print.cpp provides many functions to
-   print Soar data structures.  Many were originally written
-   for debugging purposes and are only fount in print commands.
-
+             soar_to_string.cpp
 ------------------------------------------------------------------ */
+
+#include "output_manager.h"
 
 #include "ebc.h"
 #include "rhs.h"
@@ -18,11 +15,11 @@
 #include "agent.h"
 #include "condition.h"
 #include "instantiation.h"
+#include "lexer.h"
 #include "rete.h"
 #include "production_reorder.h"
 #include "rhs.h"
 #include "rhs_functions.h"
-#include "output_manager.h"
 #include "preference.h"
 #include "working_memory.h"
 #include "soar_instance.h"

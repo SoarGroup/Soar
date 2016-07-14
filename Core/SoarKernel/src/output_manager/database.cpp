@@ -5,12 +5,15 @@
 
 /*************************************************************************
  *
- *  file:  output_manager_db.cpp
+ *  file:  database.cpp
  *
  * =======================================================================
  */
 
+#include "output_db.h"
+
 #include "output_manager.h"
+#include "output_settings.h"
 
 OM_DB::OM_DB(soar_module::sqlite_database* pDebugDB)
     : soar_module::sqlite_statement_container(pDebugDB)
