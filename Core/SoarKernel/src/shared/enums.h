@@ -212,7 +212,6 @@ num_memory_pools
 enum chunkNameFormats
 {
     numberedFormat,
-    longFormat,
     ruleFormat
 };
 

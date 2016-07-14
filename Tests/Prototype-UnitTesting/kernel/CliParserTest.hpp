@@ -53,10 +53,6 @@ public:
     {
         return false;
     }
-	virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0)
-	{
-		return false;
-	}
 	virtual bool DoCLIMessage(const std::string& pMessage)
 	{
 		return false;
@@ -150,10 +146,6 @@ public:
 		return false;
 	}
 	virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0)
-	{
-		return false;
-	}
-	virtual bool DoMaxChunks(const int n = 0)
 	{
 		return false;
 	}

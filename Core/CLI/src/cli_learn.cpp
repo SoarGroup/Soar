@@ -58,7 +58,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
 
     if (options.test(LEARN_ENABLE))
     {
-        std::string tempstr1("learn"), tempstr2("on");
+        std::string tempstr1("learn"), tempstr2("always");
         DoChunk('S', &tempstr1, &tempstr2);
         std::ostringstream tempstrstream;
         tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
@@ -67,7 +67,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
 
     if (options.test(LEARN_DISABLE))
     {
-        std::string tempstr1("learn"), tempstr2("off");
+        std::string tempstr1("learn"), tempstr2("never");
         DoChunk('S', &tempstr1, &tempstr2);
         std::ostringstream tempstrstream;
         tempstrstream << "Warning:  'learn' has been deprecated.  New corresponding command is: chunk " << tempstr2;
@@ -126,7 +126,6 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
     }
 
     thisAgent->ebChunker->ebc_params->update_params(thisAgent->ebChunker->ebc_settings);
-    thisAgent->ebChunker->update_learning_on();
     return true;
 }
 

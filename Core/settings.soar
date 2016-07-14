@@ -16,6 +16,8 @@
 alias cnf               chunk-name-format
 alias ea                excise --all
 alias ec                excise --chunks
+alias ep                epmem
+alias eps               epmem -S
 alias m                 matches
 alias pcf               print -cfi
 alias pf                production-find
@@ -23,12 +25,13 @@ alias ps                print --stack
 alias quit              exit
 alias r                 run
 alias s                 run 1
+alias sm                smem
+alias sms               smem -S
 alias wmes              print -depth 0 -internal
-alias ebc explain-backtraces -c
-alias ep epmem
-alias eps epmem -S
-alias sm smem
-alias sms smem -S
+
+# Backward compatibility aliases
+alias max-chunks chunk max-chunks
+alias chunk-name-format chunk naming-style
 
 #################
 # Soar Settings #
@@ -45,4 +48,4 @@ default-wme-depth 2
 # smem -e
 # learn -e
 
-echo "\nUser settings loaded from settings/settings.soar..."
+echo "\nUser settings loaded from settings.soar..."

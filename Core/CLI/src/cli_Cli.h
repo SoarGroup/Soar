@@ -71,16 +71,6 @@ namespace cli
              */
             virtual bool DoCD(const std::string* pDirectory = 0) = 0;
 
-            /**
-             * @brief chunk-name-format command
-             * @param pLongFormat Pointer to the new format type, true for long format, false
-             *        for short format, 0 (null) for query or no change
-             * @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
-             * @param pPrefix Pointer to the new prefix, must not contain '*' character,
-             *        null for query
-             */
-            virtual bool DoChunkNameFormat(const chunkNameFormats* chunkNameFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0) = 0;
-
             enum eLogMode
             {
                 LOG_QUERY,
@@ -325,12 +315,6 @@ namespace cli
              * @param pProduction The production, pass 0 (null) if not applicable to mode
              */
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0) = 0;
-
-            /**
-             * @brief max-chunks command
-             * @param n The new max chunks value, use 0 to query
-             */
-            virtual bool DoMaxChunks(const int n = 0) = 0;
 
             /**
              * @brief max-dc-time command

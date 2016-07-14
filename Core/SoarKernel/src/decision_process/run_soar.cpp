@@ -197,12 +197,9 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
     thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM] = 100;
-    thisAgent->sysparams[MAX_CHUNKS_SYSPARAM] = 50;
     thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = 15;
     thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
     thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
-
-    thisAgent->sysparams[RESPOND_TO_LOAD_ERRORS_SYSPARAM] = true;
 
 #ifdef ATTENTION_LAPSE
     /* RMJ */
@@ -212,11 +209,8 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
-    thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = true;  /* AGR 627 */
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
-
-
     thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }
 

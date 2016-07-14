@@ -4,7 +4,7 @@
 
 #define setting_on(s) pEBC_settings[s] ? on : off
 
-ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[]): soar_module::param_container(new_agent)
+ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes): soar_module::param_container(new_agent)
 {
 
     /* Set up the settings array that is used for quick access */
@@ -22,28 +22,53 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[])
     pEBC_settings[SETTING_EBC_OSK] = false;
     pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
     pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] = false;
+    pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] = true;
     pEBC_settings[SETTING_EBC_MERGE] = true;
     pEBC_settings[SETTING_EBC_USER_SINGLETONS] = false;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
     pEBC_settings[SETTING_EBC_ALLOW_OSK] = true;
     pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
-    pEBC_settings[SETTING_EBC_ALLOW_PROB] = false;
+    pEBC_settings[SETTING_EBC_ALLOW_PROB] = true;
     pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
     pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
 
+    pMaxChunks = 50;
+    pMaxDupes = 3;
+
     // enabled
-    enabled = new soar_module::constant_param<EBCLearnChoices>("learn", ebc_never, new soar_module::f_predicate<EBCLearnChoices>());
-    enabled->add_mapping(ebc_always, "enabled");
-    enabled->add_mapping(ebc_always, "on");
-    enabled->add_mapping(ebc_always, "all");
-    enabled->add_mapping(ebc_never, "disabled");
-    enabled->add_mapping(ebc_never, "off");
-    enabled->add_mapping(ebc_never, "none");
-    enabled->add_mapping(ebc_only, "only");
-    enabled->add_mapping(ebc_except, "all-except");
-    add(enabled);
+    chunk_in_states = new soar_module::constant_param<EBCLearnChoices>("learn", ebc_never, new soar_module::f_predicate<EBCLearnChoices>());
+    chunk_in_states->add_mapping(ebc_always, "enabled");
+    chunk_in_states->add_mapping(ebc_always, "on");
+    chunk_in_states->add_mapping(ebc_always, "always");
+    chunk_in_states->add_mapping(ebc_always, "all");
+    chunk_in_states->add_mapping(ebc_never, "disabled");
+    chunk_in_states->add_mapping(ebc_never, "off");
+    chunk_in_states->add_mapping(ebc_never, "none");
+    chunk_in_states->add_mapping(ebc_never, "never");
+    chunk_in_states->add_mapping(ebc_only, "only");
+    chunk_in_states->add_mapping(ebc_except, "except");
+    chunk_in_states->add_mapping(ebc_except, "all-except");
+    add(chunk_in_states);
+
+    naming_style = new soar_module::constant_param<chunkNameFormats>("naming-style", ruleFormat, new soar_module::f_predicate<chunkNameFormats>());
+    naming_style->add_mapping(ruleFormat, "rule");
+    naming_style->add_mapping(numberedFormat, "numbered");
+    add(naming_style);
+
+    history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());
+    add(history_cmd);
+    stats_cmd = new soar_module::boolean_param("stats", on, new soar_module::f_predicate<boolean>());
+    add(stats_cmd);
+    help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
+    add(help_cmd);
+    qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
+    add(qhelp_cmd);
+
+    max_chunks = new soar_module::integer_param("max-chunks", pMaxChunks, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
+    add(max_chunks);
+    max_dupes = new soar_module::integer_param("max-dupes", pMaxDupes, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
+    add(max_dupes);
 
     bottom_level_only = new soar_module::boolean_param("bottom-only", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
     add(bottom_level_only);
@@ -89,43 +114,54 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[])
 
 }
 
-void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam)
+void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
 {
     if (!pChangedParam)
     {
-        if (enabled->get_value() == ebc_always)
+        if (!pChangedIntParam)
         {
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+            if (chunk_in_states->get_value() == ebc_always)
+            {
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+            }
+            else if (chunk_in_states->get_value() == ebc_never)
+            {
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = true;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
+            }
+            else if (chunk_in_states->get_value() == ebc_only)
+            {
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = true;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+            }
+            else if (chunk_in_states->get_value() == ebc_except)
+            {
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
+                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+            }
+        } else {
+            if (pChangedIntParam == max_chunks)
+            {
+                thisAgent->ebChunker->max_chunks = pChangedIntParam->get_value();
+            }
+            else if (pChangedIntParam == max_dupes)
+            {
+                thisAgent->ebChunker->max_dupes= pChangedIntParam->get_value();
+            }
         }
-        else if (enabled->get_value() == ebc_never)
-        {
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = true;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
-        }
-        else if (enabled->get_value() == ebc_only)
-        {
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = true;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
-        }
-        else if (enabled->get_value() == ebc_except)
-        {
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
-            thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
-        }
-        thisAgent->ebChunker->update_learning_on();
     }
     else if (pChangedParam == bottom_level_only)
     {
@@ -209,19 +245,19 @@ void ebc_param_container::update_params(bool pEBC_settings[])
 {
     if (pEBC_settings[SETTING_EBC_ALWAYS])
     {
-        enabled->set_value(ebc_always);
+        chunk_in_states->set_value(ebc_always);
     }
     else if (pEBC_settings[SETTING_EBC_NEVER])
     {
-        enabled->set_value(ebc_never);
+        chunk_in_states->set_value(ebc_never);
     }
     else if (pEBC_settings[SETTING_EBC_ONLY])
     {
-        enabled->set_value(ebc_only);
+        chunk_in_states->set_value(ebc_only);
     }
     else if (pEBC_settings[SETTING_EBC_EXCEPT])
     {
-        enabled->set_value(ebc_except);
+        chunk_in_states->set_value(ebc_except);
     }
     bottom_level_only->set_value(pEBC_settings[SETTING_EBC_BOTTOM_ONLY] ? on : off);
     interrupt_on_chunk->set_value(pEBC_settings[SETTING_EBC_INTERRUPT] ? on : off);

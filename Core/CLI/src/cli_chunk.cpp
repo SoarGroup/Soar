@@ -28,6 +28,14 @@
 using namespace cli;
 using namespace sml;
 
+const char* capitalizeOnOff(bool isEnabled) {
+    if (isEnabled)
+    {
+        return "[ ON | off ]";
+    } else {
+        return "[ on | OFF ]";
+    }
+}
 bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, const std::string* pVal)
 {
     // No options means print current settings
@@ -38,33 +46,35 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
     if (!pOp)
     {
 
-            PrintCLIMessage_Header("Chunking Settings", 61);
-            PrintCLIMessage_Item("Learn rules from states", thisAgent->ebChunker->ebc_params->enabled, 61);
-            PrintCLIMessage_Item("Learn only from lowest sub-state", thisAgent->ebChunker->ebc_params->bottom_level_only, 61);
-            PrintCLIMessage_Item("Interrupt after learning rule", thisAgent->ebChunker->ebc_params->interrupt_on_chunk, 61);
-            PrintCLIMessage_Item("Record utility instead of firing", thisAgent->ebChunker->ebc_params->utility_mode, 61);
-            PrintCLIMessage_Header("Mechanisms Enabled", 61);
-            PrintCLIMessage_Item("Learn from operator selection knowledge", thisAgent->ebChunker->ebc_params->mechanism_OSK, 61);
-            PrintCLIMessage_Item("Variablize symbols based on identity analysis", thisAgent->ebChunker->ebc_params->mechanism_identity_analysis, 61);
-            PrintCLIMessage_Item("Variablize and compose RHS functions", thisAgent->ebChunker->ebc_params->mechanism_variablize_rhs_funcs, 61);
-            PrintCLIMessage_Item("Track and enforce transitive constraints", thisAgent->ebChunker->ebc_params->mechanism_constraints, 61);
-            PrintCLIMessage_Item("Repair rules with unconnected RHS actions", thisAgent->ebChunker->ebc_params->mechanism_repair_rhs, 61);
-            PrintCLIMessage_Item("Repair rules with unconnected LHS conditions", thisAgent->ebChunker->ebc_params->mechanism_repair_lhs, 61);
-            PrintCLIMessage_Item("Repair rules that augment previous results", thisAgent->ebChunker->ebc_params->mechanism_promotion_tracking, 61);
-            PrintCLIMessage_Item("Merge redundant conditions", thisAgent->ebChunker->ebc_params->mechanism_merge, 61);
-            PrintCLIMessage_Item("Unify identities using domain-specific singletons", thisAgent->ebChunker->ebc_params->mechanism_user_singletons, 61);
-            PrintCLIMessage_Header("Learn rules despite problem-solving that...", 61);
-            PrintCLIMessage_Item("Used local negative reasoning", thisAgent->ebChunker->ebc_params->allow_missing_negative_reasoning, 61);
-            PrintCLIMessage_Item("Used operator selection knowledge", thisAgent->ebChunker->ebc_params->allow_missing_OSK, 61);
-            PrintCLIMessage_Item("Used knowledge retrieved from memory subsystem", thisAgent->ebChunker->ebc_params->allow_opaque_knowledge, 61);
-            PrintCLIMessage_Item("Selects operators probabilistically", thisAgent->ebChunker->ebc_params->allow_probabilistic_operators, 61);
-            PrintCLIMessage_Item("Tests a WME that has multiple reasons it exists", thisAgent->ebChunker->ebc_params->allow_multiple_prefs, 61);
-            PrintCLIMessage_Item("Tests retrieved LTM that already existed in higher goal", thisAgent->ebChunker->ebc_params->allow_temporal_constraint, 61);
-            PrintCLIMessage_Item("Creates a result by augmenting a previous result", thisAgent->ebChunker->ebc_params->allow_local_promotion, 61);
+            PrintCLIMessage_Header("Chunking Settings", 65);
+            PrintCLIMessage_Item("Learn rules from states", thisAgent->ebChunker->ebc_params->chunk_in_states, 65);
+            PrintCLIMessage_Item("Learn only from lowest sub-state", thisAgent->ebChunker->ebc_params->bottom_level_only, 65);
+            PrintCLIMessage_Item("Maximum rules that can be learned", thisAgent->ebChunker->ebc_params->max_chunks, 65);
+            PrintCLIMessage_Item("Maximum duplicate rules per sub-state (per rule, per phase)", thisAgent->ebChunker->ebc_params->max_dupes, 65);
+            PrintCLIMessage_Item("Interrupt after learning rule", thisAgent->ebChunker->ebc_params->interrupt_on_chunk, 65);
+            PrintCLIMessage_Item("Record utility instead of firing", thisAgent->ebChunker->ebc_params->utility_mode, 65);
+            PrintCLIMessage_Header("Mechanisms Enabled", 65);
+            PrintCLIMessage_Item("Learn from operator selection knowledge", thisAgent->ebChunker->ebc_params->mechanism_OSK, 65);
+            PrintCLIMessage_Item("Variablize symbols based on identity analysis", thisAgent->ebChunker->ebc_params->mechanism_identity_analysis, 65);
+            PrintCLIMessage_Item("Variablize and compose RHS functions", thisAgent->ebChunker->ebc_params->mechanism_variablize_rhs_funcs, 65);
+            PrintCLIMessage_Item("Track and enforce transitive constraints", thisAgent->ebChunker->ebc_params->mechanism_constraints, 65);
+            PrintCLIMessage_Item("Repair rules with unconnected RHS actions", thisAgent->ebChunker->ebc_params->mechanism_repair_rhs, 65);
+            PrintCLIMessage_Item("Repair rules with unconnected LHS conditions", thisAgent->ebChunker->ebc_params->mechanism_repair_lhs, 65);
+            PrintCLIMessage_Item("Repair rules that augment previous results", thisAgent->ebChunker->ebc_params->mechanism_promotion_tracking, 65);
+            PrintCLIMessage_Item("Merge redundant conditions", thisAgent->ebChunker->ebc_params->mechanism_merge, 65);
+            PrintCLIMessage_Item("Unify identities using domain-specific singletons", thisAgent->ebChunker->ebc_params->mechanism_user_singletons, 65);
+            PrintCLIMessage_Header("Allow rules to be learned despite problem-solving that...", 65);
+            PrintCLIMessage_Item("Used local negative reasoning", thisAgent->ebChunker->ebc_params->allow_missing_negative_reasoning, 65);
+            PrintCLIMessage_Item("Used operator selection rules to choose operator", thisAgent->ebChunker->ebc_params->allow_missing_OSK, 65);
+            PrintCLIMessage_Item("Used knowledge retrieved from memory subsystem", thisAgent->ebChunker->ebc_params->allow_opaque_knowledge, 65);
+            PrintCLIMessage_Item("Used operators selected probabilistically", thisAgent->ebChunker->ebc_params->allow_probabilistic_operators, 65);
+            PrintCLIMessage_Item("Tests a WME that has multiple reasons it exists", thisAgent->ebChunker->ebc_params->allow_multiple_prefs, 65);
+            PrintCLIMessage_Item("Tests retrieved LTM that already existed in higher goal", thisAgent->ebChunker->ebc_params->allow_temporal_constraint, 65);
+            PrintCLIMessage_Item("Creates a result by augmenting a previous result", thisAgent->ebChunker->ebc_params->allow_local_promotion, 65);
 
             if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] )
             {
-                PrintCLIMessage_Section("Only Learning In States", 61);
+                PrintCLIMessage_Section("Only Learning In States", 65);
                 if (!thisAgent->ebChunker->chunky_problem_spaces)
                 {
                     PrintCLIMessage("No current learning states.\n");
@@ -79,7 +89,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
                 }
             } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT])
             {
-                PrintCLIMessage_Section("Learning in All States Except", 61);
+                PrintCLIMessage_Section("Learning in All States Except", 65);
                 if (!thisAgent->ebChunker->chunky_problem_spaces)
                 {
                     PrintCLIMessage("Currently learning in all states.\n");
@@ -98,22 +108,82 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 'G')
     {
+        /* Single command argument */
         soar_module::param* my_param = thisAgent->ebChunker->ebc_params->get(pAttr->c_str());
         if (!my_param)
         {
-            if(thisAgent->ebChunker->ebc_params->enabled->validate_string(pAttr->c_str()))
+            /* Command was not a valid ebc_param name, so it must be a single word command */
+            /* Check if it's one of the four chunk enable commands.  (Means no ebc_param name
+             * can be named enabled, on off, all disabled, none only all-except*/
+            if(thisAgent->ebChunker->ebc_params->chunk_in_states->validate_string(pAttr->c_str()))
             {
-                thisAgent->ebChunker->ebc_params->enabled->set_string(pAttr->c_str());
-                tempStringStream << "Chunking parameter " << pAttr->c_str() << " = " << pVal->c_str();
+                thisAgent->ebChunker->ebc_params->chunk_in_states->set_string(pAttr->c_str());
+                tempStringStream << "Learns rules in states: " << pAttr->c_str();
                 PrintCLIMessage(&tempStringStream);
                 thisAgent->ebChunker->ebc_params->update_ebc_settings(thisAgent, NULL);
                 return true;
             } else {
-                return SetError("Invalid chunking parameter.  Use 'chunk -?' to see a list of valid settings.");
+                return SetError("Invalid chunking command.  Use 'chunk ?' to see a list of valid settings.");
             }
         }
+        if (my_param == thisAgent->ebChunker->ebc_params->stats_cmd)
+        {
+            thisAgent->explanationLogger->print_global_stats();
 
-        PrintCLIMessage_Item("", my_param, 0);
+        }
+        else if (my_param == thisAgent->ebChunker->ebc_params->history_cmd)
+        {
+            thisAgent->explanationLogger->print_global_stats();
+        }
+        else if ((my_param == thisAgent->ebChunker->ebc_params->help_cmd) || (my_param == thisAgent->ebChunker->ebc_params->qhelp_cmd))
+        {
+            tempStringStream << "chunk <command> [parameter value]    (leave empty to see current value)\n";
+            tempStringStream << "      ============= When to chunk =================== Value ===\n";
+            tempStringStream << "      always | never | only | all-except\n";
+            tempStringStream << "      bottom-only                                  " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->bottom_level_only->get_value()) << "\n";
+            tempStringStream << "      =============== Settings ====================== Value ===\n";
+            tempStringStream << "      naming-style                          [ " <<
+                                ((thisAgent->ebChunker->ebc_params->naming_style->get_value() == ruleFormat) ?  "numbered" : "NUMBERED") << " | " <<
+                                ((thisAgent->ebChunker->ebc_params->naming_style->get_value() == ruleFormat) ?  "RULE" : "rule") <<" ]\n";
+            std::string sep_string("");
+            std::string left_string("      max-chunks");
+            std::string right_string(thisAgent->ebChunker->ebc_params->max_chunks->get_string());
+            sep_string.insert(0, 63 - left_string.length() - right_string.length(), ' ');
+            tempStringStream << left_string << sep_string << right_string << '\n';
+            sep_string = "";
+            left_string = "      max-dupes";
+            right_string = thisAgent->ebChunker->ebc_params->max_dupes->get_string();
+            sep_string.insert(0, 63 - left_string.length() - right_string.length(), ' ');
+            tempStringStream << left_string << sep_string << right_string << '\n';
+            tempStringStream << "      =========== Debugging Commands ================ Value ===\n";
+            tempStringStream << "      ? | help | history | stats \n";
+            tempStringStream << "      interrupt                                    " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->bottom_level_only->get_value()) << "\n";
+            tempStringStream << "      record-utility                               " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->utility_mode->get_value()) << "\n";
+            tempStringStream << "      ============= EBC Mechanisms ================== Value ===\n";
+            tempStringStream << "      add-osk                                      " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_OSK->get_value()) << "\n";
+            tempStringStream << "      variablize-identity                          " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_identity_analysis->get_value()) << "\n";
+            tempStringStream << "      variablize-rhs-funcs                         " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_variablize_rhs_funcs->get_value()) << "\n";
+            tempStringStream << "      enforce-constraints                          " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_constraints->get_value()) << "\n";
+            tempStringStream << "      repair-rhs                                   " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_repair_rhs->get_value()) << "\n";
+            tempStringStream << "      repair-lhs                                   " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_repair_lhs->get_value()) << "\n";
+            tempStringStream << "      repair-rhs-promotion                         " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_promotion_tracking->get_value()) << "\n";
+            tempStringStream << "      merge                                        " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_merge->get_value()) << "\n";
+            tempStringStream << "      user-singletons                              " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->mechanism_user_singletons->get_value()) << "\n";
+            tempStringStream << "      ========== Correctness Filters ================ Value ===\n";
+            tempStringStream << "      allow-local-negations                        " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_missing_negative_reasoning->get_value()) << "\n";
+            tempStringStream << "      allow-missing-osk                            " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_missing_OSK->get_value()) << "\n";
+            tempStringStream << "      allow-opaque                                 " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_opaque_knowledge->get_value()) << "\n";
+            tempStringStream << "      allow-uncertain-operators                    " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_probabilistic_operators->get_value()) << "\n";
+            tempStringStream << "      allow-multiple-prefs                         " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_multiple_prefs->get_value()) << "\n";
+            tempStringStream << "      allow-pre-existing-ltm                       " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_temporal_constraint->get_value()) << "\n";
+            tempStringStream << "      allow-local-promotion                        " << capitalizeOnOff(thisAgent->ebChunker->ebc_params->allow_local_promotion->get_value()) << "\n";
+            PrintCLIMessage(tempStringStream.str().c_str(), false);
+        }
+        else {
+            /* Command was a valid ebc_param name, so print it's value */
+            tempStringStream << "Chunking parameter " << pAttr->c_str() << " =" ;
+            PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
+        }
         return true;
     }
     else if (pOp == 'S')
@@ -121,12 +191,12 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         soar_module::param* my_param = thisAgent->ebChunker->ebc_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid chunking parameter.  Use 'chunk -?' to see a list of valid settings.");
+            return SetError("Invalid chunking command.  Use 'chunk ?' to see a list of valid settings.");
         }
 
         if (!my_param->validate_string(pVal->c_str()))
         {
-            return SetError("Invalid setting for chunking parameter. Use 'chunk -?' to see a list of valid settings.");
+            return SetError("Invalid argument for chunking command. Use 'chunk ?' to see a list of valid settings.");
         }
 
         bool result = my_param->set_string(pVal->c_str());
@@ -143,7 +213,9 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         /* The following code assumes that all parameters except learn are boolean */
         if (!strcmp(pAttr->c_str(), "learn"))
         {
-            thisAgent->ebChunker->ebc_params->update_ebc_settings(thisAgent, NULL);
+            thisAgent->ebChunker->ebc_params->update_ebc_settings(thisAgent);
+        } else if (!strcmp(pAttr->c_str(), "max-chunks") || !strcmp(pAttr->c_str(), "max-dupes")) {
+            thisAgent->ebChunker->ebc_params->update_ebc_settings(thisAgent, NULL, static_cast<soar_module::integer_param*>(my_param));
         } else {
             thisAgent->ebChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
         }

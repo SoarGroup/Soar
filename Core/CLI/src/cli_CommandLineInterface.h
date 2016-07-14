@@ -120,7 +120,6 @@ namespace cli
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
             virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoChunkNameFormat(const chunkNameFormats* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
             virtual bool DoCLIMessage(const std::string& pMessage);
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
@@ -145,7 +144,6 @@ namespace cli
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
-            virtual bool DoMaxChunks(const int n = 0);
             virtual bool DoMaxDCTime(const int n = 0);
             virtual bool DoMaxElaborations(const int n = 0);
             virtual bool DoMaxGoalDepth(const int n = 0);

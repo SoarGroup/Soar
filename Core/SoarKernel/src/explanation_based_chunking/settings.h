@@ -15,7 +15,17 @@ class ebc_param_container: public soar_module::param_container
 {
     public:
 
-        soar_module::constant_param<EBCLearnChoices>* enabled;
+        soar_module::constant_param<EBCLearnChoices>* chunk_in_states;
+        soar_module::constant_param<chunkNameFormats>* naming_style;
+
+        soar_module::boolean_param* history_cmd;
+        soar_module::boolean_param* stats_cmd;
+        soar_module::boolean_param* help_cmd;
+        soar_module::boolean_param* qhelp_cmd;
+
+        soar_module::integer_param* max_chunks;
+        soar_module::integer_param* max_dupes;
+
         soar_module::boolean_param* bottom_level_only;
         soar_module::boolean_param* interrupt_on_chunk;
         soar_module::boolean_param* utility_mode;
@@ -38,9 +48,9 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* allow_temporal_constraint;
         soar_module::boolean_param* allow_local_promotion;
 
-        ebc_param_container(agent* new_agent, bool pEBC_settings[]);
+        ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
         void update_params(bool pEBC_settings[]);
-        void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam);
+        void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam = NULL, soar_module::integer_param* pChangedIntParam = NULL);
 };
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_SETTINGS_H_ */

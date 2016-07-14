@@ -32,7 +32,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Create the parameter object where the cli settings are stored.
      * This also initializes the ebc_settings array */
-    ebc_params = new ebc_param_container(thisAgent, ebc_settings);
+    ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
 
     /* Create data structures used for EBC */
     o_id_to_var_map = new id_to_sym_map_type();
@@ -46,7 +46,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
-    ebc_settings[SETTING_EBC_LEARNING_ON] = ebc_settings[SETTING_EBC_LEARNING_ON];
     m_learning_on_for_instantiation = ebc_settings[SETTING_EBC_LEARNING_ON];
 
     chunkNameFormat = ruleFormat;
@@ -77,10 +76,6 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
 
-}
-void Explanation_Based_Chunker::update_learning_on()
-{
-    ebc_settings[SETTING_EBC_LEARNING_ON] = ebc_settings[SETTING_EBC_LEARNING_ON];
 }
 
 void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
@@ -184,7 +179,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     std::stringstream lName;
     char* rule_prefix;
     uint64_t rule_number;
-    chunkNameFormats chunkNameFormat = Get_Chunk_Name_Format();
+    chunkNameFormats chunkNameFormat = ebc_params->naming_style->get_value();
 
     if (pIsChunk)
     {
@@ -213,62 +208,6 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                         thisAgent,
                         rule_prefix,
                         &(chunk_count)));
-        }
-        case longFormat:
-        {
-            if (goal)
-            {
-                impasse_type = type_of_existing_impasse(thisAgent, goal);
-                switch (impasse_type)
-                {
-                    case NONE_IMPASSE_TYPE:
-                        lImpasseName = "unknownimpasse";
-                        break;
-                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        lImpasseName = "cfailure";
-                        break;
-                    case CONFLICT_IMPASSE_TYPE:
-                        lImpasseName = "conflict";
-                        break;
-                    case TIE_IMPASSE_TYPE:
-                        lImpasseName = "tie";
-                        break;
-                    case NO_CHANGE_IMPASSE_TYPE:
-                    {
-                        Symbol* sym;
-
-                        if ((sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol)) == NIL)
-                        {
-                            lImpasseName = "unknownimpasse";
-                        }
-                        else if (sym == thisAgent->operator_symbol)
-                        {
-                            lImpasseName = "opnochange";
-                        }
-                        else if (sym == thisAgent->state_symbol)
-                        {
-                            lImpasseName = "snochange";
-                        }
-                        else
-                        {
-                            lImpasseName = "unknownimpasse";
-                        }
-                    }
-                    break;
-                    default:
-                        lImpasseName = "unknownimpasse";
-                        break;
-                }
-            }
-            else
-            {
-                lImpasseName = "unknownimpasse";
-            }
-            increment_counter(chunk_count);
-            lName << rule_prefix << "-" << chunk_count << "*" <<
-                  thisAgent->d_cycle_count << "*" << lImpasseName << "*" << rule_number;
-
-            break;
         }
         case ruleFormat:
         {

@@ -83,12 +83,10 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
-        /* For the cli learn command */
-        chunkNameFormats        Get_Chunk_Name_Format() {return chunkNameFormat;};
-        void                    Set_Chunk_Name_Format(chunkNameFormats pChunkNameFormat) {chunkNameFormat = pChunkNameFormat;};
-        void                    update_learning_on();
+        /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
+        uint64_t                max_chunks, max_dupes;
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */

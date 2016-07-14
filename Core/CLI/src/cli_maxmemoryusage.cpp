@@ -32,7 +32,7 @@ bool CommandLineInterface::DoMaxMemoryUsage(const int n)
         else
         {
             std::string temp;
-            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM], temp));
+            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(thisAgent->ebChunker->max_chunks, temp));
         }
         return true;
     }
