@@ -3,7 +3,6 @@
 #include "unittest.h"
 
 #include "handlers.h"
-#include "kernel.h"
 #include "soar_rand.h"
 
 namespace sml

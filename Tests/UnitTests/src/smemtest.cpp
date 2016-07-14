@@ -3,7 +3,6 @@
 #include "unittest.h"
 
 #include "handlers.h"
-#include "kernel.h"
 #include "sml_Events.h"
 #include "soar_instance.h"
 
