@@ -91,6 +91,10 @@ class Explanation_Memory
         void increment_stat_constraints_attached() { stats.constraints_attached++; if (current_recording_chunk) current_recording_chunk->stats.constraints_attached++; };
         void increment_stat_constraints_collected() { stats.constraints_collected++; if (current_recording_chunk) current_recording_chunk->stats.constraints_collected++; };
 
+        uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
+        uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };
+        uint64_t get_stat_justifications() { return stats.justifications_succeeded; };
+
         bool current_discussed_chunk_exists();
         bool watch_rule(const std::string* pStringParameter);
         bool toggle_production_watch(production* pProduction);

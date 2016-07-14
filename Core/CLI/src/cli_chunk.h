@@ -28,36 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "chunk <command> [parameter value]    (leave empty to see current value)\n"
-                    "      ============= When to chunk ============== Value ===\n"
-                    "      always | never | only | all-except\n"
-                    "      bottom-only                             [ on | off ]\n"
-                    "      =============== Settings ================= Value ===\n"
-                    "      naming-style                     [ numbered | rule ]\n"
-                    "      max-chunks                                 <maximum>\n"
-                    "      max-dupe-chunks                            <maximum>\n"
-                    "      =========== Debugging Commands =========== Value ===\n"
-                    "      ? | help | history | stats \n"
-                    "      interrupt                               [ on | off ]\n"
-                    "      record-utility                          [ on | off ]\n"
-                    "      ============= EBC Mechanisms ============= Value ===\n"
-                    "      variablize-identity                     [ on | off ]\n"
-                    "      enforce-constraints                     [ on | off ]\n"
-                    "      add-osk                                 [ on | off ]\n"
-                    "      variablize-rhs-funcs                    [ on | off ]\n"
-                    "      repair-rhs                              [ on | off ]\n"
-                    "      repair-lhs                              [ on | off ]\n"
-                    "      repair-rhs-promotion                    [ on | off ]\n"
-                    "      merge                                   [ on | off ]\n"
-                    "      user-singletons                         [ on | off ]\n"
-                    "      ========== Correctness Filters =========== Value ===\n"
-                    "      allow-local-negations                   [ on | off ]\n"
-                    "      allow-missing-osk                       [ on | off ]\n"
-                    "      allow-opaque                            [ on | off ]\n"
-                    "      allow-uncertain-operators               [ on | off ]\n"
-                    "      allow-multiple-prefs                    [ on | off ]\n"
-                    "      allow-pre-existing-ltm                  [ on | off ]\n"
-                    "      allow-local-promotion                   [ on | off ]\n";
+                return  "Try 'chunk ?' or 'help chunk' to learn more about the chunking command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)

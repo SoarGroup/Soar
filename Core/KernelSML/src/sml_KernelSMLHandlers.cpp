@@ -31,6 +31,7 @@
 #include "agent.h"
 #include "io_link.h"
 #include "working_memory.h"
+#include "svs_interface.h"
 #include "xml.h"
 
 #include <iostream>

@@ -46,7 +46,6 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* allow_probabilistic_operators;
         soar_module::boolean_param* allow_multiple_prefs;
         soar_module::boolean_param* allow_temporal_constraint;
-        soar_module::boolean_param* allow_local_promotion;
 
         ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
         void update_params(bool pEBC_settings[]);

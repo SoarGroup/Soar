@@ -219,10 +219,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         case numberedFormat:
         {
             increment_counter(chunk_count);
-            return (generate_new_str_constant(
-                        thisAgent,
-                        rule_prefix,
-                        &(chunk_count)));
+            return (generate_new_str_constant(thisAgent, rule_prefix, &(chunk_count)));
         }
         case ruleFormat:
         {
@@ -238,13 +235,13 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                 switch (impasse_type)
                 {
                     case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        lImpasseName = "cfo";
+                        lImpasseName = "Failure";
                         break;
                     case CONFLICT_IMPASSE_TYPE:
-                        lImpasseName = "con";
+                        lImpasseName = "Conflict";
                         break;
                     case TIE_IMPASSE_TYPE:
-                        lImpasseName = "tie";
+                        lImpasseName = "Tie";
                         break;
                     case NO_CHANGE_IMPASSE_TYPE:
                     {
@@ -254,11 +251,11 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                         {
                             if (sym == thisAgent->operator_symbol)
                             {
-                                lImpasseName = "onc";
+                                lImpasseName = "OpNoChange";
                             }
                             else if (sym == thisAgent->state_symbol)
                             {
-                                lImpasseName = "snc";
+                                lImpasseName = "StateNoChange";
                             }
                         }
                     }
@@ -270,6 +267,10 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
 
             if (inst->prod)
             {
+                /* Check for chunk pos and original rule name pos.
+                 * If difference is length of chunk + 1, concat x2
+                 * If more, then convert string in between to number, add 1 and concat xN
+                 */
                 if ((strstr(inst->prod_name->sc->name, rule_prefix) == inst->prod_name->sc->name) &&
                     (strstr(inst->prod_name->sc->name, "-multi") == inst->prod_name->sc->name))
                 {

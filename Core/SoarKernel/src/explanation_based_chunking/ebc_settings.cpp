@@ -16,7 +16,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_EXCEPT] = false;
     pEBC_settings[SETTING_EBC_BOTTOM_ONLY] = false;
     pEBC_settings[SETTING_EBC_INTERRUPT] = false;
-    pEBC_settings[SETTING_EBC_UTILITY_MODE] = true;
+    pEBC_settings[SETTING_EBC_UTILITY_MODE] = false;
     pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] = true;
     pEBC_settings[SETTING_EBC_CONSTRAINTS] = true;
     pEBC_settings[SETTING_EBC_RHS_VRBLZ] = true;
@@ -41,13 +41,14 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     chunk_in_states = new soar_module::constant_param<EBCLearnChoices>("learn", ebc_never, new soar_module::f_predicate<EBCLearnChoices>());
     chunk_in_states->add_mapping(ebc_always, "enabled");
     chunk_in_states->add_mapping(ebc_always, "on");
-    chunk_in_states->add_mapping(ebc_always, "always");
     chunk_in_states->add_mapping(ebc_always, "all");
+    chunk_in_states->add_mapping(ebc_always, "always");
     chunk_in_states->add_mapping(ebc_never, "disabled");
     chunk_in_states->add_mapping(ebc_never, "off");
     chunk_in_states->add_mapping(ebc_never, "none");
     chunk_in_states->add_mapping(ebc_never, "never");
     chunk_in_states->add_mapping(ebc_only, "only");
+    chunk_in_states->add_mapping(ebc_only, "flagged");
     chunk_in_states->add_mapping(ebc_except, "except");
     chunk_in_states->add_mapping(ebc_except, "all-except");
     add(chunk_in_states);
@@ -83,7 +84,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(mechanism_identity_analysis);
     mechanism_variablize_rhs_funcs = new soar_module::boolean_param("variablize-rhs-funcs", setting_on(SETTING_EBC_RHS_VRBLZ), new soar_module::f_predicate<boolean>());
     add(mechanism_variablize_rhs_funcs);
-    mechanism_constraints = new soar_module::boolean_param("enforce-constraints", setting_on(SETTING_EBC_BOTTOM_ONLY), new soar_module::f_predicate<boolean>());
+    mechanism_constraints = new soar_module::boolean_param("enforce-constraints", setting_on(SETTING_EBC_CONSTRAINTS), new soar_module::f_predicate<boolean>());
     add(mechanism_constraints);
     mechanism_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_OSK), new soar_module::f_predicate<boolean>());
     add(mechanism_OSK);
@@ -102,17 +103,14 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(allow_missing_negative_reasoning);
     allow_missing_OSK = new soar_module::boolean_param("allow-missing-osk", setting_on(SETTING_EBC_ALLOW_OSK), new soar_module::f_predicate<boolean>());
     add(allow_missing_OSK);
-    allow_opaque_knowledge = new soar_module::boolean_param("allow-memory-subsystems", setting_on(SETTING_EBC_ALLOW_OPAQUE), new soar_module::f_predicate<boolean>());
+    allow_opaque_knowledge = new soar_module::boolean_param("allow-opaque", setting_on(SETTING_EBC_ALLOW_OPAQUE), new soar_module::f_predicate<boolean>());
     add(allow_opaque_knowledge);
     allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
     add(allow_probabilistic_operators);
     allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
     add(allow_multiple_prefs);
-    allow_temporal_constraint = new soar_module::boolean_param("allow-pre-existing-ltm", setting_on(SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT), new soar_module::f_predicate<boolean>());
+    allow_temporal_constraint = new soar_module::boolean_param("allow-higher-level-ltm", setting_on(SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT), new soar_module::f_predicate<boolean>());
     add(allow_temporal_constraint);
-    allow_local_promotion = new soar_module::boolean_param("allow-local-promotion", setting_on(SETTING_EBC_ALLOW_LOCAL_PROMOTION), new soar_module::f_predicate<boolean>());
-    add(allow_local_promotion);
-
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
@@ -236,10 +234,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = pChangedParam->get_value();
     }
-    else if (pChangedParam == allow_local_promotion)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = pChangedParam->get_value();
-    }
 }
 
 void ebc_param_container::update_params(bool pEBC_settings[])
@@ -265,8 +259,8 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     utility_mode->set_value(pEBC_settings[SETTING_EBC_UTILITY_MODE] ? on : off);
 
     mechanism_identity_analysis->set_value(pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] ? on : off);
-    mechanism_variablize_rhs_funcs->set_value(pEBC_settings[SETTING_EBC_CONSTRAINTS] ? on : off);
-    mechanism_constraints->set_value(pEBC_settings[SETTING_EBC_RHS_VRBLZ] ? on : off);
+    mechanism_variablize_rhs_funcs->set_value(pEBC_settings[SETTING_EBC_RHS_VRBLZ] ? on : off);
+    mechanism_constraints->set_value(pEBC_settings[SETTING_EBC_CONSTRAINTS] ? on : off);
     mechanism_OSK->set_value(pEBC_settings[SETTING_EBC_OSK] ? on : off);
     mechanism_repair_rhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_RHS] ? on : off);
     mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
@@ -280,5 +274,4 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
     allow_multiple_prefs->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
     allow_temporal_constraint->set_value(pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] ? on : off);
-    allow_local_promotion->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] ? on : off);
 }

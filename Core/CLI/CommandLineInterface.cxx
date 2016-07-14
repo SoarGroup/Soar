@@ -24,7 +24,6 @@
 #include "src/cli_indifferentselection.cpp"
 #include "src/cli_initsoar.cpp"
 #include "src/cli_internalsymbols.cpp"
-#include "src/cli_learn.cpp"
 #include "src/cli_loadLibrary.cpp"
 #include "src/cli_ls.cpp"
 #include "src/cli_matches.cpp"
