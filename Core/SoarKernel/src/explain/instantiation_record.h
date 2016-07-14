@@ -17,7 +17,7 @@ class action_record;
 
 class instantiation_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
         friend class chunk_record;
 
     public:

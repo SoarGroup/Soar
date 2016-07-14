@@ -292,10 +292,10 @@ agent* create_soar_agent(char* agent_name)                                      
     // be set before the agent was initialized.
     init_sysparams(thisAgent);
     thisAgent->parser_syms = NIL;
-    thisAgent->ebChunker = new Explanation_Based_Chunker(thisAgent);
-    thisAgent->explanationLogger = new Explanation_Logger(thisAgent);
+    thisAgent->explanationBasedChunker = new Explanation_Based_Chunker(thisAgent);
+    thisAgent->explanationMemory = new Explanation_Memory(thisAgent);
     thisAgent->outputManager = &Output_Manager::Get_OM();
-    thisAgent->visualizer = new GraphViz_Visualizer(thisAgent);
+    thisAgent->visualizationManager = new GraphViz_Visualizer(thisAgent);
 
     /* Initializing all the timer structures */
     // Timers must be initialized after sysparams
@@ -427,12 +427,12 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    delete delete_agent->explanationLogger;
-    delete_agent->explanationLogger = NULL;
-    delete delete_agent->ebChunker;
+    delete delete_agent->explanationMemory;
+    delete_agent->explanationMemory = NULL;
+    delete delete_agent->explanationBasedChunker;
     dprint(DT_DEBUG, "Done cleaning up EBC and explainer.\n");
 
-    delete delete_agent->visualizer;
+    delete delete_agent->visualizationManager;
 
     // cleanup exploration
     for (int i = 0; i < EXPLORATION_PARAMS; i++)
@@ -601,9 +601,9 @@ bool reinitialize_agent(agent* thisAgent)
     smem_reinit(thisAgent);
     thisAgent->LTIs_sourced->clear();
 
-    thisAgent->ebChunker->reinit();
+    thisAgent->explanationBasedChunker->reinit();
     #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->re_init();
+    thisAgent->explanationMemory->re_init();
     #endif
 
     bool wma_was_enabled = wma_enabled(thisAgent);

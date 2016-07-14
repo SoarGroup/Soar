@@ -49,7 +49,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
-        new_action_record = thisAgent->explanationLogger->add_result(pref);
+        new_action_record = thisAgent->explanationMemory->add_result(pref);
         actions->push_front(new_action_record);
     }
 
@@ -76,11 +76,11 @@ void instantiation_record::delete_instantiation()
 {
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
-        thisAgent->explanationLogger->delete_condition((*it)->get_conditionID());
+        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
     }
     for (auto it = actions->begin(); it != actions->end(); it++)
     {
-        thisAgent->explanationLogger->delete_action((*it)->get_actionID());
+        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
     }
 }
 
@@ -90,7 +90,7 @@ void instantiation_record::record_instantiation_contents()
     /* Create condition and action records */
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        condition_record* lCondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, this);
+        condition_record* lCondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, this);
         lCondRecord->connect_to_action();
     }
 }
@@ -286,7 +286,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
 
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -309,11 +309,11 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationLogger->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
         if (printFooter) {
-            thisAgent->explanationLogger->print_footer();
+            thisAgent->explanationMemory->print_footer();
             outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
-            thisAgent->explanationLogger->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
+            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
         outputManager->printa(thisAgent, "\n");
 
@@ -357,9 +357,9 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                 outputManager->printa_sf(thisAgent,
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
-                thisAgent->explanationLogger->print_explanation_trace = false;
+                thisAgent->explanationMemory->print_explanation_trace = false;
                 print_for_wme_trace(printFooter);
-                thisAgent->explanationLogger->print_explanation_trace = true;
+                thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
         } else {
@@ -406,7 +406,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
-                thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
                 id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value);
@@ -449,11 +449,11 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationLogger->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
         if (printFooter) {
-            thisAgent->explanationLogger->print_footer();
+            thisAgent->explanationMemory->print_footer();
             outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
-            thisAgent->explanationLogger->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
+            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
         outputManager->printa(thisAgent, "\n");
 
@@ -466,8 +466,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
 
 void instantiation_record::viz_simple_instantiation()
 {
-    thisAgent->visualizer->viz_object_start(production_name, instantiationID, viz_simple_inst);
-    thisAgent->visualizer->viz_object_end(viz_simple_inst);
+    thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_simple_inst);
+    thisAgent->visualizationManager->viz_object_end(viz_simple_inst);
 }
 
 
@@ -475,7 +475,7 @@ void instantiation_record::viz_wm_instantiation()
 {
 
     Output_Manager* outputManager = thisAgent->outputManager;
-    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     condition_record* lCond;
 
     if (conditions->empty())
@@ -493,7 +493,7 @@ void instantiation_record::viz_wm_instantiation()
         bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
-        thisAgent->visualizer->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -507,13 +507,13 @@ void instantiation_record::viz_wm_instantiation()
             {
                 if (lCond->type != CONJUNCTIVE_NEGATION_CONDITION)
                 {
-                    thisAgent->visualizer->viz_NCC_end();
+                    thisAgent->visualizationManager->viz_NCC_end();
                     lInNegativeConditions = false;
                 }
             } else {
                 if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
                 {
-                    thisAgent->visualizer->viz_NCC_start();
+                    thisAgent->visualizationManager->viz_NCC_start();
                     lInNegativeConditions = true;
                 }
             }
@@ -521,20 +521,20 @@ void instantiation_record::viz_wm_instantiation()
         }
         if (lInNegativeConditions)
         {
-            thisAgent->visualizer->viz_NCC_end();
+            thisAgent->visualizationManager->viz_NCC_end();
         } else {
-            thisAgent->visualizer->viz_endl();
+            thisAgent->visualizationManager->viz_endl();
         }
-        thisAgent->visualizer->viz_seperator();
+        thisAgent->visualizationManager->viz_seperator();
         action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
-        thisAgent->visualizer->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
     }
 }
 
 void instantiation_record::viz_et_instantiation()
 {
     Output_Manager* outputManager = thisAgent->outputManager;
-    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (conditions->empty())
     {
@@ -560,9 +560,9 @@ void instantiation_record::viz_et_instantiation()
                 assert(top);
                 assert(rhs);
             } else {
-                thisAgent->explanationLogger->print_explanation_trace = false;
+                thisAgent->explanationMemory->print_explanation_trace = false;
                 viz_wm_instantiation();
-                thisAgent->explanationLogger->print_explanation_trace = true;
+                thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
         } else {
@@ -577,7 +577,7 @@ void instantiation_record::viz_et_instantiation()
         }
         outputManager->set_print_test_format(true, false);
 
-        thisAgent->visualizer->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -585,12 +585,12 @@ void instantiation_record::viz_et_instantiation()
             ++lConditionCount;
             if (lConditionCount > 1)
             {
-                thisAgent->visualizer->viz_endl();
+                thisAgent->visualizationManager->viz_endl();
             }
 
             if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
             {
-                thisAgent->visualizer->viz_NCC_start();
+                thisAgent->visualizationManager->viz_NCC_start();
                 lInNegativeConditions = true;
             }
 
@@ -608,7 +608,7 @@ void instantiation_record::viz_et_instantiation()
                 if (!currentNegativeCond)
                 {
                     current_cond = current_cond->next;
-                    thisAgent->visualizer->viz_NCC_end();
+                    thisAgent->visualizationManager->viz_NCC_end();
                     lInNegativeConditions = false;
                 }
             } else {
@@ -621,27 +621,27 @@ void instantiation_record::viz_et_instantiation()
         }
         if (lInNegativeConditions)
         {
-            thisAgent->visualizer->viz_NCC_end();
+            thisAgent->visualizationManager->viz_NCC_end();
         } else {
-            thisAgent->visualizer->viz_endl();
+            thisAgent->visualizationManager->viz_endl();
         }
-        thisAgent->visualizer->viz_seperator();
+        thisAgent->visualizationManager->viz_seperator();
         action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
         if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
         }
-        thisAgent->visualizer->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
     }
 }
 
 void instantiation_record::visualize()
 {
-    if (thisAgent->visualizer->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->is_simple_inst_enabled())
     {
         viz_simple_instantiation();
     } else {
-        if (thisAgent->explanationLogger->print_explanation_trace)
+        if (thisAgent->explanationMemory->print_explanation_trace)
         {
             viz_et_instantiation();
         } else {

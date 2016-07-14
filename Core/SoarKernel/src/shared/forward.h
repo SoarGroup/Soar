@@ -55,7 +55,7 @@ typedef byte wme_trace_type;
 typedef struct symbol_with_match_struct symbol_with_match;
 
 class Output_Manager;
-class Explanation_Logger;
+class Explanation_Memory;
 class Soar_Instance;
 class AgentOutput_Info;
 class GraphViz_Visualizer;

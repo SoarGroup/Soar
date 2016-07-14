@@ -87,6 +87,11 @@ class Explanation_Based_Chunker
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
         uint64_t                max_chunks, max_dupes;
+        bool                    max_chunks_reached;
+
+        /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
+        ::list*     chunk_free_problem_spaces;
+        ::list*     chunky_problem_spaces;   /* AGR MVL1 */
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
@@ -102,7 +107,6 @@ class Explanation_Based_Chunker
         uint64_t get_justification_count() { return justification_count; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
-        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
 
         /* Methods used during condition copying to make unification and constraint
@@ -111,30 +115,16 @@ class Explanation_Based_Chunker
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
-        /* Methods used by cli learn command */
-        uint64_t get_chunk_count() { return chunk_count; };
-        void     set_chunk_count(uint64_t pChunkCount) { chunk_count = pChunkCount; };
-        char*    get_chunk_name_prefix() { return chunk_name_prefix; };
-        void     set_chunk_name_prefix(const char* pChunk_name_prefix);
-
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
-        bool max_chunks_reached;
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
-
-        /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-        ::list*             chunk_free_problem_spaces;
-        ::list*             chunky_problem_spaces;   /* AGR MVL1 */
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
-
-        /* Methods for printing in Soar trace */
-        void print_current_built_rule(const char* pHeader);
 
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
@@ -163,10 +153,17 @@ class Explanation_Based_Chunker
         uint64_t            justification_count;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
+        std::string*        chunk_history;
 
         /* String that every chunk name begins with */
         char*               chunk_name_prefix;
         char*               justification_name_prefix;
+
+        /* -- A counter for variablization and instantiation id's - */
+        uint64_t inst_id_counter;
+        uint64_t ovar_id_counter;
+
+        tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
         ::list*             grounds;
@@ -200,9 +197,11 @@ class Explanation_Based_Chunker
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
         EBCFailureType      m_failure_type;
-        /* -- The following are tables used by the variablization manager during
-         *    instantiation creation, backtracing and chunk formation.  The data
-         *    they store is temporary and cleared after use. -- */
+
+        /* -- The following are the core tables used by EBC during
+         *    instantiation creation, identity analysis, condition
+         *    formation and variablization.  The data stored within
+         *    them is temporary and cleared after use. -- */
 
         inst_to_id_map_type*            instantiation_identities;
         id_to_sym_map_type*             o_id_to_var_map;
@@ -221,14 +220,6 @@ class Explanation_Based_Chunker
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
         sym_to_sym_map_type*            rhs_var_to_match_map;
-
-        /* -- A counter for variablization and instantiation id's - */
-        uint64_t inst_id_counter;
-        uint64_t ovar_id_counter;
-
-        chunkNameFormats chunkNameFormat;
-
-        tc_number tc_num_found;
 
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
@@ -281,6 +272,7 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
+        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
@@ -313,6 +305,7 @@ class Explanation_Based_Chunker
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
         Symbol* get_variablization(uint64_t index_id);
+        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
@@ -328,10 +321,10 @@ class Explanation_Based_Chunker
         void clear_o_id_substitution_map();
         void clear_singletons();
         void clear_data();
-
         void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
-        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
+        /* Methods for printing in Soar trace */
+        void print_current_built_rule(const char* pHeader);
 };
 
 #endif /* EBC_MANAGER_H_ */

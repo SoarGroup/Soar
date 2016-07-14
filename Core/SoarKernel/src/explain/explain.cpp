@@ -21,7 +21,7 @@
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900
 
-Explanation_Logger::Explanation_Logger(agent* myAgent)
+Explanation_Memory::Explanation_Memory(agent* myAgent)
 {
     /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
@@ -44,7 +44,7 @@ Explanation_Logger::Explanation_Logger(agent* myAgent)
 
 }
 
-void Explanation_Logger::initialize_counters()
+void Explanation_Memory::initialize_counters()
 {
 
     current_discussed_chunk = NULL;
@@ -74,7 +74,7 @@ void Explanation_Logger::initialize_counters()
     stats.grounding_conditions_added = 0;
 
 }
-void Explanation_Logger::clear_explanations()
+void Explanation_Memory::clear_explanations()
 {
     //debug_trace_set(DT_ID_LEAKING, true);
     //debug_trace_set(DT_EXPLAIN, true);
@@ -123,7 +123,7 @@ void Explanation_Logger::clear_explanations()
 
 }
 
-Explanation_Logger::~Explanation_Logger()
+Explanation_Memory::~Explanation_Memory()
 {
     //debug_trace_set(DT_ID_LEAKING, true);
     //debug_trace_set(DT_EXPLAIN, true);
@@ -143,7 +143,7 @@ Explanation_Logger::~Explanation_Logger()
     //debug_trace_set(DT_EXPLAIN, false);
 }
 
-void Explanation_Logger::re_init()
+void Explanation_Memory::re_init()
 {
     dprint(DT_EXPLAIN, "Re-intializing explanation logger.\n");
     clear_explanations();
@@ -154,7 +154,7 @@ void Explanation_Logger::re_init()
 
 }
 
-void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
+void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 {
     bool lShouldRecord = false;
     if ((!enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
@@ -174,7 +174,7 @@ void Explanation_Logger::add_chunk_record(instantiation* pBaseInstantiation)
     //}
 }
 
-void Explanation_Logger::end_chunk_record()
+void Explanation_Memory::end_chunk_record()
 {
     if (current_recording_chunk)
     {
@@ -183,7 +183,7 @@ void Explanation_Logger::end_chunk_record()
     }
 }
 
-void Explanation_Logger::cancel_chunk_record()
+void Explanation_Memory::cancel_chunk_record()
 {
     if (current_recording_chunk)
     {
@@ -191,22 +191,22 @@ void Explanation_Logger::cancel_chunk_record()
         current_recording_chunk = NULL;
     }
 }
-void Explanation_Logger::delete_condition(uint64_t pCondID)
+void Explanation_Memory::delete_condition(uint64_t pCondID)
 {
     all_conditions->erase(pCondID);
 }
 
-void Explanation_Logger::delete_action(uint64_t pActionID)
+void Explanation_Memory::delete_action(uint64_t pActionID)
 {
     all_actions->erase(pActionID);
 }
 
-void Explanation_Logger::delete_instantiation(uint64_t pInstID)
+void Explanation_Memory::delete_instantiation(uint64_t pInstID)
 {
     instantiations->erase(pInstID);
 }
 
-void Explanation_Logger::add_result_instantiations(instantiation* pBaseInst, preference* pResults)
+void Explanation_Memory::add_result_instantiations(instantiation* pBaseInst, preference* pResults)
 {
     if (current_recording_chunk)
     {
@@ -220,7 +220,7 @@ void Explanation_Logger::add_result_instantiations(instantiation* pBaseInst, pre
     }
 }
 
-void Explanation_Logger::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
+void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
 {
     //debug_trace_set(DT_ID_LEAKING, true);
     //debug_trace_set(DT_EXPLAIN, true);
@@ -239,7 +239,7 @@ void Explanation_Logger::record_chunk_contents(production* pProduction, conditio
     //debug_trace_set(DT_ID_LEAKING, false);
 }
 
-condition_record* Explanation_Logger::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
+condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
 {
     dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
@@ -271,7 +271,7 @@ condition_record* Explanation_Logger::add_condition(condition_record_list* pCond
     }
 }
 
-instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst, uint64_t pChunkID)
+instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst, uint64_t pChunkID)
 {
     if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
@@ -339,7 +339,7 @@ instantiation_record* Explanation_Logger::add_instantiation(instantiation* pInst
     return get_instantiation(pInst);
 }
 
-action_record* Explanation_Logger::add_result(preference* pPref, action* pAction)
+action_record* Explanation_Memory::add_result(preference* pPref, action* pAction)
 {
     increment_counter(action_id_count);
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
@@ -349,7 +349,7 @@ action_record* Explanation_Logger::add_result(preference* pPref, action* pAction
     return lActionRecord;
 }
 
-chunk_record* Explanation_Logger::get_chunk_record(Symbol* pChunkName)
+chunk_record* Explanation_Memory::get_chunk_record(Symbol* pChunkName)
 {
     assert(pChunkName);
 
@@ -366,7 +366,7 @@ chunk_record* Explanation_Logger::get_chunk_record(Symbol* pChunkName)
     return NULL;
 }
 
-instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst)
+instantiation_record* Explanation_Memory::get_instantiation(instantiation* pInst)
 {
     assert(pInst);
 
@@ -385,7 +385,7 @@ instantiation_record* Explanation_Logger::get_instantiation(instantiation* pInst
 }
 
 
-bool Explanation_Logger::toggle_production_watch(production* pProduction)
+bool Explanation_Memory::toggle_production_watch(production* pProduction)
 {
     if (pProduction->explain_its_chunks)
     {
@@ -400,7 +400,7 @@ bool Explanation_Logger::toggle_production_watch(production* pProduction)
     return true;
 }
 
-bool Explanation_Logger::watch_rule(const std::string* pStringParameter)
+bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 {
     Symbol* sym;
 
@@ -415,7 +415,7 @@ bool Explanation_Logger::watch_rule(const std::string* pStringParameter)
     return false;
 }
 
-bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
+bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
 
@@ -440,7 +440,7 @@ bool Explanation_Logger::explain_chunk(const std::string* pStringParameter)
 
 }
 
-void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
+void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
@@ -457,7 +457,7 @@ void Explanation_Logger::discuss_chunk(chunk_record* pChunkRecord)
 
 }
 
-void Explanation_Logger::save_excised_production(production* pProd)
+void Explanation_Memory::save_excised_production(production* pProd)
 {
     dprint(DT_EXPLAIN, "Explanation logger adding production record for excised production: %y\n", pProd->name);
     production_record* lProductionRecord = new production_record(thisAgent, pProd);
@@ -489,7 +489,7 @@ void Explanation_Logger::save_excised_production(production* pProd)
     dprint(DT_EXPLAIN, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
 }
 
-bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
+bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
 {
     std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
 
@@ -504,7 +504,7 @@ bool Explanation_Logger::print_chunk_explanation_for_id(uint64_t pChunkID)
     return true;
 }
 
-bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID)
+bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID)
 {
     std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
 
@@ -519,7 +519,7 @@ bool Explanation_Logger::print_instantiation_explanation_for_id(uint64_t pInstID
     return true;
 }
 
-bool Explanation_Logger::print_condition_explanation_for_id(uint64_t pConditionID)
+bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
 {
     std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
     identity_triple lWatchIdentities;
@@ -552,7 +552,7 @@ bool Explanation_Logger::print_condition_explanation_for_id(uint64_t pConditionI
     return true;
 }
 
-bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
 {
     /* First argument must be an object type.  Current valid types are 'chunk',
      * and 'instantiation' */
@@ -590,12 +590,12 @@ bool Explanation_Logger::explain_item(const std::string* pObjectTypeString, cons
 }
 
 
-bool Explanation_Logger::current_discussed_chunk_exists()
+bool Explanation_Memory::current_discussed_chunk_exists()
 {
     return current_discussed_chunk;
 }
 
-void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
+void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
 {
     assert(duplicate_rule);
     increment_counter(stats.duplicates);
@@ -610,7 +610,7 @@ void Explanation_Logger::increment_stat_duplicates(production* duplicate_rule)
     }
 };
 
-void Explanation_Logger::increment_stat_grounded(int pNumConds)
+void Explanation_Memory::increment_stat_grounded(int pNumConds)
 {
     increment_counter(stats.grounding_conditions_added);
     if (current_recording_chunk)
@@ -620,7 +620,7 @@ void Explanation_Logger::increment_stat_grounded(int pNumConds)
     }
 };
 
-void Explanation_Logger::increment_stat_reverted()
+void Explanation_Memory::increment_stat_reverted()
 {
     increment_counter(stats.chunks_reverted);
     if (current_recording_chunk)
@@ -631,7 +631,7 @@ void Explanation_Logger::increment_stat_reverted()
     stats.justifications_attempted--;
 };
 
-void Explanation_Logger::clear_chunk_from_instantiations()
+void Explanation_Memory::clear_chunk_from_instantiations()
 {
     instantiation_record* lNewInstRecord;
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
@@ -645,21 +645,21 @@ void Explanation_Logger::clear_chunk_from_instantiations()
     }
 }
 
-void Explanation_Logger::visualize_last_output()
+void Explanation_Memory::visualize_last_output()
 {
-    thisAgent->visualizer->viz_graph_start();
+    thisAgent->visualizationManager->viz_graph_start();
     if (!last_printed_id)
     {
         current_discussed_chunk->visualize();
     } else {
         visualize_instantiation_explanation_for_id(last_printed_id);
     }
-    thisAgent->visualizer->viz_graph_end();
+    thisAgent->visualizationManager->viz_graph_end();
 }
 
-void Explanation_Logger::visualize_instantiation_graph()
+void Explanation_Memory::visualize_instantiation_graph()
 {
-    thisAgent->visualizer->viz_graph_start();
+    thisAgent->visualizationManager->viz_graph_start();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
         (*it)->visualize();
@@ -668,13 +668,13 @@ void Explanation_Logger::visualize_instantiation_graph()
     {
         (*it)->viz_connect_conditions();
     }
-    thisAgent->visualizer->viz_graph_end();
+    thisAgent->visualizationManager->viz_graph_end();
 }
 
-void Explanation_Logger::visualize_contributors()
+void Explanation_Memory::visualize_contributors()
 {
-    bool old_Simple_Setting = thisAgent->visualizer->is_simple_inst_enabled();
-    thisAgent->visualizer->viz_graph_start();
+    bool old_Simple_Setting = thisAgent->visualizationManager->is_simple_inst_enabled();
+    thisAgent->visualizationManager->viz_graph_start();
     current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
@@ -684,10 +684,10 @@ void Explanation_Logger::visualize_contributors()
     {
         (*it)->viz_connect_conditions();
     }
-    thisAgent->visualizer->viz_graph_end();
+    thisAgent->visualizationManager->viz_graph_end();
 }
 
-bool Explanation_Logger::visualize_instantiation_explanation_for_id(uint64_t pInstID)
+bool Explanation_Memory::visualize_instantiation_explanation_for_id(uint64_t pInstID)
 {
     std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
 

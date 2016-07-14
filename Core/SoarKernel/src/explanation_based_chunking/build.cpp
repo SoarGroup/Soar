@@ -539,7 +539,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     #ifdef BUILD_WITH_EXPLAINER
     if (has_local_negation)
     {
-        thisAgent->explanationLogger->increment_stat_tested_local_negation();
+        thisAgent->explanationMemory->increment_stat_tested_local_negation();
     }
     #endif
     if (prev_vrblz)
@@ -799,7 +799,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     locals = NIL;
 
 #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->set_backtrace_number(backtrace_number);
+    thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
 #endif
 
     /* --- backtrace through the instantiation that produced each result --- */
@@ -882,7 +882,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_chunks_attempted();
+        thisAgent->explanationMemory->increment_stat_chunks_attempted();
         #endif
     }
     else
@@ -894,7 +894,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_should_print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_justifications_attempted();
+        thisAgent->explanationMemory->increment_stat_justifications_attempted();
         #endif
     }
 
@@ -933,19 +933,22 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
     {
         #ifdef BUILD_WITH_EXPLAINER
         assert(m_prod);
-            thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
-            thisAgent->explanationLogger->increment_stat_justifications();
+            thisAgent->explanationMemory->increment_stat_justifications();
         } else {
-            thisAgent->explanationLogger->increment_stat_succeeded();
+            thisAgent->explanationMemory->increment_stat_succeeded();
+//            chunk_history += "Successfully created chunk\n";
+//            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
+
         }
             #endif
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
 
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
         #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationLogger->increment_stat_duplicates(duplicate_rule);
-        thisAgent->explanationLogger->cancel_chunk_record();
+            thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
+        thisAgent->explanationMemory->cancel_chunk_record();
             #endif
         excise_production(thisAgent, m_prod, false);
         m_chunk_inst->in_ms = false;
@@ -954,16 +957,16 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationLogger->increment_stat_justification_did_not_match();
-                thisAgent->explanationLogger->cancel_chunk_record();
+                thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+                thisAgent->explanationMemory->cancel_chunk_record();
             #endif
             excise_production(thisAgent, m_prod, false);
         } else {
             /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.*/
             #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationLogger->increment_stat_chunk_did_not_match();
+                thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
                 assert(m_prod);
-                thisAgent->explanationLogger->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+                thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
             #endif
         }
         m_chunk_inst->in_ms = false;
@@ -1020,7 +1023,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_max_chunks();
+        thisAgent->explanationMemory->increment_stat_max_chunks();
         #endif
         m_extra_results = NULL;
         m_inst = NULL;
@@ -1028,7 +1031,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->add_chunk_record(m_inst);
+    thisAgent->explanationMemory->add_chunk_record(m_inst);
     #endif
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
@@ -1054,8 +1057,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
         #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationLogger->increment_stat_no_grounds();
-        thisAgent->explanationLogger->cancel_chunk_record();
+            thisAgent->explanationMemory->increment_stat_no_grounds();
+        thisAgent->explanationMemory->cancel_chunk_record();
             #endif
         clean_up();
         return;
@@ -1071,7 +1074,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_BUILD_CHUNK_CONDS, "Counterparts conditions for variablization:\n%6", m_vrblz_top, m_results);
 
     #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->add_result_instantiations(m_inst, m_results);
+    thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
     #endif
 
     if (variablize)
@@ -1103,7 +1106,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!lChunkValidated)
     {
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationLogger->increment_stat_unorderable();
+        thisAgent->explanationMemory->increment_stat_unorderable();
         #endif
         if (variablize)
         {
@@ -1118,7 +1121,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
                 //thisAgent->stop_soar = true;
 
                 #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationLogger->increment_stat_reverted();
+                thisAgent->explanationMemory->increment_stat_reverted();
                 #endif
             }
         } else {
@@ -1126,7 +1129,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
-                    thisAgent->explanationLogger->cancel_chunk_record();
+                    thisAgent->explanationMemory->cancel_chunk_record();
                     #endif
             clean_up();
             return;
@@ -1190,9 +1193,9 @@ void Explanation_Based_Chunker::clean_up ()
 {
     if (m_chunk_new_i_id)
     {
-        thisAgent->ebChunker->cleanup_for_instantiation(m_chunk_new_i_id);
+        thisAgent->explanationBasedChunker->cleanup_for_instantiation(m_chunk_new_i_id);
     }
-    thisAgent->explanationLogger->end_chunk_record();
+    thisAgent->explanationMemory->end_chunk_record();
     if (m_vrblz_top)
     {
         deallocate_condition_list(thisAgent, m_vrblz_top);

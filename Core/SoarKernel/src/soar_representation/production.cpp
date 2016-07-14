@@ -613,9 +613,9 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
 #ifdef BUILD_WITH_EXPLAINER
-    if (prod->save_for_justification_explanation && thisAgent->explanationLogger)
+    if (prod->save_for_justification_explanation && thisAgent->explanationMemory)
     {
-        thisAgent->explanationLogger->save_excised_production(prod);
+        thisAgent->explanationMemory->save_excised_production(prod);
     }
 #endif
     if (prod->trace_firings)

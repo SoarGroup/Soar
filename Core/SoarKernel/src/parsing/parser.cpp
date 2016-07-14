@@ -2512,7 +2512,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     p->declared_support = declared_support;
     p->interrupt = interrupt_on_match;
     if (explain_chunks) {
-        thisAgent->explanationLogger->toggle_production_watch(p);
+        thisAgent->explanationMemory->toggle_production_watch(p);
     } else {
         p->explain_its_chunks = false;
     }

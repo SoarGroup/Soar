@@ -40,18 +40,18 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     /* Handle options that enable/disable recording of chunk formation */
     if (options.test(EXPLAIN_ALL))
     {
-        thisAgent->explanationLogger->set_enabled(true);
+        thisAgent->explanationMemory->set_enabled(true);
         print(thisAgent, "Will monitor all chunks created.\n");
         return true;
     }
     if (options.test(EXPLAIN_ONLY_SPECIFIC))
     {
-        thisAgent->explanationLogger->set_enabled(false);
+        thisAgent->explanationMemory->set_enabled(false);
         print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */
-    if (!thisAgent->explanationLogger->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
+    if (!thisAgent->explanationMemory->current_discussed_chunk_exists() && (options.test(EXPLAIN_FORMATION) || options.test(EXPLAIN_CONSTRAINTS) ||
         options.test(EXPLAIN_IDENTITY_SETS) || options.test(EXPLAIN_STATS) || options.test(EXPLAIN_EXPLANATION_TRACE) || options.test(EXPLAIN_WME_TRACE)))
     {
         SetError("Please first specify the chunk you want to discuss with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.");
@@ -61,41 +61,41 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     {
             if (options.test(EXPLAIN_FORMATION))
         {
-            thisAgent->explanationLogger->print_formation_explanation();
+            thisAgent->explanationMemory->print_formation_explanation();
         }
         if (options.test(EXPLAIN_CONSTRAINTS))
         {
-            thisAgent->explanationLogger->print_constraints_enforced();
+            thisAgent->explanationMemory->print_constraints_enforced();
         }
         if (options.test(EXPLAIN_IDENTITY_SETS))
         {
-            thisAgent->explanationLogger->print_identity_set_explanation();
+            thisAgent->explanationMemory->print_identity_set_explanation();
         }
         if (options.test(EXPLAIN_STATS))
         {
-            thisAgent->explanationLogger->print_chunk_stats();
+            thisAgent->explanationMemory->print_chunk_stats();
         }
         if (options.test(EXPLAIN_EXPLANATION_TRACE))
         {
-            thisAgent->explanationLogger->switch_to_explanation_trace(true);
+            thisAgent->explanationMemory->switch_to_explanation_trace(true);
         }
         if (options.test(EXPLAIN_WME_TRACE))
         {
-            thisAgent->explanationLogger->switch_to_explanation_trace(false);
+            thisAgent->explanationMemory->switch_to_explanation_trace(false);
         }
     }
 
     /* Handle global stats command*/
     if (options.test(EXPLAIN_GLOBAL_STATS))
     {
-            thisAgent->explanationLogger->print_explainer_stats();
+            thisAgent->explanationMemory->print_explainer_stats();
             return true;
     }
 
     /* Handle global stats command*/
     if (options.test(EXPLAIN_LIST_ALL))
     {
-            thisAgent->explanationLogger->print_all_chunks();
+            thisAgent->explanationMemory->print_all_chunks();
             return true;
     }
 
@@ -104,9 +104,9 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     {
         if (pStringParameter->empty())
         {
-            thisAgent->explanationLogger->print_all_watched_rules();
+            thisAgent->explanationMemory->print_all_watched_rules();
         } else {
-            return thisAgent->explanationLogger->watch_rule(pStringParameter);
+            return thisAgent->explanationMemory->watch_rule(pStringParameter);
         }
     }
 
@@ -115,12 +115,12 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     {
         if (pStringParameter->empty())
         {
-                    thisAgent->explanationLogger->print_explain_summary();
+                    thisAgent->explanationMemory->print_explain_summary();
                     return true;
         } else if (pStringParameter2->empty()) {
-            return thisAgent->explanationLogger->explain_chunk(pStringParameter);
+            return thisAgent->explanationMemory->explain_chunk(pStringParameter);
         } else {
-            return thisAgent->explanationLogger->explain_item(pStringParameter, pStringParameter2);
+            return thisAgent->explanationMemory->explain_item(pStringParameter, pStringParameter2);
         }
     } else {
         if (!pStringParameter->empty())

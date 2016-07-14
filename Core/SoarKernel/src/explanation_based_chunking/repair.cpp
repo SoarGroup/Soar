@@ -204,7 +204,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
         }
         prefix[1] = 0;
         lNewVar = generate_new_variable(thisAgent, prefix);
-        lMatchedIdentity = thisAgent->ebChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
+        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
 
     }
     else
@@ -341,7 +341,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
 
 
     #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->increment_stat_grounded(m_repair_WMEs.size());
+    thisAgent->explanationMemory->increment_stat_grounded(m_repair_WMEs.size());
     #endif
 
     dprint(DT_REPAIR, "Repair rule started...\n");

@@ -87,7 +87,7 @@ void identity_record::generate_identity_sets(condition* lhs)
             } else {
                 /* Identity points to an identity not in the chunk.  Create a new identity
                  * set and assign both identities to it. */
-                lNewIdSetID = thisAgent->explanationLogger->get_identity_set_counter();
+                lNewIdSetID = thisAgent->explanationMemory->get_identity_set_counter();
                 lNewIDSet->identity_set_ID = lNewIdSetID;
                 lNewIDSet->rule_variable = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
@@ -167,7 +167,7 @@ void identity_record::print_original_ebc_mappings()
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
         dprint_noprefix(DT_EXPLAIN_IDENTITIES, "%u%-%y %-%u%-%y\n",
-            iter->first, thisAgent->ebChunker->get_ovar_for_o_id(iter->first), iter->second, thisAgent->ebChunker->get_ovar_for_o_id(iter->second));
+            iter->first, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->first), iter->second, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->second));
     }
 }
 

@@ -350,7 +350,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                     identity_set_info* lNewIDSet = new identity_set_info();
                     if (pTest->data.referent->is_variable())
                     {
-                        lNewIDSet->identity_set_ID = thisAgent->explanationLogger->get_identity_set_counter();
+                        lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
                         lNewIDSet->rule_variable = pTest->data.referent;
                         symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
                     } else {

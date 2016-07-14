@@ -75,13 +75,13 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            if (pStripLiteralConjuncts && thisAgent->ebChunker->in_null_identity_set(t->eq_test))
+            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
                 new_ct->identity = t->eq_test->identity;
                 if (pUnify_variablization_identity)
                 {
-                    thisAgent->ebChunker->unify_identity(new_ct);
+                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
@@ -103,11 +103,11 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  * already in a condition, which most should be. */
                 if (t->type != EQUALITY_TEST)
                 {
-                    t->tc_num = thisAgent->ebChunker->get_constraint_found_tc_num();
+                    t->tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
                 }
                 if (new_ct->identity)
                 {
-                    thisAgent->ebChunker->unify_identity(new_ct);
+                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
             }
 

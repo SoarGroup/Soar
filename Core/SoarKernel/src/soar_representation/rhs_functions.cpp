@@ -564,9 +564,9 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->ebChunker->chunk_free_problem_spaces))
+    if (! member_of_list(state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces))
     {
-        push(thisAgent, state, thisAgent->ebChunker->chunk_free_problem_spaces);
+        push(thisAgent, state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces);
         /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
     }
     return NIL;
@@ -608,9 +608,9 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->ebChunker->chunky_problem_spaces))
+    if (! member_of_list(state, thisAgent->explanationBasedChunker->chunky_problem_spaces))
     {
-        push(thisAgent, state, thisAgent->ebChunker->chunky_problem_spaces);
+        push(thisAgent, state, thisAgent->explanationBasedChunker->chunky_problem_spaces);
         /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
     }
     return NIL;

@@ -83,7 +83,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
 
     for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
     {
-        thisAgent->visualizer->viz_object_start(it->first, 0, viz_id_and_augs);
+        thisAgent->visualizationManager->viz_object_start(it->first, 0, viz_id_and_augs);
         lIDSym = it->first;
         lAugSet = it->second;
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
@@ -93,21 +93,21 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
-                thisAgent->visualizer->viz_record_start();
-                thisAgent->visualizer->viz_table_element_start();
-                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->attr);
-                thisAgent->visualizer->viz_table_element_end();
-                thisAgent->visualizer->viz_table_element_start();
-                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", lAug->value);
-                thisAgent->visualizer->viz_table_element_end();
-                thisAgent->visualizer->viz_record_end();
-                thisAgent->visualizer->viz_endl();
+                thisAgent->visualizationManager->viz_record_start();
+                thisAgent->visualizationManager->viz_table_element_start();
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", lAug->attr);
+                thisAgent->visualizationManager->viz_table_element_end();
+                thisAgent->visualizationManager->viz_table_element_start();
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", lAug->value);
+                thisAgent->visualizationManager->viz_table_element_end();
+                thisAgent->visualizationManager->viz_record_end();
+                thisAgent->visualizationManager->viz_endl();
             }
         }
-        thisAgent->visualizer->viz_object_end(viz_id_and_augs);
-        thisAgent->visualizer->viz_endl();
+        thisAgent->visualizationManager->viz_object_end(viz_id_and_augs);
+        thisAgent->visualizationManager->viz_endl();
     }
-    thisAgent->visualizer->graphviz_output += graphviz_connections;
+    thisAgent->visualizationManager->graphviz_output += graphviz_connections;
 }
 
 void WM_Visualization_Map::visualize_wm_as_graph()
@@ -118,26 +118,26 @@ void WM_Visualization_Map::visualize_wm_as_graph()
 
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!thisAgent->visualizer->is_include_arch_enabled() && !w->preference) continue;
+        if (!thisAgent->visualizationManager->is_include_arch_enabled() && !w->preference) continue;
         if (w->id->tc_num != tc)
         {
-            thisAgent->visualizer->viz_object_start(w->id, 0, viz_wme);
-            thisAgent->visualizer->viz_object_end(viz_wme);
-            thisAgent->visualizer->viz_endl();
+            thisAgent->visualizationManager->viz_object_start(w->id, 0, viz_wme);
+            thisAgent->visualizationManager->viz_object_end(viz_wme);
+            thisAgent->visualizationManager->viz_endl();
             w->id->tc_num = tc;
         }
         if (w->value->tc_num != tc)
         {
-            thisAgent->visualizer->viz_object_start(w->value, 0, viz_wme);
-            thisAgent->visualizer->viz_object_end(viz_wme);
-            thisAgent->visualizer->viz_endl();
+            thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme);
+            thisAgent->visualizationManager->viz_object_end(viz_wme);
+            thisAgent->visualizationManager->viz_endl();
             w->value->tc_num = tc;
         }
         if (w->attr != thisAgent->superstate_symbol)
         {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         } else {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         }
     }
 

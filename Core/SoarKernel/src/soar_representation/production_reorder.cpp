@@ -163,7 +163,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 {
                     lNewUngroundedSym->matched_sym = lSym;
                 } else {
-                    lNewUngroundedSym->matched_sym = thisAgent->ebChunker->get_match_for_rhs_var(lSym);
+                    lNewUngroundedSym->matched_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
                 dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/? [%u]\n",  lNewUngroundedSym->sym,  lNewUngroundedSym->identity);
@@ -172,7 +172,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         thisAgent->outputManager->set_print_indents();
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->ebChunker->set_failure_type(ebc_failed_reordering_rhs);
+        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
 
         /* --- reconstruct list of all actions --- */
         if (last_action)
@@ -1560,7 +1560,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
 
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
-        thisAgent->ebChunker->set_failure_type(ebc_failed_unconnected_conditions);
+        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
         return false;
     }
 
@@ -1592,7 +1592,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     if (!roots)
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-        thisAgent->ebChunker->set_failure_type(ebc_failed_no_roots);
+        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
         return false;
     }
 
@@ -1604,7 +1604,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     if (!check_negative_relational_test_bindings(thisAgent, *lhs_top, get_new_tc_number(thisAgent)))
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
-        thisAgent->ebChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
+        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
         return false;
     }
 

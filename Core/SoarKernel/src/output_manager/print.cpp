@@ -462,7 +462,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string_brief(t->type);
                                     }
-                                    sym = thisAgent->ebChunker->get_ovar_for_o_id(t->identity);
+                                    sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(t->identity);
                                     if (sym) destString += sym->to_string(true); else destString += '#';
                                 } else {
                                     test_to_string(t, destString);
@@ -479,7 +479,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         {
                                             destString += test_type_to_string_brief(ct->type);
                                         }
-                                        sym = thisAgent->ebChunker->get_ovar_for_o_id(ct->identity);
+                                        sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(ct->identity);
                                         if (sym) destString += sym->to_string(true); else destString += '#';
                                     } else {
                                         test_to_string(ct, destString);

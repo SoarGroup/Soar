@@ -122,122 +122,122 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
         {
             if (chunk_in_states->get_value() == ebc_always)
             {
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
             else if (chunk_in_states->get_value() == ebc_never)
             {
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = true;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
             }
             else if (chunk_in_states->get_value() == ebc_only)
             {
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = true;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
             else if (chunk_in_states->get_value() == ebc_except)
             {
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_NEVER] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_ONLY] = false;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
-                thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
+                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
         } else {
             if (pChangedIntParam == max_chunks)
             {
-                thisAgent->ebChunker->max_chunks = pChangedIntParam->get_value();
+                thisAgent->explanationBasedChunker->max_chunks = pChangedIntParam->get_value();
             }
             else if (pChangedIntParam == max_dupes)
             {
-                thisAgent->ebChunker->max_dupes= pChangedIntParam->get_value();
+                thisAgent->explanationBasedChunker->max_dupes= pChangedIntParam->get_value();
             }
         }
     }
     else if (pChangedParam == bottom_level_only)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY] = pChangedParam->get_value();
     }
     else if (pChangedParam == interrupt_on_chunk)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_INTERRUPT] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT] = pChangedParam->get_value();
     }
     else if (pChangedParam == utility_mode)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_UTILITY_MODE] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_UTILITY_MODE] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_identity_analysis)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_IDENTITY_VRBLZ] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_IDENTITY_VRBLZ] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_variablize_rhs_funcs)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_RHS_VRBLZ] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_RHS_VRBLZ] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_constraints)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_CONSTRAINTS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_CONSTRAINTS] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_OSK)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_repair_rhs)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_REPAIR_LHS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_LHS] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_repair_lhs)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_REPAIR_RHS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_promotion_tracking)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_REPAIR_PROMOTION] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_PROMOTION] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_merge)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_user_singletons)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_USER_SINGLETONS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_USER_SINGLETONS] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_missing_negative_reasoning)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_missing_OSK)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_OSK] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_OSK] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_opaque_knowledge)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_OPAQUE] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_OPAQUE] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_probabilistic_operators)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_multiple_prefs)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_temporal_constraint)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = pChangedParam->get_value();
     }
     else if (pChangedParam == allow_local_promotion)
     {
-        thisAgent->ebChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = pChangedParam->get_value();
     }
 }
 

@@ -36,7 +36,7 @@ void condition_record::viz_connect_to_action()
     {
         assert(parent_action);
         assert(my_instantiation);
-        thisAgent->visualizer->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
+        thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
             parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
     }
 }
@@ -52,7 +52,7 @@ void condition_record::update_condition(condition* pCond, instantiation_record* 
     cached_wme = pCond->bt.wme_;
     if (pCond->bt.trace)
     {
-        parent_instantiation = thisAgent->explanationLogger->get_instantiation(pCond->bt.trace->inst);
+        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
     } else {
         parent_instantiation = NULL;
     }
@@ -125,7 +125,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     cached_wme = pCond->bt.wme_;
     if (pCond->bt.trace)
     {
-        parent_instantiation = thisAgent->explanationLogger->get_instantiation(pCond->bt.trace->inst);
+        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
     } else {
         parent_instantiation = NULL;
     }
@@ -219,7 +219,7 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
 {
     cons* c, *c2;
-    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -264,7 +264,7 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
 void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
 {
     cons* c;
-    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -320,13 +320,13 @@ void condition_record::visualize_for_wm_trace()
     bool removed_goal_test, removed_impasse_test;
     test id_test_without_goal_test ;
 
-    thisAgent->visualizer->viz_record_start();
+    thisAgent->visualizationManager->viz_record_start();
     id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
     viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false);
     deallocate_test(thisAgent, id_test_without_goal_test);
     viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false);
     viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false);
-    thisAgent->visualizer->viz_record_end();
+    thisAgent->visualizationManager->viz_record_end();
 }
 
 void condition_record::visualize_for_chunk()
@@ -334,13 +334,13 @@ void condition_record::visualize_for_chunk()
     bool removed_goal_test, removed_impasse_test;
     test id_test_without_goal_test ;
 
-    thisAgent->visualizer->viz_record_start();
+    thisAgent->visualizationManager->viz_record_start();
     id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
-    viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationLogger->print_explanation_trace);
+    viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace);
     deallocate_test(thisAgent, id_test_without_goal_test);
-    viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationLogger->print_explanation_trace);
-    viz_matched_test(condition_tests.value, matched_wme ? matched_wme->value : NULL, conditionID, false, true, false, false, thisAgent->explanationLogger->print_explanation_trace);
-    thisAgent->visualizer->viz_record_end();
+    viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace);
+    viz_matched_test(condition_tests.value, matched_wme ? matched_wme->value : NULL, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace);
+    thisAgent->visualizationManager->viz_record_end();
 }
 
 void condition_record::visualize_for_explanation_trace(condition* pCond)
@@ -350,12 +350,12 @@ void condition_record::visualize_for_explanation_trace(condition* pCond)
     test id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, pCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
     test id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
 
-    thisAgent->visualizer->viz_record_start();
+    thisAgent->visualizationManager->viz_record_start();
     viz_combo_test(id_test_without_goal_test, id_test_without_goal_test2, conditionID, true, false, false, false, true);
     deallocate_test(thisAgent, id_test_without_goal_test);
     deallocate_test(thisAgent, id_test_without_goal_test2);
     viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true);
     viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true);
-    thisAgent->visualizer->viz_record_end();
+    thisAgent->visualizationManager->viz_record_end();
 }
 

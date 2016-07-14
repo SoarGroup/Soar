@@ -21,7 +21,7 @@ typedef struct identity_set_struct {
 
 class identity_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
 
     public:
         identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map_type* pIdentitySetMappings);

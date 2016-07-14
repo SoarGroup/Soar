@@ -15,7 +15,7 @@ class production_record;
 
 class action_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
 
     public:
         action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);

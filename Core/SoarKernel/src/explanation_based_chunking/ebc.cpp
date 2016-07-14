@@ -48,7 +48,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Initialize learning setting */
     m_learning_on_for_instantiation = ebc_settings[SETTING_EBC_LEARNING_ON];
 
-    chunkNameFormat = ruleFormat;
     max_chunks_reached = false;
     m_failure_type = ebc_success;
 
@@ -56,7 +55,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
     local_singleton_superstate_identity = NULL;
-
+    chunk_history = new std::string();
 
     reinit();
 }
@@ -72,17 +71,11 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete unification_map;
     delete id_to_rule_sym_debug_map;
     delete rhs_var_to_match_map;
+    delete chunk_history;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
-
 }
-
-void Explanation_Based_Chunker::set_chunk_name_prefix(const char* pChunk_name_prefix)
-{
-    free_memory_block_for_string(thisAgent, chunk_name_prefix);
-    chunk_name_prefix = make_memory_block_for_string(thisAgent, pChunk_name_prefix);
-};
 
 void Explanation_Based_Chunker::reinit()
 {
@@ -116,6 +109,8 @@ void Explanation_Based_Chunker::reinit()
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
     m_failure_type                      = ebc_success;
+
+//    chunk_history += "Soar re-initialization performed.\n";
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
@@ -135,6 +130,11 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
+//            chunk_history += "Did not attempt to learn a chunk for match of ";
+//            chunk_history += inst->prod_name->to_string();
+//            chunk_history += " because state ";
+//            chunk_history += inst->match_goal->to_string();
+//            chunk_history += " was flagged to prevent learning (chunk all-except)\n";
         }
         m_learning_on_for_instantiation = false;
         return false;
@@ -149,6 +149,11 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";
             print(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
+//            chunk_history += "Did not attempt to learn a chunk for match of ";
+//            chunk_history += inst->prod_name->to_string();
+//            chunk_history += " because state ";
+//            chunk_history += inst->match_goal->to_string();
+//            chunk_history += " was not flagged for learning.  (chunk only)\n";
         }
         m_learning_on_for_instantiation = false;
         return false;
@@ -160,6 +165,15 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_BOTTOM_ONLY]  &&
             !inst->match_goal->id->allow_bottom_up_chunks)
     {
+        std::ostringstream message;
+        message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " is not the bottom state";
+        print(thisAgent,  message.str().c_str());
+        xml_generate_verbose(thisAgent, message.str().c_str());
+//        chunk_history += "Did not attempt to learn a chunk for match of ";
+//        chunk_history += inst->prod_name->to_string();
+//        chunk_history += " because state ";
+//        chunk_history += inst->match_goal->to_string();
+//        chunk_history += " not the bottom state.  (chunk bottom-only)\n";
         m_learning_on_for_instantiation = false;
         return false;
     }

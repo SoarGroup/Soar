@@ -28,7 +28,7 @@ void Explanation_Based_Chunker::merge_values_in_conds(condition* pDestCond, cond
     dprint(DT_MERGE, "...merging conditions in value element...\n");
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
     #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationLogger->increment_stat_merged_conditions();
+    thisAgent->explanationMemory->increment_stat_merged_conditions();
     #endif
 }
 

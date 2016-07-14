@@ -151,11 +151,11 @@ typedef struct EXPORT agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
 
-    Explanation_Based_Chunker*  ebChunker;
+    Explanation_Based_Chunker*  explanationBasedChunker;
     Memory_Manager*             memoryManager;
     Output_Manager*             outputManager;
-    Explanation_Logger*         explanationLogger;
-    GraphViz_Visualizer*        visualizer;
+    Explanation_Memory*         explanationMemory;
+    GraphViz_Visualizer*        visualizationManager;
 
     /* ---------------- Predefined Symbols -------------------------
        Certain symbols are used so frequently that we create them at

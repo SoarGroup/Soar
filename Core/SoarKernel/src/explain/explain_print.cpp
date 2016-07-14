@@ -21,7 +21,7 @@
 #include "output_manager.h"
 #include "dprint.h"
 
-void Explanation_Logger::switch_to_explanation_trace(bool pEnableExplanationTrace)
+void Explanation_Memory::switch_to_explanation_trace(bool pEnableExplanationTrace)
 {
     print_explanation_trace = pEnableExplanationTrace;
     if (!last_printed_id)
@@ -32,7 +32,7 @@ void Explanation_Logger::switch_to_explanation_trace(bool pEnableExplanationTrac
     }
 }
 
-void Explanation_Logger::print_formation_explanation()
+void Explanation_Memory::print_formation_explanation()
 {
     assert(current_discussed_chunk);
 
@@ -80,7 +80,7 @@ void Explanation_Logger::print_formation_explanation()
     print_footer(true);
 }
 
-void Explanation_Logger::print_footer(bool pPrintDiscussedChunkCommands)
+void Explanation_Memory::print_footer(bool pPrintDiscussedChunkCommands)
 {
     outputManager->printa(thisAgent, "---------------------------------------------------------------------------------------------------------------------\n");
     outputManager->set_column_indent(0, 0);
@@ -99,7 +99,7 @@ void Explanation_Logger::print_footer(bool pPrintDiscussedChunkCommands)
 
 }
 
-bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
+bool Explanation_Memory::is_condition_related(condition_record* pCondRecord)
 {
     //    if ((pCondRecord->condition_tests.id->eq_test->identity == current_explained_ids.id) ||
     //        (pCondRecord->condition_tests.attr->eq_test->identity == current_explained_ids.id) ||
@@ -109,7 +109,7 @@ bool Explanation_Logger::is_condition_related(condition_record* pCondRecord)
     return false;
 }
 
-void Explanation_Logger::print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal, const char* pFailedStr, const char* pHeaderStr)
+void Explanation_Memory::print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal, const char* pFailedStr, const char* pHeaderStr)
 {
     if (pPathToBase && (!pPathToBase->empty()))
     {
@@ -136,7 +136,7 @@ void Explanation_Logger::print_path_to_base(const inst_record_list* pPathToBase,
 }
 
 
-void Explanation_Logger::print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
+void Explanation_Memory::print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
 {
     if (pActionRecords->empty())
     {
@@ -250,7 +250,7 @@ void action_record::print_action(action* pAction, int lActionCount)
     }
     tempString.clear();
 }
-void Explanation_Logger::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
+void Explanation_Memory::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {
     if (print_explanation_trace)
     {
@@ -260,7 +260,7 @@ void Explanation_Logger::print_instantiation_explanation(instantiation_record* p
     }
 }
 
-void Explanation_Logger::print_chunk_explanation()
+void Explanation_Memory::print_chunk_explanation()
 {
     assert(current_discussed_chunk);
 
@@ -272,7 +272,7 @@ void Explanation_Logger::print_chunk_explanation()
     }
 }
 
-void Explanation_Logger::print_explain_summary()
+void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 4);
     outputManager->set_column_indent(1, 50);
@@ -308,7 +308,7 @@ void Explanation_Logger::print_explain_summary()
     outputManager->printa(thisAgent, "Type 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
 }
 
-void Explanation_Logger::print_all_watched_rules()
+void Explanation_Memory::print_all_watched_rules()
 {
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 0);
@@ -318,7 +318,7 @@ void Explanation_Logger::print_all_watched_rules()
 }
 
 
-void Explanation_Logger::print_all_chunks()
+void Explanation_Memory::print_all_chunks()
 {
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 0);
@@ -327,7 +327,7 @@ void Explanation_Logger::print_all_chunks()
     print_chunk_list(0);
 }
 
-void Explanation_Logger::print_global_stats()
+void Explanation_Memory::print_global_stats()
 {
     outputManager->set_column_indent(0, 60);
     outputManager->printa_sf(thisAgent, "=============================================================\n");
@@ -340,7 +340,7 @@ void Explanation_Logger::print_global_stats()
     outputManager->printa_sf(thisAgent, "\nJustifications attempted                   %- %u\n", stats.justifications_attempted);
     outputManager->printa_sf(thisAgent, "Justifications successfully built          %-%u\n", stats.justifications_succeeded);
 
-    outputManager->printa_sf(thisAgent, "\nInstantiations built                     %- %u\n", thisAgent->ebChunker->get_instantiation_count());
+    outputManager->printa_sf(thisAgent, "\nInstantiations built                     %- %u\n", thisAgent->explanationBasedChunker->get_instantiation_count());
     outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %-%u\n", stats.instantations_backtraced);
     outputManager->printa_sf(thisAgent, "Instantiations re-visited                  %-%u\n", stats.seen_instantations_backtraced);
 
@@ -370,7 +370,7 @@ void Explanation_Logger::print_global_stats()
     outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
 }
 
-void Explanation_Logger::print_explainer_stats()
+void Explanation_Memory::print_explainer_stats()
 {
     outputManager->set_column_indent(0, 50);
     outputManager->printa_sf(thisAgent, "------------------------\n");
@@ -382,7 +382,7 @@ void Explanation_Logger::print_explainer_stats()
     outputManager->printa_sf(thisAgent, "Instantiation records                      %-%d\n", instantiations->size());
 }
 
-void Explanation_Logger::print_chunk_stats() {
+void Explanation_Memory::print_chunk_stats() {
 
     assert(current_discussed_chunk);
     outputManager->set_column_indent(0, 45);
@@ -411,7 +411,7 @@ void Explanation_Logger::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "Failed chunk reverted to justification     %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
 }
 
-void Explanation_Logger::print_chunk_list(short pNumToPrint)
+void Explanation_Memory::print_chunk_list(short pNumToPrint)
 {
     short lNumPrinted = 0;
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
@@ -430,7 +430,7 @@ void Explanation_Logger::print_chunk_list(short pNumToPrint)
     }
 }
 
-bool Explanation_Logger::print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint)
+bool Explanation_Memory::print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint)
 {
     short lNumPrinted = 0;
     bool lThereWasMore = false;
@@ -459,7 +459,7 @@ bool Explanation_Logger::print_watched_rules_of_type(agent* thisAgent, unsigned 
     return lThereWasMore;
 }
 
-void Explanation_Logger::print_rules_watched(short pNumToPrint)
+void Explanation_Memory::print_rules_watched(short pNumToPrint)
 {
     short lNumLeftToPrint = pNumToPrint;
     bool lThereWasMore = false;
@@ -487,26 +487,26 @@ void Explanation_Logger::print_rules_watched(short pNumToPrint)
     }
 }
 
-void Explanation_Logger::print_condition_explanation(uint64_t pCondID)
+void Explanation_Memory::print_condition_explanation(uint64_t pCondID)
 {
     assert(current_discussed_chunk);
     outputManager->printa_sf(thisAgent, "Printing explanation of condition %u in relation to chunk %y.\n", pCondID, current_discussed_chunk->name);
 }
 
-void Explanation_Logger::print_identity_set_explanation()
+void Explanation_Memory::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
     current_discussed_chunk->identity_analysis->print_identity_mappings();
 }
 
-void Explanation_Logger::print_constraints_enforced()
+void Explanation_Memory::print_constraints_enforced()
 {
     assert(current_discussed_chunk);
     outputManager->printa_sf(thisAgent, "Constraints enforced during formation of chunk %y.\n\nNot yet implemented.\n", current_discussed_chunk->name);
 }
 
 
-void Explanation_Logger::print_involved_instantiations()
+void Explanation_Memory::print_involved_instantiations()
 {
     // Attempt to sort that wasn't compiling and didn't have time to figure out
     //    struct cmp_iID

@@ -124,7 +124,7 @@ class Output_Manager
 {
         friend class OM_DB;
         friend class cli::CommandLineInterface;
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
         friend class GraphViz_Visualizer;
         friend class action_record;
 

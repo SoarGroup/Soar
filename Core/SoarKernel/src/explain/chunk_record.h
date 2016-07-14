@@ -29,7 +29,7 @@ typedef struct chunk_stats_struct {
 
 class chunk_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
 
     public:
         chunk_record(agent* myAgent, uint64_t pChunkID);

@@ -16,7 +16,7 @@ class action_record;
 
 class condition_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
         friend class GraphViz_Visualizer;
         friend class instantiation_record;
         friend class chunk_record;

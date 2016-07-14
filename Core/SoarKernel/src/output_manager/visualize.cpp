@@ -295,7 +295,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
-    if (thisAgent->visualizer->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->is_simple_inst_enabled())
     {
         graphviz_output += ":e";
     } else {
@@ -305,7 +305,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
     }
     graphviz_output += "-\xF2 rule";
     graphviz_output += std::to_string(pTargetRuleID);
-    if (thisAgent->visualizer->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->is_simple_inst_enabled())
     {
         graphviz_output += ":w\n";
     } else {

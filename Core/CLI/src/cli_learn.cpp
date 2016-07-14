@@ -125,7 +125,7 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options)
         PrintCLIMessage(tempstrstream.str().c_str());
     }
 
-    thisAgent->ebChunker->ebc_params->update_params(thisAgent->ebChunker->ebc_settings);
+    thisAgent->explanationBasedChunker->ebc_params->update_params(thisAgent->explanationBasedChunker->ebc_settings);
     return true;
 }
 

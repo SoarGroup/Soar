@@ -156,7 +156,7 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
     tempString = "";
     thisAgent->outputManager->set_print_test_format(true, false);
     thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_value, tempString, NULL, NULL);
-    thisAgent->visualizer->graphviz_output += tempString;
+    thisAgent->visualizationManager->graphviz_output += tempString;
     if (pRHS_variablized_value)
     {
         if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
@@ -167,17 +167,17 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
             thisAgent->outputManager->set_print_test_format(true, false);
             if (!tempString.empty())
             {
-                thisAgent->visualizer->graphviz_output += " (";
-                thisAgent->visualizer->graphviz_output += tempString;
-                thisAgent->visualizer->graphviz_output += ')';
+                thisAgent->visualizationManager->graphviz_output += " (";
+                thisAgent->visualizationManager->graphviz_output += tempString;
+                thisAgent->visualizationManager->graphviz_output += ')';
                 identity_printed = true;
             }
         }
     }
     if (!identity_printed && pID) {
-        thisAgent->visualizer->graphviz_output += " (";
-        thisAgent->visualizer->graphviz_output += std::to_string(pID);
-        thisAgent->visualizer->graphviz_output += ')';
+        thisAgent->visualizationManager->graphviz_output += " (";
+        thisAgent->visualizationManager->graphviz_output += std::to_string(pID);
+        thisAgent->visualizationManager->graphviz_output += ')';
     }
 }
 
@@ -185,7 +185,7 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
 {
     if (pActionRecords->empty())
     {
-        thisAgent->visualizer->viz_text_record("Empty RHS");
+        thisAgent->visualizationManager->viz_text_record("Empty RHS");
     }
     else
     {
@@ -195,7 +195,7 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
-        if (thisAgent->explanationLogger->print_explanation_trace)
+        if (thisAgent->explanationMemory->print_explanation_trace)
         {
             /* We use pRhs to deallocate actions at end, and rhs to iterate through actions */
             if (pRhs)
@@ -209,9 +209,9 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
                         rhs = pExcisedRule->get_rhs();
                         assert(rhs);
                     } else {
-                        thisAgent->visualizer->viz_record_start();
-                        thisAgent->visualizer->viz_text_record("No RETE rule");
-                        thisAgent->visualizer->viz_record_end();
+                        thisAgent->visualizationManager->viz_record_start();
+                        thisAgent->visualizationManager->viz_text_record("No RETE rule");
+                        thisAgent->visualizationManager->viz_record_end();
                         return;
                     }
                 } else {
@@ -227,9 +227,9 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
             ++lActionCount;
             if (lActionCount <= lNumRecords)
             {
-                thisAgent->visualizer->viz_endl();
+                thisAgent->visualizationManager->viz_endl();
             }
-            if (!thisAgent->explanationLogger->print_explanation_trace)
+            if (!thisAgent->explanationMemory->print_explanation_trace)
             {
                 lAction->viz_preference();
             } else {
@@ -237,8 +237,8 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
                 rhs = rhs->next;
             }
         }
-        thisAgent->visualizer->graphviz_output += "\n";
-        if (thisAgent->explanationLogger->print_explanation_trace)
+        thisAgent->visualizationManager->graphviz_output += "\n";
+        if (thisAgent->explanationMemory->print_explanation_trace)
         {
             /* If top exists, we generated conditions here and must deallocate. */
             if (pRhs) deallocate_action_list(thisAgent, pRhs);
@@ -249,28 +249,28 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
 }
 void action_record::viz_preference()
 {
-    thisAgent->visualizer->viz_record_start();
-    thisAgent->visualizer->viz_table_element_start(actionID, 'a', true);
-    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", instantiated_pref->id);
-    thisAgent->visualizer->viz_table_element_end();
-    thisAgent->visualizer->viz_table_element_start();
-    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", instantiated_pref->attr);
-    thisAgent->visualizer->viz_table_element_end();
+    thisAgent->visualizationManager->viz_record_start();
+    thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
+    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", instantiated_pref->id);
+    thisAgent->visualizationManager->viz_table_element_end();
+    thisAgent->visualizationManager->viz_table_element_start();
+    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", instantiated_pref->attr);
+    thisAgent->visualizationManager->viz_table_element_end();
 
     if (preference_is_binary(instantiated_pref->type))
     {
-        thisAgent->visualizer->viz_table_element_start();
-        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, "%y", instantiated_pref->value);
-        thisAgent->visualizer->viz_table_element_end();
-        thisAgent->visualizer->viz_table_element_start(actionID, 'a', false);
-        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, " %c %y", preference_to_char(instantiated_pref->type), instantiated_pref->referent);
-        thisAgent->visualizer->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_start();
+        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", instantiated_pref->value);
+        thisAgent->visualizationManager->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " %c %y", preference_to_char(instantiated_pref->type), instantiated_pref->referent);
+        thisAgent->visualizationManager->viz_table_element_end();
     } else {
-        thisAgent->visualizer->viz_table_element_start(actionID, 'a', false);
-        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizer->graphviz_output, " %y %c", instantiated_pref->value, preference_to_char(instantiated_pref->type));
-        thisAgent->visualizer->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " %y %c", instantiated_pref->value, preference_to_char(instantiated_pref->type));
+        thisAgent->visualizationManager->viz_table_element_end();
     }
-    thisAgent->visualizer->viz_record_end();
+    thisAgent->visualizationManager->viz_record_end();
 }
 
 void action_record::viz_action(action* pAction)
@@ -279,41 +279,41 @@ void action_record::viz_action(action* pAction)
 
     if (pAction->type == FUNCALL_ACTION)
     {
-        thisAgent->visualizer->viz_record_start();
-        thisAgent->visualizer->viz_table_element_start(actionID, 'a', true);
-        thisAgent->visualizer->graphviz_output += "RHS Funcall";
-        thisAgent->visualizer->viz_table_element_end();
-        thisAgent->visualizer->viz_table_element_start(actionID, 'a', false);
+        thisAgent->visualizationManager->viz_record_start();
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
+        thisAgent->visualizationManager->graphviz_output += "RHS Funcall";
+        thisAgent->visualizationManager->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
         tempString = "";
         thisAgent->outputManager->rhs_value_to_string(thisAgent, pAction->value, tempString, NULL, NULL);
-        thisAgent->visualizer->graphviz_output += tempString;
-        thisAgent->visualizer->viz_table_element_end();
-        thisAgent->visualizer->viz_record_end();
+        thisAgent->visualizationManager->graphviz_output += tempString;
+        thisAgent->visualizationManager->viz_table_element_end();
+        thisAgent->visualizationManager->viz_record_end();
     } else {
-        thisAgent->visualizer->viz_record_start();
-        thisAgent->visualizer->viz_table_element_start(actionID, 'a', true);
+        thisAgent->visualizationManager->viz_record_start();
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
         viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id);
-        thisAgent->visualizer->viz_table_element_end();
-        thisAgent->visualizer->viz_table_element_start();
+        thisAgent->visualizationManager->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_start();
         viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr);
-        thisAgent->visualizer->viz_table_element_end();
+        thisAgent->visualizationManager->viz_table_element_end();
         if (pAction->referent)
         {
-            thisAgent->visualizer->viz_table_element_start();
+            thisAgent->visualizationManager->viz_table_element_start();
             viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
-            thisAgent->visualizer->viz_table_element_end();
-            thisAgent->visualizer->viz_table_element_start(actionID, 'a', false);
-            thisAgent->visualizer->graphviz_output += preference_to_char(pAction->preference_type);
+            thisAgent->visualizationManager->viz_table_element_end();
+            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+            thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
             viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent);
-            thisAgent->visualizer->viz_table_element_end();
+            thisAgent->visualizationManager->viz_table_element_end();
         } else {
-            thisAgent->visualizer->viz_table_element_start(actionID, 'a', false);
+            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
             viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
-            thisAgent->visualizer->graphviz_output += ' ';
-            thisAgent->visualizer->graphviz_output += preference_to_char(pAction->preference_type);
-            thisAgent->visualizer->viz_table_element_end();
+            thisAgent->visualizationManager->graphviz_output += ' ';
+            thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
+            thisAgent->visualizationManager->viz_table_element_end();
         }
-        thisAgent->visualizer->viz_record_end();
+        thisAgent->visualizationManager->viz_record_end();
     }
     tempString.clear();
 }

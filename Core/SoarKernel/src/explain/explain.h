@@ -50,7 +50,7 @@ typedef struct chunking_stats_struct {
 } chunking_stats;
 
 
-class Explanation_Logger
+class Explanation_Memory
 {
         friend class instantiation_record;
         friend class chunk_record;
@@ -121,8 +121,8 @@ class Explanation_Logger
         void visualize_instantiation_graph();
         void visualize_contributors();
 
-        Explanation_Logger(agent* myAgent);
-        ~Explanation_Logger();
+        Explanation_Memory(agent* myAgent);
+        ~Explanation_Memory();
 
     private:
 

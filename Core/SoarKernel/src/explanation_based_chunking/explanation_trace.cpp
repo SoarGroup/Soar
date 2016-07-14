@@ -35,7 +35,7 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
     cond->data.tests.id_test->identity = t->identity;
     dprint(DT_ADD_ADDITIONALS, "add_hash_info_to_original_id_test added o_id o%u(%y) from %t.\n",
         cond->data.tests.id_test->identity,
-        thisAgent->ebChunker->get_ovar_for_o_id(cond->data.tests.id_test->identity),
+        thisAgent->explanationBasedChunker->get_ovar_for_o_id(cond->data.tests.id_test->identity),
         t);
 }
 
@@ -283,7 +283,7 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                         /* This is the special case */
                         destination->identity = new_test->identity;
                         dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %y\n",
-                            destination, thisAgent->ebChunker->get_ovar_for_o_id(destination->identity));
+                            destination, thisAgent->explanationBasedChunker->get_ovar_for_o_id(destination->identity));
                         deallocate_test(thisAgent, new_test);
                         return;
                     }
@@ -310,7 +310,7 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                                 /* This is the special case */
                                 check_test->identity = new_test->identity;
                                 dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
-                                    thisAgent->ebChunker->get_ovar_for_o_id(check_test->identity));
+                                    thisAgent->explanationBasedChunker->get_ovar_for_o_id(check_test->identity));
                                 deallocate_test(thisAgent, new_test);
                                 return;
                             }

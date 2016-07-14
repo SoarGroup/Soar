@@ -12,7 +12,7 @@
 
 class production_record
 {
-        friend class Explanation_Logger;
+        friend class Explanation_Memory;
 
     public:
 

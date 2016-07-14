@@ -551,8 +551,8 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         reset_variable_generator(thisAgent, cond_top, NIL);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->ebChunker->variablize_condition_list(cond_top);
-        action* new_action = thisAgent->ebChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
+        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
+        action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
@@ -584,7 +584,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_name_symbol = NULL;
         }
 
-        thisAgent->ebChunker->clear_variablization_maps();
+        thisAgent->explanationBasedChunker->clear_variablization_maps();
         deallocate_condition_list(thisAgent, cond_top);
 
     return new_name_symbol;

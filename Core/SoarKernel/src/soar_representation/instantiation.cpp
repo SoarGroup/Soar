@@ -105,7 +105,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
         cond->bt.CDPS = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
-            if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_OSK])
+            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
             {
                 if (cond->bt.trace->slot->CDPS)
                 {
@@ -847,7 +847,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
-    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
+    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
@@ -879,7 +879,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     AddAdditionalTestsMode additional_test_mode;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-    } else if (thisAgent->ebChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         additional_test_mode = ALL_ORIGINALS;
     } else  {
@@ -1082,7 +1082,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         }
     }
 
-    thisAgent->ebChunker->set_learning_for_instantiation(inst);
+    thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
 
     /* Copy any context-dependent preferences for conditions of this instantiation */
     build_CDPS(thisAgent, inst);
@@ -1092,9 +1092,9 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    thisAgent->ebChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
+    thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
 
-    thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
@@ -1153,7 +1153,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
          * we have a long sequence of persistent instantiations firing. The following function
          * cleans up the identity->rule variable mapping that are only used for debugging in a
          * non-release build. */
-        thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+        thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
 
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
@@ -1444,7 +1444,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
-    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
+    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
     inst->bottom_of_instantiated_conditions = NULL;
@@ -1528,7 +1528,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     }
 
     /* Might not be needed yet, but could be if we add identity information to fake instantiation */
-    thisAgent->ebChunker->cleanup_for_instantiation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
 
     return inst;
 }
@@ -1584,21 +1584,21 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* --- make the fake instantiation --- */
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
-    inst->i_id = thisAgent->ebChunker->get_new_inst_id();
+    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
 
     /* --- make the fake condition --- */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->ebChunker->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
                            cand->value, NIL,
                            identity_triple(
-                               thisAgent->ebChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
+                               thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
                                0,
                                cond->data.tests.value_test->identity));
     symbol_add_ref(thisAgent, pref->id);
@@ -1647,7 +1647,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 #endif
     cond->bt.level = ap_wme->id->id->level;
 
-    thisAgent->ebChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
 
     /* --- return the fake preference --- */
     return pref;

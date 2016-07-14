@@ -62,11 +62,11 @@ void chunk_record::excise_chunk_record()
 {
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
-        thisAgent->explanationLogger->delete_condition((*it)->get_conditionID());
+        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
     }
     for (auto it = actions->begin(); it != actions->end(); it++)
     {
-        thisAgent->explanationLogger->delete_action((*it)->get_actionID());
+        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
     }
     /* For this to work, store id of last chunk that created instantiation record.  If it's the
      * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
@@ -76,7 +76,7 @@ void chunk_record::excise_chunk_record()
         if ((*it)->get_chunk_creator() == chunkID)
         {
             (*it)->delete_instantiation();
-            thisAgent->explanationLogger->delete_instantiation((*it)->get_instantiationID());
+            thisAgent->explanationMemory->delete_instantiation((*it)->get_instantiationID());
         }
     }
 }
@@ -120,7 +120,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (auto it = backtraced_instantiations->begin(); it != backtraced_instantiations->end(); it++)
     {
         lNewInst = (*it);
-        lNewInstRecord = thisAgent->explanationLogger->add_instantiation((*it), chunkID);
+        lNewInstRecord = thisAgent->explanationMemory->add_instantiation((*it), chunkID);
         assert(lNewInstRecord);
         backtraced_inst_records->push_back(lNewInstRecord);
         dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod_name);
@@ -142,12 +142,12 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         lNewInstRecord->cached_inst->explain_status = explain_recorded;
     }
 
-    baseInstantiation = thisAgent->explanationLogger->get_instantiation(pBaseInstantiation);
+    baseInstantiation = thisAgent->explanationMemory->get_instantiation(pBaseInstantiation);
 
     dprint(DT_EXPLAIN, "(2) Recording other result instantiation of chunk...\n", pBaseInstantiation->i_id);
     for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
     {
-        lResultInstRecord = thisAgent->explanationLogger->get_instantiation((*it));
+        lResultInstRecord = thisAgent->explanationMemory->get_instantiation((*it));
         assert(lResultInstRecord);
         result_inst_records->insert(lResultInstRecord);
     }
@@ -166,11 +166,11 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
             dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);
             /* The backtrace should have already added all instantiations that contained
              * grounds, so we can just look up the instantiation for each condition */
-            lchunkInstRecord = thisAgent->explanationLogger->get_instantiation(lChunkCondInst);
+            lchunkInstRecord = thisAgent->explanationMemory->get_instantiation(lChunkCondInst);
         } else {
             lchunkInstRecord = NULL;
         }
-        lcondRecord = thisAgent->explanationLogger->add_condition(conditions, cond, lchunkInstRecord);
+        lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
         cond->inst = pChunkInstantiation;
         cond->counterpart->inst = pChunkInstantiation;
@@ -184,7 +184,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     action* lAction;
     for (pref = results, lAction= rhs; (pref != NIL) && (lAction != NIL); pref = pref->next_result, lAction = lAction->next)
     {
-        new_action_record = thisAgent->explanationLogger->add_result(pref, lAction);
+        new_action_record = thisAgent->explanationMemory->add_result(pref, lAction);
         actions->push_back(new_action_record);
     }
 
@@ -286,13 +286,13 @@ void chunk_record::print_for_explanation_trace()
             id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value);
             deallocate_test(thisAgent, id_test_without_goal_test);
 
-            thisAgent->explanationLogger->print_path_to_base(lCond->get_path_to_base(), true);
+            thisAgent->explanationMemory->print_path_to_base(lCond->get_path_to_base(), true);
         }
         if (lInNegativeConditions)
         {
@@ -302,9 +302,9 @@ void chunk_record::print_for_explanation_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationLogger->print_action_list(actions, original_production, NULL, excised_production);
+    thisAgent->explanationMemory->print_action_list(actions, original_production, NULL, excised_production);
     outputManager->printa(thisAgent, "}\n");
-    thisAgent->explanationLogger->print_footer(true);
+    thisAgent->explanationMemory->print_footer(true);
 }
 
 void chunk_record::print_for_wme_trace()
@@ -354,9 +354,9 @@ void chunk_record::print_for_wme_trace()
             if (lCond->matched_wme)
             {
                 outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
-                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             } else {
-                outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationLogger->is_condition_related(lCond) ? "*" : "");
+                outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             }
             if (lCond->matched_wme != NULL)
             {
@@ -385,15 +385,15 @@ void chunk_record::print_for_wme_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationLogger->print_action_list(actions, original_production, NULL, excised_production);
+    thisAgent->explanationMemory->print_action_list(actions, original_production, NULL, excised_production);
     outputManager->printa(thisAgent, "}\n");
-    thisAgent->explanationLogger->print_footer(true);
+    thisAgent->explanationMemory->print_footer(true);
 }
 
 void chunk_record::visualize()
 {
     Output_Manager* outputManager = thisAgent->outputManager;
-    GraphViz_Visualizer* visualizer = thisAgent->visualizer;
+    GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     condition_record* lCond;
 
     if (conditions->empty())
