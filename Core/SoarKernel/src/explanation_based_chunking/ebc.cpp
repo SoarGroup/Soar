@@ -192,7 +192,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     goal_stack_level lowest_result_level;
     std::string lImpasseName;
     std::stringstream lName;
-    char* rule_prefix;
+    std::string rule_prefix;
     uint64_t rule_number;
     chunkNameFormats chunkNameFormat = ebc_params->naming_style->get_value();
 
@@ -219,7 +219,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         case numberedFormat:
         {
             increment_counter(chunk_count);
-            return (generate_new_str_constant(thisAgent, rule_prefix, &(chunk_count)));
+            return (generate_new_str_constant(thisAgent, rule_prefix.c_str(), &(chunk_count)));
         }
         case ruleFormat:
         {
@@ -267,15 +267,31 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
 
             if (inst->prod)
             {
-                /* Check for chunk pos and original rule name pos.
-                 * If difference is length of chunk + 1, concat x2
-                 * If more, then convert string in between to number, add 1 and concat xN
-                 */
-                if ((strstr(inst->prod_name->sc->name, rule_prefix) == inst->prod_name->sc->name) &&
-                    (strstr(inst->prod_name->sc->name, "-multi") == inst->prod_name->sc->name))
+                std::string:: size_type pos1, pos2, pos3;
+                std::string numberString;
+                std::string sourceString = inst->prod_name->sc->name;
+                std::string targetString = inst->prod->original_rule_name;
+                int pNum(0);
+
+                pos1 = sourceString.find(rule_prefix);
+                pos2 = sourceString.find(targetString);
+                if ((pos1 ==  0)  && (pos2 !=  std::string::npos) && (pos2 > pos1))
                 {
-                    /*-- This is a chunk based on a chunk, so annotate name to indicate --*/
-                    lName << "-multi";
+                    if ((pos2 - rule_prefix.length()) >= 3)
+                    {
+                        numberString = sourceString.substr((rule_prefix.length() + 1), (pos2 - rule_prefix.length()-2));
+                        try
+                        {
+                            pNum = std::stoi(numberString);
+                        }
+                        catch(std::invalid_argument&) //or catch(...) to catch all exceptions
+                        {
+                            std::cout << "Exception caugth!" << std::endl;
+                        }
+                        lName << 'x' << (pNum + 1);
+                    } else {
+                        lName << "x2";
+                    }
                 }
                 lName << "*" << inst->prod->original_rule_name;
             }
@@ -283,13 +299,13 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
             {
                 lName << "*" << lImpasseName;
             }
+
             lName << "*t" << thisAgent->d_cycle_count << "-" << rule_number;
         }
     }
     lImpasseName.erase();
     if (lName.str().empty()) { return NULL; }
 
-    /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
     if (find_str_constant(thisAgent, lName.str().c_str()))
     {
         uint64_t collision_count = 1;
@@ -297,12 +313,10 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
 
         print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
-//        dprint(DT_DEBUG, "Chunk name %s already exists...trying...", lName.str().c_str());
         do
         {
             newLName.str("");
             newLName << lName.str() << "-" << collision_count++;
-//            dprint_noprefix(DT_DEBUG, "%s\n", newLName.str().c_str());
         }
         while (find_str_constant(thisAgent, newLName.str().c_str()));
         lName.str(newLName.str());
