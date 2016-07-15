@@ -6,15 +6,18 @@
  */
 
 #include "ebc.h"
+
 #include "agent.h"
+#include "dprint.h"
+#include "ebc_settings.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
-#include <assert.h>
-#include "test.h"
-#include "working_memory.h"
 #include "output_manager.h"
 #include "print.h"
+#include "test.h"
+#include "working_memory.h"
 
-#include "dprint.h"
+#include <assert.h>
 
 void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {
@@ -209,4 +212,117 @@ void Explanation_Based_Chunker::print_tables(TraceMode mode)
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     print_variablization_table(mode);
     print_o_id_tables(mode);
+}
+
+
+inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
+
+inline const char* concatJustified(const char* left_string, std::string right_string, int pWidth)
+{
+    std::string return_string = left_string;
+    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    return_string += right_string;
+    return return_string.c_str();
+}
+
+void Explanation_Based_Chunker::print_chunking_summary()
+{
+    std::string tempString;
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 55);
+
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa(thisAgent,    "                     Chunking Summary\n");
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks learned", std::to_string(thisAgent->explanationMemory->get_stat_succeeded()), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks attempted", std::to_string(thisAgent->explanationMemory->get_stat_chunks_attempted()), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Justifications learned", std::to_string(thisAgent->explanationMemory->get_stat_justifications()), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Interrupt after learning rule", std::string(ebc_params->interrupt_on_chunk->get_value() ? "Yes" : "No"), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55));
+
+    if (ebc_settings[SETTING_EBC_ONLY] )
+    {
+        outputManager->printa_sf(thisAgent, "Only Learning In States\n");
+        if (!chunky_problem_spaces)
+        {
+            outputManager->printa_sf(thisAgent, "No current learning states.\n");
+        } else
+        {
+            for (cons* c = chunky_problem_spaces; c != NIL; c = c->rest)
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol*>(c->first));
+                outputManager->printa_sf(thisAgent, tempString.c_str());
+                tempString.clear();
+            }
+        }
+    } else if (ebc_settings[SETTING_EBC_EXCEPT])
+    {
+        outputManager->printa_sf(thisAgent, "Learning in All States Except\n");
+        if (!chunky_problem_spaces)
+        {
+            outputManager->printa_sf(thisAgent, "Currently learning in all states.\n");
+        } else
+        {
+            for (cons* c = chunk_free_problem_spaces; c != NIL; c = c->rest)
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol*>(c->first));
+                outputManager->printa_sf(thisAgent, tempString.c_str());
+                tempString.clear();
+            }
+        }
+    }
+    outputManager->printa_sf(thisAgent, "\nFor a list of chunking commands and settings:  chunk  ?");
+}
+
+
+void Explanation_Based_Chunker::print_chunking_settings()
+{
+    std::string tempString;
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 40);
+    outputManager->set_column_indent(1, 55);
+    outputManager->printa_sf(thisAgent, "========== Chunk Settings and Commands ============\n");
+    outputManager->printa_sf(thisAgent, "%s | %s | %s | %s       %-%s\n",
+        ebc_params->chunk_in_states->get_value() == ebc_always  ? "ALWAYS" : "always",
+            ebc_params->chunk_in_states->get_value() == ebc_never ? "NEVER" : "never",
+                ebc_params->chunk_in_states->get_value() == ebc_only ? "FLAGGED" : "flagged",
+                    ebc_params->chunk_in_states->get_value() == ebc_except ? "ALL-EXCEPT" : "all-except",
+        "When Soar will learn new rules");
+    outputManager->printa_sf(thisAgent, "bottom-only                %-%s%-%s\n", capitalizeOnOff(ebc_params->bottom_level_only->get_value()), "Learn only from bottom sub-state");
+    outputManager->printa_sf(thisAgent, "------------------- Settings ----------------------\n");
+    tempString = "[ ";
+    tempString += ebc_params->naming_style->get_value() == ruleFormat ?  "numbered" : "NUMBERED";
+    tempString += " | ";
+    tempString += ebc_params->naming_style->get_value() == ruleFormat ?  "RULE" : "rule";
+    tempString += "]";
+    outputManager->printa_sf(thisAgent, "%s %-%s\n",
+        concatJustified("naming-style", tempString, 51),"Simple numeric chunk names or informational rule-based name");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string(), 45), "Maximum chunks that can be learned (per phase)");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string(), 45), "Maximum duplicate chunks (per rule, per phase)");
+    outputManager->printa_sf(thisAgent, "---------- Debugging Commands/Settings ------------\n");
+    outputManager->printa_sf(thisAgent, "? | help %-%-%s\n", "Print a listing of all chunking-related settings and commands");
+    outputManager->printa_sf(thisAgent, "history %-%-%s\n", "Print a bullet-point listing of all chunking events");
+    outputManager->printa_sf(thisAgent, "stats %-%-%s\n", "Print a listing of summary statistics");
+    outputManager->printa_sf(thisAgent, "interrupt                   %-%s%-%s\n", capitalizeOnOff(ebc_params->bottom_level_only->get_value()), "Stop Soar after learning from a watched rule");
+    outputManager->printa_sf(thisAgent, "record-utility              %-%s%-%s\n", capitalizeOnOff(ebc_params->utility_mode->get_value()), "Record utility instead of firing");
+    outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");
+    outputManager->printa_sf(thisAgent, "add-osk                     %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_OSK->get_value()), "Learn from operator selection knowledge");
+    outputManager->printa_sf(thisAgent, "variablize-identity         %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_identity_analysis->get_value()), "Variablize symbols based on identity analysis");
+    outputManager->printa_sf(thisAgent, "variablize-rhs-funcs        %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_variablize_rhs_funcs->get_value()), "Variablize and compose RHS functions");
+    outputManager->printa_sf(thisAgent, "enforce-constraints         %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_constraints->get_value()), "Track and enforce transitive constraints");
+    outputManager->printa_sf(thisAgent, "repair-rhs                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_rhs->get_value()), "Repair rules with unconnected RHS actions");
+    outputManager->printa_sf(thisAgent, "repair-lhs                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_lhs->get_value()), "Repair rules with unconnected LHS conditions");
+    outputManager->printa_sf(thisAgent, "repair-rhs-promotion        %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_promotion_tracking->get_value()), "Repair rules that augment previous results");
+    outputManager->printa_sf(thisAgent, "merge                       %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
+    outputManager->printa_sf(thisAgent, "user-singletons             %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_user_singletons->get_value()), "Unify identities using domain-specific singletons");
+    outputManager->printa_sf(thisAgent, "--------- Correctness Guarantee Filters ------------\n");
+    outputManager->printa_sf(thisAgent, "allow-local-negations       %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_negative_reasoning->get_value()), "Used local negative reasoning");
+    outputManager->printa_sf(thisAgent, "allow-missing-osk           %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_OSK->get_value()), "Used operator selection rules to choose operator");
+    outputManager->printa_sf(thisAgent, "allow-opaque                %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
+    outputManager->printa_sf(thisAgent, "allow-uncertain-operators   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
+    outputManager->printa_sf(thisAgent, "allow-multiple-prefs        %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_multiple_prefs->get_value()), "Tests a WME that has multiple reasons it exists");
+    outputManager->printa_sf(thisAgent, "allow-pre-existing-ltm      %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_temporal_constraint->get_value()), "Augments/tests a retrieved LTM that existed in higher goal");
+
 }

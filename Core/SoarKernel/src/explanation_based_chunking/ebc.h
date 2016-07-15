@@ -137,6 +137,9 @@ class Explanation_Based_Chunker
         void print_o_id_substitution_map(TraceMode mode);
         void print_o_id_to_ovar_debug_map(TraceMode mode);
 
+        void print_chunking_summary();
+        void print_chunking_settings();
+
         /* Clean-up */
         void reinit();
         void cleanup_for_instantiation(uint64_t pI_id);

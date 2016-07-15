@@ -658,6 +658,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     break;
 
                     case '-':
+                    case '=':
                     {
                         indent_amount = 0;
                         next_position = (this->get_printer_output_column(thisAgent) + destString.length());
@@ -669,11 +670,15 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                             }
                         }
                         if (indent_amount > 0) {
-                            destString.append(indent_amount , ' ');
+                            if (ch == '-')
+                            {
+                                destString.append(indent_amount , ' ');
+                            } else {
+                                destString.append(indent_amount , '.');
+                            }
                         }
                     }
                     break;
-
                     default:
                     {
                         destString += '%';
