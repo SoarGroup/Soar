@@ -162,7 +162,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
             tempStringStream << "      ? | help | history | stats \n";
             tempStringStream << "      interrupt                                    " << capitalizeOnOff(thisAgent->explanationBasedChunker->ebc_params->bottom_level_only->get_value()) << "\n";
             tempStringStream << "      record-utility                               " << capitalizeOnOff(thisAgent->explanationBasedChunker->ebc_params->utility_mode->get_value()) << "\n";
-            tempStringStream << "      * For debugging, also see 'explain' and 'watch' commands.
+            tempStringStream << "      * For debugging, also see 'explain' and 'watch' commands.";
             tempStringStream << "      ============= EBC Mechanisms ================== Value ===\n";
             tempStringStream << "      add-osk                                      " << capitalizeOnOff(thisAgent->explanationBasedChunker->ebc_params->mechanism_OSK->get_value()) << "\n";
             tempStringStream << "      variablize-identity                          " << capitalizeOnOff(thisAgent->explanationBasedChunker->ebc_params->mechanism_identity_analysis->get_value()) << "\n";
