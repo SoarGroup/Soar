@@ -2552,7 +2552,6 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     return resultString;
 }
 
-#ifndef NO_SVS
 void Kernel::SendSVSInput(const char* agentName, const std::string& txt)
 {
     AnalyzeXML response;
@@ -2584,4 +2583,3 @@ std::string Kernel::SVSQuery(const char* agentName, const std::string& q)
         return "";
     }
 }
-#endif

@@ -507,9 +507,7 @@ namespace cli
              */
             virtual bool DoRL(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
-#ifndef NO_SVS
             virtual bool DoSVS(const std::vector<std::string>& args) = 0;
-#endif
             enum eRunOptions
             {
                 RUN_DECISION,

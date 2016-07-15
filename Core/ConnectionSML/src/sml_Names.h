@@ -441,11 +441,9 @@ namespace sml
             // Command line interface
             static char const* const kCommand_CommandLine ;
 
-#ifndef NO_SVS
             static char const* const kCommand_SVSInput ;
             static char const* const kCommand_SVSOutput ;
             static char const* const kCommand_SVSQuery ;
-#endif
     } ;
 
 }

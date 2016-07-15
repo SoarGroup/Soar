@@ -94,11 +94,9 @@ void KernelSML::BuildCommandMap()
     m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
     m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
     m_CommandMap[sml_Names::kCommand_GetListenerPort]   = &sml::KernelSML::HandleGetListenerPort;
-#ifndef NO_SVS
     m_CommandMap[sml_Names::kCommand_SVSInput] = &sml::KernelSML::HandleSVSInput;
     m_CommandMap[sml_Names::kCommand_SVSOutput] = &sml::KernelSML::HandleSVSOutput;
     m_CommandMap[sml_Names::kCommand_SVSQuery] = &sml::KernelSML::HandleSVSQuery;
-#endif
 }
 
 bool fileExists(const char* path)
@@ -1146,31 +1144,39 @@ bool KernelSML::HandleGetListenerPort(AgentSML* /*pAgentSML*/, char const* /*pCo
     return this->ReturnIntResult(pConnection, pResponse, this->GetListenerPort());
 }
 
-#ifndef NO_SVS
 bool KernelSML::HandleSVSInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
 {
+#ifndef NO_SVS
     if (pAgentSML->GetSoarAgent()->svs->is_enabled())
     {
+#endif
         // Get the parameters
         char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
         if (!pLine)
         {
             return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
         }
+#ifndef NO_SVS
         pAgentSML->GetSoarAgent()->svs->add_input(pLine);
         return true;
     }
+#endif
     return true;
 }
 
 bool KernelSML::HandleSVSOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
 {
+    std::string s;
+#ifndef NO_SVS
     if (pAgentSML->GetSoarAgent()->svs->is_enabled())
     {
-        std::string s = pAgentSML->GetSoarAgent()->svs->get_output();
+        s = pAgentSML->GetSoarAgent()->svs->get_output();
+#endif
         return this->ReturnResult(pConnection, pResponse, s.c_str()) ;
+#ifndef NO_SVS
     }
     return true;
+#endif
 }
 
 bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
@@ -1181,7 +1187,9 @@ bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Co
     {
         return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
     }
-    std::string res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    std::string res;
+#ifndef NO_SVS
+    res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+#endif
     return this->ReturnResult(pConnection, pResponse, res.c_str());
 }
-#endif

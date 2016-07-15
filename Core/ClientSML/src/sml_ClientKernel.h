@@ -986,11 +986,9 @@ namespace sml
             *************************************************************/
             static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
 
-#ifndef NO_SVS
             void        SendSVSInput(const char* agentName, const std::string& txt);
             std::string GetSVSOutput(const char* agentName);
             std::string SVSQuery(const char* agentName, const std::string& q);
-#endif
     };
 
 }//closes namespace

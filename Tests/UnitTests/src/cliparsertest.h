@@ -321,12 +321,10 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-#ifndef NO_SVS
         virtual bool DoSVS(const std::vector<std::string>& args)
         {
             return false;
         }
-#endif
 };
 
 class CliEcho : public CliAdapter

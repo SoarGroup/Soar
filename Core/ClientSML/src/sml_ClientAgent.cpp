@@ -1820,7 +1820,6 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
     return pClientIdentifier;
 }
 
-#ifndef NO_SVS
 void Agent::SendSVSInput(const std::string& txt)
 {
     GetKernel()->SendSVSInput(GetAgentName(), txt);
@@ -1835,4 +1834,3 @@ std::string Agent::GetSVSOutput()
 {
     return GetKernel()->GetSVSOutput(GetAgentName());
 }
-#endif

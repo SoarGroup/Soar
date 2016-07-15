@@ -5431,7 +5431,6 @@ namespace cli
             WMACommand& operator=(const WMACommand&);
     };
 
-#ifndef NO_SVS
     class SVSCommand : public cli::ParserCommand
     {
         public:
@@ -5455,7 +5454,6 @@ namespace cli
         private:
             cli::Cli& cli;
     };
-#endif
 }
 
 #endif // CLI_COMMANDS_H
