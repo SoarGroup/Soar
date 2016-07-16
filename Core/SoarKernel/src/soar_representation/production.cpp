@@ -553,6 +553,8 @@ production* make_production(agent*          thisAgent,
     p->interrupt = false;
     p->explain_its_chunks = false;
     p->save_for_justification_explanation = false;
+    p->duplicate_chunks_this_cycle = 0;
+    p->last_duplicate_dc = 0;
 
     // Soar-RL stuff
     p->rl_update_count = 0.0;

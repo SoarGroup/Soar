@@ -27,6 +27,7 @@ typedef struct chunking_stats_struct {
         uint64_t            chunk_did_not_match;
         uint64_t            no_grounds;
         uint64_t            max_chunks;
+        uint64_t            max_dupes;
         uint64_t            tested_local_negation;
         uint64_t            merged_conditions;
         uint64_t            chunks_attempted;
@@ -53,6 +54,7 @@ class Explanation_Memory
     public:
         bool                    get_enabled() { return enabled; }
         void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
+        bool                    isRecordingChunk() { return (enabled || current_recording_chunk); }
 
         void                    re_init();
         void                    clear_explanations();
@@ -80,6 +82,7 @@ class Explanation_Memory
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
+        void increment_stat_max_dupes() { stats.max_dupes++;  if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
         void increment_stat_succeeded() { stats.chunks_succeeded++; };
         void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
@@ -130,7 +133,6 @@ class Explanation_Memory
         uint64_t                last_printed_id;
 
         int                     num_rules_watched;
-        bool                    shouldRecord() { return (enabled || current_recording_chunk); }
 
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;

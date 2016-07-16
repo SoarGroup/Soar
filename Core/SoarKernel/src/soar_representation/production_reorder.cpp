@@ -173,6 +173,11 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         thisAgent->outputManager->set_print_indents();
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational actions.";
+        }
 
         /* --- reconstruct list of all actions --- */
         if (last_action)
@@ -1561,6 +1566,11 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational conditions.";
+        }
         return false;
     }
 
@@ -1593,6 +1603,11 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with no conditions that match a goal state.";
+        }
         return false;
     }
 
@@ -1605,6 +1620,11 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with negative relational test bindings.";
+        }
         return false;
     }
 

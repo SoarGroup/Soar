@@ -28,6 +28,7 @@ class ebc_param_container: public soar_module::param_container
 
         soar_module::boolean_param* bottom_level_only;
         soar_module::boolean_param* interrupt_on_chunk;
+        soar_module::boolean_param* interrupt_on_failure;
         soar_module::boolean_param* utility_mode;
 
         soar_module::boolean_param* mechanism_identity_analysis;

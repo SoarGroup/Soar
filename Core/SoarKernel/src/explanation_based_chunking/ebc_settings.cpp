@@ -76,6 +76,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(bottom_level_only);
     interrupt_on_chunk = new soar_module::boolean_param("interrupt", setting_on(SETTING_EBC_INTERRUPT), new soar_module::f_predicate<boolean>());
     add(interrupt_on_chunk);
+    interrupt_on_failure = new soar_module::boolean_param("interrupt-on-failure", setting_on(SETTING_EBC_INTERRUPT_FAILURE), new soar_module::f_predicate<boolean>());
+    add(interrupt_on_failure);
     utility_mode = new soar_module::boolean_param("record-utility", setting_on(SETTING_EBC_UTILITY_MODE), new soar_module::f_predicate<boolean>());
     add(utility_mode);
 
@@ -170,6 +172,10 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT] = pChangedParam->get_value();
     }
+    else if (pChangedParam == interrupt_on_failure)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] = pChangedParam->get_value();
+    }
     else if (pChangedParam == utility_mode)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_UTILITY_MODE] = pChangedParam->get_value();
@@ -256,6 +262,7 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     }
     bottom_level_only->set_value(pEBC_settings[SETTING_EBC_BOTTOM_ONLY] ? on : off);
     interrupt_on_chunk->set_value(pEBC_settings[SETTING_EBC_INTERRUPT] ? on : off);
+    interrupt_on_failure->set_value(pEBC_settings[SETTING_EBC_INTERRUPT_FAILURE] ? on : off);
     utility_mode->set_value(pEBC_settings[SETTING_EBC_UTILITY_MODE] ? on : off);
 
     mechanism_identity_analysis->set_value(pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] ? on : off);

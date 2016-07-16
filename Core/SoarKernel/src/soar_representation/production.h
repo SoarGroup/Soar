@@ -48,6 +48,10 @@ typedef struct production_struct
     double rl_gql;                // second value for implementation of GQ(\lambda)
 
     condition* rl_template_conds;
+
+    int      duplicate_chunks_this_cycle;
+    uint64_t last_duplicate_dc;
+
 } production;
 
 /* ========================================================================

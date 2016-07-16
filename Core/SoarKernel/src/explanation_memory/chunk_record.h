@@ -17,6 +17,7 @@ class identity_record;
 
 typedef struct chunk_stats_struct {
         uint64_t            duplicates;
+        uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                reverted;
         uint64_t            num_grounding_conditions_added;

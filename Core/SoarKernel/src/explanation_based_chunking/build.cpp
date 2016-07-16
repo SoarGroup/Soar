@@ -540,6 +540,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     if (has_local_negation)
     {
         thisAgent->explanationMemory->increment_stat_tested_local_negation();
+
     }
     #endif
     if (prev_vrblz)
@@ -931,43 +932,56 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
     }
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
-        #ifdef BUILD_WITH_EXPLAINER
         assert(m_prod);
-            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications();
         } else {
             thisAgent->explanationMemory->increment_stat_succeeded();
-//            chunk_history += "Successfully created chunk\n";
-//            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
+            if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Soar learned new rule via chunking.";
+
+            }
+            //            chunk_history += "Successfully created chunk\n";
+            //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
 
         }
-            #endif
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
 
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
-        #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
+        if (m_inst->prod)
+        {
+            if (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc)
+            {
+                m_inst->prod->duplicate_chunks_this_cycle++;
+            } else {
+                m_inst->prod->duplicate_chunks_this_cycle = 1;
+                m_inst->prod->last_duplicate_dc = thisAgent->d_cycle_count;
+            }
+        }
+        thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
-            #endif
         excise_production(thisAgent, m_prod, false);
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
-            #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_justification_did_not_match();
-                thisAgent->explanationMemory->cancel_chunk_record();
-            #endif
+            thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+            thisAgent->explanationMemory->cancel_chunk_record();
             excise_production(thisAgent, m_prod, false);
+            if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Chunking failure:  Justification did not match working memory.";
+            }
         } else {
             /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.*/
-            #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
-                assert(m_prod);
-                thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
-            #endif
+            thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
+            assert(m_prod);
+            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         }
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
@@ -1029,6 +1043,16 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         m_inst = NULL;
         return;
     }
+    if ((thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
+    {
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, PRINT_WARNINGS_SYSPARAM);
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_max_dupes();
+        #endif
+        m_extra_results = NULL;
+        m_inst = NULL;
+        return;
+    }
 
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_chunk_record(m_inst);
@@ -1059,14 +1083,28 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
+        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Rule learned had no conditions.";
+        }
             #endif
         clean_up();
         return;
     }
 
     /* Determine if we create a justification or chunk */
-    variablize = learning_is_on_for_instantiation() && m_reliable;
+    variablize = learning_is_on_for_instantiation();
+    if (variablize && !m_reliable)
+    {
+        variablize = false;
+        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
+        }
 
+    }
     set_up_rule_name(variablize);
 
     dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", m_prod_name);
@@ -1116,9 +1154,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             if (m_prod)
             {
                 print_current_built_rule("Adding the following justification instead:");
-
-                /* MToDo | Make this an option to interrrupt when an explanation is made*/
-                //thisAgent->stop_soar = true;
 
                 #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->increment_stat_reverted();

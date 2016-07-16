@@ -23,42 +23,34 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
     {
         case ebc_failed_reordering_rhs:
         {
-            printa(thisAgent,"\nChunking has created an invalid rule:\n");
-            printa_sf(thisAgent,"   %s\n\n", pString1);
+            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
             printa(thisAgent,     "   RHS actions contain variables/long-term identifiers\n"
-                                  "   that are not tested in a positive condition on the LHS.\n\n"
-                                  "   Note:  Negative conditions don't count.  This error may also\n"
-                                  "          occur if you pass an unbound variable as an argument \n"
-                                  "          to a RHS function.\n");
-            printa_sf(thisAgent,"\nProblem RHS Actions:\n%s\n", pString2);
+                                  "   that are not tested in a positive condition on the LHS.\n\n");
+            printa_sf(thisAgent,"\n- Unconnected RHS Actions:\n%s\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:
         {
-            printa(thisAgent,"\nChunking has created an invalid rule:\n");
-            printa_sf(thisAgent,"   %s\n\n", pString1);
+            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
             printa(thisAgent,   "   A LHS condition is not connected to a goal.  This is likely caused \n"
-                                "   by a condition in a matched rule that tested either\n"
-                                "      (a) a long-term identifier retrieved in the sub-state that also \n"
-                                "          exists in a super-state or "
-                                "      (b) a working memory element that was created in the sub-state \n"
-                                "          and then later linked to a WME in the super-state at some \n"
-                                "          intermediate point during problem-solving.\n\n");
-            printa_sf(thisAgent,"\nUnconnected identifiers: %s\n", pString2);
+                                "   by a condition that tested either\n"
+                                "      (a) semantic memory retrieved in the sub-state that already \n"
+                                "          exists in a super-state \n"
+                                "      (b) working memory element that was created in the sub-state \n"
+                                "          and then connected to the super-state during problem-solving.\n");
+            printa_sf(thisAgent,"\n- Unconnected identifiers: %s\n", pString2);
             break;
         }
         case ebc_failed_no_roots:
         {
-            printa(thisAgent,"\nChunking has created an invalid rule:\n");
-            printa_sf(thisAgent,"        %s\n\n", pString1);
-            printa(   thisAgent,  "        None of the conditions reference a goal state.\n");
+            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
+            printa(   thisAgent,  "- None of the conditions reference a goal state.\n");
             break;
         }
         case ebc_failed_negative_relational_test_bindings:
         {
-            printa(thisAgent,"\nChunking has created an invalid rule:\n");
-            printa_sf(thisAgent,"        %s\n\n", pString1);
-            printa(thisAgent,  "        Unbound relational test in negative condition of rule \n");
+            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
+            printa(thisAgent,  "- Unbound relational test in negative condition of rule \n");
             break;
         }
         default:
@@ -81,6 +73,11 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         case ebc_error_max_chunks:
         {
             printa(thisAgent, "Warning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
+            break;
+        }
+        case ebc_error_max_dupes:
+        {
+            printa(thisAgent, "Warning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_invalid_chunk:

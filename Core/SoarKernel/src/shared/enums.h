@@ -78,6 +78,7 @@ enum ChunkingSettings {
     SETTING_EBC_EXCEPT,
     SETTING_EBC_BOTTOM_ONLY,
     SETTING_EBC_INTERRUPT,
+    SETTING_EBC_INTERRUPT_FAILURE,
     SETTING_EBC_UTILITY_MODE,
     SETTING_EBC_IDENTITY_VRBLZ,
     SETTING_EBC_CONSTRAINTS,
@@ -130,6 +131,7 @@ enum top_level_phase { INPUT_PHASE = 0,
 
 enum SoarCannedMessageType {
     ebc_error_max_chunks,
+    ebc_error_max_dupes,
     ebc_error_invalid_chunk,
     ebc_error_invalid_justification,
     ebc_error_no_conditions,
