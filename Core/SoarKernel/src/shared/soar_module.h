@@ -36,7 +36,7 @@ namespace soar_module
     // Utility functions
     /////////////////////////////////////////////////////////////
 
-
+    void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list);
     wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
     void remove_module_wme(agent* thisAgent, wme* w);
 
@@ -137,7 +137,6 @@ namespace soar_module
             agent_predicate(agent* new_agent): thisAgent(new_agent) {}
     };
 
-
     ///////////////////////////////////////////////////////////////////////////
     // Common for params, stats, timers, etc.
     ///////////////////////////////////////////////////////////////////////////
@@ -206,6 +205,45 @@ namespace soar_module
 
             //
 
+            T* findClosestObject(std::string pStr)
+            {
+                T* matched_object = NULL , *current_object = NULL;
+                std::list<std::string> matched_name_list;
+                std::string current_name;
+                size_t match_pos, match_length, longest_match = 0;
+
+                typename std::map<std::string, T*>::iterator p;
+
+                for (p = objects->begin(); p != objects->end(); p++)
+                {
+                    current_object = p->second;
+                    current_name = current_object->get_name();
+                    match_pos = current_name.find(pStr);
+                    if (match_pos == 0)
+                    {
+                        if (matched_name_list.empty())
+                        {
+                            matched_name_list.push_back(current_name);
+                            matched_object = current_object;
+                        }
+                        else
+                        {
+                            matched_name_list.push_back(current_name);
+                            matched_object = NULL;
+                        }
+                    }
+                }
+                if (matched_object)
+                {
+                    return matched_object;
+                }
+                else if (matched_name_list.size() > 1)
+                {
+                    print_ambiguous_commands(thisAgent, pStr, matched_name_list);
+                }
+                return NULL;
+            }
+
             T* get(const char* name)
             {
                 std::string temp_str(name);
@@ -213,7 +251,8 @@ namespace soar_module
 
                 if (p == objects->end())
                 {
-                    return NULL;
+                    T* closestObject = findClosestObject(temp_str);
+                    return closestObject;
                 }
                 else
                 {

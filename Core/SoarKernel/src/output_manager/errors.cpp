@@ -113,3 +113,20 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
     }
 }
+
+void Output_Manager::display_ambiguous_command_error(agent* thisAgent, const std::list< std::string > matched_objects_str)
+{
+    std::string last_p;
+    for (auto p = matched_objects_str.begin(); p != matched_objects_str.end();)
+    {
+        last_p = (*p++);
+
+        if (p == matched_objects_str.end())
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, ", or %s?", last_p.c_str());
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, " %s", last_p.c_str());
+        }
+    }
+}
+

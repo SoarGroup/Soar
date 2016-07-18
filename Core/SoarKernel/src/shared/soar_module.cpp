@@ -75,7 +75,11 @@ namespace soar_module
         }
     }
 
-
+    void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%s is not a valid command or option.  Did you mean", badCommand.c_str());
+        thisAgent->outputManager->display_ambiguous_command_error(thisAgent, matched_name_list);
+    }
 
 }
 

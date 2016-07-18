@@ -262,6 +262,7 @@ class Output_Manager
          * to make other code cleaner and easier to parse */
         void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, int64_t pSysParam = 0);
         void display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
+        void display_ambiguous_command_error(agent* thisAgent, std::list< std::string > matched_objects_str);
 
         /* -- Should be moved elsewhere -- */
         void debug_find_and_print_sym(char* find_string);

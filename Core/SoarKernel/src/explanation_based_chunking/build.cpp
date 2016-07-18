@@ -1043,7 +1043,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         m_inst = NULL;
         return;
     }
-    if ((thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
+    if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, PRINT_WARNINGS_SYSPARAM);
         #ifdef BUILD_WITH_EXPLAINER
