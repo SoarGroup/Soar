@@ -116,9 +116,7 @@ void instantiation_record::update_instantiation_contents()
     {
         lCondRecord = (*it);
         lCondRecord->update_condition(cond, this);
-        /* I don't think the connection can ever change without the instantiation retracting.  If we have problems
-         * with a trace being connected incorrectly, though, this could be why. */
-        //        lCondRecord->connect_to_action();
+        lCondRecord->connect_to_action();
     }
 }
 

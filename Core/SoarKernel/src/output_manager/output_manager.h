@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <string>
+#include <list>
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000

@@ -170,7 +170,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     if (found_variablization)
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
-        dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
+//        dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
         if (pShouldCachedMatchValue)
         {
             add_matched_sym_for_rhs_var(found_variablization, rs->referent);

@@ -26,7 +26,7 @@ void condition_record::connect_to_action()
         assert(parent_action);
         dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
     } else {
-        dprint(DT_EXPLAIN, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+        dprint(DT_EXPLAIN_CONNECT, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
     }
 //    cached_pref = NULL;
 }
