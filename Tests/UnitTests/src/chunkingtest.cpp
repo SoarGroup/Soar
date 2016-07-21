@@ -14,7 +14,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-        CPPUNIT_TEST(testLearn);   // bug 1145
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_Variablization_Same_Type);
         CPPUNIT_TEST(STI_with_referents);
@@ -80,6 +79,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Unify_Children_Results);
         CPPUNIT_TEST(Blocks_World_Hierarchical);
         CPPUNIT_TEST(Crazy_Unconnected);
+        CPPUNIT_TEST(testLearn);   // bug 1145
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -91,7 +91,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
         void source(const std::string& path);
         void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
-        void testLearn();
         void STI_Variablization();
         void STI_Variablization_Same_Type();
         void All_Test_Types();
@@ -156,6 +155,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Unify_Children_Results();
         void Blocks_World_Hierarchical();
         void Crazy_Unconnected();
+        void testLearn();
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
         bool succeeded;
@@ -227,7 +227,7 @@ void ChunkTest::tearDown()
 
 void ChunkTest::testLearn()
 {
-    source("test_agents/testLearn.soar");
+    source("testLearn.soar");
     pAgent->ExecuteCommandLine("learn --except");
     pKernel->RunAllAgentsForever();
     {
