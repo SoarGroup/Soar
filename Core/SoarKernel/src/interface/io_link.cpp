@@ -586,7 +586,7 @@ void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
     {
         c = ol->ids_in_tc;
         ol->ids_in_tc = c->rest;
-        id = static_cast<symbol_struct*>(c->first);
+        id = static_cast<Symbol*>(c->first);
         free_cons(thisAgent, c);
 
         /* --- remove "ol" from the list of associated_output_links(id) --- */
@@ -703,7 +703,7 @@ io_wme* get_io_wmes_for_output_link(agent* thisAgent, output_link* ol)
     add_wme_to_collected_io_wmes(thisAgent, ol->link_wme);
     for (c = ol->ids_in_tc; c != NIL; c = c->rest)
     {
-        id = static_cast<symbol_struct*>(c->first);
+        id = static_cast<Symbol*>(c->first);
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
             add_wme_to_collected_io_wmes(thisAgent, w);

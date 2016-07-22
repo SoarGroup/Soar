@@ -92,7 +92,7 @@ struct strSymbol;
 
 typedef struct EXPORT symbol_struct
 {
-    struct symbol_struct* next_in_hash_table;
+    Symbol* next_in_hash_table;
     uint64_t reference_count;
     byte symbol_type;
     byte decider_flag;
@@ -142,23 +142,25 @@ typedef struct EXPORT symbol_struct
     const char* type_string();
     char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
 
-    struct symbol_struct*   get_parent_state();
-} Symbol;
+    Symbol*   get_parent_state();
+} SymbolType;
 
-struct floatSymbol : public Symbol
+//typedef tracked_ptr<SymbolType> Symbol;
+//
+struct floatSymbol : public SymbolType
 {
     double value;
 };
-struct intSymbol   : public Symbol
+struct intSymbol   : public SymbolType
 {
     int64_t value;
 };
-struct strSymbol   : public Symbol
+struct strSymbol   : public SymbolType
 {
     char* name;
     struct production_struct* production;
 };
-struct varSymbol   : public Symbol
+struct varSymbol   : public SymbolType
 {
     char* name;
     Symbol* current_binding_value;
@@ -166,7 +168,7 @@ struct varSymbol   : public Symbol
     ::cons* rete_binding_locations;
 };
 
-struct idSymbol    : public Symbol
+struct idSymbol    : public SymbolType
 {
     uint64_t name_number;
     char name_letter;

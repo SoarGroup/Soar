@@ -29,13 +29,7 @@
 #include "kernel.h"
 #include "callback.h"
 
-typedef unsigned char byte;
-typedef struct cons_struct cons;
-typedef struct wme_struct wme;
 typedef struct callback_struct soar_callback;
-typedef cons list;
-typedef struct symbol_struct Symbol;
-
 typedef void* soar_callback_data;
 typedef void* soar_call_data;
 

@@ -105,7 +105,7 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
 
     while (id_list)
     {
-        sym = static_cast<symbol_struct*>(id_list->first);
+        sym = static_cast<Symbol*>(id_list->first);
         next = id_list->rest;
         free_cons(thisAgent, id_list);
         sym->tc_num = 0;
@@ -120,7 +120,7 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 
     while (var_list)
     {
-        sym = static_cast<symbol_struct*>(var_list->first);
+        sym = static_cast<Symbol*>(var_list->first);
         next = var_list->rest;
         free_cons(thisAgent, var_list);
         sym->tc_num = 0;

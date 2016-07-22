@@ -1403,7 +1403,7 @@ void _smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
 // instance of hash_table_callback_fn2
 bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
 {
-    Symbol* id = static_cast<symbol_struct*>(item);
+    Symbol* id = static_cast<Symbol*>(item);
 
     dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
     if (id->id->smem_lti != NIL)

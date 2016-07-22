@@ -12,9 +12,10 @@
 
 #include <vector>
 
-typedef struct symbol_struct Symbol;
-typedef struct agent_struct agent;
-typedef struct cons_struct list;
+#include "forward.h"
+//typedef struct symbol_struct Symbol;
+//typedef struct agent_struct agent;
+//typedef struct cons_struct list;
 
 namespace sml
 {

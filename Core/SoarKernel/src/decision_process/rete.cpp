@@ -4578,7 +4578,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
             cell = thisAgent->rhs_variable_bindings;
             for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
             {
-                *(cell++) = static_cast<symbol_struct*>(c->first);
+                *(cell++) = static_cast<Symbol*>(c->first);
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
@@ -7079,7 +7079,7 @@ bool retesave_symbol_and_assign_index(agent* thisAgent, void* item, void* userda
     Symbol* sym;
     FILE* f = reinterpret_cast<FILE*>(userdata);
 
-    sym = static_cast<symbol_struct*>(item);
+    sym = static_cast<Symbol*>(item);
     thisAgent->current_retesave_symindex++;
     sym->retesave_symindex = thisAgent->current_retesave_symindex;
     retesave_string(sym->to_string(), f);

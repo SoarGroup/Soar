@@ -20,12 +20,12 @@
 #include "sml_InputListener.h"
 
 #include "callback.h"
-
+#include "forward.h"
 
 // Forward definitions for kernel
-typedef struct symbol_struct Symbol;
-typedef struct cons_struct list;
-typedef struct wme_struct wme;
+////typedef struct symbol_struct Symbol;
+//typedef struct cons_struct list;
+//typedef struct wme_struct wme;
 
 #include <map>
 #include <list>

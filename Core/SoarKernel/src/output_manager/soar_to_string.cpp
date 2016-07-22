@@ -130,7 +130,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         destString += "<< ";
         for (c = t->data.disjunction_list; c != NIL; c = c->rest)
         {
-            destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+            destString += static_cast<Symbol*>(c->first)->to_string(false);
             destString += ' ';
         }
         destString += ">>";
@@ -680,7 +680,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return false;
 
-    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
+    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<Symbol*>(item), static_cast<Symbol*>(item)->reference_count);
     return false;
 }
 

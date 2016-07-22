@@ -452,7 +452,7 @@ void do_promotion(agent* thisAgent)
     while (thisAgent->promoted_ids)
     {
         c = thisAgent->promoted_ids;
-        to = static_cast<symbol_struct*>(c->first);
+        to = static_cast<Symbol*>(c->first);
         thisAgent->promoted_ids = thisAgent->promoted_ids->rest;
         free_cons(thisAgent, c);
         promote_id_and_tc(thisAgent, to, to->id->promotion_level);
@@ -900,7 +900,7 @@ void do_demotion(agent* thisAgent)
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = next_dc)
     {
         next_dc = dc->next;
-        id = static_cast<symbol_struct*>(dc->item);
+        id = static_cast<Symbol*>(dc->item);
         if (id->id->link_count == 0)
         {
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
@@ -915,7 +915,7 @@ void do_demotion(agent* thisAgent)
     {
         dc = thisAgent->disconnected_ids;
         thisAgent->disconnected_ids = thisAgent->disconnected_ids->next;
-        id = static_cast<symbol_struct*>(dc->item);
+        id = static_cast<Symbol*>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
@@ -936,7 +936,7 @@ void do_demotion(agent* thisAgent)
     thisAgent->mark_tc_number = get_new_tc_number(thisAgent);
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = dc->next)
     {
-        id = static_cast<symbol_struct*>(dc->item);
+        id = static_cast<Symbol*>(dc->item);
         thisAgent->level_at_which_marking_started = id->id->level;
         mark_id_and_tc_as_unknown_level(thisAgent, id);
     }
@@ -969,7 +969,7 @@ void do_demotion(agent* thisAgent)
         dc = thisAgent->ids_with_unknown_level;
         thisAgent->ids_with_unknown_level =
             thisAgent->ids_with_unknown_level->next;
-        id = static_cast<symbol_struct*>(dc->item);
+        id = static_cast<Symbol*>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */

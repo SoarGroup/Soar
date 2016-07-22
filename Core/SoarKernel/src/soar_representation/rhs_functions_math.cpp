@@ -40,7 +40,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -54,7 +54,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     float_found = false;
     while (args)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -104,7 +104,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -118,7 +118,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     float_found = false;
     while (args)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -176,7 +176,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -189,7 +189,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     if (! args->rest)
     {
         /* --- only one argument --- */
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             return make_int_constant(thisAgent, - arg->ic->value);
@@ -198,7 +198,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     float_found = false;
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -211,7 +211,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     }
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -267,7 +267,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -280,7 +280,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     if (! args->rest)
     {
         /* --- only one argument --- */
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             f = static_cast<double>(arg->ic->value);
@@ -298,7 +298,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         f = static_cast<double>(arg->ic->value);
@@ -309,7 +309,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     }
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (arg->ic->value)
@@ -348,8 +348,8 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
 
-    arg1 = static_cast<symbol_struct*>(args->first);
-    arg2 = static_cast<symbol_struct*>(args->rest->first);
+    arg1 = static_cast<Symbol*>(args->first);
+    arg2 = static_cast<Symbol*>(args->rest->first);
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -381,7 +381,7 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     slot* s;
     wme* w;
 
-    arg1 = static_cast<symbol_struct*>(args->first);
+    arg1 = static_cast<Symbol*>(args->first);
 
     if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -405,7 +405,7 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 	slot* s;
 	wme* w;
 
-    arg1 = static_cast<symbol_struct*>(args->first);
+    arg1 = static_cast<Symbol*>(args->first);
 
 	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -435,8 +435,8 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
 
-    arg1 = static_cast<symbol_struct*>(args->first);
-    arg2 = static_cast<symbol_struct*>(args->rest->first);
+    arg1 = static_cast<Symbol*>(args->first);
+    arg2 = static_cast<Symbol*>(args->rest->first);
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -481,7 +481,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -494,7 +494,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     float_found = false;
     while (args)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -559,7 +559,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -572,7 +572,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     float_found = false;
     while (args)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -635,7 +635,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -670,7 +670,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -704,7 +704,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         return NIL;
     }
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -743,7 +743,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<symbol_struct*>(c->first);
+        arg = static_cast<Symbol*>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -759,7 +759,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         return NIL;
     }
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         numer_value = arg->fc->value;
@@ -775,7 +775,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         print(thisAgent, "Error: 'atan2' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = static_cast<symbol_struct*>(c->first);
+    arg = static_cast<Symbol*>(c->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         denom_value = arg->fc->value;
@@ -805,7 +805,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         return_value = make_float_constant(thisAgent, fabs(arg->fc->value));

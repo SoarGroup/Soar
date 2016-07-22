@@ -180,7 +180,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (; args != NIL; args = args->rest)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
         string = arg->to_string();
@@ -245,7 +245,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
     {
         for (c = args; c != NIL; c = c->rest)
         {
-            string = static_cast<symbol_struct*>(c->first)->to_string();
+            string = static_cast<Symbol*>(c->first)->to_string();
             buf << string;
         }
     }
@@ -445,20 +445,20 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
 
     /* --- two or more arguments --- */
-    arg1 = static_cast<symbol_struct*>(args->first);
+    arg1 = static_cast<Symbol*>(args->first);
     c = args->rest;
-    arg2 = static_cast<symbol_struct*>(c->first);
+    arg2 = static_cast<Symbol*>(c->first);
     c = c->rest;
 
     if (arg1 == arg2)
     {
         symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
-        return static_cast<symbol_struct*>(c->first);
+        return static_cast<Symbol*>(c->first);
     }
     else if (c->rest)
     {
         symbol_add_ref(thisAgent, static_cast<Symbol*>(c->rest->first));
-        return static_cast<symbol_struct*>(c->rest->first);
+        return static_cast<Symbol*>(c->rest->first);
     }
     else
     {
@@ -520,7 +520,7 @@ Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data
     Symbol* arg;
     char* string;
 
-    arg = static_cast<symbol_struct*>(args->first);
+    arg = static_cast<Symbol*>(args->first);
 
     /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
@@ -794,7 +794,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (; args != NIL; args = args->rest)
     {
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
         string = arg->to_string();
@@ -817,7 +817,7 @@ Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     if(args != NIL)
     {
         Symbol* arg;
-        arg = static_cast<symbol_struct*>(args->first);
+        arg = static_cast<Symbol*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             ms = arg->ic->value;

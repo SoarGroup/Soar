@@ -121,37 +121,38 @@ uint32_t hash_float_constant_raw_info(double value, short num_bits)
 
 uint32_t hash_variable(void* item, short num_bits)
 {
-    varSymbol* var;
-    var = static_cast<varSymbol*>(item);
+    Symbol var;
+    var = static_cast<Symbol>(item);
     return compress(hash_string(var->name), num_bits);
 }
 
 uint32_t hash_identifier(void* item, short num_bits)
 {
-    idSymbol* id;
-    id = static_cast<idSymbol*>(item);
-    return compress(static_cast<uint32_t>(id->name_number) ^ (static_cast<uint32_t>(id->name_letter) << 24), num_bits);  // FIXME: cast from 64 to 32 bits
+    Symbol lIDSym;
+    lIDSym = static_cast<Symbol>(item);
+    uint32_t lNameNumber = lIDSym->id->name_number;
+    return compress(static_cast<uint32_t>(lIDSym->id->name_number) ^ (static_cast<uint32_t>(lIDSym->id->name_letter) << 24), num_bits);  // FIXME: cast from 64 to 32 bits
 }
 
 uint32_t hash_str_constant(void* item, short num_bits)
 {
-    strSymbol* sc;
-    sc = static_cast<strSymbol*>(item);
-    return compress(hash_string(sc->name), num_bits);
+    Symbol sc;
+    sc = static_cast<Symbol>(item);
+    return compress(hash_string(sc->sc->name), num_bits);
 }
 
 uint32_t hash_int_constant(void* item, short num_bits)
 {
-    intSymbol* ic;
-    ic = static_cast<intSymbol*>(item);
-    return compress(static_cast<uint32_t>(ic->value), num_bits);
+    Symbol ic;
+    ic = static_cast<Symbol>(item);
+    return compress(static_cast<uint32_t>(ic->ic->value), num_bits);
 }
 
 uint32_t hash_float_constant(void* item, short num_bits)
 {
-    floatSymbol* fc;
-    fc = static_cast<floatSymbol*>(item);
-    return compress(static_cast<uint32_t>(fc->value), num_bits);
+    Symbol fc;
+    fc = static_cast<Symbol>(item);
+    return compress(static_cast<uint32_t>(fc->fc->value), num_bits);
 }
 
 /* -----------------------------------------------------------------
@@ -232,13 +233,13 @@ void init_symbol_tables(agent* thisAgent)
 Symbol* find_variable(agent* thisAgent, const char* name)
 {
     uint32_t hash_value;
-    varSymbol* sym;
+    Symbol sym;
 
     hash_value = hash_variable_raw_info(name, thisAgent->variable_hash_table->log2size);
-    sym = reinterpret_cast<varSymbol*>(*(thisAgent->variable_hash_table->buckets + hash_value));
+    sym = reinterpret_cast<Symbol>(*(thisAgent->variable_hash_table->buckets + hash_value));
     for (; sym != NIL; sym = varSym(sym->next_in_hash_table))
     {
-        if (!strcmp(sym->name, name))
+        if (!strcmp(sym->var->name, name))
         {
             return sym;
         }
@@ -249,15 +250,15 @@ Symbol* find_variable(agent* thisAgent, const char* name)
 Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number)
 {
     uint32_t hash_value;
-    idSymbol* sym;
+    Symbol sym;
 
     hash_value = hash_identifier_raw_info(name_letter, name_number,
                                           thisAgent->identifier_hash_table->log2size);
-    sym = reinterpret_cast<idSymbol*>(*(thisAgent->identifier_hash_table->buckets + hash_value));
+    sym = reinterpret_cast<Symbol>(*(thisAgent->identifier_hash_table->buckets + hash_value));
     for (; sym != NIL; sym = idSym(sym->next_in_hash_table))
     {
-        if ((name_letter == sym->name_letter) &&
-                (name_number == sym->name_number))
+        if ((name_letter == sym->id->name_letter) &&
+                (name_number == sym->id->name_number))
         {
             return sym;
         }
@@ -322,9 +323,9 @@ Symbol* find_float_constant(agent* thisAgent, double value)
 Symbol* make_variable(agent* thisAgent, const char* name)
 {
 
-    varSymbol* sym;
+    Symbol sym;
 
-    sym = varSym(find_variable(thisAgent, name));
+    sym = find_variable(thisAgent, name);
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
@@ -336,9 +337,9 @@ Symbol* make_variable(agent* thisAgent, const char* name)
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
     sym->tc_num = 0;
-    sym->name = make_memory_block_for_string(thisAgent, name);
-    sym->gensym_number = 0;
-    sym->rete_binding_locations = NIL;
+    sym->var->name = make_memory_block_for_string(thisAgent, name);
+    sym->var->gensym_number = 0;
+    sym->var->rete_binding_locations = NIL;
     sym->fc = NIL;
     sym->ic = NIL;
     sym->sc = NIL;
@@ -353,7 +354,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
 Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number)
 {
 
-    idSymbol* sym;
+    Symbol sym;
 
     if (isalpha(name_letter))
     {
@@ -371,7 +372,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
     sym->tc_num = 0;
-    sym->name_letter = name_letter;
+    sym->id->name_letter = name_letter;
 
     // For long-term identifiers
     if (name_number == NIL)
@@ -386,48 +387,48 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
             (*current_number) = (name_number + 1);
         }
     }
-    sym->name_number = name_number;
+    sym->id->name_number = name_number;
 
-    sym->level = level;
-    sym->promotion_level = level;
-    sym->slots = NIL;
-    sym->isa_goal = false;
-    sym->isa_impasse = false;
-    sym->isa_operator = 0;
-    sym->link_count = 0;
-    sym->unknown_level = NIL;
-    sym->could_be_a_link_from_below = false;
-    sym->impasse_wmes = NIL;
-    sym->higher_goal = NIL;
-    sym->gds = NIL;
-    sym->saved_firing_type = NO_SAVED_PRODS;
-    sym->ms_o_assertions = NIL;
-    sym->ms_i_assertions = NIL;
-    sym->ms_retractions = NIL;
-    sym->lower_goal = NIL;
-    sym->operator_slot = NIL;
-    sym->preferences_from_goal = NIL;
-    sym->associated_output_links = NIL;
-    sym->input_wmes = NIL;
+    sym->id->level = level;
+    sym->id->promotion_level = level;
+    sym->id->slots = NIL;
+    sym->id->isa_goal = false;
+    sym->id->isa_impasse = false;
+    sym->id->isa_operator = 0;
+    sym->id->link_count = 0;
+    sym->id->unknown_level = NIL;
+    sym->id->could_be_a_link_from_below = false;
+    sym->id->impasse_wmes = NIL;
+    sym->id->higher_goal = NIL;
+    sym->id->gds = NIL;
+    sym->id->saved_firing_type = NO_SAVED_PRODS;
+    sym->id->ms_o_assertions = NIL;
+    sym->id->ms_i_assertions = NIL;
+    sym->id->ms_retractions = NIL;
+    sym->id->lower_goal = NIL;
+    sym->id->operator_slot = NIL;
+    sym->id->preferences_from_goal = NIL;
+    sym->id->associated_output_links = NIL;
+    sym->id->input_wmes = NIL;
 
-    sym->rl_info = NIL;
-    sym->reward_header = NIL;
+    sym->id->rl_info = NIL;
+    sym->id->reward_header = NIL;
 
-    sym->epmem_header = NIL;
-    sym->epmem_cmd_header = NIL;
-    sym->epmem_result_header = NIL;
-    sym->epmem_id = EPMEM_NODEID_BAD;
+    sym->id->epmem_header = NIL;
+    sym->id->epmem_cmd_header = NIL;
+    sym->id->epmem_result_header = NIL;
+    sym->id->epmem_id = EPMEM_NODEID_BAD;
     sym->epmem_valid = NIL;
-    sym->epmem_time_wme = NIL;
+    sym->id->epmem_time_wme = NIL;
 
-    sym->smem_header = NIL;
-    sym->smem_cmd_header = NIL;
-    sym->smem_result_header = NIL;
-    sym->smem_lti = NIL;
-    sym->smem_time_id = EPMEM_MEMID_NONE;
+    sym->id->smem_header = NIL;
+    sym->id->smem_cmd_header = NIL;
+    sym->id->smem_result_header = NIL;
+    sym->id->smem_lti = NIL;
+    sym->id->smem_time_id = EPMEM_MEMID_NONE;
     sym->smem_valid = NIL;
 
-    sym->rl_trace = NIL;
+    sym->id->rl_trace = NIL;
 
     sym->fc = NIL;
     sym->ic = NIL;
@@ -629,7 +630,7 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     /* ensure null termination */
     msg[0] = 0;
     msg[255] = 0;
-    sym = static_cast<symbol_struct*>(item);
+    sym = static_cast<Symbol*>(item);
     FILE* f = reinterpret_cast<FILE*>(userdata);
 
     if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -665,7 +666,7 @@ bool remove_if_sti(agent* thisAgent, void* item, void* userdata)
 {
     Symbol* sym;
     char msg[256];
-    sym = static_cast<symbol_struct*>(item);
+    sym = static_cast<Symbol*>(item);
 
     if (sym->is_sti())
     {
@@ -741,7 +742,7 @@ bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
 {
     Symbol* sym;
 
-    sym = static_cast<symbol_struct*>(item);
+    sym = static_cast<Symbol*>(item);
     sym->tc_num = 0;
     return false;
 }
@@ -756,7 +757,7 @@ bool reset_gensym_number(agent* /*thisAgent*/, void* item, void*)
 {
     Symbol* sym;
 
-    sym = static_cast<symbol_struct*>(item);
+    sym = static_cast<Symbol*>(item);
     sym->var->gensym_number = 0;
     return false;
 }
@@ -768,7 +769,7 @@ void reset_variable_gensym_numbers(agent* thisAgent)
 
 bool print_sym(agent* thisAgent, void* item, void*)
 {
-    print(thisAgent,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
+    print(thisAgent,  "%s (%lld)\n", static_cast<Symbol*>(item)->to_string(), static_cast<Symbol*>(item)->reference_count);
     return false;
 }
 

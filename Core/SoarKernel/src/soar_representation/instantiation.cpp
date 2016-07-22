@@ -926,7 +926,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     cell = thisAgent->rhs_variable_bindings;
     for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
     {
-        *(cell++) = static_cast<symbol_struct*>(c->first);
+        *(cell++) = static_cast<Symbol*>(c->first);
         index++;
     }
     thisAgent->firer_highest_rhs_unboundvar_index = index - 1;

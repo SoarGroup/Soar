@@ -832,7 +832,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
                 for (c = root_goals; c != NIL; c = next_c)
                 {
                     next_c = c->rest;
-                    if (test_is_for_symbol(cond->data.tests.id_test, static_cast<symbol_struct*>(c->first)) == YES)
+                    if (test_is_for_symbol(cond->data.tests.id_test, static_cast<Symbol*>(c->first)) == YES)
                     {
                         /* --- remove c from the root_goals list --- */
                         if (prev_c)
@@ -866,7 +866,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
     /* --- if there's only one root goal, that's it! --- */
     if (num_root_goals == 1)
     {
-        result = static_cast<symbol_struct*>(root_goals->first);
+        result = static_cast<Symbol*>(root_goals->first);
     }
     else
     {
@@ -922,7 +922,7 @@ Symbol* find_thing_off_goal(agent* thisAgent, condition* lhs,
         add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, &vars);
         if (vars)
         {
-            result = static_cast<symbol_struct*>(vars->first);
+            result = static_cast<Symbol*>(vars->first);
             free_list(thisAgent, vars);
             return result;
         }

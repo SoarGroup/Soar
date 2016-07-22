@@ -1240,7 +1240,7 @@ void add_values_of_attribute_path(agent* thisAgent,
         if (w->attr == path->first)
             add_values_of_attribute_path(thisAgent, w->value, path->rest, result, recursive,
                                          count);
-    s = find_slot(object, static_cast<symbol_struct*>(path->first));
+    s = find_slot(object, static_cast<Symbol*>(path->first));
     if (s)
     {
         for (w = s->wmes; w != NIL; w = w->next)
@@ -1353,7 +1353,7 @@ void add_trace_for_attribute_path(agent* thisAgent,
         add_to_growable_string(thisAgent, result, "^");
         for (c = path; c != NIL; c = c->rest)
         {
-            ch = static_cast<symbol_struct*>(c->first)->to_string(true);
+            ch = static_cast<Symbol*>(c->first)->to_string(true);
             add_to_growable_string(thisAgent, result, ch);
             if (c->rest)
             {

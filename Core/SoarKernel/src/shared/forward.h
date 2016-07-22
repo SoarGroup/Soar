@@ -7,6 +7,7 @@
 
 #ifndef CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_
 #define CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_
+#include "tracked_ptr.h"
 
 typedef struct action_struct action;
 typedef struct agent_struct agent;
@@ -41,7 +42,9 @@ typedef char* rhs_value;
 typedef struct saved_test_struct saved_test;
 typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
-typedef struct symbol_struct Symbol;
+typedef struct symbol_struct SymbolType;
+typedef tracked_ptr<SymbolType> Symbol;
+
 typedef uint64_t tc_number;
 typedef struct test_struct test_info;
 typedef test_info* test;

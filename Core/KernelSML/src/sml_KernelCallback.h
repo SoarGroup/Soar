@@ -24,10 +24,11 @@
 #include <assert.h>
 #include <map>
 
-// Forward definitions for kernel
-typedef struct agent_struct agent;
-typedef struct symbol_struct Symbol;
-typedef struct cons_struct list;
+#include "forward.h"
+//// Forward definitions for kernel
+//typedef struct agent_struct agent;
+//typedef struct symbol_struct Symbol;
+//typedef struct cons_struct list;
 
 namespace sml
 {
