@@ -1,5 +1,6 @@
 #include "src/debug_code/debug.cpp"
 #include "src/debug_code/debug_stacktrace.cpp"
+#include "src/debug_code/tracked_ptr.cpp"
 #include "src/decision_process/consistency.cpp"
 #include "src/decision_process/decide.cpp"
 #include "src/decision_process/decision_manipulation.cpp"
