@@ -48,7 +48,7 @@ class instantiation_record
 
         agent* thisAgent;
         uint64_t                instantiationID;
-        Symbol*                 production_name;
+        Symbol                 production_name;
         production*             original_production;
         production_record*      excised_production;
         uint64_t                creating_chunk;

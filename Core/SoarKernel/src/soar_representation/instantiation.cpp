@@ -226,10 +226,10 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
 
 void find_match_goal(instantiation* inst)
 {
-    Symbol* lowest_goal_so_far;
+    Symbol lowest_goal_so_far;
     goal_stack_level lowest_level_so_far;
     condition* cond;
-    Symbol* id;
+    Symbol id;
 
     lowest_goal_so_far = NIL;
     lowest_level_so_far = -1;
@@ -262,7 +262,7 @@ goal_stack_level get_match_goal(condition* top_cond)
 {
     goal_stack_level lowest_level_so_far;
     condition* cond;
-    Symbol* id;
+    Symbol id;
 
     lowest_level_so_far = -1;
     for (cond = top_cond; cond != NIL; cond = cond->next)
@@ -306,7 +306,7 @@ goal_stack_level get_match_goal(condition* top_cond)
  it will be instantiated with the same gensym.
  ----------------------------------------------------------------------- */
 
-Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
+Symbol instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                               goal_stack_level new_id_level, char new_id_letter,
                               struct token_struct* tok, wme* w)
 {
@@ -314,7 +314,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     list* arglist;
     cons* c, *prev_c, *arg_cons;
     rhs_function* rf;
-    Symbol* result;
+    Symbol result;
     bool nil_arg_found;
 
     if (rhs_value_is_symbol(rv))
@@ -364,7 +364,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     if (rhs_value_is_unboundvar(rv))
     {
         int64_t index;
-        Symbol* sym;
+        Symbol sym;
 
         index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
         if (thisAgent->firer_highest_rhs_unboundvar_index < index)
@@ -464,12 +464,12 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     }
 
     /* --- scan through arglist, dereference symbols and deallocate conses --- */
-    Symbol* lSym;
+    Symbol lSym;
     for (c = arglist; c != NIL; c = c->rest)
         if (c->first)
         {
-            lSym = static_cast<Symbol *>(c->first);
-            symbol_remove_ref(thisAgent, &lSym);
+            lSym = static_cast<Symbol>(c->first);
+            symbol_remove_ref(thisAgent, lSym);
         }
     free_list(thisAgent, arglist);
 
@@ -480,7 +480,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                            action* rule_action,
                            condition* cond)
 {
-    Symbol* lId, *lAttr, *lValue, *lReferent;
+    Symbol lId, lAttr, lValue, lReferent;
     char first_letter;
 
     if (a->type == FUNCALL_ACTION)
@@ -488,7 +488,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
         if (lValue)
         {
-            symbol_remove_ref(thisAgent, &lValue);
+            symbol_remove_ref(thisAgent, lValue);
         }
         return NIL;
     }
@@ -611,19 +611,19 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 abort_execute_action: /* control comes here when some error occurred */
     if (lId)
     {
-        symbol_remove_ref(thisAgent, &lId);
+        symbol_remove_ref(thisAgent, lId);
     }
     if (lAttr)
     {
-        symbol_remove_ref(thisAgent, &lAttr);
+        symbol_remove_ref(thisAgent, lAttr);
     }
     if (lValue)
     {
-        symbol_remove_ref(thisAgent, &lValue);
+        symbol_remove_ref(thisAgent, lValue);
     }
     if (lReferent)
     {
-        symbol_remove_ref(thisAgent, &lReferent);
+        symbol_remove_ref(thisAgent, lReferent);
     }
     return NIL;
 }
@@ -828,7 +828,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     bool need_to_do_support_calculations;
     bool trace_it;
     int64_t index;
-    Symbol** cell;
+    Symbol cell;
 
 #ifdef BUG_139_WORKAROUND
     /* New waterfall model: this is now checked for before we call this function */
@@ -926,7 +926,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     cell = thisAgent->rhs_variable_bindings;
     for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
     {
-        *(cell++) = static_cast<Symbol*>(c->first);
+        *(cell++) = static_cast<Symbol>(c->first);
         index++;
     }
     thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
@@ -1291,12 +1291,12 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         cond_stack.pop_back();
 
         /* --- dereference component symbols --- */
-        symbol_remove_ref(thisAgent, &temp->bt.trace->id);
-        symbol_remove_ref(thisAgent, &temp->bt.trace->attr);
-        symbol_remove_ref(thisAgent, &temp->bt.trace->value);
+        symbol_remove_ref(thisAgent, temp->bt.trace->id);
+        symbol_remove_ref(thisAgent, temp->bt.trace->attr);
+        symbol_remove_ref(thisAgent, temp->bt.trace->value);
         if (preference_is_binary(temp->bt.trace->type))
         {
-            symbol_remove_ref(thisAgent, &temp->bt.trace->referent);
+            symbol_remove_ref(thisAgent, temp->bt.trace->referent);
         }
 
         if (temp->bt.trace->wma_o_set)
@@ -1308,7 +1308,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
-    symbol_remove_ref(thisAgent, &inst->prod_name);
+    symbol_remove_ref(thisAgent, inst->prod_name);
 
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
@@ -1428,7 +1428,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
+instantiation* make_architectural_instantiation(agent* thisAgent, Symbol state, wme_set* conditions, symbol_triple_list* actions)
 {
     dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
 
@@ -1558,7 +1558,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
 
 ------------------------------------------------------------------ */
 
-preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand)
+preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol goal, preference* cand)
 {
     slot* s;
     wme* ap_wme;

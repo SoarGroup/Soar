@@ -39,9 +39,9 @@ using namespace sml;
 ===============================
 */
 
-bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, Symbol** attr)
+bool read_attribute_from_string(agent* thisAgent, Symbol id, char* the_lexeme, Symbol attr)
 {
-    Symbol* attr_tmp;
+    Symbol attr_tmp;
     slot* s;
 
     /* skip optional '^' if present.  KJC added to Ken's code */
@@ -181,7 +181,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
 int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool object, bool print_prod, wme_trace_type wtt)
 {
 
-    Symbol* id, *attr = 0;
+    Symbol id, attr = 0;
     slot* s = 0 ;
     preference* p;
     wme* w;

@@ -16,7 +16,7 @@
 typedef struct saved_test_struct
 {
     struct saved_test_struct* next;
-    Symbol* var;
+    Symbol var;
     test the_test;
 } saved_test;
 

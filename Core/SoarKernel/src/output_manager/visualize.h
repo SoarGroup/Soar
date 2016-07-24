@@ -13,8 +13,8 @@
 
 typedef struct aug_struct
 {
-        Symbol* attr;
-        Symbol* value;
+        Symbol attr;
+        Symbol value;
 } augmentation;
 
 class WM_Visualization_Map
@@ -25,7 +25,7 @@ class WM_Visualization_Map
         ~WM_Visualization_Map();
 
         void reset();
-        void add_triple(Symbol* id, Symbol* attr, Symbol* value);
+        void add_triple(Symbol id, Symbol attr, Symbol value);
         void add_current_wm();
         void visualize_wm_as_linked_records();
         void visualize_wm_as_graph();
@@ -73,7 +73,7 @@ class GraphViz_Visualizer
         /* Utility graphviz printing functions */
         void viz_graph_start(bool pLeftRight = true);
         void viz_graph_end();
-        void viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType);
+        void viz_object_start(Symbol pName, uint64_t node_id, visualizationObjectType objectType);
         void viz_object_end(visualizationObjectType objectType);
         void viz_table_start();
         void viz_table_end();

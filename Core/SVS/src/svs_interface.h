@@ -7,8 +7,8 @@ class svs_interface
 {
     public:
         virtual ~svs_interface() {}
-        virtual void state_creation_callback(Symbol* goal) = 0;
-        virtual void state_deletion_callback(Symbol* goal) = 0;
+        virtual void state_creation_callback(Symbol goal) = 0;
+        virtual void state_deletion_callback(Symbol goal) = 0;
         virtual void output_callback() = 0;
         virtual void input_callback() = 0;
         virtual void add_input(const std::string& in) = 0;

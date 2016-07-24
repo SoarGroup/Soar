@@ -45,26 +45,26 @@ soar_interface::~soar_interface()
 {
 }
 
-void soar_interface::del_sym(Symbol* s)
+void soar_interface::del_sym(Symbol s)
 {
-    symbol_remove_ref(thisAgent, &s);
+    symbol_remove_ref(thisAgent, s);
 }
 
 
-wme* soar_interface::make_id_wme(Symbol* id, const string& attr)
+wme* soar_interface::make_id_wme(Symbol id, const string& attr)
 {
-    Symbol* attrsym = make_str_constant(thisAgent, attr.c_str());
-    Symbol* valsym = make_new_identifier(thisAgent, attr[0], id->id->level);
+    Symbol attrsym = make_str_constant(thisAgent, attr.c_str());
+    Symbol valsym = make_new_identifier(thisAgent, attr[0], id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attrsym, valsym);
-    symbol_remove_ref(thisAgent, &attrsym);
-    symbol_remove_ref(thisAgent, &valsym);
+    symbol_remove_ref(thisAgent, attrsym);
+    symbol_remove_ref(thisAgent, valsym);
     return w;
 }
 
-wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
+wme* soar_interface::make_id_wme(Symbol id, Symbol attr)
 {
     char n;
-    Symbol* val;
+    Symbol val;
 
     if (attr->symbol_type != STR_CONSTANT_SYMBOL_TYPE ||
             strlen(attr->sc->name) == 0)
@@ -78,7 +78,7 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
 
     val = make_new_identifier(thisAgent, n, id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
-    symbol_remove_ref(thisAgent, &val);
+    symbol_remove_ref(thisAgent, val);
     return w;
 }
 
@@ -87,7 +87,7 @@ void soar_interface::remove_wme(wme* w)
     soar_module::remove_module_wme(thisAgent, w);
 }
 
-bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
+bool soar_interface::get_child_wmes(Symbol id, wme_vector& childs)
 {
     slot* s;
     wme* w;
@@ -112,7 +112,7 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
 #include <iostream>
 #include "symbol.h"
 using namespace std;
-bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
+bool soar_interface::get_vec3(Symbol id, const string& attr, vec3& val)
 {
     vec3 res;
 
@@ -122,7 +122,7 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
     {
         return false;
     }
-    Symbol* vec3_root = get_wme_val(vec3_wme);
+    Symbol vec3_root = get_wme_val(vec3_wme);
 
 		string vec_id_name;
 		vec3_root->get_id_name(vec_id_name);
@@ -148,7 +148,7 @@ bool soar_interface::get_vec3(Symbol* id, const string& attr, vec3& val)
 }
 
 
-bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
+bool soar_interface::find_child_wme(Symbol id, const string& attr, wme*& w)
 {
     slot* s;
     wme* w1;
@@ -174,19 +174,19 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
     return false;
 }
 
-wme* soar_interface::make_wme(Symbol* id, Symbol* attr, Symbol* val)
+wme* soar_interface::make_wme(Symbol id, Symbol attr, Symbol val)
 {
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
-    symbol_remove_ref(thisAgent, &val);
+    symbol_remove_ref(thisAgent, val);
     return w;
 }
 
-wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
+wme* soar_interface::make_wme(Symbol id, const std::string& attr, Symbol val)
 {
     wme* w;
-    Symbol* attrsym = make_sym(attr);
+    Symbol attrsym = make_sym(attr);
     w = make_wme(id, attrsym, val);
-    symbol_remove_ref(thisAgent, &attrsym);
+    symbol_remove_ref(thisAgent, attrsym);
 
     return w;
 }

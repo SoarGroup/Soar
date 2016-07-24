@@ -32,7 +32,7 @@
 typedef char* rhs_value;
 typedef struct rhs_struct
 {
-    Symbol* referent;
+    Symbol referent;
     uint64_t o_id;
 } rhs_info;
 typedef rhs_info* rhs_symbol;
@@ -84,7 +84,7 @@ typedef struct action_struct
 /* -- Used by cli_productionfind.cpp and related functions -- */
 typedef struct binding_structure
 {
-    Symbol* from, *to;
+    Symbol from, to;
 } Binding;
 
 extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
@@ -124,7 +124,7 @@ inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv);
 }
-inline Symbol*    rhs_value_to_symbol(rhs_value rv)
+inline Symbol    rhs_value_to_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->referent;
 }
@@ -200,8 +200,8 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 extern action* make_action(agent* thisAgent);
 extern action* copy_action(agent* thisAgent, action* pAction);
 
-extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
-extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol sym, uint64_t pO_ID);
+extern rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol sym, uint64_t pO_ID);
 
 rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,

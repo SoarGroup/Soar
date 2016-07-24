@@ -10,7 +10,7 @@
 typedef struct production_struct
 {
     ProductionType                  type;
-    Symbol*                         name;
+    Symbol                         name;
     struct rete_node_struct*        p_node;                     /* NIL if it's not in the rete */
     char*                           original_rule_name;
     char*                           documentation;              /* pointer to memory block, or NIL */
@@ -65,7 +65,7 @@ typedef struct production_struct
 /* This structure is used to break ties in favor of non-multi-attributes */
 typedef struct multi_attributes_struct
 {
-    Symbol* symbol;
+    Symbol symbol;
     int64_t value;
     struct multi_attributes_struct* next;
 } multi_attribute;
@@ -113,7 +113,7 @@ void init_production_utilities(agent* thisAgent);
 
 tc_number get_new_tc_number(agent* thisAgent);
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
+void add_symbol_to_tc(agent* thisAgent, Symbol sym, tc_number tc,
                       ::list** id_list, ::list** var_list);
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
                     ::list** id_list, ::list** var_list);
@@ -142,7 +142,7 @@ bool action_is_in_tc(action* a, tc_number tc);
 void reset_variable_generator(agent* thisAgent,
                               condition* conds_with_vars_to_avoid,
                               action* actions_with_vars_to_avoid);
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
+Symbol generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -179,7 +179,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                             symbol_with_match_list*  ungrounded_syms = NULL);
 
 production* make_production(agent* thisAgent, ProductionType type,
-                                   Symbol* name, char* original_rule_name,
+                                   Symbol name, char* original_rule_name,
                                    condition** lhs_top, action** rhs_top,
                                    bool reorder_nccs, preference* results);
 

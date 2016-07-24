@@ -61,9 +61,9 @@ void reset_placeholder_variable_generator(agent* thisAgent)
     }
 }
 
-Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
+Symbol make_placeholder_var(agent* thisAgent, char first_letter)
 {
-    Symbol* v;
+    Symbol v;
     char buf[30];
     int i;
 
@@ -97,9 +97,9 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
 
 test make_placeholder_test(agent* thisAgent, char first_letter)
 {
-    Symbol* new_var = make_placeholder_var(thisAgent, first_letter);
+    Symbol new_var = make_placeholder_var(thisAgent, first_letter);
     test new_test = make_test(thisAgent, new_var, EQUALITY_TEST);
-    symbol_remove_ref(thisAgent, &new_var);
+    symbol_remove_ref(thisAgent, new_var);
     return new_test;
 }
 
@@ -119,10 +119,10 @@ test make_placeholder_test(agent* thisAgent, char first_letter)
    substitute_for_placeholders_in_condition_list (lhs).
 ----------------------------------------------------------------- */
 
-void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
+void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol sym)
 {
     char prefix[3];
-    Symbol* var;
+    Symbol var;
     bool just_created;
 
     /* --- if not a variable, do nothing --- */
@@ -152,7 +152,7 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         dprint(DT_PARSER, "Substituting for placeholder %y with existing %y.\n", (*sym), (*sym)->var->current_binding_value);
     }
     var = (*sym)->var->current_binding_value;
-    symbol_remove_ref(thisAgent, &(*sym));
+    symbol_remove_ref(thisAgent, (*sym));
     *sym = var;
     if (!just_created)
     {
@@ -296,9 +296,9 @@ const char* help_on_lhs_grammar[] =
 
 ================================================================= */
 
-Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
+Symbol make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 {
-    Symbol* newSymbol;
+    Symbol newSymbol;
 
     switch (lexeme->type)
     {
@@ -403,7 +403,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
 {
     TestType test_type;
     test t;
-    Symbol* referent;
+    Symbol referent;
 
     test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
 
@@ -469,11 +469,11 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
             if (!lexer->get_lexeme())
             {
-                symbol_remove_ref(thisAgent, &referent);
+                symbol_remove_ref(thisAgent, referent);
                 return NULL;
             }
             t = make_test(thisAgent, referent, test_type);
-            symbol_remove_ref(thisAgent, &referent);
+            symbol_remove_ref(thisAgent, referent);
             return t;
 
         default:
@@ -996,7 +996,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
 test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_letter_if_no_id_given)
 {
     test id_test, id_goal_impasse_test, check_for_symconstant;
-    Symbol* sym;
+    Symbol sym;
 
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
@@ -1427,7 +1427,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
         Lexer* lexer, bool is_stand_alone_action)
 {
     rhs_function* rf;
-    Symbol* fun_name;
+    Symbol fun_name;
     list* fl;
     cons* c, *prev_c;
     rhs_value arg_rv;
@@ -1560,7 +1560,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
             (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
     {
         // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
-        Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
+        Symbol new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
         rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
         if (!lexer->get_lexeme()) return NULL;
         return rv;
@@ -1752,7 +1752,7 @@ PreferenceType parse_preference_specifier_without_referent(agent* thisAgent, Lex
                             | <binary-preference> <rhs_value> [,]
 ----------------------------------------------------------------- */
 
-action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
+action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol id,
                           rhs_value attr, rhs_value value)
 {
     action* a;
@@ -1854,7 +1854,7 @@ action* parse_preferences(agent* thisAgent, Lexer* lexer, Symbol* id,
                             | <binary-preference> <rhs_value> [,]
 ----------------------------------------------------------------- */
 
-action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Symbol* id,
+action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Symbol id,
         rhs_value attr, rhs_value value)
 {
     action* a;
@@ -1984,11 +1984,11 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
    <value_make> ::= <rhs_value> <preferences>
 ----------------------------------------------------------------- */
 
-action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
+action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol id)
 {
     rhs_value attr, value;
     action* all_actions, *new_actions, *last;
-    Symbol* old_id, *new_var;
+    Symbol old_id, new_var;
 
     /* JC Added, need to store the attribute name */
     char    szAttribute[256];
@@ -2047,7 +2047,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
         /* Remove references for dummy var used to represent dot notation links */
         deallocate_rhs_value(thisAgent, attr);
-        symbol_remove_ref(thisAgent, &new_var);
+        symbol_remove_ref(thisAgent, new_var);
 
         /* if there was a "." then there must be another attribute
            set id for next action and get the next attribute */
@@ -2110,7 +2110,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
 {
     action* all_actions, *new_actions, *last;
-    Symbol* var = NULL;
+    Symbol var = NULL;
     rhs_value funcall_value;
 
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
@@ -2178,14 +2178,14 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         else
         {
-            symbol_remove_ref(thisAgent, &var);
+            symbol_remove_ref(thisAgent, var);
             deallocate_action_list(thisAgent, all_actions);
             return NIL;
         }
     }
     /* consume the right parenthesis */
     if (!lexer->get_lexeme()) return NULL;
-    symbol_remove_ref(thisAgent, &var);
+    symbol_remove_ref(thisAgent, var);
     return all_actions;
 }
 
@@ -2273,12 +2273,12 @@ action* destructively_reverse_action_list(action* a)
     return prev;
 }
 
-void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentation = NULL , condition** lhs_top = NULL, action** rhs = NULL)
+void abort_parse_production(agent* thisAgent, Symbol& name, char** documentation = NULL , condition** lhs_top = NULL, action** rhs = NULL)
 {
     if (name)
     {
         print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        symbol_remove_ref(thisAgent, &name);
+        symbol_remove_ref(thisAgent, name);
         name = NULL;
     }
     if (documentation && *documentation)
@@ -2309,7 +2309,7 @@ void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentatio
 ================================================================= */
 production* parse_production(agent* thisAgent, const char* prod_string, unsigned char* rete_addition_result)
 {
-    Symbol*         name = NULL;
+    Symbol         name = NULL;
     char*           documentation = NULL;
     condition       *lhs = NULL, *lhs_top = NULL, *lhs_bottom = NULL;
     action*         rhs = NULL;
@@ -2536,7 +2536,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
 void LTI_Promotion_Set::promote_LTIs_sourced(agent* thisAgent)
 {
     smem_lti_id lti_id;
-    Symbol* lSym;
+    Symbol lSym;
 
     if (!LTIs_Lexed->empty())
     {

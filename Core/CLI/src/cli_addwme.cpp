@@ -19,7 +19,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     soar::Lexeme lexeme;
 
     // Get ID
-    Symbol* pId = 0;
+    Symbol pId = 0;
     if (!read_id_or_context_var_from_string(thisAgent, id.c_str(), &pId))
     {
         return SetError("Invalid identifier");
@@ -32,7 +32,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
 
     // get attribute or '*'
-    Symbol* pAttr = 0;
+    Symbol pAttr = 0;
     if (attribute == "*")
     {
         pAttr = make_new_identifier(thisAgent, 'I', pId->id->level);
@@ -67,7 +67,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     }
 
     // get value or '*'
-    Symbol* pValue = 0;
+    Symbol pValue = 0;
     if (value == "*")
     {
         pValue = make_new_identifier(thisAgent, 'I', pId->id->level);
@@ -91,13 +91,13 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
                 pValue = read_identifier_or_context_variable(thisAgent, &lexeme);
                 if (!pValue)
                 {
-                    symbol_remove_ref(thisAgent, &pAttr);
+                    symbol_remove_ref(thisAgent, pAttr);
                     return SetError("Invalid value.");
                 }
                 symbol_add_ref(thisAgent, pValue);
                 break;
             default:
-                symbol_remove_ref(thisAgent, &pAttr);
+                symbol_remove_ref(thisAgent, pAttr);
                 return SetError("Unknown value type.");
         }
     }
@@ -105,8 +105,8 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // now create and add the wme
     wme* pWme = make_wme(thisAgent, pId, pAttr, pValue, acceptable);
 
-    symbol_remove_ref(thisAgent, &pWme->attr);
-    symbol_remove_ref(thisAgent, &pWme->value);
+    symbol_remove_ref(thisAgent, pWme->attr);
+    symbol_remove_ref(thisAgent, pWme->value);
     insert_at_head_of_dll(pWme->id->id->input_wmes, pWme, next, prev);
 
     if (wma_enabled(thisAgent))

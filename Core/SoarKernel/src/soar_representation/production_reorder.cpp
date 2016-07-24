@@ -148,7 +148,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
         std::string unSymString("");
         action* lAction;
-        Symbol* lSym;
+        Symbol lSym;
         thisAgent->outputManager->set_print_indents("        ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
@@ -208,7 +208,7 @@ bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
 {
     cons* c;
     list* fl;
-    Symbol* sym;
+    Symbol sym;
 
     if (rhs_value_is_funcall(rv))
     {
@@ -290,7 +290,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 {
     test ct, New, subtest;
     saved_test* saved;
-    Symbol* var, *sym;
+    Symbol var, sym;
     cons* c, *prev_c, *next_c;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
@@ -414,7 +414,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             var = generate_new_variable(thisAgent, "dummy-");
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
-            symbol_remove_ref(thisAgent, &var);
+            symbol_remove_ref(thisAgent, var);
             thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
             old_sts = saved;
@@ -499,7 +499,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
 {
     saved_test* st, *prev_st, *next_st;
     bool added_it;
-    Symbol* referent;
+    Symbol referent;
 
     dprint(DT_REORDERER, "Looking for saved tests for: %t\n", (*t));
 //  dprint_saved_test_list (DT_REORDERER, tests_to_restore);
@@ -572,7 +572,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             {
                 tests_to_restore = next_st;
             }
-            symbol_remove_ref(thisAgent, &st->var);
+            symbol_remove_ref(thisAgent, st->var);
             thisAgent->memoryManager->free_with_pool(MP_saved_test, st);
         }
         else
@@ -708,7 +708,7 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
         list* starting_list)
 {
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -841,7 +841,7 @@ list* collect_root_variables(agent* thisAgent,
     /* The following find alls soar identifiers in the identifier element
      * that aren't in a value element */
 
-    Symbol* lSym, *lMatchedSym;
+    Symbol lSym, lMatchedSym;
     uint64_t lIdentity;
 
     /* --- find everthing that's in the value slot of some condition --- */
@@ -955,7 +955,7 @@ list* collect_root_variables(agent* thisAgent,
 bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
 {
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -993,7 +993,7 @@ bool test_covered_by_bound_vars(test t, tc_number tc, list* extra_vars)
    set list.
 ------------------------------------------------------------- */
 
-int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol* sym)
+int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol sym)
 {
     multi_attribute* m = thisAgent->multi_attributes;
     while (m)
@@ -1095,7 +1095,7 @@ int64_t cost_of_adding_condition(agent* thisAgent,
        return MAX_COST --- */
     for (c = cond->reorder.vars_requiring_bindings; c != NIL; c = c->rest)
     {
-        if (static_cast<Symbol*>(c->first)->tc_num != tc)
+        if (static_cast<Symbol>(c->first)->tc_num != tc)
         {
             return MAX_COST;
         }
@@ -1328,7 +1328,7 @@ void reorder_simplified_conditions(agent* thisAgent,
         {
             cons* c;
             for (c = roots; c != NIL; c = c->rest)
-                if (static_cast<Symbol*>(c->first)->tc_num != bound_vars_tc_number)
+                if (static_cast<Symbol>(c->first)->tc_num != bound_vars_tc_number)
                 {
                     break;
                 }
@@ -1372,7 +1372,7 @@ bool test_tests_for_root(test t, list* roots)
 {
 
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     /* Gather variables from test. */
 

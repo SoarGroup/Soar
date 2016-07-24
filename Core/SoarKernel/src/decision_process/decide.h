@@ -67,7 +67,7 @@
 
 typedef struct gds_struct
 {
-    Symbol* goal;                /* pointer to the goal for the dependency set */
+    Symbol goal;                /* pointer to the goal for the dependency set */
     wme* wmes_in_gds;            /* pointer to the dll of WMEs in GDS of goal */
 } goal_dependency_set;
 
@@ -125,8 +125,8 @@ typedef struct gds_struct
         if one has changed, it points to a dl_cons.
 ------------------------------------------------------------------------ */
 
-extern void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to);
-extern void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to);
+extern void post_link_addition(agent* thisAgent, Symbol from, Symbol to);
+extern void post_link_removal(agent* thisAgent, Symbol from, Symbol to);
 
 extern void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* s);
 extern void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s);
@@ -135,7 +135,7 @@ extern void elaborate_gds(agent* thisAgent);
 extern void gds_invalid_so_remove_goal(agent* thisAgent, wme* w);
 extern void free_parent_list(agent* thisAgent);
 extern void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst);
-extern void create_gds_for_goal(agent* thisAgent, Symbol* goal);
+extern void create_gds_for_goal(agent* thisAgent, Symbol goal);
 extern void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w);
 
 extern int GDS_PrintCmd(/****ClientData****/ int clientData,
@@ -176,13 +176,13 @@ extern void create_top_goal(agent* thisAgent);
 extern void clear_goal_stack(agent* thisAgent);
 extern void print_lowest_slot_in_context_stack(agent* thisAgent);
 
-extern void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal);
-extern byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
-extern Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal);
-extern byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
+extern void remove_existing_context_and_descendents(agent* thisAgent, Symbol goal);
+extern byte type_of_existing_impasse(agent* thisAgent, Symbol goal);
+extern Symbol attribute_of_existing_impasse(agent* thisAgent, Symbol goal);
+extern byte type_of_existing_impasse(agent* thisAgent, Symbol goal);
 unsigned int count_candidates(preference* candidates);
 
-Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
-Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
+Symbol find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
+Symbol find_impasse_wme_value(Symbol id, Symbol attr);
 
 #endif

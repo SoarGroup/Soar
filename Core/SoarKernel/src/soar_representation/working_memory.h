@@ -34,22 +34,22 @@
 #include "kernel.h"
 
 void reset_wme_timetags(agent* thisAgent);
-wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
+wme* make_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value, bool acceptable);
 void add_wme_to_wm(agent* thisAgent, wme* w);
 void remove_wme_from_wm(agent* thisAgent, wme* w);
 void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap = false);
 void do_buffered_wm_changes(agent* thisAgent);
 
 void deallocate_wme(agent* thisAgent, wme* w);
-Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
+Symbol find_name_of_object(agent* thisAgent, Symbol id);
 
 typedef struct wme_struct
 {
     /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
        the rete code relies on this! */
-    Symbol* id;
-    Symbol* attr;
-    Symbol* value;
+    Symbol id;
+    Symbol attr;
+    Symbol value;
     bool acceptable;
     uint64_t timetag;
     uint64_t reference_count;
@@ -103,7 +103,7 @@ inline const char* field_to_string(WME_Field f)
     return "NO-ELEMENT";
 }
 
-inline Symbol* get_wme_element(wme* w, WME_Field f)
+inline Symbol get_wme_element(wme* w, WME_Field f)
 {
     if (!w)  return NULL;
     if (f == ID_ELEMENT) return w->id;

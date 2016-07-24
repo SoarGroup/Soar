@@ -204,7 +204,7 @@ typedef soar_module::bla_object_memory< production, 10, 50 > rl_production_memor
 
 // remove Soar-RL references to productions
 extern void rl_remove_refs_for_prod(agent* thisAgent, production* prod);
-extern void rl_clear_refs(Symbol* goal);
+extern void rl_clear_refs(Symbol goal);
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
@@ -250,7 +250,7 @@ extern void rl_revert_template_id(agent* thisAgent);
 //////////////////////////////////////////////////////////
 
 // builds a new Soar-RL rule from a template instantiation
-extern Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2);
+extern Symbol rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* a2);
 
 // adds a test to a condition list for goals or impasses contained within the condition list
 extern void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds);
@@ -260,7 +260,7 @@ extern void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* a
 //////////////////////////////////////////////////////////
 
 // tabulation of a single goal's reward
-extern void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal);
+extern void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol goal);
 
 // tabulation of all agent goal reward
 extern void rl_tabulate_reward_values(agent* thisAgent);
@@ -270,12 +270,12 @@ extern void rl_tabulate_reward_values(agent* thisAgent);
 //////////////////////////////////////////////////////////
 
 // Store and update data that will be needed later to perform a Bellman update for the current operator
-extern void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand);
+extern void rl_store_data(agent* thisAgent, Symbol goal, preference* cand);
 
 // update the value of Soar-RL rules
-extern void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* goal, bool update_efr = true);
+extern void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol goal, bool update_efr = true);
 
 // clears eligibility traces in accordance with watkins
-extern void rl_watkins_clear(agent* thisAgent, Symbol* goal);
+extern void rl_watkins_clear(agent* thisAgent, Symbol goal);
 
 #endif

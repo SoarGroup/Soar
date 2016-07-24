@@ -53,7 +53,7 @@ command_table::command_table()
 command* command_table::make_command(svs_state* state, wme* w)
 {
     string name;
-    Symbol* id;
+    Symbol id;
     soar_interface* si;
     
     si = state->get_svs()->get_soar_interface();

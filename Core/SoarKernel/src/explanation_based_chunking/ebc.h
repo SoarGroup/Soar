@@ -105,9 +105,9 @@ class Explanation_Based_Chunker
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_instantiation_count() { return inst_id_counter; };
         uint64_t get_justification_count() { return justification_count; };
-        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
-        Symbol * get_ovar_for_o_id(uint64_t o_id);
-        Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
+        uint64_t get_or_create_o_id(Symbol orig_var, uint64_t pI_id);
+        Symbol   get_ovar_for_o_id(uint64_t o_id);
+        Symbol   get_match_for_rhs_var(Symbol pRHS_var);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -194,7 +194,7 @@ class Explanation_Based_Chunker
         action*             m_rhs;
         production*         m_prod;
         instantiation*      m_chunk_inst;
-        Symbol*             m_prod_name;
+        Symbol             m_prod_name;
         condition*          m_saved_justification_top;
         condition*          m_saved_justification_bottom;
         ProductionType      m_prod_type;
@@ -232,14 +232,14 @@ class Explanation_Based_Chunker
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
                                                         uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
-        Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
+        Symbol         generate_chunk_name(instantiation* inst, bool pIsChunk);
         void            set_up_rule_name(bool pForChunk);
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
         void            add_pref_to_results(preference* pref, uint64_t linked_id);
-        void            add_results_for_id(Symbol* id, uint64_t linked_id);
-        void            add_results_if_needed(Symbol* sym, uint64_t linked_id);
+        void            add_results_for_id(Symbol id, uint64_t linked_id);
+        void            add_results_if_needed(Symbol sym, uint64_t linked_id);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
         void            create_initial_chunk_condition_lists();
@@ -275,7 +275,7 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
+        uint64_t get_existing_o_id(Symbol orig_var, uint64_t pI_id);
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
@@ -301,14 +301,14 @@ class Explanation_Based_Chunker
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
-        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
+        void variablize_lhs_symbol(Symbol sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
-        Symbol* get_variablization(uint64_t index_id);
-        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
+        void store_variablization(Symbol instantiated_sym, Symbol variable, uint64_t pIdentity);
+        Symbol get_variablization(uint64_t index_id);
+        void add_matched_sym_for_rhs_var(Symbol pRHS_var, Symbol pMatched_sym);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

@@ -23,7 +23,7 @@ using namespace std;
 class tag_select_filter : public select_filter<sgnode*>
 {
     public:
-        tag_select_filter(Symbol* root, soar_interface* si,
+        tag_select_filter(Symbol root, soar_interface* si,
                           filter_input* input)
             : select_filter<sgnode * >(root, si, input)
         {}
@@ -66,7 +66,7 @@ class tag_select_filter : public select_filter<sgnode*>
         }
 };
 
-filter* make_tag_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_tag_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new tag_select_filter(root, si, input);
 }

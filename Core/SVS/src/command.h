@@ -19,7 +19,7 @@ class command
             return update_sub();
         }
         
-        command(svs_state* state, Symbol* root);
+        command(svs_state* state, Symbol root);
         virtual ~command();
         
         /* check if any substructure in the command changed */
@@ -30,7 +30,7 @@ class command
         
         void set_status(const std::string& s);
         
-        Symbol* get_root()
+        Symbol get_root()
         {
             return root;
         }
@@ -48,7 +48,7 @@ class command
         
         svs_state*      state;
         soar_interface* si;
-        Symbol*         root;
+        Symbol         root;
         wme*            status_wme;
         std::string     curr_status;
         size_t             subtree_size;

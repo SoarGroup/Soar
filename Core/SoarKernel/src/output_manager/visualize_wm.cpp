@@ -38,7 +38,7 @@ WM_Visualization_Map::~WM_Visualization_Map()
     delete id_augmentations;
 }
 
-void WM_Visualization_Map::add_triple(Symbol* id, Symbol* attr, Symbol* value)
+void WM_Visualization_Map::add_triple(Symbol id, Symbol attr, Symbol value)
 {
     augmentation* lNewAugmentation = new augmentation();
     lNewAugmentation->attr = attr;
@@ -73,7 +73,7 @@ void WM_Visualization_Map::reset()
 void WM_Visualization_Map::visualize_wm_as_linked_records()
 {
     augmentation_set* lAugSet;
-    Symbol* lIDSym;
+    Symbol lIDSym;
     augmentation* lAug;
 
     std::string graphviz_connections;

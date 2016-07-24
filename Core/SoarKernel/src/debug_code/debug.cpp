@@ -182,7 +182,7 @@ debug_param_container::debug_param_container(agent* new_agent): soar_module::par
 }
 
 #include "sqlite3.h"
-bool symbol_matches_string(Symbol* sym, const char* match)
+bool symbol_matches_string(Symbol sym, const char* match)
 {
     std::string strName(sym->to_string());
     if (strName == match)
@@ -217,7 +217,7 @@ bool wme_matches_bug(wme *w)
     return false;
 
 }
-bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
+bool check_symbol(agent* thisAgent, Symbol sym, const char* message)
 {
 #ifdef DEBUG_CHECK_SYMBOL
     std::string strName(sym->to_string());
@@ -271,7 +271,7 @@ bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
 
 #include "output_manager.h"
 
-void debug_store_refcount(Symbol* sym, bool isAdd)
+void debug_store_refcount(Symbol sym, bool isAdd)
 {
     std::string caller_string = get_stacktrace(isAdd ? "add_ref" : "remove_ref");
     debug_agent->outputManager->store_refcount(sym, caller_string.c_str() , isAdd);
@@ -369,7 +369,7 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = find_identifier(thisAgent, 'V', 30);
+            Symbol sym = find_identifier(thisAgent, 'V', 30);
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
@@ -392,7 +392,7 @@ void debug_test(int type)
         }
         case 4:
         {
-            Symbol *sym = find_identifier(thisAgent, 'G', 1);
+            Symbol sym = find_identifier(thisAgent, 'G', 1);
             if (sym)
             {
                 dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);

@@ -470,11 +470,11 @@ bool reinitialize_soar(agent* thisAgent)
        an elaboration cycle.)  (If n==-1, it runs forever.)
      - Run_for_n_decision_cycles() runs Soar for a given number (n) of
        decision cycles.  (If n==-1, it runs forever.)
-     - Run_for_n_selections_of_slot (int64_t n, Symbol *attr_of_slot): this
+     - Run_for_n_selections_of_slot (int64_t n, Symbol attr_of_slot): this
        runs Soar until the nth time a selection is made for a given
        type of slot.  Attr_of_slot should be either state_symbol or
        operator_symbol.
-     - Run_for_n_selections_of_slot_at_level (int64_t n, Symbol *attr_of_slot,
+     - Run_for_n_selections_of_slot_at_level (int64_t n, Symbol attr_of_slot,
        goal_stack_level level):  this runs Soar for n selections of the
        given slot at the given level, or until the goal stack is popped
        so that level no longer exists.
@@ -482,7 +482,7 @@ bool reinitialize_soar(agent* thisAgent)
 
 void do_one_top_level_phase(agent* thisAgent)
 {
-    //  Symbol *iterate_goal_sym;  kjc commented /* RCHONG: end 10.11 */
+//    Symbol iterate_goal_sym;  kjc commented /* RCHONG: end 10.11 */
 
     if (thisAgent->system_halted)
     {
@@ -1188,7 +1188,7 @@ void do_one_top_level_phase(agent* thisAgent)
         // To model episodic task, after halt, perform RL update with next-state value 0
         if (rl_enabled(thisAgent))
         {
-            for (Symbol* g = thisAgent->bottom_goal; g; g = g->id->higher_goal)
+            for (Symbol g = thisAgent->bottom_goal; g; g = g->id->higher_goal)
             {
                 rl_tabulate_reward_value_for_goal(thisAgent, g);
                 rl_perform_update(thisAgent, 0, true, g);
@@ -1397,7 +1397,7 @@ void run_for_n_decision_cycles(agent* thisAgent, int64_t n)
 #endif
 }
 
-Symbol* attr_of_slot_just_decided(agent* thisAgent)
+Symbol attr_of_slot_just_decided(agent* thisAgent)
 {
     if (thisAgent->bottom_goal->id->operator_slot->wmes)
     {
@@ -1406,7 +1406,7 @@ Symbol* attr_of_slot_just_decided(agent* thisAgent)
     return thisAgent->state_symbol;
 }
 
-void run_for_n_selections_of_slot(agent* thisAgent, int64_t n, Symbol* attr_of_slot)
+void run_for_n_selections_of_slot(agent* thisAgent, int64_t n, Symbol attr_of_slot)
 {
     int64_t count;
     bool was_decision_phase;
@@ -1446,7 +1446,7 @@ void run_for_n_selections_of_slot(agent* thisAgent, int64_t n, Symbol* attr_of_s
 }
 
 void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
-        Symbol* attr_of_slot,
+        Symbol attr_of_slot,
         goal_stack_level level)
 {
     int64_t count;

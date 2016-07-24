@@ -144,7 +144,7 @@ void filter_table::proxy_use_sub(const std::vector<std::string>& args, std::ostr
 }
 
 
-filter* filter_table::make_filter(const string& pred, Symbol* root, soar_interface* si, scene* scn, filter_input* input) const
+filter* filter_table::make_filter(const string& pred, Symbol root, soar_interface* si, scene* scn, filter_input* input) const
 {
     map<std::string, filter_table_entry*>::const_iterator i = t.find(pred);
     if (i == t.end() || i->second->create == NULL)
@@ -185,7 +185,7 @@ Example input:
 (<ota> ^type node ^name box1)
 (<otb> ^type node ^name box2)
 */
-filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
+filter* parse_filter_spec(soar_interface* si, Symbol root, scene* scn)
 {
     wme_vector children, params;
     wme_vector::iterator i;
@@ -223,7 +223,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         {
             continue;
         }
-        Symbol* cval = si->get_wme_val(*i);
+        Symbol cval = si->get_wme_val(*i);
         if (pname == "type")
         {
             if (!get_symbol_value(cval, ftype))
@@ -264,7 +264,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
         {
             continue;
         }
-        Symbol* cval = si->get_wme_val(*i);
+        Symbol cval = si->get_wme_val(*i);
         filter* cf = parse_filter_spec(si, cval, scn);
         if (!cf)
         {

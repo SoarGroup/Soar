@@ -21,9 +21,9 @@
 #include "test.h"
 #include "xml.h"
 
-extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
-extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
-byte type_of_existing_impasse(agent* thisAgent, Symbol* goal);
+extern Symbol find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
+extern Symbol find_impasse_wme_value(Symbol id, Symbol attr);
+byte type_of_existing_impasse(agent* thisAgent, Symbol goal);
 
 Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 {
@@ -183,10 +183,10 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     return true;
 }
 
-Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool pIsChunk)
+Symbol Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool pIsChunk)
 {
-    Symbol* generated_name;
-    Symbol* goal;
+    Symbol generated_name;
+    Symbol goal;
     byte impasse_type;
     preference* p;
     goal_stack_level lowest_result_level;
@@ -245,7 +245,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                         break;
                     case NO_CHANGE_IMPASSE_TYPE:
                     {
-                        Symbol* sym;
+                        Symbol sym;
                         sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
                         if (sym)
                         {

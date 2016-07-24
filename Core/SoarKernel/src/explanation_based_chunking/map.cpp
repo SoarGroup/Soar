@@ -57,7 +57,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     for (id_to_sym_map_type::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, &it->second);
+        symbol_remove_ref(thisAgent, it->second);
     }
     o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing o_id_to_var_map data.\n");
@@ -83,7 +83,7 @@ void Explanation_Based_Chunker::clear_rulesym_to_identity_map()
     instantiation_identities->clear();
 }
 
-uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t pI_id)
+uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol orig_var, uint64_t pI_id)
 {
     assert(orig_var && pI_id);
 
@@ -156,7 +156,7 @@ void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t 
 #endif
 }
 
-uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
+uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol orig_var, uint64_t pI_id)
 {
     assert(orig_var->is_variable());
     int64_t existing_o_id = 0;
@@ -176,7 +176,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
     }
 }
 
-Symbol* Explanation_Based_Chunker::get_match_for_rhs_var(Symbol* pRHS_var)
+Symbol Explanation_Based_Chunker::get_match_for_rhs_var(Symbol pRHS_var)
 {
     sym_to_sym_map_type::iterator iter = rhs_var_to_match_map->find(pRHS_var);
     if (iter != rhs_var_to_match_map->end())
@@ -186,16 +186,16 @@ Symbol* Explanation_Based_Chunker::get_match_for_rhs_var(Symbol* pRHS_var)
     return NULL;
 }
 
-void Explanation_Based_Chunker::add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym)
+void Explanation_Based_Chunker::add_matched_sym_for_rhs_var(Symbol pRHS_var, Symbol pMatched_sym)
 {
-    Symbol* lSym = get_match_for_rhs_var(pRHS_var);
+    Symbol lSym = get_match_for_rhs_var(pRHS_var);
     if (!lSym)
     {
         (*rhs_var_to_match_map)[pRHS_var] = pMatched_sym;
     }
 }
 
-Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
+Symbol Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
 {
 #ifndef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
     return NULL;

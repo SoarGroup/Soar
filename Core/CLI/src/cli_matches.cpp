@@ -53,7 +53,7 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
             return SetError("Production required.");
         }
         
-        Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
+        Symbol sym = find_str_constant(thisAgent, pProduction->c_str());
         rete_node* prod = (sym && sym->sc->production) ? sym->sc->production->p_node : 0;
         
         if (!prod)

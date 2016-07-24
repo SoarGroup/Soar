@@ -50,7 +50,7 @@ void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pID
 {
     list* fl;
     cons* c;
-    Symbol* sym;
+    Symbol sym;
 
     if (rhs_value_is_symbol(rv))
     {
@@ -75,7 +75,7 @@ void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pID
 
 void add_all_identities_in_action(agent* thisAgent, action* a, id_set* pIDSet)
 {
-    Symbol* id;
+    Symbol id;
 
     if (a->type == MAKE_ACTION)
     {

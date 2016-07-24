@@ -22,7 +22,7 @@ using namespace std;
 class delete_node_command : public command
 {
     public:
-        delete_node_command(svs_state* state, Symbol* root)
+        delete_node_command(svs_state* state, Symbol root)
             : command(state, root), root(root), scn(state->get_scene()), first(true)
         {
             si = state->get_svs()->get_soar_interface();
@@ -89,13 +89,13 @@ class delete_node_command : public command
         }
         
         scene*             scn;
-        Symbol*            root;
+        Symbol            root;
         soar_interface*    si;
         bool first;
         string                      nodeId;
 };
 
-command* _make_delete_node_command_(svs_state* state, Symbol* root)
+command* _make_delete_node_command_(svs_state* state, Symbol root)
 {
     return new delete_node_command(state, root);
 }

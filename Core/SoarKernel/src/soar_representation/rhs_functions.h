@@ -34,12 +34,12 @@
 #include "kernel.h"
 #include "Export.h"
 
-typedef Symbol* ((*rhs_function_routine)(agent* thisAgent, ::list* args, void* user_data));
+typedef Symbol ((*rhs_function_routine)(agent* thisAgent, ::list* args, void* user_data));
 
 typedef struct rhs_function_struct
 {
     struct rhs_function_struct* next;
-    Symbol* name;
+    Symbol name;
     rhs_function_routine f;
     int num_args_expected;     /* -1 means it can take any number of args */
     bool can_be_rhs_value;
@@ -48,14 +48,14 @@ typedef struct rhs_function_struct
 } rhs_function;
 
 extern EXPORT void add_rhs_function(agent* thisAgent,
-                             Symbol* name,
+                             Symbol name,
                              rhs_function_routine f,
                              int num_args_expected,
                              bool can_be_rhs_value,
                              bool can_be_stand_alone_action,
                              void* user_data);
-extern EXPORT void remove_rhs_function(agent* thisAgent, Symbol* name);
-extern EXPORT rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name);
+extern EXPORT void remove_rhs_function(agent* thisAgent, Symbol name);
+extern EXPORT rhs_function* lookup_rhs_function(agent* thisAgent, Symbol name);
 extern EXPORT void init_built_in_rhs_functions(agent* thisAgent);
 extern EXPORT void remove_built_in_rhs_functions(agent* thisAgent);
 

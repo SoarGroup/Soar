@@ -40,7 +40,7 @@ bool contain_test(sgnode* a, sgnode* b, const filter_params* p)
 }
 
 ////// filter contain //////
-filter* make_contain_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_contain_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_filter(root, si, input, &contain_test);
 }
@@ -57,7 +57,7 @@ filter_table_entry* contain_filter_entry()
 }
 
 ////// filter contain_select //////
-filter* make_contain_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_contain_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_select_filter(root, si, input, &contain_test);
 }

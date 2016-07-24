@@ -89,14 +89,14 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
     }
 
     // Set it
-    Symbol* s = make_str_constant(thisAgent, pAttribute->c_str());
+    Symbol s = make_str_constant(thisAgent, pAttribute->c_str());
 
     while (maList)
     {
         if (maList->symbol == s)
         {
             maList->value = n;
-            symbol_remove_ref(thisAgent, &s);
+            symbol_remove_ref(thisAgent, s);
             return true;
         }
 

@@ -125,7 +125,7 @@ class filter
 {
     public:
     
-        filter(Symbol* root, soar_interface* si, filter_input* in);
+        filter(Symbol root, soar_interface* si, filter_input* in);
         
         virtual ~filter();
         
@@ -189,7 +189,7 @@ class filter
         filter_output output;
         std::string status;
         soar_interface* si;
-        Symbol* root;
+        Symbol root;
         wme* status_wme;
 };
 
@@ -246,7 +246,7 @@ template <class T>
 class typed_filter : public filter
 {
     public:
-        typed_filter(Symbol* root, soar_interface* si, filter_input* in)
+        typed_filter(Symbol root, soar_interface* si, filter_input* in)
             : filter(root, si, in)
         {}
         
@@ -331,7 +331,7 @@ template <>
 class typed_filter<sgnode*> : public filter, public sgnode_listener
 {
     public:
-        typed_filter(Symbol* root, soar_interface* si, filter_input* in)
+        typed_filter(Symbol root, soar_interface* si, filter_input* in)
             : filter(root, si, in)
         {
         }
@@ -513,7 +513,7 @@ template <class T>
 class map_filter : public typed_filter<T>
 {
     public:
-        map_filter(Symbol* root, soar_interface* si, filter_input* input)
+        map_filter(Symbol root, soar_interface* si, filter_input* input)
             : typed_filter<T>(root, si, input)
         {}
         
@@ -577,7 +577,7 @@ template <class T>
 class select_filter : public typed_filter<T>
 {
     public:
-        select_filter(Symbol* root, soar_interface* si, filter_input* input)
+        select_filter(Symbol root, soar_interface* si, filter_input* input)
             : typed_filter<T>(root, si, input)
         {}
         
@@ -667,7 +667,7 @@ class select_filter : public typed_filter<T>
 class rank_filter : public typed_filter<double>
 {
     public:
-        rank_filter(Symbol* root, soar_interface* si, filter_input* input)
+        rank_filter(Symbol root, soar_interface* si, filter_input* input)
             : typed_filter<double>(root, si, input), best_input(NULL), select_highest(true)
         {}
         
@@ -810,7 +810,7 @@ template <class T>
 class passthru_filter : public map_filter<T>
 {
     public:
-        passthru_filter(Symbol* root, soar_interface* si, filter_input* input)
+        passthru_filter(Symbol root, soar_interface* si, filter_input* input)
             : map_filter<T>(root, si, input)
         {}
         

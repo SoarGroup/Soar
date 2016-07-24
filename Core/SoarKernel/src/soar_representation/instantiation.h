@@ -33,14 +33,14 @@ typedef struct instantiation_struct
     condition*                      top_of_instantiated_conditions;
     condition*                      bottom_of_instantiated_conditions;
     preference*                     preferences_generated;  /* header for dll of prefs */
-    Symbol*                         match_goal;             /* symbol, or NIL if none */
+    Symbol                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool                            reliable;
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
     tc_number                       backtrace_number;
     bool                            GDS_evaluated_already;
     uint64_t                        i_id;                   /* id number used by EBC */
-    Symbol*                         prod_name;
+    Symbol                         prod_name;
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;
@@ -56,15 +56,15 @@ void                deallocate_instantiation(agent* thisAgent, instantiation*& i
 goal_stack_level    get_match_goal(condition* top_cond);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
 void                build_CDPS(agent* thisAgent, instantiation* inst);
-Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
+Symbol             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
     if ((!(inst)->preferences_generated) && (!(inst)->in_ms)) deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
-preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
+instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol state, wme_set* conditions, symbol_triple_list* actions);
+preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol goal, preference* cand);
 
 /* -------------------------------------------------------------------
                               Instantiations

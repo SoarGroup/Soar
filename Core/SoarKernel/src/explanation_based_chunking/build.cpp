@@ -57,7 +57,7 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, uint64_t linked_id)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol sym, uint64_t linked_id)
 {
     dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y (parent identity %u)", sym, linked_id);
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -145,7 +145,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_id)
+void Explanation_Based_Chunker::add_results_for_id(Symbol id, uint64_t linked_id)
 {
     slot* s;
     preference* pref;
@@ -582,7 +582,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     condition* cc;
     tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
-    Symbol* id, *id_vrblz;
+    Symbol id, id_vrblz;
     test t;
 
     tc = get_new_tc_number(thisAgent);
@@ -854,7 +854,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
     /* Change to justification naming */
-    symbol_remove_ref(thisAgent, &m_prod_name);
+    symbol_remove_ref(thisAgent, m_prod_name);
     set_up_rule_name(false);
 
     /* Clean up */
@@ -1060,7 +1060,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
-        Symbol* g;
+        Symbol g;
         for (g = m_inst->match_goal->id->higher_goal; g && g->id->allow_bottom_up_chunks; g = g->id->higher_goal)
         {
             g->id->allow_bottom_up_chunks = false;
@@ -1238,7 +1238,7 @@ void Explanation_Based_Chunker::clean_up ()
     if (m_prod_name)
     {
         dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", m_prod_name);
-        symbol_remove_ref(thisAgent, &m_prod_name);
+        symbol_remove_ref(thisAgent, m_prod_name);
     }
     if (m_saved_justification_top)
     {

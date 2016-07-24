@@ -86,7 +86,7 @@ void GraphViz_Visualizer::viz_graph_end()
     escape_graphviz_chars();
 }
 
-void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start(Symbol pName, uint64_t node_id, visualizationObjectType objectType)
 {
     switch (objectType)
     {

@@ -24,7 +24,7 @@ using namespace std;
 class delete_tag_command : public command
 {
     public:
-        delete_tag_command(svs_state* state, Symbol* root)
+        delete_tag_command(svs_state* state, Symbol root)
             : command(state, root), root(root), first(true)
         {
             si = state->get_svs()->get_soar_interface();
@@ -103,7 +103,7 @@ class delete_tag_command : public command
         }
         
     private:
-        Symbol*         root;
+        Symbol         root;
         scene*          scn;
         soar_interface* si;
         bool            first;
@@ -111,7 +111,7 @@ class delete_tag_command : public command
         string          tag_name;
 };
 
-command* _make_delete_tag_command_(svs_state* state, Symbol* root)
+command* _make_delete_tag_command_(svs_state* state, Symbol root)
 {
     return new delete_tag_command(state, root);
 }

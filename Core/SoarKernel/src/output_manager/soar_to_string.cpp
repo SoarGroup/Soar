@@ -130,7 +130,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         destString += "<< ";
         for (c = t->data.disjunction_list; c != NIL; c = c->rest)
         {
-            destString += static_cast<Symbol*>(c->first)->to_string(false);
+            destString += static_cast<Symbol>(c->first)->to_string(false);
             destString += ' ';
         }
         destString += ">>";
@@ -202,7 +202,7 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
 void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
-    Symbol* sym = NIL;
+    Symbol sym = NIL;
     cons* c;
     list* fl;
     rhs_function* rf;
@@ -555,7 +555,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
         c = varnames_to_var_list(var_names);
         while (c)
         {
-            print_sf("%y ", static_cast<Symbol*>(c->first));;
+            print_sf("%y ", static_cast<Symbol>(c->first));;
             c = c->rest;
         }
     }
@@ -584,7 +584,7 @@ void Output_Manager::print_varnames_node(TraceMode mode, node_varnames* var_name
 
 void Output_Manager::debug_find_and_print_sym(char* find_string)
 {
-    Symbol* newSym = NULL;
+    Symbol newSym = NULL;
     if (find_string)
     {
         bool found = false;
@@ -680,7 +680,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return false;
 
-    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<Symbol*>(item), static_cast<Symbol*>(item)->reference_count);
+    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<Symbol>(item), static_cast<Symbol>(item)->reference_count);
     return false;
 }
 

@@ -154,7 +154,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
                 the difference between the address of ch and
                 the address of the beginning of the buffer
                 */
-            (va_arg(args, Symbol*))->to_string(true, ch, count - (ch - dest));
+            (va_arg(args, Symbol))->to_string(true, ch, count - (ch - dest));
             while (*ch)
             {
                 ch++;
@@ -250,7 +250,7 @@ char* string_to_escaped_string(char* s, char first_and_last_char, char* dest)
 }
 
 
-char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
+char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol sym)
 {
     switch (sym->symbol_type)
     {
@@ -1182,7 +1182,7 @@ void print_phase(agent* thisAgent, const char* s, bool end_of_phase)
 
 ===========================
 */
-bool wme_filter_component_match(Symbol* filterComponent, Symbol* wmeComponent)
+bool wme_filter_component_match(Symbol filterComponent, Symbol wmeComponent)
 {
     if ((filterComponent->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
             (!strcmp(filterComponent->sc->name, "*")))

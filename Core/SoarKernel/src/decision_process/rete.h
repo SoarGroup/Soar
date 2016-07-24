@@ -59,7 +59,7 @@
 
 extern void abort_with_fatal_error_noagent(const char* msg);
 
-inline varnames* one_var_to_varnames(Symbol* x)
+inline varnames* one_var_to_varnames(Symbol x)
 {
     return reinterpret_cast<varnames*>(x);
 }
@@ -75,9 +75,9 @@ inline bool varnames_is_one_var(varnames* x)
 {
     return ! varnames_is_var_list(x);
 }
-inline Symbol* varnames_to_one_var(varnames* x)
+inline Symbol varnames_to_one_var(varnames* x)
 {
-    return reinterpret_cast<Symbol*>(x);
+    return reinterpret_cast<Symbol>(x);
 }
 inline list* varnames_to_var_list(varnames* x)
 {
@@ -86,7 +86,7 @@ inline list* varnames_to_var_list(varnames* x)
 
 /* --- tells where to find a variable --- */
 typedef unsigned short rete_node_level;
-Symbol* var_bound_in_reconstructed_conds(
+Symbol var_bound_in_reconstructed_conds(
     agent* thisAgent,
     condition* cond,
     byte where_field_num,
@@ -135,9 +135,9 @@ typedef struct alpha_mem_struct
     struct right_mem_struct* right_mems;  /* dll of right_mem structures */
     struct rete_node_struct* beta_nodes;  /* list of attached beta nodes */
     struct rete_node_struct* last_beta_node; /* tail of above dll */
-    Symbol* id;                  /* constants tested by this alpha mem */
-    Symbol* attr;                /* (NIL if this alpha mem ignores that field) */
-    Symbol* value;
+    Symbol id;                  /* constants tested by this alpha mem */
+    Symbol attr;                /* (NIL if this alpha mem ignores that field) */
+    Symbol value;
     bool acceptable;             /* does it test for acceptable pref? */
     uint32_t am_id;            /* id for hashing */
     uint64_t reference_count;  /* number of beta nodes using this mem */
@@ -171,7 +171,7 @@ typedef struct rete_test_struct
     union rete_test_data_union
     {
         var_location variable_referent;   /* for relational tests to a variable */
-        Symbol* constant_referent;        /* for relational tests to a constant */
+        Symbol constant_referent;        /* for relational tests to a constant */
         list* disjunction_list;           /* list of symbols in disjunction test */
     } data;
     struct rete_test_struct* next; /* next in list of tests at the node */
@@ -336,7 +336,7 @@ typedef struct token_struct
         struct token_in_hash_table_data_struct
         {
             struct token_struct* next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
-            Symbol* referent; /* referent of the hash test (thing we hashed on) */
+            Symbol referent; /* referent of the hash test (thing we hashed on) */
         } ht;
         struct token_from_right_memory_of_negative_or_cn_node_struct
         {
@@ -367,7 +367,7 @@ typedef struct ms_change_struct
     wme* w;                              /* for assertions only */
     struct instantiation_struct* inst;   /* for retractions only */
 
-    Symbol* goal;
+    Symbol goal;
     goal_stack_level level;              /* Level of the match of the assertion or retraction */
     struct ms_change_struct* next_in_level; /* dll for goal level */
     struct ms_change_struct* prev_in_level;
@@ -405,7 +405,7 @@ extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         action** dest_rhs,
         uint64_t i_id = 0,
         AddAdditionalTestsMode additional_tests = DONT_EXPLAIN);
-extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
+extern Symbol get_symbol_from_rete_loc(unsigned short levels_up,
                                         byte field_num,
                                         struct token_struct* tok, wme* w);
 

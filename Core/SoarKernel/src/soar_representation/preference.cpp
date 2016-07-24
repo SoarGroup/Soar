@@ -55,8 +55,8 @@ const char* preference_name[] =
    and are optional/have default nil values.
 ---------------------------------------------------------------------- */
 
-preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr,
-                            Symbol* value, Symbol* referent,
+preference* make_preference(agent* thisAgent, PreferenceType type, Symbol id, Symbol attr,
+                            Symbol value, Symbol referent,
                             const identity_triple o_ids,
                             const rhs_triple rhs_funcs)
 {
@@ -196,12 +196,12 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* --- dereference component symbols --- */
-    symbol_remove_ref(thisAgent, &pref->id);
-    symbol_remove_ref(thisAgent, &pref->attr);
-    symbol_remove_ref(thisAgent, &pref->value);
+    symbol_remove_ref(thisAgent, pref->id);
+    symbol_remove_ref(thisAgent, pref->attr);
+    symbol_remove_ref(thisAgent, pref->value);
     if (preference_is_binary(pref->type))
     {
-        symbol_remove_ref(thisAgent, &pref->referent);
+        symbol_remove_ref(thisAgent, pref->referent);
     }
     if (pref->wma_o_set)
     {
@@ -414,7 +414,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
             {
                 thisAgent->memoryManager->allocate_with_pool(MP_wma_slot_refs, &(s->wma_val_references));
 #ifdef USE_MEM_POOL_ALLOCATORS
-                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >());
+                s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map(std::less< Symbol >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol, uint64_t > >());
 #else
                 s->wma_val_references = new(s->wma_val_references) wma_sym_reference_map();
 #endif

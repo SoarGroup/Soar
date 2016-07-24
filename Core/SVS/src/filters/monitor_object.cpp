@@ -38,7 +38,7 @@ typedef std::map<sgnode*, vec3> pos_map;
 
 class monitor_volume_filter : public map_filter<double> {
 public:
-	monitor_volume_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
+	monitor_volume_filter(Symbol root, soar_interface *si, scene *scn, filter_input *input)
 	: map_filter<double>(root, si, input), scn(scn)
 	{
 	}
@@ -73,7 +73,7 @@ private:
 
 class monitor_position_filter : public map_filter<double> {
 public:
-	monitor_position_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
+	monitor_position_filter(Symbol root, soar_interface *si, scene *scn, filter_input *input)
 	: map_filter<double>(root, si, input), scn(scn)
 	{
 	}
@@ -107,11 +107,11 @@ private:
 	scene *scn;
 };
 
-filter *make_monitor_position_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_monitor_position_filter(Symbol root, soar_interface *si, scene *scn, filter_input *input) {
 	return new monitor_position_filter(root, si, scn, input);
 }
 
-filter *make_monitor_volume_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_monitor_volume_filter(Symbol root, soar_interface *si, scene *scn, filter_input *input) {
 	return new monitor_volume_filter(root, si, scn, input);
 }
 

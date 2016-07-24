@@ -34,7 +34,7 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     last_printed_id = 0;
 
     /* Create data structures used for EBC */
-    chunks = new std::unordered_map< Symbol*, chunk_record* >();
+    chunks = new std::unordered_map< Symbol, chunk_record* >();
     chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
@@ -79,11 +79,11 @@ void Explanation_Memory::clear_explanations()
     //debug_trace_set(DT_EXPLAIN, true);
 
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
-    Symbol* lSym;
-    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    Symbol lSym;
+    for (std::unordered_map< Symbol, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         lSym = it->first;
-        symbol_remove_ref(thisAgent, &lSym);
+        symbol_remove_ref(thisAgent, lSym);
         delete it->second;
     }
     chunks->clear();
@@ -348,11 +348,11 @@ action_record* Explanation_Memory::add_result(preference* pPref, action* pAction
     return lActionRecord;
 }
 
-chunk_record* Explanation_Memory::get_chunk_record(Symbol* pChunkName)
+chunk_record* Explanation_Memory::get_chunk_record(Symbol pChunkName)
 {
     assert(pChunkName);
 
-    std::unordered_map< Symbol *, chunk_record* >::iterator iter_chunk;
+    std::unordered_map< Symbol, chunk_record* >::iterator iter_chunk;
 
 //    dprint(DT_EXPLAIN, "...Looking  for chunk %y...", pChunkName);
     iter_chunk = chunks->find(pChunkName);
@@ -401,7 +401,7 @@ bool Explanation_Memory::toggle_production_watch(production* pProduction)
 
 bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 {
-    Symbol* sym;
+    Symbol sym;
 
     sym = find_str_constant(thisAgent, pStringParameter->c_str());
     if (sym && (sym->sc->production))
@@ -416,7 +416,7 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 
 bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
-    Symbol* sym;
+    Symbol sym;
 
     sym = find_str_constant(thisAgent, pStringParameter->c_str());
     if (sym && sym->sc->production)

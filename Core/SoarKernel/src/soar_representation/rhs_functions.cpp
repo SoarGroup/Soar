@@ -63,7 +63,7 @@
 using namespace soar_TraceNames;
 
 void add_rhs_function(agent* thisAgent,
-                      Symbol* name,
+                      Symbol name,
                       rhs_function_routine f,
                       int num_args_expected,
                       bool can_be_rhs_value,
@@ -102,7 +102,7 @@ void add_rhs_function(agent* thisAgent,
     rf->user_data = user_data;
 }
 
-rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
+rhs_function* lookup_rhs_function(agent* thisAgent, Symbol name)
 {
     rhs_function* rf;
 
@@ -116,7 +116,7 @@ rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
     return NIL;
 }
 
-void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/00 */
+void remove_rhs_function(agent* thisAgent, Symbol name)    /* code from Koss 8/00 */
 {
 
     rhs_function* rf = NIL, *prev;
@@ -157,7 +157,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
     }
 
     // DJP-FREE: The name reference needs to be released now the function is gone
-    symbol_remove_ref(thisAgent, &name);
+    symbol_remove_ref(thisAgent, name);
 }
 
 /* ====================================================================
@@ -172,15 +172,15 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
    Takes any number of arguments, and prints each one.
 -------------------------------------------------------------------- */
 
-Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     char* string;
     growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
 
     for (; args != NIL; args = args->rest)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
         string = arg->to_string();
@@ -201,7 +201,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    Just returns a str_constant whose print name is a line feed.
 -------------------------------------------------------------------- */
 
-Symbol* crlf_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
+Symbol crlf_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
 {
     return make_str_constant(thisAgent, "\n");
 }
@@ -212,7 +212,7 @@ Symbol* crlf_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_da
    Just sets a flag indicating that the system has halted.
 -------------------------------------------------------------------- */
 
-Symbol* halt_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
+Symbol halt_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
 {
     thisAgent->system_halted = true;
     soar_invoke_callbacks(thisAgent,
@@ -231,7 +231,7 @@ Symbol* halt_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_da
    concatenation of those arguments.
 -------------------------------------------------------------------- */
 
-Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     std::stringstream buf;
     char* string;
@@ -245,7 +245,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
     {
         for (c = args; c != NIL; c = c->rest)
         {
-            string = static_cast<Symbol*>(c->first)->to_string();
+            string = static_cast<Symbol>(c->first)->to_string();
             buf << string;
         }
     }
@@ -264,7 +264,7 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
    of the current local time.
 -------------------------------------------------------------------- */
 
-Symbol* timestamp_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
+Symbol timestamp_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
 {
     time_t now;
     struct tm* temp;
@@ -303,10 +303,10 @@ Symbol* timestamp_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*us
    symbol from that line.
 -------------------------------------------------------------------- */
 
-Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
+Symbol accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
 {
     char buf[2000], *s;
-    Symbol* sym;
+    Symbol sym;
 
     while (true)
     {
@@ -334,11 +334,11 @@ Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_
   Capitalize a Symbol
 ------------------------------------------------------------------------ */
 
-Symbol*
+Symbol
 capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     char* symbol_to_capitalize;
-    Symbol* sym, * returnSym;
+    Symbol sym, returnSym;
 
     if (!args)
     {
@@ -346,7 +346,7 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         return NIL;
     }
 
-    sym = static_cast<Symbol*>(args->first);
+    sym = static_cast<Symbol>(args->first);
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
@@ -433,9 +433,9 @@ strlen <val> - returns the string length of the output string so that
 
 ------------------------------------------------------------ */
 
-Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg1, *arg2;
+    Symbol arg1, arg2;
     cons* c;
 
     if (!args)
@@ -445,20 +445,20 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
 
     /* --- two or more arguments --- */
-    arg1 = static_cast<Symbol*>(args->first);
+    arg1 = static_cast<Symbol>(args->first);
     c = args->rest;
-    arg2 = static_cast<Symbol*>(c->first);
+    arg2 = static_cast<Symbol>(c->first);
     c = c->rest;
 
     if (arg1 == arg2)
     {
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
-        return static_cast<Symbol*>(c->first);
+        symbol_add_ref(thisAgent, static_cast<Symbol>(c->first));
+        return static_cast<Symbol>(c->first);
     }
     else if (c->rest)
     {
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->rest->first));
-        return static_cast<Symbol*>(c->rest->first);
+        symbol_add_ref(thisAgent, static_cast<Symbol>(c->rest->first));
+        return static_cast<Symbol>(c->rest->first);
     }
     else
     {
@@ -466,10 +466,10 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
 }
 
-Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     char* symbol_to_trim;
-    Symbol* sym, *returnSym;
+    Symbol sym, returnSym;
 
     if (!args)
     {
@@ -477,7 +477,7 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         return NIL;
     }
 
-    sym = (Symbol*) args->first;
+    sym = (Symbol) args->first;
 
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
@@ -515,12 +515,12 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
 }
 
-Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     char* string;
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
 
     /* --- Note use of false here--print the symbol itself, not a rereadable
        version of it --- */
@@ -537,9 +537,9 @@ Hack for learning.  Allow user to denote states in which learning
 shouldn't occur when "learning" is set to "except".
 -------------------------------------------------------------------- */
 
-Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* state;
+    Symbol state;
 
     if (!args)
     {
@@ -547,7 +547,7 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
         return NIL;
     }
 
-    state = static_cast<Symbol*>(args->first);
+    state = static_cast<Symbol>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
@@ -564,7 +564,7 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces))
+    if (! member_of_list(static_cast<void *>(state), thisAgent->explanationBasedChunker->chunk_free_problem_spaces))
     {
         push(thisAgent, state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces);
         /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
@@ -580,9 +580,9 @@ Hack for learning.  Allow user to denote states in which learning
 should occur when "learning" is set to "only".
 -------------------------------------------------------------------- */
 
-Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* state;
+    Symbol state;
 
     if (!args)
     {
@@ -590,7 +590,7 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
         return NIL;
     }
 
-    state = static_cast<Symbol*>(args->first);
+    state = static_cast<Symbol>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
@@ -608,7 +608,7 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
         return NIL;
     }
 
-    if (! member_of_list(state, thisAgent->explanationBasedChunker->chunky_problem_spaces))
+    if (! member_of_list(static_cast<void *>(state), thisAgent->explanationBasedChunker->chunky_problem_spaces))
     {
         push(thisAgent, state, thisAgent->explanationBasedChunker->chunky_problem_spaces);
         /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
@@ -621,28 +621,28 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
                   RHS Deep copy recursive helper functions
 ====================================================================  */
 void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
-                                std::unordered_map<Symbol*, Symbol*>& processedSymbols);
+                                Symbol id_to_process,
+                                Symbol parent_id,
+                                std::unordered_map<Symbol, Symbol>& processedSymbols);
 
 void recursive_wme_copy(agent* thisAgent,
-                        Symbol* parent_id,
+                        Symbol parent_id,
                         wme* curwme,
-                        std::unordered_map<Symbol*, Symbol*>& processedSymbols)
+                        std::unordered_map<Symbol, Symbol>& processedSymbols)
 {
 
     bool made_new_attr_symbol = false;
     bool made_new_value_symbol = false;
 
-    Symbol* new_id = parent_id;
-    Symbol* new_attr = curwme->attr;
-    Symbol* new_value = curwme->value;
+    Symbol new_id = parent_id;
+    Symbol new_attr = curwme->attr;
+    Symbol new_value = curwme->value;
 
     /* Handling the case where the attribute is an id symbol */
     if (curwme->attr->is_identifier())
     {
         /* Have I already made a new identifier for this identifier */
-        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
+        std::unordered_map<Symbol, Symbol>::iterator it = processedSymbols.find(curwme->attr);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -665,7 +665,7 @@ void recursive_wme_copy(agent* thisAgent,
     if (curwme->value->symbol_type == 1)
     {
         /* Have I already made a new identifier for this identifier */
-        std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->value);
+        std::unordered_map<Symbol, Symbol>::iterator it = processedSymbols.find(curwme->value);
         if (it != processedSymbols.end())
         {
             /* Retrieve the previously created id symbol */
@@ -707,16 +707,16 @@ void recursive_wme_copy(agent* thisAgent,
 }
 
 void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
-                                std::unordered_map<Symbol*, Symbol*>& processedSymbols)
+                                Symbol id_to_process,
+                                Symbol parent_id,
+                                std::unordered_map<Symbol, Symbol>& processedSymbols)
 {
     /* If this symbol has already been processed then ignore it and return */
     if (processedSymbols.find(id_to_process) != processedSymbols.end())
     {
         return;
     }
-    processedSymbols.insert(std::pair<Symbol*, Symbol*>(id_to_process, parent_id));
+    processedSymbols.insert(std::pair<Symbol, Symbol>(id_to_process, parent_id));
 
     /* Iterating over the normal slot wmes */
     for (slot* curslot = id_to_process->id->slots;
@@ -756,21 +756,21 @@ void recursive_deep_copy_helper(agent* thisAgent,
 /* ====================================================================
                   RHS Deep copy function
 ====================================================================  */
-Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
 
     /* Getting the argument symbol */
-    Symbol* baseid = static_cast<Symbol*>(args->first);
+    Symbol baseid = static_cast<Symbol>(args->first);
     if (!baseid->is_identifier())
     {
         return make_str_constant(thisAgent, "*symbol not id*");
     }
 
     /* Make the new root identifier symbol.  We'll set the level in create_instantiation. */
-    Symbol* retval = make_new_identifier(thisAgent, 'D', 0, NIL);
+    Symbol retval = make_new_identifier(thisAgent, 'D', 0, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
-    std::unordered_map<Symbol*, Symbol*> processedSymbols;
+    std::unordered_map<Symbol, Symbol> processedSymbols;
     recursive_deep_copy_helper(thisAgent,
                                baseid,
                                retval,
@@ -787,14 +787,14 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
    dynamic counters.
 -------------------------------------------------------------------- */
 
-Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     char* string;
 
     for (; args != NIL; args = args->rest)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
         string = arg->to_string();
@@ -811,13 +811,13 @@ Symbol* count_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    milliseconds
 -------------------------------------------------------------------- */
 
-Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     int ms = 1; // if there is no valid argument, then just default to 1
     if(args != NIL)
     {
-        Symbol* arg;
-        arg = static_cast<Symbol*>(args->first);
+        Symbol arg;
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             ms = arg->ic->value;

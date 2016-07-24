@@ -42,7 +42,7 @@ namespace soar_module
     // Utility functions
     /////////////////////////////////////////////////////////////
 
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
+    wme* add_module_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value)
     {
         slot* my_slot = make_slot(thisAgent, id, attr);
         wme* w = make_wme(thisAgent, id, attr, value, false);

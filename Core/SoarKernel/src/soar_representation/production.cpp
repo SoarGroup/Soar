@@ -101,11 +101,11 @@ tc_number get_new_tc_number(agent* thisAgent)
 void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
 {
     cons* next;
-    Symbol* sym;
+    Symbol sym;
 
     while (id_list)
     {
-        sym = static_cast<Symbol*>(id_list->first);
+        sym = static_cast<Symbol>(id_list->first);
         next = id_list->rest;
         free_cons(thisAgent, id_list);
         sym->tc_num = 0;
@@ -116,11 +116,11 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
 void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 {
     cons* next;
-    Symbol* sym;
+    Symbol sym;
 
     while (var_list)
     {
-        sym = static_cast<Symbol*>(var_list->first);
+        sym = static_cast<Symbol>(var_list->first);
         next = var_list->rest;
         free_cons(thisAgent, var_list);
         sym->tc_num = 0;
@@ -225,7 +225,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
+void add_symbol_to_tc(agent* thisAgent, Symbol sym, tc_number tc,
                       list** id_list, list** var_list)
 {
     if ((sym->symbol_type == VARIABLE_SYMBOL_TYPE) || (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE))
@@ -388,16 +388,16 @@ void reset_variable_generator(agent* thisAgent,
     add_all_variables_in_action_list(thisAgent, actions_with_vars_to_avoid, tc, &var_list);
     for (c = var_list; c != NIL; c = c->rest)
     {
-        static_cast<Symbol*>(c->first)->var->gensym_number = thisAgent->current_variable_gensym_number;
+        static_cast<Symbol>(c->first)->var->gensym_number = thisAgent->current_variable_gensym_number;
     }
     free_list(thisAgent, var_list);
 }
 
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
+Symbol generate_new_variable(agent* thisAgent, const char* prefix)
 {
 #define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */
     char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
-    Symbol* New;
+    Symbol New;
     char first_letter;
 
     first_letter = *prefix;
@@ -426,7 +426,7 @@ Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
         }
         /* -- A variable with that name already existed.  make_variable just returned it and
          *    incremented its refcount, so reverse that refcount addition and try again. -- */
-        symbol_remove_ref(thisAgent, &New);
+        symbol_remove_ref(thisAgent, New);
     }
 
     New->var->current_binding_value = NIL;
@@ -484,7 +484,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
 production* make_production(agent*          thisAgent,
                             ProductionType  type,
-                            Symbol*         name,
+                            Symbol         name,
                             char*           original_rule_name,
                             condition**     lhs_top,
                             action**        rhs_top,
@@ -593,7 +593,7 @@ void deallocate_production(agent* thisAgent, production* prod)
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
-    symbol_remove_ref(thisAgent, &prod->name);
+    symbol_remove_ref(thisAgent, prod->name);
     free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {
@@ -692,7 +692,7 @@ void excise_all_productions(agent* thisAgent,
 
 uint32_t canonical_test(test t)
 {
-    Symbol* sym;
+    Symbol sym;
 
     if (!t)
     {

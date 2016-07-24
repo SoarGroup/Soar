@@ -84,7 +84,7 @@ typedef struct EXPORT agent_struct
 
     uint64_t current_retesave_symindex;
     uint64_t reteload_num_syms;
-    Symbol** reteload_symbol_table;
+    Symbol reteload_symbol_table;
 
     token* dummy_matches_node_tokens;
 
@@ -110,7 +110,7 @@ typedef struct EXPORT agent_struct
 
     //
     // These was taked from print.
-    Symbol* action_id_to_match;
+    Symbol action_id_to_match;
     test id_test_to_match;
 
     //
@@ -162,111 +162,111 @@ typedef struct EXPORT agent_struct
        system startup time and never deallocate them.
        ------------------------------------------------------------- */
 
-    Symbol*             attribute_symbol;
-    Symbol*             choices_symbol;
-    Symbol*             conflict_symbol;
-    Symbol*             constraint_failure_symbol;
-    Symbol*             goal_symbol;
-    Symbol*             impasse_symbol;
-    Symbol*             io_symbol;
-    Symbol*             item_symbol;
-    Symbol*             non_numeric_symbol;
-    Symbol*             multiple_symbol;
-    Symbol*             name_symbol;
-    Symbol*             nil_symbol;
-    Symbol*             no_change_symbol;
-    Symbol*             none_symbol;
-    Symbol*             o_context_variable;
-    Symbol*             object_symbol;
-    Symbol*             operator_symbol;
-    Symbol*             problem_space_symbol;
-    Symbol*             quiescence_symbol;
-    Symbol*             s_context_variable;
-    Symbol*             so_context_variable;
-    Symbol*             ss_context_variable;
-    Symbol*             sso_context_variable;
-    Symbol*             sss_context_variable;
-    Symbol*             state_symbol;
-    Symbol*             superstate_symbol;
-    Symbol*             t_symbol;
-    Symbol*             tie_symbol;
-    Symbol*             to_context_variable;
-    Symbol*             ts_context_variable;
-    Symbol*             type_symbol;
+    Symbol             attribute_symbol;
+    Symbol             choices_symbol;
+    Symbol             conflict_symbol;
+    Symbol             constraint_failure_symbol;
+    Symbol             goal_symbol;
+    Symbol             impasse_symbol;
+    Symbol             io_symbol;
+    Symbol             item_symbol;
+    Symbol             non_numeric_symbol;
+    Symbol             multiple_symbol;
+    Symbol             name_symbol;
+    Symbol             nil_symbol;
+    Symbol             no_change_symbol;
+    Symbol             none_symbol;
+    Symbol             o_context_variable;
+    Symbol             object_symbol;
+    Symbol             operator_symbol;
+    Symbol             problem_space_symbol;
+    Symbol             quiescence_symbol;
+    Symbol             s_context_variable;
+    Symbol             so_context_variable;
+    Symbol             ss_context_variable;
+    Symbol             sso_context_variable;
+    Symbol             sss_context_variable;
+    Symbol             state_symbol;
+    Symbol             superstate_symbol;
+    Symbol             t_symbol;
+    Symbol             tie_symbol;
+    Symbol             to_context_variable;
+    Symbol             ts_context_variable;
+    Symbol             type_symbol;
 
-    Symbol*             item_count_symbol; // SBW 5/07
-    Symbol*             non_numeric_count_symbol; // NLD 11/11
+    Symbol             item_count_symbol; // SBW 5/07
+    Symbol             non_numeric_count_symbol; // NLD 11/11
 
-    Symbol*             fake_instantiation_symbol;
-    Symbol*             architecture_inst_symbol;
-    Symbol*             sti_symbol;
+    Symbol             fake_instantiation_symbol;
+    Symbol             architecture_inst_symbol;
+    Symbol             sti_symbol;
 
     /* RPM 9/06 begin */
-    Symbol*             input_link_symbol;
-    Symbol*             output_link_symbol;
+    Symbol             input_link_symbol;
+    Symbol             output_link_symbol;
     /* RPM 9/06 end */
 
-    Symbol*             rl_sym_reward_link;
-    Symbol*             rl_sym_reward;
-    Symbol*             rl_sym_value;
+    Symbol             rl_sym_reward_link;
+    Symbol             rl_sym_reward;
+    Symbol             rl_sym_value;
 
-    Symbol*             epmem_sym;
-    Symbol*             epmem_sym_cmd;
-    Symbol*             epmem_sym_result;
+    Symbol             epmem_sym;
+    Symbol             epmem_sym_cmd;
+    Symbol             epmem_sym_result;
 
-    Symbol*             epmem_sym_retrieved;
-    Symbol*             epmem_sym_status;
-    Symbol*             epmem_sym_match_score;
-    Symbol*             epmem_sym_cue_size;
-    Symbol*             epmem_sym_normalized_match_score;
-    Symbol*             epmem_sym_match_cardinality;
-    Symbol*             epmem_sym_memory_id;
-    Symbol*             epmem_sym_present_id;
-    Symbol*             epmem_sym_no_memory;
-    Symbol*             epmem_sym_graph_match;
-    Symbol*             epmem_sym_graph_match_mapping;
-    Symbol*             epmem_sym_graph_match_mapping_node;
-    Symbol*             epmem_sym_graph_match_mapping_cue;
-    Symbol*             epmem_sym_success;
-    Symbol*             epmem_sym_failure;
-    Symbol*             epmem_sym_bad_cmd;
+    Symbol             epmem_sym_retrieved;
+    Symbol             epmem_sym_status;
+    Symbol             epmem_sym_match_score;
+    Symbol             epmem_sym_cue_size;
+    Symbol             epmem_sym_normalized_match_score;
+    Symbol             epmem_sym_match_cardinality;
+    Symbol             epmem_sym_memory_id;
+    Symbol             epmem_sym_present_id;
+    Symbol             epmem_sym_no_memory;
+    Symbol             epmem_sym_graph_match;
+    Symbol             epmem_sym_graph_match_mapping;
+    Symbol             epmem_sym_graph_match_mapping_node;
+    Symbol             epmem_sym_graph_match_mapping_cue;
+    Symbol             epmem_sym_success;
+    Symbol             epmem_sym_failure;
+    Symbol             epmem_sym_bad_cmd;
 
-    Symbol*             epmem_sym_retrieve;
-    Symbol*             epmem_sym_next;
-    Symbol*             epmem_sym_prev;
-    Symbol*             epmem_sym_query;
-    Symbol*             epmem_sym_negquery;
-    Symbol*             epmem_sym_before;
-    Symbol*             epmem_sym_after;
-    Symbol*             epmem_sym_prohibit;
-    Symbol*             epmem_sym_yes;
-    Symbol*             epmem_sym_no;
+    Symbol             epmem_sym_retrieve;
+    Symbol             epmem_sym_next;
+    Symbol             epmem_sym_prev;
+    Symbol             epmem_sym_query;
+    Symbol             epmem_sym_negquery;
+    Symbol             epmem_sym_before;
+    Symbol             epmem_sym_after;
+    Symbol             epmem_sym_prohibit;
+    Symbol             epmem_sym_yes;
+    Symbol             epmem_sym_no;
 
-    Symbol*             smem_sym;
-    Symbol*             smem_sym_cmd;
-    Symbol*             smem_sym_result;
+    Symbol             smem_sym;
+    Symbol             smem_sym_cmd;
+    Symbol             smem_sym_result;
 
-    Symbol*             smem_sym_retrieved;
-    Symbol*             smem_sym_depth_retrieved;
-    Symbol*             smem_sym_status;
-    Symbol*             smem_sym_success;
-    Symbol*             smem_sym_failure;
-    Symbol*             smem_sym_bad_cmd;
+    Symbol             smem_sym_retrieved;
+    Symbol             smem_sym_depth_retrieved;
+    Symbol             smem_sym_status;
+    Symbol             smem_sym_success;
+    Symbol             smem_sym_failure;
+    Symbol             smem_sym_bad_cmd;
 
-    Symbol*             smem_sym_retrieve;
-    Symbol*             smem_sym_query;
-    Symbol*             smem_sym_negquery;
-    Symbol*             smem_sym_prohibit;
-    Symbol*             smem_sym_store;
-    Symbol*             smem_sym_math_query;
-    Symbol*             smem_sym_depth;
+    Symbol             smem_sym_retrieve;
+    Symbol             smem_sym_query;
+    Symbol             smem_sym_negquery;
+    Symbol             smem_sym_prohibit;
+    Symbol             smem_sym_store;
+    Symbol             smem_sym_math_query;
+    Symbol             smem_sym_depth;
 
-    Symbol*             smem_sym_math_query_less;
-    Symbol*             smem_sym_math_query_greater;
-    Symbol*             smem_sym_math_query_less_or_equal;
-    Symbol*             smem_sym_math_query_greater_or_equal;
-    Symbol*             smem_sym_math_query_max;
-    Symbol*             smem_sym_math_query_min;
+    Symbol             smem_sym_math_query_less;
+    Symbol             smem_sym_math_query_greater;
+    Symbol             smem_sym_math_query_less_or_equal;
+    Symbol             smem_sym_math_query_greater_or_equal;
+    Symbol             smem_sym_math_query_max;
+    Symbol             smem_sym_math_query_min;
 
     // Used by the parser to promote LTIs in rules after database is loaded
     LTI_Promotion_Set*  LTIs_sourced;
@@ -317,7 +317,7 @@ typedef struct EXPORT agent_struct
     /* --- parameters for running Soar --- */
     /*  --- the code loops go_number times over the go_type phases --- */
     int64_t             go_number;     /* How many times to "go" */
-    Symbol*             go_slot_attr;  /* The context slot checked */
+    Symbol             go_slot_attr;  /* The context slot checked */
     goal_stack_level    go_slot_level; /* The goal stack level checked */
     enum go_type_enum   go_type;       /* The phase type used */
 
@@ -518,7 +518,7 @@ typedef struct EXPORT agent_struct
     production*         production_being_fired;
 
     uint64_t            max_rhs_unbound_variables;
-    Symbol**            rhs_variable_bindings;
+    Symbol            rhs_variable_bindings;
 
     /* ==================================================================
        Decider stuff
@@ -536,11 +536,11 @@ typedef struct EXPORT agent_struct
        is NIL of there isn't any top state selected.
     --------------------------------------------------------------------- */
 
-    Symbol*             bottom_goal;
-    Symbol*             top_goal;
-    Symbol*             top_state;
+    Symbol             bottom_goal;
+    Symbol             top_goal;
+    Symbol             top_state;
 
-    Symbol*             highest_goal_whose_context_changed;
+    Symbol             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
     dl_list*            context_slots_with_changed_acceptable_preferences;
     ::list*             slots_for_possible_removal;
@@ -587,13 +587,13 @@ typedef struct EXPORT agent_struct
 
     bool               output_link_changed;
 
-    Symbol*             io_header;
+    Symbol             io_header;
     wme*                io_header_link;
 
-    Symbol*             io_header_input;
-    Symbol*             io_header_output;
+    Symbol             io_header_input;
+    Symbol             io_header_output;
 
-    Symbol*             prev_top_state;
+    Symbol             prev_top_state;
 
     /* ------------ Varible Generator stuff (in production.c) ---------------- */
 
@@ -626,7 +626,7 @@ typedef struct EXPORT agent_struct
     bool      did_PE;
     bool      soar_verbose_flag;
     int        FIRING_TYPE;
-    Symbol*     PE_level;
+    Symbol     PE_level;
 
     struct ms_change_struct* ms_o_assertions;   /* changes to match set */
     struct ms_change_struct* ms_i_assertions;   /* changes to match set */
@@ -636,8 +636,8 @@ typedef struct EXPORT agent_struct
 
     goal_stack_level active_level;
     goal_stack_level previous_active_level;
-    Symbol* active_goal;
-    Symbol* previous_active_goal;
+    Symbol active_goal;
+    Symbol previous_active_goal;
     struct ms_change_struct* nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
 
     /**
@@ -650,7 +650,7 @@ typedef struct EXPORT agent_struct
      * State for new waterfall model
      * Same as highest_active_level, just the goal that the level represents.
      */
-    Symbol* highest_active_goal;
+    Symbol highest_active_goal;
     /**
      * State for new waterfall model
      * Can't fire rules at this level or higher (lower int)

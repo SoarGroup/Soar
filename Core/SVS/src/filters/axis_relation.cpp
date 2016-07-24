@@ -59,7 +59,7 @@ bool test_axis_relation(const sgnode* a, const sgnode* b, int axis, double top, 
 class axis_relation_select_filter : public select_filter<sgnode*>
 {
     public:
-        axis_relation_select_filter(Symbol* root, soar_interface* si, filter_input* input)
+        axis_relation_select_filter(Symbol root, soar_interface* si, filter_input* input)
             : select_filter<sgnode*>(root, si, input)
         {
         }
@@ -129,7 +129,7 @@ class axis_relation_select_filter : public select_filter<sgnode*>
 };
 
 
-filter* make_axis_relation_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_axis_relation_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new axis_relation_select_filter(root, si, input);
 }

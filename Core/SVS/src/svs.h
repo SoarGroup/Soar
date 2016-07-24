@@ -18,10 +18,10 @@ class drawer;
 class sgwme : public sgnode_listener
 {
     public:
-        sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node);
+        sgwme(soar_interface* si, Symbol ident, sgwme* parent, sgnode* node);
         ~sgwme();
         void node_update(sgnode* n, sgnode::change_type t, const std::string& update_info);
-        Symbol* get_id()
+        Symbol get_id()
         {
             return id;
         }
@@ -44,7 +44,7 @@ class sgwme : public sgnode_listener
         
         sgwme*          parent;
         sgnode*         node;
-        Symbol*         id;
+        Symbol         id;
         wme*            id_wme;
         soar_interface* soarint;
         
@@ -75,8 +75,8 @@ typedef command_set::iterator command_set_it;
 class svs_state : public cliproxy
 {
     public:
-        svs_state(svs* svsp, Symbol* state, soar_interface* soar, scene* scn);
-        svs_state(Symbol* state, svs_state* parent);
+        svs_state(svs* svsp, Symbol state, soar_interface* soar, scene* scn);
+        svs_state(Symbol state, svs_state* parent);
         
         ~svs_state();
         
@@ -101,7 +101,7 @@ class svs_state : public cliproxy
         {
             return scn;
         }
-        Symbol*        get_state()
+        Symbol        get_state()
         {
             return state;
         }
@@ -118,7 +118,7 @@ class svs_state : public cliproxy
         
     private:
         void init();
-        void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
+        void collect_cmds(Symbol id, std::set<wme*>& all_cmds);
         
         void proxy_get_children(std::map<std::string, cliproxy*>& c);
         void cli_out(const std::vector<std::string>& args, std::ostream& os);
@@ -131,10 +131,10 @@ class svs_state : public cliproxy
         sgwme*          root;
         soar_interface* si;
         
-        Symbol* state;
-        Symbol* svs_link;
-        Symbol* scene_link;
-        Symbol* cmd_link;
+        Symbol state;
+        Symbol svs_link;
+        Symbol scene_link;
+        Symbol cmd_link;
         
         int scene_num;
         wme* scene_num_wme;
@@ -150,8 +150,8 @@ class svs : public svs_interface, public cliproxy
         svs(agent* a);
         ~svs();
         
-        void state_creation_callback(Symbol* goal);
-        void state_deletion_callback(Symbol* goal);
+        void state_creation_callback(Symbol goal);
+        void state_deletion_callback(Symbol goal);
         void output_callback();
         void input_callback();
         void add_input(const std::string& in);

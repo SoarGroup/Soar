@@ -144,14 +144,14 @@ void remove_output_function(agent* thisAgent, const char* name)
    do some error checking, but they're nowhere near bullet-proof.
 ==================================================================== */
 
-Symbol* get_new_io_identifier(agent* thisAgent, char first_letter)
+Symbol get_new_io_identifier(agent* thisAgent, char first_letter)
 {
     return make_new_identifier(thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
 }
 
-Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
+Symbol get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
 {
-    Symbol* id = find_identifier(thisAgent, first_letter, number) ;
+    Symbol id = find_identifier(thisAgent, first_letter, number) ;
 
     // DJP: The other "make_<type>" methods either make a new object or incremenent the refence
     // on an existing object.  So I'm going to make this method function the same way for identifiers.
@@ -167,27 +167,27 @@ Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
     return id ;
 }
 
-Symbol* get_io_str_constant(agent* thisAgent, char const* name)
+Symbol get_io_str_constant(agent* thisAgent, char const* name)
 {
     return make_str_constant(thisAgent, name);
 }
 
-Symbol* get_io_int_constant(agent* thisAgent, int64_t value)
+Symbol get_io_int_constant(agent* thisAgent, int64_t value)
 {
     return make_int_constant(thisAgent, value);
 }
 
-Symbol* get_io_float_constant(agent* thisAgent, double value)
+Symbol get_io_float_constant(agent* thisAgent, double value)
 {
     return make_float_constant(thisAgent, value);
 }
 
-void release_io_symbol(agent* thisAgent, Symbol* sym)
+void release_io_symbol(agent* thisAgent, Symbol sym)
 {
-    symbol_remove_ref(thisAgent, &sym);
+    symbol_remove_ref(thisAgent, sym);
 }
 
-wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
+wme* add_input_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value)
 {
     wme* w;
 
@@ -214,7 +214,7 @@ wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
     return w;
 }
 
-wme* find_input_wme_by_timetag_from_id(agent* thisAgent, Symbol* idSym, uint64_t timetag, tc_number tc)
+wme* find_input_wme_by_timetag_from_id(agent* thisAgent, Symbol idSym, uint64_t timetag, tc_number tc)
 {
     wme* pWME, *w;
 
@@ -580,13 +580,13 @@ void inform_output_module_of_wm_changes(agent* thisAgent,
 void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
 {
     cons* c, *prev_c;
-    Symbol* id;
+    Symbol id;
 
     while (ol->ids_in_tc)    /* for each id in the old TC... */
     {
         c = ol->ids_in_tc;
         ol->ids_in_tc = c->rest;
-        id = static_cast<Symbol*>(c->first);
+        id = static_cast<Symbol>(c->first);
         free_cons(thisAgent, c);
 
         /* --- remove "ol" from the list of associated_output_links(id) --- */
@@ -612,12 +612,12 @@ void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
             id->id->associated_output_links = c->rest;
         }
         free_cons(thisAgent, c);
-        symbol_remove_ref(thisAgent, &id);
+        symbol_remove_ref(thisAgent, id);
     }
 }
 
 
-void add_id_to_output_link_tc(agent* thisAgent, Symbol* id)
+void add_id_to_output_link_tc(agent* thisAgent, Symbol id)
 {
     slot* s;
     wme* w;
@@ -695,7 +695,7 @@ void add_wme_to_collected_io_wmes(agent* thisAgent, wme* w)
 io_wme* get_io_wmes_for_output_link(agent* thisAgent, output_link* ol)
 {
     cons* c;
-    Symbol* id;
+    Symbol id;
     slot* s;
     wme* w;
 
@@ -703,7 +703,7 @@ io_wme* get_io_wmes_for_output_link(agent* thisAgent, output_link* ol)
     add_wme_to_collected_io_wmes(thisAgent, ol->link_wme);
     for (c = ol->ids_in_tc; c != NIL; c = c->rest)
     {
-        id = static_cast<Symbol*>(c->first);
+        id = static_cast<Symbol>(c->first);
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
             add_wme_to_collected_io_wmes(thisAgent, w);
@@ -882,7 +882,7 @@ void do_output_cycle(agent* thisAgent)
    NULL pointer.
 -------------------------------------------------------------------- */
 
-Symbol* get_output_value(io_wme* outputs, Symbol* id, Symbol* attr)
+Symbol get_output_value(io_wme* outputs, Symbol id, Symbol attr)
 {
     io_wme* iw;
 
@@ -910,7 +910,7 @@ Symbol* get_output_value(io_wme* outputs, Symbol* id, Symbol* attr)
 
    Get_next_io_symbol_from_text_input_line (char **text_read_position) is
    the main text input parser.  It reads text from text_read_position
-   and returns a (Symbol *) for the first item read.  It updates
+   and returns a Symbol for the first item read.  It updates
    text_read_position to point to the next character not yet read.
    If end-of-line is reached without any symbol being read, NIL is
    returned.
@@ -919,7 +919,7 @@ Symbol* get_output_value(io_wme* outputs, Symbol* id, Symbol* attr)
 bool tio_constituent_char[256];
 bool tio_whitespace[256];
 
-Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_string)
+Symbol get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_string)
 {
     long int_val;
     double float_val;
@@ -967,7 +967,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
 
 #define MAX_TEXT_INPUT_LINE_LENGTH 1000 /* used to be in soarkernel.h */
 
-Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
+Symbol get_next_io_symbol_from_text_input_line(agent* thisAgent,
         char** text_read_position)
 {
     char* ch;

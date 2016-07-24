@@ -239,13 +239,13 @@ bool rl_enabled(agent* thisAgent)
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
-inline void rl_add_ref(Symbol* goal, production* prod)
+inline void rl_add_ref(Symbol goal, production* prod)
 {
     goal->id->rl_info->prev_op_rl_rules->push_back(prod);
     prod->rl_ref_count++;
 }
 
-inline void rl_remove_ref(Symbol* goal, production* prod)
+inline void rl_remove_ref(Symbol goal, production* prod)
 {
     rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
@@ -260,7 +260,7 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
     rules->remove(prod);
 }
 
-void rl_clear_refs(Symbol* goal)
+void rl_clear_refs(Symbol goal)
 {
     rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
@@ -278,7 +278,7 @@ void rl_clear_refs(Symbol* goal)
 // resets rl data structures
 void rl_reset_data(agent* thisAgent)
 {
-    Symbol* goal = thisAgent->top_goal;
+    Symbol goal = thisAgent->top_goal;
     while (goal)
     {
         rl_data* data = goal->id->rl_info;
@@ -300,7 +300,7 @@ void rl_reset_data(agent* thisAgent)
 // removes rl references to a production (used for excise)
 void rl_remove_refs_for_prod(agent* thisAgent, production* prod)
 {
-    for (Symbol* state = thisAgent->top_state; state; state = state->id->lower_goal)
+    for (Symbol state = thisAgent->top_state; state; state = state->id->lower_goal)
     {
         state->id->rl_info->eligibility_traces->erase(prod);
         rl_remove_ref(state, prod);
@@ -513,9 +513,9 @@ void rl_revert_template_id(agent* thisAgent)
 }
 
 // builds a template instantiation
-Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* rhs_actions)
+Symbol rl_build_template_instantiation(agent* thisAgent, instantiation* my_template_instance, struct token_struct* tok, wme* w, action* rhs_actions)
 {
-    Symbol* new_name_symbol = NULL;
+    Symbol new_name_symbol = NULL;
 
     if (my_template_instance->prod->rl_template_conds == NIL)
     {
@@ -580,7 +580,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         {
             dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
-            symbol_remove_ref(thisAgent, &new_name_symbol);
+            symbol_remove_ref(thisAgent, new_name_symbol);
             new_name_symbol = NULL;
         }
 
@@ -593,7 +593,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_conds)
 {
     // mark each id as we add a test for it, so we don't add a test for the same id in two different places
-    Symbol* id_sym;
+    Symbol id_sym;
     test t;
     tc_number tc = get_new_tc_number(thisAgent);
 
@@ -619,7 +619,7 @@ void rl_add_goal_or_impasse_tests_to_conds(agent* thisAgent, condition* all_cond
 /////////////////////////////////////////////////////
 
 // gathers discounted reward for a state
-void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
+void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol goal)
 {
     rl_data* data = goal->id->rl_info;
 
@@ -677,7 +677,7 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
 // gathers reward for all states
 void rl_tabulate_reward_values(agent* thisAgent)
 {
-    Symbol* goal = thisAgent->top_goal;
+    Symbol goal = thisAgent->top_goal;
 
     while (goal)
     {
@@ -687,10 +687,10 @@ void rl_tabulate_reward_values(agent* thisAgent)
 }
 
 // stores rl info for a state w.r.t. a selected operator
-void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
+void rl_store_data(agent* thisAgent, Symbol goal, preference* cand)
 {
     rl_data* data = goal->id->rl_info;
-    Symbol* op = cand->value;
+    Symbol op = cand->value;
 
     bool using_gaps = (thisAgent->rl_params->temporal_extension->get_value() == on);
 
@@ -748,7 +748,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
 }
 
 // performs the rl update at a state
-void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* goal, bool update_efr)
+void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol goal, bool update_efr)
 {
     bool using_gaps = (thisAgent->rl_params->temporal_extension->get_value() == on);
 
@@ -943,8 +943,8 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     }
 
                     // Change value of rule
-                    Symbol* lSym = rhs_value_to_symbol(prod->action_list->referent);
-                    symbol_remove_ref(thisAgent, &lSym);
+                    Symbol lSym = rhs_value_to_symbol(prod->action_list->referent);
+                    symbol_remove_ref(thisAgent, lSym);
 
                     // No refcount needed here because make_float_constant will increase
                     prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined), 0);
@@ -1005,7 +1005,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         {
                             for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
                             {
-                                symbol_remove_ref(thisAgent, &pref->referent);
+                                symbol_remove_ref(thisAgent, pref->referent);
                                 pref->referent = make_float_constant(thisAgent, new_combined);
                             }
                         }
@@ -1021,7 +1021,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
 }
 
 // clears eligibility traces
-void rl_watkins_clear(agent* /*thisAgent*/, Symbol* goal)
+void rl_watkins_clear(agent* /*thisAgent*/, Symbol goal)
 {
     goal->id->rl_info->eligibility_traces->clear();
 }

@@ -22,7 +22,7 @@
 using namespace sml ;
 
 // This method is called by the kernel, which in turn calls the Execute method of the RhsFunction.
-Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user_data)
+Symbol RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user_data)
 {
     // Since we registered this callback, we know what the user data is.
     RhsFunction* rhsFunction = static_cast<RhsFunction*>(user_data);
@@ -30,13 +30,13 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
     // Prepare arguments
     
     // List of symbols wrapped in gSymbols
-    std::vector<Symbol*> symVector;
+    std::vector<Symbol> symVector;
     for (; args != NIL; args = args->rest)
     {
-        symVector.push_back(static_cast<Symbol*>(args->first));
+        symVector.push_back(static_cast<Symbol>(args->first));
     }
     
-    Symbol* pSoarReturn = 0;
+    Symbol pSoarReturn = 0;
     
     // Check to make sure we have the right number of arguments.
     if ((rhsFunction->GetNumExpectedParameters() == kPARAM_NUM_VARIABLE) ||
@@ -44,7 +44,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
     {
         // Actually make the call.  We can do the dynamic cast because we passed in the
         //  symbol factory and thus know how the symbol was created.
-        Symbol* pReturn = rhsFunction->Execute(&symVector);
+        Symbol pReturn = rhsFunction->Execute(&symVector);
         
         // Return the result, assuming it is not NIL
         if (rhsFunction->IsValueReturned() == true)
@@ -71,7 +71,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
         // In any case, we are done using the return value
         //if(pReturn != 0)
         //{
-        //  symbol_remove_ref(thisAgent, &pReturn) ;
+        //  symbol_remove_ref(thisAgent, pReturn) ;
         //}
     }
     else
@@ -89,20 +89,20 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
     return pSoarReturn;
 }
 
-Symbol* sml::InterruptRhsFunction::Execute(std::vector<Symbol*>* /*pArguments*/)
+Symbol sml::InterruptRhsFunction::Execute(std::vector<Symbol>* /*pArguments*/)
 {
     // BADBAD?  Should this be just an interrupt on this agent?  Existing semantics are for all agents so doing that here too.
     m_pAgentSML->GetKernelSML()->InterruptAllAgents(sml_STOP_AFTER_SMALLEST_STEP) ;
     return 0 ;
 }
 
-Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
+Symbol sml::ConcatRhsFunction::Execute(std::vector<Symbol>* pArguments)
 {
     std::ostringstream ostr;
     
-    for (std::vector<Symbol*>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
+    for (std::vector<Symbol>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
     {
-        Symbol* pSymbol = *iter ;
+        Symbol pSymbol = *iter ;
         
         if (!pSymbol)
         {
@@ -119,11 +119,11 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     
     std::string result = ostr.str();
     char const* pResultStr = result.c_str() ;
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
+    Symbol pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
     return pResult ;
 }
 
-Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
+Symbol sml::CmdRhsFunction::Execute(std::vector<Symbol>* pArguments)
 {
     std::ostringstream ostr;
     
@@ -139,9 +139,9 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     bool first = false ;
     
     // Get the command line string.
-    for (std::vector<Symbol*>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
+    for (std::vector<Symbol>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
     {
-        Symbol* pSymbol = *iter ;
+        Symbol pSymbol = *iter ;
         
         // Insert spaces between the arguments
         if (first)
@@ -169,11 +169,11 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     
     std::string result = m_pAgentSML->ExecuteCommandLine(argument) ;
     
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+    Symbol pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
     return pResult ;
 }
 
-Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
+Symbol sml::ExecRhsFunction::Execute(std::vector<Symbol>* pArguments)
 {
     std::ostringstream ostr;
     
@@ -191,9 +191,9 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     // Get the command line string.
     // We've decided for "exec" to just concatenate all arguments together without inserting
     // spaces.  This allows for powerful operations (such as constructing an argument out of pieces).
-    for (std::vector<Symbol*>::iterator iter = (++pArguments->begin()) ; iter != pArguments->end() ; iter++)
+    for (std::vector<Symbol>::iterator iter = (++pArguments->begin()) ; iter != pArguments->end() ; iter++)
     {
-        Symbol* pSymbol = *iter ;
+        Symbol pSymbol = *iter ;
         
         if (!pSymbol)
         {
@@ -217,6 +217,6 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         result = std::string("Error: Nobody was registered to implement rhs function ") + function ;
     }
     
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+    Symbol pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
     return pResult ;
 }

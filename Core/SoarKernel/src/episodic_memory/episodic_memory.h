@@ -452,7 +452,7 @@ typedef struct epmem_data_struct
 } epmem_data;
 
 // lookup tables to facilitate shared identifiers
-typedef std::map<epmem_node_id, Symbol*> epmem_id_mapping;
+typedef std::map<epmem_node_id, Symbol> epmem_id_mapping;
 
 // types/structures to facilitate re-use of identifiers
 typedef std::pair<epmem_node_id, epmem_node_id> epmem_id_pair;
@@ -463,19 +463,19 @@ typedef std::map<epmem_node_id, epmem_id_pool*> epmem_return_id_pool;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > epmem_wme_set;
-typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_stack;
+typedef std::list< Symbol, soar_module::soar_memory_pool_allocator< Symbol > > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
 typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > > > epmem_id_removal_map;
-typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
+typedef std::set< Symbol, std::less< Symbol >, soar_module::soar_memory_pool_allocator< Symbol > > epmem_symbol_set;
 
 #else
 typedef std::set< wme* > epmem_wme_set;
-typedef std::list< Symbol* > epmem_symbol_stack;
+typedef std::list< Symbol > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
 typedef std::map<epmem_node_id, bool> epmem_id_removal_map;
-typedef std::set< Symbol* > epmem_symbol_set;
+typedef std::set< Symbol > epmem_symbol_set;
 #endif
 typedef std::map<epmem_node_id, epmem_wme_set*> epmem_id_ref_counter;
 
@@ -492,7 +492,7 @@ typedef struct epmem_edge_struct
 {
 
     epmem_node_id parent_n_id;                          // id
-    Symbol* attribute;                          // attr
+    Symbol attribute;                          // attr
     epmem_node_id child_n_id;                           // value
 
     bool val_is_short_term;
@@ -514,7 +514,7 @@ extern bool epmem_enabled(agent* thisAgent);
 
 // init, end
 extern void epmem_attach(agent* thisAgent);
-extern void epmem_reset(agent* thisAgent, Symbol* state = NULL);
+extern void epmem_reset(agent* thisAgent, Symbol state = NULL);
 extern void epmem_close(agent* thisAgent);
 extern void epmem_reinit(agent* thisAgent);
 extern void epmem_reinit_cmd(agent* thisAgent);
@@ -524,13 +524,13 @@ extern void epmem_clear_transient_structures(agent* thisAgent);
 // perform epmem actions
 extern void epmem_go(agent* thisAgent, bool allow_store = true);
 extern bool epmem_backup_db(agent* thisAgent, const char* file_name, std::string* err);
-extern void epmem_schedule_promotion(agent* thisAgent, Symbol* id);
+extern void epmem_schedule_promotion(agent* thisAgent, Symbol id);
 extern void epmem_init_db(agent* thisAgent, bool readonly = false);
 // visualization
 extern void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
 extern void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
 
-extern epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail = true);
+extern epmem_hash_id epmem_temporal_hash(agent* thisAgent, Symbol sym, bool add_on_fail = true);
 //////////////////////////////////////////////////////////
 // Episodic Memory Search
 //////////////////////////////////////////////////////////
@@ -543,18 +543,18 @@ typedef struct epmem_uedge_struct epmem_uedge;
 typedef struct epmem_interval_struct epmem_interval;
 
 // pairs
-typedef struct std::pair<Symbol*, epmem_literal*> epmem_symbol_literal_pair;
-typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
+typedef struct std::pair<Symbol, epmem_literal*> epmem_symbol_literal_pair;
+typedef struct std::pair<Symbol, epmem_node_id> epmem_symbol_node_pair;
 typedef struct std::pair<epmem_literal*, epmem_node_id> epmem_literal_node_pair;
 typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
 
 // collection classes
 typedef std::deque<epmem_literal*> epmem_literal_deque;
 typedef std::deque<epmem_node_id> epmem_node_deque;
-typedef std::map<Symbol*, int> epmem_symbol_int_map;
+typedef std::map<Symbol, int> epmem_symbol_int_map;
 typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_literal_node_pair, int> epmem_literal_node_pair_int_map;
-typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
+typedef std::map<epmem_node_id, Symbol> epmem_node_symbol_map;
 typedef std::map<epmem_node_id, int> epmem_node_int_map;
 typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;
@@ -600,8 +600,8 @@ struct epmem_triple_struct
 
 struct epmem_literal_struct
 {
-    Symbol* id_sym;
-    Symbol* value_sym;
+    Symbol id_sym;
+    Symbol value_sym;
     int is_neg_q;
     int value_is_id;
     bool is_leaf;

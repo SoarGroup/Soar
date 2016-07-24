@@ -48,9 +48,9 @@
 
 typedef struct wme_filter_struct
 {
-    Symbol* id;
-    Symbol* attr;
-    Symbol* value;
+    Symbol id;
+    Symbol attr;
+    Symbol value;
     bool adds;
     bool removes;
 } wme_filter;
@@ -122,8 +122,8 @@ inline char bool_to_char(bool b)
     }
 }
 
-char* symbol_to_string(agent* thisAgent, Symbol* sym, bool rereadable, char* dest, size_t dest_size);
-char const* symbol_to_typeString(agent* thisAgent, Symbol* sym);
+char* symbol_to_string(agent* thisAgent, Symbol sym, bool rereadable, char* dest, size_t dest_size);
+char const* symbol_to_typeString(agent* thisAgent, Symbol sym);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production

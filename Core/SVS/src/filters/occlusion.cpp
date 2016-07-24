@@ -43,7 +43,7 @@ typedef map<const filter_params*, sgnode*> element_map;
 
 class occlusion_filter : public typed_filter<double> {
 public:
-	occlusion_filter(Symbol *root, soar_interface *si, scene* scn, filter_input *input)
+	occlusion_filter(Symbol root, soar_interface *si, scene* scn, filter_input *input)
 	: typed_filter<double>(root, si, input), a(0), eye(0), scn(scn)
 	{}
 
@@ -135,7 +135,7 @@ private:
 	element_map nodes;  // Set of nodes to check as occluders
 };
 
-filter *make_occlusion_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_occlusion_filter(Symbol root, soar_interface *si, scene *scn, filter_input *input) {
 	return new occlusion_filter(root, si, scn, input);
 }
 

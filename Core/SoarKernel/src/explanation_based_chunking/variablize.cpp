@@ -17,14 +17,14 @@
 #include "xml.h"
 #include "dprint.h"
 
-Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
+Symbol Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
     if (index_id == 0)
     {
         return NULL;
     }
 
-    std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
+    std::unordered_map< uint64_t, Symbol >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
         dprint(DT_VM_MAPS, "...found o%u in variablization table: %y\n", index_id, iter->second);
@@ -38,8 +38,8 @@ Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     }
 }
 
-void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
-        Symbol* variable,
+void Explanation_Based_Chunker::store_variablization(Symbol instantiated_sym,
+        Symbol variable,
         uint64_t pIdentity)
 {
     assert(instantiated_sym && variable && pIdentity);
@@ -67,18 +67,18 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
  *           For RL rules, identity may be NULL
  *
  * ========================================================================= */
-void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
+void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol &sym, uint64_t pIdentity)
 {
     char prefix[2];
-    Symbol* var;
-    Symbol* var_info;
+    Symbol var;
+    Symbol var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
 
     var_info = get_variablization(pIdentity);
     if (var_info)
     {
-        symbol_remove_ref(thisAgent, &(*sym));
+        symbol_remove_ref(thisAgent, (*sym));
         *sym = var_info;
         symbol_add_ref(thisAgent, var_info);
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
@@ -112,7 +112,7 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
 
         store_variablization((*sym), var, pIdentity);
 
-        symbol_remove_ref(thisAgent, &*sym);
+        symbol_remove_ref(thisAgent, *sym);
         *sym = var;
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
@@ -121,8 +121,8 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
 void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
 {
     char prefix[2];
-    Symbol* var;
-    Symbol* found_variablization = NULL;
+    Symbol var;
+    Symbol found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -175,7 +175,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         {
             add_matched_sym_for_rhs_var(found_variablization, rs->referent);
         }
-        symbol_remove_ref(thisAgent, &rs->referent);
+        symbol_remove_ref(thisAgent, rs->referent);
         rs->referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
     }
@@ -249,7 +249,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test t)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    Symbol* found_variablization = NULL;
+    Symbol found_variablization = NULL;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", t);
 
@@ -263,7 +263,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, &t->data.referent);
+        symbol_remove_ref(thisAgent, t->data.referent);
         t->data.referent = found_variablization;
         symbol_add_ref(thisAgent, found_variablization);
     }
@@ -385,7 +385,7 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
 action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, double & initial_value)
 {
     action* rhs;
-    Symbol* id_sym, *attr_sym, *val_sym, *ref_sym;
+    Symbol id_sym, attr_sym, val_sym, ref_sym;
     char first_letter;
 
     // get the preference value
@@ -405,10 +405,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
-    symbol_remove_ref(thisAgent, &id_sym);
-    symbol_remove_ref(thisAgent, &attr_sym);
-    symbol_remove_ref(thisAgent, &val_sym);
-    symbol_remove_ref(thisAgent, &ref_sym);
+    symbol_remove_ref(thisAgent, id_sym);
+    symbol_remove_ref(thisAgent, attr_sym);
+    symbol_remove_ref(thisAgent, val_sym);
+    symbol_remove_ref(thisAgent, ref_sym);
 
     if (ref_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {

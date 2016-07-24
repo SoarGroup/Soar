@@ -41,7 +41,7 @@ typedef struct test_struct
     TestType        type;                  /* see definitions in enums.h */
     union test_info_union
     {
-        Symbol*        referent;         /* for relational tests */
+        Symbol        referent;         /* for relational tests */
         ::list*        disjunction_list;   /* for disjunction tests */
         ::list*        conjunct_list;      /* for conjunctive tests */
     } data;
@@ -75,7 +75,7 @@ bool test_is_variable(agent* thisAgent, test t);
 test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 test equality_test_found_in_test(test t);
 
-test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
+test make_test(agent* thisAgent, Symbol sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
@@ -96,7 +96,7 @@ void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* r
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list, bool add_LTIs = false);
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity, tc_number tc, symbol_with_match_list* var_list, bool add_LTIs = false);
+void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol pSym, Symbol pSymCounterpart, uint64_t pIdentity, tc_number tc, symbol_with_match_list* var_list, bool add_LTIs = false);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 const char* test_type_to_string(byte test_type);
 

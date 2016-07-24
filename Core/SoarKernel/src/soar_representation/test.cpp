@@ -56,7 +56,7 @@ list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 
 test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
-//    Symbol* referent;
+//    Symbol referent;
     test new_ct;
 
     if (!t)
@@ -235,9 +235,9 @@ void deallocate_test(agent* thisAgent, test t)
             break;
         default: /* relational tests other than equality */
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-            symbol_remove_ref(thisAgent, &t->data.referent);
+            symbol_remove_ref(thisAgent, t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, &t->data.referent);
+            symbol_remove_ref(thisAgent, t->data.referent);
 #endif
             break;
     }
@@ -356,8 +356,8 @@ bool tests_are_equal(test t1, test t2, bool neg)
         }
 
         // ignore variables in negation tests
-        Symbol* s1 = t1->data.referent;
-        Symbol* s2 = t2->data.referent;
+        Symbol s1 = t1->data.referent;
+        Symbol s2 = t2->data.referent;
 
         if ((s1->is_variable()) && (s2->is_variable()))
         {
@@ -524,7 +524,7 @@ uint32_t hash_test(agent* thisAgent, test t)
             result = 7245;
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
             {
-                result = result + static_cast<Symbol*>(c->first)->hash_id;
+                result = result + static_cast<Symbol>(c->first)->hash_id;
             }
             return result;
         case CONJUNCTIVE_TEST:
@@ -662,7 +662,7 @@ void add_all_variables_in_test(agent* thisAgent, test t,
                                tc_number tc, list** var_list)
 {
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -700,7 +700,7 @@ void add_all_variables_in_test(agent* thisAgent, test t,
 void add_bound_variables_in_test(agent* thisAgent, test t,
                                  tc_number tc, list** var_list, bool add_LTIs)
 {
-    Symbol* referent;
+    Symbol referent;
 
     if (!t) return;
 
@@ -712,9 +712,9 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     return;
 }
 
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list, bool add_LTIs)
+void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol pSym, Symbol pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list, bool add_LTIs)
 {
-    Symbol* referent;
+    Symbol referent;
 
     if (pSym->is_variable() || (add_LTIs && pSym->is_lti()))
     {
@@ -781,7 +781,7 @@ char first_letter_from_test(test t)
 
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
 {
-    Symbol* New;
+    Symbol New;
     test eq_test = 0;
     char prefix[2];
 
@@ -807,7 +807,7 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                                  condition* cond, /* current cond */
                                  rete_test* rt)
 {
-    Symbol* referent;
+    Symbol referent;
     test New = 0;
     TestType test_type;
 
@@ -907,7 +907,7 @@ void add_hash_info_to_id_test(agent* thisAgent,
                               byte field_num,
                               rete_node_level levels_up)
 {
-    Symbol* temp;
+    Symbol temp;
     test New = 0;
 
     temp = var_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
@@ -978,7 +978,7 @@ inline bool is_test_type_with_no_referent(TestType test_type)
             (test_type == IMPASSE_ID_TEST));
 }
 
-test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
+test make_test(agent* thisAgent, Symbol sym, TestType test_type)
 {
     test new_ct;
 

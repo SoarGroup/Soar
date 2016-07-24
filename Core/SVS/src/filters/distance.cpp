@@ -67,7 +67,7 @@ double compare_distance(sgnode* a, sgnode* b, const filter_params* p)
 }
 
 ///// filter distance //////
-filter* make_distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_distance_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_filter(root, si, input, &compare_distance);
 }
@@ -85,7 +85,7 @@ filter_table_entry* distance_filter_entry()
 }
 
 ///// filter distance_select //////
-filter* make_distance_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_distance_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_select_filter(root, si, input, &compare_distance);
 }
@@ -105,7 +105,7 @@ filter_table_entry* distance_select_filter_entry()
 }
 
 ////// filter closest //////
-filter* make_closest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_closest_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     node_comparison_rank_filter* f = new node_comparison_rank_filter(root, si, input, &compare_distance);
     f->set_select_highest(false);
@@ -125,7 +125,7 @@ filter_table_entry* closest_filter_entry()
 }
 
 ////// filter farthest //////
-filter* make_farthest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_farthest_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_rank_filter(root, si, input, &compare_distance);
 }

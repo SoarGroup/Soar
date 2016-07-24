@@ -43,7 +43,7 @@ double compare_overlap(sgnode* a, sgnode* b, const filter_params* p){
 }
 
 ///// filter overlap //////
-filter* make_overlap_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_overlap_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_filter(root, si, input, &compare_overlap);
 }
@@ -60,7 +60,7 @@ filter_table_entry* overlap_filter_entry()
 }
 
 ///// filter overlap_select //////
-filter* make_overlap_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_overlap_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_select_filter(root, si, input, &compare_overlap);
 }

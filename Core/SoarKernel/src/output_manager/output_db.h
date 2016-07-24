@@ -20,7 +20,7 @@ class OM_DB: public soar_module::sqlite_statement_container
 
         void print_db(MessageType msgType, const char* prefix, const char* msg);
         void create_db();
-        void store_refcount(Symbol* sym, const char* trace, bool isAdd);
+        void store_refcount(Symbol sym, const char* trace, bool isAdd);
 
     private:
         soar_module::sqlite_database*    m_Debug_DB;

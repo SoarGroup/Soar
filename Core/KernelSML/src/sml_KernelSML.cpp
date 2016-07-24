@@ -694,7 +694,7 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
     return pResponse ;
 }
 
-void KernelSML::Symbol2String(Symbol* pSymbol,  bool refCounts, std::ostringstream& buffer)
+void KernelSML::Symbol2String(Symbol pSymbol,  bool refCounts, std::ostringstream& buffer)
 {
     if (pSymbol->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
@@ -745,7 +745,7 @@ void KernelSML::PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts)
     PrintDebugFormat("%s %s", pMsg, str.c_str()) ;
 }
 
-void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts)
+void KernelSML::PrintDebugSymbol(Symbol pSymbol, bool refCounts)
 {
     std::ostringstream buffer ;
     Symbol2String(pSymbol, refCounts, buffer) ;

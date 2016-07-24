@@ -160,7 +160,7 @@ class Output_Manager
         void sprint_sf(std::string &destString, const char* format, ...);
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
-        void store_refcount(Symbol* sym, const char* callers, bool isAdd);
+        void store_refcount(Symbol sym, const char* callers, bool isAdd);
 
         /* Versions that will check debug mode and only print if set */
         void debug_print(TraceMode mode, const char* msg);

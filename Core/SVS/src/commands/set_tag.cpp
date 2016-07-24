@@ -25,7 +25,7 @@ using namespace std;
 class set_tag_command : public command
 {
     public:
-        set_tag_command(svs_state* state, Symbol* root)
+        set_tag_command(svs_state* state, Symbol root)
             : command(state, root), root(root), first(true)
         {
             si = state->get_svs()->get_soar_interface();
@@ -116,7 +116,7 @@ class set_tag_command : public command
         }
         
     private:
-        Symbol*         root;
+        Symbol         root;
         scene*          scn;
         soar_interface* si;
         bool            first;
@@ -125,7 +125,7 @@ class set_tag_command : public command
         string          tag_value;
 };
 
-command* _make_set_tag_command_(svs_state* state, Symbol* root)
+command* _make_set_tag_command_(svs_state* state, Symbol root)
 {
     return new set_tag_command(state, root);
 }

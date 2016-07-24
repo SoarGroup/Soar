@@ -412,9 +412,9 @@ void Explanation_Memory::print_chunk_stats() {
 void Explanation_Memory::print_chunk_list(short pNumToPrint)
 {
     short lNumPrinted = 0;
-    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    for (std::unordered_map< Symbol, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
-        Symbol* d1 = it->first;
+        Symbol d1 = it->first;
         chunk_record* d2 = it->second;
         outputManager->printa_sf(thisAgent, "%-%-%y (c%u)\n", it->first, it->second->chunkID);
         if (pNumToPrint && (++lNumPrinted >= pNumToPrint))

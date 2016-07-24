@@ -19,7 +19,7 @@ typedef map<sgnode*, const filter_params*> node_param_map;
 class node_filter : public select_filter<sgnode*>
 {
     public:
-        node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+        node_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
             : select_filter<sgnode * >(root, si, input), scn(scn)
         {
         }
@@ -58,7 +58,7 @@ class node_filter : public select_filter<sgnode*>
 class all_nodes_filter : public filter, public sgnode_listener
 {
     public:
-        all_nodes_filter(Symbol* root, soar_interface* si, scene* scn)
+        all_nodes_filter(Symbol root, soar_interface* si, scene* scn)
             : filter(root, si, NULL), scn(scn), first(true) {}
             
         ~all_nodes_filter()
@@ -154,7 +154,7 @@ class all_nodes_filter : public filter, public sgnode_listener
 class remove_node_filter : public select_filter<sgnode*>
 {
     public:
-        remove_node_filter(Symbol* root, soar_interface* si, filter_input* input, scene* scn)
+        remove_node_filter(Symbol root, soar_interface* si, filter_input* input, scene* scn)
             : select_filter<sgnode * >(root, si, input), scn(scn)
         {}
         
@@ -193,7 +193,7 @@ class remove_node_filter : public select_filter<sgnode*>
 class node_bbox_filter : public map_filter<bbox>
 {
     public:
-        node_bbox_filter(Symbol* root, soar_interface* si, filter_input* input)
+        node_bbox_filter(Symbol root, soar_interface* si, filter_input* input)
             : map_filter<bbox>(root, si, input)
         {}
         
@@ -213,7 +213,7 @@ class node_bbox_filter : public map_filter<bbox>
 class node_trans_filter : public map_filter<vec3>
 {
     public:
-        node_trans_filter(Symbol* root, soar_interface* si, filter_input* input, char trans_type)
+        node_trans_filter(Symbol root, soar_interface* si, filter_input* input, char trans_type)
             : map_filter<vec3>(root, si, input), trans_type(trans_type)
         {}
         
@@ -235,47 +235,47 @@ class node_trans_filter : public map_filter<vec3>
 class combine_nodes_filter : public passthru_filter<sgnode*>
 {
     public:
-        combine_nodes_filter(Symbol* root, soar_interface* si, filter_input* input)
+        combine_nodes_filter(Symbol root, soar_interface* si, filter_input* input)
             : passthru_filter<sgnode * >(root, si, input)
         {}
 };
 
-filter* make_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_filter(root, si, scn, input);
 }
 
-filter* make_all_nodes_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_all_nodes_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new all_nodes_filter(root, si, scn);
 }
 
-filter* make_node_position_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_position_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_trans_filter(root, si, input, 'p');
 }
 
-filter* make_node_rotation_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_rotation_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_trans_filter(root, si, input, 'r');
 }
 
-filter* make_node_scale_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_scale_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_trans_filter(root, si, input, 's');
 }
 
-filter* make_node_bbox_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_node_bbox_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_bbox_filter(root, si, input);
 }
 
-filter* make_remove_node_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_remove_node_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new remove_node_filter(root, si, input, scn);
 }
 
-filter* make_combine_nodes_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_combine_nodes_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new combine_nodes_filter(root, si, input);
 }

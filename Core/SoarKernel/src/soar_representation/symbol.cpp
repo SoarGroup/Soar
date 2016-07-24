@@ -230,7 +230,7 @@ void init_symbol_tables(agent* thisAgent)
     reset_id_counters(thisAgent);
 }
 
-Symbol* find_variable(agent* thisAgent, const char* name)
+Symbol find_variable(agent* thisAgent, const char* name)
 {
     uint32_t hash_value;
     Symbol sym;
@@ -247,7 +247,7 @@ Symbol* find_variable(agent* thisAgent, const char* name)
     return NIL;
 }
 
-Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number)
+Symbol find_identifier(agent* thisAgent, char name_letter, uint64_t name_number)
 {
     uint32_t hash_value;
     Symbol sym;
@@ -266,7 +266,7 @@ Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number
     return NIL;
 }
 
-Symbol* find_str_constant(agent* thisAgent, const char* name)
+Symbol find_str_constant(agent* thisAgent, const char* name)
 {
     uint32_t hash_value;
     strSymbol* sym;
@@ -284,7 +284,7 @@ Symbol* find_str_constant(agent* thisAgent, const char* name)
     return NIL;
 }
 
-Symbol* find_int_constant(agent* thisAgent, int64_t value)
+Symbol find_int_constant(agent* thisAgent, int64_t value)
 {
     uint32_t hash_value;
     intSymbol* sym;
@@ -302,7 +302,7 @@ Symbol* find_int_constant(agent* thisAgent, int64_t value)
     return NIL;
 }
 
-Symbol* find_float_constant(agent* thisAgent, double value)
+Symbol find_float_constant(agent* thisAgent, double value)
 {
     uint32_t hash_value;
     floatSymbol* sym;
@@ -320,7 +320,7 @@ Symbol* find_float_constant(agent* thisAgent, double value)
     return NIL;
 }
 
-Symbol* make_variable(agent* thisAgent, const char* name)
+Symbol make_variable(agent* thisAgent, const char* name)
 {
 
     Symbol sym;
@@ -351,7 +351,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
     return sym;
 }
 
-Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number)
+Symbol make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number)
 {
 
     Symbol sym;
@@ -441,7 +441,7 @@ Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level
     return sym;
 }
 
-Symbol* make_str_constant(agent* thisAgent, char const* name)
+Symbol make_str_constant(agent* thisAgent, char const* name)
 {
     strSymbol* sym;
 
@@ -474,7 +474,7 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
     return sym;
 }
 
-Symbol* make_int_constant(agent* thisAgent, int64_t value)
+Symbol make_int_constant(agent* thisAgent, int64_t value)
 {
     intSymbol* sym;
 
@@ -506,7 +506,7 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
     return sym;
 }
 
-Symbol* make_float_constant(agent* thisAgent, double value)
+Symbol make_float_constant(agent* thisAgent, double value)
 {
     floatSymbol* sym;
 
@@ -544,7 +544,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 
 ------------------------------------------------------------------- */
 
-void deallocate_symbol(agent* thisAgent, Symbol*& sym)
+void deallocate_symbol(agent* thisAgent, Symbol& sym)
 {
 
     #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -625,12 +625,12 @@ void deallocate_symbol(agent* thisAgent, Symbol*& sym)
 
 bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
 {
-    Symbol* sym;
+    Symbol sym;
     char msg[256];
     /* ensure null termination */
     msg[0] = 0;
     msg[255] = 0;
-    sym = static_cast<Symbol*>(item);
+    sym = static_cast<Symbol>(item);
     FILE* f = reinterpret_cast<FILE*>(userdata);
 
     if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -664,9 +664,9 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
 
 bool remove_if_sti(agent* thisAgent, void* item, void* userdata)
 {
-    Symbol* sym;
+    Symbol sym;
     char msg[256];
-    sym = static_cast<Symbol*>(item);
+    sym = static_cast<Symbol>(item);
 
     if (sym->is_sti())
     {
@@ -740,9 +740,9 @@ bool reset_id_counters(agent* thisAgent)
 
 bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
 {
-    Symbol* sym;
+    Symbol sym;
 
-    sym = static_cast<Symbol*>(item);
+    sym = static_cast<Symbol>(item);
     sym->tc_num = 0;
     return false;
 }
@@ -755,9 +755,9 @@ void reset_id_and_variable_tc_numbers(agent* thisAgent)
 
 bool reset_gensym_number(agent* /*thisAgent*/, void* item, void*)
 {
-    Symbol* sym;
+    Symbol sym;
 
-    sym = static_cast<Symbol*>(item);
+    sym = static_cast<Symbol>(item);
     sym->var->gensym_number = 0;
     return false;
 }
@@ -769,7 +769,7 @@ void reset_variable_gensym_numbers(agent* thisAgent)
 
 bool print_sym(agent* thisAgent, void* item, void*)
 {
-    print(thisAgent,  "%s (%lld)\n", static_cast<Symbol*>(item)->to_string(), static_cast<Symbol*>(item)->reference_count);
+    print(thisAgent,  "%s (%lld)\n", static_cast<Symbol>(item)->to_string(), static_cast<Symbol>(item)->reference_count);
     return false;
 }
 
@@ -787,12 +787,12 @@ void print_internal_symbols(agent* thisAgent)
     do_for_all_items_in_hash_table(thisAgent, thisAgent->variable_hash_table, print_sym, 0);
 }
 
-Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter)
+Symbol generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter)
 {
 
 #define GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */
     char name[GENERATE_NEW_STR_CONSTANT_BUFFER_SIZE];
-    Symbol* New;
+    Symbol New;
 
     while (true)
     {
@@ -819,7 +819,7 @@ Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t
    find a reasonable choice, it returns '*'.
 ----------------------------------------------------------------- */
 
-char first_letter_from_symbol(Symbol* sym)
+char first_letter_from_symbol(Symbol sym)
 {
     switch (sym->symbol_type)
     {
@@ -837,7 +837,7 @@ char first_letter_from_symbol(Symbol* sym)
 /***************************************************************************
  * Function     : get_number_from_symbol
  **************************************************************************/
-double get_number_from_symbol(Symbol* sym)
+double get_number_from_symbol(Symbol sym)
 {
     if (sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
@@ -867,7 +867,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
     }
     allocate_cons(thisAgent, &first);
     first->first = sym_list->first;
-    symbol_add_ref(thisAgent, static_cast<Symbol*>(first->first));
+    symbol_add_ref(thisAgent, static_cast<Symbol>(first->first));
     sym_list = sym_list->rest;
     prev = first;
     while (sym_list)
@@ -875,7 +875,7 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
         allocate_cons(thisAgent, &c);
         prev->rest = c;
         c->first = sym_list->first;
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
+        symbol_add_ref(thisAgent, static_cast<Symbol>(c->first));
         sym_list = sym_list->rest;
         prev = c;
     }
@@ -890,13 +890,13 @@ list* copy_symbol_list_adding_references(agent* thisAgent,
 void deallocate_symbol_list_removing_references(agent* thisAgent, list*& sym_list)
 {
     cons* c;
-    Symbol* lSym;
+    Symbol lSym;
     while (sym_list)
     {
         c = sym_list;
         sym_list = sym_list->rest;
-        lSym = static_cast<Symbol*>(c->first);
-        symbol_remove_ref(thisAgent, &lSym);
+        lSym = static_cast<Symbol>(c->first);
+        symbol_remove_ref(thisAgent, lSym);
         free_cons(thisAgent, c);
     }
     sym_list = NULL;
@@ -1029,9 +1029,9 @@ void create_predefined_symbols(agent* thisAgent)
     thisAgent->smem_sym_math_query_min = make_str_constant(thisAgent, "min");
 }
 
-inline void release_helper(agent* thisAgent, Symbol** sym)
+inline void release_helper(agent* thisAgent, Symbol sym)
 {
-    symbol_remove_ref(thisAgent, &(*sym));
+    symbol_remove_ref(thisAgent, (*sym));
     *sym = 0;
 }
 

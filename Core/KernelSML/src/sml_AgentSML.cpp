@@ -845,9 +845,9 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
 
     // Tell the kernel we are done listening.
     //RPM 9/06: removed symbol ref so symbol is released properly
-    Symbol* tmp = make_str_constant(m_agent, szName);
+    Symbol tmp = make_str_constant(m_agent, szName);
     remove_rhs_function(m_agent, tmp);
-    symbol_remove_ref(m_agent, &tmp);
+    symbol_remove_ref(m_agent, tmp);
 }
 
 char const* AgentSML::GetValueType(int type)
@@ -918,7 +918,7 @@ std::string AgentSML::ExecuteCommandLine(std::string const& commandLine)
     return result ;
 }
 
-bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, int64_t clientTimeTag)
+bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol pValueSymbol, int64_t clientTimeTag)
 {
     std::string idKernel ;
     ConvertID(pID, &idKernel) ;
@@ -928,8 +928,8 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
     from_c_string(idNumber, idKernel.substr(1).c_str());
 
     // Now create the wme
-    Symbol* pIDSymbol   = get_io_identifier(m_agent, idLetter, idNumber) ;
-    Symbol* pAttrSymbol = get_io_str_constant(m_agent, pAttribute) ;
+    Symbol pIDSymbol   = get_io_identifier(m_agent, idLetter, idNumber) ;
+    Symbol pAttrSymbol = get_io_str_constant(m_agent, pAttribute) ;
 
     CHECK_RET_FALSE(pIDSymbol) ;
     CHECK_RET_FALSE(pAttrSymbol) ;
@@ -959,7 +959,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
     // Creating a wme with a string constant value
-    Symbol* pValueSymbol = get_io_str_constant(m_agent, pValue) ;
+    Symbol pValueSymbol = get_io_str_constant(m_agent, pValue) ;
 
     if (CaptureQuery())
     {
@@ -981,7 +981,7 @@ bool AgentSML::AddStringInputWME(char const* pID, char const* pAttribute, char c
 bool AgentSML::AddIntInputWME(char const* pID, char const* pAttribute, int64_t value, int64_t clientTimeTag)
 {
     // Creating a wme with an int constant value
-    Symbol* pValueSymbol = get_io_int_constant(m_agent, value) ;
+    Symbol pValueSymbol = get_io_int_constant(m_agent, value) ;
 
     if (CaptureQuery())
     {
@@ -1005,7 +1005,7 @@ bool AgentSML::AddIntInputWME(char const* pID, char const* pAttribute, int64_t v
 bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double value, int64_t clientTimeTag)
 {
     // Creating a wme with an int constant value
-    Symbol* pValueSymbol = get_io_float_constant(m_agent, value) ;
+    Symbol pValueSymbol = get_io_float_constant(m_agent, value) ;
 
     if (CaptureQuery())
     {
@@ -1028,7 +1028,7 @@ bool AgentSML::AddDoubleInputWME(char const* pID, char const* pAttribute, double
 
 bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag)
 {
-    Symbol* pValueSymbol = 0 ;
+    Symbol pValueSymbol = 0 ;
 
     // We will always receive a client-side identifier
     // If that identifier is found when we try to convert it, it already exists in the kernel, we make a shared id.

@@ -41,7 +41,7 @@ extern void inform_output_module_of_wm_changes(agent* thisAgent,
         ::list* wmes_being_added,
         ::list* wmes_being_removed);
 
-extern Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
+extern Symbol get_next_io_symbol_from_text_input_line(agent* thisAgent,
         char** text_read_position); /* in io.cpp */
 
 /* =======================================================================
@@ -77,7 +77,7 @@ extern Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
 
          float current_sensor_value;
          wme *w;
-         Symbol *s1,*s2;
+         Symbol s1,s2;
          ... insert code to read value into current_sensor_value here ...
          s1 = get_io_str_constant ("sensor-value");
          s2 = get_io_float_constant (current_sensor_value);
@@ -106,14 +106,14 @@ extern Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
 #define NORMAL_INPUT_CYCLE 2
 #define TOP_STATE_JUST_REMOVED 3
 
-extern Symbol* get_new_io_identifier(agent* thisAgent, char first_letter) ;
-extern Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number);
-extern Symbol* get_io_str_constant(agent* thisAgent, char const* name);
-extern Symbol* get_io_int_constant(agent* thisAgent, int64_t value);
-extern Symbol* get_io_float_constant(agent* thisAgent, double value);
-extern void release_io_symbol(agent* thisAgent, Symbol* sym);
+extern Symbol get_new_io_identifier(agent* thisAgent, char first_letter) ;
+extern Symbol get_io_identifier(agent* thisAgent, char first_letter, uint64_t number);
+extern Symbol get_io_str_constant(agent* thisAgent, char const* name);
+extern Symbol get_io_int_constant(agent* thisAgent, int64_t value);
+extern Symbol get_io_float_constant(agent* thisAgent, double value);
+extern void release_io_symbol(agent* thisAgent, Symbol sym);
 
-extern wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
+extern wme* add_input_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value);
 extern bool remove_input_wme(agent* thisAgent, wme* w);
 
 /* =======================================================================
@@ -158,9 +158,9 @@ extern bool remove_input_wme(agent* thisAgent, wme* w);
 typedef struct io_wme_struct
 {
     struct io_wme_struct* next;  /* points to next io_wme in the chain */
-    Symbol* id;                  /* id, attribute, and value of the wme */
-    Symbol* attr;
-    Symbol* value;
+    Symbol id;                  /* id, attribute, and value of the wme */
+    Symbol attr;
+    Symbol value;
     uint64_t timetag ;        /* DJP: Added.  Only guaranteed valid for an output wme. */
 } io_wme;
 
@@ -184,7 +184,7 @@ typedef struct output_call_info_struct
     io_wme* outputs;
 } output_call_info;
 
-extern Symbol* get_output_value(io_wme* outputs, Symbol* id, Symbol* attr);
+extern Symbol get_output_value(io_wme* outputs, Symbol id, Symbol attr);
 extern io_wme* get_io_wmes_for_output_link(agent* thisAgent, output_link* ol) ;
 extern void deallocate_io_wme_list(agent* thisAgent, io_wme* iw) ;
 

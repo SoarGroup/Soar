@@ -139,7 +139,7 @@ bool smaller_test(sgnode* a, sgnode* b, const filter_params* p)
 }
 
 ///// filter volume //////
-filter* make_volume_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_volume_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_evaluation_filter(root, si, input, &evaluate_volume);
 }
@@ -156,7 +156,7 @@ filter_table_entry* volume_filter_entry()
 }
 
 ///// filter volume_select //////
-filter* make_volume_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_volume_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_evaluation_select_filter(root, si, input, &evaluate_volume);
 }
@@ -175,7 +175,7 @@ filter_table_entry* volume_select_filter_entry()
 }
 
 ////// filter smallest //////
-filter* make_smallest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_smallest_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     node_evaluation_rank_filter* f = new node_evaluation_rank_filter(root, si, input, &evaluate_volume);
     f->set_select_highest(false);
@@ -194,7 +194,7 @@ filter_table_entry* smallest_filter_entry()
 }
 
 ////// filter largest  //////
-filter* make_largest_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_largest_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_evaluation_rank_filter(root, si, input, &evaluate_volume);
 }
@@ -211,7 +211,7 @@ filter_table_entry* largest_filter_entry()
 }
 
 ////// filter larger //////
-filter* make_larger_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_larger_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_filter(root, si, input, &larger_test);
 }
@@ -229,7 +229,7 @@ filter_table_entry* larger_filter_entry()
 }
 
 ////// filter smaller //////
-filter* make_smaller_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_smaller_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_filter(root, si, input, &smaller_test);
 }
@@ -247,7 +247,7 @@ filter_table_entry* smaller_filter_entry()
 }
 
 ////// filter larger_select //////
-filter* make_larger_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_larger_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_select_filter(root, si, input, &larger_test);
 }
@@ -265,7 +265,7 @@ filter_table_entry* larger_select_filter_entry()
 }
 
 ////// filter smaller_select //////
-filter* make_smaller_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_smaller_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_select_filter(root, si, input, &smaller_test);
 }

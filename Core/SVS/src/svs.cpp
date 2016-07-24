@@ -30,7 +30,7 @@ svs_interface* make_svs(agent* a)
 }
 
 
-sgwme::sgwme(soar_interface* si, Symbol* ident, sgwme* parent, sgnode* node)
+sgwme::sgwme(soar_interface* si, Symbol ident, sgwme* parent, sgnode* node)
     : soarint(si), id(ident), parent(parent), node(node)
 {
     node->listen(this);
@@ -134,7 +134,7 @@ void sgwme::add_child(sgnode* c)
 
 void sgwme::set_tag(const string& tag_name, const string& tag_value)
 {
-    Symbol* rootID = id;
+    Symbol rootID = id;
     std::string att = tag_name;
     
     wme* value_wme;
@@ -165,16 +165,16 @@ void sgwme::delete_tag(const string& tag_name)
 }
 
 
-svs_state::svs_state(svs* svsp, Symbol* state, soar_interface* si, scene* scn)
+svs_state::svs_state(svs* svsp, Symbol state, soar_interface* si, scene* scn)
     : svsp(svsp), parent(NULL), state(state), si(si), level(0),
       scene_num(-1), scene_num_wme(NULL), scn(scn), scene_link(NULL)
 {
-    assert(state->is_top_state());
+    assert(state->is_state() && (state->id->higher_goal == NULL));
     state->get_id_name(name);
     init();
 }
 
-svs_state::svs_state(Symbol* state, svs_state* parent)
+svs_state::svs_state(Symbol state, svs_state* parent)
     : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
       level(parent->level + 1), scene_num(-1),
       scene_num_wme(NULL), scn(NULL), scene_link(NULL)
@@ -267,7 +267,7 @@ void svs_state::process_cmds()
     for (all_it = all.begin(); all_it != all.end(); all_it++)
     {
         // Convert wme val to string
-        Symbol* idSym = si->get_wme_val(*all_it);
+        Symbol idSym = si->get_wme_val(*all_it);
         string cmdId;
         ;
         if (!idSym->get_id_name(cmdId))
@@ -381,7 +381,7 @@ svs::~svs()
     delete draw;
 }
 
-void svs::state_creation_callback(Symbol* state)
+void svs::state_creation_callback(Symbol state)
 {
     string type, msg;
     svs_state* s;
@@ -403,7 +403,7 @@ void svs::state_creation_callback(Symbol* state)
     state_stack.push_back(s);
 }
 
-void svs::state_deletion_callback(Symbol* state)
+void svs::state_deletion_callback(Symbol state)
 {
     svs_state* s;
     s = state_stack.back();

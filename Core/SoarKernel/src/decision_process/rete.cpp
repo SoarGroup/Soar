@@ -151,7 +151,7 @@ inline bool var_locations_equal(var_location v1, var_location v2)
   ( (&((wme)->id))[(field_num)] )*/
 
 /* The semantics of this function is the same as
- * inline Symbol * field_from_wme(wme * _wme, byte field_num) {
+ * inline Symbol field_from_wme(wme * _wme, byte field_num) {
  *   switch (field_num) {
  *     case 0:
  *       return _wme->id;
@@ -162,7 +162,7 @@ inline bool var_locations_equal(var_location v1, var_location v2)
  *   }
  * }
  */
-inline Symbol* field_from_wme(wme* _wme, byte field_num)
+inline Symbol field_from_wme(wme* _wme, byte field_num)
 {
     return ((&((_wme)->id))[(field_num)]);
 }
@@ -823,7 +823,7 @@ inline void update_stats_for_destroying_node(agent* thisAgent, rete_node* node)
 
 
 
-Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc)
+Symbol find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc)
 {
 
     wme* lowest_goal_wme;
@@ -890,7 +890,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     return 0;
 }
 
-Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
+Symbol find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
 #ifdef DEBUG_WATERFALL
@@ -948,7 +948,7 @@ void print_retraction(agent* thisAgent, ms_change* msc)
 bool any_assertions_or_retractions_ready(agent* thisAgent)
 {
 
-    Symbol* goal;
+    Symbol goal;
 
     /* Determining if assertions or retractions are ready require looping over
     all goals in Waterfall/Operand2 */
@@ -1249,11 +1249,11 @@ inline bool wme_matches_alpha_mem(wme* w, alpha_mem* am)
 
 /* --- Returns hash value for the given id/attr/value symbols --- */
 /*#define alpha_hash_value(i,a,v,num_bits) \
- ( ( ((i) ? ((Symbol *)(i))->hash_id : 0) ^ \
-     ((a) ? ((Symbol *)(a))->hash_id : 0) ^ \
-     ((v) ? ((Symbol *)(v))->hash_id : 0) ) & \
+ ( ( ((i) ? ((Symbol)(i))->hash_id : 0) ^ \
+     ((a) ? ((Symbol)(a))->hash_id : 0) ^ \
+     ((v) ? ((Symbol)(v))->hash_id : 0) ) & \
    masks_for_n_low_order_bits[(num_bits)] )*/
-inline uint32_t alpha_hash_value(Symbol* i, Symbol* a, Symbol* v, short num_bits)
+inline uint32_t alpha_hash_value(Symbol i, Symbol a, Symbol v, short num_bits)
 {
     return
         (((i ? i->hash_id : 0) ^
@@ -1277,7 +1277,7 @@ uint32_t hash_alpha_mem(void* item, short num_bits)
                                      ((value) ? 4 : 0) + \
                                      ((acceptable) ? 8 : 0) ]*/
 inline hash_table* table_for_tests(agent* thisAgent,
-                                   Symbol* id, Symbol* attr, Symbol* value,
+                                   Symbol id, Symbol attr, Symbol value,
                                    bool acceptable)
 {
     return thisAgent->alpha_hash_tables [(id ? 1 : 0) + (attr ? 2 : 0) +
@@ -1335,8 +1335,8 @@ void remove_wme_from_alpha_mem(agent* thisAgent, right_mem* rm)
 }
 
 /* --- Looks for an existing alpha mem, returns it or NIL if not found --- */
-alpha_mem* find_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
-                          Symbol* value, bool acceptable)
+alpha_mem* find_alpha_mem(agent* thisAgent, Symbol id, Symbol attr,
+                          Symbol value, bool acceptable)
 {
     hash_table* ht;
     alpha_mem* am;
@@ -1357,8 +1357,8 @@ alpha_mem* find_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
 
 /* --- Find and share existing alpha memory, or create new one.  Adjusts
    the reference count on the alpha memory accordingly. --- */
-alpha_mem* find_or_make_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
-                                  Symbol* value, bool acceptable)
+alpha_mem* find_or_make_alpha_mem(agent* thisAgent, Symbol id, Symbol attr,
+                                  Symbol value, bool acceptable)
 {
     hash_table* ht;
     alpha_mem* am, *more_general_am;
@@ -1631,7 +1631,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 
 inline void _epmem_process_ids(agent* thisAgent)
 {
-    Symbol* id;
+    Symbol id;
     slot* s;
     wme* w;
 
@@ -1788,15 +1788,15 @@ void remove_ref_to_alpha_mem(agent* thisAgent, alpha_mem* am)
     remove_from_hash_table(thisAgent, ht, am);
     if (am->id)
     {
-        symbol_remove_ref(thisAgent, &am->id);
+        symbol_remove_ref(thisAgent, am->id);
     }
     if (am->attr)
     {
-        symbol_remove_ref(thisAgent, &am->attr);
+        symbol_remove_ref(thisAgent, am->attr);
     }
     if (am->value)
     {
-        symbol_remove_ref(thisAgent, &am->value);
+        symbol_remove_ref(thisAgent, am->value);
     }
     while (am->right_mems)
     {
@@ -2409,7 +2409,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
 
         if (test_is_constant_relational_test(rt->type))
         {
-            symbol_remove_ref(thisAgent, &rt->data.constant_referent);
+            symbol_remove_ref(thisAgent, rt->data.constant_referent);
         }
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
@@ -2537,8 +2537,8 @@ void deallocate_rete_node(agent* thisAgent, rete_node* node)
    Pop_var_binding() pops the top binding.
 ********************************************************************** */
 
-//#define var_is_bound(v) (((Symbol *)(v))->var->rete_binding_locations != NIL)
-inline bool var_is_bound(Symbol* v)
+//#define var_is_bound(v) (((Symbol)(v))->var->rete_binding_locations != NIL)
+inline bool var_is_bound(Symbol v)
 {
     return v->var->rete_binding_locations != NIL;
 }
@@ -2564,8 +2564,8 @@ inline byte dummy_to_varloc_field_num(void* d)
 /*#define push_var_binding(v,depth,field_num) { \
   void *dummy_xy312; \
   dummy_xy312 = varloc_to_dummy ((depth), (field_num)); \
-  push(thisAgent, dummy_xy312, ((Symbol *)(v))->var->rete_binding_locations); }*/
-inline void push_var_binding(agent* thisAgent, Symbol* v, rete_node_level depth, byte field_num)
+  push(thisAgent, dummy_xy312, ((Symbol)(v))->var->rete_binding_locations); }*/
+inline void push_var_binding(agent* thisAgent, Symbol v, rete_node_level depth, byte field_num)
 {
     void* dummy_xy312;
     dummy_xy312 = varloc_to_dummy(depth, field_num);
@@ -2574,14 +2574,14 @@ inline void push_var_binding(agent* thisAgent, Symbol* v, rete_node_level depth,
 
 /*#define pop_var_binding(v) { \
   cons *c_xy312; \
-  c_xy312 = ((Symbol *)(v))->var->rete_binding_locations; \
-  ((Symbol *)(v))->var->rete_binding_locations = c_xy312->rest; \
+  c_xy312 = ((Symbol)(v))->var->rete_binding_locations; \
+  ((Symbol)(v))->var->rete_binding_locations = c_xy312->rest; \
   free_cons (c_xy312); }*/
 inline void pop_var_binding(agent* thisAgent, void* v)
 {
     cons* c_xy312;
-    c_xy312 = static_cast<Symbol*>(v)->var->rete_binding_locations;
-    static_cast<Symbol*>(v)->var->rete_binding_locations = c_xy312->rest;
+    c_xy312 = static_cast<Symbol>(v)->var->rete_binding_locations;
+    static_cast<Symbol>(v)->var->rete_binding_locations = c_xy312->rest;
     free_cons(thisAgent, c_xy312);
 }
 
@@ -2595,7 +2595,7 @@ inline void pop_var_binding(agent* thisAgent, void* v)
    binding is found, the function returns false.
 ------------------------------------------------------------------- */
 
-bool find_var_location(Symbol* var, rete_node_level current_depth,
+bool find_var_location(Symbol var, rete_node_level current_depth,
                        var_location* result)
 {
     void* dummy;
@@ -2627,7 +2627,7 @@ void bind_variables_in_test(agent* thisAgent,
                             bool dense,
                             list** varlist)
 {
-    Symbol* referent;
+    Symbol referent;
     cons* c;
 
     if (!t)
@@ -2721,7 +2721,7 @@ void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, list* vars)
    chain of node_varnames structures, scanning up the net, etc.
 ********************************************************************** */
 
-varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
+varnames* add_var_to_varnames(agent* thisAgent, Symbol var,
                               varnames* old_varnames)
 {
     cons* c1, *c2;
@@ -2750,7 +2750,7 @@ varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
 
 void deallocate_varnames(agent* thisAgent, varnames* vn)
 {
-    Symbol* sym;
+    Symbol sym;
     list* symlist;
 
     if (vn == NIL)
@@ -2760,7 +2760,7 @@ void deallocate_varnames(agent* thisAgent, varnames* vn)
     if (varnames_is_one_var(vn))
     {
         sym = varnames_to_one_var(vn);
-        symbol_remove_ref(thisAgent, &sym);
+        symbol_remove_ref(thisAgent, sym);
     }
     else
     {
@@ -2808,7 +2808,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 {
     test New;
     cons* c;
-    Symbol* temp;
+    Symbol temp;
 
     if (vn == NIL)
     {
@@ -2827,7 +2827,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     {
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
-            temp = static_cast<Symbol*>(c->first);
+            temp = static_cast<Symbol>(c->first);
             dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
@@ -2840,7 +2840,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
 {
 //    test New;
     cons* c;
-    Symbol* temp;
+    Symbol temp;
 
     if (vn == NIL)
     {
@@ -2863,7 +2863,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         assert(false);
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
-            temp = static_cast<Symbol*>(c->first);
+            temp = static_cast<Symbol>(c->first);
             t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
             dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
@@ -2885,7 +2885,7 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
                                        varnames* starting_vn)
 {
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -3037,14 +3037,14 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
                              rete_node_level current_depth,
                              byte field_num,
                              rete_test** rt,
-                             Symbol** alpha_constant)
+                             Symbol &alpha_constant)
 {
     var_location where;
     where.var_location_struct::field_num = 0;
     where.var_location_struct::levels_up = 0;
     cons* c;
     rete_test* new_rt;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -3058,9 +3058,9 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
 
         /* --- if constant test and alpha=NIL, install alpha test --- */
         if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
-                (*alpha_constant == NIL))
+                (alpha_constant == NIL))
         {
-            *alpha_constant = referent;
+            alpha_constant = referent;
             return;
         }
 
@@ -3346,7 +3346,7 @@ rete_node* make_node_for_positive_cond(agent* thisAgent,
                                        rete_node* parent)
 {
     byte pos_node_type, mem_node_type, mp_node_type;
-    Symbol* alpha_id, *alpha_attr, *alpha_value;
+    Symbol alpha_id, alpha_attr, alpha_value;
     rete_node* node, *mem_node, *mp_node;
     alpha_mem* am;
     rete_test* rt;
@@ -3370,12 +3370,12 @@ rete_node* make_node_for_positive_cond(agent* thisAgent,
 
     /* --- Get Rete tests, alpha constants, and hash location --- */
     add_rete_tests_for_test(thisAgent, cond->data.tests.id_test, current_depth, 0,
-                            &rt, &alpha_id);
+                            &rt, alpha_id);
     hash_this_node = extract_rete_test_to_hash_with(thisAgent, &rt, &left_hash_loc);
     add_rete_tests_for_test(thisAgent, cond->data.tests.attr_test, current_depth, 1,
-                            &rt, &alpha_attr);
+                            &rt, alpha_attr);
     add_rete_tests_for_test(thisAgent, cond->data.tests.value_test, current_depth, 2,
-                            &rt, &alpha_value);
+                            &rt, alpha_value);
 
     /* --- Pop sparse variable bindings for this condition --- */
     pop_bindings_and_deallocate_list_of_variables(thisAgent, vars_bound_here);
@@ -3489,7 +3489,7 @@ rete_node* make_node_for_negative_cond(agent* thisAgent,
                                        rete_node* parent)
 {
     byte node_type;
-    Symbol* alpha_id, *alpha_attr, *alpha_value;
+    Symbol alpha_id, alpha_attr, alpha_value;
     rete_node* node;
     alpha_mem* am;
     rete_test* rt;
@@ -3513,12 +3513,12 @@ rete_node* make_node_for_negative_cond(agent* thisAgent,
 
     /* --- Get Rete tests, alpha constants, and hash location --- */
     add_rete_tests_for_test(thisAgent, cond->data.tests.id_test, current_depth, 0,
-                            &rt, &alpha_id);
+                            &rt, alpha_id);
     hash_this_node = extract_rete_test_to_hash_with(thisAgent, &rt, &left_hash_loc);
     add_rete_tests_for_test(thisAgent, cond->data.tests.attr_test, current_depth, 1,
-                            &rt, &alpha_attr);
+                            &rt, alpha_attr);
     add_rete_tests_for_test(thisAgent, cond->data.tests.value_test, current_depth, 2,
-                            &rt, &alpha_value);
+                            &rt, alpha_value);
 
     /* --- Pop sparse variable bindings for this condition --- */
     pop_bindings_and_deallocate_list_of_variables(thisAgent, vars_bound_here);
@@ -3737,8 +3737,8 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
                 {
                     if (rhs_value_is_symbol(a1->referent) && rhs_value_is_symbol(a2->referent))
                     {
-                        Symbol* a1r = rhs_value_to_symbol(a1->referent);
-                        Symbol* a2r = rhs_value_to_symbol(a2->referent);
+                        Symbol a1r = rhs_value_to_symbol(a1->referent);
+                        Symbol a2r = rhs_value_to_symbol(a2->referent);
 
                         if (((a1r->symbol_type == INT_CONSTANT_SYMBOL_TYPE) || (a1r->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)) &&
                                 ((a2r->symbol_type == INT_CONSTANT_SYMBOL_TYPE) || (a2r->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)))
@@ -3794,7 +3794,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         tc_number rhs_unbound_vars_tc)
 {
     cons* c;
-    Symbol* sym;
+    Symbol sym;
     var_location var_loc;
     var_loc.var_location_struct::levels_up = 0;
     var_loc.var_location_struct::field_num = 0;
@@ -3811,7 +3811,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         if (find_var_location(sym, static_cast<rete_node_level>(bottom_depth + 1), &var_loc))
         {
             /* --- Yes, replace it with reteloc --- */
-            symbol_remove_ref(thisAgent, &sym);
+            symbol_remove_ref(thisAgent, sym);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
         }
         else
@@ -3823,14 +3823,14 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
                 push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
                 sym->tc_num = rhs_unbound_vars_tc;
                 index = num_rhs_unbound_vars_for_new_prod++;
-                sym->var->current_binding_value = reinterpret_cast<Symbol*>(index);
+                sym->var->current_binding_value = reinterpret_cast<Symbol>(index);
             }
             else
             {
                 index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
             }
             *rv = unboundvar_to_rhs_value(index);
-            symbol_remove_ref(thisAgent, &sym);
+            symbol_remove_ref(thisAgent, sym);
         }
         return;
     }
@@ -3860,11 +3860,11 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
 {
     if (num_for_new_production > thisAgent->max_rhs_unbound_variables)
     {
-        thisAgent->memoryManager->free_memory(thisAgent->rhs_variable_bindings, MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(static_cast<void *>(thisAgent->rhs_variable_bindings), MISCELLANEOUS_MEM_USAGE);
         thisAgent->max_rhs_unbound_variables = num_for_new_production;
-        thisAgent->rhs_variable_bindings = (Symbol**)
+        thisAgent->rhs_variable_bindings = (Symbol)
                                            thisAgent->memoryManager->allocate_memory_and_zerofill(thisAgent->max_rhs_unbound_variables *
-                                                   sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
+                                                   sizeof(Symbol), MISCELLANEOUS_MEM_USAGE);
     }
 }
 
@@ -4221,7 +4221,7 @@ void excise_production_from_rete(agent* thisAgent, production* p)
    of conditions reconstructed so far, and finds the appropriate variable.
 ---------------------------------------------------------------------- */
 
-Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
+Symbol var_bound_in_reconstructed_conds(agent* thisAgent,
         condition* cond, /* current cond */
         byte where_field_num,
         rete_node_level where_levels_up)
@@ -4546,7 +4546,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                                   AddAdditionalTestsMode additional_tests)
 {
     cons* c;
-    Symbol** cell;
+    Symbol cell;
     int64_t index;
     production* prod;
 //	goal_stack_level lowest_level_so_far, match_level;
@@ -4578,7 +4578,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
             cell = thisAgent->rhs_variable_bindings;
             for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
             {
-                *(cell++) = static_cast<Symbol*>(c->first);
+                *(cell++) = static_cast<Symbol>(c->first);
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
@@ -4592,7 +4592,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     }
 }
 
-Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
+Symbol get_symbol_from_rete_loc(unsigned short levels_up,
                                  byte field_num,
                                  token* tok, wme* w)
 {
@@ -4662,7 +4662,7 @@ inline bool match_left_and_right(agent* thisAgent, rete_test* _rete_test,
 /* return -1, 0, or 1 if s1 is less than, equal to, or greater than s2,
  * respectively
  */
-inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
+inline int64_t compare_symbols(Symbol s1, Symbol s2)
 {
     switch (s1->symbol_type)
     {
@@ -4742,7 +4742,7 @@ bool id_is_impasse_rete_test_routine(agent* /*thisAgent*/, rete_test* /*rt*/, to
 
 bool disjunction_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
 {
-    Symbol* sym;
+    Symbol sym;
     cons* c;
 
     sym = field_from_wme(w, rt->right_field_num);
@@ -4756,7 +4756,7 @@ bool disjunction_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /
 
 bool constant_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4766,7 +4766,7 @@ bool constant_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token
 bool constant_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4775,7 +4775,7 @@ bool constant_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 
 bool constant_less_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4784,7 +4784,7 @@ bool constant_less_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token*
 
 bool constant_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4794,7 +4794,7 @@ bool constant_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, tok
 bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4804,7 +4804,7 @@ bool constant_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* r
 bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4814,7 +4814,7 @@ bool constant_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test
 bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
@@ -4823,7 +4823,7 @@ bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 
 bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4846,7 +4846,7 @@ bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token
 bool variable_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4868,7 +4868,7 @@ bool variable_not_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 
 bool variable_less_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4890,7 +4890,7 @@ bool variable_less_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token*
 
 bool variable_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4913,7 +4913,7 @@ bool variable_greater_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, tok
 bool variable_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4936,7 +4936,7 @@ bool variable_less_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* r
 bool variable_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4959,7 +4959,7 @@ bool variable_greater_or_equal_rete_test_routine(agent* /*thisAgent*/, rete_test
 bool variable_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
         wme* w)
 {
-    Symbol* s1, *s2;
+    Symbol s1, s2;
     int i;
 
     s1 = field_from_wme(w, rt->right_field_num);
@@ -4987,7 +4987,7 @@ bool variable_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 ************************************************************************ */
 
 void positive_node_left_addition(agent* thisAgent, rete_node* node, token* New,
-                                 Symbol* hash_referent);
+                                 Symbol hash_referent);
 void unhashed_positive_node_left_addition(agent* thisAgent, rete_node* node, token* New);
 
 void rete_error_left(agent* thisAgent, rete_node* node, token* /*t*/, wme* /*w*/)
@@ -5012,7 +5012,7 @@ void beta_memory_node_left_addition(agent* thisAgent, rete_node* node,
                                     token* tok, wme* w)
 {
     uint32_t hv;
-    Symbol* referent;
+    Symbol referent;
     rete_node* child, *next;
     token* New;
 
@@ -5087,7 +5087,7 @@ void unhashed_beta_memory_node_left_addition(agent* thisAgent,
 
 void positive_node_left_addition(agent* thisAgent,
                                  rete_node* node, token* New,
-                                 Symbol* hash_referent)
+                                 Symbol hash_referent)
 {
     uint32_t right_hv;
     right_mem* rm;
@@ -5194,7 +5194,7 @@ void unhashed_positive_node_left_addition(agent* thisAgent, rete_node* node, tok
 void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 {
     uint32_t hv;
-    Symbol* referent;
+    Symbol referent;
     rete_node* child;
     token* New;
     uint32_t right_hv;
@@ -5357,7 +5357,7 @@ void positive_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
 {
     uint32_t hv;
     token* tok;
-    Symbol* referent;
+    Symbol referent;
     rete_test* rt;
     bool failed_a_test;
     rete_node* child;
@@ -5465,7 +5465,7 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
 {
     uint32_t hv;
     token* tok;
-    Symbol* referent;
+    Symbol referent;
     rete_test* rt;
     bool failed_a_test;
     rete_node* child;
@@ -5601,7 +5601,7 @@ void negative_node_left_addition(agent* thisAgent, rete_node* node,
                                  token* tok, wme* w)
 {
     uint32_t hv, right_hv;
-    Symbol* referent;
+    Symbol referent;
     right_mem* rm;
     alpha_mem* am;
     rete_test* rt;
@@ -5768,7 +5768,7 @@ void negative_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
 {
     uint32_t hv;
     token* tok;
-    Symbol* referent;
+    Symbol referent;
     rete_test* rt;
     bool failed_a_test;
 
@@ -7076,10 +7076,10 @@ void reteload_string(FILE* f)
 
 bool retesave_symbol_and_assign_index(agent* thisAgent, void* item, void* userdata)
 {
-    Symbol* sym;
+    Symbol sym;
     FILE* f = reinterpret_cast<FILE*>(userdata);
 
-    sym = static_cast<Symbol*>(item);
+    sym = static_cast<Symbol>(item);
     thisAgent->current_retesave_symindex++;
     sym->retesave_symindex = thisAgent->current_retesave_symindex;
     retesave_string(sym->to_string(), f);
@@ -7109,7 +7109,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
 {
     uint64_t num_str_constants, num_variables;
     uint64_t num_int_constants, num_float_constants;
-    Symbol** current_place_in_symtab;
+    Symbol current_place_in_symtab;
     uint64_t i;
 
     num_str_constants = reteload_eight_bytes(f);
@@ -7121,7 +7121,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
                                    + num_float_constants;
 
     /* --- allocate memory for the symbol table --- */
-    thisAgent->reteload_symbol_table = (Symbol**)
+    thisAgent->reteload_symbol_table = (Symbol)
                                        thisAgent->memoryManager->allocate_memory(thisAgent->reteload_num_syms * sizeof(char*), MISCELLANEOUS_MEM_USAGE);
 
     /* --- read in all the symbols from the file --- */
@@ -7150,7 +7150,7 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
     }
 }
 
-Symbol* reteload_symbol_from_index(agent* thisAgent, FILE* f)
+Symbol reteload_symbol_from_index(agent* thisAgent, FILE* f)
 {
     uint64_t index;
 
@@ -7176,9 +7176,9 @@ void reteload_free_symbol_table(agent* thisAgent)
 
     for (i = 0; i < thisAgent->reteload_num_syms; i++)
     {
-        symbol_remove_ref(thisAgent, &(*(thisAgent->reteload_symbol_table + i)));
+        symbol_remove_ref(thisAgent, *(thisAgent->reteload_symbol_table + i));
     }
-    thisAgent->memoryManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
+    thisAgent->memoryManager->free_memory(static_cast<void *>(thisAgent->reteload_symbol_table), MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ----------------------------------------------------------------------
@@ -7240,7 +7240,7 @@ void retesave_alpha_memories(agent* thisAgent, FILE* f)
 void reteload_alpha_memories(agent* thisAgent, FILE* f)
 {
     uint64_t i;
-    Symbol* id, *attr, *value;
+    Symbol id, attr, value;
     bool acceptable;
 
     thisAgent->reteload_num_ams = reteload_eight_bytes(f);
@@ -7302,7 +7302,7 @@ void retesave_varnames(varnames* names, FILE* f)
 {
     list* c;
     uint64_t i;
-    Symbol* sym;
+    Symbol sym;
 
     if (! names)
     {
@@ -7321,7 +7321,7 @@ void retesave_varnames(varnames* names, FILE* f)
         retesave_eight_bytes(i, f);
         for (c = varnames_to_var_list(names); c != NIL; c = c->rest)
         {
-            retesave_eight_bytes(static_cast<Symbol*>(c->first)->retesave_symindex, f);
+            retesave_eight_bytes(static_cast<Symbol>(c->first)->retesave_symindex, f);
         }
     }
 }
@@ -7330,7 +7330,7 @@ varnames* reteload_varnames(agent* thisAgent, FILE* f)
 {
     list* c;
     uint64_t i, count;
-    Symbol* sym;
+    Symbol sym;
 
     i = reteload_one_byte(f);
     if (i == 0)
@@ -7427,7 +7427,7 @@ node_varnames* reteload_node_varnames(agent* thisAgent, rete_node* node, FILE* f
 void retesave_rhs_value(rhs_value rv, FILE* f)
 {
     uint64_t i;
-    Symbol* sym;
+    Symbol sym;
     cons* c;
 
     if (rhs_value_is_symbol(rv))
@@ -7467,7 +7467,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
 {
     rhs_value rv, temp;
     uint64_t i, count;
-    Symbol* sym;
+    Symbol sym;
     byte type, field_num;
     int levels_up;
     list* funcall_list;
@@ -7686,7 +7686,7 @@ void retesave_rete_test(rete_test* rt, FILE* f)
         retesave_two_bytes(static_cast<uint16_t>(i), f);
         for (c = rt->data.disjunction_list; c != NIL; c = c->rest)
         {
-            retesave_eight_bytes(static_cast<Symbol*>(c->first)->retesave_symindex, f);
+            retesave_eight_bytes(static_cast<Symbol>(c->first)->retesave_symindex, f);
         }
     }
 }
@@ -7694,7 +7694,7 @@ void retesave_rete_test(rete_test* rt, FILE* f)
 rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
 {
     rete_test* rt;
-    Symbol* sym;
+    Symbol sym;
     uint64_t count;
     list* temp;
 
@@ -7921,7 +7921,7 @@ void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
             retesave_eight_bytes(i, f);
             for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
             {
-                retesave_eight_bytes(static_cast<Symbol*>(c->first)->retesave_symindex, f);
+                retesave_eight_bytes(static_cast<Symbol>(c->first)->retesave_symindex, f);
             }
             if (node->b.p.parents_nvn)
             {
@@ -7960,7 +7960,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
     uint64_t count;
     alpha_mem* am;
     production* prod;
-    Symbol* sym;
+    Symbol sym;
     list* ubv_list;
     var_location left_hash_loc;
     rete_test* other_tests;
@@ -8724,13 +8724,13 @@ void print_partial_match_information(agent* thisAgent, rete_node* p_node,
 
 typedef struct match_set_trace
 {
-    Symbol* sym;
+    Symbol sym;
     int        count;
     struct match_set_trace* next;
-    Symbol* goal;
+    Symbol goal;
 } MS_trace;
 
-MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
+MS_trace* in_ms_trace(Symbol sym, MS_trace* trace)
 {
     MS_trace* tmp;
     for (tmp = trace; tmp; tmp = tmp->next)
@@ -8743,7 +8743,7 @@ MS_trace* in_ms_trace(Symbol* sym, MS_trace* trace)
     return 0;
 }
 
-MS_trace* in_ms_trace_same_goal(Symbol* sym, MS_trace* trace, Symbol* goal)
+MS_trace* in_ms_trace_same_goal(Symbol sym, MS_trace* trace, Symbol goal)
 {
     MS_trace* tmp;
     for (tmp = trace; tmp; tmp = tmp->next)
@@ -9805,8 +9805,8 @@ void init_rete(agent* thisAgent)
     init_dummy_top_node(thisAgent);
 
     thisAgent->max_rhs_unbound_variables = 1;
-    thisAgent->rhs_variable_bindings = (Symbol**)
-                                       thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(Symbol*), MISCELLANEOUS_MEM_USAGE);
+    thisAgent->rhs_variable_bindings = (Symbol)
+                                       thisAgent->memoryManager->allocate_memory_and_zerofill(sizeof(Symbol), MISCELLANEOUS_MEM_USAGE);
 
     /* This is still not thread-safe. -AJC (8/9/02) */
     static bool bInit = false;

@@ -48,7 +48,7 @@ class condition_record
 
         void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
         void        visualize_for_wm_trace();
-        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
+        void        viz_matched_test(test pTest, Symbol pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
         void        visualize_for_chunk();
         void        visualize_for_explanation_trace(condition* pCond);
 

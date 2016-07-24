@@ -37,7 +37,7 @@ namespace soar_module
     /////////////////////////////////////////////////////////////
 
     void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list);
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
+    wme* add_module_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value);
     void remove_module_wme(agent* thisAgent, wme* w);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -532,21 +532,21 @@ namespace soar_module
     class sym_set_param: public param
     {
         protected:
-            std::set<Symbol*>* my_set;
+            std::set<Symbol>* my_set;
             std::string* value;
             predicate<const char*>* prot_pred;
 
             agent* thisAgent;
 
         public:
-            sym_set_param(const char* new_name, predicate<const char*>* new_prot_pred, agent* new_agent): param(new_name), my_set(new std::set<Symbol * >()), value(new std::string), prot_pred(new_prot_pred), thisAgent(new_agent) {}
+            sym_set_param(const char* new_name, predicate<const char*>* new_prot_pred, agent* new_agent): param(new_name), my_set(new std::set<Symbol>()), value(new std::string), prot_pred(new_prot_pred), thisAgent(new_agent) {}
 
             virtual ~sym_set_param()
             {
-                for (std::set<Symbol*>::iterator p = my_set->begin(); p != my_set->end(); p++)
+                for (std::set<Symbol>::iterator p = my_set->begin(); p != my_set->end(); p++)
                 {
-                    Symbol* lSym = (*p);
-                    symbol_remove_ref(thisAgent, &lSym);
+                    Symbol lSym = (*p);
+                    symbol_remove_ref(thisAgent, lSym);
                 }
 
                 delete my_set;
@@ -585,7 +585,7 @@ namespace soar_module
 
             //
 
-            virtual bool in_set(Symbol* test_sym)
+            virtual bool in_set(Symbol test_sym)
             {
                 bool return_val = false;
 
@@ -593,7 +593,7 @@ namespace soar_module
                         (test_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
                         (test_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
                 {
-                    Symbol* my_sym = test_sym;
+                    Symbol my_sym = test_sym;
 
                     if (my_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
                     {
@@ -611,12 +611,12 @@ namespace soar_module
                         my_sym = make_str_constant(thisAgent, temp_str.c_str());
                     }
 
-                    std::set<Symbol*>::iterator p = my_set->find(my_sym);
+                    std::set<Symbol>::iterator p = my_set->find(my_sym);
                     return_val = (p != my_set->end());
 
                     if (test_sym != my_sym)
                     {
-                        symbol_remove_ref(thisAgent, &my_sym);
+                        symbol_remove_ref(thisAgent, my_sym);
                     }
                 }
 
@@ -625,16 +625,16 @@ namespace soar_module
 
             virtual void set_value(const char* new_value)
             {
-                Symbol* my_sym = make_str_constant(thisAgent, new_value);
-                std::set<Symbol*>::iterator p = my_set->find(my_sym);
+                Symbol my_sym = make_str_constant(thisAgent, new_value);
+                std::set<Symbol>::iterator p = my_set->find(my_sym);
 
                 if (p != my_set->end())
                 {
                     my_set->erase(p);
 
                     // remove for now and when added to the set
-                    symbol_remove_ref(thisAgent, &my_sym);
-                    symbol_remove_ref(thisAgent, &my_sym);
+                    symbol_remove_ref(thisAgent, my_sym);
+                    symbol_remove_ref(thisAgent, my_sym);
 
                     // regenerate value from scratch
                     value->clear();

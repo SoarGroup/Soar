@@ -246,7 +246,7 @@ void Output_Manager::debug_start_fresh_line(TraceMode mode)
 
 void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list pargs)
 {
-    Symbol* sym;
+    Symbol sym;
     test t, ct;
     char ch = 0;
     char* ch2 = 0;
@@ -309,7 +309,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'y':
                     {
-                        sym = va_arg(args, Symbol*);
+                        sym = va_arg(args, Symbol);
                         if (sym)
                         {
                             destString += sym->to_string(true);

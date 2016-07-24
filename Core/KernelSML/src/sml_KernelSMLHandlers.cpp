@@ -680,7 +680,7 @@ bool KernelSML::HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pComma
         return InvalidArg(pConnection, pResponse, pCommandName, "Need to specify the production name to check.") ;
     }
 
-    Symbol* sym = find_str_constant(pAgentSML->GetSoarAgent(), pName);
+    Symbol sym = find_str_constant(pAgentSML->GetSoarAgent(), pName);
 
     bool found = true;
     if (!sym || !(sym->sc->production))
@@ -823,7 +823,7 @@ bool KernelSML::HandleGetInputLink(AgentSML* pAgentSML, char const* /*pCommandNa
         return false ;
     }
 
-    Symbol* sym = pAgentSML->GetSoarAgent()->io_header_input;
+    Symbol sym = pAgentSML->GetSoarAgent()->io_header_input;
 
     // Turn the id symbol into an actual string
     char buf[ MAX_LEXEME_LENGTH ];

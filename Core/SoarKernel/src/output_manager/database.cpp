@@ -403,7 +403,7 @@ void OM_DB::increment_message_count(MessageType msgType)
     add_message_id->execute(soar_module::op_reinit);
 }
 
-void OM_DB::store_refcount(Symbol* sym, const char* callers, bool isAdd)
+void OM_DB::store_refcount(Symbol sym, const char* callers, bool isAdd)
 {
     increment_message_count(refcnt_msg);
     //  print_sf("Storing refcount %i %y %s\n", message_count, sym, callers);

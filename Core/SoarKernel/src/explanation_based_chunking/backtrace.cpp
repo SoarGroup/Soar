@@ -251,7 +251,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     tc = get_new_tc_number(thisAgent);
     tc2 = get_new_tc_number(thisAgent);
     need_another_pass = false;
-    Symbol* thisID, *value;
+    Symbol thisID, value;
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
@@ -527,9 +527,9 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         }
         /* --- for augmentations of the local goal id, either handle the
            "^quiescence t" test or discard it --- */
-        Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-        Symbol* thisAttr = cond->data.tests.attr_test->eq_test->data.referent;
-        Symbol* thisValue = cond->data.tests.value_test->eq_test->data.referent;
+        Symbol thisID = cond->data.tests.id_test->eq_test->data.referent;
+        Symbol thisAttr = cond->data.tests.attr_test->eq_test->data.referent;
+        Symbol thisValue = cond->data.tests.value_test->eq_test->data.referent;
         if (thisID->id->isa_goal)
         {
             if ((thisAttr == thisAgent->quiescence_symbol) &&

@@ -26,7 +26,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** un
         }
 //        if (lSym->matched_sym)
 //        {
-//            symbol_remove_ref(thisAgent, &lSym->matched_sym);
+//            symbol_remove_ref(thisAgent, lSym->matched_sym);
 //        }
         delete lSym;
     }
@@ -34,7 +34,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** un
     (*unconnected_syms) = NULL;
 }
 
-wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
+wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol pNonOperationalSym)
 {
     sym_grounding_path_list ids_to_walk;
     Path_to_Goal_State*     lCurrentPath = NULL, *lNewPath = NULL;
@@ -45,7 +45,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
-    Symbol* g = thisAgent->top_goal;
+    Symbol g = thisAgent->top_goal;
     while (g->id->level < pNonOperationalSym->id->level)
     {
         g = g->id->lower_goal;
@@ -118,7 +118,7 @@ inline void add_cond_to_lists(condition** c, condition** prev, condition** first
 void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC)
 {
     dprint(DT_REPAIR, "...adding state link WMEs: \n");
-    Symbol* g, *last_goal = NULL;
+    Symbol g, last_goal = NULL;
     wme* w;
 
     g = thisAgent->bottom_goal;
@@ -171,14 +171,14 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     assert(pTest && pTest->type == EQUALITY_TEST);
 
     char prefix[2];
-    Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
+    Symbol lNewVar = NULL, lMatchedSym = pTest->data.referent;
     uint64_t lMatchedIdentity = 0;
 
     assert(lMatchedSym->is_identifier());
 
     /* Copy in any identities for the LTI that was used in the unconnected conditions */
-    std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
-    std::unordered_map< Symbol*, uint64_t >::iterator iter_id;
+    std::unordered_map< Symbol, Symbol >::iterator iter_sym;
+    std::unordered_map< Symbol, uint64_t >::iterator iter_id;
 
     iter_sym = m_sym_to_var_map.find(lMatchedSym);
     if (iter_sym == m_sym_to_var_map.end())
@@ -221,7 +221,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
     pTest->identity = lMatchedIdentity;
-    symbol_remove_ref(thisAgent, &lMatchedSym);
+    symbol_remove_ref(thisAgent, lMatchedSym);
 }
 
 
@@ -267,7 +267,7 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
     return new_cond;
 }
 
-void Repair_Manager::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
+void Repair_Manager::add_variablization(Symbol pSym, Symbol pVar, uint64_t pIdentity, const char* pTypeStr)
 {
     dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
     m_sym_to_var_map[pSym] = pVar;
@@ -279,7 +279,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
 {
     assert(pCondList);
     condition* lCond;
-    Symbol* highest_goal = thisAgent->bottom_goal;
+    Symbol highest_goal = thisAgent->bottom_goal;
     test lID_test, lValue_test, lInst_ID_test, lInst_Value_test, highest_goal_test = NULL;
 
     for (lCond = pCondList; lCond; lCond = lCond->next)

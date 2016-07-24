@@ -32,7 +32,7 @@ enum GeometryType
 class add_node_command : public command
 {
     public:
-        add_node_command(svs_state* state, Symbol* root)
+        add_node_command(svs_state* state, Symbol root)
             : command(state, root), root(root), scn(state->get_scene()), parent(NULL), first(true)
         {
             si = state->get_svs()->get_soar_interface();
@@ -149,14 +149,14 @@ class add_node_command : public command
             wme* tags_wme;
             if(si->find_child_wme(root, "tags", tags_wme))
             {
-                Symbol* tags_root = si->get_wme_val(tags_wme);
+                Symbol tags_root = si->get_wme_val(tags_wme);
                 vector<wme*> tag_wmes;
                 if(si->get_child_wmes(tags_root, tag_wmes))
                 {
                     for(vector<wme*>::const_iterator tag_it = tag_wmes.begin(); tag_it != tag_wmes.end(); tag_it++)
                     {
-                        Symbol* tag_attr = si->get_wme_attr(*tag_it);
-                        Symbol* tag_value = si->get_wme_val(*tag_it);
+                        Symbol tag_attr = si->get_wme_attr(*tag_it);
+                        Symbol tag_value = si->get_wme_val(*tag_it);
                         string tag_attr_str;
                         string tag_value_str;
                         if(get_symbol_value(tag_attr, tag_attr_str) && get_symbol_value(tag_value, tag_value_str))
@@ -233,7 +233,7 @@ class add_node_command : public command
         }
         
         scene*             scn;
-        Symbol*            root;
+        Symbol            root;
         soar_interface*    si;
         
         bool first;
@@ -246,7 +246,7 @@ class add_node_command : public command
         
 };
 
-command* _make_add_node_command_(svs_state* state, Symbol* root)
+command* _make_add_node_command_(svs_state* state, Symbol root)
 {
     return new add_node_command(state, root);
 }

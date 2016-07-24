@@ -51,12 +51,12 @@
 ----------------------------------------------------------------------- */
 
 /* This prototype is needed by the following macros. */
-void add_to_os_tc(agent* thisAgent, Symbol* id, bool isa_state);
+void add_to_os_tc(agent* thisAgent, Symbol id, bool isa_state);
 
 /*#define add_to_os_tc_if_needed(sym) \
   { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       add_to_os_tc (sym,false); }*/
-inline void add_to_os_tc_if_needed(agent* thisAgent, Symbol* sym)
+inline void add_to_os_tc_if_needed(agent* thisAgent, Symbol sym)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
@@ -67,7 +67,7 @@ inline void add_to_os_tc_if_needed(agent* thisAgent, Symbol* sym)
 /*#define add_to_os_tc_if_id(sym,flag) \
   { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       add_to_os_tc (sym,flag); }*/
-inline void add_to_os_tc_if_id(agent* thisAgent, Symbol* sym, bool flag)
+inline void add_to_os_tc_if_id(agent* thisAgent, Symbol sym, bool flag)
 {
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE) \
         add_to_os_tc(thisAgent, sym, flag);
@@ -79,7 +79,7 @@ inline void add_to_os_tc_if_id(agent* thisAgent, Symbol* sym, bool flag)
  * If it isa_state, check for the operator slot before the recursive call.
  */
 
-void add_to_os_tc(agent* thisAgent, Symbol* id, bool isa_state)
+void add_to_os_tc(agent* thisAgent, Symbol id, bool isa_state)
 {
     slot* s;
     preference* pref;
@@ -154,10 +154,10 @@ void begin_os_tc(agent* thisAgent, preference* rhs_prefs_or_nil)
    the id is not allowed to be "sym_excluded_from_value".
 ----------------------------------------------------------------------- */
 
-bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol* excluded_sym)
+bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol excluded_sym)
 {
     cons* c;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -187,8 +187,8 @@ bool test_has_id_in_os_tc(agent* thisAgent, test t, Symbol* excluded_sym)
 }
 
 bool id_or_value_of_condition_list_is_in_os_tc(agent* thisAgent, condition* conds,
-        Symbol* sym_excluded_from_value,
-        Symbol* match_state_to_exclude_test_of_the_operator_off_of)
+        Symbol sym_excluded_from_value,
+        Symbol match_state_to_exclude_test_of_the_operator_off_of)
 {
     /* RBD 8/19/94 Under NNPSCM, when we use this routine to look for "something
        off the state", we want to exclude tests of (match_state ^operator _). */
@@ -239,9 +239,9 @@ bool id_or_value_of_condition_list_is_in_os_tc(agent* thisAgent, condition* cond
    in super-states.
 
 ----------------------------------------------------------------------- */
-bool is_state_id(agent* thisAgent, Symbol* sym, Symbol* match_state)
+bool is_state_id(agent* thisAgent, Symbol sym, Symbol match_state)
 {
-    Symbol* c;
+    Symbol c;
 
     for (c = thisAgent->top_goal; c != match_state; c = c->id->lower_goal)
     {
@@ -575,7 +575,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 
 void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, instantiation* inst)
 {
-    Symbol* match_state;
+    Symbol match_state;
     bool rule_2_or_3, anything_added;
     preference* rhs, *pref;
     wme* w;
@@ -684,12 +684,12 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
 
 enum yes_no_maybe { YES, NO, MAYBE } ;
 
-yes_no_maybe test_is_for_symbol(test t, Symbol* sym)
+yes_no_maybe test_is_for_symbol(test t, Symbol sym)
 {
     cons* c;
     yes_no_maybe temp;
     bool maybe_found;
-    Symbol* referent;
+    Symbol referent;
 
     if (!t)
     {
@@ -794,14 +794,14 @@ list* find_known_goals(agent* thisAgent, condition* lhs)
    Note:  this uses the TC routines and clobbers any existing TC.
 ------------------------------------------------------------------ */
 
-Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* known_goals)
+Symbol find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* known_goals)
 {
     tc_number tc;
     list* roots;
     list* root_goals;
     int num_root_goals;
     cons* c, *prev_c, *next_c;
-    Symbol* result;
+    Symbol result;
     condition* cond;
 
     /* --- find root variables --- */
@@ -832,7 +832,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
                 for (c = root_goals; c != NIL; c = next_c)
                 {
                     next_c = c->rest;
-                    if (test_is_for_symbol(cond->data.tests.id_test, static_cast<Symbol*>(c->first)) == YES)
+                    if (test_is_for_symbol(cond->data.tests.id_test, static_cast<Symbol>(c->first)) == YES)
                     {
                         /* --- remove c from the root_goals list --- */
                         if (prev_c)
@@ -866,7 +866,7 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
     /* --- if there's only one root goal, that's it! --- */
     if (num_root_goals == 1)
     {
-        result = static_cast<Symbol*>(root_goals->first);
+        result = static_cast<Symbol>(root_goals->first);
     }
     else
     {
@@ -891,13 +891,13 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
    Note:  this uses the TC routines and clobbers any existing TC.
 ------------------------------------------------------------------ */
 
-Symbol* find_thing_off_goal(agent* thisAgent, condition* lhs,
-                            Symbol* goal, Symbol* attr)
+Symbol find_thing_off_goal(agent* thisAgent, condition* lhs,
+                            Symbol goal, Symbol attr)
 {
     condition* c;
     list* vars;
     tc_number tc;
-    Symbol* result;
+    Symbol result;
 
     for (c = lhs; c != NIL; c = c->next)
     {
@@ -922,7 +922,7 @@ Symbol* find_thing_off_goal(agent* thisAgent, condition* lhs,
         add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, &vars);
         if (vars)
         {
-            result = static_cast<Symbol*>(vars->first);
+            result = static_cast<Symbol>(vars->first);
             free_list(thisAgent, vars);
             return result;
         }
@@ -938,7 +938,7 @@ Symbol* find_thing_off_goal(agent* thisAgent, condition* lhs,
    within NCC's).
 ------------------------------------------------------------------ */
 
-bool condition_list_has_id_test_for_sym(condition* conds, Symbol* sym)
+bool condition_list_has_id_test_for_sym(condition* conds, Symbol sym)
 {
     for (; conds != NIL; conds = conds->next)
     {
@@ -970,7 +970,7 @@ bool condition_list_has_id_test_for_sym(condition* conds, Symbol* sym)
 ------------------------------------------------------------------ */
 
 bool match_state_tests_non_operator_slot(agent* thisAgent, condition* conds,
-        Symbol* match_state)
+        Symbol match_state)
 {
     yes_no_maybe ynm;
 
@@ -1066,7 +1066,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
 {
     list* known_goals;
     cons* c;
-    Symbol*  match_state, *match_operator;
+    Symbol  match_state, match_operator;
     yes_no_maybe lhs_oa_support, lhs_oc_support, lhs_om_support;
     action* a;
     condition* cond;
@@ -1112,7 +1112,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
             if (rhs_value_is_symbol(a->attr))   /* RBD 3/29/95 general RHS attr's */
             {
-                Symbol* attr;
+                Symbol attr;
                 attr = rhs_value_to_symbol(a->attr);
                 if (attr == thisAgent->operator_symbol)
                 {
@@ -1210,7 +1210,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
                 }
                 if (rhs_value_is_symbol(a->attr))   /* RBD 3/29/95 */
                 {
-                    Symbol* attr;
+                    Symbol attr;
                     attr = rhs_value_to_symbol(a->attr);
                     if ((attr->symbol_type == VARIABLE_SYMBOL_TYPE) &&
                             (attr != match_state))

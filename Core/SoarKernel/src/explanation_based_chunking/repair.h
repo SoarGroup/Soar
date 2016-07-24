@@ -5,8 +5,8 @@
 #include "stl_typedefs.h"
 
 typedef struct symbol_with_match_struct {
-        Symbol*     sym;
-        Symbol*     matched_sym;
+        Symbol     sym;
+        Symbol     matched_sym;
         uint64_t    identity;
         symbol_with_match_struct() {
             sym = NULL;
@@ -18,7 +18,7 @@ typedef struct symbol_with_match_struct {
 class Path_to_Goal_State
 {
     public:
-        Path_to_Goal_State(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL) {
+        Path_to_Goal_State(Symbol new_root, wme_list* new_path = NULL, wme* new_wme = NULL) {
             topSym = new_root;
             wme_path = new wme_list();
             if (new_path) {
@@ -28,12 +28,12 @@ class Path_to_Goal_State
         }
         ~Path_to_Goal_State() { delete wme_path; }
 
-        Symbol* get_root() {return topSym;}
+        Symbol get_root() {return topSym;}
         wme_list* get_path() {return wme_path;}
 
     private:
 
-        Symbol*     topSym;
+        Symbol     topSym;
         wme_list*   wme_path;
 };
 
@@ -58,10 +58,10 @@ class Repair_Manager
         uint64_t                m_chunk_ID;
 
 
-        wme_list*   find_path_to_goal_for_symbol(Symbol* targetLTI);
+        wme_list*   find_path_to_goal_for_symbol(Symbol targetLTI);
         void        mark_states_in_cond_list(condition* pCondList, tc_number pTC);
         condition*  make_condition_from_wme(wme* lWME);
-        void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
+        void        add_variablization(Symbol pSym, Symbol pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
         void        variablize_connecting_sti(test pTest);
         void        add_path_to_goal_WMEs(symbol_with_match* pTargetSym);
         void        add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC);

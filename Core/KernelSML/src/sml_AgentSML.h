@@ -106,7 +106,7 @@ namespace sml
         protected:
             // This function actually creates a wme in Soar (and the associated mappings between client and kernel side timetags)
             // Currently, only the functions below call this, so it's protected
-            bool AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, int64_t clientTimeTag);
+            bool AddInputWME(char const* pID, char const* pAttribute, Symbol pValueSymbol, int64_t clientTimeTag);
         public:
             // These functions convert values into Symbols so the above function can be called
             bool AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag);

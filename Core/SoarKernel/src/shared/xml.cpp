@@ -164,7 +164,7 @@ void xml_att_val(agent* pAgent, char const* pAttribute, char const* pValue)
     pXML->AddAttribute(pAttribute, pValue) ;
 }
 
-void xml_att_val(agent* pAgent, char const* pAttribute, Symbol* pSymbol)
+void xml_att_val(agent* pAgent, char const* pAttribute, Symbol pSymbol)
 {
     // Passing 0, 0 as buffer to symbol to string causes it to use internal, temporary buffers
     // which is fine because we immediately copy that string in XMLAddAttribute.

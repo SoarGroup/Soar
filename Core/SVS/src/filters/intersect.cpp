@@ -51,7 +51,7 @@ bool intersect_test(sgnode* a, sgnode* b, const filter_params* p)
 }
 
 ////// filter intersect //////
-filter* make_intersect_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_intersect_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_filter(root, si, input, &intersect_test);
 }
@@ -69,7 +69,7 @@ filter_table_entry* intersect_filter_entry()
 }
 
 ////// filter intersect_select //////
-filter* make_intersect_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_intersect_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_test_select_filter(root, si, input, &intersect_test);
 }

@@ -23,7 +23,7 @@ class filter_table_entry : public cliproxy
     public:
         filter_table_entry();
         
-        filter* (*create)(Symbol*, soar_interface*, scene*, filter_input*);
+        filter* (*create)(Symbol, soar_interface*, scene*, filter_input*);
         
         std::string name;
         std::string description;
@@ -37,7 +37,7 @@ class filter_table : public cliproxy
     public:
         friend filter_table& get_filter_table();
         
-        filter* make_filter(const std::string& pred, Symbol* root, soar_interface* si, scene* scn, filter_input* input) const;
+        filter* make_filter(const std::string& pred, Symbol root, soar_interface* si, scene* scn, filter_input* input) const;
         
     private:
         filter_table();
@@ -51,5 +51,5 @@ class filter_table : public cliproxy
 /* Get the singleton instance */
 filter_table& get_filter_table();
 
-filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn);
+filter* parse_filter_spec(soar_interface* si, Symbol root, scene* scn);
 #endif

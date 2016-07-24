@@ -35,14 +35,14 @@
 typedef struct slot_struct
 {
     struct slot_struct* next, *prev;  /* dll of slots for this id */
-    Symbol* id;                       /* id, attr of the slot */
-    Symbol* attr;
+    Symbol id;                       /* id, attr of the slot */
+    Symbol attr;
     wme* wmes;                        /* dll of wmes in the slot */
     wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
     preference* all_preferences;      /* dll of all pref's in the slot */
     preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
     ::list* CDPS;                     /* list of prefs in the CDPS to backtrace through */
-    Symbol* impasse_id;               /* NIL if slot is not impassed */
+    Symbol impasse_id;               /* NIL if slot is not impassed */
     bool isa_context_slot;
     byte impasse_type;
     bool marked_for_possible_removal;
@@ -57,8 +57,8 @@ typedef struct slot_struct
 
 } slot;
 
-extern slot* find_slot(Symbol* id, Symbol* attr);
-extern slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr);
+extern slot* find_slot(Symbol id, Symbol attr);
+extern slot* make_slot(agent* thisAgent, Symbol id, Symbol attr);
 extern void mark_slot_as_changed(agent* thisAgent, slot* s);
 extern void mark_slot_for_possible_removal(agent* thisAgent, slot* s);
 extern void remove_garbage_slots(agent* thisAgent);

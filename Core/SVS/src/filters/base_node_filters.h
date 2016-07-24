@@ -116,7 +116,7 @@ typedef double node_evaluation(sgnode* a, const filter_params* p);
 class node_select_range_filter : public select_filter<sgnode*>
 {
     public:
-        node_select_range_filter(Symbol* root, soar_interface* si,
+        node_select_range_filter(Symbol root, soar_interface* si,
                                       filter_input* input)
             : select_filter<sgnode*>(root, si, input),
               range_min(-1000000000), range_max(1000000000),
@@ -153,7 +153,7 @@ class node_select_range_filter : public select_filter<sgnode*>
 class node_test_filter : public map_filter<bool>
 {
     public:
-        node_test_filter(Symbol* root, soar_interface* si,
+        node_test_filter(Symbol root, soar_interface* si,
                          filter_input* input, node_test* test)
             : map_filter<bool>(root, si, input), test(test)
         {}
@@ -167,7 +167,7 @@ class node_test_filter : public map_filter<bool>
 class node_test_select_filter : public select_filter<sgnode*>
 {
     public:
-        node_test_select_filter(Symbol* root, soar_interface* si,
+        node_test_select_filter(Symbol root, soar_interface* si,
                                 filter_input* input, node_test* test)
             : select_filter<sgnode * >(root, si, input), test(test), select_true(true)
         {}
@@ -187,7 +187,7 @@ class node_test_select_filter : public select_filter<sgnode*>
 class node_comparison_filter : public map_filter<double>
 {
     public:
-        node_comparison_filter(Symbol* root, soar_interface* si,
+        node_comparison_filter(Symbol root, soar_interface* si,
                                filter_input* input, node_comparison* comp)
             : map_filter<double>(root, si, input), comp(comp)
         {}
@@ -202,7 +202,7 @@ class node_comparison_filter : public map_filter<double>
 class node_comparison_select_filter : public node_select_range_filter
 {
     public:
-        node_comparison_select_filter(Symbol* root, soar_interface* si,
+        node_comparison_select_filter(Symbol root, soar_interface* si,
                                       filter_input* input, node_comparison* comp)
             : node_select_range_filter(root, si, input), comp(comp)
         {}
@@ -216,7 +216,7 @@ class node_comparison_select_filter : public node_select_range_filter
 class node_comparison_rank_filter : public rank_filter
 {
     public:
-        node_comparison_rank_filter(Symbol* root, soar_interface* si,
+        node_comparison_rank_filter(Symbol root, soar_interface* si,
                                     filter_input* input, node_comparison* comp)
             : rank_filter(root, si, input), comp(comp)
         {}
@@ -231,7 +231,7 @@ class node_comparison_rank_filter : public rank_filter
 class node_evaluation_filter : public map_filter<double>
 {
     public:
-        node_evaluation_filter(Symbol* root, soar_interface* si,
+        node_evaluation_filter(Symbol root, soar_interface* si,
                                filter_input* input, node_evaluation* eval)
             : map_filter<double>(root, si, input), eval(eval)
         {}
@@ -245,7 +245,7 @@ class node_evaluation_filter : public map_filter<double>
 class node_evaluation_select_filter : public node_select_range_filter
 {
     public:
-        node_evaluation_select_filter(Symbol* root, soar_interface* si,
+        node_evaluation_select_filter(Symbol root, soar_interface* si,
                                       filter_input* input, node_evaluation* eval)
             : node_select_range_filter(root, si, input), eval(eval)
         {}
@@ -259,7 +259,7 @@ class node_evaluation_select_filter : public node_select_range_filter
 class node_evaluation_rank_filter : public rank_filter
 {
     public:
-        node_evaluation_rank_filter(Symbol* root, soar_interface* si,
+        node_evaluation_rank_filter(Symbol root, soar_interface* si,
                                     filter_input* input, node_evaluation* eval)
             : rank_filter(root, si, input), eval(eval)
         {}

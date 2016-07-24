@@ -140,7 +140,7 @@ class Explanation_Memory
         identity_triple         current_explained_ids;
 
         void                    initialize_counters();
-        chunk_record*           get_chunk_record(Symbol* pChunkName);
+        chunk_record*           get_chunk_record(Symbol pChunkName);
         instantiation_record*   get_instantiation(instantiation* pInst);
         condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
@@ -179,7 +179,7 @@ class Explanation_Memory
         chunking_stats      stats;
 
         /* These maps store all of the records the logger keeps */
-        std::unordered_map< Symbol*, chunk_record* >*           chunks;
+        std::unordered_map< Symbol, chunk_record* >*           chunks;
         std::unordered_map< uint64_t, chunk_record* >*          chunks_by_ID;
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;

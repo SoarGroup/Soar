@@ -695,11 +695,11 @@ void CommandLineInterface::PrintCLIMessage_Section(const char* headerString, int
 }
 
 void get_context_var_info(agent* thisAgent, const char* var_name,
-                          Symbol** dest_goal,
-                          Symbol** dest_attr_of_slot,
-                          Symbol** dest_current_value)
+                          Symbol dest_goal,
+                          Symbol dest_attr_of_slot,
+                          Symbol dest_current_value)
 {
-    Symbol* v, *g;
+    Symbol v, g;
     int levels_up;
     wme* w;
 
@@ -778,10 +778,10 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
 }
 
 bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string,
-                                        Symbol** result_id)
+                                        Symbol result_id)
 {
-    Symbol* id;
-    Symbol* g, *attr, *value;
+    Symbol id;
+    Symbol g, attr, value;
 
     soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, lex_string);
 
@@ -820,10 +820,10 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
     return false;
 }
 
-Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme)
+Symbol read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexeme)
 {
-    Symbol* id;
-    Symbol* g, *attr, *value;
+    Symbol id;
+    Symbol g, attr, value;
 
     if (lexeme->type == IDENTIFIER_LEXEME)
     {

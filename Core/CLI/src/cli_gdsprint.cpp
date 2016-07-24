@@ -27,7 +27,7 @@ using namespace sml;
 bool CommandLineInterface::DoGDSPrint()
 {
     wme* w;
-    Symbol* goal;
+    Symbol goal;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     
     

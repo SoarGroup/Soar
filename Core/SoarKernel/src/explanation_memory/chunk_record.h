@@ -49,7 +49,7 @@ class chunk_record
     private:
         agent*                  thisAgent;
 
-        Symbol*                 name;
+        Symbol                 name;
         uint64_t                chunkID;
         instantiation_record*   chunkInstantiation;
         production*             original_production;

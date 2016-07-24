@@ -37,7 +37,7 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
     const int maxStates = 500;
     int stateCount = 0 ;
 
-    for (Symbol* g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
+    for (Symbol g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
     {
         stateCount++ ;
 
@@ -213,7 +213,7 @@ void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentati
 
 // RPM 4/07: Note, mark_depths_augs_of_id must be called before the root call to print_augs_of_id
 //           Thus, this should probably only be called from do_print_for_identifier
-void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, bool intern, bool tree, tc_number tc)
+void print_augs_of_id(agent* thisAgent, Symbol id, int depth, int maxdepth, bool intern, bool tree, tc_number tc)
 {
     slot* s;
     wme* w;
@@ -378,7 +378,7 @@ That is, if an id can be reached by multiple paths, this will find the shortest 
 the depth of that path on the id.  Thus, when we print, the wmes will be indented properly,
 making it much easier to read, and avoiding bugs (see bug 988).
 */
-void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number tc)
+void mark_depths_augs_of_id(agent* thisAgent, Symbol id, int depth, tc_number tc)
 {
     slot* s;
     wme* w;
@@ -432,7 +432,7 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
     }
 }
 
-void do_print_for_identifier(agent* thisAgent, Symbol* id, int depth, bool intern, bool tree)
+void do_print_for_identifier(agent* thisAgent, Symbol id, int depth, bool intern, bool tree)
 {
     tc_number tc;
 
@@ -446,7 +446,7 @@ void do_print_for_identifier(agent* thisAgent, Symbol* id, int depth, bool inter
 
 void do_print_for_production_name(agent* thisAgent, soar::Lexeme* lexeme, const char* prod_name, bool intern, bool print_filename, bool full_prod)
 {
-    Symbol* sym;
+    Symbol sym;
 
     sym = find_str_constant(thisAgent, lexeme->string());
     if (sym && sym->sc->production)
@@ -474,7 +474,7 @@ void do_print_for_wme(agent* thisAgent, wme* w, int depth, bool intern, bool tre
 
 /* --- Read and consume one pattern element.  Return 0 if error, 1 if "*",
 otherwise return 2 and set dest_sym to find_symbol() result. --- */
-int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol** dest_sym)
+int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol dest_sym)
 {
     if (strcmp(lexeme->string(), "*") == 0)
     {
@@ -512,7 +512,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
     int parentheses_level;
     list* wmes;
     wme* w;
-    Symbol* id, *attr, *value;
+    Symbol id, attr, value;
     int id_result, attr_result, value_result;
     bool acceptable;
     soar::Lexer lexer(thisAgent, pattern);
@@ -586,7 +586,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
 void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool intern, bool tree, bool full_prod, int depth, bool exact)
 {
     cons* c;
-    Symbol* id;
+    Symbol id;
     wme* w;
     list* wmes;
 
@@ -629,14 +629,14 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             {
                 // When printing exact, we want to list only those wmes who match.
                 // Group up the wmes in objects (id ^attr value ^attr value ...)
-                std::map< Symbol*, std::list< wme* > > objects;
+                std::map< Symbol, std::list< wme* > > objects;
                 for (c = wmes; c != NIL; c = c->rest)
                 {
                     wme* current = static_cast<wme*>(c->first);
                     objects[current->id].push_back(current);
                 }
                 // Loop through objects and print its wmes
-                std::map< Symbol*, std::list<wme*> >::iterator iter = objects.begin();
+                std::map< Symbol, std::list<wme*> >::iterator iter = objects.begin();
                 while (iter != objects.end())
                 {
                     std::list<wme*> wmelist = iter->second;

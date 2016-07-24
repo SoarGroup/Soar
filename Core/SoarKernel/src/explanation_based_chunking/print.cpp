@@ -253,7 +253,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
         {
             for (cons* c = chunky_problem_spaces; c != NIL; c = c->rest)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol*>(c->first));
+                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol>(c->first));
                 outputManager->printa_sf(thisAgent, tempString.c_str());
                 tempString.clear();
             }
@@ -268,7 +268,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
         {
             for (cons* c = chunk_free_problem_spaces; c != NIL; c = c->rest)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol*>(c->first));
+                thisAgent->outputManager->sprinta_sf(thisAgent, tempString, "%y\n", static_cast<Symbol>(c->first));
                 outputManager->printa_sf(thisAgent, tempString.c_str());
                 tempString.clear();
             }

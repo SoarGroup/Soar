@@ -32,7 +32,7 @@ string filter_val_c<sgnode*>::toString() const
  * filter
  ********/
 
-filter::filter(Symbol* root, soar_interface* si, filter_input* in)
+filter::filter(Symbol root, soar_interface* si, filter_input* in)
     : root(root), si(si), status_wme(NULL), input(in)
 {
     if (input == NULL)

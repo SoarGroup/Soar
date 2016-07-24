@@ -30,17 +30,17 @@
    returns their sum.
 -------------------------------------------------------------------- */
 
-Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     bool float_found;
     int64_t i;
     double f = 0;
-    Symbol* arg;
+    Symbol arg;
     cons* c;
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -54,7 +54,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     float_found = false;
     while (args)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -94,17 +94,17 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
    returns their product.
 -------------------------------------------------------------------- */
 
-Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     bool float_found;
     int64_t i;
     double f = 0;
-    Symbol* arg;
+    Symbol arg;
     cons* c;
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -118,7 +118,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     float_found = false;
     while (args)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -160,9 +160,9 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    If >=2 arguments (x, y1, ..., yk), returns x - y1 - ... - yk.
 -------------------------------------------------------------------- */
 
-Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double f = 0;  /* For gcc -Wall */
     int64_t i = 0;   /* For gcc -Wall */
     cons* c;
@@ -176,7 +176,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -189,7 +189,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     if (! args->rest)
     {
         /* --- only one argument --- */
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             return make_int_constant(thisAgent, - arg->ic->value);
@@ -198,7 +198,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     float_found = false;
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -211,7 +211,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     }
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -253,9 +253,9 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    If >=2 arguments (x, y1, ..., yk), returns x / y1 / ... / yk.
 -------------------------------------------------------------------- */
 
-Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double f;
     cons* c;
 
@@ -267,7 +267,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -280,7 +280,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     if (! args->rest)
     {
         /* --- only one argument --- */
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             f = static_cast<double>(arg->ic->value);
@@ -298,7 +298,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         f = static_cast<double>(arg->ic->value);
@@ -309,7 +309,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     }
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (arg->ic->value)
@@ -344,12 +344,12 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
    Takes two int_constant arguments, and returns their quotient.
 -------------------------------------------------------------------- */
 
-Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg1, *arg2;
+    Symbol arg1, arg2;
 
-    arg1 = static_cast<Symbol*>(args->first);
-    arg2 = static_cast<Symbol*>(args->rest->first);
+    arg1 = static_cast<Symbol>(args->first);
+    arg2 = static_cast<Symbol>(args->rest->first);
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -375,13 +375,13 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
        two args is negative. */
 }
 
-Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg1;
+    Symbol arg1;
     slot* s;
     wme* w;
 
-    arg1 = static_cast<Symbol*>(args->first);
+    arg1 = static_cast<Symbol>(args->first);
 
     if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -399,13 +399,13 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
     return make_int_constant(thisAgent, count);
 }
-Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-	Symbol* arg1;
+	Symbol arg1;
 	slot* s;
 	wme* w;
 
-    arg1 = static_cast<Symbol*>(args->first);
+    arg1 = static_cast<Symbol>(args->first);
 
 	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
@@ -431,12 +431,12 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the remainder after dividing x by y.
 -------------------------------------------------------------------- */
 
-Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg1, *arg2;
+    Symbol arg1, arg2;
 
-    arg1 = static_cast<Symbol*>(args->first);
-    arg2 = static_cast<Symbol*>(args->rest->first);
+    arg1 = static_cast<Symbol>(args->first);
+    arg2 = static_cast<Symbol>(args->rest->first);
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -470,18 +470,18 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    and returns the minimum value in the list
 -------------------------------------------------------------------- */
 
-Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     bool float_found;
     bool first = true;
     int64_t min_i = 0;
     double min_f = 0;
-    Symbol* arg;
+    Symbol arg;
     cons* c;
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -494,7 +494,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     float_found = false;
     while (args)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -548,18 +548,18 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    and returns the maximum value in the list
 -------------------------------------------------------------------- */
 
-Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     bool float_found;
     bool first = true;
     int64_t max_i = 0;
     double max_f = 0;
-    Symbol* arg;
+    Symbol arg;
     cons* c;
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -572,7 +572,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     float_found = false;
     while (args)
     {
-        arg = static_cast<Symbol*>(args->first);
+        arg = static_cast<Symbol>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
             if (float_found)
@@ -624,9 +624,9 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the sine of an angle measured in radians.
  */
-Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double  arg_value;
 
     if (!args)
@@ -635,7 +635,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -659,9 +659,9 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the cosine of an angle measured in radians.
  */
-Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double  arg_value;
 
     if (!args)
@@ -670,7 +670,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -693,9 +693,9 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the square root of its argument (integer or float).
  */
-Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double  arg_value;
 
     if (!args)
@@ -704,7 +704,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         arg_value = arg->fc->value;
@@ -728,9 +728,9 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
  * Returns as a float in radians the arctangent of (first_arg/second_arg)
  * which are floats or integers.
  */
-Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     cons* c;
     double  numer_value,
             denom_value;
@@ -743,7 +743,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -759,7 +759,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         numer_value = arg->fc->value;
@@ -775,7 +775,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         print(thisAgent, "Error: 'atan2' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = static_cast<Symbol*>(c->first);
+    arg = static_cast<Symbol>(c->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         denom_value = arg->fc->value;
@@ -794,9 +794,9 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
  *
  * Returns the absolute value of a float as a float, of an int as an int.
  */
-Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg,
+    Symbol arg,
             *return_value;
 
     if (!args)
@@ -805,7 +805,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         return_value = make_float_constant(thisAgent, fabs(arg->fc->value));
@@ -831,9 +831,9 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the integer portion is returned.
 -------------------------------------------------------------------- */
 
-Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* sym;
+    Symbol sym;
 
     if (!args)
     {
@@ -847,7 +847,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    sym = static_cast<Symbol*>(args->first);
+    sym = static_cast<Symbol>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: variable (%y) passed to 'int' RHS function.\n",
@@ -900,9 +900,9 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the integer portion is converted.
 -------------------------------------------------------------------- */
 
-Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* sym;
+    Symbol sym;
 
     if (!args)
     {
@@ -916,7 +916,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         return NIL;
     }
 
-    sym = static_cast<Symbol*>(args->first);
+    sym = static_cast<Symbol>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
         print_with_symbols(thisAgent, "Error: variable (%y) passed to 'float' RHS function.\n",
@@ -1053,9 +1053,9 @@ double round_off_heading_float(double n, double m)
     return unbounded_rounded / 10.0;
 }
 
-Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double n = 0, f_m = 0;
     int64_t i_m = 0;
     cons* c;
@@ -1075,7 +1075,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         n = static_cast<double>(arg->ic->value) ;
@@ -1092,7 +1092,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
         print(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = static_cast<Symbol*>(c->first);
+    arg = static_cast<Symbol>(c->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         i_m = arg->ic->value;
@@ -1122,9 +1122,9 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
 
  Takes two numbers and returns the first rounded to the nearest second.
 -------------------------------------------------------------------- */
-Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double n = 0, f_m = 0;
     int64_t i_m = 0;
     cons* c;
@@ -1144,7 +1144,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     }
 
     /* --- two or more arguments --- */
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         n = static_cast<double>(arg->ic->value) ;
@@ -1161,7 +1161,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
         print(thisAgent, "Error: 'round_off' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = static_cast<Symbol*>(c->first);
+    arg = static_cast<Symbol>(c->first);
     if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
         i_m = arg->ic->value;
@@ -1307,9 +1307,9 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
  Takes 4 args and returns integer heading from x1,y1 to x2,y2
 -------------------------------------------------------------------- */
 
-Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     int64_t current_x, current_y;
     int64_t waypoint_x, waypoint_y;
     int count;
@@ -1323,7 +1323,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1336,7 +1336,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
 
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1355,16 +1355,16 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
-    arg = static_cast<Symbol*>(args->rest->first);
+    arg = static_cast<Symbol>(args->rest->first);
     current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
-    arg = static_cast<Symbol*>(args->rest->rest->first);
+    arg = static_cast<Symbol>(args->rest->rest->first);
     waypoint_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
-    arg = static_cast<Symbol*>(args->rest->rest->rest->first);
+    arg = static_cast<Symbol>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
     return make_int_constant(thisAgent, heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
@@ -1376,9 +1376,9 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
  Takes 4 args and returns integer range from x1,y1 to x2,y2
 -------------------------------------------------------------------- */
 
-Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-    Symbol* arg;
+    Symbol arg;
     double current_x, current_y;
     double waypoint_x, waypoint_y;
     int count;
@@ -1392,7 +1392,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
 
     for (c = args; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1405,7 +1405,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
 
     for (c = args->rest; c != NIL; c = c->rest)
     {
-        arg = static_cast<Symbol*>(c->first);
+        arg = static_cast<Symbol>(c->first);
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1424,16 +1424,16 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
         return NIL;
     }
 
-    arg = static_cast<Symbol*>(args->first);
+    arg = static_cast<Symbol>(args->first);
     current_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
 
-    arg = static_cast<Symbol*>(args->rest->first);
+    arg = static_cast<Symbol>(args->rest->first);
     current_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
 
-    arg = static_cast<Symbol*>(args->rest->rest->first);
+    arg = static_cast<Symbol>(args->rest->rest->first);
     waypoint_x = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
 
-    arg = static_cast<Symbol*>(args->rest->rest->rest->first);
+    arg = static_cast<Symbol>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
 
     return make_int_constant(thisAgent, static_cast<int64_t>(sqrt((current_x - waypoint_x)
@@ -1449,13 +1449,13 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
  Returns [0,1.0] of no argument, or if argument is not positive.
  Returns [0,n] if argument is positive.
 -------------------------------------------------------------------- */
-Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     double n = 0;
     if (args)
     {
         cons* c = args;
-        Symbol* arg = static_cast<Symbol*>(c->first);
+        Symbol arg = static_cast<Symbol>(c->first);
         if (arg)
         {
             if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -1493,13 +1493,13 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
  Returns [-2^31,2^31-1] of no argument, or if argument is not positive.
  Returns [0,n] if argument is positive.
 -------------------------------------------------------------------- */
-Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     int64_t n = 0;
     if (args)
     {
         cons* c = args;
-        Symbol* arg = static_cast<Symbol*>(c->first);
+        Symbol arg = static_cast<Symbol>(c->first);
         if (arg)
         {
             if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -1626,7 +1626,7 @@ double _dice_prob_atleast(int64_t dice, int64_t sides, int64_t count)
 
 // Taken primarily from Jon Voigt's soar-dice project
 // (compute-dice-probability dice sides count predicate) = 0..1
-Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
     int64_t dice;
     int64_t sides;
@@ -1637,10 +1637,10 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     // parse + validate
     {
-        Symbol* temp_sym;
+        Symbol temp_sym;
 
         // dice
-        temp_sym = static_cast< Symbol* >(args->first);
+        temp_sym = static_cast< Symbol >(args->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1650,7 +1650,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         dice = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
 
         // sides
-        temp_sym = static_cast< Symbol* >(args->rest->first);
+        temp_sym = static_cast< Symbol >(args->rest->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1660,7 +1660,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         sides = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
 
         // count
-        temp_sym = static_cast< Symbol* >(args->rest->rest->first);
+        temp_sym = static_cast< Symbol >(args->rest->rest->first);
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
@@ -1670,7 +1670,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         count = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
 
         // pred
-        temp_sym = static_cast< Symbol* >(args->rest->rest->rest->first);
+        temp_sym = static_cast< Symbol >(args->rest->rest->rest->first);
         if (temp_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
         {
             print_with_symbols(thisAgent, "Error: non-string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym);

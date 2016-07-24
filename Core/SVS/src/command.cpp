@@ -37,7 +37,7 @@ void cleanstring(string& s)
     }
 }
 
-command::command(svs_state* state, Symbol* cmd_root)
+command::command(svs_state* state, Symbol cmd_root)
     : state(state), si(state->get_svs()->get_soar_interface()), root(cmd_root),
       subtree_size(0), prev_max_time(-1), status_wme(NULL), first(true)
 {}
@@ -62,10 +62,10 @@ bool command::changed()
 void command::parse_substructure(size_t& size, uint64_t& max_time)
 {
     tc_number tc;
-    stack< Symbol*> to_process;
+    stack< Symbol> to_process;
     wme_vector childs;
     wme_vector::iterator i;
-    Symbol* parent, *v;
+    Symbol parent, v;
     uint64_t tt;
     string attr;
     

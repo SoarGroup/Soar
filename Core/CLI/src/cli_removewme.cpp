@@ -44,7 +44,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
 
     if (pWme)
     {
-        Symbol* pId = pWme->id;
+        Symbol pId = pWme->id;
 
         // remove w from whatever list of wmes it's on
         for (wme* pWme2 = pId->id->input_wmes; pWme2 != 0; pWme2 = pWme2->next)

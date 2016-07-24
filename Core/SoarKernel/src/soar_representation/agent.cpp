@@ -130,11 +130,11 @@ void init_soar_agent(agent* thisAgent)
     add_trace_format(thisAgent, false, FOR_STATES_TF, NIL,
                      "%id %ifdef[(%v[attribute] %v[impasse])]");
     {
-        Symbol* evaluate_object_sym;
+        Symbol evaluate_object_sym;
         evaluate_object_sym = make_str_constant(thisAgent, "evaluate-object");
         add_trace_format(thisAgent, false, FOR_OPERATORS_TF, evaluate_object_sym,
                          "%id (evaluate-object %o[object])");
-        symbol_remove_ref(thisAgent, &evaluate_object_sym);
+        symbol_remove_ref(thisAgent, evaluate_object_sym);
     }
     /* --- add default stack trace formats --- */
     add_trace_format(thisAgent, true, FOR_STATES_TF, NIL,
@@ -376,10 +376,10 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
     thisAgent->epmem_edge_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
 
-    thisAgent->epmem_wme_adds = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
-    thisAgent->epmem_promotions = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    thisAgent->epmem_wme_adds = new epmem_symbol_set(std::less< Symbol >(), soar_module::soar_memory_pool_allocator< Symbol >(thisAgent));
+    thisAgent->epmem_promotions = new epmem_symbol_set(std::less< Symbol >(), soar_module::soar_memory_pool_allocator< Symbol >(thisAgent));
 
-    thisAgent->epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    thisAgent->epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol >(thisAgent));
 #else
     thisAgent->epmem_node_removals = new epmem_id_removal_map();
     thisAgent->epmem_edge_removals = new epmem_id_removal_map();
@@ -403,7 +403,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->LTIs_sourced = new LTI_Promotion_Set();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    thisAgent->smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    thisAgent->smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol >(), soar_module::soar_memory_pool_allocator< Symbol >(thisAgent));
 #else
     thisAgent->smem_changed_ids = new smem_pooled_symbol_set();
 #endif
@@ -557,7 +557,7 @@ void destroy_soar_agent(agent* delete_agent)
     /* Releasing trace formats (needs to happen before tracing hashtables are released) */
     remove_trace_format(delete_agent, false, FOR_ANYTHING_TF, NIL);
     remove_trace_format(delete_agent, false, FOR_STATES_TF, NIL);
-    Symbol* evaluate_object_sym = find_str_constant(delete_agent, "evaluate-object");
+    Symbol evaluate_object_sym = find_str_constant(delete_agent, "evaluate-object");
     remove_trace_format(delete_agent, false, FOR_OPERATORS_TF, evaluate_object_sym);
     remove_trace_format(delete_agent, true, FOR_STATES_TF, NIL);
     remove_trace_format(delete_agent, true, FOR_OPERATORS_TF, NIL);

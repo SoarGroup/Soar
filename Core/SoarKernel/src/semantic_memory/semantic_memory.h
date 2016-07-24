@@ -325,7 +325,7 @@ typedef std::list<smem_lti_id> smem_lti_list;
 typedef std::set<smem_lti_id> smem_lti_set;
 
 // a list of symbols
-typedef std::list<Symbol*> smem_sym_list;
+typedef std::list<Symbol> smem_sym_list;
 
 // ways to store an identifier
 enum smem_storage_type { store_level, store_recursive };
@@ -335,9 +335,9 @@ typedef std::list<wme*> smem_wme_list;
 
 // represents a set of symbols
 #ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > smem_pooled_symbol_set;
+typedef std::set< Symbol, std::less< Symbol >, soar_module::soar_memory_pool_allocator< Symbol > > smem_pooled_symbol_set;
 #else
-typedef std::set< Symbol* > smem_pooled_symbol_set;
+typedef std::set< Symbol > smem_pooled_symbol_set;
 #endif
 
 // list used primarily like a stack
@@ -404,11 +404,11 @@ typedef struct smem_chunk_struct smem_chunk;
 typedef std::set<smem_chunk*> smem_chunk_set;
 typedef union smem_chunk_value_union smem_chunk_value;
 typedef std::list<smem_chunk_value*> smem_slot;
-typedef std::map<Symbol*, smem_slot*> smem_slot_map;
+typedef std::map<Symbol, smem_slot*> smem_slot_map;
 
 struct smem_chunk_struct
 {
-    Symbol* soar_id;
+    Symbol soar_id;
     smem_lti_id lti_id;
 
     char lti_letter;
@@ -420,7 +420,7 @@ struct smem_chunk_struct
 struct smem_chunk_value_constant
 {
     smem_cue_element_type val_type;
-    Symbol* val_value;
+    Symbol val_value;
 };
 
 struct smem_chunk_value_lti
@@ -436,7 +436,7 @@ union smem_chunk_value_union
 };
 
 typedef std::map<std::string, smem_chunk*> smem_str_to_chunk_map;
-typedef std::map<Symbol*, smem_chunk*> smem_sym_to_chunk_map;
+typedef std::map<Symbol, smem_chunk*> smem_sym_to_chunk_map;
 
 //
 
@@ -476,10 +476,10 @@ extern bool smem_count_ltis(agent* thisAgent, void* item, void* userdata);
 extern bool smem_valid_production(condition* lhs_top, action* rhs_top);
 
 extern smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_number);
-extern Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level);
-extern void smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id);
+extern Symbol smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level);
+extern void smem_lti_soar_promote_STI(agent* thisAgent, Symbol id);
 
-extern void smem_reset(agent* thisAgent, Symbol* state);
+extern void smem_reset(agent* thisAgent, Symbol state);
 extern void smem_reset_id_counters(agent* thisAgent);
 extern void smem_close(agent* thisAgent);
 extern void smem_reinit(agent* thisAgent);

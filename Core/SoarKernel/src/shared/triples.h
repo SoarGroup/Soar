@@ -5,11 +5,11 @@
 
 typedef struct symbol_triple_struct
 {
-        Symbol* id;
-        Symbol* attr;
-        Symbol* value;
+        Symbol id;
+        Symbol attr;
+        Symbol value;
 
-        symbol_triple_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
+        symbol_triple_struct(Symbol new_id = NULL, Symbol new_attr = NULL, Symbol new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
 } symbol_triple;
 
 typedef struct test_triple_struct

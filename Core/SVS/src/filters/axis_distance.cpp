@@ -66,7 +66,7 @@ double compare_axis_distance(sgnode* a, sgnode* b, const filter_params* p)
 }
 
 ///// filter axis_distance //////
-filter* make_axis_distance_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_axis_distance_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_filter(root, si, input, &compare_axis_distance);
 }
@@ -85,7 +85,7 @@ filter_table_entry* axis_distance_filter_entry()
 }
 
 ///// filter axis_distance_select //////
-filter* make_axis_distance_select_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_axis_distance_select_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new node_comparison_select_filter(root, si, input, &compare_axis_distance);
 }

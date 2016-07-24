@@ -706,7 +706,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_wme_list* smem_get_direct_augs_of_id(Symbol* id, tc_number tc = NIL)
+smem_wme_list* smem_get_direct_augs_of_id(Symbol id, tc_number tc = NIL)
 {
     slot* s;
     wme* w;
@@ -758,7 +758,7 @@ smem_wme_list* smem_get_direct_augs_of_id(Symbol* id, tc_number tc = NIL)
     return return_val;
 }
 
-inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
+inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
     {
@@ -854,13 +854,13 @@ inline void _smem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme
     }
 }
 
-inline void smem_process_buffered_wmes(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
+inline void smem_process_buffered_wmes(agent* thisAgent, Symbol state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
     _smem_process_buffered_wme_list(thisAgent, state, cue_wmes, meta_wmes, true);
     _smem_process_buffered_wme_list(thisAgent, state, cue_wmes, retrieval_wmes, false);
 }
 
-inline void smem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
+inline void smem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, Symbol id, Symbol attr, Symbol value)
 {
     my_list.push_back(new symbol_triple(id, attr, value));
 
@@ -1027,7 +1027,7 @@ inline smem_hash_id smem_temporal_hash_str(agent* thisAgent, char* val, bool add
 }
 
 // returns a temporally unique integer representing a symbol constant
-smem_hash_id smem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail = true)
+smem_hash_id smem_temporal_hash(agent* thisAgent, Symbol sym, bool add_on_fail = true)
 {
     smem_hash_id return_val = NIL;
 
@@ -1110,9 +1110,9 @@ inline void smem_reverse_hash_str(agent* thisAgent, smem_hash_id hash_value, std
     thisAgent->smem_stmts->hash_rev_str->reinitialize();
 }
 
-inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_id hash_value)
+inline Symbol smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_id hash_value)
 {
-    Symbol* return_val = NULL;
+    Symbol return_val = NULL;
     std::string dest;
 
     switch (symbol_type)
@@ -1351,7 +1351,7 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void _smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
+void _smem_lti_from_test(test t, std::set<Symbol>* valid_ltis)
 {
     if (!t)
     {
@@ -1380,11 +1380,11 @@ void _smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
 }
 
 // copied primarily from add_all_variables_in_rhs_value
-void _smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
+void _smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol>* valid_ltis)
 {
     if (rhs_value_is_symbol(rv))
     {
-        Symbol* sym = rhs_value_to_symbol(rv);
+        Symbol sym = rhs_value_to_symbol(rv);
         if ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->id->smem_lti != NIL))
         {
             valid_ltis->insert(sym);
@@ -1403,7 +1403,7 @@ void _smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
 // instance of hash_table_callback_fn2
 bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
 {
-    Symbol* id = static_cast<Symbol*>(item);
+    Symbol id = static_cast<Symbol>(item);
 
     dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
     if (id->id->smem_lti != NIL)
@@ -1461,7 +1461,7 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
 
 /* I don't know how important the inline was for Nate to include it, so I just made a copy
    of that function for use in other files. */
-void smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id)
+void smem_lti_soar_promote_STI(agent* thisAgent, Symbol id)
 {
     assert(id->is_identifier());
     if (id->id->smem_lti == NIL)
@@ -1481,7 +1481,7 @@ void smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id)
 }
 
 // makes a non-long-term identifier into a long-term identifier
-inline void smem_lti_soar_add(agent* thisAgent, Symbol* id)
+inline void smem_lti_soar_add(agent* thisAgent, Symbol id)
 {
     if ((id->is_identifier()) &&
             (id->id->smem_lti == NIL))
@@ -1502,9 +1502,9 @@ inline void smem_lti_soar_add(agent* thisAgent, Symbol* id)
 }
 
 // returns a reference to an lti
-Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level)
+Symbol smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level)
 {
-    Symbol* return_val;
+    Symbol return_val;
 
     // try to find existing
     return_val = find_identifier(thisAgent, name_letter, name_number);
@@ -1565,7 +1565,7 @@ void smem_reset_id_counters(agent* thisAgent)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-inline smem_slot* smem_make_slot(smem_slot_map* slots, Symbol* attr)
+inline smem_slot* smem_make_slot(smem_slot_map* slots, Symbol attr)
 {
     smem_slot** s = & (*slots)[ attr ];
 
@@ -1635,7 +1635,7 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
     }
 }
 
-void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true)
+void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol print_id = NULL, bool activate = true)
 {
     // if remove children, disconnect chunk -> no existing edges
     // else, need to query number of existing edges
@@ -1930,7 +1930,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     }
 }
 
-void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL)
+void smem_soar_store(agent* thisAgent, Symbol id, smem_storage_type store_type = store_level, tc_number tc = NIL)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -2041,14 +2041,14 @@ void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
+void smem_install_memory(agent* thisAgent, Symbol state, smem_lti_id lti_id, Symbol lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
 {
     ////////////////////////////////////////////////////////////////////////////
     thisAgent->smem_timers->ncb_retrieval->start();
     ////////////////////////////////////////////////////////////////////////////
 
     // get the ^result header for this state
-    Symbol* result_header = NULL;
+    Symbol result_header = NULL;
     if (install_type == wm_install)
     {
         result_header = state->id->smem_result_header;
@@ -2094,7 +2094,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // remove a single ref count AFTER the wme
         // is added (such as to not deallocate the symbol
         // prematurely)
-        symbol_remove_ref(thisAgent, &lti);
+        symbol_remove_ref(thisAgent, lti);
     }
 
     bool triggered = false;
@@ -2115,13 +2115,13 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         }
 
         soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
-        Symbol* attr_sym;
-        Symbol* value_sym;
+        Symbol attr_sym;
+        Symbol value_sym;
 
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
         expand_q->bind_int(1, lti_id);
 
-        std::set<Symbol*> children;
+        std::set<Symbol> children;
 
         while (expand_q->execute() == soar_module::row)
         {
@@ -2147,14 +2147,14 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
-            symbol_remove_ref(thisAgent, &attr_sym);
-            symbol_remove_ref(thisAgent, &value_sym);
+            symbol_remove_ref(thisAgent, attr_sym);
+            symbol_remove_ref(thisAgent, value_sym);
         }
         expand_q->reinitialize();
 
         //Attempt to find children for the case of depth.
-        std::set<Symbol*>::iterator iterator;
-        std::set<Symbol*>::iterator end = children.end();
+        std::set<Symbol>::iterator iterator;
+        std::set<Symbol>::iterator end = children.end();
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
             if (visited->find((*iterator)->id->smem_lti) == visited->end())
@@ -2330,11 +2330,11 @@ inline bool _smem_process_cue_wme(agent* thisAgent, wme* w, bool pos_cue, smem_p
 }
 
 //this returns a pair with <needFullSearch, goodCue>
-std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq)
+std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol mathQuery, smem_prioritized_weighted_cue* weighted_pq)
 {
     bool needFullSearch = false;
     //Use this set to track when certain elements have been added, so we don't add them twice
-    std::set<Symbol*> uniqueMathQueryElements;
+    std::set<Symbol> uniqueMathQueryElements;
     std::pair<bool, bool>* result = new std::pair<bool, bool>(true, true);
 
     smem_wme_list* cue = smem_get_direct_augs_of_id(mathQuery);
@@ -2470,7 +2470,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
     return result;
 }
 
-smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
+smem_lti_id smem_process_query(agent* thisAgent, Symbol state, Symbol query, Symbol negquery, Symbol mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -2851,7 +2851,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_clear_result(agent* thisAgent, Symbol* state)
+void smem_clear_result(agent* thisAgent, Symbol state)
 {
     preference* pref;
 
@@ -2868,7 +2868,7 @@ void smem_clear_result(agent* thisAgent, Symbol* state)
 }
 
 // performs cleanup when a state is removed
-void smem_reset(agent* thisAgent, Symbol* state)
+void smem_reset(agent* thisAgent, Symbol state)
 {
     if (state == NULL)
     {
@@ -3317,7 +3317,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
         {
             smem_slot_map::iterator s;
             smem_slot::iterator v;
-            Symbol* lSym;
+            Symbol lSym;
             // iterate over slots
             while (!chunk->slots->empty())
             {
@@ -3332,7 +3332,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
                         // de-allocation of value is dependent upon type
                         if ((*v)->val_const.val_type == value_const_t)
                         {
-                            symbol_remove_ref(thisAgent, &(*v)->val_const.val_value);
+                            symbol_remove_ref(thisAgent, (*v)->val_const.val_value);
                         }
                         else
                         {
@@ -3349,7 +3349,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
 
                 // deallocate attribute for each corresponding value
                 lSym = s->first;
-                symbol_remove_ref(thisAgent, &lSym);
+                symbol_remove_ref(thisAgent, lSym);
 
                 chunk->slots->erase(s);
             }
@@ -3400,9 +3400,9 @@ inline std::string* smem_parse_lti_name(agent* thisAgent, soar::Lexeme* lexeme, 
     return return_val;
 }
 
-inline Symbol* smem_parse_constant_attr(agent* thisAgent, soar::Lexeme* lexeme)
+inline Symbol smem_parse_constant_attr(agent* thisAgent, soar::Lexeme* lexeme)
 {
-    Symbol* return_val = NIL;
+    Symbol return_val = NIL;
 
     if ((*lexeme).type == STR_CONSTANT_LEXEME)
     {
@@ -3468,7 +3468,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
             smem_chunk* temp_chunk;
             std::string temp_key;
             std::string* temp_key2;
-            Symbol* chunk_attr;
+            Symbol chunk_attr;
             smem_chunk_value* chunk_value;
             smem_slot* s;
 
@@ -3626,7 +3626,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                                 if (first_value && !s->empty())
                                 {
                                     // in the case of a repeated attribute, remove ref here to avoid leak
-                                    symbol_remove_ref(thisAgent, &chunk_attr);
+                                    symbol_remove_ref(thisAgent, chunk_attr);
                                 }
                                 s->push_back(chunk_value);
 
@@ -3789,7 +3789,7 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
                                 (*c_new)->lti_id = smem_lti_add_id(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
 
                                 // this could affect an existing identifier in Soar's WM
-                                Symbol* id_parent = find_identifier(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
+                                Symbol id_parent = find_identifier(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
                                 if (id_parent != NIL)
                                 {
                                     // if so we make it an lti manually
@@ -3872,16 +3872,16 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
     // and indicates whether or not we can call smem_process_query.
 
-    std::map<std::string, Symbol*> cue_ids; //I want to keep track of previous references when adding a new element to the cue.
+    std::map<std::string, Symbol> cue_ids; //I want to keep track of previous references when adding a new element to the cue.
 
     //consume next token.
     lexer.get_lexeme();
 
     good_cue = lexer.current_lexeme.type == L_PAREN_LEXEME;
 
-    Symbol* root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
+    Symbol root_cue_id = NIL;    //This is the id that gets passed to smem_process_query.
     //It's main purpose is to contain augmentations
-    Symbol* negative_cues = NULL;  //This is supposed to contain the negative augmentations.
+    Symbol negative_cues = NULL;  //This is supposed to contain the negative augmentations.
 
     bool trigger_first = true; //Just for managing my loop.
     bool minus_ever = false; //Did a negative cue ever show up?
@@ -3927,7 +3927,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             //Consume the root_cue_id
             lexer.get_lexeme();
 
-            Symbol* attribute;
+            Symbol attribute;
             slot* temp_slot;
 
             //Now, we process the attributes of the cue id contained in this clause.
@@ -3971,7 +3971,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     break;
                 }
 
-                Symbol* value;
+                Symbol value;
                 wme* temp_wme;
 
                 if (minus)
@@ -4024,7 +4024,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     }
                     else if (lexer.current_lexeme.type == VARIABLE_LEXEME || lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                     {
-                        std::map<std::basic_string<char>, Symbol*>::iterator value_iterator;
+                        std::map<std::basic_string<char>, Symbol>::iterator value_iterator;
                         value_iterator = cue_ids.find(lexer.current_lexeme.string());
 
                         if (value_iterator == cue_ids.end())
@@ -4131,12 +4131,12 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, &delete_wme->value);
+                symbol_remove_ref(thisAgent, delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, &s->attr);
+            symbol_remove_ref(thisAgent, s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         root_cue_id->id->slots = NIL;
@@ -4147,18 +4147,18 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, &delete_wme->value);
+                symbol_remove_ref(thisAgent, delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, &s->attr);
+            symbol_remove_ref(thisAgent, s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         negative_cues->id->slots = NIL;
 
-        symbol_remove_ref(thisAgent, &root_cue_id);//gets rid of cue id.
-        symbol_remove_ref(thisAgent, &negative_cues);//gets rid of negative cues id.
+        symbol_remove_ref(thisAgent, root_cue_id);//gets rid of cue id.
+        symbol_remove_ref(thisAgent, negative_cues);//gets rid of negative cues id.
     }
 
     return good_cue;
@@ -4220,7 +4220,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 
     if (good_command && lti_id != NIL)
     {
-        Symbol* lti = smem_lti_soar_make(thisAgent, lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+        Symbol lti = smem_lti_soar_make(thisAgent, lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
 
         lexer.get_lexeme();//Consume the identifier.
 
@@ -4323,7 +4323,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
             {
                 lexer.get_lexeme();// Consume the up arrow.
 
-                Symbol* attribute = NIL;
+                Symbol attribute = NIL;
 
                 if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                 {
@@ -4351,7 +4351,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 
                 if (good_command && (lexer.current_lexeme.type != UP_ARROW_LEXEME && lexer.current_lexeme.type != R_PAREN_LEXEME)) //If there are values.
                 {
-                    Symbol* value;
+                    Symbol value;
                     do //Add value by type
                     {
                         value = NIL;
@@ -4484,12 +4484,12 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
         symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
         for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->id);
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->attr);
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->value);
+            symbol_remove_ref(thisAgent, (*triple_iterator)->id);
+            symbol_remove_ref(thisAgent, (*triple_iterator)->attr);
+            symbol_remove_ref(thisAgent, (*triple_iterator)->value);
             delete *triple_iterator;
         }
-        symbol_remove_ref(thisAgent, &lti);
+        symbol_remove_ref(thisAgent, lti);
     }
     return good_command;
 }
@@ -4507,7 +4507,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
     // start at the bottom and work our way up
     // (could go in the opposite direction as well)
-    Symbol* state = thisAgent->bottom_goal;
+    Symbol state = thisAgent->bottom_goal;
 
     smem_wme_list* wmes;
     smem_wme_list* cmds;
@@ -4517,10 +4517,10 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     symbol_triple_list retrieval_wmes;
     wme_set cue_wmes;
 
-    Symbol* query;
-    Symbol* negquery;
-    Symbol* retrieve;
-    Symbol* math;
+    Symbol query;
+    Symbol negquery;
+    Symbol retrieve;
+    Symbol math;
     uint64_t depth;
     smem_sym_list prohibit;
     smem_sym_list store;
@@ -4533,8 +4533,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
     tc_number tc;
 
-    Symbol* parent_sym;
-    std::queue<Symbol*> syms;
+    Symbol parent_sym;
+    std::queue<Symbol> syms;
 
     int parent_level;
     std::queue<int> levels;
@@ -4868,9 +4868,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
+                        symbol_remove_ref(thisAgent, (*mw_it)->id);
+                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, (*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4878,9 +4878,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
+                        symbol_remove_ref(thisAgent, (*mw_it)->id);
+                        symbol_remove_ref(thisAgent, (*mw_it)->attr);
+                        symbol_remove_ref(thisAgent, (*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4929,9 +4929,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 // add one to the mirrors stat
                 thisAgent->smem_stats->mirrors->set_value(thisAgent->smem_stats->mirrors->get_value() + 1);
             }
-            Symbol* lSym = (*it);
+            Symbol lSym = (*it);
 
-            symbol_remove_ref(thisAgent, &lSym);
+            symbol_remove_ref(thisAgent, lSym);
         }
 
         // commit transaction (if not lazy)

@@ -121,10 +121,10 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
    remain consistent with the current preferences, even if the proposal
    for some operator is still acceptable */
 
-bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal, slot* s)
+bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol goal, slot* s)
 {
     byte current_impasse_type, new_impasse_type;
-    Symbol* current_impasse_attribute;
+    Symbol current_impasse_attribute;
     wme* current_operator;
     preference* candidates, *cand;
     bool operator_in_slot, goal_is_impassed;
@@ -369,7 +369,7 @@ void remove_current_decision(agent* thisAgent, slot* s)
 
 bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 {
-    Symbol* goal;
+    Symbol goal;
     slot* s;
 
 #ifdef DEBUG_CONSISTENCY_CHECK
@@ -433,7 +433,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 
 /* REW: begin 08.20.97 */
 
-bool i_activity_at_goal(Symbol* goal)
+bool i_activity_at_goal(Symbol goal)
 {
 
     /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
@@ -460,7 +460,7 @@ bool i_activity_at_goal(Symbol* goal)
      current GOAL.  Else it returns false.  */
 
 
-bool minor_quiescence_at_goal(agent* thisAgent, Symbol* goal)
+bool minor_quiescence_at_goal(agent* thisAgent, Symbol goal)
 {
 
     if ((thisAgent->FIRING_TYPE == IE_PRODS) &&
@@ -491,10 +491,10 @@ bool minor_quiescence_at_goal(agent* thisAgent, Symbol* goal)
  * highest state, this allows us to be flexible.
  */
 
-Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool noneOk)
+Symbol highest_active_goal_propose(agent* thisAgent, Symbol start_goal, bool noneOk)
 {
 
-    Symbol* goal;
+    Symbol goal;
 
     for (goal = start_goal; goal; goal = goal->id->lower_goal)
     {
@@ -545,10 +545,10 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
     return NIL;
 }
 
-Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool noneOk)
+Symbol highest_active_goal_apply(agent* thisAgent, Symbol start_goal, bool noneOk)
 {
 
-    Symbol* goal;
+    Symbol goal;
 
     for (goal = start_goal; goal; goal = goal->id->lower_goal)
     {
@@ -614,7 +614,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
    values if there is no activity at the current level.  It should only be
    called when activity at the active_level has been determined. */
 
-int active_production_type_at_goal(Symbol* goal)
+int active_production_type_at_goal(Symbol goal)
 {
 
     if (i_activity_at_goal(goal))
@@ -630,7 +630,7 @@ int active_production_type_at_goal(Symbol* goal)
 
 /* ---------------------------------------------------------------------- */
 
-bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
+bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol goal)
 {
     bool test;
 
@@ -680,7 +680,7 @@ bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
 void initialize_consistency_calculations_for_new_decision(agent* thisAgent)
 {
 
-    Symbol* goal;
+    Symbol goal;
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
     printf("\nInitialize consistency calculations for new decision.\n");
@@ -714,7 +714,7 @@ followed by a consistency check. */
 void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 {
 
-    Symbol* goal;
+    Symbol goal;
     int level_change_type, diff;
 
     /* KJC 04/05 - moved phase printing to init_soar: do_one_top_level_phase, case APPLY */
@@ -979,7 +979,7 @@ followed by a consistency check. */
 void determine_highest_active_production_level_in_stack_propose(agent* thisAgent)
 {
 
-    Symbol* goal;
+    Symbol goal;
     int level_change_type, diff;
 
     /* KJC 04/05 - moved phase printing to init_soar: do_one_top_level_phase, case APPLY */

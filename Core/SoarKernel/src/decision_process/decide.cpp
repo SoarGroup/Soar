@@ -132,9 +132,9 @@ void print_candidates(agent* thisAgent, preference* candidates)
 */
 #define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 8
 
-Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
+Symbol find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
 {
-    Symbol* g;
+    Symbol g;
 
     for (g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
         if (g->id->level == level)
@@ -144,7 +144,7 @@ Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
     return (NIL);
 }
 
-Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr)
+Symbol find_impasse_wme_value(Symbol id, Symbol attr)
 {
     wme* w;
 
@@ -338,7 +338,7 @@ void do_buffered_acceptable_preference_wme_changes(agent* thisAgent)
    Post a link addition for later processing.
 ---------------------------------------------- */
 
-void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
+void post_link_addition(agent* thisAgent, Symbol from, Symbol to)
 {
 
     /* --- don't add links to goals/impasses, except the special one
@@ -386,7 +386,7 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
     { if ((sym)->symbol_type==IDENTIFIER_SYMBOL_TYPE) \
             promote_id_and_tc(thisAgent, sym,new_level); }
 
-void promote_id_and_tc(agent* thisAgent, Symbol* id, goal_stack_level new_level)
+void promote_id_and_tc(agent* thisAgent, Symbol id, goal_stack_level new_level)
 {
     slot* s;
     preference* pref;
@@ -447,16 +447,16 @@ void promote_id_and_tc(agent* thisAgent, Symbol* id, goal_stack_level new_level)
 void do_promotion(agent* thisAgent)
 {
     cons* c;
-    Symbol* to;
+    Symbol to;
 
     while (thisAgent->promoted_ids)
     {
         c = thisAgent->promoted_ids;
-        to = static_cast<Symbol*>(c->first);
+        to = static_cast<Symbol>(c->first);
         thisAgent->promoted_ids = thisAgent->promoted_ids->rest;
         free_cons(thisAgent, c);
         promote_id_and_tc(thisAgent, to, to->id->promotion_level);
-        symbol_remove_ref(thisAgent, &to);
+        symbol_remove_ref(thisAgent, to);
     }
 }
 
@@ -495,7 +495,7 @@ void do_promotion(agent* thisAgent)
    Post a link removal for later processing.
 ---------------------------------------------- */
 
-void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
+void post_link_removal(agent* thisAgent, Symbol from, Symbol to)
 {
     dl_cons* dc;
 
@@ -528,7 +528,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
             //dprint(DT_UNKNOWN_LEVEL, "Removing %y from ids_with_unknown_level in post_link_removal() while adding to disconnected list.\n", to);
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol>(dc->item));
         }
         else
         {
@@ -571,7 +571,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
    id from TM.
 ---------------------------------------------- */
 
-void garbage_collect_id(agent* thisAgent, Symbol* id)
+void garbage_collect_id(agent* thisAgent, Symbol id)
 {
     slot* s;
     preference* pref, *next_pref;
@@ -642,16 +642,16 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
    The marked ids are added to ids_with_unknown_level.
 ---------------------------------------------- */
 
-void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
+void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol root)
 {
     slot* s;
     preference* pref;
     wme* w;
     dl_cons* dc;
 
-    Symbol* id;
+    Symbol id;
 #ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
+    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol >());
 #else
     symbol_list ids_to_walk;
 #endif
@@ -778,21 +778,21 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
    remove it from ids_with_unknown_level.
 ---------------------------------------------- */
 
-inline bool level_update_needed(agent* thisAgent, Symbol* sym)
+inline bool level_update_needed(agent* thisAgent, Symbol sym)
 {
     return ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->tc_num != thisAgent->walk_tc_number));
 }
 
-void walk_and_update_levels(agent* thisAgent, Symbol* root)
+void walk_and_update_levels(agent* thisAgent, Symbol root)
 {
     slot* s;
     preference* pref;
     wme* w;
     dl_cons* dc;
-    Symbol* id;
+    Symbol id;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
+    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol >());
 #else
     symbol_list ids_to_walk;
 #endif
@@ -824,7 +824,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             dc = id->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
-            symbol_remove_ref(thisAgent, &id);
+            symbol_remove_ref(thisAgent, id);
             id->id->unknown_level = NIL;
             id->id->level = thisAgent->walk_level;
             id->id->promotion_level = thisAgent->walk_level;
@@ -892,7 +892,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
 
 void do_demotion(agent* thisAgent)
 {
-    Symbol* g, *id;
+    Symbol g, id;
     dl_cons* dc, *next_dc;
 
     /* --- scan through ids_with_unknown_level, move the ones with link_count==0
@@ -900,12 +900,12 @@ void do_demotion(agent* thisAgent)
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = next_dc)
     {
         next_dc = dc->next;
-        id = static_cast<Symbol*>(dc->item);
+        id = static_cast<Symbol>(dc->item);
         if (id->id->link_count == 0)
         {
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
-            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol *>(dc->item));
+            //dprint(DT_LINKS, "Disconnecting %y in do_demotion.\n", static_cast<Symbol>(dc->item));
         }
     }
 
@@ -915,11 +915,11 @@ void do_demotion(agent* thisAgent)
     {
         dc = thisAgent->disconnected_ids;
         thisAgent->disconnected_ids = thisAgent->disconnected_ids->next;
-        id = static_cast<Symbol*>(dc->item);
+        id = static_cast<Symbol>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, &id);
+        symbol_remove_ref(thisAgent, id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 
@@ -936,7 +936,7 @@ void do_demotion(agent* thisAgent)
     thisAgent->mark_tc_number = get_new_tc_number(thisAgent);
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = dc->next)
     {
-        id = static_cast<Symbol*>(dc->item);
+        id = static_cast<Symbol>(dc->item);
         thisAgent->level_at_which_marking_started = id->id->level;
         mark_id_and_tc_as_unknown_level(thisAgent, id);
     }
@@ -969,12 +969,12 @@ void do_demotion(agent* thisAgent)
         dc = thisAgent->ids_with_unknown_level;
         thisAgent->ids_with_unknown_level =
             thisAgent->ids_with_unknown_level->next;
-        id = static_cast<Symbol*>(dc->item);
+        id = static_cast<Symbol>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, &id);
+        symbol_remove_ref(thisAgent, id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 }
@@ -1234,7 +1234,7 @@ byte run_preference_semantics(agent* thisAgent,
     preference* p, *p2, *cand, *prev_cand;
     bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst = false;
     preference* candidates;
-    Symbol* value;
+    Symbol value;
 
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore the CDPS when:
@@ -1460,7 +1460,7 @@ byte run_preference_semantics(agent* thisAgent,
     if (s->preferences[BETTER_PREFERENCE_TYPE]
             || s->preferences[WORSE_PREFERENCE_TYPE])
     {
-        Symbol* j, *k;
+        Symbol j, k;
 
         /* Initialize decider flags */
 
@@ -1964,7 +1964,7 @@ byte run_preference_semantics(agent* thisAgent,
    (if non-NIL) for backtracing.
 ------------------------------------------------------------------ */
 
-void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p)
+void add_impasse_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value, preference* p)
 {
     wme* w;
 
@@ -1982,10 +1982,10 @@ void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, 
    and all the extra stuff for goal identifiers.
 ------------------------------------------------------------------ */
 
-Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symbol* attr,
+Symbol create_new_impasse(agent* thisAgent, bool isa_goal, Symbol object, Symbol attr,
                            byte impasse_type, goal_stack_level level)
 {
-    Symbol* id;
+    Symbol id;
 
     id = make_new_identifier(thisAgent, (isa_goal ? 'S' : 'I'), level);
     post_link_addition(thisAgent, NIL, id);   /* add the special link */
@@ -2014,9 +2014,9 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
                 my_time = 1;
             }
 
-            Symbol* my_time_sym = make_int_constant(thisAgent, my_time);
+            Symbol my_time_sym = make_int_constant(thisAgent, my_time);
             id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
-            symbol_remove_ref(thisAgent, &my_time_sym);
+            symbol_remove_ref(thisAgent, my_time_sym);
         }
 
         id->id->smem_header = make_new_identifier(thisAgent, 'S', level);
@@ -2077,7 +2077,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 
 void create_new_attribute_impasse_for_slot(agent* thisAgent, slot* s, byte impasse_type)
 {
-    Symbol* id;
+    Symbol id;
 
     s->impasse_type = impasse_type;
     id = create_new_impasse(thisAgent, false, s->id, s->attr, impasse_type,
@@ -2092,7 +2092,7 @@ void create_new_attribute_impasse_for_slot(agent* thisAgent, slot* s, byte impas
 
 void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
 {
-    Symbol* id;
+    Symbol id;
 
     soar_invoke_callbacks(thisAgent,
                           REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
@@ -2104,7 +2104,7 @@ void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
     remove_wme_list_from_wm(thisAgent, id->id->impasse_wmes);
     id->id->impasse_wmes = NIL;
     post_link_removal(thisAgent, NIL, id);   /* remove the special link */
-    symbol_remove_ref(thisAgent, &id);
+    symbol_remove_ref(thisAgent, id);
 }
 
 /* ------------------------------------------------------------------
@@ -2119,7 +2119,7 @@ void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
    list for those candidates that do not have numeric preferences.
 ------------------------------------------------------------------ */
 
-void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
+void update_impasse_items(agent* thisAgent, Symbol id, preference* items)
 {
     enum item_types { regular, numeric };
 
@@ -2127,9 +2127,9 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
     preference* cand;
     preference* bt_pref;
     unsigned int item_count;
-    Symbol* loop_sym = NULL;
-    Symbol* loop_count_sym = NULL;
-    Symbol* count_sym = NULL;
+    Symbol loop_sym = NULL;
+    Symbol loop_count_sym = NULL;
+    Symbol count_sym = NULL;
 
     for (int it = regular; it <= numeric; it++)
     {
@@ -2246,7 +2246,7 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
         {
             count_sym = make_int_constant(thisAgent, static_cast< int64_t >(item_count));
             add_impasse_wme(thisAgent, id, loop_count_sym, count_sym, NIL);
-            symbol_remove_ref(thisAgent, &count_sym);
+            symbol_remove_ref(thisAgent, count_sym);
         }
     }
 }
@@ -2649,7 +2649,7 @@ void remove_wmes_for_context_slot(agent* thisAgent, slot* s)
    entire context stack is removed.)
 ------------------------------------------------------------------ */
 
-void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
+void remove_existing_context_and_descendents(agent* thisAgent, Symbol goal)
 {
     preference* p;
 
@@ -2789,21 +2789,21 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
     goal->id->rl_info->prev_op_rl_rules->~rl_rule_list();
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
-    symbol_remove_ref(thisAgent, &goal->id->reward_header);
+    symbol_remove_ref(thisAgent, goal->id->reward_header);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
 
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_cmd_header);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_result_header);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_header);
+    symbol_remove_ref(thisAgent, goal->id->epmem_cmd_header);
+    symbol_remove_ref(thisAgent, goal->id->epmem_result_header);
+    symbol_remove_ref(thisAgent, goal->id->epmem_header);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
     goal->id->smem_info->smem_wmes->~smem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
-    symbol_remove_ref(thisAgent, &goal->id->smem_cmd_header);
-    symbol_remove_ref(thisAgent, &goal->id->smem_result_header);
-    symbol_remove_ref(thisAgent, &goal->id->smem_header);
+    symbol_remove_ref(thisAgent, goal->id->smem_cmd_header);
+    symbol_remove_ref(thisAgent, goal->id->smem_result_header);
+    symbol_remove_ref(thisAgent, goal->id->smem_header);
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
 #ifndef NO_SVS
@@ -2825,7 +2825,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
-    symbol_remove_ref(thisAgent, &goal);
+    symbol_remove_ref(thisAgent, goal);
 
     if (goal->id->level <= thisAgent->substate_break_level)
     {
@@ -2844,9 +2844,9 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
    the top and bottom goal.
 ------------------------------------------------------------------ */
 
-void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_type)
+void create_new_context(agent* thisAgent, Symbol attr_of_impasse, byte impasse_type)
 {
-    Symbol* id;
+    Symbol id;
 
     if (thisAgent->bottom_goal)
     {
@@ -2954,7 +2954,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
    in the goal stack.
 ------------------------------------------------------------------ */
 
-byte type_of_existing_impasse(agent* thisAgent, Symbol* goal)
+byte type_of_existing_impasse(agent* thisAgent, Symbol goal)
 {
     wme* w;
     char msg[BUFFER_MSG_SIZE];
@@ -2996,7 +2996,7 @@ byte type_of_existing_impasse(agent* thisAgent, Symbol* goal)
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal)
+Symbol attribute_of_existing_impasse(agent* thisAgent, Symbol goal)
 {
     wme* w;
 
@@ -3027,10 +3027,10 @@ Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal)
    the given slot.
 ------------------------------------------------------------------ */
 
-bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict = false)
+bool decide_context_slot(agent* thisAgent, Symbol goal, slot* s, bool predict = false)
 {
     byte impasse_type;
-    Symbol* attribute_of_impasse;
+    Symbol attribute_of_impasse;
     wme* w;
     preference* candidates;
     preference* temp;
@@ -3243,7 +3243,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
 void decide_context_slots(agent* thisAgent, bool predict = false)
 {
-    Symbol* goal;
+    Symbol goal;
     slot* s;
 
     if (thisAgent->highest_goal_whose_context_changed)
@@ -3571,7 +3571,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         }
 
         // try to make a symbol
-        Symbol* sym = NIL;
+        Symbol sym = NIL;
         if (rhs_value_is_symbol(a->id))
         {
             sym = rhs_value_to_symbol(a->id);
@@ -4608,7 +4608,7 @@ void free_parent_list(agent* thisAgent)
     thisAgent->parent_list_head = NIL;
 }
 
-void create_gds_for_goal(agent* thisAgent, Symbol* goal)
+void create_gds_for_goal(agent* thisAgent, Symbol goal)
 {
     goal_dependency_set* gds;
 

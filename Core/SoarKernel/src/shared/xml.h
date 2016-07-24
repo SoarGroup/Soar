@@ -38,7 +38,7 @@ void xml_att_val(agent* pAgent, char const* pAttribute, int value) ;
 void xml_att_val(agent* pAgent, char const* pAttribute, int64_t value) ;
 void xml_att_val(agent* pAgent, char const* pAttribute, double value) ;
 void xml_att_val(agent* pAgent, char const* pAttribute, char const* pValue) ;
-void xml_att_val(agent* pAgent, char const* pAttribute, Symbol* pSymbol) ;
+void xml_att_val(agent* pAgent, char const* pAttribute, Symbol pSymbol) ;
 
 void xml_object(agent* pAgent, char const* pTag) ;
 void xml_object(agent* pAgent, char const* pTag, char const* pAttribute, char const* pValue) ;

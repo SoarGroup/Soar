@@ -16,7 +16,7 @@ class instantiation_record;
 
 typedef struct identity_set_struct {
         uint64_t    identity_set_ID;
-        Symbol*     rule_variable;
+        Symbol     rule_variable;
 } identity_set_info;
 
 class identity_record

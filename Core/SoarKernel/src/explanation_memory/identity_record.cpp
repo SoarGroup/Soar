@@ -33,7 +33,7 @@ identity_record::~identity_record()
     {
     for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
     {
-        if (it->second->rule_variable) symbol_remove_ref(thisAgent, &it->second->rule_variable);
+        if (it->second->rule_variable) symbol_remove_ref(thisAgent, it->second->rule_variable);
         delete it->second;
     }
     delete id_to_id_set_mappings;

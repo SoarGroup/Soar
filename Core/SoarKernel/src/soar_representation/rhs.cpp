@@ -66,7 +66,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
         dprint_noprefix(DT_RHS_VALUE, "%y(o%u)\n", r->referent, r->o_id);
         if (r->referent)
         {
-            symbol_remove_ref(thisAgent, &r->referent);
+            symbol_remove_ref(thisAgent, r->referent);
         }
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
@@ -212,7 +212,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
 {
     list* fl;
     cons* c;
-    Symbol* sym;
+    Symbol sym;
 
     if (rhs_value_is_symbol(rv))
     {
@@ -242,7 +242,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
 void add_all_variables_in_action(agent* thisAgent, action* a,
                                  tc_number tc, list** var_list, bool add_LTIs)
 {
-    Symbol* id;
+    Symbol id;
 
     if (a->type == MAKE_ACTION)
     {
@@ -293,7 +293,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
 {
     list* fl;
     cons* c;
-    Symbol* sym;
+    Symbol sym;
 
     if (rhs_value_is_symbol(rv))
     {
@@ -318,7 +318,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
 void add_bound_variables_in_action(agent* thisAgent, action* a,
                                    tc_number tc, list** var_list)
 {
-    Symbol* id;
+    Symbol id;
 
     if (a->type == MAKE_ACTION)
     {
@@ -405,7 +405,7 @@ rhs_value create_RHS_value(agent* thisAgent,
 {
     cons* c, *new_c, *prev_new_c;
     list* fl, *new_fl;
-    Symbol* sym;
+    Symbol sym;
     int64_t index;
     char prefix[2];
 	test t;//, original_t;
@@ -560,7 +560,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol sym, uint64_t pO_ID)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -577,7 +577,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol sym, uint64_t pO_ID)
 {
     if (sym)
     {

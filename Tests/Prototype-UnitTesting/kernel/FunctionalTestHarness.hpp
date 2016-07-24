@@ -31,11 +31,11 @@ public:
 protected:
 	struct user_data_struct
 	{
-		user_data_struct(std::function<::Symbol* ()> routine)
+		user_data_struct(std::function<::Symbol ()> routine)
 		: function(routine)
 		{}
 
-		std::function<::Symbol* ()> function;
+		std::function<::Symbol ()> function;
 	};
 
 	user_data_struct haltData;
@@ -76,9 +76,9 @@ public:
 	void after(bool caught) { tearDown(caught); }
 	void tearDown(bool caught);
 
-	::Symbol* haltHandler();
-	::Symbol* failedHandler();
-	::Symbol* succeededHandler();
+	::Symbol haltHandler();
+	::Symbol failedHandler();
+	::Symbol succeededHandler();
 
 	/**
 	 * Set up the agent with RHS functions common to these

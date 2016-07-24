@@ -17,7 +17,7 @@ class command_table_entry : public cliproxy
 {
     public:
         command_table_entry();
-        command* (*create)(svs_state*, Symbol*);
+        command* (*create)(svs_state*, Symbol);
         
         std::string name;
         std::string description;

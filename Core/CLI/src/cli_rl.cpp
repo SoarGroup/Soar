@@ -277,7 +277,7 @@ bool CommandLineInterface::DoRL(const char pOp, const std::string* pAttr, const 
                     return SetError("Invalid RL goal level for rl -t init.");
                 }
                 
-                for (Symbol* goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level)
+                for (Symbol goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level)
                 {
                     if (level == goal_level)
                     {
@@ -288,7 +288,7 @@ bool CommandLineInterface::DoRL(const char pOp, const std::string* pAttr, const 
             }
             else
             {
-                for (Symbol* goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level)
+                for (Symbol goal = thisAgent->top_goal; goal; goal = goal->id->lower_goal, ++level)
                 {
                     goal->id->rl_trace = &thisAgent->rl_trace[level];
                 }

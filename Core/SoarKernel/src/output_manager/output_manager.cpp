@@ -211,7 +211,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
     }
 }
 
-void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd)
+void Output_Manager::store_refcount(Symbol sym, const char* callers, bool isAdd)
 {
     m_db->store_refcount(sym, callers, isAdd);
 }

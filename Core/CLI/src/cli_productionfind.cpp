@@ -66,7 +66,7 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
     bindings = current_binding_point;
 }
 
-Symbol* get_binding(Symbol* f, list* bindings)
+Symbol get_binding(Symbol f, list* bindings)
 {
     cons* c;
 
@@ -80,10 +80,10 @@ Symbol* get_binding(Symbol* f, list* bindings)
     return NIL;
 }
 
-bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, list** bindings)
+bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol s1, Symbol s2, list** bindings)
 {
     Binding* b;
-    Symbol* bvar;
+    Symbol bvar;
 
     if ((s1 == s2) && (s1->symbol_type != VARIABLE_SYMBOL_TYPE))
     {

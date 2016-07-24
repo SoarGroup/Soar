@@ -29,7 +29,7 @@ namespace sml
             AgentSML* m_pAgentSML ;
             
         public:
-            static Symbol* RhsFunctionCallback(agent* thisAgent, list* args, void* user_data) ;
+            static Symbol RhsFunctionCallback(agent* thisAgent, list* args, void* user_data) ;
             static const int kPARAM_NUM_VARIABLE = -1 ;
             
             RhsFunction(AgentSML* pAgent)
@@ -63,7 +63,7 @@ namespace sml
              * Because this is a callback, the calling method will release them.  However, if you clone
              *  or otherwise copy any values, you are responsible for releasing the copies.
              */
-            virtual Symbol* Execute(std::vector<Symbol*>* pArguments) = 0;
+            virtual Symbol Execute(std::vector<Symbol>* pArguments) = 0;
     } ;
     
     class InterruptRhsFunction: public RhsFunction
@@ -84,7 +84,7 @@ namespace sml
                 return false;
             }
             
-            virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
+            virtual Symbol Execute(std::vector<Symbol>* pArguments) ;
     };
     
     class ConcatRhsFunction: public RhsFunction
@@ -105,7 +105,7 @@ namespace sml
                 return true;
             }
             
-            virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
+            virtual Symbol Execute(std::vector<Symbol>* pArguments) ;
     };
     
     class ExecRhsFunction: public RhsFunction
@@ -126,7 +126,7 @@ namespace sml
                 return true;
             }
             
-            virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
+            virtual Symbol Execute(std::vector<Symbol>* pArguments) ;
     };
     
     class CmdRhsFunction: public RhsFunction
@@ -147,7 +147,7 @@ namespace sml
                 return true;
             }
             
-            virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
+            virtual Symbol Execute(std::vector<Symbol>* pArguments) ;
     };
     
     

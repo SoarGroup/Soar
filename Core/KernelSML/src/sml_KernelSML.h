@@ -444,10 +444,10 @@ namespace sml
             void ClearAllInterrupts() ;
             
             // A set of helper functions for tracing kernel wmes
-            static void         Symbol2String(Symbol* pSymbol,  bool refCounts, std::ostringstream& buffer);
+            static void         Symbol2String(Symbol pSymbol,  bool refCounts, std::ostringstream& buffer);
             static std::string  Wme2String(wme* pWME, bool refCounts);
             static void         PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts = false);
-            static void         PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
+            static void         PrintDebugSymbol(Symbol pSymbol, bool refCounts = false);
             void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, uint64_t count);
             
         protected:

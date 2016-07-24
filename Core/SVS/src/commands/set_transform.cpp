@@ -28,7 +28,7 @@ using namespace std;
 class set_transform_command : public command
 {
     public:
-        set_transform_command(svs_state* state, Symbol* root)
+        set_transform_command(svs_state* state, Symbol root)
             : command(state, root), root(root), first(true)
         {
             si = state->get_svs()->get_soar_interface();
@@ -117,7 +117,7 @@ class set_transform_command : public command
         }
 
     private:
-        Symbol*         root;
+        Symbol         root;
         scene*          scn;
         soar_interface* si;
         bool            first;
@@ -126,7 +126,7 @@ class set_transform_command : public command
 
 };
 
-command* _make_set_transform_command_(svs_state* state, Symbol* root)
+command* _make_set_transform_command_(svs_state* state, Symbol root)
 {
     return new set_transform_command(state, root);
 }

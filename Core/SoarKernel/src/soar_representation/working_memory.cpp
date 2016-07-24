@@ -59,7 +59,7 @@ void reset_wme_timetags(agent* thisAgent)
     thisAgent->current_wme_timetag = 1;
 }
 
-wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable)
+wme* make_wme(agent* thisAgent, Symbol id, Symbol attr, Symbol value, bool acceptable)
 {
     wme* w;
 
@@ -342,15 +342,15 @@ void deallocate_wme(agent* thisAgent, wme* w)
         wma_remove_decay_element(thisAgent, w);
     }
 
-    symbol_remove_ref(thisAgent, &w->id);
-    symbol_remove_ref(thisAgent, &w->attr);
-    symbol_remove_ref(thisAgent, &w->value);
+    symbol_remove_ref(thisAgent, w->id);
+    symbol_remove_ref(thisAgent, w->attr);
+    symbol_remove_ref(thisAgent, w->value);
 
     thisAgent->memoryManager->free_with_pool(MP_wme, w);
     thisAgent->num_existing_wmes--;
 }
 
-Symbol* find_name_of_object(agent* thisAgent, Symbol* object)
+Symbol find_name_of_object(agent* thisAgent, Symbol object)
 {
     slot* s;
 

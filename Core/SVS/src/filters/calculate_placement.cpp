@@ -88,7 +88,7 @@ vec3 calculate_placement(const sgnode* a, const sgnode* b, const sgnode* ref, do
 class calculate_placement_filter : public map_filter<vec3>
 {
     public:
-      calculate_placement_filter(Symbol* root, soar_interface* si, filter_input* input)
+      calculate_placement_filter(Symbol root, soar_interface* si, filter_input* input)
             : map_filter<vec3>(root, si, input)
         {}
         
@@ -133,7 +133,7 @@ class calculate_placement_filter : public map_filter<vec3>
 };
 
 ///// filter calculate_placement //////
-filter* make_calculate_placement_filter(Symbol* root, soar_interface* si, scene* scn, filter_input* input)
+filter* make_calculate_placement_filter(Symbol root, soar_interface* si, scene* scn, filter_input* input)
 {
     return new calculate_placement_filter(root, si, input);
 }

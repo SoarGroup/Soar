@@ -27,7 +27,7 @@ using namespace std;
 class extract_command : public command, public filter_input::listener
 {
     public:
-        extract_command(svs_state* state, Symbol* root, bool once)
+        extract_command(svs_state* state, Symbol root, bool once)
             : command(state, root), root(root), state(state), fltr(NULL), res_root(NULL), first(true), once(once)
         {
             si = state->get_svs()->get_soar_interface();
@@ -142,12 +142,12 @@ class extract_command : public command, public filter_input::listener
         }
         
     private:
-        wme* make_filter_val_wme(Symbol* id, const string& attr, filter_val* v)
+        wme* make_filter_val_wme(Symbol id, const string& attr, filter_val* v)
         {
             int iv;
             double fv;
             bool bv;
-            Symbol* single_val = NULL;
+            Symbol single_val = NULL;
             
             if (get_filter_val(v, iv))
             {
@@ -177,7 +177,7 @@ class extract_command : public command, public filter_input::listener
             }
             
             wme* w = si->make_id_wme(id, attr);
-            Symbol* subid = si->get_wme_val(w);
+            Symbol subid = si->get_wme_val(w);
             map<string, string>::const_iterator i, iend;
             for (i = rep.begin(), iend = rep.end(); i != iend; ++i)
             {
@@ -194,7 +194,7 @@ class extract_command : public command, public filter_input::listener
             return w;
         }
         
-        bool sym_reps_filter_val(Symbol* s, const filter_val* fv)
+        bool sym_reps_filter_val(Symbol s, const filter_val* fv)
         {
             long fiv, siv;
             double ffv, sfv;
@@ -233,12 +233,12 @@ class extract_command : public command, public filter_input::listener
             return false;
         }
         
-        wme* make_value_wme(filter_val* v, Symbol* root)
+        wme* make_value_wme(filter_val* v, Symbol root)
         {
             return make_filter_val_wme(root, "value", v);
         }
         
-        void update_param_struct(const filter_params* p, Symbol* pid)
+        void update_param_struct(const filter_params* p, Symbol pid)
         {
             filter_params::const_iterator j;
             for (j = p->begin(); j != p->end(); ++j)
@@ -299,17 +299,17 @@ class extract_command : public command, public filter_input::listener
             {
                 if (i->second.params == p)
                 {
-                    Symbol* pid = si->get_wme_val(i->second.params_wme);
+                    Symbol pid = si->get_wme_val(i->second.params_wme);
                     update_param_struct(p, pid);
                     return;
                 }
             }
         }
         
-        Symbol*         root;
-        Symbol*         res_root;
-        Symbol*         pos_root;  // identifier for positive atoms
-        Symbol*         neg_root;  // identifier for negative atoms
+        Symbol         root;
+        Symbol         res_root;
+        Symbol         pos_root;  // identifier for positive atoms
+        Symbol         neg_root;  // identifier for negative atoms
         svs_state*      state;
         soar_interface* si;
         filter*         fltr;
@@ -321,19 +321,19 @@ class extract_command : public command, public filter_input::listener
             wme* rec_wme;
             wme* val_wme;
             wme* params_wme;
-            Symbol* rec_id;
+            Symbol rec_id;
         };
         
         typedef map<filter_val*, record> record_map;
         record_map records;
 };
 
-command* _make_extract_command_(svs_state* state, Symbol* root)
+command* _make_extract_command_(svs_state* state, Symbol root)
 {
     return new extract_command(state, root, false);
 }
 
-command* _make_extract_once_command_(svs_state* state, Symbol* root)
+command* _make_extract_once_command_(svs_state* state, Symbol root)
 {
     return new extract_command(state, root, true);
 }

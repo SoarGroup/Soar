@@ -145,7 +145,7 @@ void FunctionalTestHarness::tearDown(bool caught)
 	internal_kernel = nullptr;
 }
 
-Symbol* FunctionalTestHarness::haltHandler()
+Symbol FunctionalTestHarness::haltHandler()
 {
 	halted = true;
 	failed = false;
@@ -155,7 +155,7 @@ Symbol* FunctionalTestHarness::haltHandler()
 	return halt_routine(internal_agent, nullptr, nullptr);
 }
 
-Symbol* FunctionalTestHarness::failedHandler()
+Symbol FunctionalTestHarness::failedHandler()
 {
 	halted = true;
 	failed = true;
@@ -165,7 +165,7 @@ Symbol* FunctionalTestHarness::failedHandler()
 	return halt_routine(internal_agent, nullptr, nullptr);
 }
 
-Symbol* FunctionalTestHarness::succeededHandler()
+Symbol FunctionalTestHarness::succeededHandler()
 {
 	halted = true;
 	failed = false;
@@ -185,7 +185,7 @@ void FunctionalTestHarness::installRHS()
 	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
 	halt_routine = halt_function->f;
 	
-	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
+	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol {
 		return static_cast<user_data_struct*>(user_data)->function();
 	};
 	

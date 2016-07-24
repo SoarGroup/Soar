@@ -90,11 +90,11 @@ void init_agent_memory(agent* thisAgent);
        output link is modified by the agent.  n is not incremented when
        the output-link is created nor when the output-link is modified
        during the Input Cycle, ie when getting feedback from a simulator.
-     - Run_for_n_selections_of_slot (agent*, int64_t n, Symbol *attr_of_slot): this
+     - Run_for_n_selections_of_slot (agent*, int64_t n, Symbol attr_of_slot): this
        runs Soar until the nth time a selection is made for a given
        type of slot.  Attr_of_slot should be either state_symbol or
        operator_symbol.
-     - Run_for_n_selections_of_slot_at_level (agent*, int64_t n, Symbol *attr_of_slot,
+     - Run_for_n_selections_of_slot_at_level (agent*, int64_t n, Symbol attr_of_slot,
        goal_stack_level level):  this runs Soar for n selections of the
        given slot at the given level, or until the goal stack is popped
        so that level no longer exists.
@@ -105,9 +105,9 @@ void run_for_n_phases(agent* thisAgent, int64_t n);
 void run_for_n_elaboration_cycles(agent* thisAgent, int64_t n);
 void run_for_n_decision_cycles(agent* thisAgent, int64_t n);
 void run_for_n_modifications_of_output(agent* thisAgent, int64_t n);
-void run_for_n_selections_of_slot(agent*, int64_t n, Symbol* attr_of_slot);
+void run_for_n_selections_of_slot(agent*, int64_t n, Symbol attr_of_slot);
 void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
-        Symbol* attr_of_slot,
+        Symbol attr_of_slot,
         goal_stack_level level);
 
 void do_one_top_level_phase(agent* thisAgent);

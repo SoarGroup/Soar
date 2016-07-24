@@ -88,7 +88,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
         return true;
     }
 
-    Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
+    Symbol sym = find_str_constant(thisAgent, pProduction->c_str());
 
     if (!sym || !(sym->sc->production))
     {
