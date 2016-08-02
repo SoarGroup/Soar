@@ -247,6 +247,8 @@ Kernel::~Kernel(void)
     delete m_SocketLibrary ;
 
     delete m_pEventMap ;
+
+    Soar_Instance::Get_Soar_Instance().Clean_Up_Libraries();
 }
 
 /*************************************************************

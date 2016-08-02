@@ -41,18 +41,6 @@ Soar_Instance::~Soar_Instance()
     dprint_header(DT_SOAR_INSTANCE, PrintBefore, "= Destroying Soar instance =\n");
     m_Kernel = NULL;
 
-    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
-    {
-        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
-        it->second->libMessageFunction("delete", NULL);
-    }
-    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
-    {
-        delete it->second;
-    }
-    m_loadedLibraries->clear();
-    delete m_loadedLibraries;
-
     m_agent_table->clear();
     delete m_agent_table;
 
@@ -83,6 +71,22 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
         dprint(DT_SOAR_INSTANCE, "CLI Extension %s registered.\n", lLibName.c_str());
 
     }
+}
+
+void Soar_Instance::Clean_Up_Libraries()
+{
+    dprint(DT_SOAR_INSTANCE, "Cleaning up loaded libraries...\n");
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    {
+        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
+        it->second->libMessageFunction("delete", NULL);
+    }
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    {
+        delete it->second;
+    }
+    m_loadedLibraries->clear();
+    delete m_loadedLibraries;
 }
 
 std::string Soar_Instance::Message_Library(const char* pMessage)

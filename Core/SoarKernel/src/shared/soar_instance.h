@@ -45,6 +45,7 @@ class EXPORT Soar_Instance
         void init_Soar_Instance(sml::Kernel* pKernel);
         void Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
         std::string Message_Library(const char* pMessage);
+        void Clean_Up_Libraries();
 
         void Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
         void Delete_Agent(char* pAgentName);

@@ -107,11 +107,11 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
            ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
 
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
