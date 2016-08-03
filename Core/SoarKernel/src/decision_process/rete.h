@@ -61,7 +61,9 @@ extern void abort_with_fatal_error_noagent(const char* msg);
 
 inline varnames* one_var_to_varnames(Symbol x)
 {
-    return reinterpret_cast<varnames*>(x);
+    TrackedPtrVoid tpv;
+    tpv.tp = x;
+    return reinterpret_cast<varnames*>(tpv.v);
 }
 inline varnames* var_list_to_varnames(cons* x)
 {
@@ -77,7 +79,9 @@ inline bool varnames_is_one_var(varnames* x)
 }
 inline Symbol varnames_to_one_var(varnames* x)
 {
-    return reinterpret_cast<Symbol>(x);
+    TrackedPtrVoid tpv;
+    tpv.v = x;
+    return tpv.tp;
 }
 inline list* varnames_to_var_list(varnames* x)
 {

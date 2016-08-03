@@ -69,7 +69,7 @@ void print_candidates(agent* thisAgent, preference* candidates)
     {
         max_count++;
         print(thisAgent, "\n Candidate %d", cand);
-        print_with_symbols(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
+        print_with_symbols(thisAgent, "\n    %y %y %y", cand->id.get(), cand->attr.get(), cand->value.get());
         if (max_count > 10)
         {
             break;
@@ -136,7 +136,7 @@ Symbol find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level)
 {
     Symbol g;
 
-    for (g = thisAgent->top_goal; g != NIL; g = g->id->lower_goal)
+    for (g = thisAgent->top_goal; g; g = g->id->lower_goal)
         if (g->id->level == level)
         {
             return (g);
@@ -375,7 +375,7 @@ void post_link_addition(agent* thisAgent, Symbol from, Symbol to)
     /* --- otherwise buffer it for later --- */
     to->id->promotion_level = from->id->promotion_level;
     symbol_add_ref(thisAgent, to);
-    push(thisAgent, to, thisAgent->promoted_ids);
+    pushSym(thisAgent, to, thisAgent->promoted_ids);
 }
 
 /* ----------------------------------------------
@@ -452,7 +452,10 @@ void do_promotion(agent* thisAgent)
     while (thisAgent->promoted_ids)
     {
         c = thisAgent->promoted_ids;
-        to = static_cast<Symbol>(c->first);
+        TrackedPtrVoid tpv;
+        tpv.v = c->first;
+        to = tpv.tp;
+//        to = static_cast<Symbol>(c->first);
         thisAgent->promoted_ids = thisAgent->promoted_ids->rest;
         free_cons(thisAgent, c);
         promote_id_and_tc(thisAgent, to, to->id->promotion_level);
@@ -518,6 +521,8 @@ void post_link_removal(agent* thisAgent, Symbol from, Symbol to)
         return;
     }
 
+    TrackedPtrVoid tpv;
+
     if ((thisAgent->link_update_mode == UPDATE_DISCONNECTED_IDS_LIST) &&
             (to->id->link_count == 0))
     {
@@ -534,7 +539,8 @@ void post_link_removal(agent* thisAgent, Symbol from, Symbol to)
         {
             symbol_add_ref(thisAgent, to);
             thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
-            dc->item = to;
+            tpv.tp = to;
+            dc->item = tpv.v;
             to->id->unknown_level = dc;
             //dprint(DT_UNKNOWN_LEVEL, "Setting %y as unknown_level in post_link_removal() while adding to disconnected list. (problem?)\n", to);
             insert_at_head_of_dll(thisAgent->disconnected_ids, dc, next, prev);
@@ -555,7 +561,8 @@ void post_link_removal(agent* thisAgent, Symbol from, Symbol to)
     {
         symbol_add_ref(thisAgent, to);
         thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
-        dc->item = to;
+        tpv.tp = to;
+        dc->item = tpv.v;
         to->id->unknown_level = dc;
 //        dprint(DT_UNKNOWN_LEVEL,
 //            "Setting %y as unknown_level in post_link_removal() because identifiers in link at "
@@ -658,6 +665,8 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol root)
     //dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level called on %y.  (mark tc = %u)", root, thisAgent->mark_tc_number);
     ids_to_walk.push_back(root);
 
+    TrackedPtrVoid tpv;
+
     while (!ids_to_walk.empty())
     {
         id = ids_to_walk.back();
@@ -703,7 +712,8 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol root)
         if (! id->id->unknown_level)
         {
             thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
-            dc->item = id;
+            tpv.tp = id;
+            dc->item = tpv.v;
             id->id->unknown_level = dc;
             //dprint(DT_UNKNOWN_LEVEL, "      Setting %y as unknown_level and adding to list ids_with_unknown_level.\n", id);
             insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
@@ -894,13 +904,16 @@ void do_demotion(agent* thisAgent)
 {
     Symbol g, id;
     dl_cons* dc, *next_dc;
+    TrackedPtrVoid tpv;
 
     /* --- scan through ids_with_unknown_level, move the ones with link_count==0
      *  over to disconnected_ids --- */
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = next_dc)
     {
         next_dc = dc->next;
-        id = static_cast<Symbol>(dc->item);
+        tpv.v = dc->item;
+        id = tpv.tp;
+//        id = static_cast<Symbol>(dc->item);
         if (id->id->link_count == 0)
         {
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
@@ -915,7 +928,9 @@ void do_demotion(agent* thisAgent)
     {
         dc = thisAgent->disconnected_ids;
         thisAgent->disconnected_ids = thisAgent->disconnected_ids->next;
-        id = static_cast<Symbol>(dc->item);
+        tpv.v = dc->item;
+        id = tpv.tp;
+//        id = static_cast<Symbol>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
@@ -936,7 +951,9 @@ void do_demotion(agent* thisAgent)
     thisAgent->mark_tc_number = get_new_tc_number(thisAgent);
     for (dc = thisAgent->ids_with_unknown_level; dc != NIL; dc = dc->next)
     {
-        id = static_cast<Symbol>(dc->item);
+        tpv.v = dc->item;
+        id = tpv.tp;
+//        id = static_cast<Symbol>(dc->item);
         thisAgent->level_at_which_marking_started = id->id->level;
         mark_id_and_tc_as_unknown_level(thisAgent, id);
     }
@@ -969,7 +986,9 @@ void do_demotion(agent* thisAgent)
         dc = thisAgent->ids_with_unknown_level;
         thisAgent->ids_with_unknown_level =
             thisAgent->ids_with_unknown_level->next;
-        id = static_cast<Symbol>(dc->item);
+        tpv.v = dc->item;
+        id = tpv.tp;
+//        id = static_cast<Symbol>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */
@@ -2265,7 +2284,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
     wme* w, *next_w;
     preference* candidates, *cand, *pref;
 
-    dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y _?_)\n", s->id, s->attr);
+    dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y _?_)\n", s->id.get(), s->attr.get());
     impasse_type = run_preference_semantics(thisAgent, s, &candidates);
 
     if (impasse_type == NONE_IMPASSE_TYPE)
@@ -2307,7 +2326,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 /* REW: begin 09.15.96 */
                 if (w->gds)
                 {
-                    if (w->gds->goal != NIL)
+                    if (w->gds->goal)
                     {
                         /* If the goal pointer is non-NIL, then goal is in the stack */
                         gds_invalid_so_remove_goal(thisAgent, w);
@@ -2591,10 +2610,10 @@ void decide_non_context_slots(agent* thisAgent)
         dc = thisAgent->changed_slots;
         thisAgent->changed_slots = thisAgent->changed_slots->next;
         s = static_cast<slot_struct*>(dc->item);
-        dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y ?)\n", s->id.get(), s->attr.get());
         decide_non_context_slot(thisAgent, s);
         s->changed = NIL;
-        dprint(DT_WME_CHANGES, "Done deciding non-context slot (%y ^%y ?)\n", s->id, s->attr);
+        dprint(DT_WME_CHANGES, "Done deciding non-context slot (%y ^%y ?)\n", s->id.get(), s->attr.get());
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
     }
     dprint(DT_WME_CHANGES, "Done deciding non-context slots.\n");
@@ -2665,7 +2684,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol goal)
     /* --- invoke callback routine --- */
     soar_invoke_callbacks(thisAgent,
                           POP_CONTEXT_STACK_CALLBACK,
-                          static_cast<soar_call_data>(goal));
+                          symbol_to_voidP(goal));
 
     if ((goal != thisAgent->top_goal) && rl_enabled(thisAgent))
     {
@@ -2821,8 +2840,10 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol goal)
 
     /* We have to remove this state from the list of states to learn in (NLD: and free cons)
      * jzxu April 24, 2009 */
-    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunky_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
-    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
+    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunky_problem_spaces), cons_equality_fn, symbol_to_voidP(goal)));
+    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, symbol_to_voidP(goal)));
+//    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunky_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
+//    free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
     symbol_remove_ref(thisAgent, goal);
@@ -2938,7 +2959,7 @@ void create_new_context(agent* thisAgent, Symbol attr_of_impasse, byte impasse_t
     /* --- invoke callback routine --- */
     soar_invoke_callbacks(thisAgent,
                           CREATE_NEW_CONTEXT_CALLBACK,
-                          static_cast<soar_call_data>(id));
+                          symbol_to_voidP(id));
 
 #ifndef NO_SVS
     thisAgent->svs->state_creation_callback(id);
@@ -3161,7 +3182,7 @@ bool decide_context_slot(agent* thisAgent, Symbol goal, slot* s, bool predict = 
         {
             if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
             {
-                print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
+                print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal.get());
             }
 
             remove_existing_context_and_descendents(thisAgent, goal->id->lower_goal);
@@ -3208,7 +3229,7 @@ bool decide_context_slot(agent* thisAgent, Symbol goal, slot* s, bool predict = 
     {
         if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
+            print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal.get());
         }
 
         remove_existing_context_and_descendents(thisAgent, goal->id->lower_goal);
@@ -3454,7 +3475,7 @@ void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
         if (thisAgent->soar_verbose_flag == true)
         {
             print_with_symbols(thisAgent,
-                               "\n      asserting instantiation: %y\n", inst->prod_name);
+                               "\n      asserting instantiation: %y\n", inst->prod_name.get());
             char buf[256];
             SNPRINTF(buf, 254, "asserting instantiation: %s",
                      inst->prod_name->to_string(true));
@@ -3585,7 +3606,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
                           rhs_value_to_reteloc_field_num(a->id), tok, w);
             }
         }
-        assert(sym != NIL);
+        assert(sym);
 
         // check level for legal change
         if (sym->id->level <= thisAgent->change_level)
@@ -3593,7 +3614,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
                 print_with_symbols(thisAgent,
-                                   "*** Waterfall: aborting firing because (%y * *)", sym);
+                                   "*** Waterfall: aborting firing because (%y * *)", sym.get());
                 print(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
                       sym->id->level, thisAgent->change_level);
@@ -3675,7 +3696,7 @@ void do_preference_phase(agent* thisAgent)
                   thisAgent->active_level);
             if (thisAgent->active_goal)
             {
-                print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal);
+                print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal.get());
             }
             print(thisAgent,  " ---\n");
         }
@@ -3733,7 +3754,7 @@ void do_preference_phase(agent* thisAgent)
         // Update accounting
         thisAgent->inner_e_cycle_count++;
 
-        if (thisAgent->active_goal == NIL)
+        if (!thisAgent->active_goal)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
@@ -3743,7 +3764,7 @@ void do_preference_phase(agent* thisAgent)
             break;
         }
 
-        if (thisAgent->active_goal->id->lower_goal == NIL)
+        if (!thisAgent->active_goal->id->lower_goal)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
@@ -3764,7 +3785,7 @@ void do_preference_phase(agent* thisAgent)
                                      thisAgent->active_goal->id->lower_goal, true);
         }
 
-        if (thisAgent->active_goal != NIL)
+        if (thisAgent->active_goal)
         {
             thisAgent->active_level = thisAgent->active_goal->id->level;
         }
@@ -3986,7 +4007,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
+        snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal.get());
         print_string(thisAgent,  msgbuf);
 
         xml_begin_tag(thisAgent, kTagVerbose);
@@ -4075,7 +4096,7 @@ void elaborate_gds(agent* thisAgent)
                 {
                     /* Then we want to check and see if the old GDS value
                     * should be changed */
-                    if (wme_matching_this_cond->gds->goal == NIL)
+                    if (~wme_matching_this_cond->gds->goal)
                     {
                         /* The goal is NIL: meaning that the goal for the GDS
                         * is no longer around */
@@ -4243,7 +4264,7 @@ void elaborate_gds(agent* thisAgent)
                                 {
                                     /* Then we want to check and see if the old GDS
                                     * value should be changed */
-                                    if (fake_inst_wme_cond->gds->goal == NIL)
+                                    if (!fake_inst_wme_cond->gds->goal)
                                     {
                                         /* The goal is NIL: meaning that the goal for
                                         * the GDS is no longer around */
@@ -4507,7 +4528,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal);
+        snprintf_with_symbols(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal.get());
         print_string(thisAgent, msgbuf);
 
         xml_begin_tag(thisAgent, soar_TraceNames::kTagVerbose);
@@ -4570,7 +4591,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 
     if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
     {
-        print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
+        print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal.get());
         print_wme(thisAgent, w);
     }
 

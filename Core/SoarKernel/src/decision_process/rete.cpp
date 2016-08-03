@@ -881,7 +881,7 @@ Symbol find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* msc
     }
     {
         char msg[BUFFER_MSG_SIZE];
-        print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
+        print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name.get());
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
                  msc->p_node->b.p.prod->name->to_string(true));
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -922,7 +922,7 @@ void print_assertion(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        print_with_symbols(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name);
+        print_with_symbols(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name.get());
     }
     else
     {
@@ -935,7 +935,7 @@ void print_retraction(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        print_with_symbols(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name);
+        print_with_symbols(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name.get());
     }
     else
     {
@@ -1241,9 +1241,9 @@ bool get_next_nil_goal_retraction(agent* thisAgent, instantiation** inst)
   ((am)->acceptable==(w)->acceptable))*/
 inline bool wme_matches_alpha_mem(wme* w, alpha_mem* am)
 {
-    return ((am->id == NIL) || (am->id == w->id)) &&
-           ((am->attr == NIL) || (am->attr == w->attr)) &&
-           ((am->value == NIL) || (am->value == w->value)) &&
+    return ((!am->id) || (am->id == w->id)) &&
+           ((!am->attr) || (am->attr == w->attr)) &&
+           ((!am->value) || (am->value == w->value)) &&
            (am->acceptable == w->acceptable);
 }
 
@@ -2580,8 +2580,9 @@ inline void push_var_binding(agent* thisAgent, Symbol v, rete_node_level depth, 
 inline void pop_var_binding(agent* thisAgent, void* v)
 {
     cons* c_xy312;
-    c_xy312 = static_cast<Symbol>(v)->var->rete_binding_locations;
-    static_cast<Symbol>(v)->var->rete_binding_locations = c_xy312->rest;
+    Symbol lSym = voidP_to_symbol(v);
+    c_xy312 = lSym->var->rete_binding_locations;
+    lSym->var->rete_binding_locations = c_xy312->rest;
     free_cons(thisAgent, c_xy312);
 }
 
@@ -2735,15 +2736,15 @@ varnames* add_var_to_varnames(agent* thisAgent, Symbol var,
     {
         allocate_cons(thisAgent, &c1);
         allocate_cons(thisAgent, &c2);
-        c1->first = var;
+        c1->first = symbol_to_voidP(var);
         c1->rest = c2;
-        c2->first = varnames_to_one_var(old_varnames);
+        c2->first = symbol_to_voidP(varnames_to_one_var(old_varnames));
         c2->rest = NIL;
         return var_list_to_varnames(c1);
     }
     /* --- otherwise old_varnames is a list --- */
     allocate_cons(thisAgent, &c1);
-    c1->first = var;
+    c1->first = symbol_to_voidP(var);
     c1->rest = varnames_to_var_list(old_varnames);
     return var_list_to_varnames(c1);
 }
@@ -2827,7 +2828,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     {
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
-            temp = static_cast<Symbol>(c->first);
+            temp = voidP_to_symbol(c->first);
             dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
@@ -2854,7 +2855,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         temp = varnames_to_one_var(vn);
         t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp.get(), pI_id);
     }
     else
     {
@@ -2863,9 +2864,9 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         assert(false);
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
-            temp = static_cast<Symbol>(c->first);
+            temp = voidP_to_symbol(c->first);
             t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
+            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp.get());
         }
     }
 }
@@ -3058,7 +3059,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
 
         /* --- if constant test and alpha=NIL, install alpha test --- */
         if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
-                (alpha_constant == NIL))
+                (!alpha_constant))
         {
             alpha_constant = referent;
             return;
@@ -3082,7 +3083,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         {
             char msg[BUFFER_MSG_SIZE];
             print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                               referent);
+                               referent.get());
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
                          referent->to_string(true));
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -3126,7 +3127,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                                   t->data.referent);
+                                   t->data.referent.get());
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
                          t->data.referent->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -3823,11 +3824,12 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
                 push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
                 sym->tc_num = rhs_unbound_vars_tc;
                 index = num_rhs_unbound_vars_for_new_prod++;
-                sym->var->current_binding_value = reinterpret_cast<Symbol>(index);
+                TrackedPtrVoid tpv;
+                sym->var->current_binding_value = symbol_to_voidP(index);
             }
             else
             {
-                index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
+                index = reinterpret_cast<uint64_t>(sym->var->current_binding_value.get());
             }
             *rv = unboundvar_to_rhs_value(index);
             symbol_remove_ref(thisAgent, sym);
@@ -3860,11 +3862,11 @@ void update_max_rhs_unbound_variables(agent* thisAgent, uint64_t num_for_new_pro
 {
     if (num_for_new_production > thisAgent->max_rhs_unbound_variables)
     {
-        thisAgent->memoryManager->free_memory(static_cast<void *>(thisAgent->rhs_variable_bindings), MISCELLANEOUS_MEM_USAGE);
+        thisAgent->memoryManager->free_memory(symbol_to_voidP(thisAgent->rhs_variable_bindings), MISCELLANEOUS_MEM_USAGE);
         thisAgent->max_rhs_unbound_variables = num_for_new_production;
-        thisAgent->rhs_variable_bindings = (Symbol)
+        thisAgent->rhs_variable_bindings = voidP_to_symbol(
                                            thisAgent->memoryManager->allocate_memory_and_zerofill(thisAgent->max_rhs_unbound_variables *
-                                                   sizeof(Symbol), MISCELLANEOUS_MEM_USAGE);
+                                                   sizeof(Symbol), MISCELLANEOUS_MEM_USAGE));
     }
 }
 
@@ -3978,7 +3980,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             xml_generate_warning(thisAgent, output.str().c_str());
 
             print_with_symbols(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
-                               p->name, p_node->b.p.prod->name);
+                               p->name.get(), p_node->b.p.prod->name.get());
         }
         deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
         return DUPLICATE_PRODUCTION;
@@ -4578,7 +4580,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
             cell = thisAgent->rhs_variable_bindings;
             for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
             {
-                *(cell++) = static_cast<Symbol>(c->first);
+                *(cell++) = voidP_to_symbol(c->first);
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
@@ -4587,7 +4589,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
         cell = thisAgent->rhs_variable_bindings;
         while (index++ <= thisAgent->highest_rhs_unboundvar_index)
         {
-            *(cell++) = NIL;
+            (void*) *(cell++) = NIL;
         }
     }
 }

@@ -44,6 +44,27 @@ typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
 typedef struct symbol_struct SymbolType;
 typedef tracked_ptr<SymbolType> Symbol;
+union TrackedPtrVoid {
+  Symbol tp;
+  void * v;
+  TrackedPtrVoid() { /*...*/ }
+  ~TrackedPtrVoid() { /*...*/ }
+  TrackedPtrVoid(const TrackedPtrVoid&c) { /*...*/ }
+} ;
+
+inline Symbol voidP_to_symbol(void* voidSym)
+{
+    TrackedPtrVoid tpv;
+    tpv.v = voidSym;
+    return tpv.tp;
+}
+
+inline void* symbol_to_voidP(Symbol voidSym)
+{
+    TrackedPtrVoid tpv;
+    tpv.tp = voidSym;
+    return tpv.v;
+}
 
 typedef uint64_t tc_number;
 typedef struct test_struct test_info;

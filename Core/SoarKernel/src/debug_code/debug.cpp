@@ -372,7 +372,7 @@ void debug_test(int type)
             Symbol sym = find_identifier(thisAgent, 'V', 30);
             if (sym)
             {
-                dprint(DT_DEBUG, "%y found.\n", sym);
+                dprint(DT_DEBUG, "%y found.\n", sym.get());
                 condition* dummy = make_condition(thisAgent);
 
 //                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);

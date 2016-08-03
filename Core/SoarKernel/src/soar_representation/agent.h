@@ -860,6 +860,15 @@ inline void push(agent* thisAgent, P item, T*& list_header)
     (list_header) = push_cons_xy298;
 }
 
+inline void pushSym(agent* thisAgent, Symbol item, cons*& list_header)
+{
+    cons* push_cons_xy298;
+    allocate_cons(thisAgent, &push_cons_xy298);
+    push_cons_xy298->first = symbol_to_voidP(item);
+    push_cons_xy298->rest = (list_header);
+    (list_header) = push_cons_xy298;
+}
+
 void    init_soar_agent(agent* thisAgent);
 agent*  create_soar_agent(char* name);
 void    destroy_soar_agent(agent* soar_agent);

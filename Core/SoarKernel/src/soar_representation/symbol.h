@@ -147,8 +147,11 @@ typedef struct EXPORT symbol_struct
 
 } SymbolType;
 
-//typedef tracked_ptr<SymbolType> Symbol;
-//
+typedef tracked_ptr<SymbolType> Symbol;
+
+// pushSym
+// .get()
+
 struct floatSymbol : public SymbolType
 {
     double value;

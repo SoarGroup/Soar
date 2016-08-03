@@ -31,9 +31,13 @@ Symbol RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user
     
     // List of symbols wrapped in gSymbols
     std::vector<Symbol> symVector;
+    TrackedPtrVoid tpv;
+
     for (; args != NIL; args = args->rest)
     {
-        symVector.push_back(static_cast<Symbol>(args->first));
+        tpv.v = args->first;
+        symVector.push_back(tpv.tp);
+//        symVector.push_back(static_cast<Symbol>(args->first));
     }
     
     Symbol pSoarReturn = 0;
@@ -50,8 +54,8 @@ Symbol RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user
         if (rhsFunction->IsValueReturned() == true)
         {
             // There should be a return value
-            assert(pReturn != 0);
-            if (pReturn != 0)
+            assert(pReturn);
+            if (!pReturn)
             {
                 // Return the result
                 pSoarReturn = pReturn;
@@ -65,7 +69,7 @@ Symbol RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user
         else
         {
             // Expected that the rhs function would not return a value, but it did.  Return value ignored.
-            assert(pReturn == 0);
+            assert(!pReturn);
         }
         
         // In any case, we are done using the return value

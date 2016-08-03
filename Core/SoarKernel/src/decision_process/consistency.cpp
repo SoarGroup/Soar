@@ -96,7 +96,7 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
             {
                 if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                 {
-                    print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
+                    print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal.get());
                 }
 
                 remove_existing_context_and_descendents(thisAgent, s->id->id->lower_goal);
@@ -336,13 +336,13 @@ void remove_current_decision(agent* thisAgent, slot* s)
     if (!s->wmes)
         if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
+            print_with_symbols(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id.get(), s->attr.get());
         }
 
     if (s->id)
         if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id);
+            print_with_symbols(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id.get());
         }
 
     /* If there is an operator in the slot, remove it */
@@ -410,7 +410,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #endif
                     if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                     {
-                        print_with_symbols(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
+                        print_with_symbols(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal.get(), goal.get());
                         print_with_symbols(thisAgent, "consistent with the current preferences.\n");
                     }
                     /* This doesn't seem like it should be necessary but evidently it is: see 2.008 */

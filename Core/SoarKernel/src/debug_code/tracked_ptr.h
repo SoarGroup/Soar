@@ -53,7 +53,7 @@ public:
 
   tracked_ptr(const tracked_ptr<T, Deleter, TPM> &rhs);
   tracked_ptr<T, Deleter, TPM> & operator=(const tracked_ptr<T, Deleter, TPM> &rhs);
-  explicit tracked_ptr(SymbolType) { };
+//  explicit tracked_ptr(SymbolType) { };
 
   /** Delete the pointer and zero out the pointer. **/
   void delete_and_zero();

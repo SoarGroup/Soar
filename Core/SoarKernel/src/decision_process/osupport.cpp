@@ -498,7 +498,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             if (thisAgent->o_support_calculation_type == 3)
             {
 
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod_name);
+                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod_name.get());
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
@@ -510,7 +510,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             }
             else if (thisAgent->o_support_calculation_type == 4)
             {
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod_name);
+                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod_name.get());
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
@@ -718,7 +718,7 @@ yes_no_maybe test_is_for_symbol(test t, Symbol sym)
             {
                 return MAYBE;
             }
-            if (member_of_list(sym, t->data.disjunction_list))
+            if (member_of_list(symbol_to_voidP(sym), t->data.disjunction_list))
             {
                 return MAYBE;
             }
@@ -832,7 +832,7 @@ Symbol find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* know
                 for (c = root_goals; c != NIL; c = next_c)
                 {
                     next_c = c->rest;
-                    if (test_is_for_symbol(cond->data.tests.id_test, static_cast<Symbol>(c->first)) == YES)
+                    if (test_is_for_symbol(cond->data.tests.id_test, voidP_to_symbol(c->first)) == YES)
                     {
                         /* --- remove c from the root_goals list --- */
                         if (prev_c)
@@ -866,7 +866,7 @@ Symbol find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* know
     /* --- if there's only one root goal, that's it! --- */
     if (num_root_goals == 1)
     {
-        result = static_cast<Symbol>(root_goals->first);
+        result = voidP_to_symbol(root_goals->first);
     }
     else
     {
@@ -922,7 +922,7 @@ Symbol find_thing_off_goal(agent* thisAgent, condition* lhs,
         add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, &vars);
         if (vars)
         {
-            result = static_cast<Symbol>(vars->first);
+            result = voidP_to_symbol(vars->first);
             free_list(thisAgent, vars);
             return result;
         }
@@ -1156,7 +1156,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
             if (rhs_value_is_symbol(a->attr) &&  /* RBD 3/29/95 */
                     rhs_value_to_symbol(a->attr) == thisAgent->operator_symbol &&
-                    (rhs_value_to_symbol(a->id) == c->first))
+                    (rhs_value_to_symbol(a->id) == voidP_to_symbol(c->first)))
             {
                 a->support = I_SUPPORT;
             }
