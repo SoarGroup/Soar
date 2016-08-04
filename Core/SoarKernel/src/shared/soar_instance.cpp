@@ -18,6 +18,7 @@
 
 Soar_Instance::Soar_Instance()
 {
+    std::cout << "= Creating Soar instance =\n";
     m_Kernel = NULL;
     m_launched_by_unit_test = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
@@ -38,13 +39,25 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
 
 Soar_Instance::~Soar_Instance()
 {
-    dprint_header(DT_SOAR_INSTANCE, PrintBefore, "= Destroying Soar instance =\n");
+    dprint(DT_SOAR_INSTANCE, "= Destroying Soar instance =\n");
     m_Kernel = NULL;
 
     m_agent_table->clear();
     delete m_agent_table;
 
-    dprint_header(DT_SOAR_INSTANCE, PrintAfter, "= Soar instance destroyed =\n");
+    dprint(DT_SOAR_INSTANCE, "Cleaning up loaded libraries...\n");
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    {
+        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
+        it->second->libMessageFunction("delete", NULL);
+    }
+    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
+    {
+        delete it->second;
+    }
+    m_loadedLibraries->clear();
+    delete m_loadedLibraries;
+    dprint(DT_SOAR_INSTANCE, "= Soar instance destroyed =\n");
 }
 
 void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction)
@@ -75,18 +88,7 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
 
 void Soar_Instance::Clean_Up_Libraries()
 {
-    dprint(DT_SOAR_INSTANCE, "Cleaning up loaded libraries...\n");
-    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
-    {
-        dprint(DT_SOAR_INSTANCE, "Sending CLI module %s a DELETE command.\n", it->first.c_str());
-        it->second->libMessageFunction("delete", NULL);
-    }
-    for (std::unordered_map< std::string, Soar_Loaded_Library* >::iterator it = (*m_loadedLibraries).begin(); it != (*m_loadedLibraries).end(); ++it)
-    {
-        delete it->second;
-    }
-    m_loadedLibraries->clear();
-    delete m_loadedLibraries;
+
 }
 
 std::string Soar_Instance::Message_Library(const char* pMessage)

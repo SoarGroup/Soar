@@ -248,7 +248,10 @@ Kernel::~Kernel(void)
 
     delete m_pEventMap ;
 
-    Soar_Instance::Get_Soar_Instance().Clean_Up_Libraries();
+    if (m_SoarInstance)
+    {
+        m_SoarInstance->Clean_Up_Libraries();
+    }
 }
 
 /*************************************************************
