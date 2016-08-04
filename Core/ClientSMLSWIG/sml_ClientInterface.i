@@ -22,9 +22,10 @@
 // For compatibility with PHP, these have been copied to the end of every
 // language except PHP.
 //
-// %newobject sml::Kernel::CreateKernelInCurrentThread;
-// %newobject sml::Kernel::CreateKernelInNewThread;
-// %newobject sml::Kernel::CreateRemoteConnection;
+// voigtjr 9/2012: Moved these back in to here since they had no effect in the other .i files. This presumably breaks PHP.
+%newobject sml::Kernel::CreateKernelInCurrentThread;
+%newobject sml::Kernel::CreateKernelInNewThread;
+%newobject sml::Kernel::CreateRemoteConnection;
 
 //
 // These static functions generate a new char* object that should be destroyed later
@@ -159,7 +160,7 @@ bool __stdcall DllMain( void * hModule,
                        void * lpReserved
 					 )
 {
-	//_crtBreakAlloc = 13542;
+	//_crtBreakAlloc = 142;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;

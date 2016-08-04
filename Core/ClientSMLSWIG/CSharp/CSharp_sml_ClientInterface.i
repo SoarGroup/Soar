@@ -514,9 +514,9 @@
 // include stuff common to all languages (i.e. Java, Tcl, C#)
 %include "../sml_ClientInterface.i"
 
-%newobject sml::Kernel::CreateKernelInCurrentThread;
-%newobject sml::Kernel::CreateKernelInNewThread;
-%newobject sml::Kernel::CreateRemoteConnection;
+//%newobject sml::Kernel::CreateKernelInCurrentThread;
+//%newobject sml::Kernel::CreateKernelInNewThread;
+//%newobject sml::Kernel::CreateRemoteConnection;
 
 %{
 #ifdef __cplusplus
