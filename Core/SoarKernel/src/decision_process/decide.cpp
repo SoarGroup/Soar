@@ -70,6 +70,7 @@ void print_candidates(agent* thisAgent, preference* candidates)
         max_count++;
         print(thisAgent, "\n Candidate %d", cand);
         print_with_symbols(thisAgent, "\n    %y %y %y", cand->id.get(), cand->attr.get(), cand->value.get());
+        print_with_symbols(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
         if (max_count > 10)
         {
             break;
