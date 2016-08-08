@@ -16,6 +16,9 @@ class SMemTest : public CPPUNIT_NS::TestCase
 #ifdef DO_SMEM_TESTS
         CPPUNIT_TEST(testISupport);
         CPPUNIT_TEST(testISupportWithLearning);
+#ifndef SKIP_SLOW_TESTS
+        CPPUNIT_TEST(testSmemArithmetic);
+#endif
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -27,6 +30,7 @@ class SMemTest : public CPPUNIT_NS::TestCase
 
         void source(const std::string& path);
 
+        void testSmemArithmetic();
         void testISupport();
         void testISupportWithLearning();
 
@@ -69,6 +73,21 @@ void SMemTest::tearDown()
     pKernel = 0;
     pAgent = 0;
 }
+
+void SMemTest::testSmemArithmetic()
+{
+    source("arithmetic/arithmetic.soar") ;
+    pAgent->ExecuteCommandLine("watch 0");
+    pAgent->ExecuteCommandLine("srand 1080");
+
+    pAgent->RunSelfForever();
+
+    sml::ClientAnalyzedXML stats;
+    pAgent->ExecuteCommandLineXML("stats", &stats);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
+}
+
+
 
 void SMemTest::testISupport()
 {

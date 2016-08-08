@@ -30,7 +30,6 @@ class MiscTest : public CPPUNIT_NS::TestCase
 #endif
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstantiationDeallocationStackOverflow);
-        CPPUNIT_TEST(testSmemArithmetic);
 #endif
         /* This test has not been kept up to date.  Disabled for quite some time
          *
@@ -53,8 +52,6 @@ class MiscTest : public CPPUNIT_NS::TestCase
         void testWrongAgentWmeFunctions();
         void testRHSRand();
         void testMultipleKernels();
-        void testSmemArithmetic();
-
         void testSource();
 
         void testSoarRand();
@@ -380,20 +377,6 @@ void MiscTest::testMultipleKernels()
     pAgent->ExecuteCommandLine("p s1");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
 }
-
-void MiscTest::testSmemArithmetic()
-{
-    source("arithmetic/arithmetic.soar") ;
-    pAgent->ExecuteCommandLine("watch 0");
-    pAgent->ExecuteCommandLine("srand 1080");
-
-    pAgent->RunSelfForever();
-
-    sml::ClientAnalyzedXML stats;
-    pAgent->ExecuteCommandLineXML("stats", &stats);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
-}
-
 
 void MiscTest::testSource()
 {
