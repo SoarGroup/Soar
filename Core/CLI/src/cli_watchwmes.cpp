@@ -135,13 +135,16 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 #endif // NO_TIMING_STUFF
     }
 
-    /* note:
-    *  See note at the NO_TOP_LEVEL_REFS flag in soar_cAddWme
-    */
-
-#ifndef NO_TOP_LEVEL_REFS
+/* This was previously using #ifndef NO_TOP_LEVEL_REFS, which is a macro constant that
+ * no longer exists.  We now use DO_TOP_LEVEL_REF_CTS.  Top level refcounting is now
+ * also disabled by default so changing it to #ifdef DO_TOP_LEVEL_REF_CTS would
+ * change the current behavior.  Other uses of DO_TOP_LEVEL_REF_CTS seem to only be used
+ * when adding refcounts to top-state wme's, so I'm not sure why the old macro prevented
+ * this entire call.  So, I'm just going to comment it out for now and preserve existing
+ * behavior. */
+//#ifdef DO_TOP_LEVEL_REF_CTS
     do_buffered_wm_and_ownership_changes(thisAgent);
-#endif // NO_TOP_LEVEL_REFS
+//#endif // DO_TOP_LEVEL_REF_CTS
 
     return 0;
 }
