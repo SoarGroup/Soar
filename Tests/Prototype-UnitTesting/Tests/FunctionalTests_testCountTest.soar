@@ -1,6 +1,6 @@
 # This is the source used for TestSoarPerformance in the UM 9.0.0
 # distribution of Soar. Courtesy of John Laird and Bob Marinier
-learn --on
+chunk always
 
 sp {elaborate*state*name
    (state <s> ^superstate.operator.name <name>)

@@ -1,4 +1,4 @@
-#learn --on
+#chunk always
 
 sp {top-goal*halt*success
    :default

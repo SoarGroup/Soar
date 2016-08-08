@@ -1,7 +1,7 @@
 # Tests variablization of referent
 
 srand 23
-learn --on
+chunk always
 
 sp {init*state
     (state <s> ^superstate nil)

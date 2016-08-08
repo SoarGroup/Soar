@@ -18,7 +18,7 @@
 
 Soar_Instance::Soar_Instance()
 {
-    std::cout << "= Creating Soar instance =\n";
+//    std::cout << "= Creating Soar instance =\n";
     m_Kernel = NULL;
     m_launched_by_unit_test = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();

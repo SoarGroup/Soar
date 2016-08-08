@@ -1,4 +1,4 @@
-learn --on
+chunk always
 
 sp {elaborate*state
    (state <s> ^superstate <ss>)

@@ -549,7 +549,7 @@ void SMemFunctionalTests::testISupport()
 
 void SMemFunctionalTests::testISupportWithLearning()
 {
-	std::string result = agent->ExecuteCommandLine("learn -e") ;
+	std::string result = agent->ExecuteCommandLine("chunk always") ;
 
 	runTest("smem-i-support", 6);
 }

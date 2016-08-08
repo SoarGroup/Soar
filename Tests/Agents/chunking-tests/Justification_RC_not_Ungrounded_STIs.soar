@@ -1,8 +1,8 @@
 # Test for bug that crashed Soar when chunker tried to clean up redundancies in justification and thought
 # ungrounded STIs were found when in realitiy it was simply not variablized.
 
-learn --on
-learn --only
+chunk always
+chunk only
 
 watch --learn 2
 

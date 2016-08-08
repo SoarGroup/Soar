@@ -3,7 +3,7 @@
 epmem --set learning off
 smem --set learning on
 
-learn --off
+chunk never
 
 sp {elaboration*enable-smem
    (state <s> ^name)

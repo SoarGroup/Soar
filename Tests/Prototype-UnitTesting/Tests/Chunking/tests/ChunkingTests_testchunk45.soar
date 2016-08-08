@@ -2,8 +2,8 @@
 # - 
 
 srand 23
-learn -e
-learn --only
+chunk always
+chunk only
 
 sp {init*state
    (state <s1> ^superstate nil)

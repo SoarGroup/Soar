@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 smem --set learning on
 smem -a {(L1 ^operator L2)}
 

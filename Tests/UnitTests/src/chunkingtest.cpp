@@ -228,7 +228,7 @@ void ChunkTest::tearDown()
 void ChunkTest::testLearn()
 {
     source("testLearn.soar");
-    pAgent->ExecuteCommandLine("learn --except");
+    pAgent->ExecuteCommandLine("chunk all-except");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;
@@ -249,7 +249,7 @@ void ChunkTest::testLearn()
 
     // turn learn except on
     pAgent->ExecuteCommandLine("init");
-    pAgent->ExecuteCommandLine("learn --except");
+    pAgent->ExecuteCommandLine("chunk all-except");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;
@@ -292,7 +292,7 @@ void ChunkTest::testLearn()
     // go to only mode
     pAgent->ExecuteCommandLine("init");
     pAgent->ExecuteCommandLine("excise -c");
-    pAgent->ExecuteCommandLine("learn --only");
+    pAgent->ExecuteCommandLine("chunk only");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;

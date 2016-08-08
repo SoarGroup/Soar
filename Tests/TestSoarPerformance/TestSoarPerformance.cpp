@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
 
         cout << "***** Running suite with learning off *****" << endl;
         Test1(numTrials, &stTest1_learnoff, commands);
-        commands.push_back("learn --on");
+        commands.push_back("chunk always");
         commands.push_back("srand 233391");
         cout << "***** Running suite with learning on *****" << endl;
         Test1(numTrials, &stTest1_learnon, commands);

@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 smem --add {(@T1 ^D X )}
 

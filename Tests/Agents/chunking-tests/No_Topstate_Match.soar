@@ -3,7 +3,7 @@
 #
 # @created mazzin 20160422
 srand 23
-learn --on
+chunk always
 
 # Tests for crash that occurred if some rule did not match in top state before a chunk is formed
 

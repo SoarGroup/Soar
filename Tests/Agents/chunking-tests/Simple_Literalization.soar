@@ -1,6 +1,6 @@
 # Simple literalization test
 
-learn --on
+chunk always
 watch --learn 2
 
 sp {init

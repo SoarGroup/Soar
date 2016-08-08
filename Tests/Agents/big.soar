@@ -3669,13 +3669,13 @@ multi-attributes peg 3
 multi-attributes holds 8
 multi-attributes upper-disk 2
 multi-attributes clear 2
-learn --off
+chunk never
 multi-attributes disk 3
 multi-attributes peg 3
 multi-attributes holds 4
 multi-attributes upper-disk 2
 multi-attributes clear 2
-learn --off
+chunk never
 sp {top-goal*elaborate*goal*tower-of-hanoi
     (state <s> ^superstate nil)
     -->
@@ -3926,7 +3926,7 @@ multi-attributes disk 7
 multi-attributes peg 4
 multi-attributes holds 10
 multi-attributes clear 3
-learn --off
+chunk never
 sp {tower-of-hanoi*propose*state*initial-and-desired-states
     "A 3-Disk Tower of Hanoi Problem." 
     (state <s> ^superstate nil)
@@ -4105,7 +4105,7 @@ multi-attributes disk 7
 multi-attributes peg 4
 multi-attributes holds 10
 multi-attributes clear 3
-learn --off
+chunk never
 sp {top-goal*elaborate*goal*tower-of-hanoi
     (state <s> ^superstate nil)
     -->
@@ -4760,13 +4760,13 @@ multi-attributes peg 3
 multi-attributes holds 8
 multi-attributes upper-disk 2
 multi-attributes clear 2
-learn --off
+chunk never
 max-elaborations 50000
 multi-attributes on 3
 multi-attributes peg 4
 multi-attributes holds 10
 multi-attributes clear 3
-learn --off
+chunk never
 sp {tower-of-hanoi*propose*state*initial-and-desired-states
     "A 3-Disk Tower of Hanoi Problem." 
     (state <s> ^superstate nil)
@@ -5098,7 +5098,7 @@ sp {blocks-world*apply*initialize
 multi-attributes ontop 3
 multi-attributes clear 3
 multi-attributes objects 4
-learn --off
+chunk never
 sp {blocks-world*elaborate*state*clear
    (state <s> ^name blocks-world
               ^object <block>
@@ -5328,9 +5328,9 @@ sp {blocks-world*apply*initialize-blocks-world-operator-subgoaling
 multi-attributes ontop 3
 multi-attributes clear 3
 multi-attributes objects 4
-learn --off
+chunk never
 max-elaborations 10
-learn --off
+chunk never
 sp {blocks-world*propose*initialize-blocks-world
    (state <s> ^superstate nil
              -^name)
@@ -5739,7 +5739,7 @@ sp {blocks-world*apply*initialize
 multi-attributes ontop 3
 multi-attributes clear 3
 multi-attributes objects 4
-learn --on
+chunk always
 epmem --set trigger dc
 epmem --set learning on
 watch --epmem
@@ -6026,7 +6026,7 @@ sp {water-jug*evaluate*state*failure*duplicate
    (<s2> ^failure <d>)}
 multi-attributes jug 3
 echo "learning is on"
-learn --on
+chunk always
 sp {water-jug*elaborate*empty
    (state <s> ^name water-jug
               ^jug <j>)
@@ -6163,7 +6163,7 @@ sp {water-jug*apply*initialize-water-jug
         ^contents 0)
    (<j> ^volume 5
         ^contents 0)}
-learn --off
+chunk never
 multi-attributes jug 3
 sp {water-jug*elaborate*empty
    (state <s> ^name water-jug
@@ -6343,7 +6343,7 @@ sp {water-jug*apply*initialize-water-jug
         ^contents 0)
    (<j> ^volume 5
         ^contents 0)}
-learn --off
+chunk never
 multi-attributes jug 3
 rl --set learning on
 sp {water-jug*elaborate*empty
@@ -6530,7 +6530,7 @@ sp {apply*pick-up
 -->
    (<j1> ^picked-up yes)
 }
-learn --off
+chunk never
 multi-attributes jug 3
 sp {water-jug*elaborate*empty
    (state <s> ^name water-jug
@@ -6794,7 +6794,7 @@ sp {water-jug*remove*last-operator
               ^operator.name <> <name>)
 -->
    (<s> ^last-operator <name> -)}
-learn --off
+chunk never
 multi-attributes jug 3
 sp {default*generic*opsub*propose*space*generic
    :default
@@ -8527,7 +8527,7 @@ epmem --set timers off
 epmem --set learning on
 watch 0
 timers --off
-learn --on
+chunk always
 sp {top-state*elaborate*missionaries-and-cannibals
 	(state <s> ^superstate nil)
 	-->
@@ -8905,9 +8905,9 @@ sp {apply*move-boat
                    (- <bank-num> <num>))
    (<obank> ^<type> <obank-num> -
                     (+ <obank-num> <num>))}
-learn --on
+chunk always
 multi-attributes holds 3
-learn --off
+chunk never
 sp {mac*propose*initialize
    (state <s> ^superstate nil
              -^name)
@@ -9132,7 +9132,7 @@ sp {monitor*state*right
    -->
    (write (crlf) | M: | <ml> |, C: | <cl> |   ~~~ B | 
                  | M: | <mr> |, C: | <cr> |  |)}
-learn --off
+chunk never
 sp {mac*elaborate*initial*desired-state
    (state <s> ^superstate nil)
    -->
@@ -9559,8 +9559,8 @@ sp {mac*apply*move-boat*remove*old*last-operator
    (<lo> ^bank <obank>)
    -->
    (<s> ^last-operator <lo> -)}
-learn --off
-learn --on
+chunk never
+chunk always
 sp {top-state*elaborate*missionaries-and-cannibals
 	(state <s> ^superstate nil)
 	-->
@@ -9731,7 +9731,7 @@ sp {monitor*move-mac-boat*evaluation
         ^{ << cannibals missionaries >>  <type> } <number>)
    -->
    (write (crlf) | Evaluate move | <number> | | <type>)}
-learn --off
+chunk never
 sp {mac*elaborate*state*name
    (state <s> ^superstate nil)
    -->
@@ -10295,7 +10295,7 @@ sp {eight*apply*operator*add-tile-cell
         ^blank-cell <c1>)
 -->
    (<s> ^tile-cell <c1>)}
-learn --on
+chunk always
 multi-attributes binding 10
 multi-attributes operator 4
 sp {eight*elaborate*problem-space
@@ -10580,7 +10580,7 @@ sp {eight*apply*operator*add-tile-cell
         ^blank-cell <c1>)
 -->
    (<s> ^tile-cell <c1>)}
-learn --on
+chunk always
 multi-attributes binding 10
 multi-attributes operator 4
 sp {elaborate*top-state*top-state

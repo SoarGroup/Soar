@@ -1,4 +1,4 @@
-learn -e
+chunk always
 smem --enable
 smem --add {
    (<L1> ^value bar)

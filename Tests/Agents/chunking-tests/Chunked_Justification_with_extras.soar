@@ -1,4 +1,4 @@
-learn --only
+chunk only
 smem --set learning on
 
 # Elaborate substate with superoperator name

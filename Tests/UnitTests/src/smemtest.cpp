@@ -80,7 +80,7 @@ void SMemTest::testISupport()
 void SMemTest::testISupportWithLearning()
 {
     source("smem-i-support.soar");
-    std::string result = pAgent->ExecuteCommandLine("learn -e") ;
+    std::string result = pAgent->ExecuteCommandLine("chunk always") ;
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(10, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);

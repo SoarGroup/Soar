@@ -5,7 +5,7 @@
 #   that tests a copy of it made on the top state
 
 srand 23
-learn --on
+chunk always
 
 sp {init-superstate
     (state <s> ^superstate nil)

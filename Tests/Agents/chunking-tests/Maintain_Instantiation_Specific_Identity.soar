@@ -1,7 +1,7 @@
 # Test to make sure that chunking doesn't unify variables with the same name
 # but different instantiations, which orig var id propagation should prevent.
 
-learn --on
+chunk always
 #learn -P
 #watch --backtracing
 #watch --learn 2

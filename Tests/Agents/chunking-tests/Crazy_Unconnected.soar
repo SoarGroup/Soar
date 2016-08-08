@@ -3,7 +3,7 @@
 
 srand 23
 smem --enable
-learn -e
+chunk always
 
 sp {elab*state-info*top
     (state <s> ^superstate nil)

@@ -1,5 +1,5 @@
-learn --on
-learn --only
+chunk always
+chunk only
 
 sp {all*elaborate*condition
    (state <s> ^superstate.condition <co>)

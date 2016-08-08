@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {init
    (state <s> ^superstate.superstate nil)

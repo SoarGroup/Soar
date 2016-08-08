@@ -14,7 +14,7 @@ multi-attributes upper-disk 2
 
 multi-attributes clear 2
 
-#learn --off
+#chunk never
 
 sp {towers-of-hanoi*object*disk*elaborate*state*larger
    "If size-of(i) > size-of(j), then larger(i,j)."

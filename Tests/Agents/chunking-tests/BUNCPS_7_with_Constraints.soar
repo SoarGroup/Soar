@@ -1,6 +1,6 @@
 srand 23
-learn --on
-learn --only
+chunk always
+chunk only
 
 watch --learn 2
 

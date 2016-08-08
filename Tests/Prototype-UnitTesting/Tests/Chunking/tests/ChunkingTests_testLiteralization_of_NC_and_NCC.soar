@@ -1,6 +1,6 @@
 # Literalization of NC and NCC
 
-learn --on
+chunk always
 watch --learn 2
 
 sp {init

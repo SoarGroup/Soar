@@ -4,7 +4,7 @@ multi-attributes clear 3
 
 multi-attributes objects 4
 
-#learn --off
+#chunk never
 
 sp {blocks-world*elaborate*state*clear
    (state <s> ^name blocks-world

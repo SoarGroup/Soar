@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {default*select*reject*conflict
     "Reject an object if it leads to a conflict that can not be resolved."

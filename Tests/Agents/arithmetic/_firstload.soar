@@ -53,7 +53,7 @@ smem --set learning on
 ## substate), but there is no explicit control to invoke them and they do not 
 ## have to be disabled during addition or the other subtraction strategy.
 
-## Works with chunking (learn --on). 
+## Works with chunking (chunk always). 
 
 ## Key data structures:
 ##   arithmetic

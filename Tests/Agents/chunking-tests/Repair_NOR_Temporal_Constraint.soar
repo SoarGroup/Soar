@@ -3,7 +3,7 @@
 
 srand 23
 smem --enable
-learn -e
+chunk always
 
 smem --add {(@T1 ^D X )}
 smem --add {(@T2 ^D Y )}

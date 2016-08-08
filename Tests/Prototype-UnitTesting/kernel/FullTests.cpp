@@ -1380,7 +1380,7 @@ void FullTests_Parent::testGDSBug1011()
 void FullTests_Parent::testLearn()
 {
 	loadProductions(SoarHelper::GetResource("testLearn.soar"));
-	agent->ExecuteCommandLine("learn --except");
+	agent->ExecuteCommandLine("chunk all-except");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;
@@ -1401,7 +1401,7 @@ void FullTests_Parent::testLearn()
 	
 	// turn learn except on
 	agent->ExecuteCommandLine("init");
-	agent->ExecuteCommandLine("learn --except");
+	agent->ExecuteCommandLine("chunk all-except");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;
@@ -1444,7 +1444,7 @@ void FullTests_Parent::testLearn()
 	// go to only mode
 	agent->ExecuteCommandLine("init");
 	agent->ExecuteCommandLine("excise -c");
-	agent->ExecuteCommandLine("learn --only");
+	agent->ExecuteCommandLine("chunk only");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;

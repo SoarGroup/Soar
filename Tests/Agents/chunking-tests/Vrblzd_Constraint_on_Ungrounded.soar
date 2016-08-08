@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {apply*test-failed
     (state <s> ^superstate.superstate.superstate.superstate nil)
