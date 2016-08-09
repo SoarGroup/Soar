@@ -14,3 +14,24 @@ sp {answer*retrieve-goal*copy-goal*snc*t5-12
     (@P1 ^arg1 @P3 +)
     (@G1 ^handle goal +)
 }
+
+sp {answer*StateNoChange*t6-1
+    (state <s1> ^cue2 goal)
+    (<s1> -^goal <g*1>)
+    (<s1> -^deleted <d*1>)
+    (<s1> ^cue1 handle)
+    (<s1> ^goal @G1)
+    (<s1> ^superstate nil)
+    (@G1 ^predicate <p2>)
+    (@G1 ^procedural <p1>)
+    (<p2> ^1 <p3>)
+    (<p3> ^default <d1>)
+    -->
+    (@G1 ^handle goal +)
+    (@G1 ^procedural @P1 +)
+    (@G1 ^predicate @P2 +)
+    (@P1 ^arg1 @P3 +)
+    (@P2 ^1 @P4 +)
+    (@P4 ^default @D1 +)
+    (@D1 ^name pantry +)
+}

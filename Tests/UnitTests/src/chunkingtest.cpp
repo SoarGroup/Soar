@@ -74,7 +74,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Faux_Operator);
         CPPUNIT_TEST(Smem_Chunk_Direct);
         /* This test seems to pass most of the time, but occasionally fails.  Not sure why.  Disabling for now */
-//        CPPUNIT_TEST(SMem_Chunked_Query);
+        CPPUNIT_TEST(SMem_Chunked_Query);
         CPPUNIT_TEST(Result_On_Operator);
         CPPUNIT_TEST(Unify_Children_Results);
         CPPUNIT_TEST(Blocks_World_Hierarchical);
@@ -631,7 +631,7 @@ void ChunkTest::Smem_Chunk_Direct()
 }
 void ChunkTest::SMem_Chunked_Query()
 {
-    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 1);
+    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 2);
 }
 void ChunkTest::Result_On_Operator()
 {
