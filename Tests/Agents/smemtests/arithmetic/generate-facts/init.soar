@@ -1,0 +1,16 @@
+sp {generate-facts*propose*init
+   (state <s> ^name generate-facts
+             -^phase)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name init)
+-->
+   (<s> ^phase check)
+   (<cmd> ^query.facts <fact>)
+}
