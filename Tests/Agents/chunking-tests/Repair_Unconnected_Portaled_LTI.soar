@@ -1,0 +1,60 @@
+srand 23
+smem --enable
+chunk always
+
+sp {elab*state-info*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^state-info <i>)
+    (<i> ^top-state <s>
+         ^level 1)
+}
+
+sp {elab*state-info*substate
+    (state <s> ^superstate <ss>)
+    (<ss> ^state-info <i>)
+    (<i> ^top-state <ts>
+         ^level <l>)
+-->
+    (<s> ^state-info <i2>)
+    (<i2> ^top-state <ts>
+          ^level (+ <l> 1))
+}
+
+sp {anystate*operator
+   (state <s> ^state-info.level <l>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name <l>)
+}
+
+
+sp {generate*lti1
+    (state <s> ^state-info.level 1)
+-->
+    (<s> ^foo @T1)
+    (@T1 ^foo bar)
+}
+
+sp {generate*lti2
+    (state <s> ^state-info.level 2)
+-->
+    (<s> ^foo <bar>)
+    (<bar> ^lti2 @T1)
+}
+
+sp {make-chunk
+    (state <s> ^foo.lti2 <t2>
+               ^state-info <i>)
+    (<i> ^top-state <ts> ^level <> 1)
+    (<t2> ^foo bar)
+ -->
+    (<ts> ^result true)
+ }
+
+sp {stop
+    (state <s> ^result)
+-->
+    (write (crlf) |Chunk produced.|)
+    (interrupt)
+    }

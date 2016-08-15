@@ -163,6 +163,23 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 /* This is the wme which is causing this production to be backtraced through.
    It is NULL when backtracing for a result preference.                   */
 
+inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
+{
+    Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
+    assert(thisID->id->is_identifier());
+    /* Note:  When we both implement repair via promotion tracking and if we switch to a
+     *        model of smem in which we can't get unexpected operational conditions
+     *        because of portalling LTIs, then we won't need the first check any more */
+     
+    if ((thisID->id->level <= grounds_level) || ((thisID->id->isa_goal) && (cond->bt.level <= grounds_level)))
+    {
+        /* Just testing whether id level can ever be wrong.  We can't sub */
+        assert(thisID->id->level <= cond->bt.level);
+        return true;
+    }
+    return false;
+}
+
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
@@ -287,7 +304,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 value->tc_num = tc;
             }
         }
-        else if ((thisID->id->isa_goal) && (c->bt.level <= grounds_level))
+        else if (condition_is_operational(c, grounds_level))
         {
             /* --- id is a higher goal id that was tested: so add id to the TC --- */
             thisID->tc_num = tc;
@@ -362,7 +379,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                     push(thisAgent, c, grounds_to_print);
                 }
             }
-            else if (c->bt.level <= grounds_level)
+            else if (condition_is_operational(c, grounds_level))
             {
                 dprint(DT_BACKTRACE, "Backtracing adding potential condition... %l (i%u)\n", c, c->inst->i_id);
                 add_to_potentials(c);
