@@ -1150,7 +1150,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         {
             /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
             revert_chunk_to_instantiation();
-            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
+            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
             if (m_prod)
             {
                 print_current_built_rule("Adding the following justification instead:");
@@ -1170,7 +1170,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             return;
         }
     } else {
-        m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
+        m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
     }
 
     #ifdef BUILD_WITH_EXPLAINER
