@@ -117,7 +117,6 @@ inline void add_cond_to_lists(condition** c, condition** prev, condition** first
 
 void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC)
 {
-    dprint(DT_REPAIR, "...adding state link WMEs: \n");
     Symbol* g, *last_goal = NULL;
     wme* w;
 
@@ -127,14 +126,17 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
         if (g->tc_num != pSeenTC && (g->id->level < m_match_goal_level))
         {
             assert(last_goal);
+            dprint(DT_REPAIR, "Found marked state %y.  Looking for superstate wme in subgoal %y...", g, last_goal);
             for (w = last_goal->id->impasse_wmes; w != NIL; w = w->next)
             {
                 if (w->attr == thisAgent->superstate_symbol)
                 {
                     m_repair_WMEs.insert(w);
-                    dprint_noprefix(DT_REPAIR, "Adding wme for superstate link: %w \n", w);
+                    dprint_noprefix(DT_REPAIR, "adding wme for superstate link: %w \n", w);
                 }
             }
+        } else {
+            dprint(DT_REPAIR, "State %y not marked (%u != %u) or level is below match goal (%d < %d).\n", g, g->tc_num, pSeenTC, g->id->level, m_match_goal_level);
         }
         last_goal = g;
         g = g->id->higher_goal;
@@ -143,9 +145,9 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
 
 void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
 {
-    dprint(DT_REPAIR, "...searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
+    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->matched_sym);
-    dprint(DT_REPAIR, "...search complete.  Adding %d wme's to set...\n", l_WMEPath->size());
+    dprint(DT_REPAIR, "...search complete.  Adding %d WMEs to repair wme path...\n", l_WMEPath->size());
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
     {
         wme* lWME = (*it);
@@ -230,7 +232,7 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 
     condition* new_cond;
 
-//    dprint(DT_REPAIR, "Creating condition for %u: (%y ^%y %y)\n", lWME->timetag, lWME->id, lWME->attr, lWME->value);
+    dprint(DT_REPAIR, "Creating condition for %u: (%y ^%y %y)\n", lWME->timetag, lWME->id, lWME->attr, lWME->value);
 //    dprint(DT_REPAIR, "   identities of associated pref: (%u ^%u %u)\n", lWME->preference ? lWME->preference->o_ids.id : 0, lWME->preference ? lWME->preference->o_ids.attr : 0, lWME->preference ? lWME->preference->o_ids.value : 0);
     new_cond = make_condition(thisAgent,
         make_test(thisAgent, lWME->id, EQUALITY_TEST),
@@ -290,6 +292,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
             {
                 if (lCond->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
+                    dprint(DT_REPAIR, "Marking state found %y in id element with tc_num %u\n", lCond->data.tests.id_test->eq_test->data.referent, tc);
                     lCond->data.tests.id_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->counterpart && lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_variable())
                     {
@@ -301,6 +304,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_identifier() &&
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
+                    dprint(DT_REPAIR, "Marking state found %y in id element counterpart with tc_num %u\n", lCond->counterpart->data.tests.id_test->eq_test->data.referent, tc);
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->data.tests.id_test->eq_test->data.referent->is_variable())
                     {
@@ -312,6 +316,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
             {
                 if (lCond->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
+                    dprint(DT_REPAIR, "Marking state found %y in value element with tc_num %u\n", lCond->data.tests.value_test->eq_test->data.referent, tc);
                     lCond->data.tests.value_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->counterpart && lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_variable())
                     {
@@ -323,6 +328,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_identifier() &&
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
+                    dprint(DT_REPAIR, "Marking state found %y in value element counterpart with tc_num %u\n", lCond->counterpart->data.tests.value_test->eq_test->data.referent, tc);
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->tc_num = tc;
                     if (lCond->data.tests.value_test->eq_test->data.referent->is_variable())
                     {
@@ -346,34 +352,40 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     #endif
 
     dprint(DT_REPAIR, "Repair rule started...\n");
-    dprint(DT_VARIABLIZATION_MANAGER, "- Variablized cond: \n%1", m_vrblz_top);
-    dprint(DT_CONSTRAINTS, "\n- Instantiated conds :\n%1", m_inst_top, NULL);
+    dprint(DT_REPAIR, "- Variablized cond: \n%1", m_vrblz_top);
+    dprint(DT_REPAIR, "\n- Instantiated conds :\n%1", m_inst_top, NULL);
 
     /* Determine the highest level of a dangling sym.  We need to add conditions
      * for all (state ^superstate state) wme's between that level and the match
      * level that are not already in the rule. We also add the identity-based
      * variablizations for these dangling symbols so that the repair conditions
      * connect to the real ones correctly */
-    dprint(DT_REPAIR, "Determining highest dangling level and adding starting variablizations...\n");
+    dprint(DT_REPAIR, "Step 1: Iterating through dangling syms to determine lowest level that we need to build links to (also adding initial variablizations)...\n");
     targetLevel = thisAgent->bottom_goal->id->level;
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
+        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %d...\n", lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, lDanglingSymInfo->matched_sym->id->level);
         if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->matched_sym->id->level;
             add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
+        } else {
+            dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n", lDanglingSymInfo->matched_sym->id->level, targetLevel);
         }
     }
 
     tc_number tc;
     tc = get_new_tc_number(thisAgent);
 
+    dprint(DT_REPAIR, "Step 2: Marking states currently in conditions: \n");
     mark_states_in_cond_list(m_vrblz_top, tc);
     reset_variable_generator(thisAgent, m_vrblz_top, NULL);
+    dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
     /* Generate connecting wme's for each unconnected LTI and add to a set */
+    dprint(DT_REPAIR, "Step 3: Adding WMEs to connect each dangling symbol...\n");
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
@@ -381,29 +393,27 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     }
 
     /* Create conditions based on set of wme's compiled */
+    dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
     condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
     while (prev_cond->next != NULL)
         prev_cond = prev_cond->next;
 
 //    prev_cond = first_cond = NULL;
 
-    dprint(DT_REPAIR, "Final set of WMEs to connect all dangling identifiers: \n");
     for (auto it = m_repair_WMEs.begin(); it != m_repair_WMEs.end(); it++)
     {
         lWME = (*it);
-
         new_cond = make_condition_from_wme(lWME);
-
         new_inst_cond = copy_condition(thisAgent, new_cond);
         new_cond->counterpart = new_inst_cond;
         new_inst_cond->counterpart = new_cond;
-        dprint(DT_REPAIR, "Variablizing condition %l.\n", new_cond);
+        dprint(DT_REPAIR, "   Variablizing %l\n", new_cond);
         /* Variablize and add to condition list */
         variablize_connecting_sti(new_cond->data.tests.id_test);
         variablize_connecting_sti(new_cond->data.tests.value_test);
         new_cond->counterpart->data.tests.id_test->identity = new_cond->data.tests.id_test->identity;
         new_cond->counterpart->data.tests.value_test->identity = new_cond->data.tests.value_test->identity;
-        dprint(DT_REPAIR, "Variablized condition %l.\n", new_cond);
+        dprint(DT_REPAIR, "   --> %l\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
 
     }

@@ -75,9 +75,6 @@ void Explanation_Memory::initialize_counters()
 }
 void Explanation_Memory::clear_explanations()
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
-
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
     Symbol* lSym;
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
@@ -117,15 +114,10 @@ void Explanation_Memory::clear_explanations()
     }
     all_excised_productions->clear();
     dprint(DT_EXPLAIN, "Explanation logger done clear_explanations...\n");
-    //debug_trace_set(DT_ID_LEAKING, false);
-    //debug_trace_set(DT_EXPLAIN, false);
-
 }
 
 Explanation_Memory::~Explanation_Memory()
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
     dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
 
     current_recording_chunk = NULL;
@@ -138,8 +130,6 @@ Explanation_Memory::~Explanation_Memory()
     delete all_actions;
     delete instantiations;
     dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
-    //debug_trace_set(DT_ID_LEAKING, false);
-    //debug_trace_set(DT_EXPLAIN, false);
 }
 
 void Explanation_Memory::re_init()
@@ -221,8 +211,6 @@ void Explanation_Memory::add_result_instantiations(instantiation* pBaseInst, pre
 
 void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
     if (current_recording_chunk)
     {
         dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pProduction->name, current_recording_chunk->chunkID, backtrace_number);
@@ -234,8 +222,6 @@ void Explanation_Memory::record_chunk_contents(production* pProduction, conditio
     } else {
         dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
     }
-    //debug_trace_set(DT_EXPLAIN, false);
-    //debug_trace_set(DT_ID_LEAKING, false);
 }
 
 condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)

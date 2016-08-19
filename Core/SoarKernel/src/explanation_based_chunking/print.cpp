@@ -23,11 +23,11 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {
     if (pHeader)
     {
-        outputManager->printa_sf(thisAgent, "\n%s\n\n", pHeader);
+        outputManager->printa_sf(thisAgent, "\n%s\n   ", pHeader);
     }
     if (m_prod_name)
     {
-        outputManager->printa_sf(thisAgent, "\nsp {%y\n", m_prod_name);
+        outputManager->printa_sf(thisAgent, "\nsp {%y\n   ", m_prod_name);
     }
     if (m_vrblz_top)
     {

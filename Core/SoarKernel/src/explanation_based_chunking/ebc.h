@@ -126,6 +126,9 @@ class Explanation_Based_Chunker
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
+        /* Methods for printing in Soar trace */
+        void print_current_built_rule(const char* pHeader = NULL);
+
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
         void print_tables(TraceMode mode);
@@ -326,8 +329,6 @@ class Explanation_Based_Chunker
         void clear_data();
         void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
 
-        /* Methods for printing in Soar trace */
-        void print_current_built_rule(const char* pHeader);
 };
 
 #endif /* EBC_MANAGER_H_ */

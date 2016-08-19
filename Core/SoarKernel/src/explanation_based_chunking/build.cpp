@@ -682,12 +682,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
         if (m_failure_type != ebc_success)
         {
-            print_current_built_rule("Incorrect rule learned:");
-
             if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
             {
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
-                //debug_trace_set(DT_ID_LEAKING, true);
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
@@ -697,23 +694,19 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
                     print_current_built_rule("Repaired rule:");
-                    //debug_trace_set(DT_ID_LEAKING, false);
                     return true;
                 } else {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
-                    //debug_trace_set(DT_ID_LEAKING, false);
                     return false;
                 }
             }
 
             delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-            //debug_trace_set(DT_ID_LEAKING, false);
             return false;
         }
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
     }
-    //debug_trace_set(DT_ID_LEAKING, false);
     return true;
 }
 
