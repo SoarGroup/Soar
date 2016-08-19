@@ -11,15 +11,16 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "condition.h"
 
 #include "agent.h"
-#include "test.h"
-#include "memory_manager.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "identity_record.h"
+#include "memory_manager.h"
+#include "output_manager.h"
+#include "run_soar.h"
+#include "test.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).

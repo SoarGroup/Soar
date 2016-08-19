@@ -8,18 +8,20 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "decide.h"
 #include "dprint.h"
+#include "ebc_settings.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "rhs.h"
-#include "ebc_settings.h"
 #include "soar_instance.h"
 #include "test.h"
 #include "xml.h"
+
+#include <assert.h>
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);

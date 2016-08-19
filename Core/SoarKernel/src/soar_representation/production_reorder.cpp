@@ -14,24 +14,25 @@
  *
  * =======================================================================
  */
-#include "run_soar.h"
-#include "production.h"
 #include "production_reorder.h"
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
 #include "repair.h"
 #include "rhs.h"
+#include "run_soar.h"
+#include "soar_TraceNames.h"
 #include "symbol.h"
 #include "test.h"
-#include "mem.h"
-#include "print.h"
 #include "xml.h"
-#include "soar_TraceNames.h"
 
 #include <stdlib.h>
-#include "dprint.h"
 
 /* *********************************************************************
 

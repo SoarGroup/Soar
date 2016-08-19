@@ -41,6 +41,8 @@ typedef char* rhs_value;
 typedef struct saved_test_struct saved_test;
 typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
+typedef uint64_t smem_lti_id;
+typedef uint64_t smem_hash_id;
 typedef struct symbol_struct Symbol;
 typedef uint64_t tc_number;
 typedef struct test_struct test_info;

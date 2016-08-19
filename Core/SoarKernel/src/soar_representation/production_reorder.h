@@ -13,6 +13,8 @@
 
 #include "kernel.h"
 
+#include "stl_typedefs.h"
+
 typedef struct saved_test_struct
 {
     struct saved_test_struct* next;

@@ -38,23 +38,12 @@
 #include "kernel.h"
 
 #include "Export.h"
-#include "mem.h"
+#include "symbol_factory.h"
 #include "soar_TraceNames.h"
 
-#include <assert.h>
-#include <map>
 #include <sstream>
 
 //#define DEBUG_TRACE_REFCOUNT_FOR "O3"
-
-typedef signed short goal_stack_level;
-typedef struct instantiation_struct instantiation;
-typedef int64_t epmem_node_id;
-typedef uint64_t epmem_hash_id;
-typedef uint64_t epmem_time_id;
-typedef uint64_t smem_lti_id;
-typedef uint64_t smem_hash_id;
-typedef uint64_t tc_number;
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;
@@ -434,35 +423,9 @@ inline strSymbol*    strSym(Symbol* sym)
 
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
-void init_symbol_tables(agent* thisAgent);
-void create_predefined_symbols(agent* thisAgent);
-void release_predefined_symbols(agent* thisAgent);
-void print_internal_symbols(agent* thisAgent);
-
 #ifndef SOAR_RELEASE_VERSION
     void debug_store_refcount(Symbol* sym, bool isAdd);
 #endif
-
-EXPORT Symbol* make_variable(agent* thisAgent, const char* name);
-EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
-EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
-EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
-EXPORT Symbol* make_new_identifier(agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
-extern Symbol* generate_new_str_constant(agent* thisAgent, const char* prefix, uint64_t* counter);
-
-EXPORT void deallocate_symbol(agent* thisAgent, Symbol*& sym);
-EXPORT void deallocate_symbol_list_removing_references(agent* thisAgent, ::cons*& sym_list);
-::cons* copy_symbol_list_adding_references(agent* thisAgent, ::cons* sym_list);
-
-EXPORT Symbol* find_variable(agent* thisAgent, const char* name);
-EXPORT Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number);
-EXPORT Symbol* find_str_constant(agent* thisAgent, const char* name);
-EXPORT Symbol* find_int_constant(agent* thisAgent, int64_t value);
-EXPORT Symbol* find_float_constant(agent* thisAgent, double value);
-
-bool reset_id_counters(agent* thisAgent);
-void reset_id_and_variable_tc_numbers(agent* thisAgent);
-void reset_variable_gensym_numbers(agent* thisAgent);
 
 char first_letter_from_symbol(Symbol* sym);
 
