@@ -24,10 +24,10 @@
 #include "instantiation.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -41,6 +41,7 @@
 #include "rhs_functions.h"
 #include "rhs.h"
 #include "run_soar.h"
+#include "semantic_memory.h"
 #include "slot.h"
 #include "soar_module.h"
 #include "soar_TraceNames.h"
@@ -50,10 +51,10 @@
 #include "working_memory.h"
 #include "xml.h"
 
+#include <assert.h>
+#include <list>
 #include <stdlib.h>
 #include <string> // SBW 8/4/08
-#include <list>
-#include "dprint.h"
 
 using namespace soar_TraceNames;
 
@@ -357,7 +358,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
             result->id->promotion_level = new_id_level;
         }
 
-        symbol_add_ref(thisAgent, result);
+        thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
 
@@ -375,20 +376,20 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
         if (!sym)
         {
-            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
+            sym = thisAgent->symbolManager->make_new_identifier(new_id_letter, new_id_level);
             *(thisAgent->rhs_variable_bindings + index) = sym;
             return sym;
         }
         else if (sym->is_variable())
         {
             new_id_letter = *(sym->var->name + 1);
-            sym = make_new_identifier(thisAgent, new_id_letter, new_id_level);
+            sym = thisAgent->symbolManager->make_new_identifier(new_id_letter, new_id_level);
             *(thisAgent->rhs_variable_bindings + index) = sym;
             return sym;
         }
         else
         {
-            symbol_add_ref(thisAgent, sym);
+            thisAgent->symbolManager->symbol_add_ref(sym);
             return sym;
         }
     }
@@ -397,7 +398,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
         result = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(rv),
                                           rhs_value_to_reteloc_field_num(rv), tok, w);
-        symbol_add_ref(thisAgent, result);
+        thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
 
@@ -469,7 +470,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         if (c->first)
         {
             lSym = static_cast<Symbol *>(c->first);
-            symbol_remove_ref(thisAgent, &lSym);
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
         }
     free_list(thisAgent, arglist);
 
@@ -488,7 +489,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
         if (lValue)
         {
-            symbol_remove_ref(thisAgent, &lValue);
+            thisAgent->symbolManager->symbol_remove_ref(&lValue);
         }
         return NIL;
     }
@@ -536,7 +537,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     if (((a->preference_type != ACCEPTABLE_PREFERENCE_TYPE)
             && (a->preference_type != REJECT_PREFERENCE_TYPE))
-            && (!(lId->id->isa_goal && (lAttr == thisAgent->operator_symbol))))
+            && (!(lId->id->isa_goal && (lAttr == thisAgent->symbolManager->soarSymbols.operator_symbol))))
     {
         print_with_symbols(thisAgent,
                            "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.",
@@ -611,19 +612,19 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 abort_execute_action: /* control comes here when some error occurred */
     if (lId)
     {
-        symbol_remove_ref(thisAgent, &lId);
+        thisAgent->symbolManager->symbol_remove_ref(&lId);
     }
     if (lAttr)
     {
-        symbol_remove_ref(thisAgent, &lAttr);
+        thisAgent->symbolManager->symbol_remove_ref(&lAttr);
     }
     if (lValue)
     {
-        symbol_remove_ref(thisAgent, &lValue);
+        thisAgent->symbolManager->symbol_remove_ref(&lValue);
     }
     if (lReferent)
     {
-        symbol_remove_ref(thisAgent, &lReferent);
+        thisAgent->symbolManager->symbol_remove_ref(&lReferent);
     }
     return NIL;
 }
@@ -852,8 +853,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
     inst->GDS_evaluated_already = false;
-    inst->prod_name = prod ? prod->name : thisAgent->architecture_inst_symbol;
-    symbol_add_ref(thisAgent, inst->prod_name);
+    inst->prod_name = prod ? prod->name : thisAgent->symbolManager->soarSymbols.architecture_inst_symbol;
+    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
@@ -1291,12 +1292,12 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         cond_stack.pop_back();
 
         /* --- dereference component symbols --- */
-        symbol_remove_ref(thisAgent, &temp->bt.trace->id);
-        symbol_remove_ref(thisAgent, &temp->bt.trace->attr);
-        symbol_remove_ref(thisAgent, &temp->bt.trace->value);
+        thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->id);
+        thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->attr);
+        thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->value);
         if (preference_is_binary(temp->bt.trace->type))
         {
-            symbol_remove_ref(thisAgent, &temp->bt.trace->referent);
+            thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->referent);
         }
 
         if (temp->bt.trace->wma_o_set)
@@ -1308,7 +1309,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
-    symbol_remove_ref(thisAgent, &inst->prod_name);
+    thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
@@ -1403,7 +1404,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     else if (prod->type == CHUNK_PRODUCTION_TYPE)
     {
         rl_param_container::apoptosis_choices apoptosis =
-            thisAgent->rl_params->apoptosis->get_value();
+            thisAgent->RL->rl_params->apoptosis->get_value();
 
         // we care about production history of chunks if...
         // - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
@@ -1418,7 +1419,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                         && (static_cast<int64_t>(prod->rl_update_count) == 0)
                         && (prod->rl_ref_count == 0)))
             {
-                thisAgent->rl_prods->reference_object(prod, 1);
+                thisAgent->RL->rl_prods->reference_object(prod, 1);
             }
         }
     }
@@ -1451,8 +1452,8 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
-    inst->prod_name = thisAgent->fake_instantiation_symbol;
-    symbol_add_ref(thisAgent, inst->prod_name);
+    inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
+    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;
@@ -1463,9 +1464,9 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
         {
             pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
             pref->o_supported = true;
-            symbol_add_ref(thisAgent, pref->id);
-            symbol_add_ref(thisAgent, pref->attr);
-            symbol_add_ref(thisAgent, pref->value);
+            thisAgent->symbolManager->symbol_add_ref(pref->id);
+            thisAgent->symbolManager->symbol_add_ref(pref->attr);
+            thisAgent->symbolManager->symbol_add_ref(pref->value);
 
             pref->inst = inst;
             pref->inst_next = pref->inst_prev = NULL;
@@ -1589,21 +1590,21 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     /* --- make the fake condition --- */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
 
     /* --- make the fake preference --- */
-    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->item_symbol,
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
                            cand->value, NIL,
                            identity_triple(
-                               thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->s_context_variable, inst->i_id),
+                               thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id),
                                0,
                                cond->data.tests.value_test->identity));
-    symbol_add_ref(thisAgent, pref->id);
-    symbol_add_ref(thisAgent, pref->attr);
-    symbol_add_ref(thisAgent, pref->value);
+    thisAgent->symbolManager->symbol_add_ref(pref->id);
+    thisAgent->symbolManager->symbol_add_ref(pref->attr);
+    thisAgent->symbolManager->symbol_add_ref(pref->value);
     insert_at_head_of_dll(goal->id->preferences_from_goal, pref,
                           all_of_goal_next, all_of_goal_prev);
     pref->on_goal_list = true;
@@ -1626,8 +1627,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
-    inst->prod_name = thisAgent->fake_instantiation_symbol;
-    symbol_add_ref(thisAgent, inst->prod_name);
+    inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
+    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;

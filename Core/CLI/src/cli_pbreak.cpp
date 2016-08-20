@@ -34,7 +34,7 @@ bool CommandLineInterface::DoPbreak(const char& mode, const std::string& product
     
     if (mode == 's' || mode == 'c')
     {
-        Symbol* sym = find_str_constant(thisAgent, production.c_str());
+        Symbol* sym = thisAgent->symbolManager->find_str_constant(production.c_str());
         rete_node* prod = (sym && sym->sc->production) ? sym->sc->production->p_node : 0;
         
         if (!prod)

@@ -6,24 +6,11 @@
  */
 #include "visualize.h"
 
-//#include "action_record.h"
-//#include "condition_record.h"
-//#include "identity_record.h"
-//#include "instantiation_record.h"
-//#include "production_record.h"
-//
 #include "agent.h"
-//#include "condition.h"
-//#include "dprint.h"
-//#include "ebc.h"
-//#include "instantiation.h"
 #include "output_manager.h"
-//#include "preference.h"
-//#include "print.h"
-//#include "production.h"
-//#include "rete.h"
-//#include "rhs.h"
-//#include "test.h"
+#include "production.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 
 WM_Visualization_Map::WM_Visualization_Map(agent* myAgent)
@@ -89,7 +76,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
             lAug = (*it2);
-            if (lAug->value->is_identifier() && (lAug->attr != thisAgent->superstate_symbol))
+            if (lAug->value->is_identifier() && (lAug->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
@@ -133,7 +120,7 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->visualizationManager->viz_endl();
             w->value->tc_num = tc;
         }
-        if (w->attr != thisAgent->superstate_symbol)
+        if (w->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         } else {

@@ -1383,17 +1383,17 @@ alpha_mem* find_or_make_alpha_mem(agent* thisAgent, Symbol* id, Symbol* attr,
     am->id = id;
     if (id)
     {
-        symbol_add_ref(thisAgent, id);
+        thisAgent->symbolManager->symbol_add_ref(id);
     }
     am->attr = attr;
     if (attr)
     {
-        symbol_add_ref(thisAgent, attr);
+        thisAgent->symbolManager->symbol_add_ref(attr);
     }
     am->value = value;
     if (value)
     {
-        symbol_add_ref(thisAgent, value);
+        thisAgent->symbolManager->symbol_add_ref(value);
     }
     am->acceptable = acceptable;
     am->am_id = get_next_alpha_mem_id(thisAgent);
@@ -1511,16 +1511,16 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
     {
-        if (thisAgent->epmem_db->get_status() == soar_module::connected)
+        if (thisAgent->EpMem->epmem_db->get_status() == soar_module::connected)
         {
             // if identifier-valued and short-term, known value
             if ((w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                     (w->value->id->epmem_id != EPMEM_NODEID_BAD) &&
-                    (w->value->id->epmem_valid == thisAgent->epmem_validation) &&
+                    (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation) &&
                     (!w->value->id->smem_lti))
             {
                 // add id ref count
-                (*thisAgent->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
+                (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
 #ifdef DEBUG_EPMEM_WME_ADD
                 fprintf(stderr, "   increasing ref_count of value in %d %d %d; new ref_count is %d\n",
                         (unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id, (unsigned int)(*thisAgent->epmem_id_ref_counts)[ w->value->id->epmem_id ]->size());
@@ -1528,20 +1528,20 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             }
 
             // if known id
-            if ((w->id->id->epmem_id != EPMEM_NODEID_BAD) && (w->id->id->epmem_valid == thisAgent->epmem_validation))
+            if ((w->id->id->epmem_id != EPMEM_NODEID_BAD) && (w->id->id->epmem_valid == thisAgent->EpMem->epmem_validation))
             {
                 // add to add set
-                thisAgent->epmem_wme_adds->insert(w->id);
+                thisAgent->EpMem->epmem_wme_adds->insert(w->id);
             }
         }
     }
 
-    if ((w->id->id->smem_lti) && (!thisAgent->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->smem_params->mirroring->get_value() == on))
+    if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->SMem->smem_params->mirroring->get_value() == on))
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
-            symbol_add_ref(thisAgent, w->id);
+            thisAgent->symbolManager->symbol_add_ref(w->id);
         }
     }
 }
@@ -1554,11 +1554,11 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
     {
         bool lti = (w->value->id->smem_lti != NIL);
 
-        if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->epmem_validation))
+        if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
             was_encoded = true;
 
-            (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
+            (*thisAgent->EpMem->epmem_edge_removals)[ w->epmem_id ] = true;
 
 #ifdef DEBUG_EPMEM_WME_ADD
             fprintf(stderr, "   wme destroyed: %d %d %d\n",
@@ -1572,16 +1572,16 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
                 fprintf(stderr, "   returning WME to pool: %d %d %d\n",
                         (unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 #endif
-                epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find(w->epmem_id);
+                epmem_return_id_pool::iterator p = thisAgent->EpMem->epmem_id_replacement->find(w->epmem_id);
                 (*p->second).push_front(std::make_pair(w->value->id->epmem_id, w->epmem_id));
-                thisAgent->epmem_id_replacement->erase(p);
+                thisAgent->EpMem->epmem_id_replacement->erase(p);
             }
         }
 
         // reduce the ref count on the value
-        if (!lti && (w->value->id->epmem_id != EPMEM_NODEID_BAD) && (w->value->id->epmem_valid == thisAgent->epmem_validation))
+        if (!lti && (w->value->id->epmem_id != EPMEM_NODEID_BAD) && (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
-            epmem_wme_set* my_refs = (*thisAgent->epmem_id_ref_counts)[ w->value->id->epmem_id ];
+            epmem_wme_set* my_refs = (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ];
 
             epmem_wme_set::iterator rc_it = my_refs->find(w);
             if (rc_it != my_refs->end())
@@ -1599,16 +1599,16 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
                             (unsigned int) w->id->id->epmem_id, (unsigned int) epmem_temporal_hash(thisAgent, w->attr), (unsigned int) w->value->id->epmem_id);
 #endif
                     my_refs->clear();
-                    thisAgent->epmem_id_removes->push_front(w->value);
+                    thisAgent->EpMem->epmem_id_removes->push_front(w->value);
                 }
             }
         }
     }
-    else if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->epmem_validation))
+    else if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->EpMem->epmem_validation))
     {
         was_encoded = true;
 
-        (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
+        (*thisAgent->EpMem->epmem_node_removals)[ w->epmem_id ] = true;
     }
 
     if (was_encoded)
@@ -1635,14 +1635,14 @@ inline void _epmem_process_ids(agent* thisAgent)
     slot* s;
     wme* w;
 
-    while (!thisAgent->epmem_id_removes->empty())
+    while (!thisAgent->EpMem->epmem_id_removes->empty())
     {
-        id = thisAgent->epmem_id_removes->front();
-        thisAgent->epmem_id_removes->pop_front();
+        id = thisAgent->EpMem->epmem_id_removes->front();
+        thisAgent->EpMem->epmem_id_removes->pop_front();
 
         assert(id->is_identifier());
 
-        if ((id->id->epmem_id != EPMEM_NODEID_BAD) && (id->id->epmem_valid == thisAgent->epmem_validation))
+        if ((id->id->epmem_id != EPMEM_NODEID_BAD) && (id->id->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
             // invalidate identifier encoding
             id->id->epmem_id = EPMEM_NODEID_BAD;
@@ -1686,19 +1686,19 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
     token* tok, *left;
 
     {
-        if (thisAgent->epmem_db->get_status() == soar_module::connected)
+        if (thisAgent->EpMem->epmem_db->get_status() == soar_module::connected)
         {
             _epmem_remove_wme(thisAgent, w);
             _epmem_process_ids(thisAgent);
         }
     }
 
-    if ((w->id->id->smem_lti) && (!thisAgent->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->smem_params->mirroring->get_value() == on))
+    if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->SMem->smem_params->mirroring->get_value() == on))
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert(w->id);
+        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
-            symbol_add_ref(thisAgent, w->id);
+            thisAgent->symbolManager->symbol_add_ref(w->id);
         }
     }
 
@@ -1788,15 +1788,15 @@ void remove_ref_to_alpha_mem(agent* thisAgent, alpha_mem* am)
     remove_from_hash_table(thisAgent, ht, am);
     if (am->id)
     {
-        symbol_remove_ref(thisAgent, &am->id);
+        thisAgent->symbolManager->symbol_remove_ref(&am->id);
     }
     if (am->attr)
     {
-        symbol_remove_ref(thisAgent, &am->attr);
+        thisAgent->symbolManager->symbol_remove_ref(&am->attr);
     }
     if (am->value)
     {
-        symbol_remove_ref(thisAgent, &am->value);
+        thisAgent->symbolManager->symbol_remove_ref(&am->value);
     }
     while (am->right_mems)
     {
@@ -2409,11 +2409,11 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
 
         if (test_is_constant_relational_test(rt->type))
         {
-            symbol_remove_ref(thisAgent, &rt->data.constant_referent);
+            thisAgent->symbolManager->symbol_remove_ref(&rt->data.constant_referent);
         }
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
-            deallocate_symbol_list_removing_references(thisAgent, rt->data.disjunction_list);
+            thisAgent->symbolManager->deallocate_symbol_list_removing_references(rt->data.disjunction_list);
         }
 
         thisAgent->memoryManager->free_with_pool(MP_rete_test, rt);
@@ -2726,7 +2726,7 @@ varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
 {
     cons* c1, *c2;
 
-    symbol_add_ref(thisAgent, var);
+    thisAgent->symbolManager->symbol_add_ref(var);
     if (old_varnames == NIL)
     {
         return one_var_to_varnames(var);
@@ -2760,12 +2760,12 @@ void deallocate_varnames(agent* thisAgent, varnames* vn)
     if (varnames_is_one_var(vn))
     {
         sym = varnames_to_one_var(vn);
-        symbol_remove_ref(thisAgent, &sym);
+        thisAgent->symbolManager->symbol_remove_ref(&sym);
     }
     else
     {
         symlist = varnames_to_var_list(vn);
-        deallocate_symbol_list_removing_references(thisAgent, symlist);
+        thisAgent->symbolManager->deallocate_symbol_list_removing_references(symlist);
     }
 }
 
@@ -3071,7 +3071,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->right_field_num = field_num;
             new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
             new_rt->data.constant_referent = referent;
-            symbol_add_ref(thisAgent, referent);
+            thisAgent->symbolManager->symbol_add_ref(referent);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3116,7 +3116,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
                                test_type_to_relational_test_type(t->type);
                 new_rt->data.constant_referent = t->data.referent;
-                symbol_add_ref(thisAgent, t->data.referent);
+                thisAgent->symbolManager->symbol_add_ref(t->data.referent);
                 new_rt->next = *rt;
                 *rt = new_rt;
                 return;
@@ -3146,7 +3146,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->right_field_num = field_num;
             new_rt->type = DISJUNCTION_RETE_TEST;
             new_rt->data.disjunction_list =
-                copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
+                thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3811,7 +3811,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         if (find_var_location(sym, static_cast<rete_node_level>(bottom_depth + 1), &var_loc))
         {
             /* --- Yes, replace it with reteloc --- */
-            symbol_remove_ref(thisAgent, &sym);
+            thisAgent->symbolManager->symbol_remove_ref(&sym);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
         }
         else
@@ -3819,7 +3819,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             /* --- No, replace it with rhs_unboundvar --- */
             if (sym->tc_num != rhs_unbound_vars_tc)
             {
-                symbol_add_ref(thisAgent, sym);
+                thisAgent->symbolManager->symbol_add_ref(sym);
                 push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
                 sym->tc_num = rhs_unbound_vars_tc;
                 index = num_rhs_unbound_vars_for_new_prod++;
@@ -3830,7 +3830,7 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
                 index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
             }
             *rv = unboundvar_to_rhs_value(index);
-            symbol_remove_ref(thisAgent, &sym);
+            thisAgent->symbolManager->symbol_remove_ref(&sym);
         }
         return;
     }
@@ -3944,7 +3944,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
-        if (!ignore_rhs && !same_rhs(p_node->b.p.prod->action_list, p->action_list, thisAgent->rl_params->chunk_stop->get_value() == on))
+        if (!ignore_rhs && !same_rhs(p_node->b.p.prod->action_list, p->action_list, thisAgent->RL->rl_params->chunk_stop->get_value() == on))
         {
             continue;
         }
@@ -3980,7 +3980,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             print_with_symbols(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
                                p->name, p_node->b.p.prod->name);
         }
-        deallocate_symbol_list_removing_references(thisAgent, rhs_unbound_vars_for_new_prod);
+        thisAgent->symbolManager->deallocate_symbol_list_removing_references(rhs_unbound_vars_for_new_prod);
         return DUPLICATE_PRODUCTION;
     }
 
@@ -4101,7 +4101,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
   if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
         p->p_node->b.p.parents_nvn = NIL;
         p->rhs_unbound_variables = NIL;
-      deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
+        thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
   } else {
         p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
         p->rhs_unbound_variables =
@@ -4558,7 +4558,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     {
         w = NIL;    /* just for safety */
     }
-    reset_variable_generator(thisAgent, NIL, NIL);  /* we'll be gensymming new vars */
+    thisAgent->symbolManager->reset_variable_generator(NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent,
                             p_node->parent,
                             p_node->b.p.parents_nvn,
@@ -6287,7 +6287,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         }
                         else
                         {
-                            if ((temp_tok->w->attr == thisAgent->operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
+                            if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
                             {
                                 if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4))
                                 {
@@ -7074,35 +7074,10 @@ void reteload_string(FILE* f)
    Reteload_free_symbol_table() frees up the symbol table when we're done.
 ---------------------------------------------------------------------- */
 
-bool retesave_symbol_and_assign_index(agent* thisAgent, void* item, void* userdata)
-{
-    Symbol* sym;
-    FILE* f = reinterpret_cast<FILE*>(userdata);
-
-    sym = static_cast<symbol_struct*>(item);
-    thisAgent->current_retesave_symindex++;
-    sym->retesave_symindex = thisAgent->current_retesave_symindex;
-    retesave_string(sym->to_string(), f);
-    return false;
-}
-
 void retesave_symbol_table(agent* thisAgent, FILE* f)
 {
     thisAgent->current_retesave_symindex = 0;
-
-    retesave_eight_bytes(thisAgent->str_constant_hash_table->count, f);
-    retesave_eight_bytes(thisAgent->variable_hash_table->count, f);
-    retesave_eight_bytes(thisAgent->int_constant_hash_table->count, f);
-    retesave_eight_bytes(thisAgent->float_constant_hash_table->count, f);
-
-    do_for_all_items_in_hash_table(thisAgent, thisAgent->str_constant_hash_table,
-                                   retesave_symbol_and_assign_index, f);
-    do_for_all_items_in_hash_table(thisAgent, thisAgent->variable_hash_table,
-                                   retesave_symbol_and_assign_index, f);
-    do_for_all_items_in_hash_table(thisAgent, thisAgent->int_constant_hash_table,
-                                   retesave_symbol_and_assign_index, f);
-    do_for_all_items_in_hash_table(thisAgent, thisAgent->float_constant_hash_table,
-                                   retesave_symbol_and_assign_index, f);
+    thisAgent->symbolManager->retesave(f);
 }
 
 void reteload_all_symbols(agent* thisAgent, FILE* f)
@@ -7129,24 +7104,24 @@ void reteload_all_symbols(agent* thisAgent, FILE* f)
     for (i = 0; i < num_str_constants; i++)
     {
         reteload_string(f);
-        *(current_place_in_symtab++) = make_str_constant(thisAgent, reteload_string_buf);
+        *(current_place_in_symtab++) = thisAgent->symbolManager->make_str_constant(reteload_string_buf);
     }
     for (i = 0; i < num_variables; i++)
     {
         reteload_string(f);
-        *(current_place_in_symtab++) = make_variable(thisAgent, reteload_string_buf);
+        *(current_place_in_symtab++) = thisAgent->symbolManager->make_variable(reteload_string_buf);
     }
     for (i = 0; i < num_int_constants; i++)
     {
         reteload_string(f);
         *(current_place_in_symtab++) =
-            make_int_constant(thisAgent, strtol(reteload_string_buf, NULL, 10));
+            thisAgent->symbolManager->make_int_constant(strtol(reteload_string_buf, NULL, 10));
     }
     for (i = 0; i < num_float_constants; i++)
     {
         reteload_string(f);
         *(current_place_in_symtab++) =
-            make_float_constant(thisAgent, strtod(reteload_string_buf, NULL));
+            thisAgent->symbolManager->make_float_constant(strtod(reteload_string_buf, NULL));
     }
 }
 
@@ -7176,7 +7151,7 @@ void reteload_free_symbol_table(agent* thisAgent)
 
     for (i = 0; i < thisAgent->reteload_num_syms; i++)
     {
-        symbol_remove_ref(thisAgent, &(*(thisAgent->reteload_symbol_table + i)));
+        thisAgent->symbolManager->symbol_remove_ref(&(*(thisAgent->reteload_symbol_table + i)));
     }
     thisAgent->memoryManager->free_memory(thisAgent->reteload_symbol_table, MISCELLANEOUS_MEM_USAGE);
 }
@@ -7340,7 +7315,7 @@ varnames* reteload_varnames(agent* thisAgent, FILE* f)
     if (i == 1)
     {
         sym = reteload_symbol_from_index(thisAgent, f);
-        symbol_add_ref(thisAgent, sym);
+        thisAgent->symbolManager->symbol_add_ref(sym);
         return one_var_to_varnames(sym);
     }
     else
@@ -7350,7 +7325,7 @@ varnames* reteload_varnames(agent* thisAgent, FILE* f)
         while (count--)
         {
             sym = reteload_symbol_from_index(thisAgent, f);
-            symbol_add_ref(thisAgent, sym);
+            thisAgent->symbolManager->symbol_add_ref(sym);
             push(thisAgent, sym, c);
         }
         c = destructively_reverse_list(c);
@@ -7494,7 +7469,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
                  *
                  * - NLD: 4/30/2011
              */
-            // symbol_add_ref(thisAgent, sym);
+            // thisAgent->symbolManager->symbol_add_ref(sym);
 
             rf = lookup_rhs_function(thisAgent, sym);
             if (!rf)
@@ -7705,7 +7680,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     if (test_is_constant_relational_test(rt->type))
     {
         rt->data.constant_referent = reteload_symbol_from_index(thisAgent, f);
-        symbol_add_ref(thisAgent, rt->data.constant_referent);
+        thisAgent->symbolManager->symbol_add_ref(rt->data.constant_referent);
     }
     else if (test_is_variable_relational_test(rt->type))
     {
@@ -7719,7 +7694,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
         while (count--)
         {
             sym = reteload_symbol_from_index(thisAgent, f);
-            symbol_add_ref(thisAgent, sym);
+            thisAgent->symbolManager->symbol_add_ref(sym);
             push(thisAgent, sym, temp);
         }
         rt->data.disjunction_list = destructively_reverse_list(temp);
@@ -8041,7 +8016,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->interrupt_break = false;
 
             sym = reteload_symbol_from_index(thisAgent, f);
-            symbol_add_ref(thisAgent, sym);
+            thisAgent->symbolManager->symbol_add_ref(sym);
             prod->name = sym;
             /* If this rule was a chunk, then original rule name might be different.  To
              * avoid having to alter rete saving, we'll just make the original name after
@@ -8069,7 +8044,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             while (count--)
             {
                 sym = reteload_symbol_from_index(thisAgent, f);
-                symbol_add_ref(thisAgent, sym);
+                thisAgent->symbolManager->symbol_add_ref(sym);
                 push(thisAgent, sym, ubv_list);
             }
             prod->rhs_unbound_variables = destructively_reverse_list(ubv_list);

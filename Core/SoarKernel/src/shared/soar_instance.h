@@ -13,17 +13,6 @@
 
 #include <unordered_map>
 
-namespace sml
-{
-    class Kernel;
-    class AgentSML;
-}
-
-class Output_Manager;
-class Memory_Manager;
-
-typedef struct agent_struct agent;
-
 typedef void* (*MessageFunction)(const char* pMessage, void* pMessageData);
 typedef struct Soar_Loaded_Library_struct
 {

@@ -29,10 +29,11 @@
 #include "rete.h"
 #include "rhs.h"
 #include "slot.h"
-#include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 #include "xml.h"
+
 #include <stdlib.h>
 
 /* -----------------------------------------------------------------------
@@ -99,7 +100,7 @@ void add_to_os_tc(agent* thisAgent, Symbol* id, bool isa_state)
     }
     for (s = id->id->slots; s != NIL; s = s->next)
     {
-        if ((!isa_state) || (s->attr != thisAgent->operator_symbol))
+        if ((!isa_state) || (s->attr != thisAgent->symbolManager->soarSymbols.operator_symbol))
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
             {
@@ -120,7 +121,7 @@ void add_to_os_tc(agent* thisAgent, Symbol* id, bool isa_state)
     {
         if (pref->id == id)
         {
-            if ((!isa_state) || (pref->attr != thisAgent->operator_symbol))
+            if ((!isa_state) || (pref->attr != thisAgent->symbolManager->soarSymbols.operator_symbol))
             {
                 add_to_os_tc_if_needed(thisAgent, pref->value);
                 if (preference_is_binary(pref->type))
@@ -199,7 +200,7 @@ bool id_or_value_of_condition_list_is_in_os_tc(agent* thisAgent, condition* cond
             case POSITIVE_CONDITION:
             case NEGATIVE_CONDITION:
                 if ((conds->data.tests.id_test->eq_test->data.referent ==  match_state_to_exclude_test_of_the_operator_off_of) &&
-                    (conds->data.tests.attr_test->eq_test->data.referent == thisAgent->operator_symbol))
+                    (conds->data.tests.attr_test->eq_test->data.referent == thisAgent->symbolManager->soarSymbols.operator_symbol))
                 {
                     break;
                 }
@@ -434,7 +435,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 
                         else
                         {
-                            if ((w->attr == thisAgent->operator_symbol) &&
+                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                                     (w->acceptable == false) &&
                                     (w->id == lowest_goal_wme->id))
                             {
@@ -594,7 +595,7 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
             continue;
         }
         w = c->bt.wme_;
-        if ((w->id == match_state) && (w->attr == thisAgent->operator_symbol))
+        if ((w->id == match_state) && (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
         {
             rule_2_or_3 = true;
             break;
@@ -618,7 +619,7 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
         for (pref = rhs; pref != NIL; pref = pref->inst_next)
         {
             if ((pref->id == match_state) &&
-                    (pref->attr == thisAgent->operator_symbol) &&
+                    (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                     ((pref->type == ACCEPTABLE_PREFERENCE_TYPE) ||
                      (pref->type == REQUIRE_PREFERENCE_TYPE)) &&
                     (pref->value->symbol_type == IDENTIFIER_SYMBOL_TYPE))
@@ -659,7 +660,7 @@ void dougs_calculate_support_for_instantiation_preferences(agent* thisAgent, ins
     /* --- Finally, use rule 1, which overrides all the other rules. --- */
     for (pref = rhs; pref != NIL; pref = pref->inst_next)
         if ((pref->id == match_state) &&
-                (pref->attr == thisAgent->operator_symbol))
+                (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
         {
             pref->o_supported = false;
         }
@@ -825,8 +826,8 @@ Symbol* find_compile_time_match_goal(agent* thisAgent, condition* lhs, list* kno
         for (cond = lhs; cond != NIL; cond = cond->next)
         {
             if ((cond->type == POSITIVE_CONDITION) &&
-                    (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->superstate_symbol) == YES) &&
-                    (test_is_for_symbol(cond->data.tests.value_test, thisAgent->nil_symbol) == YES))
+                    (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.superstate_symbol) == YES) &&
+                    (test_is_for_symbol(cond->data.tests.value_test, thisAgent->symbolManager->soarSymbols.nil_symbol) == YES))
             {
                 prev_c = NIL;
                 for (c = root_goals; c != NIL; c = next_c)
@@ -982,7 +983,7 @@ bool match_state_tests_non_operator_slot(agent* thisAgent, condition* conds,
             case NEGATIVE_CONDITION:
                 if (conds->data.tests.id_test->eq_test->data.referent == match_state)
                 {
-                    ynm = test_is_for_symbol(conds->data.tests.attr_test, thisAgent->operator_symbol);
+                    ynm = test_is_for_symbol(conds->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.operator_symbol);
                     if (ynm == NO)
                     {
                         return true;
@@ -1091,7 +1092,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
         {
             continue;
         }
-        ynm = test_is_for_symbol(cond->data.tests.attr_test, thisAgent->operator_symbol);
+        ynm = test_is_for_symbol(cond->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.operator_symbol);
         if (ynm == YES)
         {
             operator_found = possible_operator_found = true;
@@ -1114,7 +1115,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             {
                 Symbol* attr;
                 attr = rhs_value_to_symbol(a->attr);
-                if (attr == thisAgent->operator_symbol)
+                if (attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
                 {
                     operator_found = possible_operator_found = true;
                     break;
@@ -1155,7 +1156,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
                 continue;
             }
             if (rhs_value_is_symbol(a->attr) &&  /* RBD 3/29/95 */
-                    rhs_value_to_symbol(a->attr) == thisAgent->operator_symbol &&
+                    rhs_value_to_symbol(a->attr) == thisAgent->symbolManager->soarSymbols.operator_symbol &&
                     (rhs_value_to_symbol(a->id) == c->first))
             {
                 a->support = I_SUPPORT;
@@ -1170,7 +1171,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
     {
         return;
     }
-    match_operator = find_thing_off_goal(thisAgent, lhs, match_state, thisAgent->operator_symbol);
+    match_operator = find_thing_off_goal(thisAgent, lhs, match_state, thisAgent->symbolManager->soarSymbols.operator_symbol);
     /* --- If when checking (above) for "operator" appearing anywhere, we
     found a possible operator but not a definite operator, now go back and
     see if the possible operator was actually the match goal or match state;
@@ -1186,7 +1187,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             {
                 continue;
             }
-            ynm = test_is_for_symbol(cond->data.tests.attr_test, thisAgent->operator_symbol);
+            ynm = test_is_for_symbol(cond->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.operator_symbol);
             if ((ynm != NO) &&
                     (test_is_for_symbol(cond->data.tests.attr_test, match_state) != YES))
             {
@@ -1271,7 +1272,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             {
                 continue;
             }
-            if (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->operator_symbol)
+            if (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.operator_symbol)
                     != YES)
             {
                 continue;
@@ -1300,7 +1301,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
                 the vagaries of knowing when this is matching a context object
                 or not. */
                 if (rhs_value_is_symbol(a->attr) &&
-                        (rhs_value_to_symbol(a->attr) == thisAgent->operator_symbol))
+                        (rhs_value_to_symbol(a->attr) == thisAgent->symbolManager->soarSymbols.operator_symbol))
                 {
                     if (a->support != I_SUPPORT)
                     {
@@ -1332,7 +1333,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             if (
                 (rhs_value_to_symbol(a->id) == match_state) &&
                 (rhs_value_is_symbol(a->attr)) &&
-                (rhs_value_to_symbol(a->attr) == thisAgent->operator_symbol) &&
+                (rhs_value_to_symbol(a->attr) == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                 ((a->preference_type == ACCEPTABLE_PREFERENCE_TYPE) ||
                  (a->preference_type == REQUIRE_PREFERENCE_TYPE)))
             {
@@ -1392,7 +1393,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
             }
             if (test_is_for_symbol(cond->data.tests.id_test, match_state) == YES)
             {
-                if (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->operator_symbol) == YES)
+                if (test_is_for_symbol(cond->data.tests.attr_test, thisAgent->symbolManager->soarSymbols.operator_symbol) == YES)
                 {
                     add_bound_variables_in_test(thisAgent, cond->data.tests.value_test, tc, NIL);
                 }

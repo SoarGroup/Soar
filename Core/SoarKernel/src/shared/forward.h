@@ -17,9 +17,6 @@ typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef cons list;
 typedef struct dl_cons_struct dl_cons;
-typedef int64_t epmem_node_id;
-typedef uint64_t epmem_hash_id;
-typedef uint64_t epmem_time_id;
 typedef struct exploration_parameter_struct exploration_parameter;
 typedef signed short goal_stack_level;
 typedef struct hash_table_struct hash_table;
@@ -41,8 +38,6 @@ typedef char* rhs_value;
 typedef struct saved_test_struct saved_test;
 typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
-typedef uint64_t smem_lti_id;
-typedef uint64_t smem_hash_id;
 typedef struct symbol_struct Symbol;
 typedef uint64_t tc_number;
 typedef struct test_struct test_info;
@@ -56,6 +51,17 @@ typedef struct wme_struct wme;
 typedef byte wme_trace_type;
 typedef struct symbol_with_match_struct symbol_with_match;
 
+typedef int64_t epmem_node_id;  // represents a unique node identifier in the episodic store
+typedef uint64_t epmem_hash_id; // represents a unique temporal hash in the episodic store
+typedef uint64_t epmem_time_id; // represents a unique episode identifier in the episodic store
+typedef uint64_t smem_lti_id;   // represents the unique identification of a long-term identifier
+typedef uint64_t smem_hash_id;  // represents a temporal hash
+
+class Symbol_Manager;
+class WM_Manager;
+class EpMem_Manager;
+class SMem_Manager;
+class RL_Manager;
 class Output_Manager;
 class Explanation_Memory;
 class Soar_Instance;
@@ -91,10 +97,12 @@ namespace sml
 {
     class Kernel;
     class Agent;
+    class AgentSML;
 }
 
 namespace soar_module {
     class sqlite_database;
+    class timer;
 }
 namespace soar {
     class Lexer;

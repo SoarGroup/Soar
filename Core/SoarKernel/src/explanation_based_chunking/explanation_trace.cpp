@@ -13,17 +13,18 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "rete.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 
 #include <assert.h>
-#include "dprint.h"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,
@@ -212,7 +213,7 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         {
             dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
             chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-            chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            chunk_test->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(rt->data.disjunction_list);
             has_referent = false;
         } else {
             if (test_is_constant_relational_test(rt->type))

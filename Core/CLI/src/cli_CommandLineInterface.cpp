@@ -703,46 +703,46 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
     int levels_up;
     wme* w;
 
-    v = find_variable(thisAgent, var_name);
-    if (v == thisAgent->s_context_variable)
+    v = thisAgent->symbolManager->find_variable(var_name);
+    if (v == thisAgent->symbolManager->soarSymbols.s_context_variable)
     {
         levels_up = 0;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->o_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.o_context_variable)
     {
         levels_up = 0;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->ss_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.ss_context_variable)
     {
         levels_up = 1;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->so_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.so_context_variable)
     {
         levels_up = 1;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->sss_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.sss_context_variable)
     {
         levels_up = 2;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->sso_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.sso_context_variable)
     {
         levels_up = 2;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->ts_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.ts_context_variable)
     {
         levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->to_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.to_context_variable)
     {
         levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
     else
     {
@@ -766,7 +766,7 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
         return;
     }
 
-    if (*dest_attr_of_slot == thisAgent->state_symbol)
+    if (*dest_attr_of_slot == thisAgent->symbolManager->soarSymbols.state_symbol)
     {
         *dest_current_value = g;
     }
@@ -787,7 +787,7 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
 
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number);
+        id = thisAgent->symbolManager->find_identifier(lexeme.id_letter, lexeme.id_number);
         if (!id)
         {
             return false;
@@ -827,7 +827,7 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
 
     if (lexeme->type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
+        id = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
         if (!id)
         {
             print(thisAgent,  "There is no identifier %c%lu.\n", lexeme->id_letter,

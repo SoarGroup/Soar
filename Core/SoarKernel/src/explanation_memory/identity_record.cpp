@@ -1,21 +1,20 @@
 #include "identity_record.h"
+
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
+#include "explanation_memory.h"
+#include "instantiation_record.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
-#include "output_manager.h"
 #include "working_memory.h"
-#include "dprint.h"
-#include "explanation_memory.h"
-#include "instantiation_record.h"
-#include "explanation_memory.h"
-
-
 
 identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map_type* pIdentitySetMappings)
 {
@@ -33,7 +32,7 @@ identity_record::~identity_record()
     {
     for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
     {
-        if (it->second->rule_variable) symbol_remove_ref(thisAgent, &it->second->rule_variable);
+        if (it->second->rule_variable) thisAgent->symbolManager->symbol_remove_ref(&it->second->rule_variable);
         delete it->second;
     }
     delete id_to_id_set_mappings;
@@ -79,7 +78,7 @@ void identity_record::generate_identity_sets(condition* lhs)
                 lNewIDSet->rule_variable = lIter->second->rule_variable;
                 if (lNewIDSet->rule_variable)
                 {
-                    symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+                    thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
                 }
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
             } else {

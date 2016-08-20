@@ -18,6 +18,7 @@
 #include "mem.h"
 #include "preference.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 
 #include <stdlib.h>
 
@@ -81,7 +82,7 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     /* Context slots are goals and operators; operator slots get
      *  created with a goal (see create_new_context).
      */
-    if ((id->id->isa_goal) && (attr == thisAgent->operator_symbol))
+    if ((id->id->isa_goal) && (attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
     {
         s->isa_context_slot = true;
     }
@@ -94,8 +95,8 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     s->acceptable_preference_changed = NIL;
     s->id = id;
     s->attr = attr;
-    symbol_add_ref(thisAgent, id);
-    symbol_add_ref(thisAgent, attr);
+    thisAgent->symbolManager->symbol_add_ref(id);
+    thisAgent->symbolManager->symbol_add_ref(attr);
     s->wmes = NIL;
     s->all_preferences = NIL;
     s->CDPS = NIL;
@@ -232,8 +233,8 @@ void remove_garbage_slots(agent* thisAgent)
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, s->changed);
         }
         remove_from_dll(s->id->id->slots, s, next, prev);
-        symbol_remove_ref(thisAgent, &s->id);
-        symbol_remove_ref(thisAgent, &s->attr);
+        thisAgent->symbolManager->symbol_remove_ref(&s->id);
+        thisAgent->symbolManager->symbol_remove_ref(&s->attr);
         if (s->wma_val_references != NIL)
         {
             s->wma_val_references->~wma_sym_reference_map();

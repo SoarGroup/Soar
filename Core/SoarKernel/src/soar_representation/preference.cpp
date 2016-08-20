@@ -125,10 +125,10 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->attr = pPref->attr;
     p->value = pPref->value;
     p->referent = pPref->referent;
-    symbol_add_ref(thisAgent, p->id);
-    symbol_add_ref(thisAgent, p->attr);
-    symbol_add_ref(thisAgent, p->value);
-    if (p->referent) symbol_add_ref(thisAgent, p->referent);
+    thisAgent->symbolManager->symbol_add_ref(p->id);
+    thisAgent->symbolManager->symbol_add_ref(p->attr);
+    thisAgent->symbolManager->symbol_add_ref(p->value);
+    if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
     p->o_ids.id = pPref->o_ids.id;
     p->o_ids.attr = pPref->o_ids.attr;
     p->o_ids.value = pPref->o_ids.value;
@@ -196,12 +196,12 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* --- dereference component symbols --- */
-    symbol_remove_ref(thisAgent, &pref->id);
-    symbol_remove_ref(thisAgent, &pref->attr);
-    symbol_remove_ref(thisAgent, &pref->value);
+    thisAgent->symbolManager->symbol_remove_ref(&pref->id);
+    thisAgent->symbolManager->symbol_remove_ref(&pref->attr);
+    thisAgent->symbolManager->symbol_remove_ref(&pref->value);
     if (preference_is_binary(pref->type))
     {
-        symbol_remove_ref(thisAgent, &pref->referent);
+        thisAgent->symbolManager->symbol_remove_ref(&pref->referent);
     }
     if (pref->wma_o_set)
     {

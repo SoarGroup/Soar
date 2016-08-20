@@ -45,7 +45,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
             return SetError("Production required.");
         }
         
-        Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
+        Symbol* sym = thisAgent->symbolManager->find_str_constant(pProduction->c_str());
         
         if (!sym || !(sym->sc->production))
         {

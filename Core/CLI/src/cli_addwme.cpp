@@ -35,7 +35,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     Symbol* pAttr = 0;
     if (attribute == "*")
     {
-        pAttr = make_new_identifier(thisAgent, 'I', pId->id->level);
+        pAttr = thisAgent->symbolManager->make_new_identifier('I', pId->id->level);
     }
     else
     {
@@ -44,13 +44,13 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         switch (lexeme.type)
         {
             case STR_CONSTANT_LEXEME:
-                pAttr = make_str_constant(thisAgent, lexeme.string());
+                pAttr = thisAgent->symbolManager->make_str_constant(lexeme.string());
                 break;
             case INT_CONSTANT_LEXEME:
-                pAttr = make_int_constant(thisAgent, lexeme.int_val);
+                pAttr = thisAgent->symbolManager->make_int_constant(lexeme.int_val);
                 break;
             case FLOAT_CONSTANT_LEXEME:
-                pAttr = make_float_constant(thisAgent, lexeme.float_val);
+                pAttr = thisAgent->symbolManager->make_float_constant(lexeme.float_val);
                 break;
             case IDENTIFIER_LEXEME:
             case VARIABLE_LEXEME:
@@ -59,7 +59,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
                 {
                     return SetError("Invalid attribute.");
                 }
-                symbol_add_ref(thisAgent, pAttr);
+                thisAgent->symbolManager->symbol_add_ref(pAttr);
                 break;
             default:
                 return SetError("Unknown attribute type.");
@@ -70,7 +70,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     Symbol* pValue = 0;
     if (value == "*")
     {
-        pValue = make_new_identifier(thisAgent, 'I', pId->id->level);
+        pValue = thisAgent->symbolManager->make_new_identifier('I', pId->id->level);
     }
     else
     {
@@ -78,26 +78,26 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
         switch (lexeme.type)
         {
             case STR_CONSTANT_LEXEME:
-                pValue = make_str_constant(thisAgent, lexeme.string());
+                pValue = thisAgent->symbolManager->make_str_constant(lexeme.string());
                 break;
             case INT_CONSTANT_LEXEME:
-                pValue = make_int_constant(thisAgent, lexeme.int_val);
+                pValue = thisAgent->symbolManager->make_int_constant(lexeme.int_val);
                 break;
             case FLOAT_CONSTANT_LEXEME:
-                pValue = make_float_constant(thisAgent, lexeme.float_val);
+                pValue = thisAgent->symbolManager->make_float_constant(lexeme.float_val);
                 break;
             case IDENTIFIER_LEXEME:
             case VARIABLE_LEXEME:
                 pValue = read_identifier_or_context_variable(thisAgent, &lexeme);
                 if (!pValue)
                 {
-                    symbol_remove_ref(thisAgent, &pAttr);
+                    thisAgent->symbolManager->symbol_remove_ref(&pAttr);
                     return SetError("Invalid value.");
                 }
-                symbol_add_ref(thisAgent, pValue);
+                thisAgent->symbolManager->symbol_add_ref(pValue);
                 break;
             default:
-                symbol_remove_ref(thisAgent, &pAttr);
+                thisAgent->symbolManager->symbol_remove_ref(&pAttr);
                 return SetError("Unknown value type.");
         }
     }
@@ -105,8 +105,8 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
     // now create and add the wme
     wme* pWme = make_wme(thisAgent, pId, pAttr, pValue, acceptable);
 
-    symbol_remove_ref(thisAgent, &pWme->attr);
-    symbol_remove_ref(thisAgent, &pWme->value);
+    thisAgent->symbolManager->symbol_remove_ref(&pWme->attr);
+    thisAgent->symbolManager->symbol_remove_ref(&pWme->value);
     insert_at_head_of_dll(pWme->id->id->input_wmes, pWme, next, prev);
 
     if (wma_enabled(thisAgent))

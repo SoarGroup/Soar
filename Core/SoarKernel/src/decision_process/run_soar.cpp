@@ -318,11 +318,11 @@ void reset_statistics(agent* thisAgent)
     reset_timers(thisAgent);
     reset_max_stats(thisAgent);
 
-    thisAgent->wma_timers->reset();
-    thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
+    thisAgent->WM->wma_timers->reset();
+    thisAgent->EpMem->epmem_timers->reset();
+    thisAgent->SMem->smem_timers->reset();
 
-    thisAgent->wma_d_cycle_count = 0;
+    thisAgent->WM->wma_d_cycle_count = 0;
 }
 
 void reset_timers(agent* thisAgent)
@@ -380,7 +380,7 @@ void reset_max_stats(agent* thisAgent)
 bool reinitialize_soar(agent* thisAgent)
 {
     ++thisAgent->init_count;
-    ++thisAgent->rl_init_count;
+    ++thisAgent->RL->rl_init_count;
 
     int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
     int64_t cur_TRACE_PHASES_SYSPARAM;
@@ -448,7 +448,6 @@ bool reinitialize_soar(agent* thisAgent)
     delete thisAgent->stats_db;
     thisAgent->stats_db = new soar_module::sqlite_database();
 
-    // voigtjr: WARN_IF_TIMERS_REPORT_ZERO block goes here in other kernel
     return ok ;
 }
 
@@ -918,7 +917,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count);
+            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
             ///////////////////////////////////////////////////////////////////
 
             // update histories only first, allows:
@@ -929,16 +928,16 @@ void do_one_top_level_phase(agent* thisAgent)
                 wma_go(thisAgent, wma_histories);
             }
 
-            if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_output))
+            if (epmem_enabled(thisAgent) && (thisAgent->EpMem->epmem_params->phase->get_value() == epmem_param_container::phase_output))
             {
                 // since we consolidated wma histories from this decision,
                 // we need to pretend it's the next time step in case
                 // an epmem retrieval wants to know current activation value
-                thisAgent->wma_d_cycle_count++;
+                thisAgent->WM->wma_d_cycle_count++;
                 {
                     epmem_go(thisAgent);
                 }
-                thisAgent->wma_d_cycle_count--;
+                thisAgent->WM->wma_d_cycle_count--;
             }
 
             // now both update histories and forget, allows
@@ -951,19 +950,19 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count);
+            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
             ///////////////////////////////////////////////////////////////////
 
             // RL apoptosis
             {
-                rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
+                rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
                 if (rl_apoptosis != rl_param_container::apoptosis_none)
                 {
-                    thisAgent->rl_prods->process_buffered_references();
-                    thisAgent->rl_prods->forget();
-                    thisAgent->rl_prods->time_forward();
+                    thisAgent->RL->rl_prods->process_buffered_references();
+                    thisAgent->RL->rl_prods->forget();
+                    thisAgent->RL->rl_prods->time_forward();
 
-                    for (rl_production_memory::object_set::iterator p = thisAgent->rl_prods->forgotten_begin(); p != thisAgent->rl_prods->forgotten_end(); p++)
+                    for (rl_production_memory::object_set::iterator p = thisAgent->RL->rl_prods->forgotten_begin(); p != thisAgent->RL->rl_prods->forgotten_end(); p++)
                     {
                         // conditions:
                         // - no matched instantiations AND
@@ -1025,7 +1024,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
                 thisAgent->last_derived_kernel_time_usec = derived_kernel_time_usec;
 
-                double total_epmem_time = thisAgent->epmem_timers->total->value();
+                double total_epmem_time = thisAgent->EpMem->epmem_timers->total->value();
                 if (thisAgent->total_dc_epmem_time_sec >= 0)
                 {
                     double delta_epmem_time = total_epmem_time - thisAgent->total_dc_epmem_time_sec;
@@ -1037,7 +1036,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
                 thisAgent->total_dc_epmem_time_sec = total_epmem_time;
 
-                double total_smem_time = thisAgent->smem_timers->total->value();
+                double total_smem_time = thisAgent->SMem->smem_timers->total->value();
                 if (thisAgent->total_dc_smem_time_sec >= 0)
                 {
                     double delta_smem_time = total_smem_time - thisAgent->total_dc_smem_time_sec;
@@ -1082,7 +1081,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
             thisAgent->current_phase = INPUT_PHASE;
             thisAgent->d_cycle_count++;
-            thisAgent->wma_d_cycle_count++;
+            thisAgent->WM->wma_d_cycle_count++;
             /* REW: end 09.15.96 */
             break;
 
@@ -1135,7 +1134,7 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->e_cycles_this_d_cycle = 0;
             thisAgent->pe_cycles_this_d_cycle = 0;
 
-            if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
+            if (epmem_enabled(thisAgent) && (thisAgent->EpMem->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
             {
                 epmem_go(thisAgent);
             }
@@ -1401,9 +1400,9 @@ Symbol* attr_of_slot_just_decided(agent* thisAgent)
 {
     if (thisAgent->bottom_goal->id->operator_slot->wmes)
     {
-        return thisAgent->operator_symbol;
+        return thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    return thisAgent->state_symbol;
+    return thisAgent->symbolManager->soarSymbols.state_symbol;
 }
 
 void run_for_n_selections_of_slot(agent* thisAgent, int64_t n, Symbol* attr_of_slot)
@@ -1537,23 +1536,23 @@ void init_agent_memory(agent* thisAgent)
     }
     thisAgent->current_phase = INPUT_PHASE;
     thisAgent->d_cycle_count++;
-    thisAgent->wma_d_cycle_count++;
+    thisAgent->WM->wma_d_cycle_count++;
 
     /* The following code was taken from the do_input_cycle function of io.cpp */
     // Creating the io_header and adding the top state io header wme
     thisAgent->io_header_link = add_input_wme(thisAgent,
                                 thisAgent->top_state,
-                                thisAgent->io_symbol,
+                                thisAgent->symbolManager->soarSymbols.io_symbol,
                                 thisAgent->io_header);
     // Creating the input and output header symbols and wmes
     // RPM 9/06 changed to use thisAgent->input/output_link_symbol
     // Note we don't have to save these wmes for later release since their parent
     //  is already being saved (above), and when we release it they will automatically be released
     add_input_wme(thisAgent, thisAgent->io_header,
-                  thisAgent->input_link_symbol,
+                  thisAgent->symbolManager->soarSymbols.input_link_symbol,
                   thisAgent->io_header_input);
     add_input_wme(thisAgent, thisAgent->io_header,
-                  thisAgent->output_link_symbol,
+                  thisAgent->symbolManager->soarSymbols.output_link_symbol,
                   thisAgent->io_header_output);
 
     // KJC & RPM 10/06
@@ -1583,9 +1582,9 @@ void init_agent_memory(agent* thisAgent)
     reset_timers(thisAgent);
     reset_max_stats(thisAgent);
 
-    thisAgent->wma_timers->reset();
-    thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
+    thisAgent->WM->wma_timers->reset();
+    thisAgent->EpMem->epmem_timers->reset();
+    thisAgent->SMem->smem_timers->reset();
 
     // This is an important part of the state of the agent for io purposes
     // (see io.cpp for details)

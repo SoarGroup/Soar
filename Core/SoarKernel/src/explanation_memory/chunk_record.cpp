@@ -1,22 +1,23 @@
 #include "chunk_record.h"
+
+#include "action_record.h"
+#include "condition_record.h"
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
+#include "identity_record.h"
 #include "instantiation.h"
+#include "instantiation_record.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "dprint.h"
-#include "action_record.h"
-#include "condition_record.h"
-#include "explanation_memory.h"
-#include "identity_record.h"
-#include "instantiation_record.h"
-#include "explanation_memory.h"
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {
@@ -88,7 +89,7 @@ chunk_record::~chunk_record()
     {
         original_production->save_for_justification_explanation = false;
     }
-    if (name) symbol_remove_ref(thisAgent, &name);
+    if (name) thisAgent->symbolManager->symbol_remove_ref(&name);
     if (conditions) delete conditions;
     if (actions) delete actions;
     if (result_instantiations) delete result_instantiations;
@@ -102,7 +103,7 @@ chunk_record::~chunk_record()
 void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
 {
     name = pProduction->name;
-    symbol_add_ref(thisAgent, name);
+    thisAgent->symbolManager->symbol_add_ref(name);
     original_production = pProduction;
     original_production->save_for_justification_explanation = true;
 

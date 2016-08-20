@@ -8,27 +8,78 @@
  */
 
 #include "agent.h"
-#include "ebc.h"
-#include "reinforcement_learning.h"
-#include "production.h"
-#include "rhs.h"
-#include "instantiation.h"
-#include "rete.h"
-#include "working_memory.h"
-#include "slot.h"
-#include "print.h"
-#include "xml.h"
-#include "test.h"
-#include "instantiation.h"
-#include "decide.h"
-#include "preference.h"
 #include "condition.h"
+#include "decide.h"
+#include "decision_manipulation.h"
+#include "dprint.h"
+#include "ebc.h"
+#include "exploration.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "print.h"
+#include "production.h"
+#include "reinforcement_learning.h"
+#include "rete.h"
+#include "rhs.h"
+#include "slot.h"
+#include "test.h"
+#include "working_memory.h"
+#include "xml.h"
+
 #include <cstdlib>
 #include <cmath>
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include "dprint.h"
+
+RL_Manager::RL_Manager(agent* myAgent)
+{
+    thisAgent = myAgent;
+    thisAgent->RL = this;
+
+    rl_init_count = 0;
+
+    exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter(0.1, &exploration_validate_epsilon, "epsilon");
+    exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter(25, &exploration_validate_temperature, "temperature");
+
+    rl_params = new rl_param_container(thisAgent);
+    rl_stats = new rl_stat_container(thisAgent);
+    rl_prods = new rl_production_memory();
+
+    rl_initialize_template_tracking(thisAgent);
+
+    // select initialization
+    thisAgent->select = new select_info;
+    select_init(thisAgent);
+
+    // predict initialization
+    thisAgent->prediction = new std::string();
+    predict_init(thisAgent);
+
+};
+
+void RL_Manager::clean_up_for_agent_deletion()
+{
+    /* This is not in destructor because it may be called before other
+     * deletion code that may need params, stats or timers to exist */
+    // cleanup exploration
+
+    for (int i = 0; i < EXPLORATION_PARAMS; i++)
+    {
+        delete exploration_params[ i ];
+    }
+
+    rl_params->apoptosis->set_value(rl_param_container::apoptosis_none);
+    delete rl_prods;
+    delete rl_params;
+    delete rl_stats;
+    rl_params = NULL; // apoptosis needs to know this for excise_all_productions later in agent deletion process
+
+    select_init(thisAgent);
+    delete thisAgent->select;
+    delete thisAgent->prediction;
+
+}
 
 /////////////////////////////////////////////////////
 // Parameters
@@ -169,14 +220,14 @@ void rl_apoptosis_param::set_value(rl_param_container::apoptosis_choices new_val
         // from off to on (doesn't matter which)
         if (value == rl_param_container::apoptosis_none)
         {
-            thisAgent->rl_prods->set_decay_rate(thisAgent->rl_params->apoptosis_decay->get_value());
-            thisAgent->rl_prods->set_decay_thresh(thisAgent->rl_params->apoptosis_thresh->get_value());
-            thisAgent->rl_prods->initialize();
+            thisAgent->RL->rl_prods->set_decay_rate(thisAgent->RL->rl_params->apoptosis_decay->get_value());
+            thisAgent->RL->rl_prods->set_decay_thresh(thisAgent->RL->rl_params->apoptosis_thresh->get_value());
+            thisAgent->RL->rl_prods->initialize();
         }
         // from on to off
         else if (new_value == rl_param_container::apoptosis_none)
         {
-            thisAgent->rl_prods->teardown();
+            thisAgent->RL->rl_prods->teardown();
         }
 
         value = new_value;
@@ -200,7 +251,7 @@ rl_apoptosis_predicate<T>::rl_apoptosis_predicate(agent* new_agent): soar_module
 template <typename T>
 bool rl_apoptosis_predicate<T>::operator()(T /*val*/)
 {
-    return (this->thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none);
+    return (this->thisAgent->RL->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none);
 }
 
 
@@ -233,7 +284,7 @@ rl_stat_container::rl_stat_container(agent* new_agent): stat_container(new_agent
 // quick shortcut to determine if rl is enabled
 bool rl_enabled(agent* thisAgent)
 {
-    return (thisAgent->rl_params->learning->get_value() == on);
+    return (thisAgent->RL->rl_params->learning->get_value() == on);
 }
 
 /////////////////////////////////////////////////////
@@ -364,11 +415,11 @@ bool rl_valid_rule(production* prod)
 // sets rl meta-data from a production documentation string
 void rl_rule_meta(agent* thisAgent, production* prod)
 {
-    if (prod->documentation && (thisAgent->rl_params->meta->get_value() == on))
+    if (prod->documentation && (thisAgent->RL->rl_params->meta->get_value() == on))
     {
         std::string doc(prod->documentation);
 
-        const std::vector<std::pair<std::string, param_accessor<double> *> >& documentation_params = thisAgent->rl_params->get_documentation_params();
+        const std::vector<std::pair<std::string, param_accessor<double> *> >& documentation_params = thisAgent->RL->rl_params->get_documentation_params();
         for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
                 doc_params_it != documentation_params.end(); ++doc_params_it)
         {
@@ -486,7 +537,7 @@ int rl_get_template_id(const char* prod_name)
 // initializes the max rl template counter
 void rl_initialize_template_tracking(agent* thisAgent)
 {
-    thisAgent->rl_template_count = 1;
+    thisAgent->RL->rl_template_count = 1;
 }
 
 // updates rl template counter for a rule
@@ -494,22 +545,22 @@ void rl_update_template_tracking(agent* thisAgent, const char* rule_name)
 {
     int new_id = rl_get_template_id(rule_name);
 
-    if ((new_id != -1) && (new_id > thisAgent->rl_template_count))
+    if ((new_id != -1) && (new_id > thisAgent->RL->rl_template_count))
     {
-        thisAgent->rl_template_count = (new_id + 1);
+        thisAgent->RL->rl_template_count = (new_id + 1);
     }
 }
 
 // gets the next template-assigned id
 int rl_next_template_id(agent* thisAgent)
 {
-    return (thisAgent->rl_template_count++);
+    return (thisAgent->RL->rl_template_count++);
 }
 
 // gives back a template-assigned id (on auto-retract)
 void rl_revert_template_id(agent* thisAgent)
 {
-    thisAgent->rl_template_count--;
+    thisAgent->RL->rl_template_count--;
 }
 
 // builds a template instantiation
@@ -544,12 +595,12 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             to_string(new_id, temp_id);
             new_name = ("rl*" + empty_string + my_template->name->sc->name + "*" + temp_id);
         }
-        while (find_str_constant(thisAgent, new_name.c_str()) != NIL);
-        new_name_symbol = make_str_constant(thisAgent, new_name.c_str());
+        while (thisAgent->symbolManager->find_str_constant(new_name.c_str()) != NIL);
+        new_name_symbol = thisAgent->symbolManager->make_str_constant(new_name.c_str());
         copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
-        reset_variable_generator(thisAgent, cond_top, NIL);
+        thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
         thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
@@ -580,7 +631,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         {
             dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
-            symbol_remove_ref(thisAgent, &new_name_symbol);
+            thisAgent->symbolManager->symbol_remove_ref(&new_name_symbol);
             new_name_symbol = NULL;
         }
 
@@ -625,12 +676,12 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
 
     if (!data->prev_op_rl_rules->empty())
     {
-        slot* s = find_slot(goal->id->reward_header, thisAgent->rl_sym_reward);
+        slot* s = find_slot(goal->id->reward_header, thisAgent->symbolManager->soarSymbols.rl_sym_reward);
         slot* t;
         wme* w, *x;
 
         double reward = 0.0;
-        double discount_rate = thisAgent->rl_params->discount_rate->get_value();
+        double discount_rate = thisAgent->RL->rl_params->discount_rate->get_value();
 
         if (s)
         {
@@ -638,7 +689,7 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
             {
                 if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                 {
-                    t = find_slot(w->value, thisAgent->rl_sym_value);
+                    t = find_slot(w->value, thisAgent->symbolManager->soarSymbols.rl_sym_value);
                     if (t)
                     {
                         for (x = t->wmes; x; x = x->next)
@@ -654,7 +705,7 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
 
             // if temporal_discount is off, don't discount for gaps
             unsigned int effective_age = data->hrl_age;
-            if (thisAgent->rl_params->temporal_discount->get_value() == on)
+            if (thisAgent->RL->rl_params->temporal_discount->get_value() == on)
             {
                 effective_age += data->gap_age;
             }
@@ -663,11 +714,11 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
         }
 
         // update stats
-        double global_reward = thisAgent->rl_stats->global_reward->get_value();
-        thisAgent->rl_stats->total_reward->set_value(reward);
-        thisAgent->rl_stats->global_reward->set_value(global_reward + reward);
+        double global_reward = thisAgent->RL->rl_stats->global_reward->get_value();
+        thisAgent->RL->rl_stats->total_reward->set_value(reward);
+        thisAgent->RL->rl_stats->global_reward->set_value(global_reward + reward);
 
-        if ((goal != thisAgent->bottom_goal) && (thisAgent->rl_params->hrl_discount->get_value() == on))
+        if ((goal != thisAgent->bottom_goal) && (thisAgent->RL->rl_params->hrl_discount->get_value() == on))
         {
             data->hrl_age++;
         }
@@ -692,7 +743,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     rl_data* data = goal->id->rl_info;
     Symbol* op = cand->value;
 
-    bool using_gaps = (thisAgent->rl_params->temporal_extension->get_value() == on);
+    bool using_gaps = (thisAgent->RL->rl_params->temporal_extension->get_value() == on);
 
     // Make list of just-fired prods
     unsigned int just_fired = 0;
@@ -750,7 +801,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
 // performs the rl update at a state
 void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* goal, bool update_efr)
 {
-    bool using_gaps = (thisAgent->rl_params->temporal_extension->get_value() == on);
+    bool using_gaps = (thisAgent->RL->rl_params->temporal_extension->get_value() == on);
 
     if (!using_gaps || op_rl)
     {
@@ -759,16 +810,16 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
         if (!data->prev_op_rl_rules->empty())
         {
             rl_et_map::iterator iter;
-            double alpha = thisAgent->rl_params->learning_rate->get_value();
-            double eta = thisAgent->rl_params->step_size_parameter->get_value();
-            double lambda = thisAgent->rl_params->et_decay_rate->get_value();
-            double gamma = thisAgent->rl_params->discount_rate->get_value();
-            double tolerance = thisAgent->rl_params->et_tolerance->get_value();
-            double theta = thisAgent->rl_params->meta_learning_rate->get_value();
+            double alpha = thisAgent->RL->rl_params->learning_rate->get_value();
+            double eta = thisAgent->RL->rl_params->step_size_parameter->get_value();
+            double lambda = thisAgent->RL->rl_params->et_decay_rate->get_value();
+            double gamma = thisAgent->RL->rl_params->discount_rate->get_value();
+            double tolerance = thisAgent->RL->rl_params->et_tolerance->get_value();
+            double theta = thisAgent->RL->rl_params->meta_learning_rate->get_value();
 
             // if temporal_discount is off, don't discount for gaps
             unsigned int effective_age = data->hrl_age + 1;
-            if (thisAgent->rl_params->temporal_discount->get_value() == on)
+            if (thisAgent->RL->rl_params->temporal_discount->get_value() == on)
             {
                 effective_age += data->gap_age;
             }
@@ -810,7 +861,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 }
             }
 
-            if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+            if (thisAgent->RL->rl_params->learning_policy->get_value() & rl_param_container::gql)
             {
                 for (iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++)
                 {
@@ -874,7 +925,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
                     double adjusted_alpha;
-                    switch (thisAgent->rl_params->decay_mode->get_value())
+                    switch (thisAgent->RL->rl_params->decay_mode->get_value())
                     {
                         case rl_param_container::exponential_decay:
                             adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
@@ -933,7 +984,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         xml_generate_message(thisAgent, temp_str.c_str());
 
                         // Log update to file if the log file has been set
-                        std::string log_path = thisAgent->rl_params->update_log_path->get_value();
+                        std::string log_path = thisAgent->RL->rl_params->update_log_path->get_value();
                         if (!log_path.empty())
                         {
                             std::ofstream file(log_path.c_str(), std::ios_base::app);
@@ -944,10 +995,10 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
 
                     // Change value of rule
                     Symbol* lSym = rhs_value_to_symbol(prod->action_list->referent);
-                    symbol_remove_ref(thisAgent, &lSym);
+                    thisAgent->symbolManager->symbol_remove_ref(&lSym);
 
                     // No refcount needed here because make_float_constant will increase
-                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, make_float_constant(thisAgent, new_combined), 0);
+                    prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_float_constant(new_combined), 0);
 
                     prod->rl_update_count += 1;
                     prod->rl_ecr = new_ecr;
@@ -955,7 +1006,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     prod->rl_gql = new_gql;
                 }
 
-                if (thisAgent->rl_params->learning_policy->get_value() & rl_param_container::gql)
+                if (thisAgent->RL->rl_params->learning_policy->get_value() & rl_param_container::gql)
                 {
                     for (preference* pref = goal->id->operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
                     {
@@ -973,14 +1024,14 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     production* prod = iter->first;
 
                     // change documentation
-                    if (thisAgent->rl_params->meta->get_value() == on)
+                    if (thisAgent->RL->rl_params->meta->get_value() == on)
                     {
                         if (prod->documentation)
                         {
                             free_memory_block_for_string(thisAgent, prod->documentation);
                         }
                         std::stringstream doc_ss;
-                        const std::vector<std::pair<std::string, param_accessor<double> *> >& documentation_params = thisAgent->rl_params->get_documentation_params();
+                        const std::vector<std::pair<std::string, param_accessor<double> *> >& documentation_params = thisAgent->RL->rl_params->get_documentation_params();
                         for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
                                 doc_params_it != documentation_params.end(); ++doc_params_it)
                         {
@@ -1005,8 +1056,8 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         {
                             for (preference* pref = inst->preferences_generated; pref; pref = pref->inst_next)
                             {
-                                symbol_remove_ref(thisAgent, &pref->referent);
-                                pref->referent = make_float_constant(thisAgent, new_combined);
+                                thisAgent->symbolManager->symbol_remove_ref(&pref->referent);
+                                pref->referent = thisAgent->symbolManager->make_float_constant(new_combined);
                             }
                         }
                     }

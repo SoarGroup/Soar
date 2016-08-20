@@ -76,7 +76,7 @@ bool CommandLineInterface::DoFiringCounts(PrintBitset options, const int numberT
     // if we have a production, just get that one, otherwise get them all
     if (pProduction && !pProduction->empty())
     {
-        Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
+        Symbol* sym = thisAgent->symbolManager->find_str_constant(pProduction->c_str());
 
         if (!sym || !(sym->sc->production))
         {

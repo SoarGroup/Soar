@@ -124,7 +124,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     // Excise specific production
     if (pProduction)
     {
-        Symbol* sym = find_str_constant(thisAgent, pProduction->c_str());
+        Symbol* sym = thisAgent->symbolManager->find_str_constant(pProduction->c_str());
 
         if (!sym || !(sym->sc->production))
         {

@@ -13,6 +13,7 @@
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "visualize.h"
 #include "working_memory.h"
@@ -80,7 +81,7 @@ void Explanation_Memory::clear_explanations()
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         lSym = it->first;
-        symbol_remove_ref(thisAgent, &lSym);
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
         delete it->second;
     }
     chunks->clear();
@@ -217,7 +218,7 @@ void Explanation_Memory::record_chunk_contents(production* pProduction, conditio
         current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number, pChunkInstantiation);
         chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
-        symbol_add_ref(thisAgent, pProduction->name);
+        thisAgent->symbolManager->symbol_add_ref(pProduction->name);
         dprint(DT_EXPLAIN, "Explanation logger done record_chunk_contents...\n");
     } else {
         dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
@@ -389,7 +390,7 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 {
     Symbol* sym;
 
-    sym = find_str_constant(thisAgent, pStringParameter->c_str());
+    sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
     if (sym && (sym->sc->production))
     {
         toggle_production_watch(sym->sc->production);
@@ -404,7 +405,7 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
 
-    sym = find_str_constant(thisAgent, pStringParameter->c_str());
+    sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
     if (sym && sym->sc->production)
     {
         /* Print chunk record if we can find it */

@@ -146,22 +146,22 @@ void remove_output_function(agent* thisAgent, const char* name)
 
 Symbol* get_new_io_identifier(agent* thisAgent, char first_letter)
 {
-    return make_new_identifier(thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
+    return thisAgent->symbolManager->make_new_identifier(first_letter, TOP_GOAL_LEVEL, NIL);
 }
 
 Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
 {
-    Symbol* id = find_identifier(thisAgent, first_letter, number) ;
+    Symbol* id = thisAgent->symbolManager->find_identifier(first_letter, number) ;
 
     // DJP: The other "make_<type>" methods either make a new object or incremenent the refence
     // on an existing object.  So I'm going to make this method function the same way for identifiers.
     if (id)
     {
-        symbol_add_ref(thisAgent, id);
+        thisAgent->symbolManager->symbol_add_ref(id);
     }
     else
     {
-        id = make_new_identifier(thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
+        id = thisAgent->symbolManager->make_new_identifier(first_letter, TOP_GOAL_LEVEL, NIL);
     }
 
     return id ;
@@ -169,22 +169,22 @@ Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
 
 Symbol* get_io_str_constant(agent* thisAgent, char const* name)
 {
-    return make_str_constant(thisAgent, name);
+    return thisAgent->symbolManager->make_str_constant(name);
 }
 
 Symbol* get_io_int_constant(agent* thisAgent, int64_t value)
 {
-    return make_int_constant(thisAgent, value);
+    return thisAgent->symbolManager->make_int_constant(value);
 }
 
 Symbol* get_io_float_constant(agent* thisAgent, double value)
 {
-    return make_float_constant(thisAgent, value);
+    return thisAgent->symbolManager->make_float_constant(value);
 }
 
 void release_io_symbol(agent* thisAgent, Symbol* sym)
 {
-    symbol_remove_ref(thisAgent, &sym);
+    thisAgent->symbolManager->symbol_remove_ref(&sym);
 }
 
 wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
@@ -319,10 +319,10 @@ void do_input_cycle(agent* thisAgent)
           thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
           thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
           add_input_wme (thisAgent, thisAgent->io_header,
-          make_str_constant(thisAgent, "input-link"),
+          thisAgent->symbolManager->make_str_constant("input-link"),
           thisAgent->io_header_input);
           add_input_wme (thisAgent, thisAgent->io_header,
-          make_str_constant(thisAgent, "output-link"),
+          thisAgent->symbolManager->make_str_constant("output-link"),
           thisAgent->io_header_output);
         */
         /* --- add top state io link before calling input phase callback so
@@ -612,7 +612,7 @@ void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
             id->id->associated_output_links = c->rest;
         }
         free_cons(thisAgent, c);
-        symbol_remove_ref(thisAgent, &id);
+        thisAgent->symbolManager->symbol_remove_ref(&id);
     }
 }
 
@@ -632,7 +632,7 @@ void add_id_to_output_link_tc(agent* thisAgent, Symbol* id)
 
     /* --- add id to output_link's list --- */
     push(thisAgent, id, thisAgent->output_link_for_tc->ids_in_tc);
-    symbol_add_ref(thisAgent, id);  /* make sure the id doesn't get deallocated before we
+    thisAgent->symbolManager->symbol_add_ref(id);  /* make sure the id doesn't get deallocated before we
                            have a chance to free the cons cell we just added */
 
     /* --- add output_link to id's list --- */

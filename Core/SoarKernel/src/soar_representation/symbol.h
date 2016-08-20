@@ -38,7 +38,6 @@
 #include "kernel.h"
 
 #include "Export.h"
-#include "symbol_factory.h"
 
 #include <sstream>
 
@@ -382,90 +381,6 @@ char first_letter_from_symbol(Symbol* sym);
 
 /* -- This function returns a numeric value from a symbol -- */
 double get_number_from_symbol(Symbol* sym);
-
-/* -- Reference count functions for symbols
- *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
- *      If DEBUG_TRACE_REFCOUNT_INVENTORY is defined, an alternate version of the function is used
- *      that sends a bunch of trace information to the debug database for deeper analysis of possible
- *      bugs. -- */
-
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
-#include <string>
-#include <iostream>
-#include "enums.h"
-std::string get_stacktrace(const char* prefix);
-extern bool is_DT_mode_enabled(TraceMode mode);
-#endif
-
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-#define symbol_add_ref(thisAgent, sym) \
-    ({debug_store_refcount(sym, true); \
-        symbol_add_ref_func(thisAgent, sym); })
-
-inline void symbol_add_ref_func(agent* thisAgent, Symbol* x)
-#else
-inline void symbol_add_ref(agent* thisAgent, Symbol* x)
-#endif
-{
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
-#else
-    //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
-#endif
-
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
-    std::string strName(x->to_string());
-    if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-    {
-        std::string caller_string = get_stacktrace("add_ref");
-//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
-        if (is_DT_mode_enabled(DT_ID_LEAKING))
-        {
-            std::cout << "++ | " << strName.c_str() << " |" << x->reference_count << " | " << caller_string.c_str() << "\n";
-        }
-    }
-#endif
-
-    (x)->reference_count++;
-}
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-#define symbol_remove_ref(thisAgent, &sym) \
-    ({debug_store_refcount(sym, false); \
-        symbol_remove_ref_func(thisAgent, sym);})
-
-inline void symbol_remove_ref_func(agent* thisAgent, Symbol*& x)
-#else
-inline void symbol_remove_ref(agent* thisAgent, Symbol** x)
-#endif
-{
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-    //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
-#else
-//    dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
-//    std::cout << "REMOVE-REF " << x->to_string() << "->" <<  ((x)->reference_count - 1) << "\n";
-#endif
-//    assert((x)->reference_count > 0);
-    (*x)->reference_count--;
-
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
-    std::string strName((*x)->to_string());
-    if (strName == DEBUG_TRACE_REFCOUNT_FOR)
-    {
-        std::string caller_string = get_stacktrace("remove_ref");
-//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), (*x)->reference_count, caller_string.c_str());
-        if (is_DT_mode_enabled(DT_ID_LEAKING))
-        {
-            std::cout << "-- | " << strName.c_str() << " | " << (*x)->reference_count << " | " << caller_string.c_str() << "\n";
-        }
-    }
-#endif
-
-    if ((*x)->reference_count == 0)
-    {
-        deallocate_symbol(thisAgent, (*x));
-        (*x) = NULL;
-    }
-}
 
 /* -----------------------------------------------------------------
  *

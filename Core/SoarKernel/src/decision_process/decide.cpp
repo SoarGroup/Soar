@@ -374,7 +374,7 @@ void post_link_addition(agent* thisAgent, Symbol* from, Symbol* to)
 
     /* --- otherwise buffer it for later --- */
     to->id->promotion_level = from->id->promotion_level;
-    symbol_add_ref(thisAgent, to);
+    thisAgent->symbolManager->symbol_add_ref(to);
     push(thisAgent, to, thisAgent->promoted_ids);
 }
 
@@ -456,7 +456,7 @@ void do_promotion(agent* thisAgent)
         thisAgent->promoted_ids = thisAgent->promoted_ids->rest;
         free_cons(thisAgent, c);
         promote_id_and_tc(thisAgent, to, to->id->promotion_level);
-        symbol_remove_ref(thisAgent, &to);
+        thisAgent->symbolManager->symbol_remove_ref(&to);
     }
 }
 
@@ -532,7 +532,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
         }
         else
         {
-            symbol_add_ref(thisAgent, to);
+            thisAgent->symbolManager->symbol_add_ref(to);
             thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
             dc->item = to;
             to->id->unknown_level = dc;
@@ -553,7 +553,7 @@ void post_link_removal(agent* thisAgent, Symbol* from, Symbol* to)
 
     if (! to->id->unknown_level)
     {
-        symbol_add_ref(thisAgent, to);
+        thisAgent->symbolManager->symbol_add_ref(to);
         thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
         dc->item = to;
         to->id->unknown_level = dc;
@@ -707,7 +707,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
             id->id->unknown_level = dc;
             //dprint(DT_UNKNOWN_LEVEL, "      Setting %y as unknown_level and adding to list ids_with_unknown_level.\n", id);
             insert_at_head_of_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
-            symbol_add_ref(thisAgent, id);
+            thisAgent->symbolManager->symbol_add_ref(id);
         } else {
             //dprint(DT_UNKNOWN_LEVEL, "      Not setting %y as unknown_level because already set.\n", id);
         }
@@ -824,7 +824,7 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
             dc = id->id->unknown_level;
             remove_from_dll(thisAgent->ids_with_unknown_level, dc, next, prev);
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
-            symbol_remove_ref(thisAgent, &id);
+            thisAgent->symbolManager->symbol_remove_ref(&id);
             id->id->unknown_level = NIL;
             id->id->level = thisAgent->walk_level;
             id->id->promotion_level = thisAgent->walk_level;
@@ -919,7 +919,7 @@ void do_demotion(agent* thisAgent)
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         id->id->unknown_level = NIL;
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, &id);
+        thisAgent->symbolManager->symbol_remove_ref(&id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 
@@ -974,7 +974,7 @@ void do_demotion(agent* thisAgent)
         id->id->unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
         /* symbol may still have pointers to it */
         garbage_collect_id(thisAgent, id);
-        symbol_remove_ref(thisAgent, &id);
+        thisAgent->symbolManager->symbol_remove_ref(&id);
     }
     thisAgent->link_update_mode = UPDATE_LINKS_NORMALLY;
 }
@@ -1103,12 +1103,12 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
 
 void build_rl_trace(agent* const& thisAgent, preference* const& candidates, preference* const& selected)   ///< bazald
 {
-    if (thisAgent->rl_params->trace->get_value() == off)
+    if (thisAgent->RL->rl_params->trace->get_value() == off)
     {
         return;
     }
 
-    agent::RL_Trace** next = NIL;
+    RL_Trace** next = NIL;
 
     for (preference* cand = candidates; cand; cand = cand->next_candidate)
     {
@@ -1156,8 +1156,8 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
 
 //       std::cerr << "rl-trace: =" << probability << std::endl;
 
-            agent::RL_Trace* const rl_trace = static_cast<agent::RL_Trace*>(candidates->slot->id->id->rl_trace);
-            rl_trace->split[index_str].init = thisAgent->rl_init_count;
+            RL_Trace* const rl_trace = static_cast<RL_Trace*>(candidates->slot->id->id->rl_trace);
+            rl_trace->split[index_str].init = thisAgent->RL->rl_init_count;
             rl_trace->split[index_str].probability = probability;
             if (cand == selected)
             {
@@ -1171,7 +1171,7 @@ void build_rl_trace(agent* const& thisAgent, preference* const& candidates, pref
         if (!*next)
         {
 //       std::cerr << "rl-trace: Expanding" << std::endl;
-            *next = new agent::RL_Trace;
+            *next = new RL_Trace;
         }
 //     else {
 //       std::cerr << "rl-trace: Traversing" << std::endl;
@@ -1987,54 +1987,54 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 {
     Symbol* id;
 
-    id = make_new_identifier(thisAgent, (isa_goal ? 'S' : 'I'), level);
+    id = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level);
     post_link_addition(thisAgent, NIL, id);   /* add the special link */
 
-    add_impasse_wme(thisAgent, id, thisAgent->type_symbol, isa_goal ? thisAgent->state_symbol : thisAgent->impasse_symbol,
+    add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
                     NIL);
 
     if (isa_goal)
     {
-        add_impasse_wme(thisAgent, id, thisAgent->superstate_symbol, object, NIL);
-        id->id->reward_header = make_new_identifier(thisAgent, 'R', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->rl_sym_reward_link, id->id->reward_header);
+        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL);
+        id->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, id->id->reward_header);
 
-        id->id->epmem_header = make_new_identifier(thisAgent, 'E', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->epmem_sym, id->id->epmem_header);
-        id->id->epmem_cmd_header = make_new_identifier(thisAgent, 'C', level);
-        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_cmd, id->id->epmem_cmd_header);
-        id->id->epmem_result_header = make_new_identifier(thisAgent, 'R', level);
-        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_result, id->id->epmem_result_header);
+        id->id->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
+        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.epmem_sym, id->id->epmem_header);
+        id->id->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
+        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, id->id->epmem_cmd_header);
+        id->id->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_result, id->id->epmem_result_header);
 
         {
-            int64_t my_time = static_cast<int64_t>(thisAgent->epmem_stats->time->get_value());
+            int64_t my_time = static_cast<int64_t>(thisAgent->EpMem->epmem_stats->time->get_value());
             if (my_time == 0)
             {
                 // special case: pre-initialization
                 my_time = 1;
             }
 
-            Symbol* my_time_sym = make_int_constant(thisAgent, my_time);
-            id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->epmem_sym_present_id, my_time_sym);
-            symbol_remove_ref(thisAgent, &my_time_sym);
+            Symbol* my_time_sym = thisAgent->symbolManager->make_int_constant(my_time);
+            id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&my_time_sym);
         }
 
-        id->id->smem_header = make_new_identifier(thisAgent, 'S', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->smem_sym, id->id->smem_header);
-        id->id->smem_cmd_header = make_new_identifier(thisAgent, 'C', level);
-        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->smem_sym_cmd, id->id->smem_cmd_header);
-        id->id->smem_result_header = make_new_identifier(thisAgent, 'R', level);
-        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->smem_sym_result, id->id->smem_result_header);
+        id->id->smem_header = thisAgent->symbolManager->make_new_identifier('S', level);
+        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.smem_sym, id->id->smem_header);
+        id->id->smem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
+        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, id->id->smem_cmd_header);
+        id->id->smem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, id->id->smem_result_header);
 
     }
     else
     {
-        add_impasse_wme(thisAgent, id, thisAgent->object_symbol, object, NIL);
+        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL);
     }
 
     if (attr)
     {
-        add_impasse_wme(thisAgent, id, thisAgent->attribute_symbol, attr, NIL);
+        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL);
     }
 
     switch (impasse_type)
@@ -2042,20 +2042,20 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         case NONE_IMPASSE_TYPE:
             break;    /* this happens only when creating the top goal */
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->impasse_symbol, thisAgent->constraint_failure_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->choices_symbol, thisAgent->none_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
         case CONFLICT_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->impasse_symbol, thisAgent->conflict_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->choices_symbol, thisAgent->multiple_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case TIE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->impasse_symbol, thisAgent->tie_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->choices_symbol, thisAgent->multiple_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case NO_CHANGE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->impasse_symbol, thisAgent->no_change_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->choices_symbol, thisAgent->none_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL);
+            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
     }
 
@@ -2063,7 +2063,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 //     std::cerr << "rl-trace: Init level " << level << std::endl;
 //   else
 //     std::cerr << "rl-trace: Restore level " << level << std::endl;
-    id->id->rl_trace = &thisAgent->rl_trace[level];
+    id->id->rl_trace = &thisAgent->RL->rl_trace[level];
 
     return id;
 }
@@ -2104,7 +2104,7 @@ void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
     remove_wme_list_from_wm(thisAgent, id->id->impasse_wmes);
     id->id->impasse_wmes = NIL;
     post_link_removal(thisAgent, NIL, id);   /* remove the special link */
-    symbol_remove_ref(thisAgent, &id);
+    thisAgent->symbolManager->symbol_remove_ref(&id);
 }
 
 /* ------------------------------------------------------------------
@@ -2135,13 +2135,13 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
     {
         if (it == regular)
         {
-            loop_sym = thisAgent->item_symbol;
-            loop_count_sym = thisAgent->item_count_symbol;
+            loop_sym = thisAgent->symbolManager->soarSymbols.item_symbol;
+            loop_count_sym = thisAgent->symbolManager->soarSymbols.item_count_symbol;
         }
         else
         {
-            loop_sym = thisAgent->non_numeric_symbol;
-            loop_count_sym = thisAgent->non_numeric_count_symbol;
+            loop_sym = thisAgent->symbolManager->soarSymbols.non_numeric_symbol;
+            loop_count_sym = thisAgent->symbolManager->soarSymbols.non_numeric_count_symbol;
         }
 
         // reset flags on existing items to NOTHING
@@ -2244,9 +2244,9 @@ void update_impasse_items(agent* thisAgent, Symbol* id, preference* items)
 
         if (item_count > 0)
         {
-            count_sym = make_int_constant(thisAgent, static_cast< int64_t >(item_count));
+            count_sym = thisAgent->symbolManager->make_int_constant(static_cast< int64_t >(item_count));
             add_impasse_wme(thisAgent, id, loop_count_sym, count_sym, NIL);
-            symbol_remove_ref(thisAgent, &count_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&count_sym);
         }
     }
 }
@@ -2789,21 +2789,21 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
     goal->id->rl_info->prev_op_rl_rules->~rl_rule_list();
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
-    symbol_remove_ref(thisAgent, &goal->id->reward_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->reward_header);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
 
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_cmd_header);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_result_header);
-    symbol_remove_ref(thisAgent, &goal->id->epmem_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_cmd_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_result_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_header);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
     goal->id->smem_info->smem_wmes->~smem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
-    symbol_remove_ref(thisAgent, &goal->id->smem_cmd_header);
-    symbol_remove_ref(thisAgent, &goal->id->smem_result_header);
-    symbol_remove_ref(thisAgent, &goal->id->smem_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_cmd_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_result_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_header);
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
 #ifndef NO_SVS
@@ -2825,7 +2825,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
-    symbol_remove_ref(thisAgent, &goal);
+    thisAgent->symbolManager->symbol_remove_ref(&goal);
 
     if (goal->id->level <= thisAgent->substate_break_level)
     {
@@ -2857,8 +2857,8 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         id->id->higher_goal = thisAgent->bottom_goal;
         thisAgent->bottom_goal->id->lower_goal = id;
         thisAgent->bottom_goal = id;
-        add_impasse_wme(thisAgent, id, thisAgent->quiescence_symbol,
-                        thisAgent->t_symbol, NIL);
+        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.quiescence_symbol,
+                        thisAgent->symbolManager->soarSymbols.t_symbol, NIL);
         if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) &&
                 (thisAgent->sysparams[MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
         {
@@ -2878,7 +2878,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     else
     {
         /* Creating the top state */
-        id = create_new_impasse(thisAgent, true, thisAgent->nil_symbol,
+        id = create_new_impasse(thisAgent, true, thisAgent->symbolManager->soarSymbols.nil_symbol,
                                 NIL, NONE_IMPASSE_TYPE,
                                 TOP_GOAL_LEVEL);
         thisAgent->top_goal = id;
@@ -2889,7 +2889,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     }
 
     id->id->isa_goal = true;
-    id->id->operator_slot = make_slot(thisAgent, id, thisAgent->operator_symbol);
+    id->id->operator_slot = make_slot(thisAgent, id, thisAgent->symbolManager->soarSymbols.operator_symbol);
     id->id->allow_bottom_up_chunks = true;
 
     thisAgent->memoryManager->allocate_with_pool(MP_rl_info, &(id->id->rl_info));
@@ -2964,25 +2964,25 @@ byte type_of_existing_impasse(agent* thisAgent, Symbol* goal)
         return NONE_IMPASSE_TYPE;
     }
     for (w = goal->id->lower_goal->id->impasse_wmes; w != NIL; w = w->next)
-        if (w->attr == thisAgent->impasse_symbol)
+        if (w->attr == thisAgent->symbolManager->soarSymbols.impasse_symbol)
         {
-            if (w->value == thisAgent->no_change_symbol)
+            if (w->value == thisAgent->symbolManager->soarSymbols.no_change_symbol)
             {
                 return NO_CHANGE_IMPASSE_TYPE;
             }
-            if (w->value == thisAgent->tie_symbol)
+            if (w->value == thisAgent->symbolManager->soarSymbols.tie_symbol)
             {
                 return TIE_IMPASSE_TYPE;
             }
-            if (w->value == thisAgent->constraint_failure_symbol)
+            if (w->value == thisAgent->symbolManager->soarSymbols.constraint_failure_symbol)
             {
                 return CONSTRAINT_FAILURE_IMPASSE_TYPE;
             }
-            if (w->value == thisAgent->conflict_symbol)
+            if (w->value == thisAgent->symbolManager->soarSymbols.conflict_symbol)
             {
                 return CONFLICT_IMPASSE_TYPE;
             }
-            if (w->value == thisAgent->none_symbol)
+            if (w->value == thisAgent->symbolManager->soarSymbols.none_symbol)
             {
                 return NONE_IMPASSE_TYPE;
             }
@@ -3005,7 +3005,7 @@ Symbol* attribute_of_existing_impasse(agent* thisAgent, Symbol* goal)
         return NIL;
     }
     for (w = goal->id->lower_goal->id->impasse_wmes; w != NIL; w = w->next)
-        if (w->attr == thisAgent->attribute_symbol)
+        if (w->attr == thisAgent->symbolManager->soarSymbols.attribute_symbol)
         {
             return w->value;
         }
@@ -3132,7 +3132,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
         }
         else
         {
-            attribute_of_impasse = thisAgent->state_symbol;
+            attribute_of_impasse = thisAgent->symbolManager->soarSymbols.state_symbol;
         }
     }
     else
@@ -3142,7 +3142,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
     }
 
     /* --- remove wme's for lower slots of this context --- */
-    if (attribute_of_impasse == thisAgent->state_symbol)
+    if (attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol)
     {
         remove_wmes_for_context_slot(thisAgent, goal->id->operator_slot);
     }
@@ -3215,7 +3215,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
     }
 
     /* REW: begin 10.24.97 */
-    if (thisAgent->waitsnc && (impasse_type == NO_CHANGE_IMPASSE_TYPE) && (attribute_of_impasse == thisAgent->state_symbol))
+    if (thisAgent->waitsnc && (impasse_type == NO_CHANGE_IMPASSE_TYPE) && (attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol))
     {
         thisAgent->waitsnc_detect = true;
     }

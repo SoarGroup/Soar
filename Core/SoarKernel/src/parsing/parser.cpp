@@ -79,7 +79,7 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
     SNPRINTF(buf, sizeof(buf) - 1, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[i]++));
     buf[sizeof(buf) - 1] = '\0';
 
-    v = make_variable(thisAgent, buf);
+    v = thisAgent->symbolManager->make_variable(buf);
     dprint(DT_PARSER, "Adding variable lexeme to parser strings %y\n", v);
     push(thisAgent, (v), thisAgent->parser_syms);
     /* --- indicate that there is no corresponding "real" variable yet --- */
@@ -99,7 +99,7 @@ test make_placeholder_test(agent* thisAgent, char first_letter)
 {
     Symbol* new_var = make_placeholder_var(thisAgent, first_letter);
     test new_test = make_test(thisAgent, new_var, EQUALITY_TEST);
-    symbol_remove_ref(thisAgent, &new_var);
+    thisAgent->symbolManager->symbol_remove_ref(&new_var);
     return new_test;
 }
 
@@ -143,7 +143,7 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         prefix[0] = *((*sym)->var->name + 2);
         prefix[1] = '*';
         prefix[2] = 0;
-        (*sym)->var->current_binding_value = generate_new_variable(thisAgent, prefix);
+        (*sym)->var->current_binding_value = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_PARSER, "Substituting for placeholder %y with newly generated %y.\n", (*sym), (*sym)->var->current_binding_value);
         just_created = true;
     }
@@ -152,11 +152,11 @@ void substitute_for_placeholders_in_symbol(agent* thisAgent, Symbol** sym)
         dprint(DT_PARSER, "Substituting for placeholder %y with existing %y.\n", (*sym), (*sym)->var->current_binding_value);
     }
     var = (*sym)->var->current_binding_value;
-    symbol_remove_ref(thisAgent, &(*sym));
+    thisAgent->symbolManager->symbol_remove_ref(&(*sym));
     *sym = var;
     if (!just_created)
     {
-        symbol_add_ref(thisAgent, var);
+        thisAgent->symbolManager->symbol_add_ref(var);
     }
 }
 
@@ -304,28 +304,28 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
     {
         case STR_CONSTANT_LEXEME:
         {
-            newSymbol = make_str_constant(thisAgent, lexeme->string());
+            newSymbol = thisAgent->symbolManager->make_str_constant(lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             dprint(DT_PARSER, "Adding str lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
-            newSymbol = make_variable(thisAgent, lexeme->string());
+            newSymbol = thisAgent->symbolManager->make_variable(lexeme->string());
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             dprint(DT_PARSER, "Adding var lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case INT_CONSTANT_LEXEME:
         {
-            newSymbol = make_int_constant(thisAgent, lexeme->int_val);
+            newSymbol = thisAgent->symbolManager->make_int_constant(lexeme->int_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             dprint(DT_PARSER, "Adding int lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case FLOAT_CONSTANT_LEXEME:
         {
-            newSymbol =  make_float_constant(thisAgent, lexeme->float_val);
+            newSymbol =  thisAgent->symbolManager->make_float_constant(lexeme->float_val);
             push(thisAgent, (newSymbol), thisAgent->parser_syms);
             dprint(DT_PARSER, "Adding float lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
@@ -353,10 +353,10 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                      * the identifier in a list so that we can add it to smem later, after we
                      * know the current source command is complete */
                     dprint(DT_PARSER_PROMOTE, "Identifier %c%d found (%s).\n", lexeme->id_letter, lexeme->id_number, allow_lti ? "true" : "false");
-                    newSymbol = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
+                    newSymbol = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
                     if (newSymbol == NIL)
                     {
-                        newSymbol = make_new_identifier(thisAgent, lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
+                        newSymbol = thisAgent->symbolManager->make_new_identifier(lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
                     }
                     thisAgent->LTIs_sourced->add_lexed_LTI(newSymbol);
                 }
@@ -469,11 +469,11 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
             if (!lexer->get_lexeme())
             {
-                symbol_remove_ref(thisAgent, &referent);
+                thisAgent->symbolManager->symbol_remove_ref(&referent);
                 return NULL;
             }
             t = make_test(thisAgent, referent, test_type);
-            symbol_remove_ref(thisAgent, &referent);
+            thisAgent->symbolManager->symbol_remove_ref(&referent);
             return t;
 
         default:
@@ -1436,21 +1436,21 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     /* --- read function name, find the rhs_function structure --- */
     if (lexer->current_lexeme.type == PLUS_LEXEME)
     {
-        fun_name = find_str_constant(thisAgent, "+");
+        fun_name = thisAgent->symbolManager->find_str_constant("+");
     }
     else if (lexer->current_lexeme.type == MINUS_LEXEME)
     {
-        fun_name = find_str_constant(thisAgent, "-");
+        fun_name = thisAgent->symbolManager->find_str_constant("-");
     }
     else
     {
-        fun_name = find_str_constant(thisAgent, lexer->current_lexeme.string());
+        fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());
     }
 
 	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
 		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
-		fun_name = find_str_constant(thisAgent, "halt");
+		fun_name = thisAgent->symbolManager->find_str_constant("halt");
 	}
 
     if (!fun_name)
@@ -1464,7 +1464,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
 		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
-		rf = lookup_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
+		rf = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
 	}
 
     if (!rf)
@@ -2047,7 +2047,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
         /* Remove references for dummy var used to represent dot notation links */
         deallocate_rhs_value(thisAgent, attr);
-        symbol_remove_ref(thisAgent, &new_var);
+        thisAgent->symbolManager->symbol_remove_ref(&new_var);
 
         /* if there was a "." then there must be another attribute
            set id for next action and get the next attribute */
@@ -2148,10 +2148,10 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
              * the identifier in a list so that we can add it to smem later, after we
              * know the current source command is complete */
             dprint(DT_PARSER_PROMOTE, "RHS Identifier %c%d found (%s).\n", lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, lexer->get_allow_ids() ? "true" : "false");
-            var = find_identifier(thisAgent, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
+            var = thisAgent->symbolManager->find_identifier(lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
             if (var == NIL)
             {
-                var = make_new_identifier(thisAgent, lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
+                var = thisAgent->symbolManager->make_new_identifier(lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
             }
             thisAgent->LTIs_sourced->add_lexed_LTI(var);
         }
@@ -2162,7 +2162,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     else
     {
-        var = make_variable(thisAgent, lexer->current_lexeme.string());
+        var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
     }
 
     if (!lexer->get_lexeme()) return NULL;
@@ -2178,14 +2178,14 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         else
         {
-            symbol_remove_ref(thisAgent, &var);
+            thisAgent->symbolManager->symbol_remove_ref(&var);
             deallocate_action_list(thisAgent, all_actions);
             return NIL;
         }
     }
     /* consume the right parenthesis */
     if (!lexer->get_lexeme()) return NULL;
-    symbol_remove_ref(thisAgent, &var);
+    thisAgent->symbolManager->symbol_remove_ref(&var);
     return all_actions;
 }
 
@@ -2278,7 +2278,7 @@ void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentatio
     if (name)
     {
         print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
-        symbol_remove_ref(thisAgent, &name);
+        thisAgent->symbolManager->symbol_remove_ref(&name);
         name = NULL;
     }
     if (documentation && *documentation)
@@ -2332,7 +2332,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
         lexer.print_location_of_most_recent_lexeme();
         return NIL;
     }
-    name = make_str_constant(thisAgent, lexer.current_lexeme.string());
+    name = thisAgent->symbolManager->make_str_constant(lexer.current_lexeme.string());
     if (!lexer.get_lexeme())
     {
         abort_parse_production(thisAgent, name);
@@ -2478,7 +2478,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     rhs = destructively_reverse_action_list(rhs);
 
     /* --- replace placeholder variables with real variables --- */
-    reset_variable_generator(thisAgent, lhs, rhs);
+    thisAgent->symbolManager->reset_variable_generator(lhs, rhs);
     substitute_for_placeholders_in_condition_list(thisAgent, lhs);
     substitute_for_placeholders_in_action_list(thisAgent, rhs);
 

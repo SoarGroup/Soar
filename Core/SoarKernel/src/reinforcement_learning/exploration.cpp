@@ -165,7 +165,7 @@ exploration_parameter* exploration_add_parameter(double value, bool (*val_func)(
 const int exploration_convert_parameter(agent* thisAgent, const char* name)
 {
     for (int i = 0; i < EXPLORATION_PARAMS; ++i)
-        if (!strcmp(name, thisAgent->exploration_params[ i ]->name))
+        if (!strcmp(name, thisAgent->RL->exploration_params[ i ]->name))
         {
             return i;
         }
@@ -175,7 +175,7 @@ const int exploration_convert_parameter(agent* thisAgent, const char* name)
 
 const char* exploration_convert_parameter(agent* thisAgent, const int parameter)
 {
-    return (parameter >= 0 && parameter < EXPLORATION_PARAMS) ? thisAgent->exploration_params[ parameter ]->name : NULL ;
+    return (parameter >= 0 && parameter < EXPLORATION_PARAMS) ? thisAgent->RL->exploration_params[ parameter ]->name : NULL ;
 }
 
 /***************************************************************************
@@ -202,14 +202,14 @@ double exploration_get_parameter_value(agent* thisAgent, const char* parameter)
         return 0;
     }
 
-    return thisAgent->exploration_params[ param ]->value;
+    return thisAgent->RL->exploration_params[ param ]->value;
 }
 
 double exploration_get_parameter_value(agent* thisAgent, const int parameter)
 {
     if (exploration_valid_parameter(thisAgent, parameter))
     {
-        return thisAgent->exploration_params[ parameter ]->value;
+        return thisAgent->RL->exploration_params[ parameter ]->value;
     }
 
     return 0;
@@ -242,14 +242,14 @@ bool exploration_valid_parameter_value(agent* thisAgent, const char* name, doubl
         return false;
     }
 
-    return thisAgent->exploration_params[ param ]->val_func(value);
+    return thisAgent->RL->exploration_params[ param ]->val_func(value);
 }
 
 bool exploration_valid_parameter_value(agent* thisAgent, const int parameter, double value)
 {
     if (exploration_valid_parameter(thisAgent, parameter))
     {
-        return thisAgent->exploration_params[ parameter ]->val_func(value);
+        return thisAgent->RL->exploration_params[ parameter ]->val_func(value);
     }
 
     return false;
@@ -266,7 +266,7 @@ bool exploration_set_parameter_value(agent* thisAgent, const char* name, double 
         return false;
     }
 
-    thisAgent->exploration_params[ param ]->value = value;
+    thisAgent->RL->exploration_params[ param ]->value = value;
 
     return true;
 }
@@ -275,7 +275,7 @@ bool exploration_set_parameter_value(agent* thisAgent, const int parameter, doub
 {
     if (exploration_valid_parameter(thisAgent, parameter))
     {
-        thisAgent->exploration_params[ parameter ]->value = value;
+        thisAgent->RL->exploration_params[ parameter ]->value = value;
         return true;
     }
     else
@@ -378,14 +378,14 @@ const int exploration_get_reduction_policy(agent* thisAgent, const char* paramet
         return EXPLORATION_REDUCTIONS;
     }
 
-    return thisAgent->exploration_params[ param ]->reduction_policy;
+    return thisAgent->RL->exploration_params[ param ]->reduction_policy;
 }
 
 const int exploration_get_reduction_policy(agent* thisAgent, const int parameter)
 {
     if (exploration_valid_parameter(thisAgent, parameter))
     {
-        return thisAgent->exploration_params[ parameter ]->reduction_policy;
+        return thisAgent->RL->exploration_params[ parameter ]->reduction_policy;
     }
     else
     {
@@ -428,7 +428,7 @@ bool exploration_set_reduction_policy(agent* thisAgent, const char* parameter, c
         return false;
     }
 
-    thisAgent->exploration_params[ param ]->reduction_policy = policy;
+    thisAgent->RL->exploration_params[ param ]->reduction_policy = policy;
 
     return true;
 }
@@ -438,7 +438,7 @@ bool exploration_set_reduction_policy(agent* thisAgent, const int parameter, con
     if (exploration_valid_parameter(thisAgent, parameter) &&
             exploration_valid_reduction_policy(thisAgent, parameter, policy))
     {
-        thisAgent->exploration_params[ parameter ]->reduction_policy = policy;
+        thisAgent->RL->exploration_params[ parameter ]->reduction_policy = policy;
         return true;
     }
 
@@ -530,7 +530,7 @@ double exploration_get_reduction_rate(agent* thisAgent, const int parameter, con
     if (exploration_valid_parameter(thisAgent, parameter) &&
             exploration_valid_reduction_policy(thisAgent, parameter, policy))
     {
-        return thisAgent->exploration_params[ parameter ]->rates[ policy ];
+        return thisAgent->RL->exploration_params[ parameter ]->rates[ policy ];
     }
 
     return 0;
@@ -562,7 +562,7 @@ bool exploration_set_reduction_rate(agent* thisAgent, const int parameter, const
             exploration_valid_reduction_policy(thisAgent, parameter, policy) &&
             exploration_valid_reduction_rate(thisAgent, parameter, policy, reduction_rate))
     {
-        thisAgent->exploration_params[ parameter ]->rates[ policy ] = reduction_rate;
+        thisAgent->RL->exploration_params[ parameter ]->rates[ policy ] = reduction_rate;
         return true;
     }
 
@@ -579,7 +579,7 @@ preference* exploration_choose_according_to_policy(agent* thisAgent, slot* s, pr
 
     const bool my_rl_enabled = rl_enabled(thisAgent);
 
-    const rl_param_container::learning_choices my_learning_policy = my_rl_enabled ? thisAgent->rl_params->learning_policy->get_value() : rl_param_container::q;
+    const rl_param_container::learning_choices my_learning_policy = my_rl_enabled ? thisAgent->RL->rl_params->learning_policy->get_value() : rl_param_container::q;
 
     // get preference values for each candidate
     // see soar_ecPrintPreferences

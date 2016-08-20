@@ -15,6 +15,8 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "memory_manager.h"
@@ -24,15 +26,12 @@
 #include "instantiation.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 #include "xml.h"
 
 #include <stdlib.h>
-#include "dprint.h"
-
-#include "explanation_memory.h"
-
 
 using namespace soar_TraceNames;
 
@@ -549,8 +548,8 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         Symbol* thisValue = cond->data.tests.value_test->eq_test->data.referent;
         if (thisID->id->isa_goal)
         {
-            if ((thisAttr == thisAgent->quiescence_symbol) &&
-                (thisValue == thisAgent->t_symbol) &&
+            if ((thisAttr == thisAgent->symbolManager->soarSymbols.quiescence_symbol) &&
+                (thisValue == thisAgent->symbolManager->soarSymbols.t_symbol) &&
                 (! cond->test_for_acceptable_preference))
             {
                 m_reliable = false;
@@ -681,7 +680,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
 {
     if (pCond->bt.wme_->id->id->isa_goal)
     {
-        if (pCond->bt.wme_->attr == thisAgent->superstate_symbol)
+        if (pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
         {
             if (!local_singleton_superstate_identity)
             {
@@ -718,8 +717,8 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     /* MToDo:  Do we need to check if not a proposal?  This seems to already not unify proposals. */
     if (pCond->bt.wme_->id->id->isa_goal)
     {
-        if ((pCond->bt.wme_->attr == thisAgent->operator_symbol) ||
-            (pCond->bt.wme_->attr == thisAgent->superstate_symbol))
+        if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
+            (pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol))
         {
             condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
             assert(last_cond);

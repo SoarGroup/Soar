@@ -62,7 +62,7 @@
 #include "src/soar_representation/rhs.cpp"
 #include "src/soar_representation/slot.cpp"
 #include "src/soar_representation/symbol.cpp"
-#include "src/soar_representation/symbol_factory.cpp"
+#include "src/soar_representation/symbol_manager.cpp"
 #include "src/soar_representation/test.cpp"
 #include "src/soar_representation/working_memory_activation.cpp"
 #include "src/soar_representation/working_memory.cpp"

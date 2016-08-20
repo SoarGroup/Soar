@@ -487,5 +487,61 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define EXPLORATION_PARAM_TEMPERATURE       1
 #define EXPLORATION_PARAMS                  2 // set as greatest param + 1
 
+//////////////////////////////////////////////////////////
+// EpMem Constants
+//////////////////////////////////////////////////////////
+
+enum epmem_variable_key
+{
+    var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
+    var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
+    var_next_id
+};
+
+// algorithm constants
+#define EPMEM_MEMID_NONE                            0
+#define EPMEM_NODEID_ROOT                           0
+#define EPMEM_NODEID_BAD                            -1
+#define EPMEM_HASH_ACCEPTABLE                       1
+
+#define EPMEM_NODE_POS                              0
+#define EPMEM_NODE_NEG                              1
+#define EPMEM_RANGE_START                           0
+#define EPMEM_RANGE_END                             1
+#define EPMEM_RANGE_EP                              0
+#define EPMEM_RANGE_NOW                             1
+#define EPMEM_RANGE_POINT                           2
+
+#define EPMEM_RIT_ROOT                              0
+#define EPMEM_RIT_OFFSET_INIT                       -1
+#define EPMEM_LN_2                                  0.693147180559945
+
+#define EPMEM_DNF                                   2
+
+#define EPMEM_RIT_STATE_NODE                        0
+#define EPMEM_RIT_STATE_EDGE                        1
+
+#define EPMEM_SCHEMA_VERSION "2.0"
+
+//////////////////////////////////////////////////////////
+// SMem Constants
+//////////////////////////////////////////////////////////
+
+enum smem_variable_key
+{
+    var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode
+};
+
+#define SMEM_ACT_MAX static_cast<uint64_t>( static_cast<uint64_t>( 0 - 1 ) / static_cast<uint64_t>(2) )
+
+#define SMEM_LTI_UNKNOWN_LEVEL 0
+
+#define SMEM_AUGMENTATIONS_NULL 0
+#define SMEM_AUGMENTATIONS_NULL_STR "0"
+
+#define SMEM_ACT_HISTORY_ENTRIES 10
+#define SMEM_ACT_LOW -1000000000
+
+#define SMEM_SCHEMA_VERSION "2.0"
 
 #endif /* ENUMS_H_ */

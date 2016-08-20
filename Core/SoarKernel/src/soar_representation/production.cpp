@@ -72,7 +72,7 @@ tc_number get_new_tc_number(agent* thisAgent)
     thisAgent->current_tc_number++;
     if (thisAgent->current_tc_number == 0)
     {
-        reset_id_and_variable_tc_numbers(thisAgent);
+        thisAgent->symbolManager->reset_id_and_variable_tc_numbers();
         thisAgent->current_tc_number = 1;
     }
     return thisAgent->current_tc_number;
@@ -165,9 +165,6 @@ void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_lis
         add_bound_variables_in_condition(thisAgent, c, tc, var_list, add_LTIs);
     }
 }
-
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list);
 
 void add_all_variables_in_condition(agent* thisAgent,
                                     condition* c, tc_number tc,
@@ -343,99 +340,6 @@ bool action_is_in_tc(action* a, tc_number tc)
 
 /* *********************************************************************
 
-                         Variable Generator
-
-   These routines are used for generating new variables.  The variables
-   aren't necessarily "completely" new--they might occur in some existing
-   production.  But we usually need to make sure the new variables don't
-   overlap with those already used in a *certain* production--for instance,
-   when variablizing a chunk, we don't want to introduce a new variable that
-   conincides with the name of a variable already in an NCC in the chunk.
-
-   To use these routines, first call reset_variable_generator(), giving
-   it lists of conditions and actions whose variables should not be
-   used.  Then call generate_new_variable() any number of times; each
-   time, you give it a string to use as the prefix for the new variable's
-   name.  The prefix string should not include the opening "<".
-********************************************************************* */
-
-
-void reset_variable_generator(agent* thisAgent,
-                              condition* conds_with_vars_to_avoid,
-                              action* actions_with_vars_to_avoid)
-{
-    tc_number tc;
-    list* var_list;
-    cons* c;
-    int i;
-
-    /* --- reset counts, and increment the gensym number --- */
-    for (i = 0; i < 26; i++)
-    {
-        thisAgent->gensymed_variable_count[i] = 1;
-    }
-    thisAgent->current_variable_gensym_number++;
-    if (thisAgent->current_variable_gensym_number == 0)
-    {
-        reset_variable_gensym_numbers(thisAgent);
-        thisAgent->current_variable_gensym_number = 1;
-    }
-
-    /* --- mark all variables in the given conds and actions --- */
-    tc = get_new_tc_number(thisAgent);
-    var_list = NIL;
-    add_all_variables_in_condition_list(thisAgent, conds_with_vars_to_avoid, tc, &var_list);
-    add_all_variables_in_action_list(thisAgent, actions_with_vars_to_avoid, tc, &var_list);
-    for (c = var_list; c != NIL; c = c->rest)
-    {
-        static_cast<Symbol*>(c->first)->var->gensym_number = thisAgent->current_variable_gensym_number;
-    }
-    free_list(thisAgent, var_list);
-}
-
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
-{
-#define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */
-    char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
-    Symbol* New;
-    char first_letter;
-
-    first_letter = *prefix;
-    if (isalpha(first_letter))
-    {
-        if (isupper(first_letter))
-        {
-            first_letter = static_cast<char>(tolower(first_letter));
-        }
-    }
-    else
-    {
-        first_letter = 'v';
-    }
-
-    while (true)
-    {
-        SNPRINTF(name, GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
-                 static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter - 'a']++));
-        name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-
-        New = make_variable(thisAgent, name);
-        if (New->var->gensym_number != thisAgent->current_variable_gensym_number)
-        {
-            break;
-        }
-        /* -- A variable with that name already existed.  make_variable just returned it and
-         *    incremented its refcount, so reverse that refcount addition and try again. -- */
-        symbol_remove_ref(thisAgent, &New);
-    }
-
-    New->var->current_binding_value = NIL;
-    New->var->gensym_number = thisAgent->current_variable_gensym_number;
-    return New;
-}
-
-/* *********************************************************************
-
                          Production Management
 
     Make_production() does reordering, compile-time o-support calc's,
@@ -466,7 +370,7 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 {
     tc_number tc;
 
-    reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
+    thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
 
@@ -592,8 +496,8 @@ void deallocate_production(agent* thisAgent, production* prod)
     }
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
-    deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
-    symbol_remove_ref(thisAgent, &prod->name);
+    thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
+    thisAgent->symbolManager->symbol_remove_ref(&prod->name);
     free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {
@@ -628,9 +532,9 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     remove_from_dll(thisAgent->all_productions_of_type[prod->type], prod, next, prev);
 
     // Remove reference from apoptosis object store
-    if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->rl_params) && (thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
+    if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->RL->rl_params) && (thisAgent->RL->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
     {
-        thisAgent->rl_prods->remove_object(prod);
+        thisAgent->RL->rl_prods->remove_object(prod);
     }
 
     // Remove RL-related pointers to this production

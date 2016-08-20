@@ -9,6 +9,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "output_manager.h"
 #include "instantiation.h"
@@ -16,12 +17,12 @@
 #include "print.h"
 #include "repair.h"
 #include "rete.h"
+#include "run_soar.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 
 #include <assert.h>
-#include "run_soar.h"
-#include "dprint.h"
 
 /* =================================================================
 
@@ -72,7 +73,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             break;
         case DISJUNCTION_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
+            new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
@@ -218,7 +219,7 @@ void deallocate_test(agent* thisAgent, test t)
         case IMPASSE_ID_TEST:
             break;
         case DISJUNCTION_TEST:
-            deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list);
+            thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE conjunctive test\n");
@@ -235,9 +236,9 @@ void deallocate_test(agent* thisAgent, test t)
             break;
         default: /* relational tests other than equality */
 #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-            symbol_remove_ref(thisAgent, &t->data.referent);
+            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, &t->data.referent);
+            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #endif
             break;
     }
@@ -787,9 +788,9 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
 
     prefix[0] = first_letter;
     prefix[1] = 0;
-    New = generate_new_variable(thisAgent, prefix);
+    New = thisAgent->symbolManager->generate_new_variable(prefix);
     eq_test = make_test(thisAgent, New, EQUALITY_TEST);
-    symbol_remove_ref (thisAgent, &New);
+    thisAgent->symbolManager->symbol_remove_ref (&New);
     add_test(thisAgent, t, eq_test);
 }
 
@@ -826,7 +827,7 @@ void add_rete_test_list_to_tests(agent* thisAgent,
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
             New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-            New->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            New->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(rt->data.disjunction_list);
         }
         else if (test_is_constant_relational_test(rt->type))
         {
@@ -997,7 +998,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
 
     if (sym)
     {
-        symbol_add_ref(thisAgent, sym);
+        thisAgent->symbolManager->symbol_add_ref(sym);
     }
 
     return new_ct;

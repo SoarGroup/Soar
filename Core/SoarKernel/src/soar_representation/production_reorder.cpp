@@ -29,6 +29,7 @@
 #include "run_soar.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "xml.h"
 
@@ -372,7 +373,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     saved->next = old_sts;
                     old_sts = saved;
                     saved->var = sym;
-                    symbol_add_ref(thisAgent, sym);
+                    thisAgent->symbolManager->symbol_add_ref(sym);
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -412,15 +413,15 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *    saved_test list passed in.  Full test with original referent still
              *    saved.
              *    - Must make sure dummy variable also gets cleaned up-- */
-            var = generate_new_variable(thisAgent, "dummy-");
+            var = thisAgent->symbolManager->generate_new_variable("dummy-");
             New = make_test(thisAgent, var, EQUALITY_TEST);
             /* -- generate variable already creates refcount -- */
-            symbol_remove_ref(thisAgent, &var);
+            thisAgent->symbolManager->symbol_remove_ref(&var);
             thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
-            // symbol_add_ref(thisAgent, var);
+            // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
             dprint(DT_REORDERER, "...goal/impasse, disjunction or non-equality relational tests...\n");
@@ -573,7 +574,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
             {
                 tests_to_restore = next_st;
             }
-            symbol_remove_ref(thisAgent, &st->var);
+            thisAgent->symbolManager->symbol_remove_ref(&st->var);
             thisAgent->memoryManager->free_with_pool(MP_saved_test, st);
         }
         else

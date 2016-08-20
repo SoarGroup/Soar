@@ -202,7 +202,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pObject2.c_str());
                 if (lexeme.type == IDENTIFIER_LEXEME)
                 {
-                    if (thisAgent->smem_db->get_status() == soar_module::connected)
+                    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                     {
                         lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
                     }

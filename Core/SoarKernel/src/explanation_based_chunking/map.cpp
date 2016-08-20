@@ -6,14 +6,16 @@
  */
 
 #include "ebc.h"
+
 #include "agent.h"
+#include "dprint.h"
 #include "instantiation.h"
-#include <assert.h>
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 #include "print.h"
 
-#include "dprint.h"
+#include <assert.h>
 
 void Explanation_Based_Chunker::clear_data()
 {
@@ -57,7 +59,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     for (id_to_sym_map_type::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
-        symbol_remove_ref(thisAgent, &it->second);
+        thisAgent->symbolManager->symbol_remove_ref(&it->second);
     }
     o_id_to_var_map->clear();
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing o_id_to_var_map data.\n");

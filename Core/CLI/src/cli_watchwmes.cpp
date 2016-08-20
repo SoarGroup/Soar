@@ -154,7 +154,7 @@ bool read_wme_filter_component(agent* thisAgent, const char* s, Symbol** sym)
     soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, const_cast<char*>(s));
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
-        if ((*sym = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number)) == NIL)
+        if ((*sym = thisAgent->symbolManager->find_identifier(lexeme.id_letter, lexeme.id_number)) == NIL)
         {
             return false;          /* Identifier does not exist */
         }
@@ -180,15 +180,15 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
     Symbol* pAttr = 0;
     if (!read_wme_filter_component(thisAgent, pAttrString, &pAttr))
     {
-        symbol_remove_ref(thisAgent, &pId);
+        thisAgent->symbolManager->symbol_remove_ref(&pId);
         return -2;
     }
 
     Symbol* pValue = 0;
     if (!read_wme_filter_component(thisAgent, pValueString, &pValue))
     {
-        symbol_remove_ref(thisAgent, &pId);
-        symbol_remove_ref(thisAgent, &pAttr);
+        thisAgent->symbolManager->symbol_remove_ref(&pId);
+        thisAgent->symbolManager->symbol_remove_ref(&pAttr);
         return -3;
     }
 
@@ -207,9 +207,9 @@ int AddWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrStrin
                 && (existing_wf->attr == pAttr)
                 && (existing_wf->value == pValue))
         {
-            symbol_remove_ref(thisAgent, &pId);
-            symbol_remove_ref(thisAgent, &pAttr);
-            symbol_remove_ref(thisAgent, &pValue);
+            thisAgent->symbolManager->symbol_remove_ref(&pId);
+            thisAgent->symbolManager->symbol_remove_ref(&pAttr);
+            thisAgent->symbolManager->symbol_remove_ref(&pValue);
             return -4; // Filter already exists
         }
     }
@@ -241,15 +241,15 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
     Symbol* pAttr = 0;
     if (!read_wme_filter_component(thisAgent, pAttrString, &pAttr))
     {
-        symbol_remove_ref(thisAgent, &pId);
+        thisAgent->symbolManager->symbol_remove_ref(&pId);
         return -2;
     }
 
     Symbol* pValue = 0;
     if (!read_wme_filter_component(thisAgent, pValueString, &pValue))
     {
-        symbol_remove_ref(thisAgent, &pId);
-        symbol_remove_ref(thisAgent, &pAttr);
+        thisAgent->symbolManager->symbol_remove_ref(&pId);
+        thisAgent->symbolManager->symbol_remove_ref(&pAttr);
         return -3;
     }
 
@@ -267,9 +267,9 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
                 && (wf->value == pValue))
         {
             *prev_cons_rest = c->rest;
-            symbol_remove_ref(thisAgent, &pId);
-            symbol_remove_ref(thisAgent, &pAttr);
-            symbol_remove_ref(thisAgent, &pValue);
+            thisAgent->symbolManager->symbol_remove_ref(&pId);
+            thisAgent->symbolManager->symbol_remove_ref(&pAttr);
+            thisAgent->symbolManager->symbol_remove_ref(&pValue);
             thisAgent->memoryManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
             free_cons(thisAgent, c);
             return 0; /* assume that AddWMEFilter did not add duplicates */
@@ -277,9 +277,9 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
         prev_cons_rest = &(c->rest);
     }
     assert(!c);
-    symbol_remove_ref(thisAgent, &pId);
-    symbol_remove_ref(thisAgent, &pAttr);
-    symbol_remove_ref(thisAgent, &pValue);
+    thisAgent->symbolManager->symbol_remove_ref(&pId);
+    thisAgent->symbolManager->symbol_remove_ref(&pAttr);
+    thisAgent->symbolManager->symbol_remove_ref(&pValue);
     return -4;
 }
 
@@ -297,9 +297,9 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
             *prev_cons_rest = c->rest;
             print_with_symbols(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
             print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
-            symbol_remove_ref(thisAgent, &wf->id);
-            symbol_remove_ref(thisAgent, &wf->attr);
-            symbol_remove_ref(thisAgent, &wf->value);
+            thisAgent->symbolManager->symbol_remove_ref(&wf->id);
+            thisAgent->symbolManager->symbol_remove_ref(&wf->attr);
+            thisAgent->symbolManager->symbol_remove_ref(&wf->value);
             thisAgent->memoryManager->free_memory(wf, MISCELLANEOUS_MEM_USAGE);
             free_cons(thisAgent, c);
             didRemoveSome = true;

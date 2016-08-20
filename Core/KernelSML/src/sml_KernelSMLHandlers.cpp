@@ -680,7 +680,7 @@ bool KernelSML::HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pComma
         return InvalidArg(pConnection, pResponse, pCommandName, "Need to specify the production name to check.") ;
     }
 
-    Symbol* sym = find_str_constant(pAgentSML->GetSoarAgent(), pName);
+    Symbol* sym = pAgentSML->GetSoarAgent()->symbolManager->find_str_constant(pName);
 
     bool found = true;
     if (!sym || !(sym->sc->production))
@@ -888,7 +888,7 @@ bool KernelSML::HandleGetAllInput(AgentSML* pAgentSML, char const* /*pCommandNam
     wme* pInputLinkWme = 0;
     for (wme* w = pSoarAgent->io_header->id->input_wmes; w != NIL; w = w->next)
     {
-        if (w->attr == pSoarAgent->input_link_symbol)
+        if (w->attr == pSoarAgent->symbolManager->soarSymbols.input_link_symbol)
         {
             pInputLinkWme = w;
             break;

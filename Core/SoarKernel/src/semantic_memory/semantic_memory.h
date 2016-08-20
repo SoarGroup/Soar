@@ -288,37 +288,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         void drop_tables(agent* new_agent);
 };
 
-//////////////////////////////////////////////////////////
-// Soar Constants
-//////////////////////////////////////////////////////////
-
-enum smem_variable_key
-{
-    var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode
-};
-
-#define SMEM_ACT_MAX static_cast<uint64_t>( static_cast<uint64_t>( 0 - 1 ) / static_cast<uint64_t>(2) )
-
-#define SMEM_LTI_UNKNOWN_LEVEL 0
-
-#define SMEM_AUGMENTATIONS_NULL 0
-#define SMEM_AUGMENTATIONS_NULL_STR "0"
-
-#define SMEM_ACT_HISTORY_ENTRIES 10
-#define SMEM_ACT_LOW -1000000000
-
-#define SMEM_SCHEMA_VERSION "2.0"
 
 //////////////////////////////////////////////////////////
-// Soar Integration Types
+// SMem Integration Types
 //////////////////////////////////////////////////////////
-
-// represents the unique identification of a
-// long-term identifier
-typedef uint64_t smem_lti_id;
-
-// represents a temporal hash
-typedef uint64_t smem_hash_id;
 
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;
@@ -469,10 +442,6 @@ extern void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned in
 extern void smem_print_store(agent* thisAgent, std::string* return_val);
 extern void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
-typedef struct condition_struct condition;
-typedef struct action_struct action;
-
-extern bool smem_count_ltis(agent* thisAgent, void* item, void* userdata);
 extern bool smem_valid_production(condition* lhs_top, action* rhs_top);
 
 extern smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_number);
@@ -490,5 +459,33 @@ extern void smem_go(agent* thisAgent, bool store_only);
 extern bool smem_backup_db(agent* thisAgent, const char* file_name, std::string* err);
 
 void smem_init_db(agent* thisAgent);
+
+
+class SMem_Manager
+{
+    public:
+        SMem_Manager(agent* myAgent);
+        ~SMem_Manager() {};
+
+        void clean_up_for_agent_deletion();
+
+        smem_param_container* smem_params;
+        smem_stat_container* smem_stats;
+        smem_timer_container* smem_timers;
+
+        soar_module::sqlite_database* smem_db;
+        smem_statement_container* smem_stmts;
+
+        uint64_t smem_validation;
+        int64_t smem_max_cycle;
+
+        smem_pooled_symbol_set* smem_changed_ids;
+        bool smem_ignore_changes;
+
+    private:
+
+        agent* thisAgent;
+
+};
 
 #endif

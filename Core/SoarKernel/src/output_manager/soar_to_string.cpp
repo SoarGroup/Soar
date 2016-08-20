@@ -9,21 +9,25 @@
 
 #include "output_manager.h"
 
-#include "ebc.h"
-#include "rhs.h"
-#include "print.h"
 #include "agent.h"
 #include "condition.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "lexer.h"
-#include "rete.h"
-#include "production_reorder.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "preference.h"
-#include "working_memory.h"
+#include "print.h"
+#include "production_reorder.h"
+#include "production.h"
+#include "rete.h"
+#include "rhs_functions.h"
+#include "rhs.h"
 #include "soar_instance.h"
+#include "symbol_manager.h"
+#include "symbol.h"
 #include "test.h"
+#include "working_memory.h"
+
+#include <vector>
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
@@ -611,7 +615,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
 
         if (possible_id)
         {
-            newSym = find_identifier(m_defaultAgent, toupper(find_string[0]), strtol(&find_string[1], NULL, 10));
+            newSym = m_defaultAgent->symbolManager->find_identifier(toupper(find_string[0]), strtol(&find_string[1], NULL, 10));
             if (newSym)
             {
                 found = true;
@@ -619,7 +623,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         }
         if (!found && possible_var)
         {
-            newSym = find_variable(m_defaultAgent, find_string);
+            newSym = m_defaultAgent->symbolManager->find_variable(find_string);
             if (newSym)
             {
                 found = true;
@@ -627,7 +631,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         }
         if (!found && possible_sc)
         {
-            newSym = find_str_constant(m_defaultAgent, find_string);
+            newSym = m_defaultAgent->symbolManager->find_str_constant(find_string);
             if (newSym)
             {
                 found = true;
@@ -637,7 +641,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         {
             if (convert >> newInt)
             {
-                newSym = find_int_constant(m_defaultAgent, newInt);
+                newSym = m_defaultAgent->symbolManager->find_int_constant(newInt);
             }
             if (newSym)
             {
@@ -648,7 +652,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         {
             if (convert >> newFloat)
             {
-                newSym = find_float_constant(m_defaultAgent, newFloat);
+                newSym = m_defaultAgent->symbolManager->find_float_constant(newFloat);
             }
             if (newSym)
             {
@@ -691,7 +695,7 @@ void Output_Manager::print_identifiers(TraceMode mode)
     if (!m_defaultAgent) return;
 
     print("--- Identifiers: ---\n");
-    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->identifier_hash_table, om_print_sym, &mode);
+    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->identifier_hash_table, om_print_sym, &mode);
 }
 
 void Output_Manager::print_variables(TraceMode mode)
@@ -701,7 +705,7 @@ void Output_Manager::print_variables(TraceMode mode)
     if (!m_defaultAgent) return;
 
     print("--- Variables: ---\n");
-    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->variable_hash_table, om_print_sym, &mode);
+    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->variable_hash_table, om_print_sym, &mode);
 }
 
 void debug_print_db_err(TraceMode mode)

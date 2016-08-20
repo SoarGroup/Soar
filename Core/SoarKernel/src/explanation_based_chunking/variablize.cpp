@@ -7,15 +7,18 @@
 
 #include "ebc.h"
 #include "agent.h"
+#include "dprint.h"
 #include "instantiation.h"
 #include "condition.h"
 #include "preference.h"
-#include <assert.h>
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "print.h"
 #include "rhs.h"
 #include "xml.h"
-#include "dprint.h"
+
+#include <assert.h>
 
 Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
@@ -47,7 +50,7 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
            instantiated_sym, pIdentity, variable);
 
     (*o_id_to_var_map)[pIdentity] = variable;
-    symbol_add_ref(thisAgent, variable);
+    thisAgent->symbolManager->symbol_add_ref(variable);
 
     dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
 }
@@ -78,9 +81,9 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
     var_info = get_variablization(pIdentity);
     if (var_info)
     {
-        symbol_remove_ref(thisAgent, &(*sym));
+        thisAgent->symbolManager->symbol_remove_ref(&(*sym));
         *sym = var_info;
-        symbol_add_ref(thisAgent, var_info);
+        thisAgent->symbolManager->symbol_add_ref(var_info);
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
 
         return;
@@ -108,11 +111,11 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
             prefix[0] = 'c';
         }
         prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
+        var = thisAgent->symbolManager->generate_new_variable(prefix);
 
         store_variablization((*sym), var, pIdentity);
 
-        symbol_remove_ref(thisAgent, &*sym);
+        thisAgent->symbolManager->symbol_remove_ref(&*sym);
         *sym = var;
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
@@ -162,7 +165,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
         prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
         prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
+        var = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
         store_variablization(rs->referent, var, rs->o_id);
         found_variablization = var;
@@ -175,9 +178,9 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         {
             add_matched_sym_for_rhs_var(found_variablization, rs->referent);
         }
-        symbol_remove_ref(thisAgent, &rs->referent);
+        thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         rs->referent = found_variablization;
-        symbol_add_ref(thisAgent, found_variablization);
+        thisAgent->symbolManager->symbol_add_ref(found_variablization);
     }
     else
     {
@@ -263,9 +266,9 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, &t->data.referent);
+        thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
         t->data.referent = found_variablization;
-        symbol_add_ref(thisAgent, found_variablization);
+        thisAgent->symbolManager->symbol_add_ref(found_variablization);
     }
     else
     {
@@ -405,10 +408,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
-    symbol_remove_ref(thisAgent, &id_sym);
-    symbol_remove_ref(thisAgent, &attr_sym);
-    symbol_remove_ref(thisAgent, &val_sym);
-    symbol_remove_ref(thisAgent, &ref_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&id_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&val_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&ref_sym);
 
     if (ref_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {

@@ -1,22 +1,23 @@
 #include "instantiation_record.h"
+
+#include "action_record.h"
 #include "agent.h"
+#include "condition_record.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
+#include "production_record.h"
 #include "production.h"
 #include "rete.h"
 #include "rhs.h"
+#include "symbol_manager.h"
 #include "symbol.h"
 #include "test.h"
-#include "output_manager.h"
 #include "visualize.h"
 #include "working_memory.h"
-#include "dprint.h"
-#include "action_record.h"
-#include "condition_record.h"
-#include "explanation_memory.h"
-#include "production_record.h"
-#include "explanation_memory.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
@@ -25,7 +26,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     instantiationID     = pInst->i_id;
     cached_inst         = pInst;
     production_name     = pInst->prod_name;
-    symbol_add_ref(thisAgent, production_name);
+    thisAgent->symbolManager->symbol_add_ref(production_name);
     original_production = pInst->prod;
     excised_production  = NULL;
 
@@ -56,7 +57,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
-    symbol_remove_ref(thisAgent, &production_name);
+    thisAgent->symbolManager->symbol_remove_ref(&production_name);
     delete conditions;
     delete actions;
     dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);

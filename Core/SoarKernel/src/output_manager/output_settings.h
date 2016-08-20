@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 #include "soar_module.h"
+#include "soar_db.h"
 
 class OM_Parameters: public soar_module::param_container
 {

@@ -19,11 +19,13 @@
  */
 
 #include "symbol.h"
+
 #include "agent.h"
 #include "lexer.h"
 #include "output_manager.h"
 #include "print.h"
 #include "run_soar.h"
+#include "symbol_manager.h"
 
 /* -----------------------------------------------------------------
                        First Letter From Symbol
@@ -69,56 +71,7 @@ double get_number_from_symbol(Symbol* sym)
     return 0.0;
 }
 
-/* ----------------------------------------------------------------
-   Takes a list of symbols and returns a copy of the same list,
-   incrementing the reference count on each symbol in the list.
----------------------------------------------------------------- */
 
-list* copy_symbol_list_adding_references(agent* thisAgent,
-        list* sym_list)
-{
-    cons* c, *first, *prev;
-
-    if (! sym_list)
-    {
-        return NIL;
-    }
-    allocate_cons(thisAgent, &first);
-    first->first = sym_list->first;
-    symbol_add_ref(thisAgent, static_cast<Symbol*>(first->first));
-    sym_list = sym_list->rest;
-    prev = first;
-    while (sym_list)
-    {
-        allocate_cons(thisAgent, &c);
-        prev->rest = c;
-        c->first = sym_list->first;
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
-        sym_list = sym_list->rest;
-        prev = c;
-    }
-    prev->rest = NIL;
-    return first;
-}
-
-/* ----------------------------------------------------------------
-   Frees a list of symbols, decrementing their reference counts.
----------------------------------------------------------------- */
-
-void deallocate_symbol_list_removing_references(agent* thisAgent, list*& sym_list)
-{
-    cons* c;
-    Symbol* lSym;
-    while (sym_list)
-    {
-        c = sym_list;
-        sym_list = sym_list->rest;
-        lSym = static_cast<Symbol*>(c->first);
-        symbol_remove_ref(thisAgent, &lSym);
-        free_cons(thisAgent, c);
-    }
-    sym_list = NULL;
-}
 
 char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
 {

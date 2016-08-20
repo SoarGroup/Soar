@@ -21,21 +21,22 @@
 
 #include "trace.h"
 
-#include "mem.h"
-#include "production.h"
-#include "lexer.h"
-#include "symbol.h"
 #include "agent.h"
-#include "print.h"
 #include "decide.h"
+#include "lexer.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "run_soar.h"
 #include "slot.h"
+#include "soar_TraceNames.h"
+#include "symbol_manager.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "xml.h"
-#include "soar_TraceNames.h"
-#include "output_manager.h"
 
 #include <ctype.h>
-#include "run_soar.h"
 #include <stdlib.h>
 
 using namespace soar_TraceNames;
@@ -102,7 +103,7 @@ void deallocate_trace_format_list(agent* thisAgent, trace_format* tf)
             case VALUES_RECURSIVELY_TFT:
             case ATTS_AND_VALUES_TFT:
             case ATTS_AND_VALUES_RECURSIVELY_TFT:
-                deallocate_symbol_list_removing_references(thisAgent, tf->data.attribute_path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(tf->data.attribute_path);
                 break;
 
             case IF_ALL_DEFINED_TFT:
@@ -239,17 +240,17 @@ list* parse_attribute_path_in_brackets(agent* thisAgent)
             if (*format == 0)
             {
                 format_string_error_message = "'[' without closing ']'";
-                deallocate_symbol_list_removing_references(thisAgent, path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
                 return NIL;
             }
             if (ch == name)
             {
                 format_string_error_message = "null attribute found in attribute path";
-                deallocate_symbol_list_removing_references(thisAgent, path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
                 return NIL;
             }
             *ch = 0;
-            sym = make_str_constant(thisAgent, name);
+            sym = thisAgent->symbolManager->make_str_constant(name);
             push(thisAgent, sym, path);
             if (*format == ']')
             {
@@ -264,7 +265,7 @@ list* parse_attribute_path_in_brackets(agent* thisAgent)
     if (*format != ']')
     {
         format_string_error_message = "'[' without closing ']'";
-        deallocate_symbol_list_removing_references(thisAgent, path);
+        thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
         return NIL;
     }
     format++;
@@ -927,7 +928,7 @@ bool remove_trace_format(agent* thisAgent,
         deallocate_trace_format_list(thisAgent, tr->format);
         remove_from_hash_table(thisAgent, ht, tr);
         thisAgent->memoryManager->free_memory(tr, MISCELLANEOUS_MEM_USAGE);
-        symbol_remove_ref(thisAgent, &name_restriction);
+        thisAgent->symbolManager->symbol_remove_ref(&name_restriction);
         return true;
     }
     /* --- no name restriction --- */
@@ -971,7 +972,7 @@ bool add_trace_format(agent* thisAgent,
     /* --- now add the new one --- */
     if (name_restriction)
     {
-        symbol_add_ref(thisAgent, name_restriction);
+        thisAgent->symbolManager->symbol_add_ref(name_restriction);
         if (stack_trace)
         {
             ht = thisAgent->stack_tr_ht[type_restriction];
@@ -1757,7 +1758,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
             wme* w;
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
-                if (w->attr == thisAgent->attribute_symbol)
+                if (w->attr == thisAgent->symbolManager->soarSymbols.attribute_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseObject, w->value->sc->name);
                     break;
@@ -1767,7 +1768,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
             // find impasse type and add it to XML
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
-                if (w->attr == thisAgent->impasse_symbol)
+                if (w->attr == thisAgent->symbolManager->soarSymbols.impasse_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseType, w->value->sc->name);
                     break;

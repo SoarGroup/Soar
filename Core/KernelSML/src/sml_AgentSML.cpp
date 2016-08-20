@@ -25,6 +25,8 @@
 #include "rhs_functions.h"
 #include "soar_rand.h"
 #include "soar_instance.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
@@ -826,7 +828,7 @@ void AgentSML::RegisterRHSFunction(RhsFunction* rhsFunction)
 {
     // Tell Soar about it
     add_rhs_function(m_agent,
-                     make_str_constant(m_agent, rhsFunction->GetName()),
+                     m_agent->symbolManager->make_str_constant(rhsFunction->GetName()),
                      RhsFunction::RhsFunctionCallback,
                      rhsFunction->GetNumExpectedParameters(),
                      rhsFunction->IsValueReturned(),
@@ -845,9 +847,9 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
 
     // Tell the kernel we are done listening.
     //RPM 9/06: removed symbol ref so symbol is released properly
-    Symbol* tmp = make_str_constant(m_agent, szName);
+    Symbol* tmp = m_agent->symbolManager->make_str_constant(szName);
     remove_rhs_function(m_agent, tmp);
-    symbol_remove_ref(m_agent, &tmp);
+    m_agent->symbolManager->symbol_remove_ref(&tmp);
 }
 
 char const* AgentSML::GetValueType(int type)
@@ -1189,7 +1191,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 
     CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
-    if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    if (pWME->value->is_identifier())
     {
         this->RemoveID(pWME->value->to_string(true)) ;
     }

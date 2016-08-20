@@ -6,17 +6,20 @@
  */
 
 #include "ebc.h"
-#include "agent.h"
-#include "instantiation.h"
-#include "condition.h"
-#include "preference.h"
-#include <assert.h>
-#include "test.h"
-#include "print.h"
-#include "working_memory.h"
-#include "rhs.h"
 
+#include "agent.h"
+#include "condition.h"
 #include "dprint.h"
+#include "instantiation.h"
+#include "preference.h"
+#include "print.h"
+#include "rhs.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "test.h"
+#include "working_memory.h"
+
+#include <assert.h>
 
 bool Explanation_Based_Chunker::in_null_identity_set(test t)
 {

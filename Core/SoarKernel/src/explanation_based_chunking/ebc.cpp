@@ -15,6 +15,7 @@
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
+#include "production.h"
 #include "print.h"
 #include "rhs.h"
 #include "soar_instance.h"
@@ -221,7 +222,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         case numberedFormat:
         {
             increment_counter(chunk_count);
-            return (generate_new_str_constant(thisAgent, rule_prefix.c_str(), &(chunk_count)));
+            return (thisAgent->symbolManager->generate_new_str_constant(rule_prefix.c_str(), &(chunk_count)));
         }
         case ruleFormat:
         {
@@ -248,14 +249,14 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                     case NO_CHANGE_IMPASSE_TYPE:
                     {
                         Symbol* sym;
-                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
+                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->symbolManager->soarSymbols.attribute_symbol);
                         if (sym)
                         {
-                            if (sym == thisAgent->operator_symbol)
+                            if (sym == thisAgent->symbolManager->soarSymbols.operator_symbol)
                             {
                                 lImpasseName = "OpNoChange";
                             }
-                            else if (sym == thisAgent->state_symbol)
+                            else if (sym == thisAgent->symbolManager->soarSymbols.state_symbol)
                             {
                                 lImpasseName = "StateNoChange";
                             }
@@ -308,7 +309,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     lImpasseName.erase();
     if (lName.str().empty()) { return NULL; }
 
-    if (find_str_constant(thisAgent, lName.str().c_str()))
+    if (thisAgent->symbolManager->find_str_constant(lName.str().c_str()))
     {
         uint64_t collision_count = 1;
         std::stringstream newLName;
@@ -320,11 +321,11 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
             newLName.str("");
             newLName << lName.str() << "-" << collision_count++;
         }
-        while (find_str_constant(thisAgent, newLName.str().c_str()));
+        while (thisAgent->symbolManager->find_str_constant(newLName.str().c_str()));
         lName.str(newLName.str());
         newLName.str("");
     }
 
-    generated_name = make_str_constant(thisAgent, lName.str().c_str());
+    generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
     return generated_name;
 }

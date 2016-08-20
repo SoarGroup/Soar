@@ -16,17 +16,22 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "decide.h"
 #include "ebc.h"
+#include "episodic_memory.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "rhs.h"
 #include "semantic_memory_math_queries.h"
 #include "test.h"
+#include "parser.h"
 #include "preference.h"
 #include "print.h"
+#include "production.h"
 #include "slot.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "working_memory_activation.h"
 #include "xml.h"
@@ -38,7 +43,6 @@
 #include <ctype.h>
 #include <fstream>
 #include <algorithm>
-#include "dprint.h"
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -176,7 +180,7 @@ that smem_update_schema_one_to_two can convert.  It tests for the existence of a
 inline bool smem_version_one(agent* thisAgent)
 {
     double check_num_tables;
-    thisAgent->smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
+    thisAgent->SMem->smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
     if (check_num_tables == 0)
     {
         return false;
@@ -194,16 +198,16 @@ void smem_path_param::set_value(const char* new_value)
     value->assign(new_value);
 
     const char* db_path;
-    db_path = thisAgent->smem_params->path->get_value();
-    bool attempt_connection_here = thisAgent->smem_db->get_status() == soar_module::disconnected;
+    db_path = thisAgent->SMem->smem_params->path->get_value();
+    bool attempt_connection_here = thisAgent->SMem->smem_db->get_status() == soar_module::disconnected;
     if (attempt_connection_here)
     {
-        thisAgent->smem_db->connect(db_path);
+        thisAgent->SMem->smem_db->connect(db_path);
     }
 
-    if (thisAgent->smem_db->get_status() == soar_module::problem)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg());
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->SMem->smem_db->get_errmsg());
     }
     else
     {
@@ -217,16 +221,16 @@ void smem_path_param::set_value(const char* new_value)
         {
             bool sql_is_new;
             std::string schema_version;
-            if (thisAgent->smem_db->sql_is_new_db(sql_is_new))
+            if (thisAgent->SMem->smem_db->sql_is_new_db(sql_is_new))
             {
                 if (!sql_is_new)
                 {
                     // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement(thisAgent->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+                    temp_q = new soar_module::sqlite_statement(thisAgent->SMem->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
                     temp_q->prepare();
                     if (temp_q->get_status() == soar_module::ready)
                     {
-                        if (!thisAgent->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
+                        if (!thisAgent->SMem->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
                             if (smem_version_one(thisAgent))
                             {
@@ -246,7 +250,7 @@ void smem_path_param::set_value(const char* new_value)
     }
     if (attempt_connection_here)
     {
-        thisAgent->smem_db->disconnect();
+        thisAgent->SMem->smem_db->disconnect();
     }
 }
 
@@ -258,13 +262,13 @@ smem_db_predicate<T>::smem_db_predicate(agent* new_agent): soar_module::agent_pr
 template <typename T>
 bool smem_db_predicate<T>::operator()(T /*val*/)
 {
-    return (this->thisAgent->smem_db->get_status() == soar_module::connected);
+    return (this->thisAgent->SMem->smem_db->get_status() == soar_module::connected);
 }
 
 
 bool smem_enabled(agent* thisAgent)
 {
-    return (thisAgent->smem_params->learning->get_value() == on);
+    return (thisAgent->SMem->smem_params->learning->get_value() == on);
 }
 
 
@@ -327,7 +331,7 @@ smem_db_lib_version_stat::smem_db_lib_version_stat(agent* new_agent, const char*
 
 const char* smem_db_lib_version_stat::get_value()
 {
-    return thisAgent->smem_db->lib_version();
+    return thisAgent->SMem->smem_db->lib_version();
 }
 
 //
@@ -336,7 +340,7 @@ smem_mem_usage_stat::smem_mem_usage_stat(agent* new_agent, const char* new_name,
 
 int64_t smem_mem_usage_stat::get_value()
 {
-    return thisAgent->smem_db->memory_usage();
+    return thisAgent->SMem->smem_db->memory_usage();
 }
 
 //
@@ -345,7 +349,7 @@ smem_mem_high_stat::smem_mem_high_stat(agent* new_agent, const char* new_name, i
 
 int64_t smem_mem_high_stat::get_value()
 {
-    return thisAgent->smem_db->memory_highwater();
+    return thisAgent->SMem->smem_db->memory_highwater();
 }
 
 
@@ -392,7 +396,7 @@ smem_timer_level_predicate::smem_timer_level_predicate(agent* new_agent): soar_m
 
 bool smem_timer_level_predicate::operator()(soar_module::timer::timer_level val)
 {
-    return (thisAgent->smem_params->timers->get_value() >= val);
+    return (thisAgent->SMem->smem_params->timers->get_value() >= val);
 }
 
 //
@@ -467,26 +471,26 @@ void smem_statement_container::create_indices()
 
 void smem_statement_container::drop_tables(agent* new_agent)
 {
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_persistent_variables");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_type");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_integer");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_float");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_string");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_lti");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_activation_history");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_augmentations");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_attribute_frequency");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_constant_frequency");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_lti_frequency");
-    new_agent->smem_db->sql_execute("DROP TABLE IF EXISTS smem_ascii");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_persistent_variables");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_type");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_integer");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_float");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_string");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_lti");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_activation_history");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_augmentations");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_attribute_frequency");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_constant_frequency");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_lti_frequency");
+    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_ascii");
 }
 
-smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->smem_db)
+smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->SMem->smem_db)
 {
-    soar_module::sqlite_database* new_db = new_agent->smem_db;
+    soar_module::sqlite_database* new_db = new_agent->SMem->smem_db;
 
     // Delete all entries from the tables in the database if append setting is off
-    if (new_agent->smem_params->append_db->get_value() == off)
+    if (new_agent->SMem->smem_params->append_db->get_value() == off)
     {
         print_sysparam_trace(new_agent, 0, "Erasing contents of semantic memory database. (append = off)\n");
         drop_tables(new_agent);
@@ -864,9 +868,9 @@ inline void smem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, S
 {
     my_list.push_back(new symbol_triple(id, attr, value));
 
-    symbol_add_ref(thisAgent, id);
-    symbol_add_ref(thisAgent, attr);
-    symbol_add_ref(thisAgent, value);
+    thisAgent->symbolManager->symbol_add_ref(id);
+    thisAgent->symbolManager->symbol_add_ref(attr);
+    thisAgent->symbolManager->symbol_add_ref(value);
 }
 
 //////////////////////////////////////////////////////////
@@ -884,7 +888,7 @@ inline void smem_buffer_add_wme(agent* thisAgent, symbol_triple_list& my_list, S
 inline bool smem_variable_get(agent* thisAgent, smem_variable_key variable_id, int64_t* variable_value)
 {
     soar_module::exec_result status;
-    soar_module::sqlite_statement* var_get = thisAgent->smem_stmts->var_get;
+    soar_module::sqlite_statement* var_get = thisAgent->SMem->smem_stmts->var_get;
 
     var_get->bind_int(1, variable_id);
     status = var_get->execute();
@@ -902,7 +906,7 @@ inline bool smem_variable_get(agent* thisAgent, smem_variable_key variable_id, i
 // sets an existing SMem variable in the database
 inline void smem_variable_set(agent* thisAgent, smem_variable_key variable_id, int64_t variable_value)
 {
-    soar_module::sqlite_statement* var_set = thisAgent->smem_stmts->var_set;
+    soar_module::sqlite_statement* var_set = thisAgent->SMem->smem_stmts->var_set;
 
     var_set->bind_int(1, variable_value);
     var_set->bind_int(2, variable_id);
@@ -913,7 +917,7 @@ inline void smem_variable_set(agent* thisAgent, smem_variable_key variable_id, i
 // creates a new SMem variable in the database
 inline void smem_variable_create(agent* thisAgent, smem_variable_key variable_id, int64_t variable_value)
 {
-    soar_module::sqlite_statement* var_create = thisAgent->smem_stmts->var_create;
+    soar_module::sqlite_statement* var_create = thisAgent->SMem->smem_stmts->var_create;
 
     var_create->bind_int(1, variable_id);
     var_create->bind_int(2, variable_value);
@@ -940,9 +944,9 @@ inline void smem_variable_create(agent* thisAgent, smem_variable_key variable_id
 
 inline smem_hash_id smem_temporal_hash_add_type(agent* thisAgent, byte symbol_type)
 {
-    thisAgent->smem_stmts->hash_add_type->bind_int(1, symbol_type);
-    thisAgent->smem_stmts->hash_add_type->execute(soar_module::op_reinit);
-    return static_cast<smem_hash_id>(thisAgent->smem_db->last_insert_rowid());
+    thisAgent->SMem->smem_stmts->hash_add_type->bind_int(1, symbol_type);
+    thisAgent->SMem->smem_stmts->hash_add_type->execute(soar_module::op_reinit);
+    return static_cast<smem_hash_id>(thisAgent->SMem->smem_db->last_insert_rowid());
 }
 
 inline smem_hash_id smem_temporal_hash_int(agent* thisAgent, int64_t val, bool add_on_fail = true)
@@ -950,12 +954,12 @@ inline smem_hash_id smem_temporal_hash_int(agent* thisAgent, int64_t val, bool a
     smem_hash_id return_val = NIL;
 
     // search first
-    thisAgent->smem_stmts->hash_get_int->bind_int(1, val);
-    if (thisAgent->smem_stmts->hash_get_int->execute() == soar_module::row)
+    thisAgent->SMem->smem_stmts->hash_get_int->bind_int(1, val);
+    if (thisAgent->SMem->smem_stmts->hash_get_int->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(thisAgent->smem_stmts->hash_get_int->column_int(0));
+        return_val = static_cast<smem_hash_id>(thisAgent->SMem->smem_stmts->hash_get_int->column_int(0));
     }
-    thisAgent->smem_stmts->hash_get_int->reinitialize();
+    thisAgent->SMem->smem_stmts->hash_get_int->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -964,9 +968,9 @@ inline smem_hash_id smem_temporal_hash_int(agent* thisAgent, int64_t val, bool a
         return_val = smem_temporal_hash_add_type(thisAgent, INT_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        thisAgent->smem_stmts->hash_add_int->bind_int(1, return_val);
-        thisAgent->smem_stmts->hash_add_int->bind_int(2, val);
-        thisAgent->smem_stmts->hash_add_int->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->hash_add_int->bind_int(1, return_val);
+        thisAgent->SMem->smem_stmts->hash_add_int->bind_int(2, val);
+        thisAgent->SMem->smem_stmts->hash_add_int->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -977,12 +981,12 @@ inline smem_hash_id smem_temporal_hash_float(agent* thisAgent, double val, bool 
     smem_hash_id return_val = NIL;
 
     // search first
-    thisAgent->smem_stmts->hash_get_float->bind_double(1, val);
-    if (thisAgent->smem_stmts->hash_get_float->execute() == soar_module::row)
+    thisAgent->SMem->smem_stmts->hash_get_float->bind_double(1, val);
+    if (thisAgent->SMem->smem_stmts->hash_get_float->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(thisAgent->smem_stmts->hash_get_float->column_int(0));
+        return_val = static_cast<smem_hash_id>(thisAgent->SMem->smem_stmts->hash_get_float->column_int(0));
     }
-    thisAgent->smem_stmts->hash_get_float->reinitialize();
+    thisAgent->SMem->smem_stmts->hash_get_float->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -991,9 +995,9 @@ inline smem_hash_id smem_temporal_hash_float(agent* thisAgent, double val, bool 
         return_val = smem_temporal_hash_add_type(thisAgent, FLOAT_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        thisAgent->smem_stmts->hash_add_float->bind_int(1, return_val);
-        thisAgent->smem_stmts->hash_add_float->bind_double(2, val);
-        thisAgent->smem_stmts->hash_add_float->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->hash_add_float->bind_int(1, return_val);
+        thisAgent->SMem->smem_stmts->hash_add_float->bind_double(2, val);
+        thisAgent->SMem->smem_stmts->hash_add_float->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -1004,12 +1008,12 @@ inline smem_hash_id smem_temporal_hash_str(agent* thisAgent, char* val, bool add
     smem_hash_id return_val = NIL;
 
     // search first
-    thisAgent->smem_stmts->hash_get_str->bind_text(1, static_cast<const char*>(val));
-    if (thisAgent->smem_stmts->hash_get_str->execute() == soar_module::row)
+    thisAgent->SMem->smem_stmts->hash_get_str->bind_text(1, static_cast<const char*>(val));
+    if (thisAgent->SMem->smem_stmts->hash_get_str->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(thisAgent->smem_stmts->hash_get_str->column_int(0));
+        return_val = static_cast<smem_hash_id>(thisAgent->SMem->smem_stmts->hash_get_str->column_int(0));
     }
-    thisAgent->smem_stmts->hash_get_str->reinitialize();
+    thisAgent->SMem->smem_stmts->hash_get_str->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -1018,9 +1022,9 @@ inline smem_hash_id smem_temporal_hash_str(agent* thisAgent, char* val, bool add
         return_val = smem_temporal_hash_add_type(thisAgent, STR_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        thisAgent->smem_stmts->hash_add_str->bind_int(1, return_val);
-        thisAgent->smem_stmts->hash_add_str->bind_text(2, static_cast<const char*>(val));
-        thisAgent->smem_stmts->hash_add_str->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->hash_add_str->bind_int(1, return_val);
+        thisAgent->SMem->smem_stmts->hash_add_str->bind_text(2, static_cast<const char*>(val));
+        thisAgent->SMem->smem_stmts->hash_add_str->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -1032,15 +1036,15 @@ smem_hash_id smem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail 
     smem_hash_id return_val = NIL;
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->hash->start();
+    thisAgent->SMem->smem_timers->hash->start();
     ////////////////////////////////////////////////////////////////////////////
 
     if (sym->is_constant())
     {
-        if ((!sym->smem_hash) || (sym->smem_valid != thisAgent->smem_validation))
+        if ((!sym->smem_hash) || (sym->smem_valid != thisAgent->SMem->smem_validation))
         {
             sym->smem_hash = NIL;
-            sym->smem_valid = thisAgent->smem_validation;
+            sym->smem_valid = thisAgent->SMem->smem_validation;
 
             switch (sym->symbol_type)
             {
@@ -1059,14 +1063,14 @@ smem_hash_id smem_temporal_hash(agent* thisAgent, Symbol* sym, bool add_on_fail 
 
             // cache results for later re-use
             sym->smem_hash = return_val;
-            sym->smem_valid = thisAgent->smem_validation;
+            sym->smem_valid = thisAgent->SMem->smem_validation;
         }
 
         return_val = sym->smem_hash;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->hash->stop();
+    thisAgent->SMem->smem_timers->hash->stop();
     ////////////////////////////////////////////////////////////////////////////
 
     return return_val;
@@ -1076,12 +1080,12 @@ inline int64_t smem_reverse_hash_int(agent* thisAgent, smem_hash_id hash_value)
 {
     int64_t return_val = NIL;
 
-    thisAgent->smem_stmts->hash_rev_int->bind_int(1, hash_value);
-    soar_module::exec_result res = thisAgent->smem_stmts->hash_rev_int->execute();
+    thisAgent->SMem->smem_stmts->hash_rev_int->bind_int(1, hash_value);
+    soar_module::exec_result res = thisAgent->SMem->smem_stmts->hash_rev_int->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    return_val = thisAgent->smem_stmts->hash_rev_int->column_int(0);
-    thisAgent->smem_stmts->hash_rev_int->reinitialize();
+    return_val = thisAgent->SMem->smem_stmts->hash_rev_int->column_int(0);
+    thisAgent->SMem->smem_stmts->hash_rev_int->reinitialize();
 
     return return_val;
 }
@@ -1090,24 +1094,24 @@ inline double smem_reverse_hash_float(agent* thisAgent, smem_hash_id hash_value)
 {
     double return_val = NIL;
 
-    thisAgent->smem_stmts->hash_rev_float->bind_int(1, hash_value);
-    soar_module::exec_result res = thisAgent->smem_stmts->hash_rev_float->execute();
+    thisAgent->SMem->smem_stmts->hash_rev_float->bind_int(1, hash_value);
+    soar_module::exec_result res = thisAgent->SMem->smem_stmts->hash_rev_float->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    return_val = thisAgent->smem_stmts->hash_rev_float->column_double(0);
-    thisAgent->smem_stmts->hash_rev_float->reinitialize();
+    return_val = thisAgent->SMem->smem_stmts->hash_rev_float->column_double(0);
+    thisAgent->SMem->smem_stmts->hash_rev_float->reinitialize();
 
     return return_val;
 }
 
 inline void smem_reverse_hash_str(agent* thisAgent, smem_hash_id hash_value, std::string& dest)
 {
-    thisAgent->smem_stmts->hash_rev_str->bind_int(1, hash_value);
-    soar_module::exec_result res = thisAgent->smem_stmts->hash_rev_str->execute();
+    thisAgent->SMem->smem_stmts->hash_rev_str->bind_int(1, hash_value);
+    soar_module::exec_result res = thisAgent->SMem->smem_stmts->hash_rev_str->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    dest.assign(thisAgent->smem_stmts->hash_rev_str->column_text(0));
-    thisAgent->smem_stmts->hash_rev_str->reinitialize();
+    dest.assign(thisAgent->SMem->smem_stmts->hash_rev_str->column_text(0));
+    thisAgent->SMem->smem_stmts->hash_rev_str->reinitialize();
 }
 
 inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_id hash_value)
@@ -1119,15 +1123,15 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
     {
         case STR_CONSTANT_SYMBOL_TYPE:
             smem_reverse_hash_str(thisAgent, hash_value, dest);
-            return_val = make_str_constant(thisAgent, const_cast<char*>(dest.c_str()));
+            return_val = thisAgent->symbolManager->make_str_constant(const_cast<char*>(dest.c_str()));
             break;
 
         case INT_CONSTANT_SYMBOL_TYPE:
-            return_val = make_int_constant(thisAgent, smem_reverse_hash_int(thisAgent, hash_value));
+            return_val = thisAgent->symbolManager->make_int_constant(smem_reverse_hash_int(thisAgent, hash_value));
             break;
 
         case FLOAT_CONSTANT_SYMBOL_TYPE:
-            return_val = make_float_constant(thisAgent, smem_reverse_hash_float(thisAgent, hash_value));
+            return_val = thisAgent->symbolManager->make_float_constant(smem_reverse_hash_float(thisAgent, hash_value));
             break;
 
         default:
@@ -1148,35 +1152,35 @@ inline Symbol* smem_reverse_hash(agent* thisAgent, byte symbol_type, smem_hash_i
 inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0)
 {
     double sum = 0.0;
-    double d = thisAgent->smem_params->base_decay->get_value();
+    double d = thisAgent->SMem->smem_params->base_decay->get_value();
     uint64_t t_k;
     uint64_t t_n = (time_now - activations_first);
 
     if (n == 0)
     {
-        thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
-        thisAgent->smem_stmts->lti_access_get->execute();
+        thisAgent->SMem->smem_stmts->lti_access_get->bind_int(1, lti);
+        thisAgent->SMem->smem_stmts->lti_access_get->execute();
 
-        n = thisAgent->smem_stmts->lti_access_get->column_int(0);
-        activations_first = thisAgent->smem_stmts->lti_access_get->column_int(2);
+        n = thisAgent->SMem->smem_stmts->lti_access_get->column_int(0);
+        activations_first = thisAgent->SMem->smem_stmts->lti_access_get->column_int(2);
 
-        thisAgent->smem_stmts->lti_access_get->reinitialize();
+        thisAgent->SMem->smem_stmts->lti_access_get->reinitialize();
     }
 
     // get all history
-    thisAgent->smem_stmts->history_get->bind_int(1, lti);
-    thisAgent->smem_stmts->history_get->execute();
+    thisAgent->SMem->smem_stmts->history_get->bind_int(1, lti);
+    thisAgent->SMem->smem_stmts->history_get->execute();
     {
         int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
-        t_k = static_cast<uint64_t>(time_now - thisAgent->smem_stmts->history_get->column_int(available_history - 1));
+        t_k = static_cast<uint64_t>(time_now - thisAgent->SMem->smem_stmts->history_get->column_int(available_history - 1));
 
         for (int i = 0; i < available_history; i++)
         {
-            sum += pow(static_cast<double>(time_now - thisAgent->smem_stmts->history_get->column_int(i)),
+            sum += pow(static_cast<double>(time_now - thisAgent->SMem->smem_stmts->history_get->column_int(i)),
                        static_cast<double>(-d));
         }
     }
-    thisAgent->smem_stmts->history_get->reinitialize();
+    thisAgent->SMem->smem_stmts->history_get->reinitialize();
 
     // if available history was insufficient, approximate rest
     if (n > SMEM_ACT_HISTORY_ENTRIES)
@@ -1198,20 +1202,20 @@ inline double smem_lti_calc_base(agent* thisAgent, smem_lti_id lti, int64_t time
 inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX)
 {
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->act->start();
+    thisAgent->SMem->smem_timers->act->start();
     ////////////////////////////////////////////////////////////////////////////
 
     int64_t time_now;
     if (add_access)
     {
-        time_now = thisAgent->smem_max_cycle++;
+        time_now = thisAgent->SMem->smem_max_cycle++;
 
-        if ((thisAgent->smem_params->activation_mode->get_value() == smem_param_container::act_base) &&
-                (thisAgent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental))
+        if ((thisAgent->SMem->smem_params->activation_mode->get_value() == smem_param_container::act_base) &&
+                (thisAgent->SMem->smem_params->base_update->get_value() == smem_param_container::bupt_incremental))
         {
             int64_t time_diff;
 
-            for (std::set< int64_t >::iterator b = thisAgent->smem_params->base_incremental_threshes->set_begin(); b != thisAgent->smem_params->base_incremental_threshes->set_end(); b++)
+            for (std::set< int64_t >::iterator b = thisAgent->SMem->smem_params->base_incremental_threshes->set_begin(); b != thisAgent->SMem->smem_params->base_incremental_threshes->set_end(); b++)
             {
                 if (*b > 0)
                 {
@@ -1221,12 +1225,12 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
                     {
                         std::list< smem_lti_id > to_update;
 
-                        thisAgent->smem_stmts->lti_get_t->bind_int(1, time_diff);
-                        while (thisAgent->smem_stmts->lti_get_t->execute() == soar_module::row)
+                        thisAgent->SMem->smem_stmts->lti_get_t->bind_int(1, time_diff);
+                        while (thisAgent->SMem->smem_stmts->lti_get_t->execute() == soar_module::row)
                         {
-                            to_update.push_back(static_cast< smem_lti_id >(thisAgent->smem_stmts->lti_get_t->column_int(0)));
+                            to_update.push_back(static_cast< smem_lti_id >(thisAgent->SMem->smem_stmts->lti_get_t->column_int(0)));
                         }
-                        thisAgent->smem_stmts->lti_get_t->reinitialize();
+                        thisAgent->SMem->smem_stmts->lti_get_t->reinitialize();
 
                         for (std::list< smem_lti_id >::iterator it = to_update.begin(); it != to_update.end(); it++)
                         {
@@ -1239,9 +1243,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     }
     else
     {
-        time_now = thisAgent->smem_max_cycle;
+        time_now = thisAgent->SMem->smem_max_cycle;
 
-        thisAgent->smem_stats->act_updates->set_value(thisAgent->smem_stats->act_updates->get_value() + 1);
+        thisAgent->SMem->smem_stats->act_updates->set_value(thisAgent->SMem->smem_stats->act_updates->get_value() + 1);
     }
 
     // access information
@@ -1251,30 +1255,30 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     {
         // get old (potentially useful below)
         {
-            thisAgent->smem_stmts->lti_access_get->bind_int(1, lti);
-            thisAgent->smem_stmts->lti_access_get->execute();
+            thisAgent->SMem->smem_stmts->lti_access_get->bind_int(1, lti);
+            thisAgent->SMem->smem_stmts->lti_access_get->execute();
 
-            prev_access_n = thisAgent->smem_stmts->lti_access_get->column_int(0);
-            prev_access_t = thisAgent->smem_stmts->lti_access_get->column_int(1);
-            prev_access_1 = thisAgent->smem_stmts->lti_access_get->column_int(2);
+            prev_access_n = thisAgent->SMem->smem_stmts->lti_access_get->column_int(0);
+            prev_access_t = thisAgent->SMem->smem_stmts->lti_access_get->column_int(1);
+            prev_access_1 = thisAgent->SMem->smem_stmts->lti_access_get->column_int(2);
 
-            thisAgent->smem_stmts->lti_access_get->reinitialize();
+            thisAgent->SMem->smem_stmts->lti_access_get->reinitialize();
         }
 
         // set new
         if (add_access)
         {
-            thisAgent->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
-            thisAgent->smem_stmts->lti_access_set->bind_int(2, time_now);
-            thisAgent->smem_stmts->lti_access_set->bind_int(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
-            thisAgent->smem_stmts->lti_access_set->bind_int(4, lti);
-            thisAgent->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->lti_access_set->bind_int(1, (prev_access_n + 1));
+            thisAgent->SMem->smem_stmts->lti_access_set->bind_int(2, time_now);
+            thisAgent->SMem->smem_stmts->lti_access_set->bind_int(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
+            thisAgent->SMem->smem_stmts->lti_access_set->bind_int(4, lti);
+            thisAgent->SMem->smem_stmts->lti_access_set->execute(soar_module::op_reinit);
         }
     }
 
     // get new activation value (depends upon bias)
     double new_activation = 0.0;
-    smem_param_container::act_choices act_mode = thisAgent->smem_params->activation_mode->get_value();
+    smem_param_container::act_choices act_mode = thisAgent->SMem->smem_params->activation_mode->get_value();
     if (act_mode == smem_param_container::act_recency)
     {
         new_activation = static_cast<double>(time_now);
@@ -1289,9 +1293,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         {
             if (add_access)
             {
-                thisAgent->smem_stmts->history_add->bind_int(1, lti);
-                thisAgent->smem_stmts->history_add->bind_int(2, time_now);
-                thisAgent->smem_stmts->history_add->execute(soar_module::op_reinit);
+                thisAgent->SMem->smem_stmts->history_add->bind_int(1, lti);
+                thisAgent->SMem->smem_stmts->history_add->bind_int(2, time_now);
+                thisAgent->SMem->smem_stmts->history_add->execute(soar_module::op_reinit);
             }
 
             new_activation = 0;
@@ -1300,9 +1304,9 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
         {
             if (add_access)
             {
-                thisAgent->smem_stmts->history_push->bind_int(1, time_now);
-                thisAgent->smem_stmts->history_push->bind_int(2, lti);
-                thisAgent->smem_stmts->history_push->execute(soar_module::op_reinit);
+                thisAgent->SMem->smem_stmts->history_push->bind_int(1, time_now);
+                thisAgent->SMem->smem_stmts->history_push->bind_int(2, lti);
+                thisAgent->SMem->smem_stmts->history_push->execute(soar_module::op_reinit);
             }
 
             new_activation = smem_lti_calc_base(thisAgent, lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
@@ -1312,33 +1316,33 @@ inline double smem_lti_activate(agent* thisAgent, smem_lti_id lti, bool add_acce
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
-        thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, lti);
-        thisAgent->smem_stmts->act_lti_child_ct_get->execute();
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->bind_int(1, lti);
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->execute();
 
-        num_edges = thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0);
+        num_edges = thisAgent->SMem->smem_stmts->act_lti_child_ct_get->column_int(0);
 
-        thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->reinitialize();
     }
 
     // only if augmentation count is less than threshold do we associate with edges
-    if (num_edges < static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value()))
+    if (num_edges < static_cast<uint64_t>(thisAgent->SMem->smem_params->thresh->get_value()))
     {
         // activation_value=? WHERE lti=?
-        thisAgent->smem_stmts->act_set->bind_double(1, new_activation);
-        thisAgent->smem_stmts->act_set->bind_int(2, lti);
-        thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->act_set->bind_double(1, new_activation);
+        thisAgent->SMem->smem_stmts->act_set->bind_int(2, lti);
+        thisAgent->SMem->smem_stmts->act_set->execute(soar_module::op_reinit);
     }
 
     // always associate activation with lti
     {
         // activation_value=? WHERE lti=?
-        thisAgent->smem_stmts->act_lti_set->bind_double(1, new_activation);
-        thisAgent->smem_stmts->act_lti_set->bind_int(2, lti);
-        thisAgent->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->act_lti_set->bind_double(1, new_activation);
+        thisAgent->SMem->smem_stmts->act_lti_set->bind_int(2, lti);
+        thisAgent->SMem->smem_stmts->act_lti_set->execute(soar_module::op_reinit);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->act->stop();
+    thisAgent->SMem->smem_timers->act->stop();
     ////////////////////////////////////////////////////////////////////////////
 
     return new_activation;
@@ -1400,38 +1404,23 @@ void _smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
     }
 }
 
-// instance of hash_table_callback_fn2
-bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
-{
-    Symbol* id = static_cast<symbol_struct*>(item);
-
-    dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
-    if (id->id->smem_lti != NIL)
-    {
-        uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
-        (*counter)++;
-    }
-
-    return false;
-}
-
 // gets the lti id for an existing lti soar_letter/number pair (or NIL if failure)
 smem_lti_id smem_lti_get_id(agent* thisAgent, char name_letter, uint64_t name_number)
 {
     smem_lti_id return_val = NIL;
 
-    if (thisAgent->smem_db->get_status() != soar_module::disconnected)
+    if (thisAgent->SMem->smem_db->get_status() != soar_module::disconnected)
     {   // getting lti ids requires an open semantic database
         // soar_letter=? AND number=?
-        thisAgent->smem_stmts->lti_get->bind_int(1, static_cast<uint64_t>(name_letter));
-        thisAgent->smem_stmts->lti_get->bind_int(2, static_cast<uint64_t>(name_number));
+        thisAgent->SMem->smem_stmts->lti_get->bind_int(1, static_cast<uint64_t>(name_letter));
+        thisAgent->SMem->smem_stmts->lti_get->bind_int(2, static_cast<uint64_t>(name_number));
 
-        if (thisAgent->smem_stmts->lti_get->execute() == soar_module::row)
+        if (thisAgent->SMem->smem_stmts->lti_get->execute() == soar_module::row)
         {
-            return_val = thisAgent->smem_stmts->lti_get->column_int(0);
+            return_val = thisAgent->SMem->smem_stmts->lti_get->column_int(0);
         }
 
-        thisAgent->smem_stmts->lti_get->reinitialize();
+        thisAgent->SMem->smem_stmts->lti_get->reinitialize();
     }
     return return_val;
 }
@@ -1442,19 +1431,19 @@ inline smem_lti_id smem_lti_add_id(agent* thisAgent, char name_letter, uint64_t 
     smem_lti_id return_val;
 
     // create lti: soar_letter, number, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    thisAgent->smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(name_letter));
-    thisAgent->smem_stmts->lti_add->bind_int(2, static_cast<uint64_t>(name_number));
-    thisAgent->smem_stmts->lti_add->bind_int(3, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->bind_double(4, static_cast<double>(0));
-    thisAgent->smem_stmts->lti_add->bind_int(5, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
-    thisAgent->smem_stmts->lti_add->execute(soar_module::op_reinit);
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(name_letter));
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(2, static_cast<uint64_t>(name_number));
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(3, static_cast<uint64_t>(0));
+    thisAgent->SMem->smem_stmts->lti_add->bind_double(4, static_cast<double>(0));
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(5, static_cast<uint64_t>(0));
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
+    thisAgent->SMem->smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
+    thisAgent->SMem->smem_stmts->lti_add->execute(soar_module::op_reinit);
 
-    return_val = static_cast<smem_lti_id>(thisAgent->smem_db->last_insert_rowid());
+    return_val = static_cast<smem_lti_id>(thisAgent->SMem->smem_db->last_insert_rowid());
 
     // increment stat
-    thisAgent->smem_stats->chunks->set_value(thisAgent->smem_stats->chunks->get_value() + 1);
+    thisAgent->SMem->smem_stats->chunks->set_value(thisAgent->SMem->smem_stats->chunks->get_value() + 1);
 
     return return_val;
 }
@@ -1473,8 +1462,8 @@ void smem_lti_soar_promote_STI(agent* thisAgent, Symbol* id)
         if (id->id->smem_lti == NIL)
         {
             id->id->smem_lti = smem_lti_add_id(thisAgent, id->id->name_letter, id->id->name_number);
-            id->id->smem_time_id = thisAgent->epmem_stats->time->get_value();
-            id->id->smem_valid = thisAgent->epmem_validation;
+            id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
             epmem_schedule_promotion(thisAgent, id);
         }
     }
@@ -1494,8 +1483,8 @@ inline void smem_lti_soar_add(agent* thisAgent, Symbol* id)
         {
             id->id->smem_lti = smem_lti_add_id(thisAgent, id->id->name_letter, id->id->name_number);
 
-            id->id->smem_time_id = thisAgent->epmem_stats->time->get_value();
-            id->id->smem_valid = thisAgent->epmem_validation;
+            id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
             epmem_schedule_promotion(thisAgent, id);
         }
     }
@@ -1507,16 +1496,16 @@ Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, 
     Symbol* return_val;
 
     // try to find existing
-    return_val = find_identifier(thisAgent, name_letter, name_number);
+    return_val = thisAgent->symbolManager->find_identifier(name_letter, name_number);
 
     // otherwise create
     if (return_val == NIL)
     {
-        return_val = make_new_identifier(thisAgent, name_letter, level, name_number);
+        return_val = thisAgent->symbolManager->make_new_identifier(name_letter, level, name_number);
     }
     else
     {
-        symbol_add_ref(thisAgent, return_val);
+        thisAgent->symbolManager->symbol_add_ref(return_val);
 
         if ((return_val->id->level == SMEM_LTI_UNKNOWN_LEVEL) && (level != SMEM_LTI_UNKNOWN_LEVEL))
         {
@@ -1533,19 +1522,19 @@ Symbol* smem_lti_soar_make(agent* thisAgent, smem_lti_id lti, char name_letter, 
 
 void smem_reset_id_counters(agent* thisAgent)
 {
-    if (thisAgent->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
     {
         // soar_letter, max
-        while (thisAgent->smem_stmts->lti_max->execute() == soar_module::row)
+        while (thisAgent->SMem->smem_stmts->lti_max->execute() == soar_module::row)
         {
-            uint64_t name_letter = static_cast<uint64_t>(thisAgent->smem_stmts->lti_max->column_int(0));
-            uint64_t letter_max = static_cast<uint64_t>(thisAgent->smem_stmts->lti_max->column_int(1));
+            uint64_t name_letter = static_cast<uint64_t>(thisAgent->SMem->smem_stmts->lti_max->column_int(0));
+            uint64_t letter_max = static_cast<uint64_t>(thisAgent->SMem->smem_stmts->lti_max->column_int(1));
 
             // shift to alphabet
             name_letter -= static_cast<uint64_t>('A');
 
             // get count
-            uint64_t* letter_ct = & thisAgent->id_counter[ name_letter ];
+            uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(name_letter);
 
             // adjust if necessary
             if ((*letter_ct) <= letter_max)
@@ -1554,7 +1543,7 @@ void smem_reset_id_counters(agent* thisAgent)
             }
         }
 
-        thisAgent->smem_stmts->lti_max->reinitialize();
+        thisAgent->SMem->smem_stmts->lti_max->reinitialize();
     }
 }
 
@@ -1587,51 +1576,51 @@ void smem_disconnect_chunk(agent* thisAgent, smem_lti_id lti_id)
         std::set<smem_lti_id> distinct_attr;
 
         // pairs first, accumulate distinct attributes and pair count
-        thisAgent->smem_stmts->web_all->bind_int(1, lti_id);
-        while (thisAgent->smem_stmts->web_all->execute() == soar_module::row)
+        thisAgent->SMem->smem_stmts->web_all->bind_int(1, lti_id);
+        while (thisAgent->SMem->smem_stmts->web_all->execute() == soar_module::row)
         {
             pair_count++;
 
-            child_attr = thisAgent->smem_stmts->web_all->column_int(0);
+            child_attr = thisAgent->SMem->smem_stmts->web_all->column_int(0);
             distinct_attr.insert(child_attr);
 
             // null -> attr/lti
-            if (thisAgent->smem_stmts->web_all->column_int(1) != SMEM_AUGMENTATIONS_NULL)
+            if (thisAgent->SMem->smem_stmts->web_all->column_int(1) != SMEM_AUGMENTATIONS_NULL)
             {
                 // adjust in opposite direction ( adjust, attribute, const )
-                thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(1, -1);
-                thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(2, child_attr);
-                thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(3, thisAgent->smem_stmts->web_all->column_int(1));
-                thisAgent->smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
+                thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(1, -1);
+                thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(2, child_attr);
+                thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(3, thisAgent->SMem->smem_stmts->web_all->column_int(1));
+                thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
             }
             else
             {
                 // adjust in opposite direction ( adjust, attribute, lti )
-                thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(1, -1);
-                thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(2, child_attr);
-                thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(3, thisAgent->smem_stmts->web_all->column_int(2));
-                thisAgent->smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(1, -1);
+                thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(2, child_attr);
+                thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(3, thisAgent->SMem->smem_stmts->web_all->column_int(2));
+                thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
             }
         }
-        thisAgent->smem_stmts->web_all->reinitialize();
+        thisAgent->SMem->smem_stmts->web_all->reinitialize();
 
         // now attributes
         for (std::set<smem_lti_id>::iterator a = distinct_attr.begin(); a != distinct_attr.end(); a++)
         {
             // adjust in opposite direction ( adjust, attribute )
-            thisAgent->smem_stmts->attribute_frequency_update->bind_int(1, -1);
-            thisAgent->smem_stmts->attribute_frequency_update->bind_int(2, *a);
-            thisAgent->smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->attribute_frequency_update->bind_int(1, -1);
+            thisAgent->SMem->smem_stmts->attribute_frequency_update->bind_int(2, *a);
+            thisAgent->SMem->smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
         }
 
         // update local statistic
-        thisAgent->smem_stats->slots->set_value(thisAgent->smem_stats->slots->get_value() - pair_count);
+        thisAgent->SMem->smem_stats->slots->set_value(thisAgent->SMem->smem_stats->slots->get_value() - pair_count);
     }
 
     // disconnect
     {
-        thisAgent->smem_stmts->web_truncate->bind_int(1, lti_id);
-        thisAgent->smem_stmts->web_truncate->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->web_truncate->bind_int(1, lti_id);
+        thisAgent->SMem->smem_stmts->web_truncate->execute(soar_module::op_reinit);
     }
 }
 
@@ -1657,12 +1646,12 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     }
     else
     {
-        thisAgent->smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
-        thisAgent->smem_stmts->act_lti_child_ct_get->execute();
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->execute();
 
-        existing_edges = static_cast<uint64_t>(thisAgent->smem_stmts->act_lti_child_ct_get->column_int(0));
+        existing_edges = static_cast<uint64_t>(thisAgent->SMem->smem_stmts->act_lti_child_ct_get->column_int(0));
 
-        thisAgent->smem_stmts->act_lti_child_ct_get->reinitialize();
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_get->reinitialize();
     }
 
     // get new edges
@@ -1688,9 +1677,9 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
             else
             {
                 // lti_id, attribute_s_id
-                thisAgent->smem_stmts->web_attr_child->bind_int(1, lti_id);
-                thisAgent->smem_stmts->web_attr_child->bind_int(2, attr_hash);
-                if (thisAgent->smem_stmts->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
+                thisAgent->SMem->smem_stmts->web_attr_child->bind_int(1, lti_id);
+                thisAgent->SMem->smem_stmts->web_attr_child->bind_int(2, attr_hash);
+                if (thisAgent->SMem->smem_stmts->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
                 {
                     attr_new.insert(attr_hash);
                 }
@@ -1709,10 +1698,10 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                     else
                     {
                         // lti_id, attribute_s_id, val_const
-                        thisAgent->smem_stmts->web_const_child->bind_int(1, lti_id);
-                        thisAgent->smem_stmts->web_const_child->bind_int(2, attr_hash);
-                        thisAgent->smem_stmts->web_const_child->bind_int(3, value_hash);
-                        if (thisAgent->smem_stmts->web_const_child->execute(soar_module::op_reinit) != soar_module::row)
+                        thisAgent->SMem->smem_stmts->web_const_child->bind_int(1, lti_id);
+                        thisAgent->SMem->smem_stmts->web_const_child->bind_int(2, attr_hash);
+                        thisAgent->SMem->smem_stmts->web_const_child->bind_int(3, value_hash);
+                        if (thisAgent->SMem->smem_stmts->web_const_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             const_new.insert(std::make_pair(attr_hash, value_hash));
                         }
@@ -1741,8 +1730,8 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                         {
                             (*v)->val_lti.val_value->soar_id->id->smem_lti = value_lti;
 
-                            (*v)->val_lti.val_value->soar_id->id->smem_time_id = thisAgent->epmem_stats->time->get_value();
-                            (*v)->val_lti.val_value->soar_id->id->smem_valid = thisAgent->epmem_validation;
+                            (*v)->val_lti.val_value->soar_id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+                            (*v)->val_lti.val_value->soar_id->id->smem_valid = thisAgent->EpMem->epmem_validation;
                             epmem_schedule_promotion(thisAgent, (*v)->val_lti.val_value->soar_id);
                         }
                     }
@@ -1754,10 +1743,10 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                     else
                     {
                         // lti_id, attribute_s_id, val_lti
-                        thisAgent->smem_stmts->web_lti_child->bind_int(1, lti_id);
-                        thisAgent->smem_stmts->web_lti_child->bind_int(2, attr_hash);
-                        thisAgent->smem_stmts->web_lti_child->bind_int(3, value_lti);
-                        if (thisAgent->smem_stmts->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
+                        thisAgent->SMem->smem_stmts->web_lti_child->bind_int(1, lti_id);
+                        thisAgent->SMem->smem_stmts->web_lti_child->bind_int(2, attr_hash);
+                        thisAgent->SMem->smem_stmts->web_lti_child->bind_int(3, value_lti);
+                        if (thisAgent->SMem->smem_stmts->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
                         }
@@ -1790,7 +1779,7 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
     bool after_above;
     double web_act = static_cast<double>(SMEM_ACT_MAX);
     {
-        uint64_t thresh = static_cast<uint64_t>(thisAgent->smem_params->thresh->get_value());
+        uint64_t thresh = static_cast<uint64_t>(thisAgent->SMem->smem_params->thresh->get_value());
         after_above = (new_edges >= thresh);
 
         // if before below
@@ -1799,18 +1788,18 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
             if (after_above)
             {
                 // update smem_augmentations to inf
-                thisAgent->smem_stmts->act_set->bind_double(1, web_act);
-                thisAgent->smem_stmts->act_set->bind_int(2, lti_id);
-                thisAgent->smem_stmts->act_set->execute(soar_module::op_reinit);
+                thisAgent->SMem->smem_stmts->act_set->bind_double(1, web_act);
+                thisAgent->SMem->smem_stmts->act_set->bind_int(2, lti_id);
+                thisAgent->SMem->smem_stmts->act_set->execute(soar_module::op_reinit);
             }
         }
     }
 
     // update edge counter
     {
-        thisAgent->smem_stmts->act_lti_child_ct_set->bind_int(1, new_edges);
-        thisAgent->smem_stmts->act_lti_child_ct_set->bind_int(2, lti_id);
-        thisAgent->smem_stmts->act_lti_child_ct_set->execute(soar_module::op_reinit);
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_set->bind_int(1, new_edges);
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_set->bind_int(2, lti_id);
+        thisAgent->SMem->smem_stmts->act_lti_child_ct_set->execute(soar_module::op_reinit);
     }
 
     // now we can safely activate the lti
@@ -1833,32 +1822,32 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    thisAgent->smem_stmts->web_add->bind_int(1, lti_id);
-                    thisAgent->smem_stmts->web_add->bind_int(2, p->first);
-                    thisAgent->smem_stmts->web_add->bind_int(3, p->second);
-                    thisAgent->smem_stmts->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
-                    thisAgent->smem_stmts->web_add->bind_double(5, web_act);
-                    thisAgent->smem_stmts->web_add->execute(soar_module::op_reinit);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(1, lti_id);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(2, p->first);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(3, p->second);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
+                    thisAgent->SMem->smem_stmts->web_add->bind_double(5, web_act);
+                    thisAgent->SMem->smem_stmts->web_add->execute(soar_module::op_reinit);
                 }
 
                 // update counter
                 {
                     // check if counter exists (and add if does not): attribute_s_id, val
-                    thisAgent->smem_stmts->wmes_constant_frequency_check->bind_int(1, p->first);
-                    thisAgent->smem_stmts->wmes_constant_frequency_check->bind_int(2, p->second);
-                    if (thisAgent->smem_stmts->wmes_constant_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                    thisAgent->SMem->smem_stmts->wmes_constant_frequency_check->bind_int(1, p->first);
+                    thisAgent->SMem->smem_stmts->wmes_constant_frequency_check->bind_int(2, p->second);
+                    if (thisAgent->SMem->smem_stmts->wmes_constant_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                     {
-                        thisAgent->smem_stmts->wmes_constant_frequency_add->bind_int(1, p->first);
-                        thisAgent->smem_stmts->wmes_constant_frequency_add->bind_int(2, p->second);
-                        thisAgent->smem_stmts->wmes_constant_frequency_add->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_add->bind_int(1, p->first);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_add->bind_int(2, p->second);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_add->execute(soar_module::op_reinit);
                     }
                     else
                     {
                         // adjust count (adjustment, attribute_s_id, val)
-                        thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(1, 1);
-                        thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(2, p->first);
-                        thisAgent->smem_stmts->wmes_constant_frequency_update->bind_int(3, p->second);
-                        thisAgent->smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(1, 1);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(2, p->first);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->bind_int(3, p->second);
+                        thisAgent->SMem->smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
                     }
                 }
             }
@@ -1871,32 +1860,32 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    thisAgent->smem_stmts->web_add->bind_int(1, lti_id);
-                    thisAgent->smem_stmts->web_add->bind_int(2, p->first);
-                    thisAgent->smem_stmts->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
-                    thisAgent->smem_stmts->web_add->bind_int(4, p->second);
-                    thisAgent->smem_stmts->web_add->bind_double(5, web_act);
-                    thisAgent->smem_stmts->web_add->execute(soar_module::op_reinit);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(1, lti_id);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(2, p->first);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
+                    thisAgent->SMem->smem_stmts->web_add->bind_int(4, p->second);
+                    thisAgent->SMem->smem_stmts->web_add->bind_double(5, web_act);
+                    thisAgent->SMem->smem_stmts->web_add->execute(soar_module::op_reinit);
                 }
 
                 // update counter
                 {
                     // check if counter exists (and add if does not): attribute_s_id, val
-                    thisAgent->smem_stmts->wmes_lti_frequency_check->bind_int(1, p->first);
-                    thisAgent->smem_stmts->wmes_lti_frequency_check->bind_int(2, p->second);
-                    if (thisAgent->smem_stmts->wmes_lti_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                    thisAgent->SMem->smem_stmts->wmes_lti_frequency_check->bind_int(1, p->first);
+                    thisAgent->SMem->smem_stmts->wmes_lti_frequency_check->bind_int(2, p->second);
+                    if (thisAgent->SMem->smem_stmts->wmes_lti_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                     {
-                        thisAgent->smem_stmts->wmes_lti_frequency_add->bind_int(1, p->first);
-                        thisAgent->smem_stmts->wmes_lti_frequency_add->bind_int(2, p->second);
-                        thisAgent->smem_stmts->wmes_lti_frequency_add->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_add->bind_int(1, p->first);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_add->bind_int(2, p->second);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_add->execute(soar_module::op_reinit);
                     }
                     else
                     {
                         // adjust count (adjustment, attribute_s_id, lti)
-                        thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(1, 1);
-                        thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(2, p->first);
-                        thisAgent->smem_stmts->wmes_lti_frequency_update->bind_int(3, p->second);
-                        thisAgent->smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(1, 1);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(2, p->first);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->bind_int(3, p->second);
+                        thisAgent->SMem->smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
                     }
                 }
             }
@@ -1907,25 +1896,25 @@ void smem_store_chunk(agent* thisAgent, smem_lti_id lti_id, smem_slot_map* child
             for (std::set< smem_hash_id >::iterator a = attr_new.begin(); a != attr_new.end(); a++)
             {
                 // check if counter exists (and add if does not): attribute_s_id
-                thisAgent->smem_stmts->attribute_frequency_check->bind_int(1, *a);
-                if (thisAgent->smem_stmts->attribute_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                thisAgent->SMem->smem_stmts->attribute_frequency_check->bind_int(1, *a);
+                if (thisAgent->SMem->smem_stmts->attribute_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                 {
-                    thisAgent->smem_stmts->attribute_frequency_add->bind_int(1, *a);
-                    thisAgent->smem_stmts->attribute_frequency_add->execute(soar_module::op_reinit);
+                    thisAgent->SMem->smem_stmts->attribute_frequency_add->bind_int(1, *a);
+                    thisAgent->SMem->smem_stmts->attribute_frequency_add->execute(soar_module::op_reinit);
                 }
                 else
                 {
                     // adjust count (adjustment, attribute_s_id)
-                    thisAgent->smem_stmts->attribute_frequency_update->bind_int(1, 1);
-                    thisAgent->smem_stmts->attribute_frequency_update->bind_int(2, *a);
-                    thisAgent->smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
+                    thisAgent->SMem->smem_stmts->attribute_frequency_update->bind_int(1, 1);
+                    thisAgent->SMem->smem_stmts->attribute_frequency_update->bind_int(2, *a);
+                    thisAgent->SMem->smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
                 }
             }
         }
 
         // update local edge count
         {
-            thisAgent->smem_stats->slots->set_value(thisAgent->smem_stats->slots->get_value() + (const_new.size() + lti_new.size()));
+            thisAgent->SMem->smem_stats->slots->set_value(thisAgent->SMem->smem_stats->slots->get_value() + (const_new.size() + lti_new.size()));
         }
     }
 }
@@ -2044,7 +2033,7 @@ void smem_soar_store(agent* thisAgent, Symbol* id, smem_storage_type store_type 
 void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL)
 {
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->ncb_retrieval->start();
+    thisAgent->SMem->smem_timers->ncb_retrieval->start();
     ////////////////////////////////////////////////////////////////////////////
 
     // get the ^result header for this state
@@ -2058,7 +2047,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     bool lti_created_here = false;
     if (lti == NIL && install_type == wm_install)
     {
-        soar_module::sqlite_statement* q = thisAgent->smem_stmts->lti_letter_num;
+        soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->lti_letter_num;
 
         q->bind_int(1, lti_id);
         q->execute();
@@ -2081,11 +2070,11 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     {
         if (visited == NULL)
         {
-            smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->smem_sym_retrieved, lti);
+            smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, lti);
         }
         else
         {
-            smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->smem_sym_depth_retrieved, lti);
+            smem_buffer_add_wme(thisAgent, meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_depth_retrieved, lti);
         }
     }
     if (lti_created_here)
@@ -2094,14 +2083,14 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
         // remove a single ref count AFTER the wme
         // is added (such as to not deallocate the symbol
         // prematurely)
-        symbol_remove_ref(thisAgent, &lti);
+        thisAgent->symbolManager->symbol_remove_ref(&lti);
     }
 
     bool triggered = false;
 
     // if no children, then retrieve children
     // merge may override this behavior
-    if (((thisAgent->smem_params->merge->get_value() == smem_param_container::merge_add) ||
+    if (((thisAgent->SMem->smem_params->merge->get_value() == smem_param_container::merge_add) ||
             ((lti->id->impasse_wmes == NIL) &&
              (lti->id->input_wmes == NIL) &&
              (lti->id->slots == NIL)))
@@ -2114,7 +2103,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             visited = new std::set<smem_lti_id>;
         }
 
-        soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
+        soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
 
@@ -2147,8 +2136,8 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
-            symbol_remove_ref(thisAgent, &attr_sym);
-            symbol_remove_ref(thisAgent, &value_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&value_sym);
         }
         expand_q->reinitialize();
 
@@ -2160,7 +2149,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
             if (visited->find((*iterator)->id->smem_lti) == visited->end())
             {
                 visited->insert((*iterator)->id->smem_lti);
-                smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
+                smem_install_memory(thisAgent, state, (*iterator)->id->smem_lti, (*iterator), (thisAgent->SMem->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
     }
@@ -2171,7 +2160,7 @@ void smem_install_memory(agent* thisAgent, Symbol* state, smem_lti_id lti_id, Sy
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->ncb_retrieval->stop();
+    thisAgent->SMem->smem_timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
 
@@ -2191,18 +2180,18 @@ inline soar_module::sqlite_statement* smem_setup_web_crawl(agent* thisAgent, sme
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        q = thisAgent->smem_stmts->web_attr_all;
+        q = thisAgent->SMem->smem_stmts->web_attr_all;
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        q = thisAgent->smem_stmts->web_const_all;
+        q = thisAgent->SMem->smem_stmts->web_const_all;
         q->bind_int(2, el->value_hash);
     }
     else if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        q = thisAgent->smem_stmts->web_lti_all;
+        q = thisAgent->SMem->smem_stmts->web_lti_all;
         q->bind_int(2, el->value_lti);
     }
 
@@ -2237,7 +2226,7 @@ inline bool _smem_process_cue_wme(agent* thisAgent, wme* w, bool pos_cue, smem_p
 
                 if (value_hash != NIL)
                 {
-                    q = thisAgent->smem_stmts->wmes_constant_frequency_get;
+                    q = thisAgent->SMem->smem_stmts->wmes_constant_frequency_get;
                     q->bind_int(1, attr_hash);
                     q->bind_int(2, value_hash);
                 }
@@ -2268,14 +2257,14 @@ inline bool _smem_process_cue_wme(agent* thisAgent, wme* w, bool pos_cue, smem_p
 
                 if (value_lti == NIL)
                 {
-                    q = thisAgent->smem_stmts->attribute_frequency_get;
+                    q = thisAgent->SMem->smem_stmts->attribute_frequency_get;
                     q->bind_int(1, attr_hash);
 
                     element_type = attr_t;
                 }
                 else
                 {
-                    q = thisAgent->smem_stmts->wmes_lti_frequency_get;
+                    q = thisAgent->SMem->smem_stmts->wmes_lti_frequency_get;
                     q->bind_int(1, attr_hash);
                     q->bind_int(2, value_lti);
 
@@ -2353,7 +2342,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
         {
             for (smem_wme_list::iterator cueType = cueTypes->begin(); cueType != cueTypes->end(); cueType++)
             {
-                if ((*cueType)->attr == thisAgent->smem_sym_math_query_less)
+                if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_less)
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
@@ -2371,7 +2360,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                         break;
                     }
                 }
-                else if ((*cueType)->attr == thisAgent->smem_sym_math_query_greater)
+                else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_greater)
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
@@ -2389,7 +2378,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                         break;
                     }
                 }
-                else if ((*cueType)->attr == thisAgent->smem_sym_math_query_less_or_equal)
+                else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_less_or_equal)
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
@@ -2407,7 +2396,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                         break;
                     }
                 }
-                else if ((*cueType)->attr == thisAgent->smem_sym_math_query_greater_or_equal)
+                else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_greater_or_equal)
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
@@ -2425,9 +2414,9 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                         break;
                     }
                 }
-                else if ((*cueType)->attr == thisAgent->smem_sym_math_query_max)
+                else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_max)
                 {
-                    if (uniqueMathQueryElements.find(thisAgent->smem_sym_math_query_max) != uniqueMathQueryElements.end())
+                    if (uniqueMathQueryElements.find(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_max) != uniqueMathQueryElements.end())
                     {
                         //Only one max at a time
                         result->first = false;
@@ -2436,14 +2425,14 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                     }
                     else
                     {
-                        uniqueMathQueryElements.insert(thisAgent->smem_sym_math_query_max);
+                        uniqueMathQueryElements.insert(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_max);
                     }
                     needFullSearch = true;
                     _smem_process_cue_wme(thisAgent, (*cue_p), true, *weighted_pq, new MathQueryMax());
                 }
-                else if ((*cueType)->attr == thisAgent->smem_sym_math_query_min)
+                else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_min)
                 {
-                    if (uniqueMathQueryElements.find(thisAgent->smem_sym_math_query_min) != uniqueMathQueryElements.end())
+                    if (uniqueMathQueryElements.find(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_min) != uniqueMathQueryElements.end())
                     {
                         //Only one min at a time
                         result->first = false;
@@ -2452,7 +2441,7 @@ std::pair<bool, bool>* processMathQuery(agent* thisAgent, Symbol* mathQuery, sme
                     }
                     else
                     {
-                        uniqueMathQueryElements.insert(thisAgent->smem_sym_math_query_min);
+                        uniqueMathQueryElements.insert(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_min);
                     }
                     needFullSearch = true;
                     _smem_process_cue_wme(thisAgent, (*cue_p), true, *weighted_pq, new MathQueryMin());
@@ -2489,7 +2478,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
     smem_lti_id king_id = NIL;
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->query->start();
+    thisAgent->SMem->smem_timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
 
     // prepare query stats
@@ -2595,12 +2584,12 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         smem_lti_id cand;
         bool good_cand;
 
-        if (thisAgent->smem_params->activation_mode->get_value() == smem_param_container::act_base)
+        if (thisAgent->SMem->smem_params->activation_mode->get_value() == smem_param_container::act_base)
         {
             // naive base-level updates means update activation of
             // every candidate in the minimal list before the
             // confirmation walk
-            if (thisAgent->smem_params->base_update->get_value() == smem_param_container::bupt_naive)
+            if (thisAgent->SMem->smem_params->base_update->get_value() == smem_param_container::bupt_naive)
             {
                 q = smem_setup_web_crawl(thisAgent, (*cand_set));
 
@@ -2637,10 +2626,10 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
 
             while (more_rows && (q->column_double(1) == static_cast<double>(SMEM_ACT_MAX)))
             {
-                thisAgent->smem_stmts->act_lti_get->bind_int(1, q->column_int(0));
-                thisAgent->smem_stmts->act_lti_get->execute();
-                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->smem_stmts->act_lti_get->column_double(0), q->column_int(0)));
-                thisAgent->smem_stmts->act_lti_get->reinitialize();
+                thisAgent->SMem->smem_stmts->act_lti_get->bind_int(1, q->column_int(0));
+                thisAgent->SMem->smem_stmts->act_lti_get->execute();
+                plentiful_parents.push(std::make_pair< double, smem_lti_id >(thisAgent->SMem->smem_stmts->act_lti_get->column_double(0), q->column_int(0)));
+                thisAgent->SMem->smem_stmts->act_lti_get->reinitialize();
 
                 more_rows = (q->execute() == soar_module::row);
             }
@@ -2694,18 +2683,18 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                         if ((*next_element)->element_type == attr_t)
                         {
                             // parent=? AND attribute_s_id=?
-                            q2 = thisAgent->smem_stmts->web_attr_child;
+                            q2 = thisAgent->SMem->smem_stmts->web_attr_child;
                         }
                         else if ((*next_element)->element_type == value_const_t)
                         {
                             // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                            q2 = thisAgent->smem_stmts->web_const_child;
+                            q2 = thisAgent->SMem->smem_stmts->web_const_child;
                             q2->bind_int(3, (*next_element)->value_hash);
                         }
                         else if ((*next_element)->element_type == value_lti_t)
                         {
                             // parent=? AND attribute_s_id=? AND value_lti_id=?
-                            q2 = thisAgent->smem_stmts->web_lti_child;
+                            q2 = thisAgent->SMem->smem_stmts->web_lti_child;
                             q2->bind_int(3, (*next_element)->value_lti);
                         }
 
@@ -2720,15 +2709,15 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                             do
                             {
                                 smem_hash_id valueHash = q2->column_int(2 - 1);
-                                thisAgent->smem_stmts->hash_rev_type->bind_int(1, valueHash);
+                                thisAgent->SMem->smem_stmts->hash_rev_type->bind_int(1, valueHash);
 
-                                if (thisAgent->smem_stmts->hash_rev_type->execute() != soar_module::row)
+                                if (thisAgent->SMem->smem_stmts->hash_rev_type->execute() != soar_module::row)
                                 {
                                     good_cand = false;
                                 }
                                 else
                                 {
-                                    switch (thisAgent->smem_stmts->hash_rev_type->column_int(1 - 1))
+                                    switch (thisAgent->SMem->smem_stmts->hash_rev_type->column_int(1 - 1))
                                     {
                                         case FLOAT_CONSTANT_SYMBOL_TYPE:
                                             mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(smem_reverse_hash_float(thisAgent, valueHash));
@@ -2738,7 +2727,7 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
                                             break;
                                     }
                                 }
-                                thisAgent->smem_stmts->hash_rev_type->reinitialize();
+                                thisAgent->SMem->smem_stmts->hash_rev_type->reinitialize();
                             }
                             while (q2->execute() == soar_module::row);
                             good_cand = mathQueryMet;
@@ -2809,35 +2798,35 @@ smem_lti_id smem_process_query(agent* thisAgent, Symbol* state, Symbol* query, S
         if (king_id != NIL)
         {
             // success!
-            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, query);
+            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
             if (negquery)
             {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, negquery);
+                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->query->stop();
+            thisAgent->SMem->smem_timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
 
-            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            smem_install_memory(thisAgent, state, king_id, NIL, (thisAgent->SMem->smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
         }
         else
         {
-            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, query);
+            smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
             if (negquery)
             {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, negquery);
+                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->query->stop();
+            thisAgent->SMem->smem_timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
         }
     }
     else
     {
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->query->stop();
+        thisAgent->SMem->smem_timers->query->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
 
@@ -2895,95 +2884,95 @@ void smem_reset(agent* thisAgent, Symbol* state)
 void smem_switch_to_memory_db(agent* thisAgent, std::string& buf)
 {
     print_sysparam_trace(thisAgent, 0, buf.c_str());
-    thisAgent->smem_db->disconnect();
-    thisAgent->smem_params->database->set_value(smem_param_container::memory);
+    thisAgent->SMem->smem_db->disconnect();
+    thisAgent->SMem->smem_params->database->set_value(smem_param_container::memory);
     smem_init_db(thisAgent);
 }
 
 inline void smem_update_schema_one_to_two(agent* thisAgent)
 {
-    thisAgent->smem_db->sql_execute("BEGIN TRANSACTION");
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_type");
+    thisAgent->SMem->smem_db->sql_execute("BEGIN TRANSACTION");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_symbols_type");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_str");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_symbols_str");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_int");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_symbols_int");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ascii");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_ascii");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_symbols_float");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_lti");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_lti");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_history");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_history");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_web");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_web");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_attr");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_ct_attr");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_const");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_ct_const");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_ct_lti");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_ct_lti");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
-    thisAgent->smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_vars");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_vars");
 
-    thisAgent->smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
-    thisAgent->smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
-    thisAgent->smem_db->sql_execute("DROP TABLE smem7_signature");
+    thisAgent->SMem->smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+    thisAgent->SMem->smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
+    thisAgent->SMem->smem_db->sql_execute("DROP TABLE smem7_signature");
 
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
-    thisAgent->smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
-    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
-    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
-    thisAgent->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
-    thisAgent->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
-    thisAgent->smem_db->sql_execute("COMMIT");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+    thisAgent->SMem->smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
+    thisAgent->SMem->smem_db->sql_execute("COMMIT");
 }
 
 // opens the SQLite database and performs all initialization required for the current mode
 void smem_init_db(agent* thisAgent)
 {
-    if (thisAgent->smem_db->get_status() != soar_module::disconnected)
+    if (thisAgent->SMem->smem_db->get_status() != soar_module::disconnected)
     {
         return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->init->start();
+    thisAgent->SMem->smem_timers->init->start();
     ////////////////////////////////////////////////////////////////////////////
 
     const char* db_path;
     bool tabula_rasa = false;
 
-    if (thisAgent->smem_params->database->get_value() == smem_param_container::memory)
+    if (thisAgent->SMem->smem_params->database->get_value() == smem_param_container::memory)
     {
         db_path = ":memory:";
         tabula_rasa = true;
@@ -2991,16 +2980,16 @@ void smem_init_db(agent* thisAgent)
     }
     else
     {
-        db_path = thisAgent->smem_params->path->get_value();
+        db_path = thisAgent->SMem->smem_params->path->get_value();
         print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory memory database at %s\n", db_path);
     }
 
     // attempt connection
-    thisAgent->smem_db->connect(db_path);
+    thisAgent->SMem->smem_db->connect(db_path);
 
-    if (thisAgent->smem_db->get_status() == soar_module::problem)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->smem_db->get_errmsg());
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->SMem->smem_db->get_errmsg());
     }
     else
     {
@@ -3018,7 +3007,7 @@ void smem_init_db(agent* thisAgent)
             /* -- Set switch_to_memory true in case we have any errors with the database -- */
             switch_to_memory = true;
 
-            if (thisAgent->smem_db->sql_is_new_db(sql_is_new))
+            if (thisAgent->SMem->smem_db->sql_is_new_db(sql_is_new))
             {
                 if (sql_is_new)
                 {
@@ -3029,11 +3018,11 @@ void smem_init_db(agent* thisAgent)
                 else
                 {
                     // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement(thisAgent->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+                    temp_q = new soar_module::sqlite_statement(thisAgent->SMem->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
                     temp_q->prepare();
                     if (temp_q->get_status() == soar_module::ready)
                     {
-                        if (thisAgent->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
+                        if (thisAgent->SMem->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
                             if (schema_version != SMEM_SCHEMA_VERSION)
                             {
@@ -3110,34 +3099,34 @@ void smem_init_db(agent* thisAgent)
         {
             // page_size
             {
-                switch (thisAgent->smem_params->page_size->get_value())
+                switch (thisAgent->SMem->smem_params->page_size->get_value())
                 {
                     case (smem_param_container::page_1k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 1024");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 1024");
                         break;
 
                     case (smem_param_container::page_2k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 2048");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 2048");
                         break;
 
                     case (smem_param_container::page_4k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 4096");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 4096");
                         break;
 
                     case (smem_param_container::page_8k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 8192");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 8192");
                         break;
 
                     case (smem_param_container::page_16k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 16384");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 16384");
                         break;
 
                     case (smem_param_container::page_32k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 32768");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 32768");
                         break;
 
                     case (smem_param_container::page_64k):
-                        thisAgent->smem_db->sql_execute("PRAGMA page_size = 65536");
+                        thisAgent->SMem->smem_db->sql_execute("PRAGMA page_size = 65536");
                         break;
                 }
             }
@@ -3145,108 +3134,108 @@ void smem_init_db(agent* thisAgent)
             // cache_size
             {
                 std::string cache_sql("PRAGMA cache_size = ");
-                char* str = thisAgent->smem_params->cache_size->get_string();
+                char* str = thisAgent->SMem->smem_params->cache_size->get_string();
                 cache_sql.append(str);
                 free(str);
                 str = NULL;
-                thisAgent->smem_db->sql_execute(cache_sql.c_str());
+                thisAgent->SMem->smem_db->sql_execute(cache_sql.c_str());
             }
 
             // optimization
-            if (thisAgent->smem_params->opt->get_value() == smem_param_container::opt_speed)
+            if (thisAgent->SMem->smem_params->opt->get_value() == smem_param_container::opt_speed)
             {
                 // synchronous - don't wait for writes to complete (can corrupt the db in case unexpected crash during transaction)
-                thisAgent->smem_db->sql_execute("PRAGMA synchronous = OFF");
+                thisAgent->SMem->smem_db->sql_execute("PRAGMA synchronous = OFF");
 
                 // journal_mode - no atomic transactions (can result in database corruption if crash during transaction)
-                thisAgent->smem_db->sql_execute("PRAGMA journal_mode = OFF");
+                thisAgent->SMem->smem_db->sql_execute("PRAGMA journal_mode = OFF");
 
                 // locking_mode - no one else can view the database after our first write
-                thisAgent->smem_db->sql_execute("PRAGMA locking_mode = EXCLUSIVE");
+                thisAgent->SMem->smem_db->sql_execute("PRAGMA locking_mode = EXCLUSIVE");
             }
         }
 
         // update validation count
-        thisAgent->smem_validation++;
+        thisAgent->SMem->smem_validation++;
 
         // setup common structures/queries
-        thisAgent->smem_stmts = new smem_statement_container(thisAgent);
+        thisAgent->SMem->smem_stmts = new smem_statement_container(thisAgent);
 
-        if (tabula_rasa || (thisAgent->smem_params->append_db->get_value() == off))
+        if (tabula_rasa || (thisAgent->SMem->smem_params->append_db->get_value() == off))
         {
-            thisAgent->smem_stmts->structure();
+            thisAgent->SMem->smem_stmts->structure();
         }
 
         // initialize queries given database structure
-        thisAgent->smem_stmts->prepare();
+        thisAgent->SMem->smem_stmts->prepare();
 
         // initialize persistent variables
-        if (tabula_rasa || (thisAgent->smem_params->append_db->get_value() == off))
+        if (tabula_rasa || (thisAgent->SMem->smem_params->append_db->get_value() == off))
         {
-            thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
             {
                 // max cycle
-                thisAgent->smem_max_cycle = static_cast<int64_t>(1);
+                thisAgent->SMem->smem_max_cycle = static_cast<int64_t>(1);
                 smem_variable_create(thisAgent, var_max_cycle, 1);
 
                 // number of nodes
-                thisAgent->smem_stats->chunks->set_value(0);
+                thisAgent->SMem->smem_stats->chunks->set_value(0);
                 smem_variable_create(thisAgent, var_num_nodes, 0);
 
                 // number of edges
-                thisAgent->smem_stats->slots->set_value(0);
+                thisAgent->SMem->smem_stats->slots->set_value(0);
                 smem_variable_create(thisAgent, var_num_edges, 0);
 
                 // threshold (from user parameter value)
-                smem_variable_create(thisAgent, var_act_thresh, static_cast<int64_t>(thisAgent->smem_params->thresh->get_value()));
+                smem_variable_create(thisAgent, var_act_thresh, static_cast<int64_t>(thisAgent->SMem->smem_params->thresh->get_value()));
 
                 // activation mode (from user parameter value)
-                smem_variable_create(thisAgent, var_act_mode, static_cast<int64_t>(thisAgent->smem_params->activation_mode->get_value()));
+                smem_variable_create(thisAgent, var_act_mode, static_cast<int64_t>(thisAgent->SMem->smem_params->activation_mode->get_value()));
             }
-            thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
         }
         else
         {
             int64_t temp;
 
             // max cycle
-            smem_variable_get(thisAgent, var_max_cycle, &(thisAgent->smem_max_cycle));
+            smem_variable_get(thisAgent, var_max_cycle, &(thisAgent->SMem->smem_max_cycle));
 
             // number of nodes
             smem_variable_get(thisAgent, var_num_nodes, &(temp));
-            thisAgent->smem_stats->chunks->set_value(temp);
+            thisAgent->SMem->smem_stats->chunks->set_value(temp);
 
             // number of edges
             smem_variable_get(thisAgent, var_num_edges, &(temp));
-            thisAgent->smem_stats->slots->set_value(temp);
+            thisAgent->SMem->smem_stats->slots->set_value(temp);
 
             // threshold
             smem_variable_get(thisAgent, var_act_thresh, &(temp));
-            thisAgent->smem_params->thresh->set_value(temp);
+            thisAgent->SMem->smem_params->thresh->set_value(temp);
 
             // activation mode
             smem_variable_get(thisAgent, var_act_mode, &(temp));
-            thisAgent->smem_params->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
+            thisAgent->SMem->smem_params->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
         }
 
         // reset identifier counters
         smem_reset_id_counters(thisAgent);
 
         // if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
-        if (thisAgent->smem_params->lazy_commit->get_value() == on)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == on)
         {
-            thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    thisAgent->smem_timers->init->stop();
+    thisAgent->SMem->smem_timers->init->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
 
 void smem_attach(agent* thisAgent)
 {
-    if (thisAgent->smem_db->get_status() == soar_module::disconnected)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::disconnected)
     {
         smem_init_db(thisAgent);
     }
@@ -3255,32 +3244,32 @@ void smem_attach(agent* thisAgent)
 inline void _smem_close_vars(agent* thisAgent)
 {
     // store max cycle for future use of the smem database
-    smem_variable_set(thisAgent, var_max_cycle, thisAgent->smem_max_cycle);
+    smem_variable_set(thisAgent, var_max_cycle, thisAgent->SMem->smem_max_cycle);
 
     // store num nodes/edges for future use of the smem database
-    smem_variable_set(thisAgent, var_num_nodes, thisAgent->smem_stats->chunks->get_value());
-    smem_variable_set(thisAgent, var_num_edges, thisAgent->smem_stats->slots->get_value());
+    smem_variable_set(thisAgent, var_num_nodes, thisAgent->SMem->smem_stats->chunks->get_value());
+    smem_variable_set(thisAgent, var_num_edges, thisAgent->SMem->smem_stats->slots->get_value());
 }
 
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void smem_close(agent* thisAgent)
 {
-    if (thisAgent->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
     {
         _smem_close_vars(thisAgent);
 
         // if lazy, commit
-        if (thisAgent->smem_params->lazy_commit->get_value() == on)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == on)
         {
-            thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
         }
 
         // de-allocate common statements
-        delete thisAgent->smem_stmts;
+        delete thisAgent->SMem->smem_stmts;
 		delete thisAgent->lastCue;
 
         // close the database
-        thisAgent->smem_db->disconnect();
+        thisAgent->SMem->smem_db->disconnect();
     }
 }
 
@@ -3292,9 +3281,9 @@ void smem_reinit_cmd(agent* thisAgent)
 
 void smem_reinit(agent* thisAgent)
 {
-    if (thisAgent->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
     {
-        if (thisAgent->smem_params->append_db->get_value() == off)
+        if (thisAgent->SMem->smem_params->append_db->get_value() == off)
         {
             smem_close(thisAgent);
             smem_init_db(thisAgent);
@@ -3332,7 +3321,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
                         // de-allocation of value is dependent upon type
                         if ((*v)->val_const.val_type == value_const_t)
                         {
-                            symbol_remove_ref(thisAgent, &(*v)->val_const.val_value);
+                            thisAgent->symbolManager->symbol_remove_ref(&(*v)->val_const.val_value);
                         }
                         else
                         {
@@ -3349,7 +3338,7 @@ void smem_deallocate_chunk(agent* thisAgent, smem_chunk* chunk, bool free_chunk 
 
                 // deallocate attribute for each corresponding value
                 lSym = s->first;
-                symbol_remove_ref(thisAgent, &lSym);
+                thisAgent->symbolManager->symbol_remove_ref(&lSym);
 
                 chunk->slots->erase(s);
             }
@@ -3384,9 +3373,10 @@ inline std::string* smem_parse_lti_name(agent* thisAgent, soar::Lexeme* lexeme, 
         (*id_number) = (*lexeme).id_number;
 
         char counter_index = (*id_letter - static_cast<char>('A'));
-        if (*id_number >= thisAgent->id_counter[counter_index])
+        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
+        if (*id_number >= *letter_ct)
         {
-            thisAgent->id_counter[counter_index] = *id_number + 1;
+            *letter_ct = *id_number + 1;
         }
     }
     else
@@ -3406,15 +3396,15 @@ inline Symbol* smem_parse_constant_attr(agent* thisAgent, soar::Lexeme* lexeme)
 
     if ((*lexeme).type == STR_CONSTANT_LEXEME)
     {
-        return_val = make_str_constant(thisAgent, static_cast<const char*>((*lexeme).string()));
+        return_val = thisAgent->symbolManager->make_str_constant(static_cast<const char*>((*lexeme).string()));
     }
     else if ((*lexeme).type == INT_CONSTANT_LEXEME)
     {
-        return_val = make_int_constant(thisAgent, (*lexeme).int_val);
+        return_val = thisAgent->symbolManager->make_int_constant((*lexeme).int_val);
     }
     else if ((*lexeme).type == FLOAT_CONSTANT_LEXEME)
     {
-        return_val = make_float_constant(thisAgent, (*lexeme).float_val);
+        return_val = thisAgent->symbolManager->make_float_constant((*lexeme).float_val);
     }
 
     return return_val;
@@ -3549,19 +3539,19 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_str_constant(thisAgent, static_cast<const char*>(lexer->current_lexeme.string()));
+                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer->current_lexeme.string()));
                             }
                             else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_int_constant(thisAgent, lexer->current_lexeme.int_val);
+                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_int_constant(lexer->current_lexeme.int_val);
                             }
                             else if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                             {
                                 chunk_value = new smem_chunk_value;
                                 chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = make_float_constant(thisAgent, lexer->current_lexeme.float_val);
+                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
                             }
                             else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
                             {
@@ -3626,7 +3616,7 @@ bool smem_parse_chunk(agent* thisAgent, soar::Lexer* lexer, smem_str_to_chunk_ma
                                 if (first_value && !s->empty())
                                 {
                                     // in the case of a repeated attribute, remove ref here to avoid leak
-                                    symbol_remove_ref(thisAgent, &chunk_attr);
+                                    thisAgent->symbolManager->symbol_remove_ref(&chunk_attr);
                                 }
                                 s->push_back(chunk_value);
 
@@ -3772,7 +3762,10 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
                     if ((*c_new)->lti_number == NIL)
                     {
                         // add a new lti id (we have a guarantee this won't be in Soar's WM)
-                        (*c_new)->lti_number = (thisAgent->id_counter[(*c_new)->lti_letter - static_cast<char>('A') ]++);
+                        char counter_index = ((*c_new)->lti_letter - static_cast<char>('A'));
+                        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
+
+                        (*c_new)->lti_number = (*letter_ct)++;
                         (*c_new)->lti_id = smem_lti_add_id(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
                     }
                     else
@@ -3789,14 +3782,14 @@ bool smem_parse_chunks(agent* thisAgent, const char* chunks_str, std::string** e
                                 (*c_new)->lti_id = smem_lti_add_id(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
 
                                 // this could affect an existing identifier in Soar's WM
-                                Symbol* id_parent = find_identifier(thisAgent, (*c_new)->lti_letter, (*c_new)->lti_number);
+                                Symbol* id_parent = thisAgent->symbolManager->find_identifier((*c_new)->lti_letter, (*c_new)->lti_number);
                                 if (id_parent != NIL)
                                 {
                                     // if so we make it an lti manually
                                     id_parent->id->smem_lti = (*c_new)->lti_id;
 
-                                    id_parent->id->smem_time_id = thisAgent->epmem_stats->time->get_value();
-                                    id_parent->id->smem_valid = thisAgent->epmem_validation;
+                                    id_parent->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+                                    id_parent->id->smem_valid = thisAgent->EpMem->epmem_validation;
                                     epmem_schedule_promotion(thisAgent, id_parent);
                                 }
                             }
@@ -3899,9 +3892,9 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
             if (good_cue)
             {
-                root_cue_id = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
+                root_cue_id = thisAgent->symbolManager->make_new_identifier((char) lexer.current_lexeme.string()[1], 1);
                 cue_ids[lexer.current_lexeme.string()] = root_cue_id;
-                negative_cues = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[1], 1);
+                negative_cues = thisAgent->symbolManager->make_new_identifier((char) lexer.current_lexeme.string()[1], 1);
             }
             else
             {
@@ -3992,17 +3985,17 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
                     value = NIL;
                     if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                     {
-                        value = make_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
+                        value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer.current_lexeme.string()));
                         lexer.get_lexeme();
                     }
                     else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                     {
-                        value = make_int_constant(thisAgent, lexer.current_lexeme.int_val);
+                        value = thisAgent->symbolManager->make_int_constant(lexer.current_lexeme.int_val);
                         lexer.get_lexeme();
                     }
                     else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                     {
-                        value = make_float_constant(thisAgent, lexer.current_lexeme.float_val);
+                        value = thisAgent->symbolManager->make_float_constant(lexer.current_lexeme.float_val);
                         lexer.get_lexeme();
                     }
                     else if (lexer.current_lexeme.type == AT_LEXEME)
@@ -4029,7 +4022,7 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
 
                         if (value_iterator == cue_ids.end())
                         {
-                            value = make_new_identifier(thisAgent, (char) lexer.current_lexeme.string()[0], 1);
+                            value = thisAgent->symbolManager->make_new_identifier((char) lexer.current_lexeme.string()[0], 1);
                             cue_ids[lexer.current_lexeme.string()] = value; //Keep track of created symbols for deletion later.
                         }
                         lexer.get_lexeme();
@@ -4131,12 +4124,12 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, &delete_wme->value);
+                thisAgent->symbolManager->symbol_remove_ref(&delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, &s->attr);
+            thisAgent->symbolManager->symbol_remove_ref(&s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         root_cue_id->id->slots = NIL;
@@ -4147,18 +4140,18 @@ bool smem_parse_cues(agent* thisAgent, const char* chunks_str, std::string** err
             wme* delete_wme;
             for (delete_wme = s->wmes; delete_wme != NIL; delete_wme = delete_wme->next)
             {
-                symbol_remove_ref(thisAgent, &delete_wme->value);
+                thisAgent->symbolManager->symbol_remove_ref(&delete_wme->value);
                 deallocate_wme(thisAgent, delete_wme);
             }
 
             s->wmes = NIL;
-            symbol_remove_ref(thisAgent, &s->attr);
+            thisAgent->symbolManager->symbol_remove_ref(&s->attr);
             mark_slot_for_possible_removal(thisAgent, s);
         }//End of for-slots loop.
         negative_cues->id->slots = NIL;
 
-        symbol_remove_ref(thisAgent, &root_cue_id);//gets rid of cue id.
-        symbol_remove_ref(thisAgent, &negative_cues);//gets rid of negative cues id.
+        thisAgent->symbolManager->symbol_remove_ref(&root_cue_id);//gets rid of cue id.
+        thisAgent->symbolManager->symbol_remove_ref(&negative_cues);//gets rid of negative cues id.
     }
 
     return good_cue;
@@ -4327,15 +4320,15 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
 
                 if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                 {
-                    attribute = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
+                    attribute = thisAgent->symbolManager->find_str_constant(static_cast<const char*>(lexer.current_lexeme.string()));
                 }
                 else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                 {
-                    attribute = find_int_constant(thisAgent, lexer.current_lexeme.int_val);
+                    attribute = thisAgent->symbolManager->find_int_constant(lexer.current_lexeme.int_val);
                 }
                 else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                 {
-                    attribute = find_float_constant(thisAgent, lexer.current_lexeme.float_val);
+                    attribute = thisAgent->symbolManager->find_float_constant(lexer.current_lexeme.float_val);
                 }
 
                 if (attribute == NIL)
@@ -4357,17 +4350,17 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                         value = NIL;
                         if (lexer.current_lexeme.type == STR_CONSTANT_LEXEME)
                         {
-                            value = find_str_constant(thisAgent, static_cast<const char*>(lexer.current_lexeme.string()));
+                            value = thisAgent->symbolManager->find_str_constant(static_cast<const char*>(lexer.current_lexeme.string()));
                             lexer.get_lexeme();
                         }
                         else if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                         {
-                            value = find_int_constant(thisAgent, lexer.current_lexeme.int_val);
+                            value = thisAgent->symbolManager->find_int_constant(lexer.current_lexeme.int_val);
                             lexer.get_lexeme();
                         }
                         else if (lexer.current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                         {
-                            value = find_float_constant(thisAgent, lexer.current_lexeme.float_val);
+                            value = thisAgent->symbolManager->find_float_constant(lexer.current_lexeme.float_val);
                             lexer.get_lexeme();
                         }
                         else if (lexer.current_lexeme.type == AT_LEXEME)
@@ -4375,7 +4368,7 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
                             lexer.get_lexeme();
                             if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                             {
-                                value = find_identifier(thisAgent, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+                                value = thisAgent->symbolManager->find_identifier(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
                                 lexer.get_lexeme();
                             }
                             else
@@ -4484,12 +4477,12 @@ bool smem_parse_remove(agent* thisAgent, const char* chunks_str, std::string** e
         symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
         for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->id);
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->attr);
-            symbol_remove_ref(thisAgent, &(*triple_iterator)->value);
+            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->id);
+            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->attr);
+            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->value);
             delete *triple_iterator;
         }
-        symbol_remove_ref(thisAgent, &lti);
+        thisAgent->symbolManager->symbol_remove_ref(&lti);
     }
     return good_command;
 }
@@ -4540,7 +4533,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     std::queue<int> levels;
 
     bool do_wm_phase = false;
-    bool mirroring_on = (thisAgent->smem_params->mirroring->get_value() == on);
+    bool mirroring_on = (thisAgent->SMem->smem_params->mirroring->get_value() == on);
 
 	//Free this up as soon as we start a phase that allows queries
 	if(!store_only){
@@ -4551,7 +4544,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->api->start();
+        thisAgent->SMem->smem_timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
 
         // make sure this state has had some sort of change to the cmd
@@ -4580,8 +4573,8 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 {
                     for (w_p = wmes->begin(); w_p != wmes->end(); w_p++)
                     {
-                        if (((store_only) && ((parent_level != 0) || ((*w_p)->attr == thisAgent->smem_sym_store))) ||
-                                ((!store_only) && ((parent_level != 0) || ((*w_p)->attr != thisAgent->smem_sym_store))))
+                        if (((store_only) && ((parent_level != 0) || ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_store))) ||
+                                ((!store_only) && ((parent_level != 0) || ((*w_p)->attr != thisAgent->symbolManager->soarSymbols.smem_sym_store))))
                         {
                             wme_count++;
 
@@ -4593,7 +4586,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                             if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                     (parent_level == 0) &&
-                                    (((*w_p)->attr == thisAgent->smem_sym_query) || ((*w_p)->attr == thisAgent->smem_sym_store)))
+                                    (((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_query) || ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_store)))
                             {
                                 syms.push((*w_p)->value);
                                 levels.push(parent_level + 1);
@@ -4656,7 +4649,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 if (path != cmd_bad)
                 {
                     // collect information about known commands
-                    if ((*w_p)->attr == thisAgent->smem_sym_retrieve)
+                    if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_retrieve)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 (path == blank_slate))
@@ -4669,7 +4662,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_query)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_query)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
@@ -4684,7 +4677,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_negquery)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_negquery)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
@@ -4699,7 +4692,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_prohibit)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_prohibit)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
@@ -4713,7 +4706,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_math_query)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
@@ -4727,7 +4720,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_store)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_store)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_store)))
@@ -4740,7 +4733,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->smem_sym_depth)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_depth)
                     {
                         if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                         {
@@ -4771,7 +4764,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->api->stop();
+            thisAgent->SMem->smem_timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
 
             // process command
@@ -4786,18 +4779,18 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                     if (retrieve->id->smem_lti == NIL)
                     {
                         // retrieve is not pointing to an lti!
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_failure, retrieve);
+                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
                     }
                     else
                     {
                         // status: success
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, retrieve);
+                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
                         smem_install_memory(thisAgent, state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
-                        thisAgent->smem_stats->expansions->set_value(thisAgent->smem_stats->expansions->get_value() + 1);
+                        thisAgent->SMem->smem_stats->expansions->set_value(thisAgent->SMem->smem_stats->expansions->get_value() + 1);
                     }
                 }
                 // query
@@ -4814,20 +4807,20 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                     smem_process_query(thisAgent, state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
-                    thisAgent->smem_stats->cbr->set_value(thisAgent->smem_stats->cbr->get_value() + 1);
+                    thisAgent->SMem->smem_stats->cbr->set_value(thisAgent->SMem->smem_stats->cbr->get_value() + 1);
                 }
                 else if (path == cmd_store)
                 {
                     smem_sym_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->smem_timers->storage->start();
+                    thisAgent->SMem->smem_timers->storage->start();
                     ////////////////////////////////////////////////////////////////////////////
 
                     // start transaction (if not lazy)
-                    if (thisAgent->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
                     {
-                        thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -4835,26 +4828,26 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                         smem_soar_store(thisAgent, (*sym_p), ((mirroring_on) ? (store_recursive) : (store_level)));
 
                         // status: success
-                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_success, (*sym_p));
+                        smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
-                        thisAgent->smem_stats->stores->set_value(thisAgent->smem_stats->stores->get_value() + 1);
+                        thisAgent->SMem->smem_stats->stores->set_value(thisAgent->SMem->smem_stats->stores->get_value() + 1);
                     }
 
                     // commit transaction (if not lazy)
-                    if (thisAgent->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
                     {
-                        thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
+                        thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->smem_timers->storage->stop();
+                    thisAgent->SMem->smem_timers->storage->stop();
                     ////////////////////////////////////////////////////////////////////////////
                 }
             }
             else
             {
-                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->smem_sym_bad_cmd, state->id->smem_cmd_header);
+                smem_buffer_add_wme(thisAgent, meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_cmd_header);
             }
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
@@ -4868,9 +4861,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4878,9 +4871,9 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
 
                     for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
                     {
-                        symbol_remove_ref(thisAgent, &(*mw_it)->id);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->attr);
-                        symbol_remove_ref(thisAgent, &(*mw_it)->value);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
 
                         delete(*mw_it);
                     }
@@ -4897,7 +4890,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
         else
         {
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->smem_timers->api->stop();
+            thisAgent->SMem->smem_timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
         }
 
@@ -4907,19 +4900,19 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
         state = state->id->higher_goal;
     }
 
-    if (store_only && mirroring_on && (!thisAgent->smem_changed_ids->empty()))
+    if (store_only && mirroring_on && (!thisAgent->SMem->smem_changed_ids->empty()))
     {
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->storage->start();
+        thisAgent->SMem->smem_timers->storage->start();
         ////////////////////////////////////////////////////////////////////////////
 
         // start transaction (if not lazy)
-        if (thisAgent->smem_params->lazy_commit->get_value() == off)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
         {
-            thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
         }
 
-        for (smem_pooled_symbol_set::iterator it = thisAgent->smem_changed_ids->begin(); it != thisAgent->smem_changed_ids->end(); it++)
+        for (smem_pooled_symbol_set::iterator it = thisAgent->SMem->smem_changed_ids->begin(); it != thisAgent->SMem->smem_changed_ids->end(); it++)
         {
             // require that the lti has at least one augmentation
             if ((*it)->id->slots)
@@ -4927,40 +4920,40 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
                 smem_soar_store(thisAgent, (*it), store_recursive);
 
                 // add one to the mirrors stat
-                thisAgent->smem_stats->mirrors->set_value(thisAgent->smem_stats->mirrors->get_value() + 1);
+                thisAgent->SMem->smem_stats->mirrors->set_value(thisAgent->SMem->smem_stats->mirrors->get_value() + 1);
             }
             Symbol* lSym = (*it);
 
-            symbol_remove_ref(thisAgent, &lSym);
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
         }
 
         // commit transaction (if not lazy)
-        if (thisAgent->smem_params->lazy_commit->get_value() == off)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
         {
-            thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
         }
 
         // clear symbol set
-        thisAgent->smem_changed_ids->clear();
+        thisAgent->SMem->smem_changed_ids->clear();
 
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->smem_timers->storage->stop();
+        thisAgent->SMem->smem_timers->storage->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
 
     if (do_wm_phase)
     {
-        thisAgent->smem_ignore_changes = true;
+        thisAgent->SMem->smem_ignore_changes = true;
 
         do_working_memory_phase(thisAgent);
 
-        thisAgent->smem_ignore_changes = false;
+        thisAgent->SMem->smem_ignore_changes = false;
     }
 }
 
 void smem_go(agent* thisAgent, bool store_only)
 {
-    thisAgent->smem_timers->total->start();
+    thisAgent->SMem->smem_timers->total->start();
 
 #ifndef SMEM_EXPERIMENT
 
@@ -4970,27 +4963,27 @@ void smem_go(agent* thisAgent, bool store_only)
 
 #endif // SMEM_EXPERIMENT
 
-    thisAgent->smem_timers->total->stop();
+    thisAgent->SMem->smem_timers->total->stop();
 }
 
 bool smem_backup_db(agent* thisAgent, const char* file_name, std::string* err)
 {
     bool return_val = false;
 
-    if (thisAgent->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
     {
         _smem_close_vars(thisAgent);
 
-        if (thisAgent->smem_params->lazy_commit->get_value() == on)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == on)
         {
-            thisAgent->smem_stmts->commit->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
         }
 
-        return_val = thisAgent->smem_db->backup(file_name, err);
+        return_val = thisAgent->SMem->smem_db->backup(file_name, err);
 
-        if (thisAgent->smem_params->lazy_commit->get_value() == on)
+        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == on)
         {
-            thisAgent->smem_stmts->begin->execute(soar_module::op_reinit);
+            thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
         }
     }
     else
@@ -5033,7 +5026,7 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
         double temp_double;
 
         // id, soar_letter, number
-        q = thisAgent->smem_stmts->vis_lti;
+        q = thisAgent->SMem->smem_stmts->vis_lti;
         while (q->execute() == soar_module::row)
         {
             lti_id = q->column_int(0);
@@ -5083,7 +5076,7 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
                 return_val->append("\n");
 
                 // lti_id, attr_type, attr_hash, val_type, val_hash
-                q = thisAgent->smem_stmts->vis_value_const;
+                q = thisAgent->SMem->smem_stmts->vis_value_const;
                 while (q->execute() == soar_module::row)
                 {
                     lti_id = q->column_int(0);
@@ -5198,7 +5191,7 @@ void smem_visualize_store(agent* thisAgent, std::string* return_val)
             // then links to other LTIs
             {
                 // lti_id, attr_type, attr_hash, value_lti_id
-                q = thisAgent->smem_stmts->vis_value_lti;
+                q = thisAgent->SMem->smem_stmts->vis_value_lti;
                 while (q->execute() == soar_module::row)
                 {
                     // source
@@ -5258,7 +5251,7 @@ void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth
     // buffer
     std::string return_val2;
 
-    soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
+    soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
     uint64_t child_counter;
 
@@ -5286,7 +5279,7 @@ void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth
 
         // fake former linkage
         {
-            soar_module::sqlite_statement* lti_q = thisAgent->smem_stmts->lti_letter_num;
+            soar_module::sqlite_statement* lti_q = thisAgent->SMem->smem_stmts->lti_letter_num;
 
             // get just this lti
             lti_q->bind_int(1, lti_id);
@@ -5486,7 +5479,7 @@ void smem_visualize_lti(agent* thisAgent, smem_lti_id lti_id, unsigned int depth
 
     // handle lti nodes at once
     {
-        soar_module::sqlite_statement* act_q = thisAgent->smem_stmts->vis_lti_act;
+        soar_module::sqlite_statement* act_q = thisAgent->SMem->smem_stmts->vis_lti_act;
 
         return_val->append("node [ shape = doublecircle ];");
         return_val->append("\n");
@@ -5537,7 +5530,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
 
     smem_attach(thisAgent);
 
-    soar_module::sqlite_statement* expand_q = thisAgent->smem_stmts->web_expand;
+    soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
     return_val->append("(@");
     return_val->push_back(lti_letter);
@@ -5712,7 +5705,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
             {
                 return_val->append(", -");
             }
-            temp_string << ((int64_t)thisAgent->smem_max_cycle - (int64_t)*history_item);
+            temp_string << ((int64_t)thisAgent->SMem->smem_max_cycle - (int64_t)*history_item);
             return_val->append(temp_string.str());
             temp_string.str("");
         }
@@ -5725,7 +5718,7 @@ inline std::set< smem_lti_id > _smem_print_lti(agent* thisAgent, smem_lti_id lti
 void smem_print_store(agent* thisAgent, std::string* return_val)
 {
     // id, soar_letter, number
-    soar_module::sqlite_statement* q = thisAgent->smem_stmts->vis_lti;
+    soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
         _smem_print_lti(thisAgent, q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3), return_val);
@@ -5744,10 +5737,10 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
     std::set< smem_lti_id > next;
     std::set< smem_lti_id >::iterator next_it;
 
-    soar_module::sqlite_statement* lti_q = thisAgent->smem_stmts->lti_letter_num;
-    soar_module::sqlite_statement* act_q = thisAgent->smem_stmts->vis_lti_act;
-    soar_module::sqlite_statement* hist_q = thisAgent->smem_stmts->history_get;
-    soar_module::sqlite_statement* lti_access_q = thisAgent->smem_stmts->lti_access_get;
+    soar_module::sqlite_statement* lti_q = thisAgent->SMem->smem_stmts->lti_letter_num;
+    soar_module::sqlite_statement* act_q = thisAgent->SMem->smem_stmts->vis_lti_act;
+    soar_module::sqlite_statement* hist_q = thisAgent->SMem->smem_stmts->history_get;
+    soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->smem_stmts->lti_access_get;
     unsigned int i;
 
 
@@ -5786,7 +5779,7 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
                 hist_q->execute();
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
-                    if (thisAgent->smem_stmts->history_get->column_int(i) != 0)
+                    if (thisAgent->SMem->smem_stmts->history_get->column_int(i) != 0)
                     {
                         access_history.push_back(hist_q->column_int(i));
                     }
@@ -5821,4 +5814,43 @@ void smem_print_lti(agent* thisAgent, smem_lti_id lti_id, uint64_t depth, std::s
             }
         }
     }
+}
+
+SMem_Manager::SMem_Manager(agent* myAgent)
+{
+    thisAgent = myAgent;
+    thisAgent->SMem = this;
+
+    smem_params = new smem_param_container(thisAgent);
+    smem_stats = new smem_stat_container(thisAgent);
+    smem_timers = new smem_timer_container(thisAgent);
+
+    smem_db = new soar_module::sqlite_database();
+
+    smem_validation = 0;
+    thisAgent->LTIs_sourced = new LTI_Promotion_Set();
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+    smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+#else
+    smem_changed_ids = new smem_pooled_symbol_set();
+#endif
+    smem_ignore_changes = false;
+
+};
+
+void SMem_Manager::clean_up_for_agent_deletion()
+{
+    /* This is not in destructor because it may be called before other
+     * deletion code that may need params, stats or timers to exist */
+    // cleanup exploration
+
+    smem_close(thisAgent);
+    delete smem_changed_ids;
+    delete smem_params;
+    delete smem_stats;
+    delete smem_timers;
+
+    delete smem_db;
+    delete thisAgent->LTIs_sourced;
 }

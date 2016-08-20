@@ -25,56 +25,6 @@
 #include <queue>
 
 //////////////////////////////////////////////////////////
-// EpMem Constants
-//////////////////////////////////////////////////////////
-
-enum epmem_variable_key
-{
-    var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
-    var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
-    var_next_id
-};
-
-// algorithm constants
-#define EPMEM_MEMID_NONE                            0
-#define EPMEM_NODEID_ROOT                           0
-#define EPMEM_NODEID_BAD                            -1
-#define EPMEM_HASH_ACCEPTABLE                       1
-
-#define EPMEM_NODE_POS                              0
-#define EPMEM_NODE_NEG                              1
-#define EPMEM_RANGE_START                           0
-#define EPMEM_RANGE_END                             1
-#define EPMEM_RANGE_EP                              0
-#define EPMEM_RANGE_NOW                             1
-#define EPMEM_RANGE_POINT                           2
-
-#define EPMEM_RIT_ROOT                              0
-#define EPMEM_RIT_OFFSET_INIT                       -1
-#define EPMEM_LN_2                                  0.693147180559945
-
-#define EPMEM_DNF                                   2
-
-#define EPMEM_RIT_STATE_NODE                        0
-#define EPMEM_RIT_STATE_EDGE                        1
-
-#define EPMEM_SCHEMA_VERSION "2.0"
-
-//////////////////////////////////////////////////////////
-// EpMem Typedefs
-//////////////////////////////////////////////////////////
-
-// represents a unique node identifier in the episodic store
-typedef int64_t epmem_node_id;
-
-// represents a unique temporal hash in the episodic store
-typedef uint64_t epmem_hash_id;
-
-// represents a unique episode identifier in the episodic store
-typedef uint64_t epmem_time_id;
-
-
-//////////////////////////////////////////////////////////
 // EpMem Parameters
 //////////////////////////////////////////////////////////
 
@@ -676,7 +626,52 @@ struct epmem_interval_comparator
         }
     }
 };
+
 typedef std::priority_queue<epmem_interval*, std::vector<epmem_interval*>, epmem_interval_comparator> epmem_interval_pq;
+
+class EpMem_Manager
+{
+    public:
+        EpMem_Manager(agent* myAgent);
+        ~EpMem_Manager() {};
+
+        void clean_up_for_agent_deletion();
+
+        // epmem
+        epmem_param_container* epmem_params;
+        epmem_stat_container* epmem_stats;
+        epmem_timer_container* epmem_timers;
+
+        soar_module::sqlite_database* epmem_db;
+        epmem_common_statement_container* epmem_stmts_common;
+        epmem_graph_statement_container* epmem_stmts_graph;
+
+
+        epmem_id_removal_map* epmem_node_removals;
+        std::vector<epmem_time_id>* epmem_node_mins;
+        std::vector<bool>* epmem_node_maxes;
+
+        epmem_id_removal_map* epmem_edge_removals;
+        std::vector<epmem_time_id>* epmem_edge_mins;
+        std::vector<bool>* epmem_edge_maxes;
+
+        epmem_parent_id_pool* epmem_id_repository;
+        epmem_return_id_pool* epmem_id_replacement;
+        epmem_id_ref_counter* epmem_id_ref_counts;
+        epmem_symbol_stack* epmem_id_removes;
+
+        epmem_symbol_set* epmem_wme_adds;
+        epmem_symbol_set* epmem_promotions;
+
+        epmem_rit_state epmem_rit_state_graph[2];
+
+        uint64_t epmem_validation;
+
+    private:
+
+        agent* thisAgent;
+
+};
 
 // suppress long "decorated name length exceeded" warning;
 // applies for the rest of the TU, which is where templates are expanded

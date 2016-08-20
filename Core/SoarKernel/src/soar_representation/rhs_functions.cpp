@@ -35,7 +35,6 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "rhs_functions.h"
 
 #include "agent.h"
@@ -47,9 +46,11 @@
 #include "print.h"
 #include "instantiation.h"
 #include "production.h"
+#include "run_soar.h"
 #include "slot.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
@@ -157,7 +158,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
     }
 
     // DJP-FREE: The name reference needs to be released now the function is gone
-    symbol_remove_ref(thisAgent, &name);
+    thisAgent->symbolManager->symbol_remove_ref(&name);
 }
 
 /* ====================================================================
@@ -203,7 +204,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
 Symbol* crlf_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_data*/)
 {
-    return make_str_constant(thisAgent, "\n");
+    return thisAgent->symbolManager->make_str_constant("\n");
 }
 
 /* --------------------------------------------------------------------
@@ -249,11 +250,11 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, list* args, voi
             buf << string;
         }
     }
-    if ((!args) && (!find_str_constant(thisAgent, buf.str().c_str())))
+    if ((!args) && (!thisAgent->symbolManager->find_str_constant(buf.str().c_str())))
     {
-        return make_str_constant(thisAgent, buf.str().c_str());
+        return thisAgent->symbolManager->make_str_constant(buf.str().c_str());
     }
-    return generate_new_str_constant(thisAgent, buf.str().c_str(), &thisAgent->mcs_counter);
+    return thisAgent->symbolManager->generate_new_str_constant(buf.str().c_str(), &thisAgent->mcs_counter);
 }
 
 
@@ -293,7 +294,7 @@ Symbol* timestamp_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*us
              temp->tm_mon + 1, temp->tm_mday, temp->tm_year,
              temp->tm_hour, temp->tm_min, temp->tm_sec);
     buf[TIMESTAMP_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-    return make_str_constant(thisAgent, buf);
+    return thisAgent->symbolManager->make_str_constant(buf);
 }
 
 /* --------------------------------------------------------------------
@@ -324,7 +325,7 @@ Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_
             break;
         }
     }
-    symbol_add_ref(thisAgent, sym);
+    thisAgent->symbolManager->symbol_add_ref(sym);
     release_io_symbol(thisAgent, sym);  /* because it was obtained using get_io_... */
     return sym;
 }
@@ -361,7 +362,7 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     symbol_to_capitalize = strdup(sym->to_string());
     *symbol_to_capitalize = static_cast<char>(toupper(*symbol_to_capitalize));
-    returnSym = make_str_constant(thisAgent, symbol_to_capitalize);
+    returnSym = thisAgent->symbolManager->make_str_constant(symbol_to_capitalize);
     free(symbol_to_capitalize);
     return returnSym;
 }
@@ -452,12 +453,12 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (arg1 == arg2)
     {
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->first));
+        thisAgent->symbolManager->symbol_add_ref(static_cast<Symbol*>(c->first));
         return static_cast<symbol_struct*>(c->first);
     }
     else if (c->rest)
     {
-        symbol_add_ref(thisAgent, static_cast<Symbol*>(c->rest->first));
+        thisAgent->symbolManager->symbol_add_ref(static_cast<Symbol*>(c->rest->first));
         return static_cast<symbol_struct*>(c->rest->first);
     }
     else
@@ -509,7 +510,7 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         str = str.substr(start_pos, end_pos - start_pos + 1);
     }
 
-    returnSym = make_str_constant(thisAgent, str.c_str());
+    returnSym = thisAgent->symbolManager->make_str_constant(str.c_str());
     free(symbol_to_trim);
     return returnSym;
 
@@ -526,7 +527,7 @@ Symbol* strlen_rhs_function_code(agent* thisAgent, list* args, void* /*user_data
        version of it --- */
     string = arg->to_string();
 
-    return make_int_constant(thisAgent, static_cast<int64_t>(strlen(string)));
+    return thisAgent->symbolManager->make_int_constant(static_cast<int64_t>(strlen(string)));
 }
 /* AGR 520     end */
 
@@ -651,7 +652,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_attr = make_new_identifier(thisAgent, curwme->attr->id->name_letter, 0, NIL);
+            new_attr = thisAgent->symbolManager->make_new_identifier(curwme->attr->id->name_letter, 0, NIL);
             made_new_attr_symbol = true;
         }
 
@@ -674,7 +675,7 @@ void recursive_wme_copy(agent* thisAgent,
         else
         {
             /* Make a new id symbol */
-            new_value = make_new_identifier(thisAgent, curwme->value->id->name_letter, 0, NIL);
+            new_value = thisAgent->symbolManager->make_new_identifier(curwme->value->id->name_letter, 0, NIL);
             made_new_value_symbol = true;
         }
 
@@ -691,14 +692,14 @@ void recursive_wme_copy(agent* thisAgent,
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
        functions. */
-    symbol_add_ref(thisAgent, new_id);
+    thisAgent->symbolManager->symbol_add_ref(new_id);
     if (!made_new_attr_symbol)
     {
-        symbol_add_ref(thisAgent, new_attr);
+        thisAgent->symbolManager->symbol_add_ref(new_attr);
     }
     if (!made_new_value_symbol)
     {
-        symbol_add_ref(thisAgent, new_value);
+        thisAgent->symbolManager->symbol_add_ref(new_value);
     }
 
     glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
@@ -763,11 +764,11 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
     Symbol* baseid = static_cast<Symbol*>(args->first);
     if (!baseid->is_identifier())
     {
-        return make_str_constant(thisAgent, "*symbol not id*");
+        return thisAgent->symbolManager->make_str_constant("*symbol not id*");
     }
 
     /* Make the new root identifier symbol.  We'll set the level in create_instantiation. */
-    Symbol* retval = make_new_identifier(thisAgent, 'D', 0, NIL);
+    Symbol* retval = thisAgent->symbolManager->make_new_identifier('D', 0, NIL);
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
@@ -837,11 +838,11 @@ Symbol* wait_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
 void init_built_in_rhs_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "write"), write_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code,
                      -1, false, true, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "crlf"), crlf_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code,
                      0, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "halt"), halt_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code,
                      0, false, true, 0);
     /*
       Replaced with a gSKI rhs function
@@ -849,49 +850,49 @@ void init_built_in_rhs_functions(agent* thisAgent)
       interrupt_rhs_function_code,
       0, false, true, 0);
     */
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "make-constant-symbol"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"),
                      make_constant_symbol_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "timestamp"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),
                      timestamp_rhs_function_code,
                      0, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "accept"), accept_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code,
                      0, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "trim"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),
                      trim_rhs_function_code,
                      1,
                      true,
                      false,
                      0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "capitalize-symbol"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"),
                      capitalize_symbol_rhs_function_code,
                      1,
                      true,
                      false,
                      0);
     /* AGR 520  begin */
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "ifeq"), ifeq_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code,
                      4, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "strlen"), strlen_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code,
                      1, true, false, 0);
     /* AGR 520  end   */
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "dont-learn"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"),
                      dont_learn_rhs_function_code,
                      1, false, true, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "force-learn"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"),
                      force_learn_rhs_function_code,
                      1, false, true, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "deep-copy"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"),
                      deep_copy_rhs_function_code,
                      1, true, false, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "count"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"),
                      count_rhs_function_code,
                      -1, false, true, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "wait"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"),
                      wait_rhs_function_code,
                      1, false, true, 0);
 
@@ -902,21 +903,21 @@ void remove_built_in_rhs_functions(agent* thisAgent)
 {
 
     // DJP-FREE: These used to call make_str_constant, but the symbols must already exist and if we call make here again we leak a reference.
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "write"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "crlf"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "halt"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "make-constant-symbol"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "timestamp"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "accept"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "trim"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "capitalize-symbol"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "ifeq"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "strlen"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "dont-learn"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "force-learn"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "deep-copy"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "count"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "wait"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("crlf"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("make-constant-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("dont-learn"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("force-learn"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("count"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
 
     remove_built_in_rhs_math_functions(thisAgent);
 }

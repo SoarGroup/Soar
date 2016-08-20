@@ -23,13 +23,15 @@
 #include "xml.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "callback.h"
 #include "ElementXML.h"
 #include "print.h"
 #include "soar_TraceNames.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "XMLTrace.h"
+
+#include <assert.h>
 
 using namespace soar_TraceNames;
 namespace stn = soar_TraceNames;

@@ -63,7 +63,7 @@ void dyn_mat::append_row(const rvec& row)
 
 void dyn_mat::insert_row(size_t i)
 {
-    assert(!released && 0 <= i && i <= r);
+    assert(!released && i <= r);
     if (r >= static_cast<size_t>(buf.rows()))
     {
         buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
@@ -84,7 +84,7 @@ void dyn_mat::insert_row(size_t i, const rvec& row)
 
 void dyn_mat::remove_row(size_t i)
 {
-    assert(!released && 0 <= i && i < r);
+    assert(!released && i < r);
     for (size_t j = i + 1; j < r; ++j)
     {
         buf.block(j - 1, 0, 1, c) = buf.block(j, 0, 1, c);
@@ -111,7 +111,7 @@ void dyn_mat::append_col(const cvec& col)
 
 void dyn_mat::insert_col(size_t i)
 {
-    assert(!released && 0 <= i && i <= c);
+    assert(!released && i <= c);
     if (c >= static_cast<size_t>(buf.cols()))
     {
         buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
@@ -132,7 +132,7 @@ void dyn_mat::insert_col(size_t i, const cvec& col)
 
 void dyn_mat::remove_col(size_t i)
 {
-    assert(!released && 0 <= i && i < c);
+    assert(!released && i < c);
     for (size_t j = i + 1; j < c; ++j)
     {
         buf.block(0, j - 1, r, 1) = buf.block(0, j, r, 1);

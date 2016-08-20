@@ -130,37 +130,37 @@ class dyn_mat : public serializable
         
         double& operator()(size_t i, size_t j)
         {
-            assert(!released && 0 <= i && i < r && 0 <= j && j < c);
+            assert(!released && i < r && j < c);
             return buf(i, j);
         }
         
         double operator()(size_t i, size_t j) const
         {
-            assert(!released && 0 <= i && i < r && 0 <= j && j < c);
+            assert(!released && i < r && j < c);
             return buf(i, j);
         }
         
         mat::RowXpr row(size_t i)
         {
-            assert(!released && 0 <= i && i < r);
+            assert(!released && i < r);
             return buf.row(i);
         }
         
         mat::ConstRowXpr row(size_t i) const
         {
-            assert(!released && 0 <= i && i < r);
+            assert(!released && i < r);
             return buf.row(i);
         }
         
         mat::ColXpr col(size_t j)
         {
-            assert(!released && 0 <= j && j < c);
+            assert(!released && j < c);
             return buf.col(j);
         }
         
         mat::ConstColXpr col(size_t j) const
         {
-            assert(!released && 0 <= j && j < c);
+            assert(!released && j < c);
             return buf.col(j);
         }
         

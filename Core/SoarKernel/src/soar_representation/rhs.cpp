@@ -13,13 +13,15 @@
 #include "rhs.h"
 
 #include "agent.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "print.h"
 #include "production.h"
+#include "symbol_manager.h"
+#include "symbol.h"
 #include "test.h"
 
 #include <stdlib.h>
-#include "dprint.h"
 
 test var_test_bound_in_reconstructed_conds(
     agent* thisAgent,
@@ -66,7 +68,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
         dprint_noprefix(DT_RHS_VALUE, "%y(o%u)\n", r->referent, r->o_id);
         if (r->referent)
         {
-            symbol_remove_ref(thisAgent, &r->referent);
+            thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         }
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
@@ -439,7 +441,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             prefix[0] = first_letter;
             prefix[1] = 0;
 
-            sym = generate_new_variable(thisAgent, prefix);
+            sym = thisAgent->symbolManager->generate_new_variable(prefix);
             *(thisAgent->rhs_variable_bindings + index) = sym;
 
             if (thisAgent->highest_rhs_unboundvar_index < index)
@@ -581,7 +583,7 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
 {
     if (sym)
     {
-        symbol_add_ref(thisAgent, sym);
+        thisAgent->symbolManager->symbol_add_ref(sym);
     }
     return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID);
 }

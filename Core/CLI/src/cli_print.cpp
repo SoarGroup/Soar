@@ -103,12 +103,12 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
         if (prod->rl_rule)
         {
             // Do extra logging if this agent is in delta bar delta mode.
-            if (thisAgent->rl_params->decay_mode->get_value() == rl_param_container::delta_bar_delta_decay)
+            if (thisAgent->RL->rl_params->decay_mode->get_value() == rl_param_container::delta_bar_delta_decay)
             {
-                print_with_symbols(thisAgent, " %y", make_float_constant(thisAgent, prod->rl_delta_bar_delta_beta));
-                print_with_symbols(thisAgent, " %y", make_float_constant(thisAgent, prod->rl_delta_bar_delta_h));
+                print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_beta));
+                print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_h));
             }
-            print_with_symbols(thisAgent, " %y", make_float_constant(thisAgent, prod->rl_update_count));
+            print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_update_count));
             print_with_symbols(thisAgent, " %y", rhs_value_to_symbol(prod->action_list->referent));
         }
     }
@@ -448,7 +448,7 @@ void do_print_for_production_name(agent* thisAgent, soar::Lexeme* lexeme, const 
 {
     Symbol* sym;
 
-    sym = find_str_constant(thisAgent, lexeme->string());
+    sym = thisAgent->symbolManager->find_str_constant(lexeme->string());
     if (sym && sym->sc->production)
     {
         do_print_for_production(thisAgent, sym->sc->production, intern, print_filename, full_prod);
@@ -483,16 +483,16 @@ int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol** dest
     switch (lexeme->type)
     {
         case STR_CONSTANT_LEXEME:
-            *dest_sym = find_str_constant(thisAgent, lexeme->string());
+            *dest_sym = thisAgent->symbolManager->find_str_constant(lexeme->string());
             return 2;
         case INT_CONSTANT_LEXEME:
-            *dest_sym = find_int_constant(thisAgent, lexeme->int_val);
+            *dest_sym = thisAgent->symbolManager->find_int_constant(lexeme->int_val);
             return 2;
         case FLOAT_CONSTANT_LEXEME:
-            *dest_sym = find_float_constant(thisAgent, lexeme->float_val);
+            *dest_sym = thisAgent->symbolManager->find_float_constant(lexeme->float_val);
             return 2;
         case IDENTIFIER_LEXEME:
-            *dest_sym = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
+            *dest_sym = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
             return 2;
         case VARIABLE_LEXEME:
             *dest_sym = read_identifier_or_context_variable(thisAgent, lexeme);

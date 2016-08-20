@@ -369,7 +369,7 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = find_identifier(thisAgent, 'V', 30);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('V', 30);
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
@@ -392,7 +392,7 @@ void debug_test(int type)
         }
         case 4:
         {
-            Symbol *sym = find_identifier(thisAgent, 'G', 1);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('G', 1);
             if (sym)
             {
                 dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
@@ -404,7 +404,7 @@ void debug_test(int type)
 
         case 5:
         {
-            print_internal_symbols(thisAgent);
+//            print_internal_symbols(thisAgent);
             dprint_identifiers(DT_DEBUG);
             break;
         }

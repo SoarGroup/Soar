@@ -5,6 +5,8 @@
 #include "condition.h"
 #include "preference.h"
 #include "slot.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 #include "dprint.h"
@@ -26,7 +28,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** un
         }
 //        if (lSym->matched_sym)
 //        {
-//            symbol_remove_ref(thisAgent, &lSym->matched_sym);
+//            thisAgent->symbolManager->symbol_remove_ref(&lSym->matched_sym);
 //        }
         delete lSym;
     }
@@ -129,7 +131,7 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
             dprint(DT_REPAIR, "Found marked state %y.  Looking for superstate wme in subgoal %y...", g, last_goal);
             for (w = last_goal->id->impasse_wmes; w != NIL; w = w->next)
             {
-                if (w->attr == thisAgent->superstate_symbol)
+                if (w->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
                 {
                     m_repair_WMEs.insert(w);
                     dprint_noprefix(DT_REPAIR, "adding wme for superstate link: %w \n", w);
@@ -206,14 +208,14 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
             prefix[0] = 'c';
         }
         prefix[1] = 0;
-        lNewVar = generate_new_variable(thisAgent, prefix);
+        lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
         lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
 
     }
     else
     {
         lNewVar = iter_sym->second;
-        symbol_add_ref(thisAgent, lNewVar);
+        thisAgent->symbolManager->symbol_add_ref(lNewVar);
         iter_id = m_sym_to_id_map.find(lMatchedSym);
         /* Always added in pairs.  Should use a single map */
         assert(iter_id != m_sym_to_id_map.end());
@@ -223,7 +225,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
     pTest->identity = lMatchedIdentity;
-    symbol_remove_ref(thisAgent, &lMatchedSym);
+    thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
 }
 
 
@@ -380,7 +382,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
 
     dprint(DT_REPAIR, "Step 2: Marking states currently in conditions: \n");
     mark_states_in_cond_list(m_vrblz_top, tc);
-    reset_variable_generator(thisAgent, m_vrblz_top, NULL);
+    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NULL);
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 

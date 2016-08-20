@@ -9,6 +9,7 @@
 
 #include "rhs.h"
 
+#include "agent.h"
 #include "decide.h"
 #include "lexer.h"
 #include "mem.h"
@@ -17,6 +18,7 @@
 #include "soar_rand.h"
 #include "slot.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 
 #include <math.h>
@@ -82,9 +84,9 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
     if (float_found)
     {
-        return make_float_constant(thisAgent, f);
+        return thisAgent->symbolManager->make_float_constant(f);
     }
-    return make_int_constant(thisAgent, i);
+    return thisAgent->symbolManager->make_int_constant(i);
 }
 
 /* --------------------------------------------------------------------
@@ -146,9 +148,9 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     }
     if (float_found)
     {
-        return make_float_constant(thisAgent, f);
+        return thisAgent->symbolManager->make_float_constant(f);
     }
-    return make_int_constant(thisAgent, i);
+    return thisAgent->symbolManager->make_int_constant(i);
 }
 
 /* --------------------------------------------------------------------
@@ -192,9 +194,9 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         arg = static_cast<symbol_struct*>(args->first);
         if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         {
-            return make_int_constant(thisAgent, - arg->ic->value);
+            return thisAgent->symbolManager->make_int_constant(- arg->ic->value);
         }
-        return make_float_constant(thisAgent, - arg->fc->value);
+        return thisAgent->symbolManager->make_float_constant(- arg->fc->value);
     }
 
     /* --- two or more arguments --- */
@@ -239,9 +241,9 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     if (float_found)
     {
-        return make_float_constant(thisAgent, f);
+        return thisAgent->symbolManager->make_float_constant(f);
     }
-    return make_int_constant(thisAgent, i);
+    return thisAgent->symbolManager->make_int_constant(i);
 }
 
 /* --------------------------------------------------------------------
@@ -291,7 +293,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         }
         if (f != 0.0)
         {
-            return make_float_constant(thisAgent, 1.0 / f);
+            return thisAgent->symbolManager->make_float_constant(1.0 / f);
         }
         print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
         return NIL;
@@ -335,7 +337,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             }
         }
     }
-    return make_float_constant(thisAgent, f);
+    return thisAgent->symbolManager->make_float_constant(f);
 }
 
 /* --------------------------------------------------------------------
@@ -370,7 +372,7 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    return make_int_constant(thisAgent, arg1->ic->value / arg2->ic->value);
+    return thisAgent->symbolManager->make_int_constant(arg1->ic->value / arg2->ic->value);
     /* Warning: ANSI doesn't say precisely what happens if one or both of the
        two args is negative. */
 }
@@ -397,7 +399,7 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
             count++;
         }
     }
-    return make_int_constant(thisAgent, count);
+    return thisAgent->symbolManager->make_int_constant(count);
 }
 Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
@@ -421,7 +423,7 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
             sum+= static_cast<int>(w->value->ic->value);
         }
     }
-	return make_int_constant(thisAgent, sum);
+	return thisAgent->symbolManager->make_int_constant(sum);
 }
 
 /* --------------------------------------------------------------------
@@ -457,7 +459,7 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    return make_int_constant(thisAgent, arg1->ic->value % arg2->ic->value);
+    return thisAgent->symbolManager->make_int_constant(arg1->ic->value % arg2->ic->value);
     /* Warning:  ANSI guarantees this does the right thing if both args are
        positive.  If one or both is negative, it only guarantees that
        (a/b)*b + a%b == a. */
@@ -536,9 +538,9 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     }
     if (float_found)
     {
-        return make_float_constant(thisAgent, min_f);
+        return thisAgent->symbolManager->make_float_constant(min_f);
     }
-    return make_int_constant(thisAgent, min_i);
+    return thisAgent->symbolManager->make_int_constant(min_i);
 }
 
 /* --------------------------------------------------------------------
@@ -614,9 +616,9 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     }
     if (float_found)
     {
-        return make_float_constant(thisAgent, max_f);
+        return thisAgent->symbolManager->make_float_constant(max_f);
     }
-    return make_int_constant(thisAgent, max_i);
+    return thisAgent->symbolManager->make_int_constant(max_i);
 }
 
 /*
@@ -650,7 +652,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return NIL;
     }
 
-    return make_float_constant(thisAgent, sin(arg_value));
+    return thisAgent->symbolManager->make_float_constant(sin(arg_value));
 }
 
 
@@ -684,7 +686,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         print_with_symbols(thisAgent, "Error: 'cos' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
-    return make_float_constant(thisAgent, cos(arg_value));
+    return thisAgent->symbolManager->make_float_constant(cos(arg_value));
 }
 
 
@@ -718,7 +720,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         print_with_symbols(thisAgent, "Error: 'sqrt' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
-    return make_float_constant(thisAgent, sqrt(arg_value));
+    return thisAgent->symbolManager->make_float_constant(sqrt(arg_value));
 }
 
 
@@ -785,7 +787,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         denom_value = static_cast<double>(arg->ic->value) ;
     }
 
-    return make_float_constant(thisAgent, atan2(numer_value, denom_value));
+    return thisAgent->symbolManager->make_float_constant(atan2(numer_value, denom_value));
 }
 
 
@@ -808,11 +810,11 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     arg = static_cast<symbol_struct*>(args->first);
     if (arg->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
-        return_value = make_float_constant(thisAgent, fabs(arg->fc->value));
+        return_value = thisAgent->symbolManager->make_float_constant(fabs(arg->fc->value));
     }
     else if (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
-        return_value = make_int_constant(thisAgent, (arg->ic->value < 0) ? -arg->ic->value : arg->ic->value);
+        return_value = thisAgent->symbolManager->make_int_constant((arg->ic->value < 0) ? -arg->ic->value : arg->ic->value);
     }
     else
     {
@@ -872,18 +874,18 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
                   sym);
             return NIL;
         }
-        return make_int_constant(thisAgent, int_val);
+        return thisAgent->symbolManager->make_int_constant(int_val);
     }
     else if (sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
-        symbol_add_ref(thisAgent, sym) ;
+        thisAgent->symbolManager->symbol_add_ref(sym) ;
         return sym;
     }
     else if (sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         double int_part;
         modf(sym->fc->value, &int_part);
-        return make_int_constant(thisAgent, static_cast<int64_t>(int_part));
+        return thisAgent->symbolManager->make_int_constant(static_cast<int64_t>(int_part));
     }
 
     print(thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
@@ -941,16 +943,16 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
                   sym);
             return NIL;
         }
-        return make_float_constant(thisAgent, float_val);
+        return thisAgent->symbolManager->make_float_constant(float_val);
     }
     else if (sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
-        symbol_add_ref(thisAgent, sym) ;
+        thisAgent->symbolManager->symbol_add_ref(sym) ;
         return sym;
     }
     else if (sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
-        return make_float_constant(thisAgent, static_cast<double>(sym->ic->value));
+        return thisAgent->symbolManager->make_float_constant(static_cast<double>(sym->ic->value));
     }
 
     print(thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
@@ -1106,11 +1108,11 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     /* Now, deal with the arguments based on type and return result */
     if (float_found)
     {
-        return make_float_constant(thisAgent, normalize_heading_float(round_off_heading_float(n, f_m)));
+        return thisAgent->symbolManager->make_float_constant(normalize_heading_float(round_off_heading_float(n, f_m)));
     }
     else
     {
-        return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int(static_cast<int64_t>(n) , i_m)));
+        return thisAgent->symbolManager->make_int_constant(normalize_heading_int(round_off_heading_int(static_cast<int64_t>(n) , i_m)));
     }
 
 }
@@ -1175,11 +1177,11 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     /* Now, deal with the arguments based on type and return result */
     if (float_found)
     {
-        return make_float_constant(thisAgent, round_off_heading_float(n, f_m));
+        return thisAgent->symbolManager->make_float_constant(round_off_heading_float(n, f_m));
     }
     else
     {
-        return make_int_constant(thisAgent, round_off_heading_int(static_cast<int64_t>(n), i_m));
+        return thisAgent->symbolManager->make_int_constant(round_off_heading_int(static_cast<int64_t>(n), i_m));
     }
 }
 
@@ -1367,7 +1369,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
     arg = static_cast<Symbol*>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic->value : static_cast<int64_t>(arg->fc->value);
 
-    return make_int_constant(thisAgent, heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
+    return thisAgent->symbolManager->make_int_constant(heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
 }
 
 /* --------------------------------------------------------------------
@@ -1436,7 +1438,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
     arg = static_cast<Symbol*>(args->rest->rest->rest->first);
     waypoint_y = (arg->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic->value) : arg->fc->value;
 
-    return make_int_constant(thisAgent, static_cast<int64_t>(sqrt((current_x - waypoint_x)
+    return thisAgent->symbolManager->make_int_constant(static_cast<int64_t>(sqrt((current_x - waypoint_x)
                              * (current_x - waypoint_x)
                              + (current_y - waypoint_y)
                              * (current_y - waypoint_y))));
@@ -1481,9 +1483,9 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 
     if (n > 0)
     {
-        return make_float_constant(thisAgent, SoarRand(n));
+        return thisAgent->symbolManager->make_float_constant(SoarRand(n));
     }
-    return make_float_constant(thisAgent, SoarRand());
+    return thisAgent->symbolManager->make_float_constant(SoarRand());
 }
 
 /* --------------------------------------------------------------------
@@ -1525,9 +1527,9 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 
     if (n > 0)
     {
-        return make_int_constant(thisAgent, static_cast<int64_t>(SoarRandInt(static_cast<uint32_t>(n))));
+        return thisAgent->symbolManager->make_int_constant(static_cast<int64_t>(SoarRandInt(static_cast<uint32_t>(n))));
     }
-    return make_int_constant(thisAgent, SoarRandInt());
+    return thisAgent->symbolManager->make_int_constant(SoarRandInt());
 }
 
 inline double _dice_zero_tolerance(double in)
@@ -1791,7 +1793,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         }
     }
 
-    return make_float_constant(thisAgent, ret);
+    return thisAgent->symbolManager->make_float_constant(ret);
 }
 
 /* ====================================================================
@@ -1803,59 +1805,59 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
 void init_built_in_rhs_math_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "+"), plus_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("+"), plus_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "*"), times_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("*"), times_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "-"), minus_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("-"), minus_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "/"), fp_divide_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("/"), fp_divide_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "div"), div_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("div"), div_rhs_function_code,
                      2, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "size"), size_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("size"), size_rhs_function_code,
                      1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "sum"), sum_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sum"), sum_rhs_function_code,
                      1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "mod"), mod_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code,
                      2, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "min"), min_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code,
                      -1, true, false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "max"), max_rhs_function_code,
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code,
                      -1, true, false, 0);
 
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "sin"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"),
                      sin_rhs_function_code,
                      1,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "cos"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("cos"),
                      cos_rhs_function_code,
                      1,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "atan2"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("atan2"),
                      atan2_rhs_function_code,
                      2,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "sqrt"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sqrt"),
                      sqrt_rhs_function_code,
                      1,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "abs"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("abs"),
                      abs_rhs_function_code,
                      1,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "int"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("int"),
                      int_rhs_function_code,
                      1,
                      true,
                      false, 0);
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "float"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("float"),
                      float_rhs_function_code,
                      1,
                      true,
@@ -1863,27 +1865,27 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
 
     /* voigtjr 6/12/2007: added these built in functions on laird's request
     these are straight out of the <8.6 kernel */
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "round-off-heading"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off-heading"),
                      round_off_heading_air_rhs_function_code, 2, true, false, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "round-off"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off"),
                      round_off_air_rhs_function_code, 2, true, false, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-heading"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-heading"),
                      compute_heading_rhs_function_code, 4, true, false, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-range"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-range"),
                      compute_range_rhs_function_code, 4, true, false, 0);
 
     // NLD: 11/11 (ditto voigtjr's motivation above)
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "compute-dice-probability"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"),
                      dice_prob_rhs_function_code, 4, true, false, 0);
 
     // Bug 800: implement rhs rand functions
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "rand-int"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-int"),
                      rand_int_rhs_function_code, -1, true, false, 0);
 
-    add_rhs_function(thisAgent, make_str_constant(thisAgent, "rand-float"),
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-float"),
                      rand_float_rhs_function_code, -1, true, false, 0);
 
 }
@@ -1891,35 +1893,35 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
 void remove_built_in_rhs_math_functions(agent* thisAgent)
 {
     // DJP-FREE: These used to call make_str_constant, but the symbols must already exist and if we call make here again we leak a reference.
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "+"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "*"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "-"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "/"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "div"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "mod"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "size"));
-	  remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sum"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "min"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "max"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sin"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "cos"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "atan2"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "sqrt"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "abs"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "int"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "float"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("+"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("*"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("-"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("/"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("div"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("size"));
+	  remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sum"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("min"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("max"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("atan2"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sqrt"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("abs"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("int"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("float"));
 
     /* voigtjr 6/12/2007: added these built in functions on laird's request
     these are straight out of the <8.6 kernel */
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "round-off-heading"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "round-off"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-heading"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-range"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("round-off-heading"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("round-off"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-heading"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-range"));
 
     // NLD: 11/11
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "compute-dice-probability"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-dice-probability"));
 
     // Bug 800: implement rand
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "rand-int"));
-    remove_rhs_function(thisAgent, find_str_constant(thisAgent, "rand-float"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-int"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-float"));
 }

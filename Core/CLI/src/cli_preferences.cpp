@@ -55,16 +55,16 @@ bool read_attribute_from_string(agent* thisAgent, Symbol* id, char* the_lexeme, 
     switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
-            attr_tmp = find_str_constant(thisAgent, lexeme.string());
+            attr_tmp = thisAgent->symbolManager->find_str_constant(lexeme.string());
             break;
         case INT_CONSTANT_LEXEME:
-            attr_tmp = find_int_constant(thisAgent, lexeme.int_val);
+            attr_tmp = thisAgent->symbolManager->find_int_constant(lexeme.int_val);
             break;
         case FLOAT_CONSTANT_LEXEME:
-            attr_tmp = find_float_constant(thisAgent, lexeme.float_val);
+            attr_tmp = thisAgent->symbolManager->find_float_constant(lexeme.float_val);
             break;
         case IDENTIFIER_LEXEME:
-            attr_tmp = find_identifier(thisAgent, lexeme.id_letter,
+            attr_tmp = thisAgent->symbolManager->find_identifier(lexeme.id_letter,
                                        lexeme.id_number);
             break;
         case VARIABLE_LEXEME:
@@ -113,7 +113,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
                                  double* selection_probability = 0)
 {
     print_string(thisAgent, "  ");
-    if (pref->attr == thisAgent->operator_symbol)
+    if (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
     {
         print_object_trace(thisAgent, pref->value);
     }
@@ -121,7 +121,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     {
         print_with_symbols(thisAgent, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
     }
-    if (pref->attr == thisAgent->operator_symbol)
+    if (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
     {
         print(thisAgent,  " %c", preference_to_char(pref->type));
     }
@@ -240,7 +240,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
         // step thru dll of slots for ID, printing prefs for each one
         for (s = id->id->slots; s != NIL; s = s->next)
         {
-            if (s->attr == thisAgent->operator_symbol)
+            if (s->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
             {
                 print_with_symbols(thisAgent, "Preferences for %y ^%y:", s->id, s->attr);
             }
@@ -291,7 +291,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
         {
             if (w->value == id)
             {
-                if (w->value == thisAgent->operator_symbol)
+                if (w->value == thisAgent->symbolManager->soarSymbols.operator_symbol)
                 {
                     print(thisAgent,  "Preferences for (%lu: ", w->timetag);
                 }
@@ -397,7 +397,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
 
     // Establish defaults
     thisAgent->bottom_goal->to_string(true, id, PREFERENCES_BUFFER_SIZE);
-    thisAgent->operator_symbol->to_string(true, attr, PREFERENCES_BUFFER_SIZE);
+    thisAgent->symbolManager->soarSymbols.operator_symbol->to_string(true, attr, PREFERENCES_BUFFER_SIZE);
 
     // Override defaults
     if (idString)

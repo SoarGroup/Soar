@@ -731,12 +731,12 @@ void Explanation_Based_Chunker::make_clones_of_results()
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
                             result_p->o_ids, result_p->rhs_funcs);
-        symbol_add_ref(thisAgent, p->id);
-        symbol_add_ref(thisAgent, p->attr);
-        symbol_add_ref(thisAgent, p->value);
+        thisAgent->symbolManager->symbol_add_ref(p->id);
+        thisAgent->symbolManager->symbol_add_ref(p->attr);
+        thisAgent->symbolManager->symbol_add_ref(p->value);
         if (preference_is_binary(p->type))
         {
-            symbol_add_ref(thisAgent, p->referent);
+            thisAgent->symbolManager->symbol_add_ref(p->referent);
         }
         /* --- put it onto the list for chunk_inst --- */
         p->inst = m_chunk_inst;
@@ -848,7 +848,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 {
     /* Change to justification naming */
-    symbol_remove_ref(thisAgent, &m_prod_name);
+    thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
     set_up_rule_name(false);
 
     /* Clean up */
@@ -1114,14 +1114,14 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         /* Save conditions and results in case we need to make a justification because chunking fails */
         copy_condition_list(thisAgent, m_vrblz_top, &m_saved_justification_top, &m_saved_justification_bottom, false, false, true);
 
-        reset_variable_generator(thisAgent, m_vrblz_top, NIL);
+        thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
         variablize_condition_list(m_vrblz_top);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after variablizing: \n%6", m_vrblz_top, m_results);
         merge_conditions(m_vrblz_top);
         dprint(DT_VARIABLIZATION_MANAGER, "chunk_instantiation after merging conditions: \n%6", m_vrblz_top, m_results);
     }
 
-    reset_variable_generator(thisAgent, m_vrblz_top, NIL);
+    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying and variablizing results... \n%6", m_vrblz_top, m_results);
     m_rhs = variablize_results_into_actions(m_results, variablize);
@@ -1182,7 +1182,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
-    symbol_add_ref(thisAgent, m_chunk_inst->prod_name);
+    thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
     m_chunk_inst->GDS_evaluated_already             = false;
     m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
@@ -1232,7 +1232,7 @@ void Explanation_Based_Chunker::clean_up ()
     if (m_prod_name)
     {
         dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", m_prod_name);
-        symbol_remove_ref(thisAgent, &m_prod_name);
+        thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
     }
     if (m_saved_justification_top)
     {
