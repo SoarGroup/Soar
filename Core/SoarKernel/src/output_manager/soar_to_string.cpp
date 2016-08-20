@@ -660,11 +660,11 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
     {
         debug_print_sf(DT_DEBUG,
                "%y:\n"
-               "  type     = %s\n"
+               "  type     = %d\n"
                "  refcount = %d\n"
                "  tc_num   = %d\n",
                newSym,
-               newSym->type_string(),
+               newSym->symbol_type,
                newSym->reference_count,
                newSym->tc_num);
     }

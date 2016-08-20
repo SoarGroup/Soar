@@ -39,7 +39,6 @@
 
 #include "Export.h"
 #include "symbol_factory.h"
-#include "soar_TraceNames.h"
 
 #include <sstream>
 
@@ -128,7 +127,6 @@ typedef struct EXPORT symbol_struct
     void        set_tc_num(tc_number n);
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
-    const char* type_string();
     char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
 
     struct symbol_struct*   get_parent_state();
@@ -373,53 +371,6 @@ inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_
         }
     }
 }
-
-inline char const* symbol_type_to_string(byte pType)
-{
-    switch (pType)
-    {
-        case VARIABLE_SYMBOL_TYPE:
-            return soar_TraceNames::kTypeVariable ;
-        case IDENTIFIER_SYMBOL_TYPE:
-            return soar_TraceNames::kTypeID ;
-        case INT_CONSTANT_SYMBOL_TYPE:
-            return soar_TraceNames::kTypeInt ;
-        case FLOAT_CONSTANT_SYMBOL_TYPE:
-            return soar_TraceNames::kTypeDouble ;
-        case STR_CONSTANT_SYMBOL_TYPE:
-            return soar_TraceNames::kTypeString ;
-        default:
-            return "UNDEFINED!";
-    }
-}
-
-inline char const* Symbol::type_string()
-{
-    return symbol_type_to_string(symbol_type);
-}
-/* -- Inline functions to make casting to specific symbol types more readable. Also
- *    useful when sym might be null, in which case you couldn't use cached pointers to cast. -- */
-
-inline idSymbol*     idSym(Symbol* sym)
-{
-    return static_cast<idSymbol*>(sym);
-};
-inline varSymbol*    varSym(Symbol* sym)
-{
-    return static_cast<varSymbol*>(sym);
-};
-inline floatSymbol*  floatSym(Symbol* sym)
-{
-    return static_cast<floatSymbol*>(sym);
-};
-inline intSymbol*    intSym(Symbol* sym)
-{
-    return static_cast<intSymbol*>(sym);
-};
-inline strSymbol*    strSym(Symbol* sym)
-{
-    return static_cast<strSymbol*>(sym);
-};
 
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 

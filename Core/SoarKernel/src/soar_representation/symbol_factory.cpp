@@ -217,7 +217,7 @@ Symbol* find_variable(agent* thisAgent, const char* name)
 
     hash_value = hash_variable_raw_info(name, thisAgent->variable_hash_table->log2size);
     sym = reinterpret_cast<varSymbol*>(*(thisAgent->variable_hash_table->buckets + hash_value));
-    for (; sym != NIL; sym = varSym(sym->next_in_hash_table))
+    for (; sym != NIL; sym = static_cast<varSymbol*>(sym->next_in_hash_table))
     {
         if (!strcmp(sym->name, name))
         {
@@ -235,7 +235,7 @@ Symbol* find_identifier(agent* thisAgent, char name_letter, uint64_t name_number
     hash_value = hash_identifier_raw_info(name_letter, name_number,
                                           thisAgent->identifier_hash_table->log2size);
     sym = reinterpret_cast<idSymbol*>(*(thisAgent->identifier_hash_table->buckets + hash_value));
-    for (; sym != NIL; sym = idSym(sym->next_in_hash_table))
+    for (; sym != NIL; sym = static_cast<idSymbol*>(sym->next_in_hash_table))
     {
         if ((name_letter == sym->name_letter) &&
                 (name_number == sym->name_number))
@@ -254,7 +254,7 @@ Symbol* find_str_constant(agent* thisAgent, const char* name)
     hash_value = hash_str_constant_raw_info(name,
                                             thisAgent->str_constant_hash_table->log2size);
     sym = reinterpret_cast<strSymbol*>(*(thisAgent->str_constant_hash_table->buckets + hash_value));
-    for (; sym != NIL; sym = strSym(sym->next_in_hash_table))
+    for (; sym != NIL; sym = static_cast<strSymbol*>(sym->next_in_hash_table))
     {
         if (!strcmp(sym->name, name))
         {
@@ -272,7 +272,7 @@ Symbol* find_int_constant(agent* thisAgent, int64_t value)
     hash_value = hash_int_constant_raw_info(value,
                                             thisAgent->int_constant_hash_table->log2size);
     sym = reinterpret_cast<intSymbol*>(*(thisAgent->int_constant_hash_table->buckets + hash_value));
-    for (; sym != NIL; sym = intSym(sym->next_in_hash_table))
+    for (; sym != NIL; sym = static_cast<intSymbol*>(sym->next_in_hash_table))
     {
         if (value == sym->value)
         {
@@ -290,7 +290,7 @@ Symbol* find_float_constant(agent* thisAgent, double value)
     hash_value = hash_float_constant_raw_info(value,
                  thisAgent->float_constant_hash_table->log2size);
     sym = reinterpret_cast<floatSymbol*>(*(thisAgent->float_constant_hash_table->buckets + hash_value));
-    for (; sym != NIL; sym = floatSym(sym->next_in_hash_table))
+    for (; sym != NIL; sym = static_cast<floatSymbol*>(sym->next_in_hash_table))
     {
         if (value == sym->value)
         {
@@ -305,7 +305,7 @@ Symbol* make_variable(agent* thisAgent, const char* name)
 
     varSymbol* sym;
 
-    sym = varSym(find_variable(thisAgent, name));
+    sym = static_cast<varSymbol*>(find_variable(thisAgent, name));
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
@@ -425,7 +425,7 @@ Symbol* make_str_constant(agent* thisAgent, char const* name)
 {
     strSymbol* sym;
 
-    sym = strSym(find_str_constant(thisAgent, name));
+    sym = static_cast<strSymbol*>(find_str_constant(thisAgent, name));
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
@@ -458,7 +458,7 @@ Symbol* make_int_constant(agent* thisAgent, int64_t value)
 {
     intSymbol* sym;
 
-    sym = intSym(find_int_constant(thisAgent, value));
+    sym = static_cast<intSymbol*>(find_int_constant(thisAgent, value));
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
@@ -490,7 +490,7 @@ Symbol* make_float_constant(agent* thisAgent, double value)
 {
     floatSymbol* sym;
 
-    sym = floatSym(find_float_constant(thisAgent, value));
+    sym = static_cast<floatSymbol*>(find_float_constant(thisAgent, value));
     if (sym)
     {
         symbol_add_ref(thisAgent, sym);
