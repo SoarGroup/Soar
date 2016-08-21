@@ -14,6 +14,12 @@
 
 #include "semantic_memory.h"
 
+#include "smem_settings.h"
+#include "smem_stats.h"
+#include "smem_timers.h"
+#include "smem_db.h"
+#include "smem_structs.h"
+
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
@@ -4912,7 +4918,7 @@ void smem_respond_to_cmd(agent* thisAgent, bool store_only)
             thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
         }
 
-        for (smem_pooled_symbol_set::iterator it = thisAgent->SMem->smem_changed_ids->begin(); it != thisAgent->SMem->smem_changed_ids->end(); it++)
+        for (symbol_set::iterator it = thisAgent->SMem->smem_changed_ids->begin(); it != thisAgent->SMem->smem_changed_ids->end(); it++)
         {
             // require that the lti has at least one augmentation
             if ((*it)->id->slots)
@@ -5831,9 +5837,9 @@ SMem_Manager::SMem_Manager(agent* myAgent)
     thisAgent->LTIs_sourced = new LTI_Promotion_Set();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    smem_changed_ids = new smem_pooled_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
+    smem_changed_ids = new symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
 #else
-    smem_changed_ids = new smem_pooled_symbol_set();
+    smem_changed_ids = new symbol_set();
 #endif
     smem_ignore_changes = false;
 

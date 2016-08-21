@@ -45,6 +45,9 @@
 #include "rhs_functions.h"
 #include "run_soar.h"
 #include "semantic_memory.h"
+#include "smem_settings.h"
+#include "smem_stats.h"
+#include "smem_structs.h"
 #include "soar_instance.h"
 #include "soar_module.h"
 #include "stats.h"
@@ -103,7 +106,7 @@ void init_soar_agent(agent* thisAgent)
 
     thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
-    thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(smem_wme_stack), "smem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(preference_list), "smem_wmes");
     thisAgent->memoryManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
 
     thisAgent->memoryManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");

@@ -16,19 +16,18 @@
  */
 
 
-#include "run_soar.h"
 #include "decide.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "condition.h"
 #include "consistency.h"
 #include "decision_manipulation.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "exploration.h"
-#include "io_link.h"
 #include "instantiation.h"
+#include "io_link.h"
 #include "mem.h"
 #include "misc.h"
 #include "preference.h"
@@ -37,16 +36,13 @@
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "rhs.h"
+#include "run_soar.h"
 #include "semantic_memory.h"
 #include "slot.h"
+#include "smem_structs.h"
 #include "soar_module.h"
-#include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
+#include "soar_rand.h"
 #include "soar_TraceNames.h"
-
-#include "dprint.h"
-#ifndef NO_SVS
-#include "svs_interface.h"
-#endif
 #include "symbol.h"
 #include "test.h"
 #include "trace.h"
@@ -54,8 +50,13 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <cmath>
+#ifndef NO_SVS
+#include "svs_interface.h"
+#endif
+
+#include <assert.h>
 #include <algorithm>
+#include <cmath>
 #include <list>
 
 using namespace soar_TraceNames;
@@ -2799,7 +2800,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_header);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
-    goal->id->smem_info->smem_wmes->~smem_wme_stack();
+    goal->id->smem_info->smem_wmes->~preference_list();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
     thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_cmd_header);
     thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_result_header);
@@ -2930,9 +2931,9 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->smem_info->last_cmd_count[1] = 0;
     thisAgent->memoryManager->allocate_with_pool(MP_smem_wmes, &(id->id->smem_info->smem_wmes));
 #ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) smem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
+    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) preference_list(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
 #else
-    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) smem_wme_stack();
+    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) preference_list();
 #endif
 
     /* --- invoke callback routine --- */

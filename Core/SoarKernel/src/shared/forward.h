@@ -57,33 +57,45 @@ typedef uint64_t epmem_time_id; // represents a unique episode identifier in the
 typedef uint64_t smem_lti_id;   // represents the unique identification of a long-term identifier
 typedef uint64_t smem_hash_id;  // represents a temporal hash
 
+typedef struct smem_weighted_cue_element_struct smem_weighted_cue_element;
+typedef struct smem_chunk_struct smem_chunk;
+struct smem_compare_weighted_cue_elements;
+struct smem_compare_activated_lti;
+struct smem_chunk_value_constant;
+struct smem_chunk_value_lti;
+typedef union smem_chunk_value_union smem_chunk_value;
+
+class Output_Manager;
 class Symbol_Manager;
 class WM_Manager;
 class EpMem_Manager;
 class SMem_Manager;
+class MathQuery;
 class RL_Manager;
-class Output_Manager;
+class Explanation_Based_Chunker;
+class Memory_Manager;
 class Explanation_Memory;
 class Soar_Instance;
 class AgentOutput_Info;
 class GraphViz_Visualizer;
 class debug_param_container;
-class Output_Manager;
 class OM_Parameters;
 class OM_DB;
-class Explanation_Based_Chunker;
-class Memory_Manager;
 class LTI_Promotion_Set;
 class wma_param_container;
 class wma_stat_container;
 class wma_timer_container;
 class rl_param_container;
+class rl_stat_container;
+class smem_timer_container;
+class smem_stat_container;
+class smem_param_container;
+class smem_statement_container;
 class epmem_param_container;
 class epmem_stat_container;
 class epmem_timer_container;
 class epmem_common_statement_container;
 class epmem_graph_statement_container;
-class rl_stat_container;
 class ebc_param_container;
 class chunk_record;
 class instantiation_record;

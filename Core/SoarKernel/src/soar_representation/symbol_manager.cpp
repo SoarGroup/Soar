@@ -16,6 +16,7 @@
 #include "rhs.h"
 #include "run_soar.h"
 #include "semantic_memory.h"
+#include "smem_db.h"
 #include "symbol.h"
 
 Symbol_Manager::Symbol_Manager(agent* pAgent)

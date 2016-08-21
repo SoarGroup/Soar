@@ -14,7 +14,6 @@
 #include <assert.h>
 #include <cmath>
 
-
 class Path_to_Goal_State;
 class condition_record;
 class action_record;
@@ -36,6 +35,7 @@ typedef struct symbol_with_match_struct symbol_with_match;
     typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
     typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
+    typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > preference_list;
     typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                        rl_rule_list;
     typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
@@ -95,9 +95,10 @@ typedef struct symbol_with_match_struct symbol_with_match;
 #else
     typedef std::list< condition* >                             condition_list;
     typedef std::list< Symbol* >                                symbol_list;
-    typedef std::list< symbol_with_match* >                        symbol_with_match_list;
+    typedef std::list< symbol_with_match* >                     symbol_with_match_list;
     typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
     typedef std::list< production* >                            rl_rule_list;
+    typedef std::list< preference* >                            preference_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
     typedef std::list< inst_record_list* >                      inst_path_list;
     typedef std::list< condition_record* >                      condition_record_list;
@@ -154,5 +155,21 @@ typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map
 
 typedef std::unordered_set< augmentation* >                     augmentation_set;
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
+
+/*------ SMem stl typedefs ------*/
+// - Could create allocator versions of a lot of these
+// - Many of these could be replaced by more general versions above.  Same with epmem
+
+typedef std::list<smem_lti_id>                  smem_lti_list;
+typedef std::set<smem_lti_id>                   smem_lti_set;
+typedef std::list<Symbol*>                      smem_sym_list;
+typedef std::list<wme*>                         smem_wme_list;
+typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;
+typedef std::pair< double, smem_lti_id >        smem_activated_lti;
+typedef std::map<std::string, smem_chunk*>      smem_str_to_chunk_map;
+typedef std::map<Symbol*, smem_chunk*>          smem_sym_to_chunk_map;
+typedef std::set<smem_chunk*>                   smem_chunk_set;
+typedef std::list<smem_chunk_value*>            smem_slot;
+typedef std::map<Symbol*, smem_slot*>           smem_slot_map;
 
 #endif /* STL_TYPEDEFS_H_ */

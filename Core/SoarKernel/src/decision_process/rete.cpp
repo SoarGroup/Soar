@@ -1,11 +1,10 @@
-#include "run_soar.h"
 #include "rete.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "callback.h"
 #include "condition.h"
 #include "decide.h"
+#include "dprint.h"
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "instantiation.h"
@@ -17,7 +16,9 @@
 #include "reinforcement_learning.h"
 #include "rhs_functions.h"
 #include "rhs.h"
+#include "run_soar.h"
 #include "semantic_memory.h"
+#include "smem_settings.h"
 #include "slot.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
@@ -25,9 +26,9 @@
 #include "working_memory.h"
 #include "xml.h"
 
+#include <assert.h>
 #include <sstream>
 #include <stdlib.h>
-#include "dprint.h"
 
 /*************************************************************************
  *
@@ -1538,7 +1539,7 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
 
     if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->SMem->smem_params->mirroring->get_value() == on))
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
+        std::pair< symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
             thisAgent->symbolManager->symbol_add_ref(w->id);
@@ -1695,7 +1696,7 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
 
     if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && smem_enabled(thisAgent) && (thisAgent->SMem->smem_params->mirroring->get_value() == on))
     {
-        std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
+        std::pair< symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
         if (insert_result.second)
         {
             thisAgent->symbolManager->symbol_add_ref(w->id);
