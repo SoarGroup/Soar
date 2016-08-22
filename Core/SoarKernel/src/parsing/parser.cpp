@@ -345,7 +345,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
             }
             else
             {
-                smem_lti_id lti_id = smem_lti_get_id(thisAgent, lexeme->id_letter, lexeme->id_number);
+                smem_lti_id lti_id = thisAgent->SMem->smem_lti_get_id(lexeme->id_letter, lexeme->id_number);
 
                 if (lti_id == NIL)
                 {
@@ -362,7 +362,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                 }
                 else
                 {
-                    newSymbol =  smem_lti_soar_make(thisAgent, lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
+                    newSymbol =  thisAgent->SMem->smem_lti_soar_make(lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
                 }
                 return newSymbol;
             }
@@ -2140,7 +2140,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     /* --- the action is a regular make action --- */
     if (id_lti)
     {
-        smem_lti_id lti_id = smem_lti_get_id(thisAgent, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
+        smem_lti_id lti_id = thisAgent->SMem->smem_lti_get_id(lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
 
         if (lti_id == NIL)
         {
@@ -2157,7 +2157,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         }
         else
         {
-            var = smem_lti_soar_make(thisAgent, lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+            var = thisAgent->SMem->smem_lti_soar_make(lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
         }
     }
     else
@@ -2540,12 +2540,12 @@ void LTI_Promotion_Set::promote_LTIs_sourced(agent* thisAgent)
 
     if (!LTIs_Lexed->empty())
     {
-        smem_attach(thisAgent);
+        thisAgent->SMem->smem_attach();
         for (auto it = LTIs_Lexed->begin(); it != LTIs_Lexed->end(); it++)
         {
             lSym = *it;
             dprint(DT_PARSER_PROMOTE, "Promoting LTI found in sourced production %y.\n", lSym);
-            smem_lti_soar_promote_STI(thisAgent, lSym);
+            thisAgent->SMem->smem_lti_soar_promote_STI(lSym);
         }
         LTIs_Lexed->clear();
     }

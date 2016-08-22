@@ -195,7 +195,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
             smem_lti_id lti_id = NIL;
 
             // visualizing the store requires an open semantic database
-            smem_attach(thisAgent);
+            thisAgent->SMem->smem_attach();
 
             if (!pObject2.empty())
             {
@@ -204,7 +204,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 {
                     if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                     {
-                        lti_id = smem_lti_get_id(thisAgent, lexeme.id_letter, lexeme.id_number);
+                        lti_id = thisAgent->SMem->smem_lti_get_id(lexeme.id_letter, lexeme.id_number);
                     }
                 }
 
@@ -216,11 +216,11 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
 
             if (lti_id == NIL)
             {
-                smem_visualize_store(thisAgent, &thisAgent->visualizationManager->graphviz_output);
+                thisAgent->SMem->smem_visualize_store(&thisAgent->visualizationManager->graphviz_output);
             }
             else
             {
-                smem_visualize_lti(thisAgent, lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
+                thisAgent->SMem->smem_visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
             }
             lValidVisualizationGenerated = true;
         }

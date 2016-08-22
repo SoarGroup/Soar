@@ -114,6 +114,7 @@ namespace sml
 
 namespace soar_module {
     class sqlite_database;
+    class sqlite_statement;
     class timer;
 }
 namespace soar {

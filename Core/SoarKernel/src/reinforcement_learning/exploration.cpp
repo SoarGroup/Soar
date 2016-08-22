@@ -13,9 +13,10 @@
 #include "soar_rand.h"
 #include "xml.h"
 #include "print.h"
+#include "run_soar.h"
 #include "slot.h"
 #include "soar_TraceNames.h"
-#include "gsysparam.h"
+
 #include "reinforcement_learning.h"
 #include "misc.h"
 #include "instantiation.h"

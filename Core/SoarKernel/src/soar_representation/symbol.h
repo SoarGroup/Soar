@@ -214,11 +214,11 @@ struct idSymbol    : public Symbol
     int depth;
 
     epmem_node_id epmem_id;
-    uint64_t epmem_valid;
+//    uint64_t epmem_valid;
 
     smem_lti_id smem_lti;
     epmem_time_id smem_time_id;
-    uint64_t smem_valid;
+//    uint64_t smem_valid;
 
     /*Agent::RL_Trace*/ void* rl_trace;
 };

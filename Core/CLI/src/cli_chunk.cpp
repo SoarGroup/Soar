@@ -19,7 +19,7 @@
 #include "agent.h"
 #include "ebc.h"
 #include "explanation_memory.h"
-#include "gsysparam.h"
+
 #include "print.h"
 #include "ebc_settings.h"
 #include "output_manager.h"

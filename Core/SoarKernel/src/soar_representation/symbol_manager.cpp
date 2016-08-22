@@ -1006,7 +1006,7 @@ bool Symbol_Manager::reset_id_counters()
 
     if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
     {
-        smem_reset_id_counters(thisAgent);
+        thisAgent->SMem->smem_reset_id_counters();
     }
 
     return true ;

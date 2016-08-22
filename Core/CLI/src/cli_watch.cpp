@@ -16,7 +16,7 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "gsysparam.h"
+
 #include "misc.h"
 #include "agent.h"
 #include "sml_AgentSML.h"

@@ -40,7 +40,7 @@
 #include "agent.h"
 #include "decide.h"
 #include "ebc.h"
-#include "gsysparam.h"
+
 #include "io_link.h"
 #include "mem.h"
 #include "print.h"

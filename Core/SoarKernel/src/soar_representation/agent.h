@@ -23,10 +23,6 @@
 #include "kernel.h"
 
 #include "Export.h"
-//#include "episodic_memory.h"
-//#include "reinforcement_learning.h"
-//#include "semantic_memory.h"
-#include "gsysparam.h"
 #include "mem.h"
 #include "memory_manager.h"
 #include "misc.h"

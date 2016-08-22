@@ -541,4 +541,61 @@ enum smem_variable_key { var_max_cycle, var_num_nodes, var_num_edges, var_act_th
 #define SMEM_ACT_LOW -1000000000
 #define SMEM_SCHEMA_VERSION "2.0"
 
+/* ====================================================================
+             Global System Parameters and Related Definitions
+   ==================================================================== */
+
+/* ====== Sysparams for what to trace === */
+#define INVALID_SYSPARAM                          0
+#define TRACE_CONTEXT_DECISIONS_SYSPARAM          1
+#define TRACE_PHASES_SYSPARAM                     2
+
+/* --- Warning: these next four MUST be consecutive and in the order of the production types defined above --- */
+#define TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM      3
+#define TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM   4
+#define TRACE_FIRINGS_OF_CHUNKS_SYSPARAM          5
+#define TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM  6
+#define TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM       7
+#define TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM     8
+#define TRACE_FIRINGS_PREFERENCES_SYSPARAM        9
+#define TRACE_WM_CHANGES_SYSPARAM                10
+#define TRACE_CHUNK_NAMES_SYSPARAM               11
+#define TRACE_JUSTIFICATION_NAMES_SYSPARAM       12
+#define TRACE_CHUNKS_SYSPARAM                    13
+#define TRACE_JUSTIFICATIONS_SYSPARAM            14
+#define TRACE_BACKTRACING_SYSPARAM               15
+/* ===== watch loading flag =====  KJC 7/96 */
+#define TRACE_LOADING_SYSPARAM                   16
+/* ====== Max Elaborations === */
+#define MAX_ELABORATIONS_SYSPARAM                17
+/* ====== User Select === */
+#define USER_SELECT_MODE_SYSPARAM                18
+/* ====== Print Warnings === */
+#define PRINT_WARNINGS_SYSPARAM                  19
+/* ====== Whether to print out aliases as they're defined === */
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         20
+#define REAL_TIME_SYSPARAM                       21
+#define ATTENTION_LAPSE_ON_SYSPARAM              22
+/* limit number of cycles in run_til_output */
+#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           23
+#define TRACE_INDIFFERENT_SYSPARAM               24
+#define TIMERS_ENABLED                           25
+#define MAX_GOAL_DEPTH                           26
+/* generate warning and event if memory usage exceeds this value */
+#define MAX_MEMORY_USAGE_SYSPARAM                27
+/* auto-reduction of exploration parameters */
+#define USER_SELECT_REDUCE_SYSPARAM              28
+/* Soar-RL trace information */
+#define TRACE_RL_SYSPARAM                        29
+/* Chunk through local negations */
+#define TRACE_WATERFALL_SYSPARAM                 30
+#define TRACE_WMA_SYSPARAM                       31
+#define TRACE_EPMEM_SYSPARAM                     32
+#define TRACE_SMEM_SYSPARAM                      33
+#define TRACE_GDS_SYSPARAM                       34
+/* Break on long decision cycle time */
+#define DECISION_CYCLE_MAX_USEC_INTERRUPT        35
+/* --- Warning: if you add sysparams, be sure to update the next line! --- */
+#define HIGHEST_SYSPARAM_NUMBER                  36
+
 #endif /* ENUMS_H_ */

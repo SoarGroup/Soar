@@ -2733,7 +2733,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     update_impasse_items(thisAgent, goal, NIL);  /* causes items & fake pref's to go away */
 
     epmem_reset(thisAgent, goal);
-    smem_reset(thisAgent, goal);
+    thisAgent->SMem->smem_reset(goal);
 
     remove_wme_list_from_wm(thisAgent, goal->id->impasse_wmes);
     goal->id->impasse_wmes = NIL;

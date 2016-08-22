@@ -28,7 +28,7 @@
 #include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "exploration.h"
-#include "gsysparam.h"
+
 #include "instantiation.h"
 #include "io_link.h"
 #include "lexer.h"
@@ -410,7 +410,7 @@ bool reinitialize_agent(agent* thisAgent)
 
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
-    smem_reinit(thisAgent);
+    thisAgent->SMem->smem_reinit();
     thisAgent->LTIs_sourced->clear();
 
     thisAgent->explanationBasedChunker->reinit();

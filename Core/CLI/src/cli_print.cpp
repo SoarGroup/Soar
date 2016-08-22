@@ -13,7 +13,7 @@
 
 #include "agent.h"
 #include "decide.h"
-#include "gsysparam.h"
+
 #include "lexer.h"
 #include "memory_manager.h"
 #include "output_manager.h"

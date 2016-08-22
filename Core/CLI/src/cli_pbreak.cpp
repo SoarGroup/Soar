@@ -18,7 +18,7 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "gsysparam.h"
+
 #include "rete.h"
 #include "sml_AgentSML.h"
 #include "symbol.h"

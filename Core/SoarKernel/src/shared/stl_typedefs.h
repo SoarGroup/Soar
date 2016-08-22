@@ -139,20 +139,17 @@ typedef struct symbol_with_match_struct symbol_with_match;
  *
  * For now, we just use standard heap allocation for unordered STL structures */
 
-typedef std::unordered_set< uint64_t >                      id_set;
-
-typedef std::unordered_map< uint64_t, uint64_t >            id_to_id_map_type;
-typedef std::unordered_map< uint64_t, Symbol* >             id_to_sym_map_type;
-typedef std::unordered_map< uint64_t, identity_set_info* >  id_to_idset_map_type;
-typedef std::unordered_map< uint64_t, attachment_point* >   attachment_points_map_type;
-typedef std::unordered_map< Symbol*, uint64_t >             sym_to_id_map_type;
-typedef std::unordered_map< Symbol*, Symbol* >              sym_to_sym_map_type;
-typedef std::unordered_map< uint64_t, sym_to_id_map_type >  inst_to_id_map_type;
-
+typedef std::unordered_set< uint64_t >                          id_set;
+typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map_type;
+typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map_type;
+typedef std::unordered_map< uint64_t, identity_set_info* >      id_to_idset_map_type;
+typedef std::unordered_map< uint64_t, attachment_point* >       attachment_points_map_type;
+typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map_type;
+typedef std::unordered_map< Symbol*, Symbol* >                  sym_to_sym_map_type;
+typedef std::unordered_map< uint64_t, sym_to_id_map_type >      inst_to_id_map_type;
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
-
 typedef std::unordered_set< augmentation* >                     augmentation_set;
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 
