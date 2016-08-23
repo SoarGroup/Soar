@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 
+#include "smem_stats.h"
 #include "soar_module.h"
 #include "soar_db.h"
 

@@ -101,6 +101,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     base_incremental_threshes = new soar_module::int_set_param("base-incremental-threshes", new soar_module::f_predicate< int64_t >());
     add(base_incremental_threshes);
 
+    /* Moved from init_agent */
+    base_incremental_threshes->set_string("10");
+
     // mirroring
     mirroring = new soar_module::boolean_param("mirroring", off, new smem_db_predicate< boolean >(thisAgent));
     add(mirroring);
@@ -110,7 +113,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 
 /* This is a test of whether or not the SMEM database with no version number is the one
 that smem_update_schema_one_to_two can convert.  It tests for the existence of a table name to determine if this is the old version. */
-bool SMem_Manager::smem_version_one()
+bool SMem_Manager::is_version_one_db()
 {
     double check_num_tables;
     smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
@@ -165,7 +168,7 @@ void smem_path_param::set_value(const char* new_value)
                     {
                         if (!thisAgent->SMem->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
-                            if (thisAgent->SMem->smem_version_one())
+                            if (thisAgent->SMem->is_version_one_db())
                             {
                                 print(thisAgent, "...You have selected a database with an old version.\n"
                                       "...If you proceed, the database will be converted to a\n"
@@ -273,7 +276,17 @@ int64_t smem_mem_high_stat::get_value()
     return thisAgent->SMem->smem_db->memory_highwater();
 }
 
-bool SMem_Manager::smem_enabled()
+bool SMem_Manager::enabled()
 {
     return (smem_params->learning->get_value() == on);
+}
+
+bool SMem_Manager::connected()
+{
+    return (smem_db->get_status() == soar_module::connected);
+}
+
+bool SMem_Manager::mirroring_enabled()
+{
+    return (smem_params->mirroring->get_value() == on);
 }

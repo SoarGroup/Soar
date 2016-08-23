@@ -10,7 +10,7 @@
 
 #include "lexer.h"
 
-void SMem_Manager::smem_visualize_store(std::string* return_val)
+void SMem_Manager::visualize_store(std::string* return_val)
 {
     // header
     return_val->append("digraph smem {");
@@ -109,16 +109,16 @@ void SMem_Manager::smem_visualize_store(std::string* return_val)
                         switch (q->column_int(3))
                         {
                             case STR_CONSTANT_SYMBOL_TYPE:
-                                smem_reverse_hash_str(q->column_int(4), temp_str);
+                                rhash__str(q->column_int(4), temp_str);
                                 break;
 
                             case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = smem_reverse_hash_int(q->column_int(4));
+                                temp_int = rhash__int(q->column_int(4));
                                 to_string(temp_int, temp_str);
                                 break;
 
                             case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = smem_reverse_hash_float(q->column_int(4));
+                                temp_double = rhash__float(q->column_int(4));
                                 to_string(temp_double, temp_str);
                                 break;
 
@@ -135,16 +135,16 @@ void SMem_Manager::smem_visualize_store(std::string* return_val)
                         switch (q->column_int(1))
                         {
                             case STR_CONSTANT_SYMBOL_TYPE:
-                                smem_reverse_hash_str(q->column_int(2), temp_str);
+                                rhash__str(q->column_int(2), temp_str);
                                 break;
 
                             case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = smem_reverse_hash_int(q->column_int(2));
+                                temp_int = rhash__int(q->column_int(2));
                                 to_string(temp_int, temp_str);
                                 break;
 
                             case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = smem_reverse_hash_float(q->column_int(2));
+                                temp_double = rhash__float(q->column_int(2));
                                 to_string(temp_double, temp_str);
                                 break;
 
@@ -220,16 +220,16 @@ void SMem_Manager::smem_visualize_store(std::string* return_val)
                         switch (q->column_int(1))
                         {
                             case STR_CONSTANT_SYMBOL_TYPE:
-                                smem_reverse_hash_str(q->column_int(2), temp_str);
+                                rhash__str(q->column_int(2), temp_str);
                                 break;
 
                             case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = smem_reverse_hash_int(q->column_int(2));
+                                temp_int = rhash__int(q->column_int(2));
                                 to_string(temp_int, temp_str);
                                 break;
 
                             case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = smem_reverse_hash_float(q->column_int(2));
+                                temp_double = rhash__float(q->column_int(2));
                                 to_string(temp_double, temp_str);
                                 break;
 
@@ -255,7 +255,7 @@ void SMem_Manager::smem_visualize_store(std::string* return_val)
     return_val->append("\n");
 }
 
-void SMem_Manager::smem_visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val)
+void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val)
 {
     // buffer
     std::string return_val2;
@@ -349,16 +349,16 @@ void SMem_Manager::smem_visualize_lti(smem_lti_id lti_id, unsigned int depth, st
                     switch (expand_q->column_int(0))
                     {
                         case STR_CONSTANT_SYMBOL_TYPE:
-                            smem_reverse_hash_str(expand_q->column_int(1), temp_str);
+                            rhash__str(expand_q->column_int(1), temp_str);
                             break;
 
                         case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = smem_reverse_hash_int(expand_q->column_int(1));
+                            temp_int = rhash__int(expand_q->column_int(1));
                             to_string(temp_int, temp_str);
                             break;
 
                         case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = smem_reverse_hash_float(expand_q->column_int(1));
+                            temp_double = rhash__float(expand_q->column_int(1));
                             to_string(temp_double, temp_str);
                             break;
 
@@ -414,16 +414,16 @@ void SMem_Manager::smem_visualize_lti(smem_lti_id lti_id, unsigned int depth, st
                     switch (expand_q->column_int(2))
                     {
                         case STR_CONSTANT_SYMBOL_TYPE:
-                            smem_reverse_hash_str(expand_q->column_int(3), temp_str);
+                            rhash__str(expand_q->column_int(3), temp_str);
                             break;
 
                         case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = smem_reverse_hash_int(expand_q->column_int(3));
+                            temp_int = rhash__int(expand_q->column_int(3));
                             to_string(temp_int, temp_str);
                             break;
 
                         case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = smem_reverse_hash_float(expand_q->column_int(3));
+                            temp_double = rhash__float(expand_q->column_int(3));
                             to_string(temp_double, temp_str);
                             break;
 
@@ -448,16 +448,16 @@ void SMem_Manager::smem_visualize_lti(smem_lti_id lti_id, unsigned int depth, st
                     switch (expand_q->column_int(0))
                     {
                         case STR_CONSTANT_SYMBOL_TYPE:
-                            smem_reverse_hash_str(expand_q->column_int(1), temp_str);
+                            rhash__str(expand_q->column_int(1), temp_str);
                             break;
 
                         case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = smem_reverse_hash_int(expand_q->column_int(1));
+                            temp_int = rhash__int(expand_q->column_int(1));
                             to_string(temp_int, temp_str);
                             break;
 
                         case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = smem_reverse_hash_float(expand_q->column_int(1));
+                            temp_double = rhash__float(expand_q->column_int(1));
                             to_string(temp_double, temp_str);
                             break;
 
@@ -525,7 +525,7 @@ void SMem_Manager::smem_visualize_lti(smem_lti_id lti_id, unsigned int depth, st
     return_val->append(return_val2);
 }
 
-std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string* return_val, std::list<uint64_t>* history)
+std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string* return_val, std::list<uint64_t>* history)
 {
     std::set< smem_lti_id > next;
 
@@ -537,7 +537,7 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
     std::map< std::string, std::list< std::string > >::iterator lti_slot;
     std::list< std::string >::iterator slot_val;
 
-    smem_attach();
+    attach();
 
     soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
@@ -557,7 +557,7 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
         {
             case STR_CONSTANT_SYMBOL_TYPE:
             {
-                smem_reverse_hash_str(expand_q->column_int(1), temp_str);
+                rhash__str(expand_q->column_int(1), temp_str);
 
                 if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
                 {
@@ -589,12 +589,12 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
                 break;
             }
             case INT_CONSTANT_SYMBOL_TYPE:
-                temp_int = smem_reverse_hash_int(expand_q->column_int(1));
+                temp_int = rhash__int(expand_q->column_int(1));
                 to_string(temp_int, temp_str);
                 break;
 
             case FLOAT_CONSTANT_SYMBOL_TYPE:
-                temp_double = smem_reverse_hash_float(expand_q->column_int(1));
+                temp_double = rhash__float(expand_q->column_int(1));
                 to_string(temp_double, temp_str);
                 break;
 
@@ -626,7 +626,7 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
                 {
-                    smem_reverse_hash_str(expand_q->column_int(3), temp_str2);
+                    rhash__str(expand_q->column_int(3), temp_str2);
 
                     if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
                     {
@@ -658,12 +658,12 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
                     break;
                 }
                 case INT_CONSTANT_SYMBOL_TYPE:
-                    temp_int = smem_reverse_hash_int(expand_q->column_int(3));
+                    temp_int = rhash__int(expand_q->column_int(3));
                     to_string(temp_int, temp_str2);
                     break;
 
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    temp_double = smem_reverse_hash_float(expand_q->column_int(3));
+                    temp_double = rhash__float(expand_q->column_int(3));
                     to_string(temp_double, temp_str2);
                     break;
 
@@ -724,18 +724,18 @@ std::set< smem_lti_id > SMem_Manager::_smem_print_lti(smem_lti_id lti_id, char l
     return next;
 }
 
-void SMem_Manager::smem_print_store(std::string* return_val)
+void SMem_Manager::print_store(std::string* return_val)
 {
     // id, soar_letter, number
     soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        _smem_print_lti(q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3), return_val);
+        print_lti(q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3), return_val);
     }
     q->reinitialize();
 }
 
-void SMem_Manager::smem_print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
+void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
 {
     std::set< smem_lti_id > visited;
     std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
@@ -798,11 +798,11 @@ void SMem_Manager::smem_print_lti(smem_lti_id lti_id, uint64_t depth, std::strin
 
             if (history && !access_history.empty())
             {
-                next = _smem_print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));
+                next = print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));
             }
             else
             {
-                next = _smem_print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
+                next = print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
             }
 
             // done with lookup

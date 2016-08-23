@@ -14,7 +14,7 @@
 #include "symbol.h"
 #include "test.h"
 
-void SMem_Manager::_smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
+void SMem_Manager::lti_from_test(test t, std::set<Symbol*>* valid_ltis)
 {
     if (!t)
     {
@@ -36,13 +36,13 @@ void SMem_Manager::_smem_lti_from_test(test t, std::set<Symbol*>* valid_ltis)
         {
             for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                _smem_lti_from_test(static_cast<test>(c->first), valid_ltis);
+                lti_from_test(static_cast<test>(c->first), valid_ltis);
             }
         }
     }
 }
 
-void SMem_Manager::_smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
+void SMem_Manager::lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis)
 {
     if (rhs_value_is_symbol(rv))
     {
@@ -57,13 +57,13 @@ void SMem_Manager::_smem_lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* val
         list* fl = rhs_value_to_funcall_list(rv);
         for (cons* c = fl->rest; c != NIL; c = c->rest)
         {
-            _smem_lti_from_rhs_value(static_cast<rhs_value>(c->first), valid_ltis);
+            lti_from_rhs_value(static_cast<rhs_value>(c->first), valid_ltis);
         }
     }
 }
 
 // gets the lti id for an existing lti soar_letter/number pair (or NIL if failure)
-smem_lti_id SMem_Manager::smem_lti_get_id(char name_letter, uint64_t name_number)
+smem_lti_id SMem_Manager::lti_get_id(char name_letter, uint64_t name_number)
 {
     smem_lti_id return_val = NIL;
 
@@ -84,7 +84,7 @@ smem_lti_id SMem_Manager::smem_lti_get_id(char name_letter, uint64_t name_number
 }
 
 // adds a new lti id for a soar_letter/number pair
-smem_lti_id SMem_Manager::smem_lti_add_id(char name_letter, uint64_t name_number)
+smem_lti_id SMem_Manager::lti_add_id(char name_letter, uint64_t name_number)
 {
     smem_lti_id return_val;
 
@@ -108,18 +108,18 @@ smem_lti_id SMem_Manager::smem_lti_add_id(char name_letter, uint64_t name_number
 
 /* I don't know how important the inline was for Nate to include it, so I just made a copy
    of that function for use in other files. */
-void SMem_Manager::smem_lti_soar_promote_STI(Symbol* id)
+void SMem_Manager::lti_soar_promote_STI(Symbol* id)
 {
     assert(id->is_identifier());
     if (id->id->smem_lti == NIL)
     {
         // try to find existing lti
-        id->id->smem_lti = smem_lti_get_id(id->id->name_letter, id->id->name_number);
+        id->id->smem_lti = lti_get_id(id->id->name_letter, id->id->name_number);
 
         // if doesn't exist, add
         if (id->id->smem_lti == NIL)
         {
-            id->id->smem_lti = smem_lti_add_id(id->id->name_letter, id->id->name_number);
+            id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
             id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
             id->id->smem_valid = thisAgent->EpMem->epmem_validation;
             epmem_schedule_promotion(thisAgent, id);
@@ -128,18 +128,18 @@ void SMem_Manager::smem_lti_soar_promote_STI(Symbol* id)
 }
 
 // makes a non-long-term identifier into a long-term identifier
-void SMem_Manager::smem_lti_soar_add(Symbol* id)
+void SMem_Manager::lti_soar_add(Symbol* id)
 {
     if ((id->is_identifier()) &&
             (id->id->smem_lti == NIL))
     {
         // try to find existing lti
-        id->id->smem_lti = smem_lti_get_id(id->id->name_letter, id->id->name_number);
+        id->id->smem_lti = lti_get_id(id->id->name_letter, id->id->name_number);
 
         // if doesn't exist, add
         if (id->id->smem_lti == NIL)
         {
-            id->id->smem_lti = smem_lti_add_id(id->id->name_letter, id->id->name_number);
+            id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
 
             id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
             id->id->smem_valid = thisAgent->EpMem->epmem_validation;
@@ -149,7 +149,7 @@ void SMem_Manager::smem_lti_soar_add(Symbol* id)
 }
 
 // returns a reference to an lti
-Symbol* SMem_Manager::smem_lti_soar_make(smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level)
+Symbol* SMem_Manager::lti_soar_make(smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level)
 {
     Symbol* return_val;
 
@@ -178,7 +178,7 @@ Symbol* SMem_Manager::smem_lti_soar_make(smem_lti_id lti, char name_letter, uint
     return return_val;
 }
 
-void SMem_Manager::smem_reset_id_counters()
+void SMem_Manager::reset_id_counters()
 {
     if (smem_db->get_status() == soar_module::connected)
     {

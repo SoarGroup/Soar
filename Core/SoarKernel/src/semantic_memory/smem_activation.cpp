@@ -12,7 +12,7 @@
 #include "smem_stats.h"
 #include "smem_timers.h"
 
-double SMem_Manager::smem_lti_calc_base(smem_lti_id lti, int64_t time_now, uint64_t n, uint64_t activations_first)
+double SMem_Manager::lti_calc_base(smem_lti_id lti, int64_t time_now, uint64_t n, uint64_t activations_first)
 {
     double sum = 0.0;
     double d = smem_params->base_decay->get_value();
@@ -62,7 +62,7 @@ double SMem_Manager::smem_lti_calc_base(smem_lti_id lti, int64_t time_now, uint6
 //       just when storing a new chunk (default is a
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-double SMem_Manager::smem_lti_activate(smem_lti_id lti, bool add_access, uint64_t num_edges)
+double SMem_Manager::lti_activate(smem_lti_id lti, bool add_access, uint64_t num_edges)
 {
     ////////////////////////////////////////////////////////////////////////////
     smem_timers->act->start();
@@ -97,7 +97,7 @@ double SMem_Manager::smem_lti_activate(smem_lti_id lti, bool add_access, uint64_
 
                         for (std::list< smem_lti_id >::iterator it = to_update.begin(); it != to_update.end(); it++)
                         {
-                            smem_lti_activate((*it), false);
+                            lti_activate((*it), false);
                         }
                     }
                 }
@@ -172,7 +172,7 @@ double SMem_Manager::smem_lti_activate(smem_lti_id lti, bool add_access, uint64_
                 smem_stmts->history_push->execute(soar_module::op_reinit);
             }
 
-            new_activation = smem_lti_calc_base(lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
+            new_activation = lti_calc_base(lti, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
         }
     }
 

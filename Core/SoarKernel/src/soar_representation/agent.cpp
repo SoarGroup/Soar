@@ -117,8 +117,6 @@ void init_soar_agent(agent* thisAgent)
     thisAgent->EpMem->epmem_params->exclusions->set_value("epmem");
     thisAgent->EpMem->epmem_params->exclusions->set_value("smem");
 
-    thisAgent->SMem->smem_params->base_incremental_threshes->set_string("10");
-
 #ifdef REAL_TIME_BEHAVIOR
     /* RMJ */
     init_real_time(thisAgent);
@@ -410,7 +408,7 @@ bool reinitialize_agent(agent* thisAgent)
 
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
-    thisAgent->SMem->smem_reinit();
+    thisAgent->SMem->reinit();
     thisAgent->LTIs_sourced->clear();
 
     thisAgent->explanationBasedChunker->reinit();
@@ -435,7 +433,7 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->RL->rl_stats->reset();
     thisAgent->WM->wma_stats->reset();
     thisAgent->EpMem->epmem_stats->reset();
-    thisAgent->SMem->smem_stats->reset();
+    thisAgent->SMem->reset_stats();
     thisAgent->dyn_counters->clear();
 
     thisAgent->active_level = 0; /* Signal that everything should be retracted */

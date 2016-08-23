@@ -14,7 +14,7 @@
 #include "symbol.h"
 #include "working_memory.h"
 
-soar_module::sqlite_statement* SMem_Manager::smem_setup_web_crawl(smem_weighted_cue_element* el)
+soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
 {
     soar_module::sqlite_statement* q = NULL;
 
@@ -44,7 +44,7 @@ soar_module::sqlite_statement* SMem_Manager::smem_setup_web_crawl(smem_weighted_
     return q;
 }
 
-bool SMem_Manager::_smem_process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery)
+bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery)
 {
     bool good_wme = true;
     smem_weighted_cue_element* new_cue_element;
@@ -58,13 +58,13 @@ bool SMem_Manager::_smem_process_cue_wme(wme* w, bool pos_cue, smem_prioritized_
 
     {
         // we only have to do hard work if
-        attr_hash = smem_temporal_hash(w->attr, false);
+        attr_hash = hash(w->attr, false);
         if (attr_hash != NIL)
         {
             if (w->value->is_constant() && mathQuery == NIL)
             {
                 value_lti = NIL;
-                value_hash = smem_temporal_hash(w->value, false);
+                value_hash = hash(w->value, false);
                 element_type = value_const_t;
 
                 if (value_hash != NIL)
@@ -169,11 +169,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     std::set<Symbol*> uniqueMathQueryElements;
     std::pair<bool, bool>* result = new std::pair<bool, bool>(true, true);
 
-    smem_wme_list* cue = smem_get_direct_augs_of_id(mathQuery);
+    smem_wme_list* cue = get_direct_augs_of_id(mathQuery);
     for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
     {
 
-        smem_wme_list* cueTypes = smem_get_direct_augs_of_id((*cue_p)->value);
+        smem_wme_list* cueTypes =get_direct_augs_of_id((*cue_p)->value);
         if (cueTypes->empty())
         {
             //This would be an attribute without a query type attached
@@ -189,11 +189,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->fc->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->fc->value));
                     }
                     else if ((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->ic->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLess((*cueType)->value->ic->value));
                     }
                     else
                     {
@@ -207,11 +207,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->fc->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->fc->value));
                     }
                     else if ((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->ic->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreater((*cueType)->value->ic->value));
                     }
                     else
                     {
@@ -225,11 +225,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->fc->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->fc->value));
                     }
                     else if ((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->ic->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryLessOrEqual((*cueType)->value->ic->value));
                     }
                     else
                     {
@@ -243,11 +243,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                 {
                     if ((*cueType)->value->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->fc->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->fc->value));
                     }
                     else if ((*cueType)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
                     {
-                        _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->ic->value));
+                       process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryGreaterOrEqual((*cueType)->value->ic->value));
                     }
                     else
                     {
@@ -271,7 +271,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                         uniqueMathQueryElements.insert(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_max);
                     }
                     needFullSearch = true;
-                    _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryMax());
+                   process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryMax());
                 }
                 else if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_min)
                 {
@@ -287,7 +287,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
                         uniqueMathQueryElements.insert(thisAgent->symbolManager->soarSymbols.smem_sym_math_query_min);
                     }
                     needFullSearch = true;
-                    _smem_process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryMin());
+                   process_cue_wme((*cue_p), true, *weighted_pq, new MathQueryMin());
                 }
             }
         }
@@ -302,7 +302,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<smem_lti_id>* match_ids, uint64_t depth, smem_install_type install_type)
+smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<smem_lti_id>* match_ids, uint64_t depth, smem_install_type install_type)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -330,7 +330,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
 
         // positive cue - always
         {
-            smem_wme_list* cue = smem_get_direct_augs_of_id(query);
+            smem_wme_list* cue = get_direct_augs_of_id(query);
             if (cue->empty())
             {
                 good_cue = false;
@@ -342,7 +342,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
 
                 if (good_cue)
                 {
-                    good_cue = _smem_process_cue_wme((*cue_p), true, weighted_pq, NIL);
+                    good_cue = process_cue_wme((*cue_p), true, weighted_pq, NIL);
                 }
             }
 
@@ -361,7 +361,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
         // negative cue - if present
         if (negquery)
         {
-            smem_wme_list* cue = smem_get_direct_augs_of_id(negquery);
+            smem_wme_list* cue = get_direct_augs_of_id(negquery);
 
             for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
             {
@@ -369,7 +369,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
 
                 if (good_cue)
                 {
-                    good_cue = _smem_process_cue_wme((*cue_p), false, weighted_pq, NIL);
+                    good_cue = process_cue_wme((*cue_p), false, weighted_pq, NIL);
                 }
             }
 
@@ -434,7 +434,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
             // confirmation walk
             if (smem_params->base_update->get_value() == smem_param_container::bupt_naive)
             {
-                q = smem_setup_web_crawl((*cand_set));
+                q =setup_web_crawl((*cand_set));
 
                 // queue up distinct lti's to update
                 // - set because queries could contain wilds
@@ -448,7 +448,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
 
                 for (std::set< smem_lti_id >::iterator it = to_update.begin(); it != to_update.end(); it++)
                 {
-                    smem_lti_activate((*it), false);
+                    lti_activate((*it), false);
                 }
 
                 q->reinitialize();
@@ -456,7 +456,7 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
         }
 
         // setup first query, which is sorted on activation already
-        q = smem_setup_web_crawl((*cand_set));
+        q =setup_web_crawl((*cand_set));
         thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
 
         // this becomes the minimal set to walk (till match or fail)
@@ -563,10 +563,10 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
                                     switch (smem_stmts->hash_rev_type->column_int(1 - 1))
                                     {
                                         case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(smem_reverse_hash_float(valueHash));
+                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
                                             break;
                                         case INT_CONSTANT_SYMBOL_TYPE:
-                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(smem_reverse_hash_int(valueHash));
+                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__int(valueHash));
                                             break;
                                     }
                                 }
@@ -641,24 +641,24 @@ smem_lti_id SMem_Manager::smem_process_query(Symbol* state, Symbol* query, Symbo
         if (king_id != NIL)
         {
             // success!
-            smem_buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
+            buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
             if (negquery)
             {
-                smem_buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
+                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////
             smem_timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
 
-            smem_install_memory(state, king_id, NIL, (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            install_memory(state, king_id, NIL, (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
         }
         else
         {
-            smem_buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
+            buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
             if (negquery)
             {
-                smem_buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
+                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////

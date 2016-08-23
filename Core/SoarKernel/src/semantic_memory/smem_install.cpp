@@ -19,7 +19,7 @@
 #include "symbol_manager.h"
 #include "working_memory_activation.h"
 
-void SMem_Manager::_smem_process_buffered_wme_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
+void SMem_Manager::process_buffered_wme_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
     {
@@ -115,13 +115,13 @@ void SMem_Manager::_smem_process_buffered_wme_list(Symbol* state, wme_set& cue_w
     }
 }
 
-void SMem_Manager::smem_process_buffered_wmes(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
+void SMem_Manager::process_buffered_wmes(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
-    _smem_process_buffered_wme_list(state, cue_wmes, meta_wmes, true);
-    _smem_process_buffered_wme_list(state, cue_wmes, retrieval_wmes, false);
+    process_buffered_wme_list(state, cue_wmes, meta_wmes, true);
+    process_buffered_wme_list(state, cue_wmes, retrieval_wmes, false);
 }
 
-void SMem_Manager::smem_buffer_add_wme(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
+void SMem_Manager::buffer_add_wme(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
     my_list.push_back(new symbol_triple(id, attr, value));
 
@@ -130,7 +130,7 @@ void SMem_Manager::smem_buffer_add_wme(symbol_triple_list& my_list, Symbol* id, 
     thisAgent->symbolManager->symbol_add_ref(value);
 }
 
-void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<smem_lti_id>* visited)
+void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<smem_lti_id>* visited)
 {
     ////////////////////////////////////////////////////////////////////////////
     smem_timers->ncb_retrieval->start();
@@ -152,7 +152,7 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
         q->bind_int(1, lti_id);
         q->execute();
 
-        lti = smem_lti_soar_make(lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
+        lti = lti_soar_make(lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
 
         q->reinitialize();
 
@@ -162,7 +162,7 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
     // activate lti
     if (activate_lti)
     {
-        smem_lti_activate(lti_id, true);
+        lti_activate(lti_id, true);
     }
 
     // point retrieved to lti
@@ -170,11 +170,11 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
     {
         if (visited == NULL)
         {
-            smem_buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, lti);
+            buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, lti);
         }
         else
         {
-            smem_buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_depth_retrieved, lti);
+            buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_depth_retrieved, lti);
         }
     }
     if (lti_created_here)
@@ -215,12 +215,12 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
         while (expand_q->execute() == soar_module::row)
         {
             // make the identifier symbol irrespective of value type
-            attr_sym = smem_reverse_hash(static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
+            attr_sym = rhash_(static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
 
             // identifier vs. constant
             if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
             {
-                value_sym = smem_lti_soar_make(static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), lti->id->level);
+                value_sym = lti_soar_make(static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), lti->id->level);
                 if (depth > 1)
                 {
                     children.insert(value_sym);
@@ -228,11 +228,11 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
             }
             else
             {
-                value_sym = smem_reverse_hash(static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
+                value_sym = rhash_(static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
             }
 
             // add wme
-            smem_buffer_add_wme(retrieval_wmes, lti, attr_sym, value_sym);
+            buffer_add_wme(retrieval_wmes, lti, attr_sym, value_sym);
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
@@ -249,7 +249,7 @@ void SMem_Manager::smem_install_memory(Symbol* state, smem_lti_id lti_id, Symbol
             if (visited->find((*iterator)->id->smem_lti) == visited->end())
             {
                 visited->insert((*iterator)->id->smem_lti);
-                smem_install_memory(state, (*iterator)->id->smem_lti, (*iterator), (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
+                install_memory(state, (*iterator)->id->smem_lti, (*iterator), (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
     }

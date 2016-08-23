@@ -63,7 +63,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'a')
     {
         std::string* err = new std::string("");
-        bool result = thisAgent->SMem->smem_parse_chunks(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->parse_chunks(pAttr->c_str(), &(err));
 
         if (!result)
         {
@@ -79,7 +79,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'b')
     {
         std::string err;
-        bool result = thisAgent->SMem->smem_backup_db(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->backup_db(pAttr->c_str(), &(err));
 
         if (!result)
         {
@@ -139,7 +139,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         smem_lti_id lti_id = NIL;
         uint64_t depth = 1;
         bool history = true;
-        thisAgent->SMem->smem_attach();
+        thisAgent->SMem->attach();
 
         if (thisAgent->SMem->smem_db->get_status() != soar_module::connected)
         {
@@ -151,7 +151,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
             if (lexeme.type == IDENTIFIER_LEXEME)
             {
-                lti_id = thisAgent->SMem->smem_lti_get_id(lexeme.id_letter, lexeme.id_number);
+                lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
             }
             if (lti_id == NIL)
             {
@@ -161,7 +161,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         std::string viz;
 
-        thisAgent->SMem->smem_print_lti(lti_id, depth, &(viz), history);
+        thisAgent->SMem->print_lti(lti_id, depth, &(viz), history);
 
         if (viz.empty())
         {
@@ -180,7 +180,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         // production memory (automatic init-soar clears working memory as a result)
 
         epmem_reinit_cmd(thisAgent);
-        thisAgent->SMem->smem_reinit_cmd();
+        thisAgent->SMem->reinit_cmd();
 
         ExciseBitset options(0);
         options.set(EXCISE_ALL, true);
@@ -194,7 +194,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         smem_lti_id lti_id = NIL;
         unsigned int depth = 1;
 
-        thisAgent->SMem->smem_attach();
+        thisAgent->SMem->attach();
         if (thisAgent->SMem->smem_db->get_status() != soar_module::connected)
         {
             return SetError("Semantic memory database not connected.");
@@ -213,7 +213,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = thisAgent->SMem->smem_lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+                    lti_id = thisAgent->SMem->lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
@@ -232,7 +232,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (lti_id == NIL)
         {
-            thisAgent->SMem->smem_print_store(&(viz));
+            thisAgent->SMem->print_store(&(viz));
             if (!viz.empty())
             {
                 PrintCLIMessage_Header("Semantic Memory", 40);
@@ -240,7 +240,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            thisAgent->SMem->smem_print_lti(lti_id, depth, &(viz));
+            thisAgent->SMem->print_lti(lti_id, depth, &(viz));
         }
         if (viz.empty())
         {
@@ -261,7 +261,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             from_c_string(number_to_retrieve, pVal->c_str());
         }
 
-        bool result = thisAgent->SMem->smem_parse_cues(pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
+        bool result = thisAgent->SMem->parse_cues(pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
 
         if (!result)
         {
@@ -286,7 +286,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
         }
 
-        bool result = thisAgent->SMem->smem_parse_remove(pAttr->c_str(), &(err), &(retrieved), force);
+        bool result = thisAgent->SMem->parse_remove(pAttr->c_str(), &(err), &(retrieved), force);
 
         if (!result)
         {
@@ -348,7 +348,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'S')
     {
-        thisAgent->SMem->smem_attach();
+        thisAgent->SMem->attach();
         if (!pAttr)
         {
             // Print SMem Settings
@@ -426,7 +426,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         unsigned int depth = 1;
 
         // visualizing the store requires an open semantic database
-        thisAgent->SMem->smem_attach();
+        thisAgent->SMem->attach();
 
         if (pAttr)
         {
@@ -435,7 +435,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = thisAgent->SMem->smem_lti_get_id(lexeme.id_letter, lexeme.id_number);
+                    lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
@@ -454,11 +454,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         if (lti_id == NIL)
         {
-            thisAgent->SMem->smem_visualize_store(&(viz));
+            thisAgent->SMem->visualize_store(&(viz));
         }
         else
         {
-            thisAgent->SMem->smem_visualize_lti(lti_id, depth, &(viz));
+            thisAgent->SMem->visualize_lti(lti_id, depth, &(viz));
         }
 
         if (viz.empty())

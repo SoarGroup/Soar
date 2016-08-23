@@ -22,7 +22,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
-void SMem_Manager::smem_deallocate_chunk(smem_chunk* chunk, bool free_chunk )
+void SMem_Manager::deallocate_chunk(smem_chunk* chunk, bool free_chunk )
 {
     if (chunk)
     {
@@ -82,7 +82,7 @@ void SMem_Manager::smem_deallocate_chunk(smem_chunk* chunk, bool free_chunk )
     }
 }
 
-std::string* SMem_Manager::smem_parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
+std::string* SMem_Manager::parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
 {
     std::string* return_val = new std::string;
 
@@ -115,7 +115,7 @@ std::string* SMem_Manager::smem_parse_lti_name(soar::Lexeme* lexeme, char* id_le
     return return_val;
 }
 
-Symbol* SMem_Manager::smem_parse_constant_attr(soar::Lexeme* lexeme)
+Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
 {
     Symbol* return_val = NIL;
 
@@ -135,7 +135,7 @@ Symbol* SMem_Manager::smem_parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
+bool SMem_Manager::parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
 {
     bool return_val = false;
 
@@ -166,7 +166,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
         if (good_at)
         {
             // save identifier
-            chunk_name = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
+            chunk_name = parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
             new_chunk->lti_letter = temp_letter;
             new_chunk->lti_number = temp_number;
             new_chunk->lti_id = NIL;
@@ -196,7 +196,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
                 lexer->get_lexeme();
 
                 // get the appropriate constant type
-                chunk_attr = smem_parse_constant_attr(&(lexer->current_lexeme));
+                chunk_attr = parse_constant_attr(&(lexer->current_lexeme));
 
                 // if constant attribute, proceed to value
                 if (chunk_attr != NIL)
@@ -222,7 +222,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
                         chunk_value = new smem_chunk_value;
                         chunk_value->val_lti.val_type = value_lti_t;
                         chunk_value->val_lti.val_value = temp_chunk;
-                        s = smem_make_slot(intermediate_parent->slots, chunk_attr);
+                        s = make_smem_slot(intermediate_parent->slots, chunk_attr);
                         s->push_back(chunk_value);
 
                         // create a key guaranteed to be unique
@@ -246,7 +246,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
 
                         // get the next attribute
                         lexer->get_lexeme();
-                        chunk_attr = smem_parse_constant_attr(&(lexer->current_lexeme));
+                        chunk_attr = parse_constant_attr(&(lexer->current_lexeme));
 
                         // consume attribute
                         lexer->get_lexeme();
@@ -296,7 +296,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                     chunk_value->val_lti.val_type = value_lti_t;
 
                                     // get key
-                                    temp_key2 = smem_parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
+                                    temp_key2 = parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
 
                                     // search for an existing chunk
                                     smem_str_to_chunk_map::iterator p = chunks->find((*temp_key2));
@@ -337,7 +337,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                 lexer->get_lexeme();
 
                                 // add to appropriate slot
-                                s = smem_make_slot(intermediate_parent->slots, chunk_attr);
+                                s = make_smem_slot(intermediate_parent->slots, chunk_attr);
                                 if (first_value && !s->empty())
                                 {
                                     // in the case of a repeated attribute, remove ref here to avoid leak
@@ -405,7 +405,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
                 // for all slots
                 for (ss_p = new_chunk->slots->begin(); ss_p != new_chunk->slots->end(); ss_p++)
                 {
-                    target_slot = smem_make_slot((*p)->slots, ss_p->first);
+                    target_slot =make_smem_slot((*p)->slots, ss_p->first);
                     source_slot = ss_p->second;
 
                     // for all values in the slot
@@ -428,7 +428,7 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
             newbies->insert((*p));
 
             // deallocate
-            smem_deallocate_chunk(new_chunk);
+            deallocate_chunk(new_chunk);
         }
     }
     else
@@ -445,13 +445,13 @@ bool SMem_Manager::smem_parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* c
     return return_val;
 }
 
-bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_msg)
+bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
 {
     bool return_val = false;
     uint64_t clause_count = 0;
 
     // parsing chunks requires an open semantic database
-    smem_attach();
+    attach();
 
     soar::Lexer lexer(thisAgent, chunks_str);
 
@@ -474,7 +474,7 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
     // while there are chunks to consume
     while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_chunk))
     {
-        good_chunk = smem_parse_chunk(&lexer, &(chunks), &(newbies));
+        good_chunk = parse_chunk(&lexer, &(chunks), &(newbies));
 
         if (good_chunk)
         {
@@ -491,7 +491,7 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
                         uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
 
                         (*c_new)->lti_number = (*letter_ct)++;
-                        (*c_new)->lti_id = smem_lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
+                        (*c_new)->lti_id =lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
                     }
                     else
                     {
@@ -499,12 +499,12 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
                         if ((*c_new)->lti_id == NIL)
                         {
                             // get existing
-                            (*c_new)->lti_id = smem_lti_get_id((*c_new)->lti_letter, (*c_new)->lti_number);
+                            (*c_new)->lti_id = lti_get_id((*c_new)->lti_letter, (*c_new)->lti_number);
 
                             // if doesn't exist, add it
                             if ((*c_new)->lti_id == NIL)
                             {
-                                (*c_new)->lti_id = smem_lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
+                                (*c_new)->lti_id =lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
 
                                 // this could affect an existing identifier in Soar's WM
                                 Symbol* id_parent = thisAgent->symbolManager->find_identifier((*c_new)->lti_letter, (*c_new)->lti_number);
@@ -528,14 +528,14 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
             {
                 if ((*c_new)->slots != NIL)
                 {
-                    smem_store_chunk((*c_new)->lti_id, (*c_new)->slots, false);
+                   store_chunk((*c_new)->lti_id, (*c_new)->slots, false);
                 }
             }
 
             // deallocate *contents* of all newbies (need to keep around name->id association for future chunks)
             for (c_new = newbies.begin(); c_new != newbies.end(); c_new++)
             {
-                smem_deallocate_chunk((*c_new), false);
+               deallocate_chunk((*c_new), false);
             }
 
             // increment clause counter
@@ -552,7 +552,7 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
     {
         for (c_old = chunks.begin(); c_old != chunks.end(); c_old++)
         {
-            smem_deallocate_chunk(c_old->second, true);
+           deallocate_chunk(c_old->second, true);
         }
     }
 
@@ -577,13 +577,13 @@ bool SMem_Manager::smem_parse_chunks(const char* chunks_str, std::string** err_m
  * -Steven 23-7-2014
  */
 
-bool SMem_Manager::smem_parse_cues(const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
+bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
 {
     uint64_t clause_count = 0;  // This is counting up the number of parsed clauses
     // so that there is a pointer to a failure location.
 
     //Parsing requires an open semantic database.
-    smem_attach();
+    attach();
 
     soar::Lexer lexer(thisAgent, chunks_str);
 
@@ -682,7 +682,7 @@ bool SMem_Manager::smem_parse_cues(const char* chunks_str, std::string** err_msg
 
                 // TODO: test to make sure this is good. Previously there was no test
                 // for the type of the lexeme so passing a "(" caused a segfault when making the slot.
-                attribute = smem_parse_constant_attr(&(lexer.current_lexeme));
+                attribute = parse_constant_attr(&(lexer.current_lexeme));
                 if (attribute == NIL)
                 {
                     good_cue = false;
@@ -727,7 +727,7 @@ bool SMem_Manager::smem_parse_cues(const char* chunks_str, std::string** err_msg
                     {
                         //If the LTI isn't recognized, then it cannot be a good cue.
                         lexer.get_lexeme();
-                        smem_lti_id value_id = smem_lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+                        smem_lti_id value_id = lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
                         if (value_id == NIL)
                         {
                             good_cue = false;
@@ -736,7 +736,7 @@ bool SMem_Manager::smem_parse_cues(const char* chunks_str, std::string** err_msg
                         }
                         else
                         {
-                            value = smem_lti_soar_make(value_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+                            value = lti_soar_make(value_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
                         }
                         lexer.get_lexeme();
                     }
@@ -819,13 +819,13 @@ bool SMem_Manager::smem_parse_cues(const char* chunks_str, std::string** err_msg
 
         std::list<smem_lti_id> match_ids;
 
-        smem_process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
+        process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
 
         if (!match_ids.empty())
         {
             for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
-                smem_print_lti((*id), 1, *result_message); //"1" is the depth.
+               print_lti((*id), 1, *result_message); //"1" is the depth.
             }
         }
         else
@@ -898,13 +898,13 @@ void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
  */
-bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
+bool SMem_Manager::parse_remove(const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
 {
     //TODO: need to fix so that err_msg and result_message are actually used or not passed.
     bool good_command = true;
 
     //parsing chunks requires an open semantic database
-    smem_attach();
+    attach();
 
     soar::Lexer lexer(thisAgent, chunks_str);
 
@@ -926,7 +926,7 @@ bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_m
 
     if (good_command)
     {
-        lti_id = smem_lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+        lti_id = lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
     }
     else
     {
@@ -938,7 +938,7 @@ bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_m
 
     if (good_command && lti_id != NIL)
     {
-        Symbol* lti = smem_lti_soar_make(lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
+        Symbol* lti = lti_soar_make(lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
 
         lexer.get_lexeme();//Consume the identifier.
 
@@ -948,7 +948,7 @@ bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_m
         {
             //Now that we know we have a good lti, we can do a NCBR so that we know what attributes and values we can delete.
             //"--force" will ignore attempts to delete that which isn't there, while the default will be to stop and report back.
-            smem_install_memory(NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
+            install_memory(NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
 
             //First, we'll create the slot_map according to retrieval_wmes, then we'll remove what we encounter during parsing.
             symbol_triple_list::iterator triple_ptr_iter;
@@ -1175,7 +1175,7 @@ bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_m
         }
         if (good_command && lexer.current_lexeme.type == R_PAREN_LEXEME)
         {
-            smem_store_chunk(lti_id, &(children), true, NULL, false);
+            store_chunk(lti_id, &(children), true, NULL, false);
         }
         else if (good_command)
         {
@@ -1212,7 +1212,7 @@ bool SMem_Manager::smem_parse_remove(const char* chunks_str, std::string** err_m
     return good_command;
 }
 
-smem_slot* SMem_Manager::smem_make_slot(smem_slot_map* slots, Symbol* attr)
+smem_slot* SMem_Manager::make_smem_slot(smem_slot_map* slots, Symbol* attr)
 {
     smem_slot** s = & (*slots)[ attr ];
 
@@ -1224,7 +1224,7 @@ smem_slot* SMem_Manager::smem_make_slot(smem_slot_map* slots, Symbol* attr)
     return (*s);
 }
 
-void SMem_Manager::smem_disconnect_chunk(smem_lti_id lti_id)
+void SMem_Manager::disconnect_chunk(smem_lti_id lti_id)
 {
     // adjust attr, attr/value counts
     {
@@ -1282,14 +1282,14 @@ void SMem_Manager::smem_disconnect_chunk(smem_lti_id lti_id)
     }
 }
 
-void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
+void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
 {
     // if remove children, disconnect chunk -> no existing edges
     // else, need to query number of existing edges
     uint64_t existing_edges = 0;
     if (remove_old_children)
     {
-        smem_disconnect_chunk(lti_id);
+        disconnect_chunk(lti_id);
 
         // provide trace output
         if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ] && (print_id))
@@ -1327,7 +1327,7 @@ void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children,
 
         for (s = children->begin(); s != children->end(); s++)
         {
-            attr_hash = smem_temporal_hash(s->first);
+            attr_hash = hash(s->first);
             if (remove_old_children)
             {
                 attr_new.insert(attr_hash);
@@ -1347,7 +1347,7 @@ void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children,
             {
                 if ((*v)->val_const.val_type == value_const_t)
                 {
-                    value_hash = smem_temporal_hash((*v)->val_const.val_value);
+                    value_hash = hash((*v)->val_const.val_value);
 
                     if (remove_old_children)
                     {
@@ -1381,7 +1381,7 @@ void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children,
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     if (value_lti == NIL)
                     {
-                        value_lti = smem_lti_add_id((*v)->val_lti.val_value->lti_letter, (*v)->val_lti.val_value->lti_number);
+                        value_lti = lti_add_id((*v)->val_lti.val_value->lti_letter, (*v)->val_lti.val_value->lti_number);
                         (*v)->val_lti.val_value->lti_id = value_lti;
 
                         if ((*v)->val_lti.val_value->soar_id != NIL)
@@ -1463,7 +1463,7 @@ void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children,
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = smem_lti_activate(lti_id, true, new_edges);
+        double lti_act = lti_activate(lti_id, true, new_edges);
 
         if (!after_above)
         {
@@ -1577,7 +1577,7 @@ void SMem_Manager::smem_store_chunk(smem_lti_id lti_id, smem_slot_map* children,
     }
 }
 
-void SMem_Manager::smem_soar_store(Symbol* id, smem_storage_type store_type, tc_number tc)
+void SMem_Manager::soar_store(Symbol* id, smem_storage_type store_type, tc_number tc)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -1587,12 +1587,12 @@ void SMem_Manager::smem_soar_store(Symbol* id, smem_storage_type store_type, tc_
     smem_sym_list shorties;
 
     // get level
-    smem_wme_list* children = smem_get_direct_augs_of_id(id, tc);
+    smem_wme_list* children = get_direct_augs_of_id(id, tc);
     smem_wme_list::iterator w;
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
-    smem_lti_soar_add(id);
+    lti_soar_add(id);
 
     // encode this level
     {
@@ -1609,7 +1609,7 @@ void SMem_Manager::smem_soar_store(Symbol* id, smem_storage_type store_type, tc_
         for (w = children->begin(); w != children->end(); w++)
         {
             // get slot
-            s = smem_make_slot(&(slots), (*w)->attr);
+            s = make_smem_slot(&(slots), (*w)->attr);
 
             // create value, per type
             v = new smem_chunk_value;
@@ -1649,7 +1649,7 @@ void SMem_Manager::smem_soar_store(Symbol* id, smem_storage_type store_type, tc_
             s->push_back(v);
         }
 
-        smem_store_chunk(id->id->smem_lti, &(slots), true, id);
+        store_chunk(id->id->smem_lti, &(slots), true, id);
 
         // clean up
         {
@@ -1677,6 +1677,6 @@ void SMem_Manager::smem_soar_store(Symbol* id, smem_storage_type store_type, tc_
     // recurse as necessary
     for (smem_sym_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
-        smem_soar_store((*shorty), store_recursive, tc);
+        soar_store((*shorty), store_recursive, tc);
     }
 }

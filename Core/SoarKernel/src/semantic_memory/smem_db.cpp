@@ -324,14 +324,14 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_hash_id SMem_Manager::smem_temporal_hash_add_type(byte symbol_type)
+smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
 {
     smem_stmts->hash_add_type->bind_int(1, symbol_type);
     smem_stmts->hash_add_type->execute(soar_module::op_reinit);
     return static_cast<smem_hash_id>(smem_db->last_insert_rowid());
 }
 
-smem_hash_id SMem_Manager::smem_temporal_hash_int(int64_t val, bool add_on_fail)
+smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
 {
     smem_hash_id return_val = NIL;
 
@@ -347,7 +347,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_int(int64_t val, bool add_on_fail)
     if (!return_val && add_on_fail)
     {
         // type first
-        return_val = smem_temporal_hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
+        return_val = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
 
         // then content
         smem_stmts->hash_add_int->bind_int(1, return_val);
@@ -358,7 +358,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_int(int64_t val, bool add_on_fail)
     return return_val;
 }
 
-smem_hash_id SMem_Manager::smem_temporal_hash_float(double val, bool add_on_fail)
+smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
 {
     smem_hash_id return_val = NIL;
 
@@ -374,7 +374,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_float(double val, bool add_on_fail
     if (!return_val && add_on_fail)
     {
         // type first
-        return_val = smem_temporal_hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
+        return_val = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
 
         // then content
         smem_stmts->hash_add_float->bind_int(1, return_val);
@@ -385,7 +385,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_float(double val, bool add_on_fail
     return return_val;
 }
 
-smem_hash_id SMem_Manager::smem_temporal_hash_str(char* val, bool add_on_fail)
+smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
 {
     smem_hash_id return_val = NIL;
 
@@ -401,7 +401,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_str(char* val, bool add_on_fail)
     if (!return_val && add_on_fail)
     {
         // type first
-        return_val = smem_temporal_hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
+        return_val = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
 
         // then content
         smem_stmts->hash_add_str->bind_int(1, return_val);
@@ -413,7 +413,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash_str(char* val, bool add_on_fail)
 }
 
 // returns a temporally unique integer representing a symbol constant
-smem_hash_id SMem_Manager::smem_temporal_hash(Symbol* sym, bool add_on_fail)
+smem_hash_id SMem_Manager::hash(Symbol* sym, bool add_on_fail)
 {
     smem_hash_id return_val = NIL;
 
@@ -431,15 +431,15 @@ smem_hash_id SMem_Manager::smem_temporal_hash(Symbol* sym, bool add_on_fail)
             switch (sym->symbol_type)
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
-                    return_val = smem_temporal_hash_str(sym->sc->name, add_on_fail);
+                    return_val = hash_str(sym->sc->name, add_on_fail);
                     break;
 
                 case INT_CONSTANT_SYMBOL_TYPE:
-                    return_val = smem_temporal_hash_int(sym->ic->value, add_on_fail);
+                    return_val = hash_int(sym->ic->value, add_on_fail);
                     break;
 
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    return_val = smem_temporal_hash_float(sym->fc->value, add_on_fail);
+                    return_val = hash_float(sym->fc->value, add_on_fail);
                     break;
             }
 
@@ -458,7 +458,7 @@ smem_hash_id SMem_Manager::smem_temporal_hash(Symbol* sym, bool add_on_fail)
     return return_val;
 }
 
-int64_t SMem_Manager::smem_reverse_hash_int(smem_hash_id hash_value)
+int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
 {
     int64_t return_val = NIL;
 
@@ -472,7 +472,7 @@ int64_t SMem_Manager::smem_reverse_hash_int(smem_hash_id hash_value)
     return return_val;
 }
 
-double SMem_Manager::smem_reverse_hash_float(smem_hash_id hash_value)
+double SMem_Manager::rhash__float(smem_hash_id hash_value)
 {
     double return_val = NIL;
 
@@ -486,7 +486,7 @@ double SMem_Manager::smem_reverse_hash_float(smem_hash_id hash_value)
     return return_val;
 }
 
-void SMem_Manager::smem_reverse_hash_str(smem_hash_id hash_value, std::string& dest)
+void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
 {
     smem_stmts->hash_rev_str->bind_int(1, hash_value);
     soar_module::exec_result res = smem_stmts->hash_rev_str->execute();
@@ -496,7 +496,7 @@ void SMem_Manager::smem_reverse_hash_str(smem_hash_id hash_value, std::string& d
     smem_stmts->hash_rev_str->reinitialize();
 }
 
- Symbol* SMem_Manager::smem_reverse_hash(byte symbol_type, smem_hash_id hash_value)
+ Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
 {
     Symbol* return_val = NULL;
     std::string dest;
@@ -504,16 +504,16 @@ void SMem_Manager::smem_reverse_hash_str(smem_hash_id hash_value, std::string& d
     switch (symbol_type)
     {
         case STR_CONSTANT_SYMBOL_TYPE:
-            smem_reverse_hash_str(hash_value, dest);
+            rhash__str(hash_value, dest);
             return_val = thisAgent->symbolManager->make_str_constant(const_cast<char*>(dest.c_str()));
             break;
 
         case INT_CONSTANT_SYMBOL_TYPE:
-            return_val = thisAgent->symbolManager->make_int_constant(smem_reverse_hash_int(hash_value));
+            return_val = thisAgent->symbolManager->make_int_constant(rhash__int(hash_value));
             break;
 
         case FLOAT_CONSTANT_SYMBOL_TYPE:
-            return_val = thisAgent->symbolManager->make_float_constant(smem_reverse_hash_float(hash_value));
+            return_val = thisAgent->symbolManager->make_float_constant(rhash__float(hash_value));
             break;
 
         default:
@@ -525,7 +525,7 @@ void SMem_Manager::smem_reverse_hash_str(smem_hash_id hash_value, std::string& d
 }
 
 // opens the SQLite database and performs all initialization required for the current mode
-void SMem_Manager::smem_init_db()
+void SMem_Manager::init_db()
 {
     if (smem_db->get_status() != soar_module::disconnected)
     {
@@ -609,11 +609,11 @@ void SMem_Manager::smem_init_db()
                         else
                         {
                             version_error_message.assign("...Error: Cannot read version number from file-based semantic memory database.\n");
-                            if (smem_version_one())
+                            if (is_version_one_db())
                             {
                                 version_error_message.assign("...Version of semantic memory database is old.\n"
                                                              "...Converting to version 2.0.\n");
-                                smem_update_schema_one_to_two();
+                                update_schema_one_to_two();
                                 switch_to_memory = false;
                                 tabula_rasa = false;
                                 delete temp_q;
@@ -627,11 +627,11 @@ void SMem_Manager::smem_init_db()
                     }
                     else     // Non-empty database exists with no version table.  Probably schema 1.0
                     {
-                        if (smem_version_one())
+                        if (is_version_one_db())
                         {
                             version_error_message.assign("...Version of semantic memory database is old.\n"
                                                          "...Converting to version 2.0.\n");
-                            smem_update_schema_one_to_two();
+                            update_schema_one_to_two();
                             switch_to_memory = false;
                             tabula_rasa = false;
                             delete temp_q;
@@ -657,7 +657,7 @@ void SMem_Manager::smem_init_db()
             {
                 // Memory mode will be set on, database will be disconnected to and then init_db
                 // will be called again to reinitialize database.
-                smem_switch_to_memory_db(version_error_message);
+                switch_to_memory_db(version_error_message);
                 return;
             }
         }
@@ -743,21 +743,21 @@ void SMem_Manager::smem_init_db()
             {
                 // max cycle
                 smem_max_cycle = static_cast<int64_t>(1);
-                smem_variable_create(var_max_cycle, 1);
+                variable_create(var_max_cycle, 1);
 
                 // number of nodes
                 smem_stats->chunks->set_value(0);
-                smem_variable_create(var_num_nodes, 0);
+                variable_create(var_num_nodes, 0);
 
                 // number of edges
                 smem_stats->slots->set_value(0);
-                smem_variable_create(var_num_edges, 0);
+                variable_create(var_num_edges, 0);
 
                 // threshold (from user parameter value)
-                smem_variable_create(var_act_thresh, static_cast<int64_t>(smem_params->thresh->get_value()));
+                variable_create(var_act_thresh, static_cast<int64_t>(smem_params->thresh->get_value()));
 
                 // activation mode (from user parameter value)
-                smem_variable_create(var_act_mode, static_cast<int64_t>(smem_params->activation_mode->get_value()));
+                variable_create(var_act_mode, static_cast<int64_t>(smem_params->activation_mode->get_value()));
             }
             smem_stmts->commit->execute(soar_module::op_reinit);
         }
@@ -766,27 +766,27 @@ void SMem_Manager::smem_init_db()
             int64_t temp;
 
             // max cycle
-            smem_variable_get(var_max_cycle, &(smem_max_cycle));
+            variable_get(var_max_cycle, &(smem_max_cycle));
 
             // number of nodes
-            smem_variable_get(var_num_nodes, &(temp));
+            variable_get(var_num_nodes, &(temp));
             smem_stats->chunks->set_value(temp);
 
             // number of edges
-            smem_variable_get(var_num_edges, &(temp));
+            variable_get(var_num_edges, &(temp));
             smem_stats->slots->set_value(temp);
 
             // threshold
-            smem_variable_get(var_act_thresh, &(temp));
+            variable_get(var_act_thresh, &(temp));
             smem_params->thresh->set_value(temp);
 
             // activation mode
-            smem_variable_get(var_act_mode, &(temp));
+            variable_get(var_act_mode, &(temp));
             smem_params->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
         }
 
         // reset identifier counters
-        smem_reset_id_counters();
+        reset_id_counters();
 
         // if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
         if (smem_params->lazy_commit->get_value() == on)
@@ -801,7 +801,7 @@ void SMem_Manager::smem_init_db()
 }
 
 // gets an SMem variable from the database
-bool SMem_Manager::smem_variable_get(smem_variable_key variable_id, int64_t* variable_value)
+bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable_value)
 {
     soar_module::exec_result status;
     soar_module::sqlite_statement* var_get = smem_stmts->var_get;
@@ -820,7 +820,7 @@ bool SMem_Manager::smem_variable_get(smem_variable_key variable_id, int64_t* var
 }
 
 // sets an existing SMem variable in the database
-void SMem_Manager::smem_variable_set(smem_variable_key variable_id, int64_t variable_value)
+void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_value)
 {
     soar_module::sqlite_statement* var_set = smem_stmts->var_set;
 
@@ -831,7 +831,7 @@ void SMem_Manager::smem_variable_set(smem_variable_key variable_id, int64_t vari
 }
 
 // creates a new SMem variable in the database
-void SMem_Manager::smem_variable_create(smem_variable_key variable_id, int64_t variable_value)
+void SMem_Manager::variable_create(smem_variable_key variable_id, int64_t variable_value)
 {
     soar_module::sqlite_statement* var_create = smem_stmts->var_create;
 
@@ -844,15 +844,15 @@ void SMem_Manager::smem_variable_create(smem_variable_key variable_id, int64_t v
 void SMem_Manager::store_globals_in_db()
 {
     // store max cycle for future use of the smem database
-    smem_variable_set(var_max_cycle, smem_max_cycle);
+    variable_set(var_max_cycle, smem_max_cycle);
 
     // store num nodes/edges for future use of the smem database
-    smem_variable_set(var_num_nodes, smem_stats->chunks->get_value());
-    smem_variable_set(var_num_edges, smem_stats->slots->get_value());
+    variable_set(var_num_nodes, smem_stats->chunks->get_value());
+    variable_set(var_num_edges, smem_stats->slots->get_value());
 }
 
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
-void SMem_Manager::smem_close()
+void SMem_Manager::close()
 {
     if (smem_db->get_status() == soar_module::connected)
     {
@@ -873,15 +873,15 @@ void SMem_Manager::smem_close()
     }
 }
 
-void SMem_Manager::smem_attach()
+void SMem_Manager::attach()
 {
     if (smem_db->get_status() == soar_module::disconnected)
     {
-        smem_init_db();
+        init_db();
     }
 }
 
-bool SMem_Manager::smem_backup_db(const char* file_name, std::string* err)
+bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 {
     bool return_val = false;
 
@@ -909,15 +909,15 @@ bool SMem_Manager::smem_backup_db(const char* file_name, std::string* err)
     return return_val;
 }
 
-void SMem_Manager::smem_switch_to_memory_db(std::string& buf)
+void SMem_Manager::switch_to_memory_db(std::string& buf)
 {
     print_sysparam_trace(thisAgent, 0, buf.c_str());
     smem_db->disconnect();
     smem_params->database->set_value(smem_param_container::memory);
-    smem_init_db();
+    init_db();
 }
 
-void SMem_Manager::smem_update_schema_one_to_two()
+void SMem_Manager::update_schema_one_to_two()
 {
     smem_db->sql_execute("BEGIN TRANSACTION");
     smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");

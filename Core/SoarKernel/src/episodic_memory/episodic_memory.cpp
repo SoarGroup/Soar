@@ -3379,7 +3379,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
         }
         else
         {
-            Symbol* value = thisAgent->SMem->smem_lti_soar_make(thisAgent->SMem->smem_lti_get_id(val_letter, val_num), val_letter, val_num, parent->id->level);
+            Symbol* value = thisAgent->SMem->lti_soar_make(thisAgent->SMem->lti_get_id(val_letter, val_num), val_letter, val_num, parent->id->level);
 
             if (id_record)
             {

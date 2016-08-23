@@ -635,9 +635,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (thisAgent->SMem->smem_enabled())
+                if (thisAgent->SMem->enabled())
                 {
-                    thisAgent->SMem->smem_go(true);
+                    thisAgent->SMem->go(true);
                 }
 
                 // allow epmem searches in proposal phase
@@ -827,9 +827,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (thisAgent->SMem->smem_enabled())
+                if (thisAgent->SMem->enabled())
                 {
-                    thisAgent->SMem->smem_go(true);
+                    thisAgent->SMem->go(true);
                 }
 
                 /* Update accounting.  Moved here by KJC 04/05/05 */
@@ -912,9 +912,9 @@ void do_one_top_level_phase(agent* thisAgent)
 
             do_output_cycle(thisAgent);
 
-            if (thisAgent->SMem->smem_enabled())
+            if (thisAgent->SMem->enabled())
             {
-                thisAgent->SMem->smem_go(false);
+                thisAgent->SMem->go(false);
             }
 
             ///////////////////////////////////////////////////////////////////
