@@ -24,7 +24,7 @@ class identity_record
         friend class Explanation_Memory;
 
     public:
-        identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map_type* pIdentitySetMappings);
+        identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map* pIdentitySetMappings);
         ~identity_record();
 
         void    generate_identity_sets(condition* lhs);
@@ -34,8 +34,8 @@ class identity_record
 
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
-        id_to_id_map_type*      original_ebc_mappings;
-        id_to_idset_map_type*   id_to_id_set_mappings;
+        id_to_id_map*      original_ebc_mappings;
+        id_to_idset_map*   id_to_id_set_mappings;
 
         void    print_identities_in_chunk();
         void    print_identity_mappings();

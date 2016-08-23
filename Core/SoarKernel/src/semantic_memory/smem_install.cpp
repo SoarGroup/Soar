@@ -19,7 +19,7 @@
 #include "symbol_manager.h"
 #include "working_memory_activation.h"
 
-void SMem_Manager::process_buffered_wme_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
+void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
     {
@@ -115,13 +115,13 @@ void SMem_Manager::process_buffered_wme_list(Symbol* state, wme_set& cue_wmes, s
     }
 }
 
-void SMem_Manager::process_buffered_wmes(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
+void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
-    process_buffered_wme_list(state, cue_wmes, meta_wmes, true);
-    process_buffered_wme_list(state, cue_wmes, retrieval_wmes, false);
+    install_buffered_triple_list(state, cue_wmes, meta_wmes, true);
+    install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false);
 }
 
-void SMem_Manager::buffer_add_wme(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
+void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
     my_list.push_back(new symbol_triple(id, attr, value));
 
@@ -130,7 +130,52 @@ void SMem_Manager::buffer_add_wme(symbol_triple_list& my_list, Symbol* id, Symbo
     thisAgent->symbolManager->symbol_add_ref(value);
 }
 
-void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<smem_lti_id>* visited)
+void SMem_Manager::clear_instance_mappings()
+{
+    lti_to_sti_map.clear();
+    sti_to_identity_map.clear();
+}
+
+
+uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_ID)
+{
+    sym_to_id_map::iterator lIter;
+
+    lIter = sti_to_identity_map.find(pSTI);
+
+    if (lIter != sti_to_identity_map.end())
+    {
+        return (lIter->second);
+    } else {
+        uint64_t return_val;
+        return_val = thisAgent->explanationBasedChunker->get_or_create_o_id(pSTI, pI_ID);
+        sti_to_identity_map[pSTI] = return_val;
+        return return_val;
+    }
+}
+
+Symbol* SMem_Manager::get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLevel, char pChar)
+{
+    id_to_sym_map::iterator lIter;
+
+    lIter = lti_to_sti_map.find(pLTI_ID);
+
+    if (lIter != lti_to_sti_map.end())
+    {
+        thisAgent->symbolManager->symbol_add_ref(lIter->second);
+        return (lIter->second);
+    } else {
+        Symbol* return_val;
+        return_val = thisAgent->symbolManager->make_new_identifier(pChar, pLevel, NIL);
+        return_val->id->level = pLevel;
+        return_val->id->promotion_level = pLevel;
+        return_val->id->smem_lti = pLTI_ID;
+        lti_to_sti_map[pLTI_ID] = return_val;
+        return return_val;
+    }
+}
+
+void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<smem_lti_id>* visited)
 {
     ////////////////////////////////////////////////////////////////////////////
     smem_timers->ncb_retrieval->start();
@@ -144,21 +189,25 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti
     }
 
     // get identifier if not known
-    bool lti_created_here = false;
-    if (lti == NIL && install_type == wm_install)
+    bool sti_created_here = false;
+    if (install_type == wm_install)
     {
-        soar_module::sqlite_statement* q = smem_stmts->lti_letter_num;
-
-        q->bind_int(1, lti_id);
-        q->execute();
-
-        lti = lti_soar_make(lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
-
-        q->reinitialize();
-
-        lti_created_here = true;
+        if (sti == NIL)
+        {
+            //        soar_module::sqlite_statement* q = smem_stmts->lti_letter_num;
+            //
+            //        q->bind_int(1, lti_id);
+            //        q->execute();
+            //
+            //        sti = lti_soar_make(lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
+            //
+            //        q->reinitialize();
+            sti = get_sti_for_lti(lti_id, result_header->id->level);
+            sti_created_here = true;
+        } else {
+            assert(sti->id->smem_lti && sti->id->level && (sti->id->level <= result_header->id->level));
+        }
     }
-
     // activate lti
     if (activate_lti)
     {
@@ -170,20 +219,22 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti
     {
         if (visited == NULL)
         {
-            buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, lti);
+            add_triple_to_recall_buffer(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, sti);
         }
         else
         {
-            buffer_add_wme(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_depth_retrieved, lti);
+            add_triple_to_recall_buffer(meta_wmes, result_header, thisAgent->symbolManager->soarSymbols.smem_sym_depth_retrieved, sti);
         }
     }
-    if (lti_created_here)
+
+    /* MToDo | Not sure if this is still needed */
+    if (sti_created_here)
     {
         // if the identifier was created above we need to
         // remove a single ref count AFTER the wme
         // is added (such as to not deallocate the symbol
         // prematurely)
-        thisAgent->symbolManager->symbol_remove_ref(&lti);
+        thisAgent->symbolManager->symbol_remove_ref(&sti);
     }
 
     bool triggered = false;
@@ -191,9 +242,9 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti
     // if no children, then retrieve children
     // merge may override this behavior
     if (((smem_params->merge->get_value() == smem_param_container::merge_add) ||
-            ((lti->id->impasse_wmes == NIL) &&
-             (lti->id->input_wmes == NIL) &&
-             (lti->id->slots == NIL)))
+            ((sti->id->impasse_wmes == NIL) &&
+             (sti->id->input_wmes == NIL) &&
+             (sti->id->slots == NIL)))
             || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
 
     {
@@ -220,7 +271,8 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti
             // identifier vs. constant
             if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
             {
-                value_sym = lti_soar_make(static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), lti->id->level);
+                value_sym = get_sti_for_lti(static_cast<smem_lti_id>(expand_q->column_int(6)), sti->id->level, static_cast<char>(expand_q->column_int(4)));
+//                value_sym = lti_soar_make(static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), sti->id->level);
                 if (depth > 1)
                 {
                     children.insert(value_sym);
@@ -232,7 +284,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti
             }
 
             // add wme
-            buffer_add_wme(retrieval_wmes, lti, attr_sym, value_sym);
+            add_triple_to_recall_buffer(retrieval_wmes, sti, attr_sym, value_sym);
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)

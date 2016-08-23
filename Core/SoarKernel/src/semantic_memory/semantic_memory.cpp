@@ -404,12 +404,12 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     if (retrieve->id->smem_lti == NIL)
                     {
                         // retrieve is not pointing to an lti!
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
                     }
                     else
                     {
                         // status: success
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
                         install_memory(state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
@@ -453,7 +453,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         soar_store((*sym_p), ((mirroring_on) ? (store_recursive) : (store_level)));
 
                         // status: success
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
                         thisAgent->SMem->smem_stats->stores->set_value(thisAgent->SMem->smem_stats->stores->get_value() + 1);
@@ -472,13 +472,13 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             }
             else
             {
-                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_cmd_header);
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_cmd_header);
             }
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
                 // process preference assertion en masse
-                process_buffered_wmes(state, cue_wmes, meta_wmes, retrieval_wmes);
+                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
 
                 // clear cache
                 {

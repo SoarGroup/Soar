@@ -16,11 +16,11 @@
 #include "test.h"
 #include "working_memory.h"
 
-identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map_type* pIdentitySetMappings)
+identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map* pIdentitySetMappings)
 {
     thisAgent = myAgent;
-    original_ebc_mappings = new id_to_id_map_type();
-    id_to_id_set_mappings = new id_to_idset_map_type();
+    original_ebc_mappings = new id_to_id_map();
+    id_to_id_set_mappings = new id_to_idset_map();
     (*original_ebc_mappings) = (*pIdentitySetMappings);
     identities_in_chunk = new id_set();
 }
@@ -57,8 +57,8 @@ void identity_record::generate_identity_sets(condition* lhs)
 //    print_original_ebc_mappings();
 
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
-    id_to_id_map_type::iterator iter;
-    id_to_idset_map_type::iterator lIter;
+    id_to_id_map::iterator iter;
+    id_to_idset_map::iterator lIter;
     identity_set_info* lNewIDSet;
     uint64_t lMapping, lNewIdSetID;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)

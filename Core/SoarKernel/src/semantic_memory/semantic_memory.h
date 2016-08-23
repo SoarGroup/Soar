@@ -117,9 +117,9 @@ class SMem_Manager
         void            switch_to_memory_db(std::string& buf);
 
         smem_wme_list*  get_direct_augs_of_id(Symbol* id, tc_number tc = NIL);
-        void            process_buffered_wme_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta);
-        void            process_buffered_wmes(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);
-        void            buffer_add_wme(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value);
+        void            install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta);
+        void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);
+        void            add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value);
         double          lti_calc_base(smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0);
         double          lti_activate(smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
         void            lti_from_test(test t, std::set<Symbol*>* valid_ltis);
@@ -144,6 +144,12 @@ class SMem_Manager
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         std::set< smem_lti_id >         print_lti(smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 
+        void            clear_instance_mappings();
+        Symbol*         get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
+        uint64_t        get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_ID);
+
+        id_to_sym_map  lti_to_sti_map;
+        sym_to_id_map  sti_to_identity_map;
 };
 
 #endif

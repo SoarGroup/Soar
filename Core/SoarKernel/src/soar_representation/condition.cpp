@@ -332,7 +332,7 @@ int condition_count(condition* pCond)
     return cnt;
 }
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -367,7 +367,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map)
+void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {

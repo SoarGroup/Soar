@@ -209,15 +209,15 @@ class Explanation_Based_Chunker
          *    formation and variablization.  The data stored within
          *    them is temporary and cleared after use. -- */
 
-        inst_to_id_map_type*            instantiation_identities;
-        id_to_sym_map_type*             o_id_to_var_map;
-        id_to_sym_map_type*             id_to_rule_sym_debug_map;
+        inst_to_id_map*            instantiation_identities;
+        id_to_sym_map*             o_id_to_var_map;
+        id_to_sym_map*             id_to_rule_sym_debug_map;
 
-        id_to_id_map_type*              unification_map;
+        id_to_id_map*              unification_map;
         identity_triple*                local_singleton_superstate_identity;
 
         constraint_list*                constraints;
-        attachment_points_map_type*     attachment_points;
+        attachment_points_map*     attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
@@ -225,7 +225,7 @@ class Explanation_Based_Chunker
 
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
-        sym_to_sym_map_type*            rhs_var_to_match_map;
+        sym_to_sym_map*            rhs_var_to_match_map;
 
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 

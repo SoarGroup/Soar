@@ -51,8 +51,8 @@ class Repair_Manager
     private:
 
         agent*                  thisAgent;
-        sym_to_sym_map_type     m_sym_to_var_map;
-        sym_to_id_map_type      m_sym_to_id_map;
+        sym_to_sym_map     m_sym_to_var_map;
+        sym_to_id_map      m_sym_to_id_map;
         wme_set                 m_repair_WMEs;
         goal_stack_level        m_match_goal_level;
         uint64_t                m_chunk_ID;

@@ -100,7 +100,7 @@ chunk_record::~chunk_record()
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
-void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
+void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
 {
     name = pProduction->name;
     thisAgent->symbolManager->symbol_add_ref(name);

@@ -42,7 +42,7 @@ void Explanation_Based_Chunker::clear_singletons()
 void Explanation_Based_Chunker::clear_attachment_map()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing attachment map...\n");
-    for (attachment_points_map_type::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
         // Don't print anything from condition b/c it could be deallocated when this is being cleared
         dprint(DT_VM_MAPS, "Clearing %u -> %s of a condition in chunk.\n", it->first, field_to_string(it->second->field));
@@ -56,7 +56,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_to_var_map map...\n");
     /* -- Clear grounding_id->variablization map -- */
-    for (id_to_sym_map_type::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+    for (id_to_sym_map::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
         dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
         thisAgent->symbolManager->symbol_remove_ref(&it->second);
@@ -89,8 +89,8 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
 {
     assert(orig_var && pI_id);
 
-    inst_to_id_map_type::iterator iter_inst;
-    sym_to_id_map_type::iterator iter_sym;
+    inst_to_id_map::iterator iter_inst;
+    sym_to_id_map::iterator iter_sym;
     iter_inst = instantiation_identities->find(pI_id);
     if (iter_inst != instantiation_identities->end())
     {
@@ -118,8 +118,8 @@ void Explanation_Based_Chunker::cleanup_for_instantiation(uint64_t pI_id)
 #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
-    inst_to_id_map_type::iterator iter_inst;
-    sym_to_id_map_type::iterator iter_sym;
+    inst_to_id_map::iterator iter_inst;
+    sym_to_id_map::iterator iter_sym;
     iter_inst = instantiation_identities->find(pI_id);
     if (iter_inst != instantiation_identities->end())
     {
@@ -142,8 +142,8 @@ void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t 
     dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
 //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
-    inst_to_id_map_type::iterator iter_inst;
-    sym_to_id_map_type::iterator iter_sym;
+    inst_to_id_map::iterator iter_inst;
+    sym_to_id_map::iterator iter_sym;
     iter_inst = instantiation_identities->find(pI_id);
     if (iter_inst != instantiation_identities->end())
     {
@@ -180,7 +180,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
 
 Symbol* Explanation_Based_Chunker::get_match_for_rhs_var(Symbol* pRHS_var)
 {
-    sym_to_sym_map_type::iterator iter = rhs_var_to_match_map->find(pRHS_var);
+    sym_to_sym_map::iterator iter = rhs_var_to_match_map->find(pRHS_var);
     if (iter != rhs_var_to_match_map->end())
     {
         return iter->second;
@@ -206,7 +206,7 @@ Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL;
 
 //    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
-    id_to_sym_map_type::iterator iter = id_to_rule_sym_debug_map->find(o_id);
+    id_to_sym_map::iterator iter = id_to_rule_sym_debug_map->find(o_id);
     if (iter != id_to_rule_sym_debug_map->end())
     {
 //        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);

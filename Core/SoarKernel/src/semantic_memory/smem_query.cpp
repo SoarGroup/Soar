@@ -641,10 +641,10 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
         if (king_id != NIL)
         {
             // success!
-            buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
+            add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
             if (negquery)
             {
-                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////
@@ -655,10 +655,10 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
         }
         else
         {
-            buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
+            add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
             if (negquery)
             {
-                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
             }
 
             ////////////////////////////////////////////////////////////////////////////
