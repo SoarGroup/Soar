@@ -22,7 +22,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY, symbol_value INTEGER)");
     add_structure("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY, symbol_value REAL)");
     add_structure("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY, symbol_value TEXT)");
-    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, total_augmentations INTEGER, activation_value REAL, activations_total INTEGER, activations_last INTEGER, activations_first INTEGER)");
+    add_structure("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY, total_augmentations INTEGER, activation_value REAL, activations_total INTEGER, activations_last INTEGER, activations_first INTEGER)");
     add_structure("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER)");
     add_structure("CREATE TABLE smem_augmentations (lti_id INTEGER, attribute_s_id INTEGER, value_constant_s_id INTEGER, value_lti_id INTEGER, activation_value REAL)");
     add_structure("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY, edge_frequency INTEGER)");
@@ -65,7 +65,6 @@ void smem_statement_container::create_indices()
     add_structure("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
     add_structure("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
     add_structure("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
-    add_structure("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter, soar_number)");
     add_structure("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
     add_structure("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id)");
     add_structure("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
@@ -164,17 +163,14 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //
 
-    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (soar_letter,soar_number,total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?,?,?)");
+    lti_id_exists = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE lti_id=?");
+    add(lti_id_exists);
+
+    lti_id_max = new soar_module::sqlite_statement(new_db, "SELECT MAX(lti_id) FROM smem_lti");
+    add(lti_id_max);
+
+    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?)");
     add(lti_add);
-
-    lti_get = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE soar_letter=? AND soar_number=?");
-    add(lti_get);
-
-    lti_letter_num = new soar_module::sqlite_statement(new_db, "SELECT soar_letter, soar_number FROM smem_lti WHERE lti_id=?");
-    add(lti_letter_num);
-
-    lti_max = new soar_module::sqlite_statement(new_db, "SELECT soar_letter, MAX(soar_number) FROM smem_lti GROUP BY soar_letter");
-    add(lti_max);
 
     lti_access_get = new soar_module::sqlite_statement(new_db, "SELECT activations_total, activations_last, activations_first FROM smem_lti WHERE lti_id=?");
     add(lti_access_get);
@@ -193,7 +189,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     web_truncate = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_augmentations WHERE lti_id=?");
     add(web_truncate);
 
-    web_expand = new soar_module::sqlite_statement(new_db, "SELECT tsh_a.symbol_type AS attr_type, tsh_a.s_id AS attr_hash, vcl.symbol_type AS value_type, vcl.s_id AS value_hash, vcl.soar_letter AS value_letter, vcl.soar_number AS value_num, vcl.value_lti_id AS value_lti FROM ((smem_augmentations w LEFT JOIN smem_symbols_type tsh_v ON w.value_constant_s_id=tsh_v.s_id) vc LEFT JOIN smem_lti AS lti ON vc.value_lti_id=lti.lti_id) vcl INNER JOIN smem_symbols_type tsh_a ON vcl.attribute_s_id=tsh_a.s_id WHERE vcl.lti_id=?");
+    web_expand = new soar_module::sqlite_statement(new_db, "SELECT tsh_a.symbol_type AS attr_type, tsh_a.s_id AS attr_hash, vcl.symbol_type AS value_type, vcl.s_id AS value_hash, vcl.value_lti_id AS value_lti FROM ((smem_augmentations w LEFT JOIN smem_symbols_type tsh_v ON w.value_constant_s_id=tsh_v.s_id) vc LEFT JOIN smem_lti AS lti ON vc.value_lti_id=lti.lti_id) vcl INNER JOIN smem_symbols_type tsh_a ON vcl.attribute_s_id=tsh_a.s_id WHERE vcl.lti_id=?");
     add(web_expand);
 
     //
@@ -295,7 +291,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
     //
 
-    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, soar_letter, soar_number, activation_value FROM smem_lti ORDER BY soar_letter ASC, soar_number ASC");
+    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_lti ORDER BY lti_id ASC");
     add(vis_lti);
 
     vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_lti WHERE lti_id=?");
@@ -554,6 +550,12 @@ void SMem_Manager::init_db()
     // attempt connection
     smem_db->connect(db_path);
 
+    #ifdef DEBUG_SMEM_SQL
+//    sqlite3_profile(smem_db->get_db(), &profile, NULL);
+    sqlite3_trace(smem_db->get_db(), trace, NULL);
+    #endif
+
+
     if (smem_db->get_status() == soar_module::problem)
     {
         print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", smem_db->get_errmsg());
@@ -785,7 +787,6 @@ void SMem_Manager::init_db()
             smem_params->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
         }
 
-        // reset identifier counters
         reset_id_counters();
 
         // if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
@@ -940,8 +941,8 @@ void SMem_Manager::update_schema_one_to_two()
     smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
     smem_db->sql_execute("DROP TABLE smem7_symbols_float");
 
-    smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,soar_letter INTEGER,soar_number INTEGER,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_lti (lti_id, soar_letter, soar_number, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, letter, num, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
+    smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+    smem_db->sql_execute("INSERT INTO smem_lti (lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
     smem_db->sql_execute("DROP TABLE smem7_lti");
 
     smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
@@ -976,7 +977,6 @@ void SMem_Manager::update_schema_one_to_two()
     smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
     smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
     smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_lti_letter_num ON smem_lti (soar_letter,soar_number)");
     smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
     smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
     smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");

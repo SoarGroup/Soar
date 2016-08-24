@@ -53,16 +53,17 @@ class SMem_Manager
         bool connected();
         void attach();
 
-        bool parse_chunks(const char* chunks, std::string** err_msg);
+        bool process_smem_add_object(const char* chunks, std::string** err_msg);
         bool parse_cues(const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
-        bool parse_remove(const char* chunks, std::string** err_msg, std::string** result_message, bool force = false);
+        bool process_smem_remove(const char* chunks, std::string** err_msg, std::string** result_message, bool force = false);
 
         void visualize_store(std::string* return_val);
         void visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val);
         void print_store(std::string* return_val);
         void print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
-        smem_lti_id lti_get_id(char name_letter, uint64_t name_number);
+        smem_lti_id lti_exists(uint64_t pLTI_ID);
+        smem_lti_id get_max_lti_id();
 
         void reset(Symbol* state);
         void reset_id_counters();
@@ -83,6 +84,8 @@ class SMem_Manager
     private:
 
         agent*                          thisAgent;
+        uint64_t                        lti_id_counter;
+
         uint64_t                        smem_validation;
         int64_t                         smem_max_cycle;
 
@@ -117,12 +120,12 @@ class SMem_Manager
         double          lti_activate(smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
         void            lti_from_test(test t, std::set<Symbol*>* valid_ltis);
         void            lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis);
-        smem_lti_id     lti_add_id(char name_letter, uint64_t name_number);
+        smem_lti_id     add_new_lti_id();
         void            link_sti_to_lti(Symbol* id);
         smem_slot*      make_smem_slot(smem_slot_map* slots, Symbol* attr);
         void            disconnect_chunk(smem_lti_id lti_id);
-        void            store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
-        void            soar_store(Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL);
+        void            add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
+        void            store_in_smem(Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL);
         void            install_memory(Symbol* state, smem_lti_id lti_id, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<smem_lti_id>* visited = NULL);
         bool            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
         smem_lti_id     process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
@@ -130,7 +133,7 @@ class SMem_Manager
         void            deallocate_chunk(smem_chunk* chunk, bool free_chunk = true);
         std::string*    parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
-        bool            parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies);
+        bool            process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies);
         void            respond_to_cmd(bool store_only);
 
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);

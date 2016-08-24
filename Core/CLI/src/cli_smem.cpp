@@ -60,7 +60,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'a')
     {
         std::string* err = new std::string("");
-        bool result = thisAgent->SMem->parse_chunks(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->process_smem_add_object(pAttr->c_str(), &(err));
 
         if (!result)
         {
@@ -148,7 +148,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
             if (lexeme.type == IDENTIFIER_LEXEME)
             {
-                lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
+                lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
             }
             if (lti_id == NIL)
             {
@@ -210,7 +210,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = thisAgent->SMem->lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
+                    lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {
@@ -283,7 +283,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
         }
 
-        bool result = thisAgent->SMem->parse_remove(pAttr->c_str(), &(err), &(retrieved), force);
+        bool result = thisAgent->SMem->process_smem_remove(pAttr->c_str(), &(err), &(retrieved), force);
 
         if (!result)
         {
@@ -431,7 +431,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                 {
-                    lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
+                    lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
 
                     if ((lti_id != NIL) && pVal)
                     {

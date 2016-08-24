@@ -320,7 +320,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
-                                ((*w_p)->value->id->smem_lti != NIL))
+                                ((*w_p)->value->id->LTI_ID != NIL))
                         {
                             prohibit.push_back((*w_p)->value);
                             path = cmd_query;
@@ -400,7 +400,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 // retrieve
                 if (path == cmd_retrieve)
                 {
-                    if (retrieve->id->smem_lti == NIL)
+                    if (retrieve->id->LTI_ID == NIL)
                     {
                         // retrieve is not pointing to an lti!
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
@@ -411,7 +411,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
-                        install_memory(state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
+                        install_memory(state, retrieve->id->LTI_ID, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
                         thisAgent->SMem->smem_stats->expansions->set_value(thisAgent->SMem->smem_stats->expansions->get_value() + 1);
@@ -425,7 +425,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
-                        prohibit_lti.insert((*sym_p)->id->smem_lti);
+                        prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
 
                     process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
@@ -449,7 +449,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                     {
-                        soar_store((*sym_p), store_level);
+                        store_in_smem((*sym_p), store_level);
 
                         // status: success
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));

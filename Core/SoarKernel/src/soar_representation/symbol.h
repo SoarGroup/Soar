@@ -214,13 +214,9 @@ struct idSymbol    : public Symbol
     int depth;
 
     epmem_node_id epmem_id;
-//    uint64_t epmem_valid;
+    smem_lti_id LTI_ID;
 
-    smem_lti_id smem_lti;
-    epmem_time_id smem_time_id;
-//    uint64_t smem_valid;
-
-    /*Agent::RL_Trace*/ void* rl_trace;
+    void* rl_trace;
 };
 
 inline bool Symbol::is_identifier()
@@ -240,12 +236,12 @@ inline bool Symbol::is_constant()
 inline bool Symbol::is_sti()
 {
     return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti == NIL));
+            (id->LTI_ID == NIL));
 };
 inline bool Symbol::is_lti()
 {
     return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti != NIL));
+            (id->LTI_ID != NIL));
 };
 
 inline bool Symbol::is_variablizable()

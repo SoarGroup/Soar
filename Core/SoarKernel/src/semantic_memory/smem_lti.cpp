@@ -23,7 +23,7 @@ void SMem_Manager::lti_from_test(test t, std::set<Symbol*>* valid_ltis)
 
     if (t->type == EQUALITY_TEST)
     {
-        if ((t->data.referent->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (t->data.referent->id->smem_lti != NIL))
+        if ((t->data.referent->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (t->data.referent->id->LTI_ID != NIL))
         {
             valid_ltis->insert(t->data.referent);
         }
@@ -47,7 +47,7 @@ void SMem_Manager::lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_lti
     if (rhs_value_is_symbol(rv))
     {
         Symbol* sym = rhs_value_to_symbol(rv);
-        if ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->id->smem_lti != NIL))
+        if ((sym->symbol_type == IDENTIFIER_SYMBOL_TYPE) && (sym->id->LTI_ID != NIL))
         {
             valid_ltis->insert(sym);
         }
@@ -63,44 +63,59 @@ void SMem_Manager::lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_lti
 }
 
 // Searches smem db for the lti id for a soar_letter/number pair (or NIL if failure)
-smem_lti_id SMem_Manager::lti_get_id(char name_letter, uint64_t name_number)
+smem_lti_id SMem_Manager::lti_exists(uint64_t pLTI_ID)
 {
     smem_lti_id return_val = NIL;
 
     if (smem_db->get_status() != soar_module::disconnected)
     {   // getting lti ids requires an open semantic database
         // soar_letter=? AND number=?
-        smem_stmts->lti_get->bind_int(1, static_cast<uint64_t>(name_letter));
-        smem_stmts->lti_get->bind_int(2, static_cast<uint64_t>(name_number));
+        smem_stmts->lti_id_exists->bind_int(1, static_cast<uint64_t>(pLTI_ID));
 
-        if (smem_stmts->lti_get->execute() == soar_module::row)
+        if (smem_stmts->lti_id_exists->execute() == soar_module::row)
         {
-            return_val = smem_stmts->lti_get->column_int(0);
+            return_val = smem_stmts->lti_id_exists->column_int(0);
         }
 
-        smem_stmts->lti_get->reinitialize();
+        smem_stmts->lti_id_exists->reinitialize();
+    }
+    return return_val;
+}
+
+// Searches smem db for the lti id for a soar_letter/number pair (or NIL if failure)
+smem_lti_id SMem_Manager::get_max_lti_id()
+{
+    smem_lti_id return_val = 0;
+
+    if (smem_db->get_status() != soar_module::disconnected)
+    {
+        if (smem_stmts->lti_id_max->execute() == soar_module::row)
+        {
+            return_val = smem_stmts->lti_id_max->column_int(0);
+        }
+
+        smem_stmts->lti_id_max->reinitialize();
     }
     return return_val;
 }
 
 // adds a new lti id for a soar_letter/number pair
-smem_lti_id SMem_Manager::lti_add_id(char name_letter, uint64_t name_number)
+smem_lti_id SMem_Manager::add_new_lti_id()
 {
     smem_lti_id return_val;
 
-    // create lti: soar_letter, number, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(name_letter));
-    smem_stmts->lti_add->bind_int(2, static_cast<uint64_t>(name_number));
+    // create lti: total_augmentations, activation_value, activations_total, activations_last, activations_first
+    smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(0));
+    smem_stmts->lti_add->bind_double(2, static_cast<double>(0));
     smem_stmts->lti_add->bind_int(3, static_cast<uint64_t>(0));
-    smem_stmts->lti_add->bind_double(4, static_cast<double>(0));
+    smem_stmts->lti_add->bind_int(4, static_cast<uint64_t>(0));
     smem_stmts->lti_add->bind_int(5, static_cast<uint64_t>(0));
-    smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
-    smem_stmts->lti_add->bind_int(7, static_cast<uint64_t>(0));
     smem_stmts->lti_add->execute(soar_module::op_reinit);
 
     return_val = static_cast<smem_lti_id>(smem_db->last_insert_rowid());
 
-    // increment stat
+    assert (return_val = ++lti_id_counter);
+
     smem_stats->chunks->set_value(smem_stats->chunks->get_value() + 1);
 
     return return_val;
@@ -109,42 +124,26 @@ smem_lti_id SMem_Manager::lti_add_id(char name_letter, uint64_t name_number)
 // Creates an LTI for a STI that does not have one
 void SMem_Manager::link_sti_to_lti(Symbol* id)
 {
-    if ((id->is_identifier()) && (id->id->smem_lti != NIL))
+    if (id->is_identifier())
     {
-        // if no smem_lti, then we should not have a corresponding lti!
-        assert(!lti_get_id(id->id->name_letter, id->id->name_number));
+        if (id->id->LTI_ID == NIL)
+        {
+            id->id->LTI_ID = add_new_lti_id();
+            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
+        } else {
+            /* Already linked?  Should not be possible */
+            assert(lti_exists(id->id->LTI_ID));
+            assert(false);
+        }
+    } else {
 
-        id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
-        id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
-        id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        epmem_schedule_promotion(thisAgent, id);
+        id->id->LTI_ID = 0;
+        id->id->smem_valid = 0;
     }
 }
 
 void SMem_Manager::reset_id_counters()
 {
-    if (smem_db->get_status() == soar_module::connected)
-    {
-        // soar_letter, max
-        while (smem_stmts->lti_max->execute() == soar_module::row)
-        {
-            uint64_t name_letter = static_cast<uint64_t>(smem_stmts->lti_max->column_int(0));
-            uint64_t letter_max = static_cast<uint64_t>(smem_stmts->lti_max->column_int(1));
-
-            // shift to alphabet
-            name_letter -= static_cast<uint64_t>('A');
-
-            // get count
-            uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(name_letter);
-
-            // adjust if necessary
-            if ((*letter_ct) <= letter_max)
-            {
-                (*letter_ct) = (letter_max + 1);
-            }
-        }
-
-        smem_stmts->lti_max->reinitialize();
-    }
+    lti_id_counter = get_max_lti_id() + 1;
 }
 

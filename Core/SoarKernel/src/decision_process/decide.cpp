@@ -583,6 +583,10 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
      * that could occur if that LTI was later retrieved at a
      * different level.  It forces Soar to set the level of the
      * LTI to the level in the next instantiation that uses it.*/
+
+    /* MToDo | This is probably no longer necessary now that we no
+     * longer have LTIs
+     */
     if (id->is_lti())
     {
         id->id->level = SMEM_LTI_UNKNOWN_LEVEL;

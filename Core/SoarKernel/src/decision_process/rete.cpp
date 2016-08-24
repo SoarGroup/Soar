@@ -1518,7 +1518,7 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             if ((w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                     (w->value->id->epmem_id != EPMEM_NODEID_BAD) &&
                     (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation) &&
-                    (!w->value->id->smem_lti))
+                    (!w->value->id->LTI_ID))
             {
                 // add id ref count
                 (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
@@ -1544,7 +1544,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        bool lti = (w->value->id->smem_lti != NIL);
+        bool lti = (w->value->id->LTI_ID != NIL);
 
         if ((w->epmem_id != EPMEM_NODEID_BAD) && (w->epmem_valid == thisAgent->EpMem->epmem_validation))
         {

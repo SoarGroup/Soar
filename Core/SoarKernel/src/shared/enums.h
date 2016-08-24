@@ -539,7 +539,7 @@ enum smem_variable_key { var_max_cycle, var_num_nodes, var_num_edges, var_act_th
 #define SMEM_AUGMENTATIONS_NULL_STR "0"
 #define SMEM_ACT_HISTORY_ENTRIES 10
 #define SMEM_ACT_LOW -1000000000
-#define SMEM_SCHEMA_VERSION "2.0"
+#define SMEM_SCHEMA_VERSION "3.0"
 
 /* ====================================================================
              Global System Parameters and Related Definitions

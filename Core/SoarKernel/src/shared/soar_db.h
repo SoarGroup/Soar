@@ -15,8 +15,8 @@
 #include <list>
 #include <assert.h>
 
-//#define DEBUG_SQL_ERRORS
-//#define DEBUG_SQL_QUERIES
+#define DEBUG_SQL_ERRORS
+#define DEBUG_SQL_QUERIES
 
 #ifdef DEBUG_SQL_QUERIES
 //static void profile(void *context, const char *sql, sqlite3_uint64 ns) {

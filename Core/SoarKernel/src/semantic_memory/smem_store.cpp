@@ -135,7 +135,7 @@ Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
+bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
 {
     bool return_val = false;
 
@@ -445,7 +445,7 @@ bool SMem_Manager::parse_chunk(soar::Lexer* lexer, smem_str_to_chunk_map* chunks
     return return_val;
 }
 
-bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
+bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string** err_msg)
 {
     bool return_val = false;
     uint64_t clause_count = 0;
@@ -474,7 +474,7 @@ bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
     // while there are chunks to consume
     while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_chunk))
     {
-        good_chunk = parse_chunk(&lexer, &(chunks), &(newbies));
+        good_chunk = process_smem_add(&lexer, &(chunks), &(newbies));
 
         if (good_chunk)
         {
@@ -491,7 +491,7 @@ bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
                         uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
 
                         (*c_new)->lti_number = (*letter_ct)++;
-                        (*c_new)->lti_id =lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
+                        (*c_new)->lti_id =add_new_lti_id();
                     }
                     else
                     {
@@ -499,24 +499,12 @@ bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
                         if ((*c_new)->lti_id == NIL)
                         {
                             // get existing
-                            (*c_new)->lti_id = lti_get_id((*c_new)->lti_letter, (*c_new)->lti_number);
+                            (*c_new)->lti_id = lti_exists((*c_new)->lti_number);
 
                             // if doesn't exist, add it
                             if ((*c_new)->lti_id == NIL)
                             {
-                                (*c_new)->lti_id =lti_add_id((*c_new)->lti_letter, (*c_new)->lti_number);
-
-                                // this could affect an existing identifier in Soar's WM
-                                Symbol* id_parent = thisAgent->symbolManager->find_identifier((*c_new)->lti_letter, (*c_new)->lti_number);
-                                if (id_parent != NIL)
-                                {
-                                    // if so we make it an lti manually
-                                    id_parent->id->smem_lti = (*c_new)->lti_id;
-
-                                    id_parent->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
-                                    id_parent->id->smem_valid = thisAgent->EpMem->epmem_validation;
-                                    epmem_schedule_promotion(thisAgent, id_parent);
-                                }
+                                (*c_new)->lti_id =add_new_lti_id();
                             }
                         }
                     }
@@ -528,7 +516,7 @@ bool SMem_Manager::parse_chunks(const char* chunks_str, std::string** err_msg)
             {
                 if ((*c_new)->slots != NIL)
                 {
-                   store_chunk((*c_new)->lti_id, (*c_new)->slots, false);
+                   add_semantic_object_to_smem((*c_new)->lti_id, (*c_new)->slots, false);
                 }
             }
 
@@ -899,7 +887,7 @@ void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
  */
-bool SMem_Manager::parse_remove(const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
+bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
 {
     /* MToDo | Fix after we fully remove shared symbol.  Then we can use either a separate symbol table or what we currently
      *         store in the db. */
@@ -979,7 +967,7 @@ bool SMem_Manager::parse_remove(const char* chunks_str, std::string** err_msg, s
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_lti_t;
 //                        smem_chunk* temp_chunk = new smem_chunk;
-//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->smem_lti;
+//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
 //                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
 //                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
 //                        temp_chunk->soar_id = (*triple_ptr_iter)->value;
@@ -1018,7 +1006,7 @@ bool SMem_Manager::parse_remove(const char* chunks_str, std::string** err_msg, s
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_lti_t;
 //                        smem_chunk* temp_chunk = new smem_chunk;
-//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->smem_lti;
+//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
 //                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
 //                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
 //                        temp_chunk->soar_id = (*triple_ptr_iter)->value;
@@ -1288,7 +1276,7 @@ void SMem_Manager::disconnect_chunk(smem_lti_id lti_id)
     }
 }
 
-void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
+void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
 {
     // if remove children, disconnect chunk -> no existing edges
     // else, need to query number of existing edges
@@ -1387,16 +1375,13 @@ void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     if (value_lti == NIL)
                     {
-                        value_lti = lti_add_id((*v)->val_lti.val_value->lti_letter, (*v)->val_lti.val_value->lti_number);
+                        value_lti = add_new_lti_id();
                         (*v)->val_lti.val_value->lti_id = value_lti;
 
                         if ((*v)->val_lti.val_value->soar_id != NIL)
                         {
-                            (*v)->val_lti.val_value->soar_id->id->smem_lti = value_lti;
-
-                            (*v)->val_lti.val_value->soar_id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+                            (*v)->val_lti.val_value->soar_id->id->LTI_ID = value_lti;
                             (*v)->val_lti.val_value->soar_id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-                            epmem_schedule_promotion(thisAgent, (*v)->val_lti.val_value->soar_id);
                         }
                     }
 
@@ -1583,7 +1568,7 @@ void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool
     }
 }
 
-void SMem_Manager::soar_store(Symbol* pIdentifierSTI, smem_storage_type store_type, tc_number tc)
+void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store_type, tc_number tc)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -1635,7 +1620,7 @@ void SMem_Manager::soar_store(Symbol* pIdentifierSTI, smem_storage_type store_ty
                 if (!(*c))
                 {
                     (*c) = new smem_chunk;
-                    (*c)->lti_id = (*w)->value->id->smem_lti;
+                    (*c)->lti_id = (*w)->value->id->LTI_ID;
                     (*c)->lti_letter = (*w)->value->id->name_letter;
                     (*c)->lti_number = (*w)->value->id->name_number;
                     (*c)->slots = NULL;
@@ -1655,7 +1640,7 @@ void SMem_Manager::soar_store(Symbol* pIdentifierSTI, smem_storage_type store_ty
             s->push_back(v);
         }
 
-        store_chunk(pIdentifierSTI->id->smem_lti, &(slots), true, pIdentifierSTI);
+        add_semantic_object_to_smem(pIdentifierSTI->id->LTI_ID, &(slots), true, pIdentifierSTI);
 
         // clean up
         {
@@ -1683,6 +1668,6 @@ void SMem_Manager::soar_store(Symbol* pIdentifierSTI, smem_storage_type store_ty
     // recurse as necessary
     for (smem_sym_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
-        soar_store((*shorty), store_recursive, tc);
+        store_in_smem((*shorty), store_recursive, tc);
     }
 }

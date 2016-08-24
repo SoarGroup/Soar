@@ -450,8 +450,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->smem_header = NIL;
     sym->smem_cmd_header = NIL;
     sym->smem_result_header = NIL;
-    sym->smem_lti = NIL;
-    sym->smem_time_id = EPMEM_MEMID_NONE;
+    sym->LTI_ID = NIL;
     sym->smem_valid = NIL;
 
     sym->rl_trace = NIL;
@@ -897,7 +896,7 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-            if (sym->id->smem_lti == NIL)
+            if (sym->id->LTI_ID == NIL)
             {
                 SNPRINTF(msg, 256,
                     "\t%c%llu --> %llu\n",
@@ -960,7 +959,7 @@ bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
     Symbol* id = static_cast<symbol_struct*>(item);
 
     dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
-    if (id->id->smem_lti != NIL)
+    if (id->id->LTI_ID != NIL)
     {
         uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
         (*counter)++;
@@ -975,29 +974,8 @@ bool Symbol_Manager::reset_id_counters()
 
     if (identifier_hash_table->count != 0)
     {
-        // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
-        uint64_t ltis = 0;
-        do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, smem_count_ltis, &ltis);
-        if (static_cast<uint64_t>(identifier_hash_table->count) != ltis)
-        {
-            print(thisAgent,  "Internal warning:  wanted to reset identifier generator numbers, but\n");
-            print(thisAgent,  "there are still some identifiers allocated.  (Probably a memory leak.)\n");
-//            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)");
-
-//            print_internal_symbols(thisAgent);
-            do_for_all_items_in_hash_table( thisAgent, identifier_hash_table, print_identifier_ref_info, 0);
-
-            #ifndef SOAR_RELEASE_VERSION
-                print(thisAgent,  "(Deleting identifiers not in semantic memory.)\n");
-//                xml_generate_warning(thisAgent, "(Deleting identifiers not in semantic memory.)");
-                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, Symbol_Manager::remove_if_sti, NULL);
-            #else
-                return false;
-            #endif
-        }
-
-        // Getting here means that there are still identifiers but that
-        // they are all long-term and (hopefully) exist only in production memory.
+        /* MToDo | We should be able to just release the hash table and reset the Symbol_Manager now that LTIs are gone */
+        assert(false);
     }
     for (i = 0; i < 26; i++)
     {

@@ -321,7 +321,6 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
         //
 
-        soar_module::sqlite_statement* promote_id;
         soar_module::sqlite_statement* find_lti;
         soar_module::sqlite_statement* find_lti_promotion_time;
 
@@ -474,7 +473,6 @@ extern void epmem_clear_transient_structures(agent* thisAgent);
 // perform epmem actions
 extern void epmem_go(agent* thisAgent, bool allow_store = true);
 extern bool epmem_backup_db(agent* thisAgent, const char* file_name, std::string* err);
-extern void epmem_schedule_promotion(agent* thisAgent, Symbol* id);
 extern void epmem_init_db(agent* thisAgent, bool readonly = false);
 // visualization
 extern void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
@@ -646,7 +644,6 @@ class EpMem_Manager
         epmem_common_statement_container* epmem_stmts_common;
         epmem_graph_statement_container* epmem_stmts_graph;
 
-
         epmem_id_removal_map* epmem_node_removals;
         std::vector<epmem_time_id>* epmem_node_mins;
         std::vector<bool>* epmem_node_maxes;
@@ -661,7 +658,6 @@ class EpMem_Manager
         epmem_symbol_stack* epmem_id_removes;
 
         epmem_symbol_set* epmem_wme_adds;
-        epmem_symbol_set* epmem_promotions;
 
         epmem_rit_state epmem_rit_state_graph[2];
 

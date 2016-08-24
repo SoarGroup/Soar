@@ -37,10 +37,9 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* hash_add_float;
         soar_module::sqlite_statement* hash_add_str;
 
+        soar_module::sqlite_statement* lti_id_exists;
+        soar_module::sqlite_statement* lti_id_max  ;
         soar_module::sqlite_statement* lti_add;
-        soar_module::sqlite_statement* lti_get;
-        soar_module::sqlite_statement* lti_letter_num;
-        soar_module::sqlite_statement* lti_max;
         soar_module::sqlite_statement* lti_access_get;
         soar_module::sqlite_statement* lti_access_set;
         soar_module::sqlite_statement* lti_get_t;

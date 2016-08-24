@@ -285,26 +285,8 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
         new_lti = new smem_vis_lti;
         new_lti->lti_id = lti_id;
         new_lti->level = 0;
-
-        // fake former linkage
-        {
-            soar_module::sqlite_statement* lti_q = thisAgent->SMem->smem_stmts->lti_letter_num;
-
-            // get just this lti
-            lti_q->bind_int(1, lti_id);
-            lti_q->execute();
-
-            // soar_letter
-            new_lti->lti_name.push_back(static_cast<char>(lti_q->column_int(0)));
-
-            // number
-            temp_int = lti_q->column_int(1);
-            to_string(temp_int, temp_str);
-            new_lti->lti_name.append(temp_str);
-
-            // done with lookup
-            lti_q->reinitialize();
-        }
+        new_lti->lti_name = "@";
+        new_lti->lti_name.append(std::to_string(lti_id));
 
         bfs.push(new_lti);
         close_list.insert(std::make_pair(lti_id, new_lti));
@@ -746,7 +728,6 @@ void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* re
     std::set< smem_lti_id > next;
     std::set< smem_lti_id >::iterator next_it;
 
-    soar_module::sqlite_statement* lti_q = thisAgent->SMem->smem_stmts->lti_letter_num;
     soar_module::sqlite_statement* act_q = thisAgent->SMem->smem_stmts->vis_lti_act;
     soar_module::sqlite_statement* hist_q = thisAgent->SMem->smem_stmts->history_get;
     soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->smem_stmts->lti_access_get;
@@ -770,9 +751,6 @@ void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* re
 
         // get lti info
         {
-            lti_q->bind_int(1, c.first);
-            lti_q->execute();
-
             act_q->bind_int(1, c.first);
             act_q->execute();
 
@@ -798,15 +776,14 @@ void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* re
 
             if (history && !access_history.empty())
             {
-                next = print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val, &(access_history));
+                next = print_lti(c.first, '@', lti_id, act_q->column_double(0), return_val, &(access_history));
             }
             else
             {
-                next = print_lti(c.first, static_cast<char>(lti_q->column_int(0)), static_cast<uint64_t>(lti_q->column_int(1)), act_q->column_double(0), return_val);
+                next = print_lti(c.first, '@', lti_id, act_q->column_double(0), return_val);
             }
 
             // done with lookup
-            lti_q->reinitialize();
             act_q->reinitialize();
 
             // consider further depth

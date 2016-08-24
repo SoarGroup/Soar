@@ -204,7 +204,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 {
                     if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
                     {
-                        lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
+                        lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
                     }
                 }
 

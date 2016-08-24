@@ -1155,9 +1155,6 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
             "ORDER BY f.parent_n_id ASC, f.child_n_id ASC", new_agent->EpMem->epmem_timers->ncb_edge);
     add(get_wmes_with_identifier_values);
 
-    promote_id = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO epmem_lti (n_id,soar_letter,soar_number,promotion_episode_id) VALUES (?,?,?,?)");
-    add(promote_id);
-
     find_lti = new soar_module::sqlite_statement(new_db, "SELECT n_id FROM epmem_lti WHERE soar_letter=? AND soar_number=?");
     add(find_lti);
 
@@ -1818,13 +1815,6 @@ void epmem_clear_transient_structures(agent* thisAgent)
     thisAgent->EpMem->epmem_id_ref_counts->clear();
     thisAgent->EpMem->epmem_wme_adds->clear();
 
-    Symbol* lSym;
-    for (epmem_symbol_set::iterator p_it = thisAgent->EpMem->epmem_promotions->begin(); p_it != thisAgent->EpMem->epmem_promotions->end(); p_it++)
-    {
-        lSym = (*p_it);
-        thisAgent->symbolManager->symbol_remove_ref(&lSym);
-    }
-    thisAgent->EpMem->epmem_promotions->clear();
 }
 
 /***************************************************************************
@@ -2449,28 +2439,6 @@ void epmem_init_db(agent* thisAgent, bool readonly)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void epmem_schedule_promotion(agent* thisAgent, Symbol* id)
-{
-    if (thisAgent->EpMem->epmem_db->get_status() == soar_module::connected)
-    {
-        if ((id->id->epmem_id != EPMEM_NODEID_BAD) && (id->id->epmem_valid == thisAgent->EpMem->epmem_validation))
-        {
-            thisAgent->symbolManager->symbol_add_ref(id);
-            thisAgent->EpMem->epmem_promotions->insert(id);
-        }
-    }
-}
-
-inline void _epmem_promote_id(agent* thisAgent, Symbol* id, epmem_time_id t)
-{
-    // n_id,soar_letter,soar_number,promotion_episode_id
-    thisAgent->EpMem->epmem_stmts_graph->promote_id->bind_int(1, id->id->epmem_id);
-    thisAgent->EpMem->epmem_stmts_graph->promote_id->bind_int(2, static_cast<uint64_t>(id->id->name_letter));
-    thisAgent->EpMem->epmem_stmts_graph->promote_id->bind_int(3, static_cast<uint64_t>(id->id->name_number));
-    thisAgent->EpMem->epmem_stmts_graph->promote_id->bind_int(4, t);
-    thisAgent->EpMem->epmem_stmts_graph->promote_id->execute(soar_module::op_reinit);
-}
-
 /* **************************************************************************
 
                          _epmem_store_level
@@ -2545,7 +2513,7 @@ inline void _epmem_store_level(agent* thisAgent,
 
         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                 (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)) &&
-                (!(*w_p)->value->id->smem_lti))
+                (!(*w_p)->value->id->LTI_ID))
         {
             // prevent exclusions from being recorded
             if (thisAgent->EpMem->epmem_params->exclusions->in_set((*w_p)->attr))
@@ -2650,7 +2618,7 @@ inline void _epmem_store_level(agent* thisAgent,
             value_known_apriori = (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation));
 
             // if long-term identifier as value, special processing (we may need to promote, we don't add to/take from any pools)
-            if ((*w_p)->value->id->smem_lti)
+            if ((*w_p)->value->id->LTI_ID)
             {
                 // find the lti or add new one
 #ifdef DEBUG_EPMEM_WME_ADD
@@ -2691,8 +2659,6 @@ inline void _epmem_store_level(agent* thisAgent,
 
                         // add repository
                         (*thisAgent->EpMem->epmem_id_repository)[(*w_p)->value->id->epmem_id ] = new epmem_hashed_id_pool;
-
-                        _epmem_promote_id(thisAgent, (*w_p)->value, time_counter);
                     }
                 }
 
@@ -2924,7 +2890,7 @@ inline void _epmem_store_level(agent* thisAgent,
 #ifdef DEBUG_EPMEM_WME_ADD
                 fprintf(stderr, "   Incrementing and setting wme id to %d\n", (unsigned int)(*w_p)->epmem_id);
 #endif
-                if (!(*w_p)->value->id->smem_lti)
+                if (!(*w_p)->value->id->LTI_ID)
                 {
                     // replace the epmem_id and wme id in the right place
                     (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
@@ -3254,21 +3220,6 @@ void epmem_new_episode(agent* thisAgent)
                 r++;
             }
             thisAgent->EpMem->epmem_edge_removals->clear();
-        }
-
-        // all in-place lti promotions
-        {
-            Symbol* lSym;
-            for (epmem_symbol_set::iterator p_it = thisAgent->EpMem->epmem_promotions->begin(); p_it != thisAgent->EpMem->epmem_promotions->end(); p_it++)
-            {
-                if (((*p_it)->id->smem_time_id == time_counter) && ((*p_it)->id->smem_valid == thisAgent->EpMem->epmem_validation))
-                {
-                    _epmem_promote_id(thisAgent, (*p_it), time_counter);
-                }
-                lSym = (*p_it);
-                thisAgent->symbolManager->symbol_remove_ref(&lSym);
-            }
-            thisAgent->EpMem->epmem_promotions->clear();
         }
 
         // add the time id to the epmem_episodes table
@@ -4008,7 +3959,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
         literal->child_n_id = epmem_temporal_hash(thisAgent, value);
         leaf_literals.insert(literal);
     }
-    else if (value->id->smem_lti)     // WME is an LTI
+    else if (value->id->LTI_ID)     // WME is an LTI
     {
         // if we can find the LTI node id, cache it; otherwise, return failure
         thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id->name_letter));
@@ -6235,10 +6186,7 @@ EpMem_Manager::EpMem_Manager(agent* myAgent)
  #ifdef USE_MEM_POOL_ALLOCATORS
      epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
      epmem_edge_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
-
      epmem_wme_adds = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
-     epmem_promotions = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
-
      epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
  #else
      epmem_node_removals = new epmem_id_removal_map();
@@ -6277,7 +6225,6 @@ void EpMem_Manager::clean_up_for_agent_deletion()
     delete epmem_id_removes;
 
     delete epmem_wme_adds;
-    delete epmem_promotions;
 
     delete epmem_db;
 }

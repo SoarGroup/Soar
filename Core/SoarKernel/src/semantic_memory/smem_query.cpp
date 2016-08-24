@@ -90,7 +90,7 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
                 //If we get here on a math query, the value may not be an identifier
                 if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
                 {
-                    value_lti = w->value->id->smem_lti;
+                    value_lti = w->value->id->LTI_ID;
                 }
                 else
                 {

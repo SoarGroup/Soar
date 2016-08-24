@@ -169,7 +169,7 @@ Symbol* SMem_Manager::get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLev
         return_val = thisAgent->symbolManager->make_new_identifier(pChar, pLevel, NIL);
         return_val->id->level = pLevel;
         return_val->id->promotion_level = pLevel;
-        return_val->id->smem_lti = pLTI_ID;
+        return_val->id->LTI_ID = pLTI_ID;
         lti_to_sti_map[pLTI_ID] = return_val;
         return return_val;
     }
@@ -197,7 +197,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
             sti = get_sti_for_lti(lti_id, result_header->id->level);
             sti_created_here = true;
         } else {
-            assert(sti->id->smem_lti && sti->id->level && (sti->id->level <= result_header->id->level));
+            assert(sti->id->LTI_ID && sti->id->level && (sti->id->level <= result_header->id->level));
         }
     }
     // activate lti
@@ -284,10 +284,10 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
         std::set<Symbol*>::iterator end = children.end();
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
-            if (visited->find((*iterator)->id->smem_lti) == visited->end())
+            if (visited->find((*iterator)->id->LTI_ID) == visited->end())
             {
-                visited->insert((*iterator)->id->smem_lti);
-                install_memory(state, (*iterator)->id->smem_lti, (*iterator), (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
+                visited->insert((*iterator)->id->LTI_ID);
+                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
     }
