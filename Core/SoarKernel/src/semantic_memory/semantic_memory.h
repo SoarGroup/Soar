@@ -51,7 +51,6 @@ class SMem_Manager
         void clean_up_for_agent_deletion();
         bool enabled();
         bool connected();
-        bool mirroring_enabled();
         void attach();
 
         bool parse_chunks(const char* chunks, std::string** err_msg);
@@ -64,8 +63,6 @@ class SMem_Manager
         void print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
         smem_lti_id lti_get_id(char name_letter, uint64_t name_number);
-        Symbol* lti_soar_make(smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level);
-        void lti_soar_promote_STI(Symbol* id);
 
         void reset(Symbol* state);
         void reset_id_counters();
@@ -82,10 +79,6 @@ class SMem_Manager
 
         /* The following remains public because used in run_soar.cpp */
         smem_timer_container*           smem_timers;
-
-        /* The following remains public because used in rete.cpp */
-        symbol_set*                     smem_changed_ids;
-        bool                            smem_ignore_changes;
 
     private:
 
@@ -125,7 +118,7 @@ class SMem_Manager
         void            lti_from_test(test t, std::set<Symbol*>* valid_ltis);
         void            lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_ltis);
         smem_lti_id     lti_add_id(char name_letter, uint64_t name_number);
-        void            lti_soar_add(Symbol* id);
+        void            link_sti_to_lti(Symbol* id);
         smem_slot*      make_smem_slot(smem_slot_map* slots, Symbol* attr);
         void            disconnect_chunk(smem_lti_id lti_id);
         void            store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);

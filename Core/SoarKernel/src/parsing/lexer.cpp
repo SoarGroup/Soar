@@ -154,30 +154,30 @@ bool Lexer::determine_type_of_constituent_string () {
         return (errno == 0);
     }
 
-    if (possible_id && get_allow_ids())
-        {
-            // long term identifiers start with @
-            unsigned lti_index = 0;
-            if (current_lexeme.lex_string[lti_index] == '@') {
-                lti_index += 1;
-            }
-            current_lexeme.id_letter = static_cast<char>(toupper(current_lexeme.lex_string[lti_index]));
-            lti_index += 1;
-            errno = 0;
-            current_lexeme.type = IDENTIFIER_LEXEME;
-            if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[lti_index]))) {
-                print (thisAgent, "Error: bad number for identifier (probably too large)\n");
-                print_location_of_most_recent_lexeme();
-                current_lexeme.id_number = 0;
-                errno = 1;
-                this->lex_error = true;
-            }
-//        } else {
-//            errno = 1;
-//            this->lex_error = true;
-//        }
-        return (errno == 0);
-    }
+//    if (possible_id && get_allow_ids())
+//        {
+//            // long term identifiers start with @
+//            unsigned lti_index = 0;
+//            if (current_lexeme.lex_string[lti_index] == '@') {
+//                lti_index += 1;
+//            }
+//            current_lexeme.id_letter = static_cast<char>(toupper(current_lexeme.lex_string[lti_index]));
+//            lti_index += 1;
+//            errno = 0;
+//            current_lexeme.type = IDENTIFIER_LEXEME;
+//            if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[lti_index]))) {
+//                print (thisAgent, "Error: bad number for identifier (probably too large)\n");
+//                print_location_of_most_recent_lexeme();
+//                current_lexeme.id_number = 0;
+//                errno = 1;
+//                this->lex_error = true;
+//            }
+////        } else {
+////            errno = 1;
+////            this->lex_error = true;
+////        }
+//        return (errno == 0);
+//    }
 
     if (possible_sc) {
         current_lexeme.type = STR_CONSTANT_LEXEME;
@@ -774,19 +774,10 @@ Lexer::Lexer(agent* agent, const char* string)
     production_string = string;
     current_char = ' ';
     parentheses_level = 0;
-    allow_ids = true;
     lex_error = false;
 
     //Initializing lexeme
     current_lexeme = Lexeme();
-}
-
-void Lexer::set_allow_ids (bool allow_identifiers) {
-  allow_ids = allow_identifiers;
-}
-
-bool Lexer::get_allow_ids() {
-    return allow_ids;
 }
 
 Lexeme Lexer::get_lexeme_from_string (agent* thisAgent, const char* input)

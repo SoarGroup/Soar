@@ -409,7 +409,6 @@ bool reinitialize_agent(agent* thisAgent)
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
     thisAgent->SMem->reinit();
-    thisAgent->LTIs_sourced->clear();
 
     thisAgent->explanationBasedChunker->reinit();
     #ifdef BUILD_WITH_EXPLAINER

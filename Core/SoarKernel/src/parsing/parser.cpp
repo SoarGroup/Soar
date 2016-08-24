@@ -331,42 +331,45 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
-            dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
-            if (!allow_lti)
-            {
-                /* This seems to only be set when being called by the watch wme cli command.  It looks
-                 * like the logic in that command could easily be altered so that this abort is not
-                 * necessary.  The watch command should just fail.  I don't see any reason to completely shut down
-                 * Soar. */
-                char msg[BUFFER_MSG_SIZE];
-                strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
-                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                abort_with_fatal_error(thisAgent, msg);
-            }
-            else
-            {
-                smem_lti_id lti_id = thisAgent->SMem->lti_get_id(lexeme->id_letter, lexeme->id_number);
-
-                if (lti_id == NIL)
-                {
-                    /* An identifier was found in a rule that is not yet in smem.  We store
-                     * the identifier in a list so that we can add it to smem later, after we
-                     * know the current source command is complete */
-                    dprint(DT_PARSER_PROMOTE, "Identifier %c%d found (%s).\n", lexeme->id_letter, lexeme->id_number, allow_lti ? "true" : "false");
-                    newSymbol = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
-                    if (newSymbol == NIL)
-                    {
-                        newSymbol = thisAgent->symbolManager->make_new_identifier(lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
-                    }
-                    thisAgent->LTIs_sourced->add_lexed_LTI(newSymbol);
-                }
-                else
-                {
-                    newSymbol =  thisAgent->SMem->lti_soar_make(lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
-                }
-                return newSymbol;
-            }
-            break;
+            dprint(DT_PARSER, "Illegal identifier found in make_symbol_for_lexeme: %c%d\n", lexeme->id_letter, lexeme->id_number);
+            /* In case we still need for reading in new LTIs */
+//            dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
+//            if (!allow_lti)
+//            {
+//                /* This seems to only be set when being called by the watch wme cli command.  It looks
+//                 * like the logic in that command could easily be altered so that this abort is not
+//                 * necessary.  The watch command should just fail.  I don't see any reason to completely shut down
+//                 * Soar. */
+//                char msg[BUFFER_MSG_SIZE];
+//                strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
+//                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+//                abort_with_fatal_error(thisAgent, msg);
+//            }
+//            else
+//            {
+//                smem_lti_id lti_id = thisAgent->SMem->lti_get_id(lexeme->id_letter, lexeme->id_number);
+//
+//                if (lti_id == NIL)
+//                {
+//                    /* An identifier was found in a rule that is not yet in smem.  We store
+//                     * the identifier in a list so that we can add it to smem later, after we
+//                     * know the current source command is complete */
+//                    dprint(DT_PARSER_PROMOTE, "Identifier %c%d found (%s).\n", lexeme->id_letter, lexeme->id_number, allow_lti ? "true" : "false");
+//                    newSymbol = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
+//                    if (newSymbol == NIL)
+//                    {
+//                        newSymbol = thisAgent->symbolManager->make_new_identifier(lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
+//                    }
+//                    thisAgent->LTIs_sourced->add_lexed_LTI(newSymbol);
+//                }
+//                else
+//                {
+//                    newSymbol =  thisAgent->SMem->lti_soar_make(lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
+//                }
+//                return newSymbol;
+//            }
+//            break;
+            return NULL;
         default:
         {
             char msg[BUFFER_MSG_SIZE];
@@ -455,9 +458,6 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             break;
     }
 
-    // Check for long term identifier notation
-    bool id_lti = parse_lti(thisAgent, lexer);
-
     /* --- read variable or constant --- */
     switch (lexer->current_lexeme.type)
     {
@@ -465,8 +465,8 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
         case INT_CONSTANT_LEXEME:
         case FLOAT_CONSTANT_LEXEME:
         case VARIABLE_LEXEME:
-        case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
-            referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
+        case IDENTIFIER_LEXEME:
+            referent = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false);
             if (!lexer->get_lexeme())
             {
                 thisAgent->symbolManager->symbol_remove_ref(&referent);
@@ -1550,17 +1550,13 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
         return parse_function_call_after_lparen(thisAgent, lexer, false);
     }
 
-    // Check for long term identifier notation
-    bool id_lti = parse_lti(thisAgent, lexer);
-
     if ((lexer->current_lexeme.type == STR_CONSTANT_LEXEME) ||
             (lexer->current_lexeme.type == INT_CONSTANT_LEXEME) ||
             (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME) ||
             (lexer->current_lexeme.type == VARIABLE_LEXEME) ||
             (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
     {
-        // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
-        Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), id_lti);
+        Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false);
         rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
         if (!lexer->get_lexeme()) return NULL;
         return rv;
@@ -2121,8 +2117,9 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     if (!lexer->get_lexeme()) return NULL;
 
-    // Check for long term identifier notation
-    bool id_lti = parse_lti(thisAgent, lexer);
+    /* Should exit gracefully if rule has an identifier in it.  We'll just do an assert for now. 
+     * - If this can't happen, we probably don't need the second clause in the next if */
+    assert(lexer->current_lexeme.type != IDENTIFIER_LEXEME);
 
     if ((lexer->current_lexeme.type != VARIABLE_LEXEME) && (lexer->current_lexeme.type != IDENTIFIER_LEXEME))
     {
@@ -2138,32 +2135,9 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         return all_actions;
     }
     /* --- the action is a regular make action --- */
-    if (id_lti)
-    {
-        smem_lti_id lti_id = thisAgent->SMem->lti_get_id(lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
+    assert(lexer->current_lexeme.type == VARIABLE_LEXEME);
 
-        if (lti_id == NIL)
-        {
-            /* An identifier was found in a rule that is not yet in smem.  We store
-             * the identifier in a list so that we can add it to smem later, after we
-             * know the current source command is complete */
-            dprint(DT_PARSER_PROMOTE, "RHS Identifier %c%d found (%s).\n", lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, lexer->get_allow_ids() ? "true" : "false");
-            var = thisAgent->symbolManager->find_identifier(lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number);
-            if (var == NIL)
-            {
-                var = thisAgent->symbolManager->make_new_identifier(lexer->current_lexeme.id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexer->current_lexeme.id_number);
-            }
-            thisAgent->LTIs_sourced->add_lexed_LTI(var);
-        }
-        else
-        {
-            var = thisAgent->SMem->lti_soar_make(lti_id, lexer->current_lexeme.id_letter, lexer->current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-        }
-    }
-    else
-    {
-        var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
-    }
+    var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
 
     if (!lexer->get_lexeme()) return NULL;
     all_actions = NIL;
@@ -2187,25 +2161,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     if (!lexer->get_lexeme()) return NULL;
     thisAgent->symbolManager->symbol_remove_ref(&var);
     return all_actions;
-}
-
-bool parse_lti(agent* thisAgent, Lexer* lexer)
-{
-    switch (lexer->current_lexeme.type)
-    {
-        case AT_LEXEME:
-        {
-            bool saved = lexer->get_allow_ids();
-            lexer->set_allow_ids(true);
-            bool lexSuccess = lexer->get_lexeme();
-            lexer->set_allow_ids(saved);
-            return lexSuccess;
-        }
-
-        default:
-            break;
-    }
-    return false;
 }
 
 /* -----------------------------------------------------------------
@@ -2318,7 +2273,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     ProductionType  prod_type;
 
     Lexer lexer(thisAgent, prod_string);
-    lexer.set_allow_ids(false);
     bool lexSuccess = lexer.get_lexeme();
 
     bool rhs_okay, interrupt_on_match, explain_chunks;
@@ -2531,22 +2485,4 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
 
     return p;
 
-}
-
-void LTI_Promotion_Set::promote_LTIs_sourced(agent* thisAgent)
-{
-    smem_lti_id lti_id;
-    Symbol* lSym;
-
-    if (!LTIs_Lexed->empty())
-    {
-        thisAgent->SMem->attach();
-        for (auto it = LTIs_Lexed->begin(); it != LTIs_Lexed->end(); it++)
-        {
-            lSym = *it;
-            dprint(DT_PARSER_PROMOTE, "Promoting LTI found in sourced production %y.\n", lSym);
-            thisAgent->SMem->lti_soar_promote_STI(lSym);
-        }
-        LTIs_Lexed->clear();
-    }
 }

@@ -194,14 +194,6 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
     {
         if (sti == NIL)
         {
-            //        soar_module::sqlite_statement* q = smem_stmts->lti_letter_num;
-            //
-            //        q->bind_int(1, lti_id);
-            //        q->execute();
-            //
-            //        sti = lti_soar_make(lti_id, static_cast<char>(q->column_int(0)), static_cast<uint64_t>(q->column_int(1)), result_header->id->level);
-            //
-            //        q->reinitialize();
             sti = get_sti_for_lti(lti_id, result_header->id->level);
             sti_created_here = true;
         } else {
@@ -240,13 +232,8 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
     bool triggered = false;
 
     // if no children, then retrieve children
-    // merge may override this behavior
-    if (((smem_params->merge->get_value() == smem_param_container::merge_add) ||
-            ((sti->id->impasse_wmes == NIL) &&
-             (sti->id->input_wmes == NIL) &&
-             (sti->id->slots == NIL)))
-            || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
-
+    if (    (!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)
+         || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
     {
         if (visited == NULL)
         {
@@ -272,7 +259,6 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
             if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
             {
                 value_sym = get_sti_for_lti(static_cast<smem_lti_id>(expand_q->column_int(6)), sti->id->level, static_cast<char>(expand_q->column_int(4)));
-//                value_sym = lti_soar_make(static_cast<smem_lti_id>(expand_q->column_int(6)), static_cast<char>(expand_q->column_int(4)), static_cast<uint64_t>(expand_q->column_int(5)), sti->id->level);
                 if (depth > 1)
                 {
                     children.insert(value_sym);

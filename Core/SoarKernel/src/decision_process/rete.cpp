@@ -1536,15 +1536,6 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             }
         }
     }
-
-    if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && thisAgent->SMem->enabled() && (thisAgent->SMem->mirroring_enabled()))
-    {
-        std::pair< symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
-        if (insert_result.second)
-        {
-            thisAgent->symbolManager->symbol_add_ref(w->id);
-        }
-    }
 }
 
 inline void _epmem_remove_wme(agent* thisAgent, wme* w)
@@ -1691,15 +1682,6 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
         {
             _epmem_remove_wme(thisAgent, w);
             _epmem_process_ids(thisAgent);
-        }
-    }
-
-    if ((w->id->id->smem_lti) && (!thisAgent->SMem->smem_ignore_changes) && thisAgent->SMem->enabled() && (thisAgent->SMem->mirroring_enabled()))
-    {
-        std::pair< symbol_set::iterator, bool > insert_result = thisAgent->SMem->smem_changed_ids->insert(w->id);
-        if (insert_result.second)
-        {
-            thisAgent->symbolManager->symbol_add_ref(w->id);
         }
     }
 

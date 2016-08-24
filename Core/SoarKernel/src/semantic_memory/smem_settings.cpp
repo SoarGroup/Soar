@@ -69,12 +69,6 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     thresh = new soar_module::integer_param("thresh", 100, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
     add(thresh);
 
-    // merge
-    merge = new soar_module::constant_param<merge_choices>("merge", merge_add, new soar_module::f_predicate<merge_choices>());
-    merge->add_mapping(merge_none, "none");
-    merge->add_mapping(merge_add, "add");
-    add(merge);
-
     // activate_on_query
     activate_on_query = new soar_module::boolean_param("activate-on-query", on, new soar_module::f_predicate<boolean>());
     add(activate_on_query);
@@ -104,9 +98,6 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     /* Moved from init_agent */
     base_incremental_threshes->set_string("10");
 
-    // mirroring
-    mirroring = new soar_module::boolean_param("mirroring", off, new smem_db_predicate< boolean >(thisAgent));
-    add(mirroring);
 }
 
 //
@@ -234,12 +225,6 @@ smem_stat_container::smem_stat_container(agent* new_agent): soar_module::stat_co
     act_updates = new soar_module::integer_stat("act_updates", 0, new soar_module::f_predicate<int64_t>());
     add(act_updates);
 
-    // mirrors
-    mirrors = new soar_module::integer_stat("mirrors", 0, new soar_module::f_predicate<int64_t>());
-    add(mirrors);
-
-    //
-
     // chunks
     chunks = new soar_module::integer_stat("nodes", 0, new smem_db_predicate< int64_t >(thisAgent));
     add(chunks);
@@ -284,9 +269,4 @@ bool SMem_Manager::enabled()
 bool SMem_Manager::connected()
 {
     return (smem_db->get_status() == soar_module::connected);
-}
-
-bool SMem_Manager::mirroring_enabled()
-{
-    return (smem_params->mirroring->get_value() == on);
 }

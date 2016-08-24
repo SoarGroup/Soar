@@ -53,9 +53,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("cache-size:", thisAgent->SMem->smem_params->cache_size, 40);
         PrintCLIMessage_Item("optimization:", thisAgent->SMem->smem_params->opt, 40);
         PrintCLIMessage_Item("timers:", thisAgent->SMem->smem_params->timers, 40);
-        PrintCLIMessage_Section("Experimental", 40);
-        PrintCLIMessage_Item("merge:", thisAgent->SMem->smem_params->merge, 40);
-        PrintCLIMessage_Item("mirroring:", thisAgent->SMem->smem_params->mirroring, 40);
         PrintCLIMessage("");
 
         return true;
@@ -360,7 +357,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage_Item("Queries:", thisAgent->SMem->smem_stats->cbr, 40);
             PrintCLIMessage_Item("Stores:", thisAgent->SMem->smem_stats->stores, 40);
             PrintCLIMessage_Item("Activation Updates:", thisAgent->SMem->smem_stats->act_updates, 40);
-            PrintCLIMessage_Item("Mirrors:", thisAgent->SMem->smem_stats->mirrors, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->SMem->smem_stats->chunks, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->SMem->smem_stats->slots, 40);
         }

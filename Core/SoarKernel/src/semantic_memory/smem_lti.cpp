@@ -62,7 +62,7 @@ void SMem_Manager::lti_from_rhs_value(rhs_value rv, std::set<Symbol*>* valid_lti
     }
 }
 
-// gets the lti id for an existing lti soar_letter/number pair (or NIL if failure)
+// Searches smem db for the lti id for a soar_letter/number pair (or NIL if failure)
 smem_lti_id SMem_Manager::lti_get_id(char name_letter, uint64_t name_number)
 {
     smem_lti_id return_val = NIL;
@@ -106,76 +106,19 @@ smem_lti_id SMem_Manager::lti_add_id(char name_letter, uint64_t name_number)
     return return_val;
 }
 
-/* I don't know how important the inline was for Nate to include it, so I just made a copy
-   of that function for use in other files. */
-void SMem_Manager::lti_soar_promote_STI(Symbol* id)
+// Creates an LTI for a STI that does not have one
+void SMem_Manager::link_sti_to_lti(Symbol* id)
 {
-    assert(id->is_identifier());
-    if (id->id->smem_lti == NIL)
+    if ((id->is_identifier()) && (id->id->smem_lti != NIL))
     {
-        // try to find existing lti
-        id->id->smem_lti = lti_get_id(id->id->name_letter, id->id->name_number);
+        // if no smem_lti, then we should not have a corresponding lti!
+        assert(!lti_get_id(id->id->name_letter, id->id->name_number));
 
-        // if doesn't exist, add
-        if (id->id->smem_lti == NIL)
-        {
-            id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
-            id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
-            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-            epmem_schedule_promotion(thisAgent, id);
-        }
+        id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
+        id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
+        id->id->smem_valid = thisAgent->EpMem->epmem_validation;
+        epmem_schedule_promotion(thisAgent, id);
     }
-}
-
-// makes a non-long-term identifier into a long-term identifier
-void SMem_Manager::lti_soar_add(Symbol* id)
-{
-    if ((id->is_identifier()) &&
-            (id->id->smem_lti == NIL))
-    {
-        // try to find existing lti
-        id->id->smem_lti = lti_get_id(id->id->name_letter, id->id->name_number);
-
-        // if doesn't exist, add
-        if (id->id->smem_lti == NIL)
-        {
-            id->id->smem_lti = lti_add_id(id->id->name_letter, id->id->name_number);
-
-            id->id->smem_time_id = thisAgent->EpMem->epmem_stats->time->get_value();
-            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-            epmem_schedule_promotion(thisAgent, id);
-        }
-    }
-}
-
-// returns a reference to an lti
-Symbol* SMem_Manager::lti_soar_make(smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level)
-{
-    Symbol* return_val;
-
-    // try to find existing
-    return_val = thisAgent->symbolManager->find_identifier(name_letter, name_number);
-
-    // otherwise create
-    if (return_val == NIL)
-    {
-        return_val = thisAgent->symbolManager->make_new_identifier(name_letter, level, name_number);
-    }
-    else
-    {
-        thisAgent->symbolManager->symbol_add_ref(return_val);
-
-        if ((return_val->id->level == SMEM_LTI_UNKNOWN_LEVEL) && (level != SMEM_LTI_UNKNOWN_LEVEL))
-        {
-            return_val->id->level = level;
-            return_val->id->promotion_level = level;
-        }
-    }
-
-    // set lti field irrespective
-    return_val->id->smem_lti = lti;
-
-    return return_val;
 }
 
 void SMem_Manager::reset_id_counters()

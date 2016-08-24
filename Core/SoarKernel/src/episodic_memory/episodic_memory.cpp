@@ -3377,24 +3377,25 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
         {
             epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, id_p->second.first);
         }
-        else
-        {
-            Symbol* value = thisAgent->SMem->lti_soar_make(thisAgent->SMem->lti_get_id(val_letter, val_num), val_letter, val_num, parent->id->level);
-
-            if (id_record)
-            {
-                epmem_id_mapping::iterator rec_p = id_record->find(child_n_id);
-                if (rec_p != id_record->end())
-                {
-                    rec_p->second = value;
-                }
-            }
-
-            epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, value);
-            thisAgent->symbolManager->symbol_remove_ref(&value);
-
-            ids->insert(std::make_pair(child_n_id, std::make_pair(value, !((value->id->impasse_wmes) || (value->id->input_wmes) || (value->id->slots)))));
-        }
+        /* MToDo | Need to re-do so that this creates STIs linked to the LTI in question */
+//        else
+//        {
+//            Symbol* value = thisAgent->SMem->lti_soar_make(thisAgent->SMem->lti_get_id(val_letter, val_num), val_letter, val_num, parent->id->level);
+//
+//            if (id_record)
+//            {
+//                epmem_id_mapping::iterator rec_p = id_record->find(child_n_id);
+//                if (rec_p != id_record->end())
+//                {
+//                    rec_p->second = value;
+//                }
+//            }
+//
+//            epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, value);
+//            thisAgent->symbolManager->symbol_remove_ref(&value);
+//
+//            ids->insert(std::make_pair(child_n_id, std::make_pair(value, !((value->id->impasse_wmes) || (value->id->input_wmes) || (value->id->slots)))));
+//        }
     }
 }
 

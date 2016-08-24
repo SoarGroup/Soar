@@ -31,22 +31,4 @@ condition*  parse_lhs(agent* thisAgent, soar::Lexer* lexer);
 bool        parse_rhs(agent* thisAgent, soar::Lexer* lexer, action **dest_rhs);
 Symbol*     make_symbol_for_lexeme (agent* thisAgent, soar::Lexeme* lexeme, bool allow_lti);
 
-bool        parse_lti(agent* thisAgent, soar::Lexer* lexer);
-
-class LTI_Promotion_Set
-{
-    public:
-        LTI_Promotion_Set()                                     { LTIs_Lexed = new symbol_set(); };
-        ~LTI_Promotion_Set()                                    { delete LTIs_Lexed; };
-
-        void         clear()                                    { dprint(DT_PARSER_PROMOTE, "Clearing LTIs found in sourced production.\n");
-                                                                  LTIs_Lexed->clear(); }
-        void         add_lexed_LTI(Symbol* pSym)                { dprint(DT_PARSER_PROMOTE, "Adding LTI found in sourced production %y.\n", pSym);
-                                                                  LTIs_Lexed->insert(pSym); }
-        void         promote_LTIs_sourced(agent* thisAgent);
-
-    private:
-        symbol_set*  LTIs_Lexed;
-};
-
 #endif

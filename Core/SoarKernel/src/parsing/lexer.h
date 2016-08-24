@@ -116,14 +116,6 @@ namespace soar
         static Lexeme get_lexeme_from_string (agent* thisAgent, const char* input);
 
         /**
-         * Tell the lexer whether to allow identifiers to be read.
-         * @param allow True to allow identifiers to be read; false
-         * to set the type of any identifier lexeme to SYM_CONSTANT_LEXEME
-         * instead.
-         */
-        void set_allow_ids(bool allow);
-        bool get_allow_ids();
-        /**
          *  Print an out the current source line and column; useful for
          *  error messages. TODO: it's a no-op for now.
          */
@@ -179,7 +171,6 @@ namespace soar
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;
-        bool                allow_ids;
         agent*              thisAgent;
 
         //length of "-->" and "<=>". If a longer one is added, be
