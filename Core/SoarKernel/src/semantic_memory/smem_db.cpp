@@ -169,7 +169,7 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     lti_id_max = new soar_module::sqlite_statement(new_db, "SELECT MAX(lti_id) FROM smem_lti");
     add(lti_id_max);
 
-    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?)");
+    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (lti_id, total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?,?)");
     add(lti_add);
 
     lti_access_get = new soar_module::sqlite_statement(new_db, "SELECT activations_total, activations_last, activations_first FROM smem_lti WHERE lti_id=?");

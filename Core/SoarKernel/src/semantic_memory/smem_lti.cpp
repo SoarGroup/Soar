@@ -102,23 +102,20 @@ smem_lti_id SMem_Manager::get_max_lti_id()
 // adds a new lti id for a soar_letter/number pair
 smem_lti_id SMem_Manager::add_new_lti_id()
 {
-    smem_lti_id return_val;
-
-    // create lti: total_augmentations, activation_value, activations_total, activations_last, activations_first
-    smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(0));
-    smem_stmts->lti_add->bind_double(2, static_cast<double>(0));
-    smem_stmts->lti_add->bind_int(3, static_cast<uint64_t>(0));
+    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
+    smem_stmts->lti_add->bind_int(1, static_cast<uint64_t>(++lti_id_counter));
+    smem_stmts->lti_add->bind_int(2, static_cast<uint64_t>(0));
+    smem_stmts->lti_add->bind_double(3, static_cast<double>(0));
     smem_stmts->lti_add->bind_int(4, static_cast<uint64_t>(0));
     smem_stmts->lti_add->bind_int(5, static_cast<uint64_t>(0));
+    smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
     smem_stmts->lti_add->execute(soar_module::op_reinit);
 
-    return_val = static_cast<smem_lti_id>(smem_db->last_insert_rowid());
-
-    assert (return_val = ++lti_id_counter);
+    assert(lti_id_counter == smem_db->last_insert_rowid());
 
     smem_stats->chunks->set_value(smem_stats->chunks->get_value() + 1);
 
-    return return_val;
+    return lti_id_counter;
 }
 
 // Creates an LTI for a STI that does not have one

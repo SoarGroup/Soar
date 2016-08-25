@@ -112,6 +112,7 @@ class SMem_Manager
         void            init_db();
         void            switch_to_memory_db(std::string& buf);
 
+        void            get_lti_name(smem_lti_id lti_id, std::string &lti_name);
         smem_wme_list*  get_direct_augs_of_id(Symbol* id, tc_number tc = NIL);
         void            install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta);
         void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);

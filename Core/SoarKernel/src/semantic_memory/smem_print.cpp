@@ -250,6 +250,12 @@ void SMem_Manager::visualize_store(std::string* return_val)
     return_val->append("\n");
 }
 
+void SMem_Manager::get_lti_name(smem_lti_id lti_id, std::string &lti_name)
+{
+    lti_name.append("@SM");
+    lti_name.append(std::to_string(lti_id));
+}
+
 void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val)
 {
     // buffer
@@ -280,8 +286,7 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
         new_lti = new smem_vis_lti;
         new_lti->lti_id = lti_id;
         new_lti->level = 0;
-        new_lti->lti_name = "@";
-        new_lti->lti_name.append(std::to_string(lti_id));
+        get_lti_name(lti_id, new_lti->lti_name);
 
         bfs.push(new_lti);
         close_list.insert(std::make_pair(lti_id, new_lti));
@@ -307,13 +312,7 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
                 new_lti = new smem_vis_lti;
                 new_lti->lti_id = expand_q->column_int(4);
                 new_lti->level = (parent_lti->level + 1);
-
-                // add node
-                {
-                    new_lti->lti_name.append("@");
-                    to_string(new_lti->lti_id, temp_str);
-                    new_lti->lti_name.append(temp_str);
-                }
+                get_lti_name(new_lti->lti_id, new_lti->lti_name);
 
 
                 // add linkage
@@ -505,6 +504,7 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
     std::string temp_str, temp_str2, temp_str3;
     int64_t temp_int;
     double temp_double;
+    smem_lti_id temp_lti_id;
 
     std::map< std::string, std::list< std::string > > augmentations;
     std::map< std::string, std::list< std::string > >::iterator lti_slot;
@@ -514,9 +514,7 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
 
     soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
-    return_val->append("@");
-    to_string(lti_id, temp_str);
-    return_val->append(temp_str);
+    get_lti_name(lti_id, *return_val);
 
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
 
@@ -578,14 +576,10 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
         // identifier vs. constant
         if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
         {
-            temp_str2.clear();
-            temp_str2.push_back('@');
+            temp_lti_id = static_cast<smem_lti_id>(expand_q->column_int(4));
+            get_lti_name(temp_lti_id, temp_str2);
 
-            // lti
-            temp_str2.push_back(static_cast<smem_lti_id>(expand_q->column_int(4)));
-
-            // add to next
-            next.insert(static_cast< smem_lti_id >(expand_q->column_int(4)));
+            next.insert(temp_lti_id);
         }
         else
         {
@@ -693,7 +687,6 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    // id, soar_letter, number
     soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
