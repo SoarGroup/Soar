@@ -158,7 +158,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         std::string viz;
 
-        thisAgent->SMem->print_lti(lti_id, depth, &(viz), history);
+        thisAgent->SMem->print_smem_object(lti_id, depth, &(viz), history);
 
         if (viz.empty())
         {
@@ -237,7 +237,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            thisAgent->SMem->print_lti(lti_id, depth, &(viz));
+            thisAgent->SMem->print_smem_object(lti_id, depth, &(viz));
         }
         if (viz.empty())
         {

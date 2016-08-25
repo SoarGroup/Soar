@@ -26,8 +26,6 @@ void SMem_Manager::visualize_store(std::string* return_val)
         soar_module::sqlite_statement* q;
 
         smem_lti_id lti_id;
-        char lti_letter;
-        uint64_t lti_number;
 
         std::string* lti_name;
         std::string temp_str;
@@ -39,13 +37,10 @@ void SMem_Manager::visualize_store(std::string* return_val)
         while (q->execute() == soar_module::row)
         {
             lti_id = q->column_int(0);
-            lti_letter = static_cast<char>(q->column_int(1));
-            lti_number = static_cast<uint64_t>(q->column_int(2));
 
             lti_name = & lti_names[ lti_id ];
-            lti_name->push_back(lti_letter);
-
-            to_string(lti_number, temp_str);
+            lti_name->append(" @");
+            to_string(lti_id, temp_str);
             lti_name->append(temp_str);
 
             return_val->append((*lti_name));
@@ -507,7 +502,7 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
     return_val->append(return_val2);
 }
 
-std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string* return_val, std::list<uint64_t>* history)
+std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_act, std::string* return_val, std::list<uint64_t>* history)
 {
     std::set< smem_lti_id > next;
 
@@ -523,9 +518,8 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, char lti_let
 
     soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
-    return_val->append("(@");
-    return_val->push_back(lti_letter);
-    to_string(lti_number, temp_str);
+    return_val->append("@");
+    to_string(lti_id, temp_str);
     return_val->append(temp_str);
 
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
@@ -712,12 +706,12 @@ void SMem_Manager::print_store(std::string* return_val)
     soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        print_lti(q->column_int(0), static_cast<char>(q->column_int(1)), static_cast<uint64_t>(q->column_int(2)), q->column_double(3), return_val);
+        print_smem_object(q->column_int(0), q->column_double(3), return_val);
     }
     q->reinitialize();
 }
 
-void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
+void SMem_Manager::print_smem_object(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
 {
     std::set< smem_lti_id > visited;
     std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
@@ -776,11 +770,11 @@ void SMem_Manager::print_lti(smem_lti_id lti_id, uint64_t depth, std::string* re
 
             if (history && !access_history.empty())
             {
-                next = print_lti(c.first, '@', lti_id, act_q->column_double(0), return_val, &(access_history));
+                next = print_lti(c.first, act_q->column_double(0), return_val, &(access_history));
             }
             else
             {
-                next = print_lti(c.first, '@', lti_id, act_q->column_double(0), return_val);
+                next = print_lti(c.first, act_q->column_double(0), return_val);
             }
 
             // done with lookup

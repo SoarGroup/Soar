@@ -18,19 +18,6 @@
 #include "soar_module.h"
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
-/* --------------------------------------------------------------------------*/
-
-
-#ifdef DEBUG_EPMEM_SQL
-    static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
-    {
-    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
-    }
-    static void trace_sql(void* /*arg*/, const char* query)
-    {
-    fprintf(stderr, "Query: %s\n", query);
-    }
-#endif
 
 extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
 extern void debug_init_db(agent* thisAgent);

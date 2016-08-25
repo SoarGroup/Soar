@@ -60,7 +60,7 @@ class SMem_Manager
         void visualize_store(std::string* return_val);
         void visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val);
         void print_store(std::string* return_val);
-        void print_lti(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
+        void print_smem_object(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history = false);
 
         smem_lti_id lti_exists(uint64_t pLTI_ID);
         smem_lti_id get_max_lti_id();
@@ -138,7 +138,7 @@ class SMem_Manager
 
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
-        std::set< smem_lti_id >         print_lti(smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
+        std::set< smem_lti_id >         print_lti(smem_lti_id lti_id, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 
         void            clear_instance_mappings();
         Symbol*         get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLevel, char pChar = 'L');

@@ -18,10 +18,12 @@ namespace soar_module
             set_errno(sqlite_err);
             set_errmsg(NULL);
             
-#ifdef DEBUG_SQL_QUERIES
-            //sqlite3_profile(my_db, &profile, NULL);
-            sqlite3_trace(my_db, trace, NULL);
-#endif
+            #ifdef DEBUG_SQL_PROFILE
+                sqlite3_profile(my_db, &profile_sql, NULL);
+            #endif
+            #ifdef DEBUG_SQL_QUERIES
+                sqlite3_trace(my_db, trace_sql, NULL);
+            #endif
         }
         else
         {

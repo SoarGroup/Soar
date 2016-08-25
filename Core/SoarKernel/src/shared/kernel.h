@@ -39,16 +39,18 @@
 
 #ifndef SOAR_RELEASE_VERSION
 
+    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    #define MEM_POOLS_ENABLED 1
+    #ifdef MEM_POOLS_ENABLED
+        #define USE_MEM_POOL_ALLOCATORS 1
+    #endif
+
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
     /* Experimental setting that forces Soar to consider the attribute element
      * of a wme/pref when incrementing/decrementing link counts, which are use
      * for garbage collection. */
     //    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
-
-    /* -- Enables tracing functions that print SQL processing and errors -- */
-    //#define DEBUG_EPMEM_SQL
-    #define DEBUG_SMEM_SQL
 
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
@@ -73,11 +75,11 @@
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 
-    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-    #define MEM_POOLS_ENABLED 1
-    #ifdef MEM_POOLS_ENABLED
-        #define USE_MEM_POOL_ALLOCATORS 1
-    #endif
+    /* -- Enables tracing functions that print SQL processing and errors -- */
+    #define DEBUG_SQL_ERRORS
+    #define DEBUG_SQL_QUERIES
+//    #define DEBUG_SQL_PROFILE
+
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
@@ -126,6 +128,22 @@ typedef unsigned char byte;
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
 //#define REAL_TIME_BEHAVIOR
 //#define ATTENTION_LAPSE
+
+/* ---------------- SQL Callback functions for sql debug modes-------------- */
+#ifdef DEBUG_SQL_PROFILE
+static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
+{
+    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
+}
+#endif
+#ifdef DEBUG_SQL_QUERIES
+static void trace_sql(void* /*arg*/, const char* query)
+{
+    fprintf(stderr, "Query: %s\n", query);
+}
+#endif
+
+/* ---------------- Macros for safe counters -------------- */
 
 #define increment_counter(counter) counter++; if (counter == 0) counter = 1;
 #define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;

@@ -15,20 +15,6 @@
 #include <list>
 #include <assert.h>
 
-#define DEBUG_SQL_ERRORS
-#define DEBUG_SQL_QUERIES
-
-#ifdef DEBUG_SQL_QUERIES
-//static void profile(void *context, const char *sql, sqlite3_uint64 ns) {
-//fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);}
-static void trace(void* /*arg*/, const char* query)
-{
-    fprintf(stderr, "Query: %s\n", query);
-}
-#endif
-
-// separates this functionality
-// just for Soar modules
 namespace soar_module
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -346,11 +332,11 @@ namespace soar_module
 
                 //asm("int $3");
 
-#ifdef DEBUG_SQL_ERRORS
-                fprintf(stderr, "SoarDB| Unexpected sqlite result!  result = %d. error = %d (%s)\n", sqlite_res, sqlite3_errcode(my_db->get_db()),
-                        sqlite3_errmsg(my_db->get_db()));
-                fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
-#endif
+                #ifdef DEBUG_SQL_ERRORS
+                    fprintf(stderr, "SoarDB| Unexpected sqlite result!  result = %d. error = %d (%s)\n", sqlite_res, sqlite3_errcode(my_db->get_db()),
+                            sqlite3_errmsg(my_db->get_db()));
+                    fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
+                #endif
             }
             virtual bool _prep()
             {
@@ -523,13 +509,13 @@ namespace soar_module
                     temp_stmt->prepare();
                     assert(temp_stmt->get_status() == ready);
                     execute_result = temp_stmt->execute();
-#ifdef DEBUG_SQL_ERRORS
+                    #ifdef DEBUG_SQL_ERRORS
                     if (execute_result == err)
                     {
                         fprintf(stderr, "SoarDB| Unexpected sqlite result in structure!  result = %d. error = %d (%s)\n", execute_result, temp_stmt->get_errno(), temp_stmt->get_errmsg());
                         fprintf(stderr, "SoarDB|...in SQL statement: %s\n", (*p));
                     }
-#endif
+                    #endif
                     delete temp_stmt;
 
                 }
@@ -642,13 +628,13 @@ namespace soar_module
         temp_q->prepare();
 
         execute_result = temp_q->execute();
-#ifdef DEBUG_SQL_ERRORS
+        #ifdef DEBUG_SQL_ERRORS
         if (execute_result == err)
         {
             fprintf(stderr, "SoarDB| Unexpected sqlite result in sql_execute!  result = %d. error = %d (%s)\n", execute_result, this->get_errno(), this->get_errmsg());
             fprintf(stderr, "SoarDB|...in SQL statement: %s\n", sql);
         }
-#endif
+        #endif
 
         delete temp_q;
         return (execute_result == ok);

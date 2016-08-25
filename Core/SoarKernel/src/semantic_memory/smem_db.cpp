@@ -550,12 +550,6 @@ void SMem_Manager::init_db()
     // attempt connection
     smem_db->connect(db_path);
 
-    #ifdef DEBUG_SMEM_SQL
-//    sqlite3_profile(smem_db->get_db(), &profile, NULL);
-    sqlite3_trace(smem_db->get_db(), trace, NULL);
-    #endif
-
-
     if (smem_db->get_status() == soar_module::problem)
     {
         print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", smem_db->get_errmsg());
