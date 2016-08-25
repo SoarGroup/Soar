@@ -7,6 +7,7 @@
 
 #include "semantic_memory.h"
 #include "smem_db.h"
+#include "dprint.h"
 
 #include "lexer.h"
 
@@ -508,6 +509,7 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
 
     soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
 
+    return_val->append("(");
     get_lti_name(lti_id, *return_val);
 
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
@@ -571,9 +573,12 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
         if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
         {
             temp_lti_id = static_cast<smem_lti_id>(expand_q->column_int(4));
+            temp_str2.clear();
             get_lti_name(temp_lti_id, temp_str2);
 
-            next.insert(temp_lti_id);
+            /* The following line prints the children indented.  It seems redundant when printing the
+             * smem store, but perhaps it's useful for printing something rooted in an lti? */
+            // next.insert(temp_lti_id);
         }
         else
         {

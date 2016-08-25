@@ -30,7 +30,7 @@
  * */
 
 /* =============================== */
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -76,7 +76,7 @@
     //#define DEBUG_GDS_HIGH
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
-    #define DEBUG_SQL_ERRORS
+//    #define DEBUG_SQL_ERRORS
 //    #define DEBUG_SQL_QUERIES
 //    #define DEBUG_SQL_PROFILE
 

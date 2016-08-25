@@ -273,6 +273,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                         temp_key2.assign(lexer->current_lexeme.string());
                                     } else {
                                         assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
+                                        temp_key2.clear();
                                         get_lti_name(lexer->current_lexeme.int_val, temp_key2);
                                     }
 
