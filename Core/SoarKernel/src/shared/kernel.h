@@ -40,7 +40,7 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-    #define MEM_POOLS_ENABLED 1
+//    #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
     #endif
@@ -77,7 +77,7 @@
 
     /* -- Enables tracing functions that print SQL processing and errors -- */
     #define DEBUG_SQL_ERRORS
-    #define DEBUG_SQL_QUERIES
+//    #define DEBUG_SQL_QUERIES
 //    #define DEBUG_SQL_PROFILE
 
 #else

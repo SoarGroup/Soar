@@ -6175,10 +6175,7 @@ EpMem_Manager::EpMem_Manager(agent* myAgent)
  #else
      epmem_node_removals = new epmem_id_removal_map();
      epmem_edge_removals = new epmem_id_removal_map();
-
      epmem_wme_adds = new epmem_symbol_set();
-     epmem_promotions = new epmem_symbol_set();
-
      epmem_id_removes = new epmem_symbol_stack();
  #endif
 

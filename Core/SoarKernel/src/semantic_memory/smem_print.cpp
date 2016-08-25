@@ -48,7 +48,7 @@ void SMem_Manager::visualize_store(std::string* return_val)
             return_val->append((*lti_name));
             return_val->append("\\n[");
 
-            temp_double = q->column_double(3);
+            temp_double = q->column_double(1);
             to_string(temp_double, temp_str, 3, true);
             if (temp_double >= 0)
             {
@@ -302,20 +302,16 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
         while (expand_q->execute() == soar_module::row)
         {
             // identifier vs. constant
-            if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
+            if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
             {
                 new_lti = new smem_vis_lti;
-                new_lti->lti_id = expand_q->column_int(6);
+                new_lti->lti_id = expand_q->column_int(4);
                 new_lti->level = (parent_lti->level + 1);
 
                 // add node
                 {
-                    // soar_letter
-                    new_lti->lti_name.push_back(static_cast<char>(expand_q->column_int(4)));
-
-                    // number
-                    temp_int = expand_q->column_int(5);
-                    to_string(temp_int, temp_str);
+                    new_lti->lti_name.append("@");
+                    to_string(new_lti->lti_id, temp_str);
                     new_lti->lti_name.append(temp_str);
                 }
 
@@ -580,21 +576,16 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
         }
 
         // identifier vs. constant
-        if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
+        if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
         {
             temp_str2.clear();
             temp_str2.push_back('@');
 
-            // soar_letter
-            temp_str2.push_back(static_cast<char>(expand_q->column_int(4)));
-
-            // number
-            temp_int = expand_q->column_int(5);
-            to_string(temp_int, temp_str3);
-            temp_str2.append(temp_str3);
+            // lti
+            temp_str2.push_back(static_cast<smem_lti_id>(expand_q->column_int(4)));
 
             // add to next
-            next.insert(static_cast< smem_lti_id >(expand_q->column_int(6)));
+            next.insert(static_cast< smem_lti_id >(expand_q->column_int(4)));
         }
         else
         {
@@ -706,7 +697,7 @@ void SMem_Manager::print_store(std::string* return_val)
     soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        print_smem_object(q->column_int(0), q->column_double(3), return_val);
+        print_smem_object(q->column_int(0), q->column_double(1), return_val);
     }
     q->reinitialize();
 }
