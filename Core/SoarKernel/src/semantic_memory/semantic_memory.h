@@ -112,7 +112,7 @@ class SMem_Manager
         void            init_db();
         void            switch_to_memory_db(std::string& buf);
 
-        void            get_lti_name(smem_lti_id lti_id, std::string &lti_name);
+        void            get_lti_name(smem_lti_id lti_id, std::string &lti_name) { lti_name.append("@");  lti_name.append(std::to_string(lti_id)); }
         smem_wme_list*  get_direct_augs_of_id(Symbol* id, tc_number tc = NIL);
         void            install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta);
         void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);
@@ -132,9 +132,8 @@ class SMem_Manager
         smem_lti_id     process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<smem_lti_id>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
         void            clear_result(Symbol* state);
         void            deallocate_chunk(smem_chunk* chunk, bool free_chunk = true);
-        std::string*    parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
-        bool            process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies);
+        bool            parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies);
         void            respond_to_cmd(bool store_only);
 
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);

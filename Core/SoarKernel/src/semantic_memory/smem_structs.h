@@ -23,8 +23,6 @@ typedef struct smem_data_struct
 typedef struct smem_chunk_struct
 {   Symbol*                 soar_id;
     smem_lti_id             lti_id;
-    char                    lti_letter;
-    uint64_t                lti_number;
     smem_slot_map*          slots;
 } smem_chunk;
 

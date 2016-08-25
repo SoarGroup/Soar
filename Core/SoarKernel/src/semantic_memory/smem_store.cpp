@@ -82,39 +82,6 @@ void SMem_Manager::deallocate_chunk(smem_chunk* chunk, bool free_chunk )
     }
 }
 
-std::string* SMem_Manager::parse_lti_name(soar::Lexeme* lexeme, char* id_letter, uint64_t* id_number)
-{
-    std::string* return_val = new std::string;
-
-    if ((*lexeme).type == IDENTIFIER_LEXEME)
-    {
-        std::string soar_number;
-        to_string((*lexeme).id_number, soar_number);
-
-        return_val->append(1, (*lexeme).id_letter);
-        return_val->append(soar_number);
-
-        (*id_letter) = (*lexeme).id_letter;
-        (*id_number) = (*lexeme).id_number;
-
-        char counter_index = (*id_letter - static_cast<char>('A'));
-        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
-        if (*id_number >= *letter_ct)
-        {
-            *letter_ct = *id_number + 1;
-        }
-    }
-    else
-    {
-        return_val->assign((*lexeme).string());
-
-        (*id_letter) = static_cast<char>(toupper((*lexeme).string()[1]));
-        (*id_number) = 0;
-    }
-
-    return return_val;
-}
-
 Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
 {
     Symbol* return_val = NIL;
@@ -135,7 +102,7 @@ Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
+bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
 {
     bool return_val = false;
 
@@ -143,9 +110,6 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
     new_chunk->slots = NULL;
 
     std::string* chunk_name = NULL;
-
-    char temp_letter;
-    uint64_t temp_number;
 
     bool good_at;
 
@@ -160,16 +124,28 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
         {
             lexer->get_lexeme();
 
-            good_at = (lexer->current_lexeme.type == IDENTIFIER_LEXEME);
+            good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+            new_chunk->lti_id = lexer->current_lexeme.int_val;
+
+        } else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
+        {
+            /* MToDo | May want to keep this case in case we want to support smem --add using existing STIs and their underlying LTI IDs.
+             * For now, we'll just set to a bad parse. In the future, we find identifier with letter/number and use LTI_ID */
+            good_at = false;
         }
 
         if (good_at)
         {
+            chunk_name = new std::string();
             // save identifier
-            chunk_name = parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
-            new_chunk->lti_letter = temp_letter;
-            new_chunk->lti_number = temp_number;
-            new_chunk->lti_id = NIL;
+            if (lexer->current_lexeme.type == VARIABLE_LEXEME)
+            {
+                chunk_name->append(lexer->current_lexeme.string());
+                new_chunk->lti_id = NIL;
+            } else {
+                assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
+                get_lti_name(new_chunk->lti_id, *chunk_name);
+            }
             new_chunk->soar_id = NIL;
             new_chunk->slots = new smem_slot_map;
 
@@ -182,7 +158,7 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
             smem_chunk* intermediate_parent;
             smem_chunk* temp_chunk;
             std::string temp_key;
-            std::string* temp_key2;
+            std::string temp_key2;
             Symbol* chunk_attr;
             smem_chunk_value* chunk_value;
             smem_slot* s;
@@ -212,8 +188,6 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                     {
                         // create a new chunk
                         temp_chunk = new smem_chunk;
-                        temp_chunk->lti_letter = ((chunk_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(chunk_attr->sc->name[0]))) : ('X'));
-                        temp_chunk->lti_number = (intermediate_counter++);
                         temp_chunk->lti_id = NIL;
                         temp_chunk->slots = new smem_slot_map;
                         temp_chunk->soar_id = NIL;
@@ -226,12 +200,10 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                         s->push_back(chunk_value);
 
                         // create a key guaranteed to be unique
-                        std::string temp_key3;
-                        to_string(temp_chunk->lti_number, temp_key3);
                         temp_key.assign("<");
-                        temp_key.append(1, temp_chunk->lti_letter);
+                        temp_key.append(1, ((chunk_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(chunk_attr->sc->name[0]))) : ('X')));
                         temp_key.append("#");
-                        temp_key.append(temp_key3);
+                        temp_key.append(std::to_string(++intermediate_counter));
                         temp_key.append(">");
 
                         // insert the new chunk
@@ -286,7 +258,7 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                 {
                                     lexer->get_lexeme();
 
-                                    good_at = (lexer->current_lexeme.type == IDENTIFIER_LEXEME);
+                                    good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
                                 }
 
                                 if (good_at)
@@ -296,10 +268,16 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                     chunk_value->val_lti.val_type = value_lti_t;
 
                                     // get key
-                                    temp_key2 = parse_lti_name(&(lexer->current_lexeme), &(temp_letter), &(temp_number));
+                                    if (lexer->current_lexeme.type == VARIABLE_LEXEME)
+                                    {
+                                        temp_key2.assign(lexer->current_lexeme.string());
+                                    } else {
+                                        assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
+                                        get_lti_name(lexer->current_lexeme.int_val, temp_key2);
+                                    }
 
                                     // search for an existing chunk
-                                    smem_str_to_chunk_map::iterator p = chunks->find((*temp_key2));
+                                    smem_str_to_chunk_map::iterator p = chunks->find((temp_key2));
 
                                     // if exists, point; else create new
                                     if (p != chunks->end())
@@ -311,8 +289,6 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                         // create new chunk
                                         temp_chunk = new smem_chunk;
                                         temp_chunk->lti_id = NIL;
-                                        temp_chunk->lti_letter = temp_letter;
-                                        temp_chunk->lti_number = temp_number;
                                         temp_chunk->lti_id = NIL;
                                         temp_chunk->slots = NIL;
                                         temp_chunk->soar_id = NIL;
@@ -321,13 +297,11 @@ bool SMem_Manager::process_smem_add(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                         chunk_value->val_lti.val_value = temp_chunk;
 
                                         // add to chunks
-                                        (*chunks)[(*temp_key2) ] = temp_chunk;
+                                        (*chunks)[temp_key2] = temp_chunk;
 
                                         // possibly a newbie (could be a self-loop)
                                         newbies->insert(temp_chunk);
                                     }
-
-                                    delete temp_key2;
                                 }
                             }
 
@@ -474,7 +448,7 @@ bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string**
     // while there are chunks to consume
     while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_chunk))
     {
-        good_chunk = process_smem_add(&lexer, &(chunks), &(newbies));
+        good_chunk = parse_add_clause(&lexer, &(chunks), &(newbies));
 
         if (good_chunk)
         {
@@ -483,31 +457,33 @@ bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string**
             {
                 if ((*c_new)->lti_id == NIL)
                 {
-                    // deal differently with variable vs. lti
-                    if ((*c_new)->lti_number == NIL)
-                    {
-                        // add a new lti id (we have a guarantee this won't be in Soar's WM)
-                        char counter_index = ((*c_new)->lti_letter - static_cast<char>('A'));
-                        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
+                    (*c_new)->lti_id =add_new_lti_id();
 
-                        (*c_new)->lti_number = (*letter_ct)++;
-                        (*c_new)->lti_id =add_new_lti_id();
-                    }
-                    else
-                    {
-                        // should ALWAYS be the case (it's a newbie and we've initialized lti_id to NIL)
-                        if ((*c_new)->lti_id == NIL)
-                        {
-                            // get existing
-                            (*c_new)->lti_id = lti_exists((*c_new)->lti_number);
-
-                            // if doesn't exist, add it
-                            if ((*c_new)->lti_id == NIL)
-                            {
-                                (*c_new)->lti_id =add_new_lti_id();
-                            }
-                        }
-                    }
+//                    // deal differently with variable vs. lti
+//                    if ((*c_new)->lti_number == NIL)
+//                    {
+//                        // add a new lti id (we have a guarantee this won't be in Soar's WM)
+//                        char counter_index = ((*c_new)->lti_letter - static_cast<char>('A'));
+//                        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
+//
+//                        (*c_new)->lti_number = (*letter_ct)++;
+//                        (*c_new)->lti_id =add_new_lti_id();
+//                    }
+//                    else
+//                    {
+//                        // should ALWAYS be the case (it's a newbie and we've initialized lti_id to NIL)
+//                        if ((*c_new)->lti_id == NIL)
+//                        {
+//                            // get existing
+//                            (*c_new)->lti_id = lti_exists((*c_new)->lti_number);
+//
+//                            // if doesn't exist, add it
+//                            if ((*c_new)->lti_id == NIL)
+//                            {
+//                                (*c_new)->lti_id =add_new_lti_id();
+//                            }
+//                        }
+//                    }
                 }
             }
 
@@ -713,21 +689,28 @@ bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std
                     }
                     else if (lexer.current_lexeme.type == AT_LEXEME)
                     {
-                        /* Need to re-do for identifier_lexeme instead.  */
-//                        //If the LTI isn't recognized, then it cannot be a good cue.
-//                        lexer.get_lexeme();
-//                        smem_lti_id value_id = lti_get_id(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
-//                        if (value_id == NIL)
-//                        {
-//                            good_cue = false;
-//                            (*err_msg)->append("Error: LTI was not found.\n");
-//                            break;
-//                        }
-//                        else
-//                        {
-//                            value = lti_soar_make(value_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-//                        }
-//                        lexer.get_lexeme();
+                        lexer.get_lexeme();
+                        smem_lti_id value_id = 0;
+                        if (lexer.current_lexeme.type != INT_CONSTANT_LEXEME)
+                        {
+                            good_cue = false;
+                            (*err_msg)->append("Error: @ must be followed by an integer to be a long-term identifier.\n");
+                            break;
+                        }
+                        value_id = lti_exists(lexer.current_lexeme.int_val);
+                        if (value_id == NIL)
+                        {
+                            good_cue = false;
+                            (*err_msg)->append("Error: LTI was not found.\n");
+                            break;
+                        }
+                        else
+                        {
+                            /* Not sure what we'd want to use here.  Will create an identifier for now with lti_id */
+                            value = thisAgent->symbolManager->make_new_identifier('L', 1);
+                            value->id->LTI_ID = lexer.current_lexeme.int_val;
+                        }
+                        lexer.get_lexeme();
                     }
                     else if (lexer.current_lexeme.type == VARIABLE_LEXEME || lexer.current_lexeme.type == IDENTIFIER_LEXEME)
                     {
@@ -1621,8 +1604,6 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
                 {
                     (*c) = new smem_chunk;
                     (*c)->lti_id = (*w)->value->id->LTI_ID;
-                    (*c)->lti_letter = (*w)->value->id->name_letter;
-                    (*c)->lti_number = (*w)->value->id->name_number;
                     (*c)->slots = NULL;
                     (*c)->soar_id = (*w)->value;
 

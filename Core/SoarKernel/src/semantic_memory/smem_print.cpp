@@ -250,12 +250,6 @@ void SMem_Manager::visualize_store(std::string* return_val)
     return_val->append("\n");
 }
 
-void SMem_Manager::get_lti_name(smem_lti_id lti_id, std::string &lti_name)
-{
-    lti_name.append("@SM");
-    lti_name.append(std::to_string(lti_id));
-}
-
 void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val)
 {
     // buffer

@@ -111,7 +111,7 @@ smem_lti_id SMem_Manager::add_new_lti_id()
     smem_stmts->lti_add->bind_int(6, static_cast<uint64_t>(0));
     smem_stmts->lti_add->execute(soar_module::op_reinit);
 
-    assert(lti_id_counter == smem_db->last_insert_rowid());
+//    assert(lti_id_counter == smem_db->last_insert_rowid());
 
     smem_stats->chunks->set_value(smem_stats->chunks->get_value() + 1);
 
@@ -141,6 +141,6 @@ void SMem_Manager::link_sti_to_lti(Symbol* id)
 
 void SMem_Manager::reset_id_counters()
 {
-    lti_id_counter = get_max_lti_id() + 1;
+    lti_id_counter = get_max_lti_id();
 }
 
