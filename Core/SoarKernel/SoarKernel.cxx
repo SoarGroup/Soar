@@ -1,3 +1,4 @@
+#include <smem_instance.cpp>
 #include "src/debug_code/debug.cpp"
 #include "src/debug_code/debug_stacktrace.cpp"
 #include "src/decision_process/consistency.cpp"
@@ -43,8 +44,6 @@
 #include "src/semantic_memory/semantic_memory.cpp"
 #include "src/semantic_memory/smem_activation.cpp"
 #include "src/semantic_memory/smem_db.cpp"
-#include "src/semantic_memory/smem_install.cpp"
-#include "src/semantic_memory/smem_lti.cpp"
 #include "src/semantic_memory/smem_print.cpp"
 #include "src/semantic_memory/smem_query.cpp"
 #include "src/semantic_memory/smem_settings.cpp"

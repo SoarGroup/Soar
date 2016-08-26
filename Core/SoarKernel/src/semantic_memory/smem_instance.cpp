@@ -12,6 +12,7 @@
 #include "agent.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "episodic_memory.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "preference.h"
@@ -19,6 +20,25 @@
 #include "symbol_manager.h"
 #include "working_memory_activation.h"
 
+void SMem_Manager::link_sti_to_lti(Symbol* id)
+{
+    if (id->is_identifier())
+    {
+        if (id->id->LTI_ID == NIL)
+        {
+            id->id->LTI_ID = add_new_lti_id();
+            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
+        } else {
+            /* Already linked?  Should not be possible */
+            assert(lti_exists(id->id->LTI_ID));
+            assert(false);
+        }
+    } else {
+
+        id->id->LTI_ID = 0;
+        id->id->smem_valid = 0;
+    }
+}
 void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
@@ -154,7 +174,7 @@ uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_I
     }
 }
 
-Symbol* SMem_Manager::get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLevel, char pChar)
+Symbol* SMem_Manager::get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar)
 {
     id_to_sym_map::iterator lIter;
 
@@ -175,10 +195,10 @@ Symbol* SMem_Manager::get_sti_for_lti(smem_lti_id pLTI_ID, goal_stack_level pLev
     }
 }
 
-void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<smem_lti_id>* visited)
+void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<uint64_t>* visited)
 {
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->ncb_retrieval->start();
+    timers->ncb_retrieval->start();
     ////////////////////////////////////////////////////////////////////////////
 
     // get the ^result header for this state
@@ -194,7 +214,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
     {
         if (sti == NIL)
         {
-            sti = get_sti_for_lti(lti_id, result_header->id->level);
+            sti = get_sti_for_lti(pLTI_ID, result_header->id->level);
             sti_created_here = true;
         } else {
             assert(sti->id->LTI_ID && sti->id->level && (sti->id->level <= result_header->id->level));
@@ -203,7 +223,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
     // activate lti
     if (activate_lti)
     {
-        lti_activate(lti_id, true);
+        lti_activate(pLTI_ID, true);
     }
 
     // point retrieved to lti
@@ -238,15 +258,15 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
         if (visited == NULL)
         {
             triggered = true;
-            visited = new std::set<smem_lti_id>;
+            visited = new std::set<uint64_t>;
         }
 
-        soar_module::sqlite_statement* expand_q = smem_stmts->web_expand;
+        soar_module::sqlite_statement* expand_q = SQL->web_expand;
         Symbol* attr_sym;
         Symbol* value_sym;
 
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-        expand_q->bind_int(1, lti_id);
+        expand_q->bind_int(1, pLTI_ID);
 
         std::set<Symbol*> children;
 
@@ -258,7 +278,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
             // identifier vs. constant
             if (expand_q->column_int(6) != SMEM_AUGMENTATIONS_NULL)
             {
-                value_sym = get_sti_for_lti(static_cast<smem_lti_id>(expand_q->column_int(6)), sti->id->level, static_cast<char>(expand_q->column_int(4)));
+                value_sym = get_sti_for_lti(static_cast<uint64_t>(expand_q->column_int(6)), sti->id->level, static_cast<char>(expand_q->column_int(4)));
                 if (depth > 1)
                 {
                     children.insert(value_sym);
@@ -287,7 +307,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
             if (visited->find((*iterator)->id->LTI_ID) == visited->end())
             {
                 visited->insert((*iterator)->id->LTI_ID);
-                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
+                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
     }
@@ -298,7 +318,7 @@ void SMem_Manager::install_memory(Symbol* state, smem_lti_id lti_id, Symbol* sti
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->ncb_retrieval->stop();
+    timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
 

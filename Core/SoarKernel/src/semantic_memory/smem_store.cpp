@@ -22,20 +22,20 @@
 #include "working_memory.h"
 #include "xml.h"
 
-void SMem_Manager::deallocate_chunk(smem_chunk* chunk, bool free_chunk )
+void SMem_Manager::deallocate_ltm(ltm_object* pLTM, bool free_ltm )
 {
-    if (chunk)
+    if (pLTM)
     {
         // proceed to slots
-        if (chunk->slots)
+        if (pLTM->slots)
         {
-            smem_slot_map::iterator s;
-            smem_slot::iterator v;
+            ltm_slot_map::iterator s;
+            ltm_slot::iterator v;
             Symbol* lSym;
             // iterate over slots
-            while (!chunk->slots->empty())
+            while (!pLTM->slots->empty())
             {
-                s = chunk->slots->begin();
+                s = pLTM->slots->begin();
 
                 // proceed to slot contents
                 if (s->second)
@@ -50,7 +50,7 @@ void SMem_Manager::deallocate_chunk(smem_chunk* chunk, bool free_chunk )
                         }
                         else
                         {
-                            // we never deallocate the lti chunk, as we assume
+                            // we never deallocate the lti ltm, as we assume
                             // it will exist elsewhere for deallocation
                             // delete (*s)->val_lti.val_value;
                         }
@@ -65,19 +65,19 @@ void SMem_Manager::deallocate_chunk(smem_chunk* chunk, bool free_chunk )
                 lSym = s->first;
                 thisAgent->symbolManager->symbol_remove_ref(&lSym);
 
-                chunk->slots->erase(s);
+                pLTM->slots->erase(s);
             }
 
             // remove slots
-            delete chunk->slots;
-            chunk->slots = NULL;
+            delete pLTM->slots;
+            pLTM->slots = NULL;
         }
 
-        // remove chunk itself
-        if (free_chunk)
+        // remove ltm itself
+        if (free_ltm)
         {
-            delete chunk;
-            chunk = NULL;
+            delete pLTM;
+            pLTM = NULL;
         }
     }
 }
@@ -102,14 +102,14 @@ Symbol* SMem_Manager::parse_constant_attr(soar::Lexeme* lexeme)
     return return_val;
 }
 
-bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* chunks, smem_chunk_set* newbies)
+bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_LTMs, ltm_set* newbies)
 {
     bool return_val = false;
 
-    smem_chunk* new_chunk = new smem_chunk;
-    new_chunk->slots = NULL;
+    ltm_object* l_ltm = new ltm_object;
+    l_ltm->slots = NULL;
 
-    std::string* chunk_name = NULL;
+    std::string l_ltm_name;
 
     bool good_at;
 
@@ -125,7 +125,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
             lexer->get_lexeme();
 
             good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
-            new_chunk->lti_id = lexer->current_lexeme.int_val;
+            l_ltm->lti_id = lexer->current_lexeme.int_val;
 
         } else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
         {
@@ -136,18 +136,16 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
 
         if (good_at)
         {
-            chunk_name = new std::string();
-            // save identifier
             if (lexer->current_lexeme.type == VARIABLE_LEXEME)
             {
-                chunk_name->append(lexer->current_lexeme.string());
-                new_chunk->lti_id = NIL;
+                l_ltm_name.append(lexer->current_lexeme.string());
+                l_ltm->lti_id = NIL;
             } else {
                 assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
-                get_lti_name(new_chunk->lti_id, *chunk_name);
+                get_lti_name(l_ltm->lti_id, l_ltm_name);
             }
-            new_chunk->soar_id = NIL;
-            new_chunk->slots = new smem_slot_map;
+            l_ltm->soar_id = NIL;
+            l_ltm->slots = new ltm_slot_map;
 
             // consume id
             lexer->get_lexeme();
@@ -155,27 +153,27 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
             //
 
             uint64_t intermediate_counter = 1;
-            smem_chunk* intermediate_parent;
-            smem_chunk* temp_chunk;
+            ltm_object* l_ltm_intermediate_parent;
+            ltm_object* l_ltm_temp;
             std::string temp_key;
             std::string temp_key2;
-            Symbol* chunk_attr;
-            smem_chunk_value* chunk_value;
-            smem_slot* s;
+            Symbol*     l_ltm_attr;
+            ltm_value*  l_ltm_value;
+            ltm_slot*  l_ltm_slot;
 
             // populate slots
             while (lexer->current_lexeme.type == UP_ARROW_LEXEME)
             {
-                intermediate_parent = new_chunk;
+                l_ltm_intermediate_parent = l_ltm;
 
                 // go on to attribute
                 lexer->get_lexeme();
 
                 // get the appropriate constant type
-                chunk_attr = parse_constant_attr(&(lexer->current_lexeme));
+                l_ltm_attr = parse_constant_attr(&(lexer->current_lexeme));
 
                 // if constant attribute, proceed to value
-                if (chunk_attr != NIL)
+                if (l_ltm_attr != NIL)
                 {
                     // consume attribute
                     lexer->get_lexeme();
@@ -186,69 +184,69 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
                     // identifier and use that as the parent
                     while (lexer->current_lexeme.type == PERIOD_LEXEME)
                     {
-                        // create a new chunk
-                        temp_chunk = new smem_chunk;
-                        temp_chunk->lti_id = NIL;
-                        temp_chunk->slots = new smem_slot_map;
-                        temp_chunk->soar_id = NIL;
+                        // create a new ltm
+                        l_ltm_temp = new ltm_object;
+                        l_ltm_temp->lti_id = NIL;
+                        l_ltm_temp->slots = new ltm_slot_map;
+                        l_ltm_temp->soar_id = NIL;
 
                         // add it as a child to the current parent
-                        chunk_value = new smem_chunk_value;
-                        chunk_value->val_lti.val_type = value_lti_t;
-                        chunk_value->val_lti.val_value = temp_chunk;
-                        s = make_smem_slot(intermediate_parent->slots, chunk_attr);
-                        s->push_back(chunk_value);
+                        l_ltm_value = new ltm_value;
+                        l_ltm_value->val_lti.val_type = value_lti_t;
+                        l_ltm_value->val_lti.val_value = l_ltm_temp;
+                        l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
+                        l_ltm_slot->push_back(l_ltm_value);
 
                         // create a key guaranteed to be unique
                         temp_key.assign("<");
-                        temp_key.append(1, ((chunk_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(chunk_attr->sc->name[0]))) : ('X')));
+                        temp_key.append(1, ((l_ltm_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(l_ltm_attr->sc->name[0]))) : ('X')));
                         temp_key.append("#");
                         temp_key.append(std::to_string(++intermediate_counter));
                         temp_key.append(">");
 
-                        // insert the new chunk
-                        (*chunks)[ temp_key ] = temp_chunk;
+                        // insert the new ltm
+                        (*str_to_LTMs)[ temp_key ] = l_ltm_temp;
 
-                        // definitely a new chunk
-                        newbies->insert(temp_chunk);
+                        // definitely a new ltm
+                        newbies->insert(l_ltm_temp);
 
-                        // the new chunk is our parent for this set of values (or further dots)
-                        intermediate_parent = temp_chunk;
-                        temp_chunk = NULL;
+                        // the new ltm is our parent for this set of values (or further dots)
+                        l_ltm_intermediate_parent = l_ltm_temp;
+                        l_ltm_temp = NULL;
 
                         // get the next attribute
                         lexer->get_lexeme();
-                        chunk_attr = parse_constant_attr(&(lexer->current_lexeme));
+                        l_ltm_attr = parse_constant_attr(&(lexer->current_lexeme));
 
                         // consume attribute
                         lexer->get_lexeme();
                     }
 
-                    if (chunk_attr != NIL)
+                    if (l_ltm_attr != NIL)
                     {
                         bool first_value = true;
 
                         do
                         {
                             // value by type
-                            chunk_value = NIL;
+                            l_ltm_value = NIL;
                             if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
                             {
-                                chunk_value = new smem_chunk_value;
-                                chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer->current_lexeme.string()));
+                                l_ltm_value = new ltm_value;
+                                l_ltm_value->val_const.val_type = value_const_t;
+                                l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer->current_lexeme.string()));
                             }
                             else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
-                                chunk_value = new smem_chunk_value;
-                                chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_int_constant(lexer->current_lexeme.int_val);
+                                l_ltm_value = new ltm_value;
+                                l_ltm_value->val_const.val_type = value_const_t;
+                                l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_int_constant(lexer->current_lexeme.int_val);
                             }
                             else if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
                             {
-                                chunk_value = new smem_chunk_value;
-                                chunk_value->val_const.val_type = value_const_t;
-                                chunk_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
+                                l_ltm_value = new ltm_value;
+                                l_ltm_value->val_const.val_type = value_const_t;
+                                l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
                             }
                             else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
                             {
@@ -264,8 +262,8 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                 if (good_at)
                                 {
                                     // create new value
-                                    chunk_value = new smem_chunk_value;
-                                    chunk_value->val_lti.val_type = value_lti_t;
+                                    l_ltm_value = new ltm_value;
+                                    l_ltm_value->val_lti.val_type = value_lti_t;
 
                                     // get key
                                     if (lexer->current_lexeme.type == VARIABLE_LEXEME)
@@ -274,89 +272,89 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
                                     } else {
                                         assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
                                         temp_key2.clear();
-                                        get_lti_name(lexer->current_lexeme.int_val, temp_key2);
+                                        get_lti_name(static_cast<uint64_t>(lexer->current_lexeme.int_val), temp_key2);
                                     }
 
-                                    // search for an existing chunk
-                                    smem_str_to_chunk_map::iterator p = chunks->find((temp_key2));
+                                    // search for an existing ltm
+                                    str_to_ltm_map::iterator p = str_to_LTMs->find((temp_key2));
 
                                     // if exists, point; else create new
-                                    if (p != chunks->end())
+                                    if (p != str_to_LTMs->end())
                                     {
-                                        chunk_value->val_lti.val_value = p->second;
+                                        l_ltm_value->val_lti.val_value = p->second;
                                     }
                                     else
                                     {
-                                        // create new chunk
-                                        temp_chunk = new smem_chunk;
-                                        temp_chunk->lti_id = NIL;
-                                        temp_chunk->lti_id = NIL;
-                                        temp_chunk->slots = NIL;
-                                        temp_chunk->soar_id = NIL;
+                                        // create new ltm
+                                        l_ltm_temp = new ltm_object;
+                                        l_ltm_temp->lti_id = NIL;
+                                        l_ltm_temp->lti_id = NIL;
+                                        l_ltm_temp->slots = NIL;
+                                        l_ltm_temp->soar_id = NIL;
 
                                         // associate with value
-                                        chunk_value->val_lti.val_value = temp_chunk;
+                                        l_ltm_value->val_lti.val_value = l_ltm_temp;
 
-                                        // add to chunks
-                                        (*chunks)[temp_key2] = temp_chunk;
+                                        // add to ltms
+                                        (*str_to_LTMs)[temp_key2] = l_ltm_temp;
 
                                         // possibly a newbie (could be a self-loop)
-                                        newbies->insert(temp_chunk);
+                                        newbies->insert(l_ltm_temp);
                                     }
                                 }
                             }
 
-                            if (chunk_value != NIL)
+                            if (l_ltm_value != NIL)
                             {
                                 // consume
                                 lexer->get_lexeme();
 
                                 // add to appropriate slot
-                                s = make_smem_slot(intermediate_parent->slots, chunk_attr);
-                                if (first_value && !s->empty())
+                                l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
+                                if (first_value && !l_ltm_slot->empty())
                                 {
                                     // in the case of a repeated attribute, remove ref here to avoid leak
-                                    thisAgent->symbolManager->symbol_remove_ref(&chunk_attr);
+                                    thisAgent->symbolManager->symbol_remove_ref(&l_ltm_attr);
                                 }
-                                s->push_back(chunk_value);
+                                l_ltm_slot->push_back(l_ltm_value);
 
                                 // if this was the last attribute
                                 if (lexer->current_lexeme.type == R_PAREN_LEXEME)
                                 {
                                     return_val = true;
                                     lexer->get_lexeme();
-                                    chunk_value = NIL;
+                                    l_ltm_value = NIL;
                                 }
 
                                 first_value = false;
                             }
                         }
-                        while (chunk_value != NIL);
+                        while (l_ltm_value != NIL);
                     }
                 }
             }
         }
         else
         {
-            delete new_chunk;
+            delete l_ltm;
         }
     }
     else
     {
-        delete new_chunk;
+        delete l_ltm;
     }
 
     if (return_val)
     {
-        // search for an existing chunk (occurs if value comes before id)
-        smem_chunk** p = & (*chunks)[(*chunk_name) ];
+        // search for an existing ltm (occurs if value comes before id)
+        /* MToDo | Isn't this just indexing by the pointer to the string?  Which means that they're all unique and have
+         *        don't really need the string to be unique? */
+        ltm_object** p = & (*str_to_LTMs)[l_ltm_name];
 
         if (!(*p))
         {
-            (*p) = new_chunk;
-
-            // a newbie!
-            newbies->insert(new_chunk);
+            (*p) = l_ltm;
+            newbies->insert(l_ltm);
         }
         else
         {
@@ -364,23 +362,23 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
             if (!(*p)->slots)
             {
                 // if none previously, can just use
-                (*p)->slots = new_chunk->slots;
-                new_chunk->slots = NULL;
+                (*p)->slots = l_ltm->slots;
+                l_ltm->slots = NULL;
             }
             else
             {
                 // otherwise, copy
 
-                smem_slot_map::iterator ss_p;
-                smem_slot::iterator s_p;
+                ltm_slot_map::iterator ss_p;
+                ltm_slot::iterator s_p;
 
-                smem_slot* source_slot;
-                smem_slot* target_slot;
+                ltm_slot* source_slot;
+                ltm_slot* target_slot;
 
                 // for all slots
-                for (ss_p = new_chunk->slots->begin(); ss_p != new_chunk->slots->end(); ss_p++)
+                for (ss_p = l_ltm->slots->begin(); ss_p != l_ltm->slots->end(); ss_p++)
                 {
-                    target_slot =make_smem_slot((*p)->slots, ss_p->first);
+                    target_slot =make_ltm_slot((*p)->slots, ss_p->first);
                     source_slot = ss_p->second;
 
                     // for all values in the slot
@@ -395,15 +393,15 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
                 }
 
                 // we no longer need the slots
-                delete new_chunk->slots;
-                new_chunk->slots = NULL;
+                delete l_ltm->slots;
+                l_ltm->slots = NULL;
             }
 
             // contents are new
             newbies->insert((*p));
 
             // deallocate
-            deallocate_chunk(new_chunk);
+            deallocate_ltm(l_ltm);
         }
     }
     else
@@ -411,47 +409,41 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, smem_str_to_chunk_map* c
         newbies->clear();
     }
 
-    // de-allocate id name
-    if (chunk_name)
-    {
-        delete chunk_name;
-    }
-
     return return_val;
 }
 
-bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string** err_msg)
+bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** err_msg)
 {
     bool return_val = false;
     uint64_t clause_count = 0;
 
-    // parsing chunks requires an open semantic database
+    // parsing ltms requires an open semantic database
     attach();
 
-    soar::Lexer lexer(thisAgent, chunks_str);
+    soar::Lexer lexer(thisAgent, ltms_str);
 
-    bool good_chunk = true;
+    bool good_ltm = true;
 
-    smem_str_to_chunk_map chunks;
-    smem_str_to_chunk_map::iterator c_old;
+    str_to_ltm_map ltms;
+    str_to_ltm_map::iterator c_old;
 
-    smem_chunk_set newbies;
-    smem_chunk_set::iterator c_new;
+    ltm_set newbies;
+    ltm_set::iterator c_new;
 
     // consume next token
     lexer.get_lexeme();
 
     if (lexer.current_lexeme.type != L_PAREN_LEXEME)
     {
-        good_chunk = false;
+        good_ltm = false;
     }
 
-    // while there are chunks to consume
-    while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_chunk))
+    // while there are ltms to consume
+    while ((lexer.current_lexeme.type == L_PAREN_LEXEME) && (good_ltm))
     {
-        good_chunk = parse_add_clause(&lexer, &(chunks), &(newbies));
+        good_ltm = parse_add_clause(&lexer, &(ltms), &(newbies));
 
-        if (good_chunk)
+        if (good_ltm)
         {
             // add all newbie lti's as appropriate
             for (c_new = newbies.begin(); c_new != newbies.end(); c_new++)
@@ -497,10 +489,10 @@ bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string**
                 }
             }
 
-            // deallocate *contents* of all newbies (need to keep around name->id association for future chunks)
+            // deallocate *contents* of all newbies (need to keep around name->id association for future ltms)
             for (c_new = newbies.begin(); c_new != newbies.end(); c_new++)
             {
-               deallocate_chunk((*c_new), false);
+               deallocate_ltm((*c_new), false);
             }
 
             // increment clause counter
@@ -511,13 +503,13 @@ bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string**
         }
     };
 
-    return_val = good_chunk;
+    return_val = good_ltm;
 
-    // deallocate all chunks
+    // deallocate all ltms
     {
-        for (c_old = chunks.begin(); c_old != chunks.end(); c_old++)
+        for (c_old = ltms.begin(); c_old != ltms.end(); c_old++)
         {
-           deallocate_chunk(c_old->second, true);
+           deallocate_ltm(c_old->second, true);
         }
     }
 
@@ -542,7 +534,7 @@ bool SMem_Manager::process_smem_add_object(const char* chunks_str, std::string**
  * -Steven 23-7-2014
  */
 
-bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
+bool SMem_Manager::parse_cues(const char* ltms_str, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve)
 {
     uint64_t clause_count = 0;  // This is counting up the number of parsed clauses
     // so that there is a pointer to a failure location.
@@ -550,7 +542,7 @@ bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std
     //Parsing requires an open semantic database.
     attach();
 
-    soar::Lexer lexer(thisAgent, chunks_str);
+    soar::Lexer lexer(thisAgent, ltms_str);
 
     bool good_cue = true;   // This is a success or failure flag that will be checked periodically
     // and indicates whether or not we can call smem_process_query.
@@ -691,7 +683,7 @@ bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std
                     else if (lexer.current_lexeme.type == AT_LEXEME)
                     {
                         lexer.get_lexeme();
-                        smem_lti_id value_id = 0;
+                        uint64_t value_id = 0;
                         if (lexer.current_lexeme.type != INT_CONSTANT_LEXEME)
                         {
                             good_cue = false;
@@ -784,19 +776,19 @@ bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std
     }
     else
     {
-        smem_lti_set* prohibit = new smem_lti_set;
+        id_set* prohibit = new id_set;
         wme_set cue_wmes;
         symbol_triple_list meta_wmes;
         symbol_triple_list retrieval_wmes;
         (*result_message) = new std::string();
 
-        std::list<smem_lti_id> match_ids;
+        std::list<uint64_t> match_ids;
 
         process_query(NIL, root_cue_id, minus_ever ? negative_cues : NIL, NIL, prohibit, cue_wmes, meta_wmes, retrieval_wmes, qry_search, number_to_retrieve, &(match_ids), 1, fake_install);
 
         if (!match_ids.empty())
         {
-            for (std::list<smem_lti_id>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
+            for (std::list<uint64_t>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
                print_lti((*id), 1, *result_message); //"1" is the depth.
             }
@@ -855,13 +847,13 @@ bool SMem_Manager::parse_cues(const char* chunks_str, std::string** err_msg, std
     return good_cue;
 }
 
-void initialize_smem_chunk_value_lti(smem_chunk_value_lti& lti)
+void init_ltm_value_lti(ltm_value_lti& lti)
 {
     lti.val_type = smem_cue_element_type_none;
     lti.val_value = NULL;
 }
 
-void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
+void init_ltm_value_constant(ltm_value_const& constant)
 {
     constant.val_type = smem_cue_element_type_none;
     constant.val_value = NULL;
@@ -871,7 +863,7 @@ void initialize_smem_chunk_value_constant(smem_chunk_value_constant& constant)
  * This is intended to allow the user to remove part or all of information stored on a LTI.
  * (All attributes, selected attributes, or just values from particular attributes.)
  */
-bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err_msg, std::string** result_message, bool force)
+bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_msg, std::string** result_message, bool force)
 {
     /* MToDo | Fix after we fully remove shared symbol.  Then we can use either a separate symbol table or what we currently
      *         store in the db. */
@@ -880,10 +872,10 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
     //    //TODO: need to fix so that err_msg and result_message are actually used or not passed.
 //    bool good_command = true;
 //
-//    //parsing chunks requires an open semantic database
+//    //parsing ltms requires an open semantic database
 //    attach();
 //
-//    soar::Lexer lexer(thisAgent, chunks_str);
+//    soar::Lexer lexer(thisAgent, ltms_str);
 //
 //    lexer.get_lexeme();
 //
@@ -899,7 +891,7 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
 //
 //    good_command = lexer.current_lexeme.type == IDENTIFIER_LEXEME;
 //
-//    smem_lti_id lti_id = 0;
+//    uint64_t lti_id = 0;
 //
 //    if (good_command)
 //    {
@@ -936,34 +928,34 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
 //                if (children.count((*triple_ptr_iter)->attr)) //If the attribute is already in the map.
 //                {
 //                    temp_slot = (children.find((*triple_ptr_iter)->attr)->second);
-//                    smem_chunk_value* temp_val = new smem_chunk_value;
+//                    smem_ltm_value* temp_val = new smem_ltm_value;
 //                    if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
 //                    {
-//                        //If the chunk was retrieved and it is an identifier it is lti.
-//                        smem_chunk_value_lti temp_lti;
-//                        smem_chunk_value_constant temp_const;
+//                        //If the ltm was retrieved and it is an identifier it is lti.
+//                        smem_ltm_value_lti temp_lti;
+//                        smem_ltm_value_constant temp_const;
 //
-//                        initialize_smem_chunk_value_lti(temp_lti);
-//                        initialize_smem_chunk_value_constant(temp_const);
+//                        initialize_smem_ltm_value_lti(temp_lti);
+//                        initialize_smem_ltm_value_constant(temp_const);
 //
 //                        temp_val->val_const = temp_const;
 //                        temp_val->val_const.val_type = value_lti_t;
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_lti_t;
-//                        smem_chunk* temp_chunk = new smem_chunk;
-//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
-//                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
-//                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
-//                        temp_chunk->soar_id = (*triple_ptr_iter)->value;
-//                        temp_val->val_lti.val_value = temp_chunk;
+//                        smem_ltm* temp_ltm = new smem_ltm;
+//                        temp_ltm->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
+//                        temp_ltm->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
+//                        temp_ltm->lti_number = (*triple_ptr_iter)->value->id->name_number;
+//                        temp_ltm->soar_id = (*triple_ptr_iter)->value;
+//                        temp_val->val_lti.val_value = temp_ltm;
 //                    }
 //                    else //If the value is not an identifier, then it is a "constant".
 //                    {
-//                        smem_chunk_value_constant temp_const;
-//                        smem_chunk_value_lti temp_lti;
+//                        smem_ltm_value_constant temp_const;
+//                        smem_ltm_value_lti temp_lti;
 //
-//                        initialize_smem_chunk_value_lti(temp_lti);
-//                        initialize_smem_chunk_value_constant(temp_const);
+//                        initialize_smem_ltm_value_lti(temp_lti);
+//                        initialize_smem_ltm_value_constant(temp_const);
 //
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_const_t;
@@ -975,34 +967,34 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
 //                else //If the attribute is not in the map and we need to make a slot.
 //                {
 //                    temp_slot = new smem_slot;
-//                    smem_chunk_value* temp_val = new smem_chunk_value;
+//                    smem_ltm_value* temp_val = new smem_ltm_value;
 //                    if ((*triple_ptr_iter)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
 //                    {
-//                        //If the chunk was retrieved and it is an identifier it is lti.
-//                        smem_chunk_value_lti temp_lti;
-//                        smem_chunk_value_constant temp_const;
+//                        //If the ltm was retrieved and it is an identifier it is lti.
+//                        smem_ltm_value_lti temp_lti;
+//                        smem_ltm_value_constant temp_const;
 //
-//                        initialize_smem_chunk_value_lti(temp_lti);
-//                        initialize_smem_chunk_value_constant(temp_const);
+//                        initialize_smem_ltm_value_lti(temp_lti);
+//                        initialize_smem_ltm_value_constant(temp_const);
 //
 //                        temp_val->val_const = temp_const;
 //                        temp_val->val_const.val_type = value_lti_t;
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_lti_t;
-//                        smem_chunk* temp_chunk = new smem_chunk;
-//                        temp_chunk->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
-//                        temp_chunk->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
-//                        temp_chunk->lti_number = (*triple_ptr_iter)->value->id->name_number;
-//                        temp_chunk->soar_id = (*triple_ptr_iter)->value;
-//                        temp_val->val_lti.val_value = temp_chunk;
+//                        smem_ltm* temp_ltm = new smem_ltm;
+//                        temp_ltm->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
+//                        temp_ltm->lti_letter = (*triple_ptr_iter)->value->id->name_letter;
+//                        temp_ltm->lti_number = (*triple_ptr_iter)->value->id->name_number;
+//                        temp_ltm->soar_id = (*triple_ptr_iter)->value;
+//                        temp_val->val_lti.val_value = temp_ltm;
 //                    }
 //                    else //If the value is nt an identifier, then it is a "constant".
 //                    {
-//                        smem_chunk_value_constant temp_const;
-//                        smem_chunk_value_lti temp_lti;
+//                        smem_ltm_value_constant temp_const;
+//                        smem_ltm_value_lti temp_lti;
 //
-//                        initialize_smem_chunk_value_lti(temp_lti);
-//                        initialize_smem_chunk_value_constant(temp_const);
+//                        initialize_smem_ltm_value_lti(temp_lti);
+//                        initialize_smem_ltm_value_constant(temp_const);
 //
 //                        temp_val->val_lti = temp_lti;
 //                        temp_val->val_lti.val_type = value_const_t;
@@ -1153,7 +1145,7 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
 //        }
 //        if (good_command && lexer.current_lexeme.type == R_PAREN_LEXEME)
 //        {
-//            store_chunk(lti_id, &(children), true, NULL, false);
+//            store_ltm(lti_id, &(children), true, NULL, false);
 //        }
 //        else if (good_command)
 //        {
@@ -1190,84 +1182,84 @@ bool SMem_Manager::process_smem_remove(const char* chunks_str, std::string** err
 //    return good_command;
 }
 
-smem_slot* SMem_Manager::make_smem_slot(smem_slot_map* slots, Symbol* attr)
+ltm_slot* SMem_Manager::make_ltm_slot(ltm_slot_map* slots, Symbol* attr)
 {
-    smem_slot** s = & (*slots)[ attr ];
+    ltm_slot** s = & (*slots)[ attr ];
 
     if (!(*s))
     {
-        (*s) = new smem_slot;
+        (*s) = new ltm_slot;
     }
 
     return (*s);
 }
 
-void SMem_Manager::disconnect_chunk(smem_lti_id lti_id)
+void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
 {
     // adjust attr, attr/value counts
     {
         uint64_t pair_count = 0;
 
-        smem_lti_id child_attr = 0;
-        std::set<smem_lti_id> distinct_attr;
+        uint64_t child_attr = 0;
+        std::set<uint64_t> distinct_attr;
 
         // pairs first, accumulate distinct attributes and pair count
-        smem_stmts->web_all->bind_int(1, lti_id);
-        while (smem_stmts->web_all->execute() == soar_module::row)
+        SQL->web_all->bind_int(1, pLTI_ID);
+        while (SQL->web_all->execute() == soar_module::row)
         {
             pair_count++;
 
-            child_attr = smem_stmts->web_all->column_int(0);
+            child_attr = SQL->web_all->column_int(0);
             distinct_attr.insert(child_attr);
 
             // null -> attr/lti
-            if (smem_stmts->web_all->column_int(1) != SMEM_AUGMENTATIONS_NULL)
+            if (SQL->web_all->column_int(1) != SMEM_AUGMENTATIONS_NULL)
             {
                 // adjust in opposite direction ( adjust, attribute, const )
-                smem_stmts->wmes_constant_frequency_update->bind_int(1, -1);
-                smem_stmts->wmes_constant_frequency_update->bind_int(2, child_attr);
-                smem_stmts->wmes_constant_frequency_update->bind_int(3, smem_stmts->web_all->column_int(1));
-                smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
+                SQL->wmes_constant_frequency_update->bind_int(1, -1);
+                SQL->wmes_constant_frequency_update->bind_int(2, child_attr);
+                SQL->wmes_constant_frequency_update->bind_int(3, SQL->web_all->column_int(1));
+                SQL->wmes_constant_frequency_update->execute(soar_module::op_reinit);
             }
             else
             {
                 // adjust in opposite direction ( adjust, attribute, lti )
-                smem_stmts->wmes_lti_frequency_update->bind_int(1, -1);
-                smem_stmts->wmes_lti_frequency_update->bind_int(2, child_attr);
-                smem_stmts->wmes_lti_frequency_update->bind_int(3, smem_stmts->web_all->column_int(2));
-                smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                SQL->wmes_lti_frequency_update->bind_int(1, -1);
+                SQL->wmes_lti_frequency_update->bind_int(2, child_attr);
+                SQL->wmes_lti_frequency_update->bind_int(3, SQL->web_all->column_int(2));
+                SQL->wmes_lti_frequency_update->execute(soar_module::op_reinit);
             }
         }
-        smem_stmts->web_all->reinitialize();
+        SQL->web_all->reinitialize();
 
         // now attributes
-        for (std::set<smem_lti_id>::iterator a = distinct_attr.begin(); a != distinct_attr.end(); a++)
+        for (std::set<uint64_t>::iterator a = distinct_attr.begin(); a != distinct_attr.end(); a++)
         {
             // adjust in opposite direction ( adjust, attribute )
-            smem_stmts->attribute_frequency_update->bind_int(1, -1);
-            smem_stmts->attribute_frequency_update->bind_int(2, *a);
-            smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
+            SQL->attribute_frequency_update->bind_int(1, -1);
+            SQL->attribute_frequency_update->bind_int(2, *a);
+            SQL->attribute_frequency_update->execute(soar_module::op_reinit);
         }
 
         // update local statistic
-        smem_stats->slots->set_value(smem_stats->slots->get_value() - pair_count);
+        statistics->slots->set_value(statistics->slots->get_value() - pair_count);
     }
 
     // disconnect
     {
-        smem_stmts->web_truncate->bind_int(1, lti_id);
-        smem_stmts->web_truncate->execute(soar_module::op_reinit);
+        SQL->web_truncate->bind_int(1, pLTI_ID);
+        SQL->web_truncate->execute(soar_module::op_reinit);
     }
 }
 
-void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
+void SMem_Manager::add_semantic_object_to_smem(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
 {
-    // if remove children, disconnect chunk -> no existing edges
+    // if remove children, disconnect ltm -> no existing edges
     // else, need to query number of existing edges
     uint64_t existing_edges = 0;
     if (remove_old_children)
     {
-        disconnect_chunk(lti_id);
+        disconnect_ltm(pLTI_ID);
 
         // provide trace output
         if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ] && (print_id))
@@ -1282,26 +1274,26 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
     }
     else
     {
-        smem_stmts->act_lti_child_ct_get->bind_int(1, lti_id);
-        smem_stmts->act_lti_child_ct_get->execute();
+        SQL->act_lti_child_ct_get->bind_int(1, pLTI_ID);
+        SQL->act_lti_child_ct_get->execute();
 
-        existing_edges = static_cast<uint64_t>(smem_stmts->act_lti_child_ct_get->column_int(0));
+        existing_edges = static_cast<uint64_t>(SQL->act_lti_child_ct_get->column_int(0));
 
-        smem_stmts->act_lti_child_ct_get->reinitialize();
+        SQL->act_lti_child_ct_get->reinitialize();
     }
 
     // get new edges
     // if didn't disconnect, entails lookups in existing edges
     std::set<smem_hash_id> attr_new;
     std::set< std::pair<smem_hash_id, smem_hash_id> > const_new;
-    std::set< std::pair<smem_hash_id, smem_lti_id> > lti_new;
+    std::set< std::pair<smem_hash_id, uint64_t> > lti_new;
     {
-        smem_slot_map::iterator s;
-        smem_slot::iterator v;
+        ltm_slot_map::iterator s;
+        ltm_slot::iterator v;
 
         smem_hash_id attr_hash = 0;
         smem_hash_id value_hash = 0;
-        smem_lti_id value_lti = 0;
+        uint64_t value_lti = 0;
 
         for (s = children->begin(); s != children->end(); s++)
         {
@@ -1313,9 +1305,9 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
             else
             {
                 // lti_id, attribute_s_id
-                smem_stmts->web_attr_child->bind_int(1, lti_id);
-                smem_stmts->web_attr_child->bind_int(2, attr_hash);
-                if (smem_stmts->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
+                SQL->web_attr_child->bind_int(1, pLTI_ID);
+                SQL->web_attr_child->bind_int(2, attr_hash);
+                if (SQL->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
                 {
                     attr_new.insert(attr_hash);
                 }
@@ -1334,10 +1326,10 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
                     else
                     {
                         // lti_id, attribute_s_id, val_const
-                        smem_stmts->web_const_child->bind_int(1, lti_id);
-                        smem_stmts->web_const_child->bind_int(2, attr_hash);
-                        smem_stmts->web_const_child->bind_int(3, value_hash);
-                        if (smem_stmts->web_const_child->execute(soar_module::op_reinit) != soar_module::row)
+                        SQL->web_const_child->bind_int(1, pLTI_ID);
+                        SQL->web_const_child->bind_int(2, attr_hash);
+                        SQL->web_const_child->bind_int(3, value_hash);
+                        if (SQL->web_const_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             const_new.insert(std::make_pair(attr_hash, value_hash));
                         }
@@ -1376,10 +1368,10 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
                     else
                     {
                         // lti_id, attribute_s_id, val_lti
-                        smem_stmts->web_lti_child->bind_int(1, lti_id);
-                        smem_stmts->web_lti_child->bind_int(2, attr_hash);
-                        smem_stmts->web_lti_child->bind_int(3, value_lti);
-                        if (smem_stmts->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
+                        SQL->web_lti_child->bind_int(1, pLTI_ID);
+                        SQL->web_lti_child->bind_int(2, attr_hash);
+                        SQL->web_lti_child->bind_int(3, value_lti);
+                        if (SQL->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
                         {
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
                         }
@@ -1412,7 +1404,7 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
     bool after_above;
     double web_act = static_cast<double>(SMEM_ACT_MAX);
     {
-        uint64_t thresh = static_cast<uint64_t>(smem_params->thresh->get_value());
+        uint64_t thresh = static_cast<uint64_t>(settings->thresh->get_value());
         after_above = (new_edges >= thresh);
 
         // if before below
@@ -1421,24 +1413,24 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
             if (after_above)
             {
                 // update smem_augmentations to inf
-                smem_stmts->act_set->bind_double(1, web_act);
-                smem_stmts->act_set->bind_int(2, lti_id);
-                smem_stmts->act_set->execute(soar_module::op_reinit);
+                SQL->act_set->bind_double(1, web_act);
+                SQL->act_set->bind_int(2, pLTI_ID);
+                SQL->act_set->execute(soar_module::op_reinit);
             }
         }
     }
 
     // update edge counter
     {
-        smem_stmts->act_lti_child_ct_set->bind_int(1, new_edges);
-        smem_stmts->act_lti_child_ct_set->bind_int(2, lti_id);
-        smem_stmts->act_lti_child_ct_set->execute(soar_module::op_reinit);
+        SQL->act_lti_child_ct_set->bind_int(1, new_edges);
+        SQL->act_lti_child_ct_set->bind_int(2, pLTI_ID);
+        SQL->act_lti_child_ct_set->execute(soar_module::op_reinit);
     }
 
     // now we can safely activate the lti
     if (activate)
     {
-        double lti_act = lti_activate(lti_id, true, new_edges);
+        double lti_act = lti_activate(pLTI_ID, true, new_edges);
 
         if (!after_above)
         {
@@ -1455,32 +1447,32 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    smem_stmts->web_add->bind_int(1, lti_id);
-                    smem_stmts->web_add->bind_int(2, p->first);
-                    smem_stmts->web_add->bind_int(3, p->second);
-                    smem_stmts->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
-                    smem_stmts->web_add->bind_double(5, web_act);
-                    smem_stmts->web_add->execute(soar_module::op_reinit);
+                    SQL->web_add->bind_int(1, pLTI_ID);
+                    SQL->web_add->bind_int(2, p->first);
+                    SQL->web_add->bind_int(3, p->second);
+                    SQL->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
+                    SQL->web_add->bind_double(5, web_act);
+                    SQL->web_add->execute(soar_module::op_reinit);
                 }
 
                 // update counter
                 {
                     // check if counter exists (and add if does not): attribute_s_id, val
-                    smem_stmts->wmes_constant_frequency_check->bind_int(1, p->first);
-                    smem_stmts->wmes_constant_frequency_check->bind_int(2, p->second);
-                    if (smem_stmts->wmes_constant_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                    SQL->wmes_constant_frequency_check->bind_int(1, p->first);
+                    SQL->wmes_constant_frequency_check->bind_int(2, p->second);
+                    if (SQL->wmes_constant_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                     {
-                        smem_stmts->wmes_constant_frequency_add->bind_int(1, p->first);
-                        smem_stmts->wmes_constant_frequency_add->bind_int(2, p->second);
-                        smem_stmts->wmes_constant_frequency_add->execute(soar_module::op_reinit);
+                        SQL->wmes_constant_frequency_add->bind_int(1, p->first);
+                        SQL->wmes_constant_frequency_add->bind_int(2, p->second);
+                        SQL->wmes_constant_frequency_add->execute(soar_module::op_reinit);
                     }
                     else
                     {
                         // adjust count (adjustment, attribute_s_id, val)
-                        smem_stmts->wmes_constant_frequency_update->bind_int(1, 1);
-                        smem_stmts->wmes_constant_frequency_update->bind_int(2, p->first);
-                        smem_stmts->wmes_constant_frequency_update->bind_int(3, p->second);
-                        smem_stmts->wmes_constant_frequency_update->execute(soar_module::op_reinit);
+                        SQL->wmes_constant_frequency_update->bind_int(1, 1);
+                        SQL->wmes_constant_frequency_update->bind_int(2, p->first);
+                        SQL->wmes_constant_frequency_update->bind_int(3, p->second);
+                        SQL->wmes_constant_frequency_update->execute(soar_module::op_reinit);
                     }
                 }
             }
@@ -1488,37 +1480,37 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
 
         // attr/lti pairs
         {
-            for (std::set< std::pair< smem_hash_id, smem_lti_id > >::iterator p = lti_new.begin(); p != lti_new.end(); p++)
+            for (std::set< std::pair< smem_hash_id, uint64_t > >::iterator p = lti_new.begin(); p != lti_new.end(); p++)
             {
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    smem_stmts->web_add->bind_int(1, lti_id);
-                    smem_stmts->web_add->bind_int(2, p->first);
-                    smem_stmts->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
-                    smem_stmts->web_add->bind_int(4, p->second);
-                    smem_stmts->web_add->bind_double(5, web_act);
-                    smem_stmts->web_add->execute(soar_module::op_reinit);
+                    SQL->web_add->bind_int(1, pLTI_ID);
+                    SQL->web_add->bind_int(2, p->first);
+                    SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
+                    SQL->web_add->bind_int(4, p->second);
+                    SQL->web_add->bind_double(5, web_act);
+                    SQL->web_add->execute(soar_module::op_reinit);
                 }
 
                 // update counter
                 {
                     // check if counter exists (and add if does not): attribute_s_id, val
-                    smem_stmts->wmes_lti_frequency_check->bind_int(1, p->first);
-                    smem_stmts->wmes_lti_frequency_check->bind_int(2, p->second);
-                    if (smem_stmts->wmes_lti_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                    SQL->wmes_lti_frequency_check->bind_int(1, p->first);
+                    SQL->wmes_lti_frequency_check->bind_int(2, p->second);
+                    if (SQL->wmes_lti_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                     {
-                        smem_stmts->wmes_lti_frequency_add->bind_int(1, p->first);
-                        smem_stmts->wmes_lti_frequency_add->bind_int(2, p->second);
-                        smem_stmts->wmes_lti_frequency_add->execute(soar_module::op_reinit);
+                        SQL->wmes_lti_frequency_add->bind_int(1, p->first);
+                        SQL->wmes_lti_frequency_add->bind_int(2, p->second);
+                        SQL->wmes_lti_frequency_add->execute(soar_module::op_reinit);
                     }
                     else
                     {
                         // adjust count (adjustment, attribute_s_id, lti)
-                        smem_stmts->wmes_lti_frequency_update->bind_int(1, 1);
-                        smem_stmts->wmes_lti_frequency_update->bind_int(2, p->first);
-                        smem_stmts->wmes_lti_frequency_update->bind_int(3, p->second);
-                        smem_stmts->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                        SQL->wmes_lti_frequency_update->bind_int(1, 1);
+                        SQL->wmes_lti_frequency_update->bind_int(2, p->first);
+                        SQL->wmes_lti_frequency_update->bind_int(3, p->second);
+                        SQL->wmes_lti_frequency_update->execute(soar_module::op_reinit);
                     }
                 }
             }
@@ -1529,25 +1521,25 @@ void SMem_Manager::add_semantic_object_to_smem(smem_lti_id lti_id, smem_slot_map
             for (std::set< smem_hash_id >::iterator a = attr_new.begin(); a != attr_new.end(); a++)
             {
                 // check if counter exists (and add if does not): attribute_s_id
-                smem_stmts->attribute_frequency_check->bind_int(1, *a);
-                if (smem_stmts->attribute_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                SQL->attribute_frequency_check->bind_int(1, *a);
+                if (SQL->attribute_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
                 {
-                    smem_stmts->attribute_frequency_add->bind_int(1, *a);
-                    smem_stmts->attribute_frequency_add->execute(soar_module::op_reinit);
+                    SQL->attribute_frequency_add->bind_int(1, *a);
+                    SQL->attribute_frequency_add->execute(soar_module::op_reinit);
                 }
                 else
                 {
                     // adjust count (adjustment, attribute_s_id)
-                    smem_stmts->attribute_frequency_update->bind_int(1, 1);
-                    smem_stmts->attribute_frequency_update->bind_int(2, *a);
-                    smem_stmts->attribute_frequency_update->execute(soar_module::op_reinit);
+                    SQL->attribute_frequency_update->bind_int(1, 1);
+                    SQL->attribute_frequency_update->bind_int(2, *a);
+                    SQL->attribute_frequency_update->execute(soar_module::op_reinit);
                 }
             }
         }
 
         // update local edge count
         {
-            smem_stats->slots->set_value(smem_stats->slots->get_value() + (const_new.size() + lti_new.size()));
+            statistics->slots->set_value(statistics->slots->get_value() + (const_new.size() + lti_new.size()));
         }
     }
 }
@@ -1559,11 +1551,11 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
     {
         tc = get_new_tc_number(thisAgent);
     }
-    smem_sym_list shorties;
+    symbol_list shorties;
 
     // get level
-    smem_wme_list* children = get_direct_augs_of_id(pIdentifierSTI, tc);
-    smem_wme_list::iterator w;
+    wme_list* children = get_direct_augs_of_id(pIdentifierSTI, tc);
+    wme_list::iterator w;
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
@@ -1571,23 +1563,23 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
 
     // encode this level
     {
-        smem_sym_to_chunk_map sym_to_chunk;
-        smem_sym_to_chunk_map::iterator c_p;
-        smem_chunk** c;
+        sym_to_ltm_map sym_to_ltm;
+        sym_to_ltm_map::iterator c_p;
+        ltm_object** c;
 
-        smem_slot_map slots;
-        smem_slot_map::iterator s_p;
-        smem_slot::iterator v_p;
-        smem_slot* s;
-        smem_chunk_value* v;
+        ltm_slot_map slots;
+        ltm_slot_map::iterator s_p;
+        ltm_slot::iterator v_p;
+        ltm_slot* s;
+        ltm_value* v;
 
         for (w = children->begin(); w != children->end(); w++)
         {
             // get slot
-            s = make_smem_slot(&(slots), (*w)->attr);
+            s = make_ltm_slot(&(slots), (*w)->attr);
 
             // create value, per type
-            v = new smem_chunk_value;
+            v = new ltm_value;
             if ((*w)->value->is_constant())
             {
                 v->val_const.val_type = value_const_t;
@@ -1597,13 +1589,15 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
             {
                 v->val_lti.val_type = value_lti_t;
 
-                // try to find existing chunk
-                c = & sym_to_chunk[(*w)->value ];
+                /* This seems like bad usage.  Following line will create entry in map.  Works
+                 * because next code will make an entry anyway.  Should use iterator and find. */
+                // try to find existing ltm
+                c = & sym_to_ltm[(*w)->value ];
 
                 // if doesn't exist, add; else use existing
                 if (!(*c))
                 {
-                    (*c) = new smem_chunk;
+                    (*c) = new ltm_object;
                     (*c)->lti_id = (*w)->value->id->LTI_ID;
                     (*c)->slots = NULL;
                     (*c)->soar_id = (*w)->value;
@@ -1637,8 +1631,8 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
                 delete s_p->second;
             }
 
-            // de-allocate chunks
-            for (c_p = sym_to_chunk.begin(); c_p != sym_to_chunk.end(); c_p++)
+            // de-allocate ltms
+            for (c_p = sym_to_ltm.begin(); c_p != sym_to_ltm.end(); c_p++)
             {
                 delete c_p->second;
             }
@@ -1648,7 +1642,7 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
     }
 
     // recurse as necessary
-    for (smem_sym_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
+    for (symbol_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
         store_in_smem((*shorty), store_recursive, tc);
     }

@@ -192,7 +192,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         }
         if (options.test(Cli::VISUALIZE_SMEM))
         {
-            smem_lti_id lti_id = NIL;
+            uint64_t lti_id = NIL;
 
             // visualizing the store requires an open semantic database
             thisAgent->SMem->attach();
@@ -202,7 +202,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pObject2.c_str());
                 if (lexeme.type == IDENTIFIER_LEXEME)
                 {
-                    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
+                    if (thisAgent->SMem->DB->get_status() == soar_module::connected)
                     {
                         lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
                     }

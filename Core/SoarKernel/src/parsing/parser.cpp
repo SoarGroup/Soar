@@ -347,7 +347,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 //            }
 //            else
 //            {
-//                smem_lti_id lti_id = thisAgent->SMem->lti_get_id(lexeme->id_letter, lexeme->id_number);
+//                uint64_t lti_id = thisAgent->SMem->lti_get_id(lexeme->id_letter, lexeme->id_number);
 //
 //                if (lti_id == NIL)
 //                {

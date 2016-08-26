@@ -10,12 +10,6 @@
 
 #include "kernel.h"
 
-//#include "soar_db.h"
-
-class smem_db_lib_version_stat;
-class smem_mem_usage_stat;
-class smem_mem_high_stat;
-
 class smem_stat_container: public soar_module::stat_container
 {
     public:
@@ -34,8 +28,6 @@ class smem_stat_container: public soar_module::stat_container
         smem_stat_container(agent* thisAgent);
 };
 
-//
-
 class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
 {
     protected:
@@ -45,8 +37,6 @@ class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* 
         smem_db_lib_version_stat(agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred);
         const char* get_value();
 };
-
-//
 
 class smem_mem_usage_stat: public soar_module::integer_stat
 {
@@ -58,8 +48,6 @@ class smem_mem_usage_stat: public soar_module::integer_stat
         int64_t get_value();
 };
 
-//
-
 class smem_mem_high_stat: public soar_module::integer_stat
 {
     protected:
@@ -69,7 +57,5 @@ class smem_mem_high_stat: public soar_module::integer_stat
         smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred);
         int64_t get_value();
 };
-
-
 
 #endif /* CORE_SOARKERNEL_SRC_SEMANTIC_MEMORY_SMEM_STATS_H_ */

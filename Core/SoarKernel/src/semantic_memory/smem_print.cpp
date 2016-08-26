@@ -21,12 +21,12 @@ void SMem_Manager::visualize_store(std::string* return_val)
     return_val->append("node [ shape = doublecircle ];");
     return_val->append("\n");
 
-    std::map< smem_lti_id, std::string > lti_names;
-    std::map< smem_lti_id, std::string >::iterator n_p;
+    std::map< uint64_t, std::string > lti_names;
+    std::map< uint64_t, std::string >::iterator n_p;
     {
         soar_module::sqlite_statement* q;
 
-        smem_lti_id lti_id;
+        uint64_t lLTI_ID;
 
         std::string* lti_name;
         std::string temp_str;
@@ -34,14 +34,14 @@ void SMem_Manager::visualize_store(std::string* return_val)
         double temp_double;
 
         // id, soar_letter, number
-        q = thisAgent->SMem->smem_stmts->vis_lti;
+        q = thisAgent->SMem->SQL->vis_lti;
         while (q->execute() == soar_module::row)
         {
-            lti_id = q->column_int(0);
+            lLTI_ID = q->column_int(0);
 
-            lti_name = & lti_names[ lti_id ];
+            lti_name = & lti_names[ lLTI_ID ];
             lti_name->append(" @");
-            to_string(lti_id, temp_str);
+            to_string(lLTI_ID, temp_str);
             lti_name->append(temp_str);
 
             return_val->append((*lti_name));
@@ -67,8 +67,8 @@ void SMem_Manager::visualize_store(std::string* return_val)
         {
             // terminal nodes first
             {
-                std::map< smem_lti_id, std::list<std::string> > lti_terminals;
-                std::map< smem_lti_id, std::list<std::string> >::iterator t_p;
+                std::map< uint64_t, std::list<std::string> > lti_terminals;
+                std::map< uint64_t, std::list<std::string> >::iterator t_p;
                 std::list<std::string>::iterator a_p;
 
                 std::list<std::string>* my_terminals;
@@ -81,12 +81,12 @@ void SMem_Manager::visualize_store(std::string* return_val)
                 return_val->append("\n");
 
                 // lti_id, attr_type, attr_hash, val_type, val_hash
-                q = thisAgent->SMem->smem_stmts->vis_value_const;
+                q = thisAgent->SMem->SQL->vis_value_const;
                 while (q->execute() == soar_module::row)
                 {
-                    lti_id = q->column_int(0);
-                    my_terminals = & lti_terminals[ lti_id ];
-                    lti_name = & lti_names[ lti_id ];
+                    lLTI_ID = q->column_int(0);
+                    my_terminals = & lti_terminals[ lLTI_ID ];
+                    lti_name = & lti_names[ lLTI_ID ];
 
                     // parent prefix
                     return_val->append((*lti_name));
@@ -196,18 +196,18 @@ void SMem_Manager::visualize_store(std::string* return_val)
             // then links to other LTIs
             {
                 // lti_id, attr_type, attr_hash, value_lti_id
-                q = thisAgent->SMem->smem_stmts->vis_value_lti;
+                q = thisAgent->SMem->SQL->vis_value_lti;
                 while (q->execute() == soar_module::row)
                 {
                     // source
-                    lti_id = q->column_int(0);
-                    lti_name = & lti_names[ lti_id ];
+                    lLTI_ID = q->column_int(0);
+                    lti_name = & lti_names[ lLTI_ID ];
                     return_val->append((*lti_name));
                     return_val->append(" -> ");
 
                     // destination
-                    lti_id = q->column_int(3);
-                    lti_name = & lti_names[ lti_id ];
+                    lLTI_ID = q->column_int(3);
+                    lti_name = & lti_names[ lLTI_ID ];
                     return_val->append((*lti_name));
                     return_val->append(" [ label =\"");
 
@@ -251,12 +251,12 @@ void SMem_Manager::visualize_store(std::string* return_val)
     return_val->append("\n");
 }
 
-void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::string* return_val)
+void SMem_Manager::visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::string* return_val)
 {
     // buffer
     std::string return_val2;
 
-    soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
+    soar_module::sqlite_statement* expand_q = thisAgent->SMem->SQL->web_expand;
 
     uint64_t child_counter;
 
@@ -269,8 +269,8 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
     smem_vis_lti* new_lti;
     smem_vis_lti* parent_lti;
 
-    std::map< smem_lti_id, smem_vis_lti* > close_list;
-    std::map< smem_lti_id, smem_vis_lti* >::iterator cl_p;
+    std::map< uint64_t, smem_vis_lti* > close_list;
+    std::map< uint64_t, smem_vis_lti* >::iterator cl_p;
 
     // header
     return_val->append("digraph smem_lti {");
@@ -279,12 +279,12 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
     // root
     {
         new_lti = new smem_vis_lti;
-        new_lti->lti_id = lti_id;
+        new_lti->lti_id = pLTI_ID;
         new_lti->level = 0;
-        get_lti_name(lti_id, new_lti->lti_name);
+        get_lti_name(pLTI_ID, new_lti->lti_name);
 
         bfs.push(new_lti);
-        close_list.insert(std::make_pair(lti_id, new_lti));
+        close_list.insert(std::make_pair(pLTI_ID, new_lti));
 
         new_lti = NULL;
     }
@@ -455,7 +455,7 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
 
     // handle lti nodes at once
     {
-        soar_module::sqlite_statement* act_q = thisAgent->SMem->smem_stmts->vis_lti_act;
+        soar_module::sqlite_statement* act_q = thisAgent->SMem->SQL->vis_lti_act;
 
         return_val->append("node [ shape = doublecircle ];");
         return_val->append("\n");
@@ -492,14 +492,14 @@ void SMem_Manager::visualize_lti(smem_lti_id lti_id, unsigned int depth, std::st
     return_val->append(return_val2);
 }
 
-std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_act, std::string* return_val, std::list<uint64_t>* history)
+id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history)
 {
-    std::set< smem_lti_id > next;
+    id_set next;
 
     std::string temp_str, temp_str2, temp_str3;
     int64_t temp_int;
     double temp_double;
-    smem_lti_id temp_lti_id;
+    uint64_t temp_lti_id;
 
     std::map< std::string, std::list< std::string > > augmentations;
     std::map< std::string, std::list< std::string > >::iterator lti_slot;
@@ -507,15 +507,15 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
 
     attach();
 
-    soar_module::sqlite_statement* expand_q = thisAgent->SMem->smem_stmts->web_expand;
+    soar_module::sqlite_statement* expand_q = thisAgent->SMem->SQL->web_expand;
 
     return_val->append("(");
-    get_lti_name(lti_id, *return_val);
+    get_lti_name(pLTI_ID, *return_val);
 
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
 
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    expand_q->bind_int(1, lti_id);
+    expand_q->bind_int(1, pLTI_ID);
     while (expand_q->execute() == soar_module::row)
     {
         // get attribute
@@ -572,7 +572,7 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
         // identifier vs. constant
         if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
         {
-            temp_lti_id = static_cast<smem_lti_id>(expand_q->column_int(4));
+            temp_lti_id = static_cast<uint64_t>(expand_q->column_int(4));
             temp_str2.clear();
             get_lti_name(temp_lti_id, temp_str2);
 
@@ -686,7 +686,7 @@ std::set< smem_lti_id > SMem_Manager::print_lti(smem_lti_id lti_id, double lti_a
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    soar_module::sqlite_statement* q = thisAgent->SMem->smem_stmts->vis_lti;
+    soar_module::sqlite_statement* q = thisAgent->SMem->SQL->vis_lti;
     while (q->execute() == soar_module::row)
     {
         print_smem_object(q->column_int(0), q->column_double(1), return_val);
@@ -694,26 +694,26 @@ void SMem_Manager::print_store(std::string* return_val)
     q->reinitialize();
 }
 
-void SMem_Manager::print_smem_object(smem_lti_id lti_id, uint64_t depth, std::string* return_val, bool history)
+void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history)
 {
-    std::set< smem_lti_id > visited;
-    std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
+    id_set visited;
+    std::pair< id_set::iterator, bool > visited_ins_result;
 
-    std::queue< std::pair< smem_lti_id, unsigned int > > to_visit;
-    std::pair< smem_lti_id, unsigned int > c;
+    std::queue< std::pair< uint64_t, unsigned int > > to_visit;
+    std::pair< uint64_t, unsigned int > c;
 
-    std::set< smem_lti_id > next;
-    std::set< smem_lti_id >::iterator next_it;
+    id_set next;
+    id_set::iterator next_it;
 
-    soar_module::sqlite_statement* act_q = thisAgent->SMem->smem_stmts->vis_lti_act;
-    soar_module::sqlite_statement* hist_q = thisAgent->SMem->smem_stmts->history_get;
-    soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->smem_stmts->lti_access_get;
+    soar_module::sqlite_statement* act_q = thisAgent->SMem->SQL->vis_lti_act;
+    soar_module::sqlite_statement* hist_q = thisAgent->SMem->SQL->history_get;
+    soar_module::sqlite_statement* lti_access_q = thisAgent->SMem->SQL->lti_access_get;
     unsigned int i;
 
 
     // initialize queue/set
-    to_visit.push(std::make_pair(lti_id, 1u));
-    visited.insert(lti_id);
+    to_visit.push(std::make_pair(pLTI_ID, 1u));
+    visited.insert(pLTI_ID);
 
     while (!to_visit.empty())
     {
@@ -743,7 +743,7 @@ void SMem_Manager::print_smem_object(smem_lti_id lti_id, uint64_t depth, std::st
                 hist_q->execute();
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
-                    if (thisAgent->SMem->smem_stmts->history_get->column_int(i) != 0)
+                    if (thisAgent->SMem->SQL->history_get->column_int(i) != 0)
                     {
                         access_history.push_back(hist_q->column_int(i));
                     }

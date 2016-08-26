@@ -214,7 +214,7 @@ struct idSymbol    : public Symbol
     int depth;
 
     epmem_node_id epmem_id;
-    smem_lti_id LTI_ID;
+    uint64_t LTI_ID;
 
     void* rl_trace;
 };

@@ -51,11 +51,11 @@
 
 #include "smem_math_query.h"
 
-smem_wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
+wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 {
     slot* s;
     wme* w;
-    smem_wme_list* return_val = new smem_wme_list;
+    wme_list* return_val = new wme_list;
 
     // augs only exist for identifiers
     if (id->is_identifier())
@@ -105,7 +105,7 @@ smem_wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 
 void SMem_Manager::go(bool store_only)
 {
-    thisAgent->SMem->smem_timers->total->start();
+    thisAgent->SMem->timers->total->start();
 
 #ifndef SMEM_EXPERIMENT
 
@@ -115,7 +115,7 @@ void SMem_Manager::go(bool store_only)
 
 #endif // SMEM_EXPERIMENT
 
-    thisAgent->SMem->smem_timers->total->stop();
+    thisAgent->SMem->timers->total->stop();
 }
 
 void SMem_Manager::respond_to_cmd(bool store_only)
@@ -127,9 +127,9 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     // (could go in the opposite direction as well)
     Symbol* state = thisAgent->bottom_goal;
 
-    smem_wme_list* wmes;
-    smem_wme_list* cmds;
-    smem_wme_list::iterator w_p;
+    wme_list* wmes;
+    wme_list* cmds;
+    wme_list::iterator w_p;
 
     symbol_triple_list meta_wmes;
     symbol_triple_list retrieval_wmes;
@@ -140,8 +140,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* retrieve;
     Symbol* math;
     uint64_t depth;
-    smem_sym_list prohibit;
-    smem_sym_list store;
+    symbol_list prohibit;
+    symbol_list store;
 
     enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store } path;
 
@@ -168,7 +168,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->SMem->smem_timers->api->start();
+        thisAgent->SMem->timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
 
         // make sure this state has had some sort of change to the cmd
@@ -388,7 +388,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->SMem->smem_timers->api->stop();
+            thisAgent->SMem->timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
 
             // process command
@@ -414,14 +414,14 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         install_memory(state, retrieve->id->LTI_ID, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
-                        thisAgent->SMem->smem_stats->expansions->set_value(thisAgent->SMem->smem_stats->expansions->get_value() + 1);
+                        thisAgent->SMem->statistics->expansions->set_value(thisAgent->SMem->statistics->expansions->get_value() + 1);
                     }
                 }
                 // query
                 else if (path == cmd_query)
                 {
-                    smem_lti_set prohibit_lti;
-                    smem_sym_list::iterator sym_p;
+                    id_set prohibit_lti;
+                    symbol_list::iterator sym_p;
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
@@ -431,20 +431,20 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
-                    thisAgent->SMem->smem_stats->cbr->set_value(thisAgent->SMem->smem_stats->cbr->get_value() + 1);
+                    thisAgent->SMem->statistics->cbr->set_value(thisAgent->SMem->statistics->cbr->get_value() + 1);
                 }
                 else if (path == cmd_store)
                 {
-                    smem_sym_list::iterator sym_p;
+                    symbol_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->SMem->smem_timers->storage->start();
+                    thisAgent->SMem->timers->storage->start();
                     ////////////////////////////////////////////////////////////////////////////
 
                     // start transaction (if not lazy)
-                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -455,17 +455,17 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
-                        thisAgent->SMem->smem_stats->stores->set_value(thisAgent->SMem->smem_stats->stores->get_value() + 1);
+                        thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
                     }
 
                     // commit transaction (if not lazy)
-                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->SMem->smem_timers->storage->stop();
+                    thisAgent->SMem->timers->storage->stop();
                     ////////////////////////////////////////////////////////////////////////////
                 }
             }
@@ -514,7 +514,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         else
         {
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->SMem->smem_timers->api->stop();
+            thisAgent->SMem->timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
         }
 
@@ -571,23 +571,11 @@ void SMem_Manager::reset(Symbol* state)
     }
 }
 
-
-void SMem_Manager::reinit_cmd()
-{
-    close();
-//    smem_init_db(thisAgent);
-}
-
-void SMem_Manager::reset_stats()
-{
-    smem_stats->reset();
-}
-
 void SMem_Manager::reinit()
 {
-    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->DB->get_status() == soar_module::connected)
     {
-        if (thisAgent->SMem->smem_params->append_db->get_value() == off)
+        if (thisAgent->SMem->settings->append_db->get_value() == off)
         {
             close();
             init_db();
@@ -600,11 +588,11 @@ SMem_Manager::SMem_Manager(agent* myAgent)
     thisAgent = myAgent;
     thisAgent->SMem = this;
 
-    smem_params = new smem_param_container(thisAgent);
-    smem_stats = new smem_stat_container(thisAgent);
-    smem_timers = new smem_timer_container(thisAgent);
+    settings = new smem_param_container(thisAgent);
+    statistics = new smem_stat_container(thisAgent);
+    timers = new smem_timer_container(thisAgent);
 
-    smem_db = new soar_module::sqlite_database();
+    DB = new soar_module::sqlite_database();
 
     smem_validation = 0;
 
@@ -617,8 +605,8 @@ void SMem_Manager::clean_up_for_agent_deletion()
     // cleanup exploration
 
     close();
-    delete smem_params;
-    delete smem_stats;
-    delete smem_timers;
-    delete smem_db;
+    delete settings;
+    delete statistics;
+    delete timers;
+    delete DB;
 }

@@ -40,16 +40,12 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
     add(act);
 }
 
-//
-
 smem_timer_level_predicate::smem_timer_level_predicate(agent* new_agent): soar_module::agent_predicate<soar_module::timer::timer_level>(new_agent) {}
 
 bool smem_timer_level_predicate::operator()(soar_module::timer::timer_level val)
 {
-    return (thisAgent->SMem->smem_params->timers->get_value() >= val);
+    return (thisAgent->SMem->settings->timers->get_value() >= val);
 }
-
-//
 
 smem_timer::smem_timer(const char* new_name, agent* new_agent, soar_module::timer::timer_level new_level): soar_module::timer(new_name, new_agent, new_level, new smem_timer_level_predicate(new_agent)) {}
 

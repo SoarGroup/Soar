@@ -23,18 +23,18 @@ soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_e
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        q = smem_stmts->web_attr_all;
+        q = SQL->web_attr_all;
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        q = smem_stmts->web_const_all;
+        q = SQL->web_const_all;
         q->bind_int(2, el->value_hash);
     }
     else if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        q = smem_stmts->web_lti_all;
+        q = SQL->web_lti_all;
         q->bind_int(2, el->value_lti);
     }
 
@@ -51,7 +51,7 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
     smem_hash_id attr_hash;
     smem_hash_id value_hash;
-    smem_lti_id value_lti;
+    uint64_t value_lti;
     smem_cue_element_type element_type;
 
     soar_module::sqlite_statement* q = NULL;
@@ -69,7 +69,7 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
                 if (value_hash != NIL)
                 {
-                    q = smem_stmts->wmes_constant_frequency_get;
+                    q = SQL->wmes_constant_frequency_get;
                     q->bind_int(1, attr_hash);
                     q->bind_int(2, value_hash);
                 }
@@ -100,14 +100,14 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
                 if (value_lti == NIL)
                 {
-                    q = smem_stmts->attribute_frequency_get;
+                    q = SQL->attribute_frequency_get;
                     q->bind_int(1, attr_hash);
 
                     element_type = attr_t;
                 }
                 else
                 {
-                    q = smem_stmts->wmes_lti_frequency_get;
+                    q = SQL->wmes_lti_frequency_get;
                     q->bind_int(1, attr_hash);
                     q->bind_int(2, value_lti);
 
@@ -169,11 +169,11 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     std::set<Symbol*> uniqueMathQueryElements;
     std::pair<bool, bool>* result = new std::pair<bool, bool>(true, true);
 
-    smem_wme_list* cue = get_direct_augs_of_id(mathQuery);
-    for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+    wme_list* cue = get_direct_augs_of_id(mathQuery);
+    for (wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
     {
 
-        smem_wme_list* cueTypes =get_direct_augs_of_id((*cue_p)->value);
+        wme_list* cueTypes =get_direct_augs_of_id((*cue_p)->value);
         if (cueTypes->empty())
         {
             //This would be an attribute without a query type attached
@@ -183,7 +183,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
         }
         else
         {
-            for (smem_wme_list::iterator cueType = cueTypes->begin(); cueType != cueTypes->end(); cueType++)
+            for (wme_list::iterator cueType = cueTypes->begin(); cueType != cueTypes->end(); cueType++)
             {
                 if ((*cueType)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query_less)
                 {
@@ -302,7 +302,7 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, smem_lti_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<smem_lti_id>* match_ids, uint64_t depth, smem_install_type install_type)
+uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -312,16 +312,16 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
 
     soar_module::sqlite_statement* q = NULL;
 
-    std::list<smem_lti_id> temp_list;
+    std::list<uint64_t> temp_list;
     if (query_level == qry_full)
     {
         match_ids = &(temp_list);
     }
 
-    smem_lti_id king_id = NIL;
+    uint64_t king_id = NIL;
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->query->start();
+    timers->query->start();
     ////////////////////////////////////////////////////////////////////////////
 
     // prepare query stats
@@ -330,13 +330,13 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
 
         // positive cue - always
         {
-            smem_wme_list* cue = get_direct_augs_of_id(query);
+            wme_list* cue = get_direct_augs_of_id(query);
             if (cue->empty())
             {
                 good_cue = false;
             }
 
-            for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+            for (wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
             {
                 cue_wmes.insert((*cue_p));
 
@@ -361,9 +361,9 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
         // negative cue - if present
         if (negquery)
         {
-            smem_wme_list* cue = get_direct_augs_of_id(negquery);
+            wme_list* cue = get_direct_augs_of_id(negquery);
 
-            for (smem_wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
+            for (wme_list::iterator cue_p = cue->begin(); cue_p != cue->end(); cue_p++)
             {
                 cue_wmes.insert((*cue_p));
 
@@ -422,17 +422,17 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
         }
 
         soar_module::sqlite_statement* q2 = NULL;
-        smem_lti_set::iterator prohibit_p;
+        id_set::iterator prohibit_p;
 
-        smem_lti_id cand;
+        uint64_t cand;
         bool good_cand;
 
-        if (smem_params->activation_mode->get_value() == smem_param_container::act_base)
+        if (settings->activation_mode->get_value() == smem_param_container::act_base)
         {
             // naive base-level updates means update activation of
             // every candidate in the minimal list before the
             // confirmation walk
-            if (smem_params->base_update->get_value() == smem_param_container::bupt_naive)
+            if (settings->base_update->get_value() == smem_param_container::bupt_naive)
             {
                 q =setup_web_crawl((*cand_set));
 
@@ -440,13 +440,13 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
                 // - set because queries could contain wilds
                 // - not in loop because the effects of activation may actually
                 //   alter the resultset of the query (isolation???)
-                std::set< smem_lti_id > to_update;
+                std::set< uint64_t > to_update;
                 while (q->execute() == soar_module::row)
                 {
                     to_update.insert(q->column_int(0));
                 }
 
-                for (std::set< smem_lti_id >::iterator it = to_update.begin(); it != to_update.end(); it++)
+                for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
                 {
                     lti_activate((*it), false);
                 }
@@ -469,10 +469,10 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
 
             while (more_rows && (q->column_double(1) == static_cast<double>(SMEM_ACT_MAX)))
             {
-                smem_stmts->act_lti_get->bind_int(1, q->column_int(0));
-                smem_stmts->act_lti_get->execute();
-                plentiful_parents.push(std::make_pair< double, smem_lti_id >(smem_stmts->act_lti_get->column_double(0), q->column_int(0)));
-                smem_stmts->act_lti_get->reinitialize();
+                SQL->act_lti_get->bind_int(1, q->column_int(0));
+                SQL->act_lti_get->execute();
+                plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(0), q->column_int(0)));
+                SQL->act_lti_get->reinitialize();
 
                 more_rows = (q->execute() == soar_module::row);
             }
@@ -526,18 +526,18 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
                         if ((*next_element)->element_type == attr_t)
                         {
                             // parent=? AND attribute_s_id=?
-                            q2 = smem_stmts->web_attr_child;
+                            q2 = SQL->web_attr_child;
                         }
                         else if ((*next_element)->element_type == value_const_t)
                         {
                             // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                            q2 = smem_stmts->web_const_child;
+                            q2 = SQL->web_const_child;
                             q2->bind_int(3, (*next_element)->value_hash);
                         }
                         else if ((*next_element)->element_type == value_lti_t)
                         {
                             // parent=? AND attribute_s_id=? AND value_lti_id=?
-                            q2 = smem_stmts->web_lti_child;
+                            q2 = SQL->web_lti_child;
                             q2->bind_int(3, (*next_element)->value_lti);
                         }
 
@@ -552,15 +552,15 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
                             do
                             {
                                 smem_hash_id valueHash = q2->column_int(2 - 1);
-                                smem_stmts->hash_rev_type->bind_int(1, valueHash);
+                                SQL->hash_rev_type->bind_int(1, valueHash);
 
-                                if (smem_stmts->hash_rev_type->execute() != soar_module::row)
+                                if (SQL->hash_rev_type->execute() != soar_module::row)
                                 {
                                     good_cand = false;
                                 }
                                 else
                                 {
-                                    switch (smem_stmts->hash_rev_type->column_int(1 - 1))
+                                    switch (SQL->hash_rev_type->column_int(1 - 1))
                                     {
                                         case FLOAT_CONSTANT_SYMBOL_TYPE:
                                             mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
@@ -570,7 +570,7 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
                                             break;
                                     }
                                 }
-                                smem_stmts->hash_rev_type->reinitialize();
+                                SQL->hash_rev_type->reinitialize();
                             }
                             while (q2->execute() == soar_module::row);
                             good_cand = mathQueryMet;
@@ -648,10 +648,10 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            smem_timers->query->stop();
+            timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
 
-            install_memory(state, king_id, NIL, (smem_params->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
         }
         else
         {
@@ -662,14 +662,14 @@ smem_lti_id SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* ne
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            smem_timers->query->stop();
+            timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
         }
     }
     else
     {
         ////////////////////////////////////////////////////////////////////////////
-        smem_timers->query->stop();
+        timers->query->stop();
         ////////////////////////////////////////////////////////////////////////////
     }
 

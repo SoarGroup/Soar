@@ -157,16 +157,12 @@ typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
-typedef std::list<smem_lti_id>                  smem_lti_list;
-typedef std::set<smem_lti_id>                   smem_lti_set;
-typedef std::list<Symbol*>                      smem_sym_list;
-typedef std::list<wme*>                         smem_wme_list;
 typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;
-typedef std::pair< double, smem_lti_id >        smem_activated_lti;
-typedef std::map<std::string, smem_chunk*>      smem_str_to_chunk_map;
-typedef std::map<Symbol*, smem_chunk*>          smem_sym_to_chunk_map;
-typedef std::set<smem_chunk*>                   smem_chunk_set;
-typedef std::list<smem_chunk_value*>            smem_slot;
-typedef std::map<Symbol*, smem_slot*>           smem_slot_map;
+typedef std::pair< double, uint64_t >           smem_activated_lti;
+typedef std::map<std::string, ltm_object*>      str_to_ltm_map;
+typedef std::map<Symbol*, ltm_object*>          sym_to_ltm_map;
+typedef std::set<ltm_object*>                   ltm_set;
+typedef std::list<ltm_value*>                   ltm_slot;
+typedef std::map<Symbol*, ltm_slot*>            ltm_slot_map;
 
 #endif /* STL_TYPEDEFS_H_ */

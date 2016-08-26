@@ -75,26 +75,26 @@ void smem_statement_container::create_indices()
 
 void smem_statement_container::drop_tables(agent* new_agent)
 {
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_persistent_variables");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_type");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_integer");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_float");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_symbols_string");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_lti");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_activation_history");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_augmentations");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_attribute_frequency");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_constant_frequency");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_wmes_lti_frequency");
-    new_agent->SMem->smem_db->sql_execute("DROP TABLE IF EXISTS smem_ascii");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_persistent_variables");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_type");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_integer");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_float");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_symbols_string");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_lti");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_activation_history");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_augmentations");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_attribute_frequency");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_wmes_constant_frequency");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_wmes_lti_frequency");
+    new_agent->SMem->DB->sql_execute("DROP TABLE IF EXISTS smem_ascii");
 }
 
-smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->SMem->smem_db)
+smem_statement_container::smem_statement_container(agent* new_agent): soar_module::sqlite_statement_container(new_agent->SMem->DB)
 {
-    soar_module::sqlite_database* new_db = new_agent->SMem->smem_db;
+    soar_module::sqlite_database* new_db = new_agent->SMem->DB;
 
     // Delete all entries from the tables in the database if append setting is off
-    if (new_agent->SMem->smem_params->append_db->get_value() == off)
+    if (new_agent->SMem->settings->append_db->get_value() == off)
     {
         print_sysparam_trace(new_agent, 0, "Erasing contents of semantic memory database. (append = off)\n");
         drop_tables(new_agent);
@@ -322,9 +322,9 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
 
 smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
 {
-    smem_stmts->hash_add_type->bind_int(1, symbol_type);
-    smem_stmts->hash_add_type->execute(soar_module::op_reinit);
-    return static_cast<smem_hash_id>(smem_db->last_insert_rowid());
+    SQL->hash_add_type->bind_int(1, symbol_type);
+    SQL->hash_add_type->execute(soar_module::op_reinit);
+    return static_cast<smem_hash_id>(DB->last_insert_rowid());
 }
 
 smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
@@ -332,12 +332,12 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    smem_stmts->hash_get_int->bind_int(1, val);
-    if (smem_stmts->hash_get_int->execute() == soar_module::row)
+    SQL->hash_get_int->bind_int(1, val);
+    if (SQL->hash_get_int->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(smem_stmts->hash_get_int->column_int(0));
+        return_val = static_cast<smem_hash_id>(SQL->hash_get_int->column_int(0));
     }
-    smem_stmts->hash_get_int->reinitialize();
+    SQL->hash_get_int->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -346,9 +346,9 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
         return_val = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        smem_stmts->hash_add_int->bind_int(1, return_val);
-        smem_stmts->hash_add_int->bind_int(2, val);
-        smem_stmts->hash_add_int->execute(soar_module::op_reinit);
+        SQL->hash_add_int->bind_int(1, return_val);
+        SQL->hash_add_int->bind_int(2, val);
+        SQL->hash_add_int->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -359,12 +359,12 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    smem_stmts->hash_get_float->bind_double(1, val);
-    if (smem_stmts->hash_get_float->execute() == soar_module::row)
+    SQL->hash_get_float->bind_double(1, val);
+    if (SQL->hash_get_float->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(smem_stmts->hash_get_float->column_int(0));
+        return_val = static_cast<smem_hash_id>(SQL->hash_get_float->column_int(0));
     }
-    smem_stmts->hash_get_float->reinitialize();
+    SQL->hash_get_float->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -373,9 +373,9 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
         return_val = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        smem_stmts->hash_add_float->bind_int(1, return_val);
-        smem_stmts->hash_add_float->bind_double(2, val);
-        smem_stmts->hash_add_float->execute(soar_module::op_reinit);
+        SQL->hash_add_float->bind_int(1, return_val);
+        SQL->hash_add_float->bind_double(2, val);
+        SQL->hash_add_float->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -386,12 +386,12 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    smem_stmts->hash_get_str->bind_text(1, static_cast<const char*>(val));
-    if (smem_stmts->hash_get_str->execute() == soar_module::row)
+    SQL->hash_get_str->bind_text(1, static_cast<const char*>(val));
+    if (SQL->hash_get_str->execute() == soar_module::row)
     {
-        return_val = static_cast<smem_hash_id>(smem_stmts->hash_get_str->column_int(0));
+        return_val = static_cast<smem_hash_id>(SQL->hash_get_str->column_int(0));
     }
-    smem_stmts->hash_get_str->reinitialize();
+    SQL->hash_get_str->reinitialize();
 
     // if fail and supposed to add
     if (!return_val && add_on_fail)
@@ -400,9 +400,9 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
         return_val = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
 
         // then content
-        smem_stmts->hash_add_str->bind_int(1, return_val);
-        smem_stmts->hash_add_str->bind_text(2, static_cast<const char*>(val));
-        smem_stmts->hash_add_str->execute(soar_module::op_reinit);
+        SQL->hash_add_str->bind_int(1, return_val);
+        SQL->hash_add_str->bind_text(2, static_cast<const char*>(val));
+        SQL->hash_add_str->execute(soar_module::op_reinit);
     }
 
     return return_val;
@@ -414,7 +414,7 @@ smem_hash_id SMem_Manager::hash(Symbol* sym, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->hash->start();
+    timers->hash->start();
     ////////////////////////////////////////////////////////////////////////////
 
     if (sym->is_constant())
@@ -448,7 +448,7 @@ smem_hash_id SMem_Manager::hash(Symbol* sym, bool add_on_fail)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->hash->stop();
+    timers->hash->stop();
     ////////////////////////////////////////////////////////////////////////////
 
     return return_val;
@@ -458,12 +458,12 @@ int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
 {
     int64_t return_val = NIL;
 
-    smem_stmts->hash_rev_int->bind_int(1, hash_value);
-    soar_module::exec_result res = smem_stmts->hash_rev_int->execute();
+    SQL->hash_rev_int->bind_int(1, hash_value);
+    soar_module::exec_result res = SQL->hash_rev_int->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    return_val = smem_stmts->hash_rev_int->column_int(0);
-    smem_stmts->hash_rev_int->reinitialize();
+    return_val = SQL->hash_rev_int->column_int(0);
+    SQL->hash_rev_int->reinitialize();
 
     return return_val;
 }
@@ -472,24 +472,24 @@ double SMem_Manager::rhash__float(smem_hash_id hash_value)
 {
     double return_val = NIL;
 
-    smem_stmts->hash_rev_float->bind_int(1, hash_value);
-    soar_module::exec_result res = smem_stmts->hash_rev_float->execute();
+    SQL->hash_rev_float->bind_int(1, hash_value);
+    soar_module::exec_result res = SQL->hash_rev_float->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    return_val = smem_stmts->hash_rev_float->column_double(0);
-    smem_stmts->hash_rev_float->reinitialize();
+    return_val = SQL->hash_rev_float->column_double(0);
+    SQL->hash_rev_float->reinitialize();
 
     return return_val;
 }
 
 void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
 {
-    smem_stmts->hash_rev_str->bind_int(1, hash_value);
-    soar_module::exec_result res = smem_stmts->hash_rev_str->execute();
+    SQL->hash_rev_str->bind_int(1, hash_value);
+    soar_module::exec_result res = SQL->hash_rev_str->execute();
     (void)res; // quells compiler warning
     assert(res == soar_module::row);
-    dest.assign(smem_stmts->hash_rev_str->column_text(0));
-    smem_stmts->hash_rev_str->reinitialize();
+    dest.assign(SQL->hash_rev_str->column_text(0));
+    SQL->hash_rev_str->reinitialize();
 }
 
  Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
@@ -523,19 +523,19 @@ void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
 // opens the SQLite database and performs all initialization required for the current mode
 void SMem_Manager::init_db()
 {
-    if (smem_db->get_status() != soar_module::disconnected)
+    if (DB->get_status() != soar_module::disconnected)
     {
         return;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->init->start();
+    timers->init->start();
     ////////////////////////////////////////////////////////////////////////////
 
     const char* db_path;
     bool tabula_rasa = false;
 
-    if (smem_params->database->get_value() == smem_param_container::memory)
+    if (settings->database->get_value() == smem_param_container::memory)
     {
         db_path = ":memory:";
         tabula_rasa = true;
@@ -543,16 +543,16 @@ void SMem_Manager::init_db()
     }
     else
     {
-        db_path = smem_params->path->get_value();
+        db_path = settings->path->get_value();
         print_sysparam_trace(thisAgent, TRACE_SMEM_SYSPARAM, "Initializing semantic memory memory database at %s\n", db_path);
     }
 
     // attempt connection
-    smem_db->connect(db_path);
+    DB->connect(db_path);
 
-    if (smem_db->get_status() == soar_module::problem)
+    if (DB->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", smem_db->get_errmsg());
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", DB->get_errmsg());
     }
     else
     {
@@ -570,7 +570,7 @@ void SMem_Manager::init_db()
             /* -- Set switch_to_memory true in case we have any errors with the database -- */
             switch_to_memory = true;
 
-            if (smem_db->sql_is_new_db(sql_is_new))
+            if (DB->sql_is_new_db(sql_is_new))
             {
                 if (sql_is_new)
                 {
@@ -581,11 +581,11 @@ void SMem_Manager::init_db()
                 else
                 {
                     // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement(smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+                    temp_q = new soar_module::sqlite_statement(DB, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
                     temp_q->prepare();
                     if (temp_q->get_status() == soar_module::ready)
                     {
-                        if (smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
+                        if (DB->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
                             if (schema_version != SMEM_SCHEMA_VERSION)
                             {
@@ -662,34 +662,34 @@ void SMem_Manager::init_db()
         {
             // page_size
             {
-                switch (smem_params->page_size->get_value())
+                switch (settings->page_size->get_value())
                 {
                     case (smem_param_container::page_1k):
-                        smem_db->sql_execute("PRAGMA page_size = 1024");
+                        DB->sql_execute("PRAGMA page_size = 1024");
                         break;
 
                     case (smem_param_container::page_2k):
-                        smem_db->sql_execute("PRAGMA page_size = 2048");
+                        DB->sql_execute("PRAGMA page_size = 2048");
                         break;
 
                     case (smem_param_container::page_4k):
-                        smem_db->sql_execute("PRAGMA page_size = 4096");
+                        DB->sql_execute("PRAGMA page_size = 4096");
                         break;
 
                     case (smem_param_container::page_8k):
-                        smem_db->sql_execute("PRAGMA page_size = 8192");
+                        DB->sql_execute("PRAGMA page_size = 8192");
                         break;
 
                     case (smem_param_container::page_16k):
-                        smem_db->sql_execute("PRAGMA page_size = 16384");
+                        DB->sql_execute("PRAGMA page_size = 16384");
                         break;
 
                     case (smem_param_container::page_32k):
-                        smem_db->sql_execute("PRAGMA page_size = 32768");
+                        DB->sql_execute("PRAGMA page_size = 32768");
                         break;
 
                     case (smem_param_container::page_64k):
-                        smem_db->sql_execute("PRAGMA page_size = 65536");
+                        DB->sql_execute("PRAGMA page_size = 65536");
                         break;
                 }
             }
@@ -697,24 +697,24 @@ void SMem_Manager::init_db()
             // cache_size
             {
                 std::string cache_sql("PRAGMA cache_size = ");
-                char* str = smem_params->cache_size->get_string();
+                char* str = settings->cache_size->get_string();
                 cache_sql.append(str);
                 free(str);
                 str = NULL;
-                smem_db->sql_execute(cache_sql.c_str());
+                DB->sql_execute(cache_sql.c_str());
             }
 
             // optimization
-            if (smem_params->opt->get_value() == smem_param_container::opt_speed)
+            if (settings->opt->get_value() == smem_param_container::opt_speed)
             {
                 // synchronous - don't wait for writes to complete (can corrupt the db in case unexpected crash during transaction)
-                smem_db->sql_execute("PRAGMA synchronous = OFF");
+                DB->sql_execute("PRAGMA synchronous = OFF");
 
                 // journal_mode - no atomic transactions (can result in database corruption if crash during transaction)
-                smem_db->sql_execute("PRAGMA journal_mode = OFF");
+                DB->sql_execute("PRAGMA journal_mode = OFF");
 
                 // locking_mode - no one else can view the database after our first write
-                smem_db->sql_execute("PRAGMA locking_mode = EXCLUSIVE");
+                DB->sql_execute("PRAGMA locking_mode = EXCLUSIVE");
             }
         }
 
@@ -722,40 +722,40 @@ void SMem_Manager::init_db()
         smem_validation++;
 
         // setup common structures/queries
-        smem_stmts = new smem_statement_container(thisAgent);
+        SQL = new smem_statement_container(thisAgent);
 
-        if (tabula_rasa || (smem_params->append_db->get_value() == off))
+        if (tabula_rasa || (settings->append_db->get_value() == off))
         {
-            smem_stmts->structure();
+            SQL->structure();
         }
 
         // initialize queries given database structure
-        smem_stmts->prepare();
+        SQL->prepare();
 
         // initialize persistent variables
-        if (tabula_rasa || (smem_params->append_db->get_value() == off))
+        if (tabula_rasa || (settings->append_db->get_value() == off))
         {
-            smem_stmts->begin->execute(soar_module::op_reinit);
+            SQL->begin->execute(soar_module::op_reinit);
             {
                 // max cycle
                 smem_max_cycle = static_cast<int64_t>(1);
                 variable_create(var_max_cycle, 1);
 
                 // number of nodes
-                smem_stats->chunks->set_value(0);
+                statistics->chunks->set_value(0);
                 variable_create(var_num_nodes, 0);
 
                 // number of edges
-                smem_stats->slots->set_value(0);
+                statistics->slots->set_value(0);
                 variable_create(var_num_edges, 0);
 
                 // threshold (from user parameter value)
-                variable_create(var_act_thresh, static_cast<int64_t>(smem_params->thresh->get_value()));
+                variable_create(var_act_thresh, static_cast<int64_t>(settings->thresh->get_value()));
 
                 // activation mode (from user parameter value)
-                variable_create(var_act_mode, static_cast<int64_t>(smem_params->activation_mode->get_value()));
+                variable_create(var_act_mode, static_cast<int64_t>(settings->activation_mode->get_value()));
             }
-            smem_stmts->commit->execute(soar_module::op_reinit);
+            SQL->commit->execute(soar_module::op_reinit);
         }
         else
         {
@@ -766,32 +766,32 @@ void SMem_Manager::init_db()
 
             // number of nodes
             variable_get(var_num_nodes, &(temp));
-            smem_stats->chunks->set_value(temp);
+            statistics->chunks->set_value(temp);
 
             // number of edges
             variable_get(var_num_edges, &(temp));
-            smem_stats->slots->set_value(temp);
+            statistics->slots->set_value(temp);
 
             // threshold
             variable_get(var_act_thresh, &(temp));
-            smem_params->thresh->set_value(temp);
+            settings->thresh->set_value(temp);
 
             // activation mode
             variable_get(var_act_mode, &(temp));
-            smem_params->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
+            settings->activation_mode->set_value(static_cast< smem_param_container::act_choices >(temp));
         }
 
         reset_id_counters();
 
         // if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
-        if (smem_params->lazy_commit->get_value() == on)
+        if (settings->lazy_commit->get_value() == on)
         {
-            smem_stmts->begin->execute(soar_module::op_reinit);
+            SQL->begin->execute(soar_module::op_reinit);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    smem_timers->init->stop();
+    timers->init->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
 
@@ -799,7 +799,7 @@ void SMem_Manager::init_db()
 bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable_value)
 {
     soar_module::exec_result status;
-    soar_module::sqlite_statement* var_get = smem_stmts->var_get;
+    soar_module::sqlite_statement* var_get = SQL->var_get;
 
     var_get->bind_int(1, variable_id);
     status = var_get->execute();
@@ -817,7 +817,7 @@ bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable
 // sets an existing SMem variable in the database
 void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_value)
 {
-    soar_module::sqlite_statement* var_set = smem_stmts->var_set;
+    soar_module::sqlite_statement* var_set = SQL->var_set;
 
     var_set->bind_int(1, variable_value);
     var_set->bind_int(2, variable_id);
@@ -828,7 +828,7 @@ void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_
 // creates a new SMem variable in the database
 void SMem_Manager::variable_create(smem_variable_key variable_id, int64_t variable_value)
 {
-    soar_module::sqlite_statement* var_create = smem_stmts->var_create;
+    soar_module::sqlite_statement* var_create = SQL->var_create;
 
     var_create->bind_int(1, variable_id);
     var_create->bind_int(2, variable_value);
@@ -842,35 +842,35 @@ void SMem_Manager::store_globals_in_db()
     variable_set(var_max_cycle, smem_max_cycle);
 
     // store num nodes/edges for future use of the smem database
-    variable_set(var_num_nodes, smem_stats->chunks->get_value());
-    variable_set(var_num_edges, smem_stats->slots->get_value());
+    variable_set(var_num_nodes, statistics->chunks->get_value());
+    variable_set(var_num_edges, statistics->slots->get_value());
 }
 
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void SMem_Manager::close()
 {
-    if (smem_db->get_status() == soar_module::connected)
+    if (DB->get_status() == soar_module::connected)
     {
         store_globals_in_db();
 
         // if lazy, commit
-        if (smem_params->lazy_commit->get_value() == on)
+        if (settings->lazy_commit->get_value() == on)
         {
-            smem_stmts->commit->execute(soar_module::op_reinit);
+            SQL->commit->execute(soar_module::op_reinit);
         }
 
         // de-allocate common statements
-        delete smem_stmts;
+        delete SQL;
         delete thisAgent->lastCue;
 
         // close the database
-        smem_db->disconnect();
+        DB->disconnect();
     }
 }
 
 void SMem_Manager::attach()
 {
-    if (smem_db->get_status() == soar_module::disconnected)
+    if (DB->get_status() == soar_module::disconnected)
     {
         init_db();
     }
@@ -880,20 +880,20 @@ bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 {
     bool return_val = false;
 
-    if (smem_db->get_status() == soar_module::connected)
+    if (DB->get_status() == soar_module::connected)
     {
         store_globals_in_db();
 
-        if (smem_params->lazy_commit->get_value() == on)
+        if (settings->lazy_commit->get_value() == on)
         {
-            smem_stmts->commit->execute(soar_module::op_reinit);
+            SQL->commit->execute(soar_module::op_reinit);
         }
 
-        return_val = smem_db->backup(file_name, err);
+        return_val = DB->backup(file_name, err);
 
-        if (smem_params->lazy_commit->get_value() == on)
+        if (settings->lazy_commit->get_value() == on)
         {
-            smem_stmts->begin->execute(soar_module::op_reinit);
+            SQL->begin->execute(soar_module::op_reinit);
         }
     }
     else
@@ -907,74 +907,127 @@ bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 void SMem_Manager::switch_to_memory_db(std::string& buf)
 {
     print_sysparam_trace(thisAgent, 0, buf.c_str());
-    smem_db->disconnect();
-    smem_params->database->set_value(smem_param_container::memory);
+    DB->disconnect();
+    settings->database->set_value(smem_param_container::memory);
     init_db();
 }
 
 void SMem_Manager::update_schema_one_to_two()
 {
-    smem_db->sql_execute("BEGIN TRANSACTION");
-    smem_db->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
-    smem_db->sql_execute("DROP TABLE smem7_symbols_type");
+    DB->sql_execute("BEGIN TRANSACTION");
+    DB->sql_execute("CREATE TABLE smem_symbols_type (s_id INTEGER PRIMARY KEY,symbol_type INTEGER)");
+    DB->sql_execute("INSERT INTO smem_symbols_type (s_id, symbol_type) SELECT id, sym_type FROM smem7_symbols_type");
+    DB->sql_execute("DROP TABLE smem7_symbols_type");
 
-    smem_db->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
-    smem_db->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
-    smem_db->sql_execute("DROP TABLE smem7_symbols_str");
+    DB->sql_execute("CREATE TABLE smem_symbols_string (s_id INTEGER PRIMARY KEY,symbol_value TEXT)");
+    DB->sql_execute("INSERT INTO smem_symbols_string (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_str");
+    DB->sql_execute("DROP TABLE smem7_symbols_str");
 
-    smem_db->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
-    smem_db->sql_execute("DROP TABLE smem7_symbols_int");
+    DB->sql_execute("CREATE TABLE smem_symbols_integer (s_id INTEGER PRIMARY KEY,symbol_value INTEGER)");
+    DB->sql_execute("INSERT INTO smem_symbols_integer (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_int");
+    DB->sql_execute("DROP TABLE smem7_symbols_int");
 
-    smem_db->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
-    smem_db->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
-    smem_db->sql_execute("DROP TABLE smem7_ascii");
+    DB->sql_execute("CREATE TABLE smem_ascii (ascii_num INTEGER PRIMARY KEY,ascii_chr TEXT)");
+    DB->sql_execute("INSERT INTO smem_ascii (ascii_num, ascii_chr) SELECT ascii_num, ascii_num FROM smem7_ascii");
+    DB->sql_execute("DROP TABLE smem7_ascii");
 
-    smem_db->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
-    smem_db->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
-    smem_db->sql_execute("DROP TABLE smem7_symbols_float");
+    DB->sql_execute("CREATE TABLE smem_symbols_float (s_id INTEGER PRIMARY KEY,symbol_value REAL)");
+    DB->sql_execute("INSERT INTO smem_symbols_float (s_id, symbol_value) SELECT id, sym_const FROM smem7_symbols_float");
+    DB->sql_execute("DROP TABLE smem7_symbols_float");
 
-    smem_db->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_lti (lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
-    smem_db->sql_execute("DROP TABLE smem7_lti");
+    DB->sql_execute("CREATE TABLE smem_lti (lti_id INTEGER PRIMARY KEY,total_augmentations INTEGER,activation_value REAL,activations_total INTEGER,activations_last INTEGER,activations_first INTEGER)");
+    DB->sql_execute("INSERT INTO smem_lti (lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first) SELECT id, child_ct, act_value, access_n, access_t, access_1 FROM smem7_lti");
+    DB->sql_execute("DROP TABLE smem7_lti");
 
-    smem_db->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
-    smem_db->sql_execute("DROP TABLE smem7_history");
+    DB->sql_execute("CREATE TABLE smem_activation_history (lti_id INTEGER PRIMARY KEY,t1 INTEGER,t2 INTEGER,t3 INTEGER,t4 INTEGER,t5 INTEGER,t6 INTEGER,t7 INTEGER,t8 INTEGER,t9 INTEGER,t10 INTEGER)");
+    DB->sql_execute("INSERT INTO smem_activation_history (lti_id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) SELECT id, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10 FROM smem7_history");
+    DB->sql_execute("DROP TABLE smem7_history");
 
-    smem_db->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
-    smem_db->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
-    smem_db->sql_execute("DROP TABLE smem7_web");
+    DB->sql_execute("CREATE TABLE smem_augmentations (lti_id INTEGER,attribute_s_id INTEGER,value_constant_s_id INTEGER,value_lti_id INTEGER,activation_value REAL)");
+    DB->sql_execute("INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) SELECT parent_id, attr, val_const, val_lti, act_value FROM smem7_web");
+    DB->sql_execute("DROP TABLE smem7_web");
 
-    smem_db->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
-    smem_db->sql_execute("DROP TABLE smem7_ct_attr");
+    DB->sql_execute("CREATE TABLE smem_attribute_frequency (attribute_s_id INTEGER PRIMARY KEY,edge_frequency INTEGER)");
+    DB->sql_execute("INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) SELECT attr, ct FROM smem7_ct_attr");
+    DB->sql_execute("DROP TABLE smem7_ct_attr");
 
-    smem_db->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
-    smem_db->sql_execute("DROP TABLE smem7_ct_const");
+    DB->sql_execute("CREATE TABLE smem_wmes_constant_frequency (attribute_s_id INTEGER,value_constant_s_id INTEGER,edge_frequency INTEGER)");
+    DB->sql_execute("INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) SELECT attr, val_const, ct FROM smem7_ct_const");
+    DB->sql_execute("DROP TABLE smem7_ct_const");
 
-    smem_db->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
-    smem_db->sql_execute("DROP TABLE smem7_ct_lti");
+    DB->sql_execute("CREATE TABLE smem_wmes_lti_frequency (attribute_s_id INTEGER,value_lti_id INTEGER,edge_frequency INTEGER)");
+    DB->sql_execute("INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) SELECT attr, val_lti, ct FROM smem7_ct_lti");
+    DB->sql_execute("DROP TABLE smem7_ct_lti");
 
-    smem_db->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
-    smem_db->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
-    smem_db->sql_execute("DROP TABLE smem7_vars");
+    DB->sql_execute("CREATE TABLE smem_persistent_variables (variable_id INTEGER PRIMARY KEY,variable_value INTEGER)");
+    DB->sql_execute("INSERT INTO smem_persistent_variables (variable_id, variable_value) SELECT id, value FROM smem7_vars");
+    DB->sql_execute("DROP TABLE smem7_vars");
 
-    smem_db->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
-    smem_db->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
-    smem_db->sql_execute("DROP TABLE smem7_signature");
+    DB->sql_execute("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+    DB->sql_execute("INSERT INTO versions (system, version_number) VALUES ('smem_schema','2.0')");
+    DB->sql_execute("DROP TABLE smem7_signature");
 
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
-    smem_db->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
-    smem_db->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
-    smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
-    smem_db->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
-    smem_db->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
-    smem_db->sql_execute("COMMIT");
+    DB->sql_execute("CREATE UNIQUE INDEX smem_symbols_int_const ON smem_symbols_integer (symbol_value)");
+    DB->sql_execute("CREATE UNIQUE INDEX smem_ct_lti_attr_val ON smem_wmes_lti_frequency (attribute_s_id, value_lti_id)");
+    DB->sql_execute("CREATE UNIQUE INDEX smem_symbols_float_const ON smem_symbols_float (symbol_value)");
+    DB->sql_execute("CREATE UNIQUE INDEX smem_symbols_str_const ON smem_symbols_string (symbol_value)");
+    DB->sql_execute("CREATE INDEX smem_lti_t ON smem_lti (activations_last)");
+    DB->sql_execute("CREATE INDEX smem_augmentations_parent_attr_val_lti ON smem_augmentations (lti_id, attribute_s_id, value_constant_s_id,value_lti_id)");
+    DB->sql_execute("CREATE INDEX smem_augmentations_attr_val_lti_cycle ON smem_augmentations (attribute_s_id, value_constant_s_id, value_lti_id, activation_value)");
+    DB->sql_execute("CREATE INDEX smem_augmentations_attr_cycle ON smem_augmentations (attribute_s_id, activation_value)");
+    DB->sql_execute("CREATE UNIQUE INDEX smem_wmes_constant_frequency_attr_val ON smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id)");
+    DB->sql_execute("COMMIT");
+}
+
+uint64_t SMem_Manager::lti_exists(uint64_t pLTI_ID)
+{
+    uint64_t return_val = NIL;
+
+    if (DB->get_status() != soar_module::disconnected)
+    {   // getting lti ids requires an open semantic database
+        // soar_letter=? AND number=?
+        SQL->lti_id_exists->bind_int(1, static_cast<uint64_t>(pLTI_ID));
+
+        if (SQL->lti_id_exists->execute() == soar_module::row)
+        {
+            return_val = SQL->lti_id_exists->column_int(0);
+        }
+
+        SQL->lti_id_exists->reinitialize();
+    }
+    return return_val;
+}
+
+uint64_t SMem_Manager::get_max_lti_id()
+{
+    uint64_t return_val = 0;
+
+    if (DB->get_status() != soar_module::disconnected)
+    {
+        if (SQL->lti_id_max->execute() == soar_module::row)
+        {
+            return_val = SQL->lti_id_max->column_int(0);
+        }
+
+        SQL->lti_id_max->reinitialize();
+    }
+    return return_val;
+}
+
+uint64_t SMem_Manager::add_new_lti_id()
+{
+    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
+    SQL->lti_add->bind_int(1, static_cast<uint64_t>(++lti_id_counter));
+    SQL->lti_add->bind_int(2, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_double(3, static_cast<double>(0));
+    SQL->lti_add->bind_int(4, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_int(5, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_int(6, static_cast<uint64_t>(0));
+    SQL->lti_add->execute(soar_module::op_reinit);
+
+//    assert(lti_id_counter == smem_db->last_insert_rowid());
+
+    statistics->chunks->set_value(statistics->chunks->get_value() + 1);
+
+    return lti_id_counter;
 }
