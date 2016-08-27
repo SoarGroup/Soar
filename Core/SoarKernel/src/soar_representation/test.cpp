@@ -699,25 +699,50 @@ void add_all_variables_in_test(agent* thisAgent, test t,
  * to a LHS element or a RHS action that has already been executed */
 
 void add_bound_variables_in_test(agent* thisAgent, test t,
-                                 tc_number tc, list** var_list, bool add_LTIs)
+                                 tc_number tc, list** var_list, bool mark_LTI_test_as_bound)
 {
-    Symbol* referent;
+    cons* c;
+    Symbol* referent = NULL;
 
     if (!t) return;
 
-    referent = t->eq_test->data.referent;
-    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
+    switch (t->type)
+    {
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case DISJUNCTION_TEST:
+            break;
+        case CONJUNCTIVE_TEST:
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
+                add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, mark_LTI_test_as_bound);
+            }
+            break;
+        case SMEM_LINK_TEST:
+//            if (mark_LTI_test_as_bound)
+//            {
+                referent = t->data.referent;
+//            }
+            break;
+        case EQUALITY_TEST:
+            referent = t->data.referent;
+            break;
+        default:
+            break;
+    }
+
+    if (referent && referent->is_variable())
     {
         referent->mark_if_unmarked(thisAgent, tc, var_list);
     }
     return;
 }
 
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list, bool add_LTIs)
+void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
 {
     Symbol* referent;
 
-    if (pSym->is_variable() || (add_LTIs && pSym->is_lti()))
+    if (pSym->is_variable())
     {
         if (pSym->tc_num != tc)
         {

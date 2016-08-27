@@ -79,6 +79,9 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type)
         case SAME_TYPE_TEST:
             return "<=> ";
             break;
+        case SMEM_LINK_TEST:
+            return "<@> ";
+            break;
         case CONJUNCTIVE_TEST:
             return "{ }";
             break;
@@ -853,6 +856,9 @@ void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
             break;
         case LESS_EQUAL_GREATER_LEXEME:
             lex_type_string = "LESS_EQUAL_GREATER_LEXEME";
+            break;
+        case LESS_AT_GREATER_LEXEME:
+            lex_type_string = "LESS_AT_GREATER_LEXEME";
             break;
         case LESS_LESS_LEXEME:
             lex_type_string = "LESS_LESS_LEXEME";

@@ -110,8 +110,7 @@ void        copy_condition_list(agent* thisAgent, condition* top_cond, condition
 void        deallocate_condition(agent* thisAgent, condition*& cond);
 void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
-void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                     ::list** var_list, bool add_LTIs = false);
+void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, ::list** var_list);
 void        unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 int         condition_count(condition* pCond);

@@ -26,7 +26,7 @@ void SMem_Manager::link_sti_to_lti(Symbol* id)
     {
         if (id->id->LTI_ID == NIL)
         {
-            id->id->LTI_ID = add_new_lti_id();
+            id->id->LTI_ID = get_new_lti_id();
             id->id->smem_valid = thisAgent->EpMem->epmem_validation;
         } else {
             /* Already linked?  Should not be possible */

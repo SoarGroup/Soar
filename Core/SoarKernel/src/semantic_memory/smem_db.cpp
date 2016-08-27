@@ -1014,7 +1014,7 @@ uint64_t SMem_Manager::get_max_lti_id()
     return return_val;
 }
 
-uint64_t SMem_Manager::add_new_lti_id()
+uint64_t SMem_Manager::get_new_lti_id()
 {
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
     SQL->lti_add->bind_int(1, static_cast<uint64_t>(++lti_id_counter));

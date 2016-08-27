@@ -118,7 +118,7 @@ class SMem_Manager
         Symbol*         rhash_(byte symbol_type, smem_hash_id hash_value);
 
         /* Methods for LTIs */
-        uint64_t        add_new_lti_id();
+        uint64_t        get_new_lti_id();
         void            get_lti_name(uint64_t pLTI_ID, std::string &lti_name) { lti_name.append("@");  lti_name.append(std::to_string(pLTI_ID)); }
         uint64_t        get_max_lti_id();
         double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
@@ -132,13 +132,13 @@ class SMem_Manager
         void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);
 
         /* Methods to update/store LTM in smem database */
-        void            add_semantic_object_to_smem(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
         void            deallocate_ltm(ltm_object* ltm, bool free_ltm = true);
         void            disconnect_ltm(uint64_t pLTI_ID);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
-        void            store_in_smem(Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL);
+        void            store_LTM(Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL);
+        void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
 
         /* Methods for creating an instance of a LTM using STIs */
         void            clear_instance_mappings();

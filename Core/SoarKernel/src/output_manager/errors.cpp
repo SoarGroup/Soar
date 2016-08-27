@@ -26,9 +26,9 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Chunking has created an invalid rule:");
 
-            printa_sf(thisAgent,  "   Reason:  RHS actions contain the following variables/long-term \n"
-                                  "   identifiers that are not tested in a positive condition \n\n"
-                                  "   on the LHS: %s\n\n", pString2);
+            printa_sf(thisAgent,  "   Reason:  The following RHS actions contain variables that are not tested\n"
+                                  "            in a positive condition on the LHS: \n"
+                                  "            %s\n\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:
@@ -36,7 +36,7 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
             thisAgent->explanationBasedChunker->print_current_built_rule("Chunking has created an invalid rule:");
 
             printa_sf(thisAgent,"   Reason: Conditions on the LHS test the following identifiers that are not connected \n"
-                                "   to a goal: %s\n\n", pString2);
+                                "           to a goal: %s\n\n", pString2);
             printa(thisAgent,   "   This is likely caused by a condition that tested either\n"
                                 "      (a) a semantic memory retrieved in the sub-state that already \n"
                                 "          exists in a super-state \n"

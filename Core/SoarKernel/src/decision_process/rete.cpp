@@ -3091,6 +3091,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         case LESS_OR_EQUAL_TEST:
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
             /* --- if constant, make constant test --- */
             if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {

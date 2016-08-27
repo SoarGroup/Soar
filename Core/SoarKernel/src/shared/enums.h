@@ -284,6 +284,7 @@ enum TestType
     GOAL_ID_TEST = 9,            /* item must be a goal identifier */
     IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
     EQUALITY_TEST = 11,
+    SMEM_LINK_TEST = 12,
     NUM_TEST_TYPES
 };
 

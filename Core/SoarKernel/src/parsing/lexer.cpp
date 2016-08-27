@@ -289,7 +289,7 @@ void Lexer::lex_greater () {
 }
 
 void Lexer::lex_less () {
-  /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
+  /* Lexeme might be "<", "<=", "<=>", "<@>", "<>", "<<", or variable */
   /* Note: this routine relies on =,<,> being constituent characters */
 
   read_constituent_string();
@@ -303,9 +303,13 @@ void Lexer::lex_less () {
     if ((current_lexeme.lex_string[1]=='=')&&(current_lexeme.lex_string[2]=='>'))
       { current_lexeme.type = LESS_EQUAL_GREATER_LEXEME; return; }
   }
+  if (current_lexeme.length()==3) {
+    if ((current_lexeme.lex_string[1]=='@')&&(current_lexeme.lex_string[2]=='>'))
+      { current_lexeme.type = LESS_AT_GREATER_LEXEME; return; }
+  }
   determine_type_of_constituent_string();
-
 }
+
 /**
  * Lexes a section of input beginning with a period (".").
  * Sometimes it is ambiguous whether a string is a floating

@@ -647,7 +647,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     }
 
-    dprint_header(DT_REORDERER, PrintBefore, "Final Conditons:\n");
+    dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
@@ -657,9 +657,8 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "\nWarning:  in production %s,\n",
-                  thisAgent->name_of_production_being_reordered);
-            print(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
+            print(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
+            // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
             // TODO: XML tagged output -- how to create this string?
@@ -667,9 +666,8 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
             // XML generation
             growable_string gs = make_blank_growable_string(thisAgent);
-            add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
+            add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
             add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-            add_to_growable_string(thisAgent, &gs, "\n      ignoring test(s) whose referent is unbound:");
             //TODO: fill in XML print_saved_test_list. Possibile methods include:
             //   1) write a version which adds to a growable string
             //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
@@ -785,8 +783,9 @@ void fill_in_vars_requiring_bindings(agent* thisAgent, condition* cond_list, tc_
     for (c = cond_list; c != NIL; c = c->next)
     {
         if (c->type != POSITIVE_CONDITION)
-            c->reorder.vars_requiring_bindings =
-                collect_vars_tested_by_cond_that_are_bound(thisAgent, c, tc, NIL);
+        {
+            c->reorder.vars_requiring_bindings =  collect_vars_tested_by_cond_that_are_bound(thisAgent, c, tc, NIL);
+        }
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
             fill_in_vars_requiring_bindings(thisAgent, c->data.ncc.top, tc);
@@ -860,7 +859,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot, false);
+            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
     /* --- now see what else we can add by throwing in the id slot --- */
@@ -877,7 +876,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot, false);
+            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
 

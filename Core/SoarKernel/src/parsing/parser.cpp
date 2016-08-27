@@ -447,6 +447,12 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             test_type = SAME_TYPE_TEST;
             if (!lexer->get_lexeme()) return NULL;
             break;
+
+        case LESS_AT_GREATER_LEXEME:
+            test_type = SMEM_LINK_TEST;
+            if (!lexer->get_lexeme()) return NULL;
+            break;
+
         case STR_CONSTANT_LEXEME:
         case INT_CONSTANT_LEXEME:
         case FLOAT_CONSTANT_LEXEME:

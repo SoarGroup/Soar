@@ -449,7 +449,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                     {
-                        store_in_smem((*sym_p), store_level);
+                        store_LTM((*sym_p), store_level);
 
                         // status: success
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));

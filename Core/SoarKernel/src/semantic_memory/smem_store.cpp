@@ -450,7 +450,7 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
             {
                 if ((*c_new)->lti_id == NIL)
                 {
-                    (*c_new)->lti_id =add_new_lti_id();
+                    (*c_new)->lti_id =get_new_lti_id();
 
 //                    // deal differently with variable vs. lti
 //                    if ((*c_new)->lti_number == NIL)
@@ -485,7 +485,7 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
             {
                 if ((*c_new)->slots != NIL)
                 {
-                   add_semantic_object_to_smem((*c_new)->lti_id, (*c_new)->slots, false);
+                   store_LTM_in_DB((*c_new)->lti_id, (*c_new)->slots, false);
                 }
             }
 
@@ -1252,7 +1252,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
     }
 }
 
-void SMem_Manager::add_semantic_object_to_smem(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
+void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
 {
     // if remove children, disconnect ltm -> no existing edges
     // else, need to query number of existing edges
@@ -1351,7 +1351,7 @@ void SMem_Manager::add_semantic_object_to_smem(uint64_t pLTI_ID, ltm_slot_map* c
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     if (value_lti == NIL)
                     {
-                        value_lti = add_new_lti_id();
+                        value_lti = get_new_lti_id();
                         (*v)->val_lti.val_value->lti_id = value_lti;
 
                         if ((*v)->val_lti.val_value->soar_id != NIL)
@@ -1544,7 +1544,7 @@ void SMem_Manager::add_semantic_object_to_smem(uint64_t pLTI_ID, ltm_slot_map* c
     }
 }
 
-void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store_type, tc_number tc)
+void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_type, tc_number tc)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -1616,7 +1616,7 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
             s->push_back(v);
         }
 
-        add_semantic_object_to_smem(pIdentifierSTI->id->LTI_ID, &(slots), true, pIdentifierSTI);
+        store_LTM_in_DB(pIdentifierSTI->id->LTI_ID, &(slots), true, pIdentifierSTI);
 
         // clean up
         {
@@ -1644,6 +1644,6 @@ void SMem_Manager::store_in_smem(Symbol* pIdentifierSTI, smem_storage_type store
     // recurse as necessary
     for (symbol_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
-        store_in_smem((*shorty), store_recursive, tc);
+        store_LTM((*shorty), store_recursive, tc);
     }
 }

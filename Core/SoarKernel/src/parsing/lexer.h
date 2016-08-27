@@ -44,6 +44,7 @@ enum lexer_token_type {
   GREATER_EQUAL_LEXEME,              /**< ">=" */
   NOT_EQUAL_LEXEME,                  /**< "<>" */
   LESS_EQUAL_GREATER_LEXEME,         /**< "<=>" */
+  LESS_AT_GREATER_LEXEME,            /**< "<@>" */
   LESS_LESS_LEXEME,                  /**< "<<" */
   GREATER_GREATER_LEXEME,            /**< ">>" */
   AMPERSAND_LEXEME,                  /**< "&" */
