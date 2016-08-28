@@ -2618,7 +2618,22 @@ void bind_variables_in_test(agent* thisAgent,
     {
         return;
     }
-    if ((t->type == EQUALITY_TEST) || (t->type == SMEM_LINK_TEST))
+    if (t->type == EQUALITY_TEST)
+    {
+        referent = t->data.referent;
+        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+        {
+            return;
+        }
+        if (!dense && var_is_bound(referent))
+        {
+            return;
+        }
+        push_var_binding(thisAgent, referent, depth, field_num);
+        push(thisAgent, referent, *varlist);
+        return;
+    }
+    else if (t->type == SMEM_LINK_TEST)
     {
         referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -4895,8 +4910,7 @@ bool constant_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
-    if (!s1->is_lti() || !s2->is_int()) return false;
-    return static_cast<bool>(s1->id->LTI_ID == s2->ic->value);
+    return static_cast<bool>(s1->is_lti() &&  s2->is_int() && s1->id->LTI_ID == s2->ic->value);
 }
 
 bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
@@ -5077,7 +5091,7 @@ bool variable_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
         w = left->w;
     }
     s2 = field_from_wme(w, rt->data.variable_referent.field_num);
-    if (!s1->is_lti() || !s2->is_lti()) return false;
+    return (s1->is_lti() && s2->is_lti() && (s1->id->LTI_ID == s2->id->LTI_ID));
 }
 
 
