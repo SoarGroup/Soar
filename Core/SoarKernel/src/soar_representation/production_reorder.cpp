@@ -366,7 +366,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             {
                 next_c = c->rest;
                 subtest = static_cast<test>(c->first);
-                if (subtest->type != EQUALITY_TEST)
+                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_TEST))
                 {
                     /* -- create saved_test, splice this cons out of conjunct_list -- */
                     thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
@@ -859,7 +859,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
     /* --- now see what else we can add by throwing in the id slot --- */
@@ -876,7 +876,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
 

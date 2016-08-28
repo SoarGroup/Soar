@@ -698,8 +698,7 @@ void add_all_variables_in_test(agent* thisAgent, test t,
  * it also consider whether the LTIs level can be determined by being linked
  * to a LHS element or a RHS action that has already been executed */
 
-void add_bound_variables_in_test(agent* thisAgent, test t,
-                                 tc_number tc, list** var_list, bool mark_LTI_test_as_bound)
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list)
 {
     cons* c;
     Symbol* referent = NULL;
@@ -715,14 +714,11 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
         case CONJUNCTIVE_TEST:
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
-                add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list, mark_LTI_test_as_bound);
+                add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
             }
             break;
         case SMEM_LINK_TEST:
-//            if (mark_LTI_test_as_bound)
-//            {
-                referent = t->data.referent;
-//            }
+            referent = t->data.referent;
             break;
         case EQUALITY_TEST:
             referent = t->data.referent;
@@ -738,7 +734,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t,
     return;
 }
 
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
 {
     Symbol* referent;
 
