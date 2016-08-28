@@ -204,11 +204,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             {
                 if (!lexer.get_lexeme()) return SetError("Nothing found after @");
             }
-            if (lexer.current_lexeme.type == IDENTIFIER_LEXEME)
+            if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
             {
                 if (thisAgent->SMem->DB->get_status() == soar_module::connected)
                 {
-                    lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.id_number);
+                    lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
 
                     if ((lti_id != NIL) && pVal)
                     {
