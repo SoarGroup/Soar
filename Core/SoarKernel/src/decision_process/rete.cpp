@@ -2608,7 +2608,8 @@ void bind_variables_in_test(agent* thisAgent,
                             rete_node_level depth,
                             byte field_num,
                             bool dense,
-                            list** varlist)
+                            list** varlist,
+                            test main_eq_test = NULL)
 {
     Symbol* referent;
     cons* c;
@@ -2617,7 +2618,7 @@ void bind_variables_in_test(agent* thisAgent,
     {
         return;
     }
-    if (t->type == EQUALITY_TEST)
+    if ((t->type == EQUALITY_TEST) || (t->type == SMEM_LINK_TEST))
     {
         referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -2633,9 +2634,12 @@ void bind_variables_in_test(agent* thisAgent,
         return;
     }
     else if (t->type == CONJUNCTIVE_TEST)
+    {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            bind_variables_in_test(thisAgent, static_cast<test>(c->first),
-                                   depth, field_num, dense, varlist);
+        {
+            bind_variables_in_test(thisAgent, static_cast<test>(c->first), depth, field_num, dense, varlist, t->eq_test);
+        }
+    }
 }
 
 /* -------------------------------------------------------------------
@@ -2658,18 +2662,6 @@ void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, list* vars)
         free_cons(thisAgent, c);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* **********************************************************************
 
@@ -3039,58 +3031,111 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         case EQUALITY_TEST:
             referent = t->data.referent;
 
-        /* --- if constant test and alpha=NIL, install alpha test --- */
-        if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
+            /* --- if constant test and alpha=NIL, install alpha test --- */
+            if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
                 (*alpha_constant == NIL))
-        {
-            *alpha_constant = referent;
-            return;
-        }
+            {
+                *alpha_constant = referent;
+                return;
+            }
 
-        /* --- if constant, make = constant test --- */
-        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-        {
+            /* --- if constant, make = constant test --- */
+            if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+            {
                 thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+                new_rt->right_field_num = field_num;
+                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+                new_rt->data.constant_referent = referent;
+                thisAgent->symbolManager->symbol_add_ref(referent);
+                new_rt->next = *rt;
+                *rt = new_rt;
+                return;
+            }
+
+            /* --- variable: if binding is for current field, do nothing --- */
+            if (! find_var_location(referent, current_depth, &where))
+            {
+                char msg[BUFFER_MSG_SIZE];
+                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+                    referent);
+                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                    referent->to_string(true));
+                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+                abort_with_fatal_error(thisAgent, msg);
+            }
+            if ((where.levels_up == 0) && (where.field_num == field_num))
+            {
+                return;
+            }
+
+            /* --- else make variable equality test --- */
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
-            new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-            new_rt->data.constant_referent = referent;
-            thisAgent->symbolManager->symbol_add_ref(referent);
+            new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+            new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
-        }
-
-        /* --- variable: if binding is for current field, do nothing --- */
-        if (! find_var_location(referent, current_depth, &where))
-        {
-            char msg[BUFFER_MSG_SIZE];
-            print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                               referent);
-            SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                         referent->to_string(true));
-            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-            abort_with_fatal_error(thisAgent, msg);
-        }
-        if ((where.levels_up == 0) && (where.field_num == field_num))
-        {
-            return;
-        }
-
-        /* --- else make variable equality test --- */
-            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-        new_rt->right_field_num = field_num;
-        new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-        new_rt->data.variable_referent = where;
-        new_rt->next = *rt;
-        *rt = new_rt;
-        return;
             break;
-        case NOT_EQUAL_TEST:
-        case LESS_TEST:
-        case GREATER_TEST:
-        case LESS_OR_EQUAL_TEST:
-        case GREATER_OR_EQUAL_TEST:
-        case SAME_TYPE_TEST:
+//        case SMEM_LINK_TEST:
+//            referent = t->data.referent;
+//
+//            /* --- if constant test and alpha=NIL, install alpha test --- */
+//            if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
+//                (*alpha_constant == NIL))
+//            {
+//                *alpha_constant = referent;
+//                return;
+//            }
+//
+//            /* --- if constant, make = constant test --- */
+//            if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+//            {
+//                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+//                new_rt->right_field_num = field_num;
+//                where.levels_up = 0;
+//                where.field_num = field_num;
+//                new_rt->data.variable_referent = where;
+//                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST;
+//                new_rt->data.constant_referent = referent;
+//                thisAgent->symbolManager->symbol_add_ref(referent);
+//                new_rt->next = *rt;
+//                *rt = new_rt;
+//                return;
+//            }
+//
+////            /* --- variable: if binding is for current field, do nothing --- */
+////            if (! find_var_location(referent, current_depth, &where))
+////            {
+////                char msg[BUFFER_MSG_SIZE];
+////                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+////                    referent);
+////                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+////                    referent->to_string(true));
+////                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+////                abort_with_fatal_error(thisAgent, msg);
+////            }
+////            if ((where.levels_up == 0) && (where.field_num == field_num))
+////            {
+////                return;
+////            }
+//
+//            /* MToDo | May want to make this a constant test, even though it has a variable. The test itself
+//             *         doesn't require a binding from another condition like a normal relational variable binding */
+//            /* --- else make variable equality test --- */
+//            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+//            new_rt->right_field_num = field_num;
+//            new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST;
+//            /* Field is 0 by default, but we want it to be whereever the real equality test is */
+//            where.levels_up = 0;
+//            where.field_num = field_num;
+//            new_rt->data.variable_referent = where;
+//            new_rt->data.constant_referent = referent;
+//            thisAgent->symbolManager->symbol_add_ref(referent);
+//            new_rt->next = *rt;
+//            *rt = new_rt;
+//            return;
+//            break;
         case SMEM_LINK_TEST:
             /* --- if constant, make constant test --- */
             if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -3098,7 +3143,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
                 thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                               test_type_to_relational_test_type(t->type);
+                    test_type_to_relational_test_type(t->type);
                 new_rt->data.constant_referent = t->data.referent;
                 thisAgent->symbolManager->symbol_add_ref(t->data.referent);
                 new_rt->next = *rt;
@@ -3110,16 +3155,54 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             {
                 char msg[BUFFER_MSG_SIZE];
                 print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                                   t->data.referent);
+                    t->data.referent);
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                         t->data.referent->to_string(true));
+                    t->data.referent->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                           test_type_to_relational_test_type(t->type);
+                test_type_to_relational_test_type(t->type);
+            new_rt->data.variable_referent = where;
+            new_rt->next = *rt;
+            *rt = new_rt;
+            return;
+        case NOT_EQUAL_TEST:
+        case LESS_TEST:
+        case GREATER_TEST:
+        case LESS_OR_EQUAL_TEST:
+        case GREATER_OR_EQUAL_TEST:
+        case SAME_TYPE_TEST:
+            /* --- if constant, make constant test --- */
+            if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+            {
+                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+                new_rt->right_field_num = field_num;
+                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
+                    test_type_to_relational_test_type(t->type);
+                new_rt->data.constant_referent = t->data.referent;
+                thisAgent->symbolManager->symbol_add_ref(t->data.referent);
+                new_rt->next = *rt;
+                *rt = new_rt;
+                return;
+            }
+            /* --- else make variable test --- */
+            if (! find_var_location(t->data.referent, current_depth, &where))
+            {
+                char msg[BUFFER_MSG_SIZE];
+                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+                    t->data.referent);
+                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                    t->data.referent->to_string(true));
+                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+                abort_with_fatal_error(thisAgent, msg);
+            }
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+            new_rt->right_field_num = field_num;
+            new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
+                test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
@@ -3139,7 +3222,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 add_rete_tests_for_test(thisAgent, static_cast<test>(c->first),
-                                        current_depth, field_num, rt, alpha_constant);
+                    current_depth, field_num, rt, alpha_constant);
             }
             return;
 
@@ -3163,7 +3246,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         {
             char msg[BUFFER_MSG_SIZE];
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: found bad test type %d while building rete\n",
-                     t->type);
+                t->type);
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
             break;
@@ -4805,6 +4888,17 @@ bool constant_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
     return static_cast<bool>(s1->symbol_type == s2->symbol_type);
 }
 
+bool constant_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
+{
+    Symbol* s1, *s2;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+    s2 = rt->data.constant_referent;
+    if (!s1->is_lti() || !s2->is_int()) return false;
+    return static_cast<bool>(s1->id->LTI_ID == s2->ic->value);
+}
+
 bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
 {
     Symbol* s1, *s2;
@@ -4962,6 +5056,29 @@ bool variable_same_type_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
     return (s1->symbol_type == s2->symbol_type);
 }
 
+
+bool variable_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
+        wme* w)
+{
+    Symbol* s1, *s2;
+    int i;
+    bool return_val = false;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+
+    if (rt->data.variable_referent.levels_up != 0)
+    {
+        i = rt->data.variable_referent.levels_up - 1;
+        while (i != 0)
+        {
+            left = left->parent;
+            i--;
+        }
+        w = left->w;
+    }
+    s2 = field_from_wme(w, rt->data.variable_referent.field_num);
+    if (!s1->is_lti() || !s2->is_lti()) return false;
+}
 
 
 /* ************************************************************************
@@ -9808,6 +9925,9 @@ void init_rete(agent* thisAgent)
     rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
                        RELATIONAL_SAME_TYPE_RETE_TEST] =
                            constant_same_type_rete_test_routine;
+    rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
+                       RELATIONAL_SMEM_LINK_TEST] =
+                           constant_smem_link_rete_test_routine;
     rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
                        RELATIONAL_EQUAL_RETE_TEST] =
                            variable_equal_rete_test_routine;
@@ -9829,4 +9949,7 @@ void init_rete(agent* thisAgent)
     rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
                        RELATIONAL_SAME_TYPE_RETE_TEST] =
                            variable_same_type_rete_test_routine;
+    rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
+                       RELATIONAL_SMEM_LINK_TEST] =
+                           variable_smem_link_rete_test_routine;
 }
