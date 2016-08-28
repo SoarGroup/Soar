@@ -125,6 +125,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             lexer->get_lexeme();
 
             good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+            /* May want to verify that this is a legitimate id in the smem database */
             l_ltm->lti_id = lexer->current_lexeme.int_val;
 
         } else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
@@ -287,11 +288,17 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                     {
                                         // create new ltm
                                         l_ltm_temp = new ltm_object;
-                                        l_ltm_temp->lti_id = NIL;
-                                        l_ltm_temp->lti_id = NIL;
                                         l_ltm_temp->slots = NIL;
                                         l_ltm_temp->soar_id = NIL;
 
+                                        if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
+                                        {
+                                            /* May want to verify that this is a legitimate id in the smem database */
+                                            l_ltm_temp->lti_id = static_cast<uint64_t>(lexer->current_lexeme.int_val);
+
+                                        } else {
+                                            l_ltm_temp->lti_id = NIL;
+                                        }
                                         // associate with value
                                         l_ltm_value->val_lti.val_value = l_ltm_temp;
 
