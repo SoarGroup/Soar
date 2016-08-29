@@ -37,8 +37,8 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
     {
         outputManager->printa(thisAgent, "\n  -->\n   ");
         print_action_list(thisAgent, m_rhs, 3, false);
+        outputManager->printa_sf(thisAgent, "}\n\n");
     }
-    outputManager->printa_sf(thisAgent, "}\n\n");
 }
 
 void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)

@@ -28,7 +28,7 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
 
             printa_sf(thisAgent,  "   Reason:  The following RHS actions contain variables that are not tested\n"
                                   "            in a positive condition on the LHS: \n"
-                                  "            %s\n\n", pString2);
+                                  "   %s\n\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:

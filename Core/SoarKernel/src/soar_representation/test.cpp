@@ -717,9 +717,11 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, list** 
                 add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
             }
             break;
-        case SMEM_LINK_TEST:
-            referent = t->data.referent;
-            break;
+            /* If you re-enable the next section, variables bound to lti-id's will be legal on the rhs.
+             * Note that they will not work as expected and will point to instance variable */
+            //        case SMEM_LINK_TEST:
+            //            referent = t->data.referent;
+            //            break;
         case EQUALITY_TEST:
             referent = t->data.referent;
             break;
