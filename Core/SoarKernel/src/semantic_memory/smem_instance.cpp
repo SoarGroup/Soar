@@ -22,7 +22,7 @@
 
 uint64_t SMem_Manager::link_sti_to_lti(Symbol* id, bool ignore_previous_link)
 {
-    assert (id->is_identifier());
+    assert (id->is_sti());
     if (id->id->LTI_ID == NIL)
         {
             id->id->LTI_ID = get_new_lti_id();

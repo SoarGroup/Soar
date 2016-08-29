@@ -147,9 +147,9 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
     dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
+    assert(((!w->id->is_sti()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+           ((!w->attr->is_sti()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
+           ((!w->value->is_sti()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
 
     push(thisAgent, w, thisAgent->wmes_to_add);
 
@@ -183,7 +183,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
-    if (w->value->is_identifier())
+    if (w->value->is_sti())
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);

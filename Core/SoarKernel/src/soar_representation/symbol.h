@@ -109,29 +109,21 @@ typedef struct EXPORT symbol_struct
     };
 #endif
 
-    bool is_identifier() { return (symbol_type == IDENTIFIER_SYMBOL_TYPE); }
-    bool is_variable() { return (symbol_type == VARIABLE_SYMBOL_TYPE); }
-    bool is_constant() { return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) || (symbol_type == INT_CONSTANT_SYMBOL_TYPE) || (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)); }
-    bool is_constant_or_marked_variable(tc_number tc) { return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc)); }
-    bool is_in_tc(tc_number tc) { if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE)) return (tc_num == tc); else return false;}
-    bool is_string() { return (symbol_type == STR_CONSTANT_SYMBOL_TYPE); }
-    bool is_int() { return (symbol_type == INT_CONSTANT_SYMBOL_TYPE); }
-    bool is_float() { return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE); }
-    tc_number get_tc_num() { return tc_num; }
-    void set_tc_num(tc_number n) { tc_num = n; }
-//    bool        is_identifier();
-//    bool        is_variable();
-//    bool        is_constant();
+    bool        is_sti()        { return (symbol_type == IDENTIFIER_SYMBOL_TYPE); }
+    bool        is_variable()   { return (symbol_type == VARIABLE_SYMBOL_TYPE); }
+    bool        is_constant()   { return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) || (symbol_type == INT_CONSTANT_SYMBOL_TYPE) || (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)); }
+    bool        is_string()     { return (symbol_type == STR_CONSTANT_SYMBOL_TYPE); }
+    bool        is_int()        { return (symbol_type == INT_CONSTANT_SYMBOL_TYPE); }
+    bool        is_float()      { return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE); }
+    tc_number   get_tc_num()            { return tc_num; }
+    void        set_tc_num(tc_number n) { tc_num = n; }
+    bool        is_constant_or_marked_variable(tc_number tc) { return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc)); }
+    bool        is_in_tc(tc_number tc)
+                { if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE)) return (tc_num == tc); else return false;}
+
     bool        is_lti();
-//    bool        is_constant_or_marked_variable(tc_number tc);
-//    bool        is_in_tc(tc_number tc);
-//    bool        is_string();
-//    bool        is_int();
-//    bool        is_float();
     bool        is_state();
     bool        is_top_state();
-//    tc_number   get_tc_num();
-//    void        set_tc_num(tc_number n);
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
@@ -278,7 +270,7 @@ inline bool Symbol::is_lti()
 //
 inline bool Symbol::is_state()
 {
-    return (is_identifier() && id->isa_goal);
+    return (is_sti() && id->isa_goal);
 }
 
 inline bool Symbol::is_top_state()
@@ -301,7 +293,7 @@ inline Symbol* Symbol::get_parent_state()
 inline bool Symbol::get_id_name(std::string& n)
 {
     std::stringstream ss;
-    if (!is_identifier())
+    if (!is_sti())
     {
         return false;
     }

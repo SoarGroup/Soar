@@ -58,7 +58,7 @@ wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
     wme_list* return_val = new wme_list;
 
     // augs only exist for identifiers
-    if (id->is_identifier())
+    if (id->is_sti())
     {
         if (tc != NIL)
         {

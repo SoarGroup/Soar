@@ -928,7 +928,7 @@ bool Symbol_Manager::remove_if_sti(agent* thisAgent, void* item, void* userdata)
     char msg[256];
     sym = static_cast<symbol_struct*>(item);
 
-    if (sym->is_identifier())
+    if (sym->is_sti())
     {
         SNPRINTF(msg, 256,
             "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",

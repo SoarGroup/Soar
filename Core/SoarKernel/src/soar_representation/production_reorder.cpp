@@ -161,7 +161,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 assert(ungrounded_syms && lSym);
                 symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                 lNewUngroundedSym->sym = lSym;
-                if (lSym->is_identifier())
+                if (lSym->is_sti())
                 {
                     lNewUngroundedSym->matched_sym = lSym;
                 } else {

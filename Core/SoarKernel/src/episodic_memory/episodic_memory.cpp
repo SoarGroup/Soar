@@ -1281,7 +1281,7 @@ epmem_wme_list* epmem_get_augs_of_id(Symbol* id, tc_number tc)
     epmem_wme_list* return_val = new epmem_wme_list;
 
     // augs only exist for identifiers
-    if ((id->is_identifier()) &&
+    if ((id->is_sti()) &&
             (id->tc_num != tc))
     {
         id->tc_num = tc;

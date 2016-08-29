@@ -1632,7 +1632,7 @@ inline void _epmem_process_ids(agent* thisAgent)
         id = thisAgent->EpMem->epmem_id_removes->front();
         thisAgent->EpMem->epmem_id_removes->pop_front();
 
-        assert(id->is_identifier());
+        assert(id->is_sti());
 
         if ((id->id->epmem_id != EPMEM_NODEID_BAD) && (id->id->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
@@ -2837,7 +2837,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         return;
     }
-    if (pOnlySTIs && !t->data.referent->is_identifier())
+    if (pOnlySTIs && !t->data.referent->is_sti())
     {
         return;
     }

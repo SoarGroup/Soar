@@ -227,7 +227,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return;
     }
@@ -388,7 +388,7 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return;
     }

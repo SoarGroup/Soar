@@ -61,7 +61,7 @@ command* command_table::make_command(svs_state* state, wme* w)
     {
         return NULL;
     }
-    if (!si->get_wme_val(w)->is_identifier())
+    if (!si->get_wme_val(w)->is_sti())
     {
         return NULL;
     }

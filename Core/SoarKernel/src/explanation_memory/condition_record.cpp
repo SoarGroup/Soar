@@ -68,7 +68,7 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
 {
     /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
      * we use actual tests if we know it's a literal condition because identifier is STI */
-    if (condition_tests.id->eq_test->data.referent->is_identifier() &&
+    if (condition_tests.id->eq_test->data.referent->is_sti() &&
         !condition_tests.attr->eq_test->data.referent->is_variable() &&
         !condition_tests.attr->eq_test->data.referent->is_variable())
     {
@@ -109,7 +109,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     if (pCond->bt.level)
     {
         wme_level_at_firing = pCond->bt.level;
-    } else if (condition_tests.id->eq_test->data.referent->is_identifier())
+    } else if (condition_tests.id->eq_test->data.referent->is_sti())
     {
         assert (condition_tests.id->eq_test->data.referent->id->level);
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;

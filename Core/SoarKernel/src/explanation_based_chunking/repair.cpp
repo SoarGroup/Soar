@@ -72,7 +72,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                 {
-                    if (w->preference && w->value->is_identifier() && (w->value->tc_num != ground_lti_tc))
+                    if (w->preference && w->value->is_sti() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
                         lNewPath = new Path_to_Goal_State(w->value, lCurrentPath->get_path(), w);
@@ -178,7 +178,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
     uint64_t lMatchedIdentity = 0;
 
-    assert(lMatchedSym->is_identifier());
+    assert(lMatchedSym->is_sti());
 
     /* Copy in any identities for the LTI that was used in the unconnected conditions */
     std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
@@ -191,7 +191,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if (lMatchedSym->is_identifier())
+        if (lMatchedSym->is_sti())
         {
             char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
             if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
@@ -290,7 +290,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
     {
         if (lCond->type == POSITIVE_CONDITION)
         {
-            if (lCond->data.tests.id_test->eq_test->data.referent->is_identifier())
+            if (lCond->data.tests.id_test->eq_test->data.referent->is_sti())
             {
                 if (lCond->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
@@ -303,7 +303,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 }
             } else {
                 if (lCond->counterpart &&
-                    lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_identifier() &&
+                    lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_sti() &&
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
                     dprint(DT_REPAIR, "Marking state found %y in id element counterpart with tc_num %u\n", lCond->counterpart->data.tests.id_test->eq_test->data.referent, tc);
@@ -314,7 +314,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     }
                 }
             }
-            if (lCond->data.tests.value_test->eq_test->data.referent->is_identifier())
+            if (lCond->data.tests.value_test->eq_test->data.referent->is_sti())
             {
                 if (lCond->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
@@ -327,7 +327,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 }
             } else {
                 if (lCond->counterpart &&
-                    lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_identifier() &&
+                    lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_sti() &&
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
                     dprint(DT_REPAIR, "Marking state found %y in value element counterpart with tc_num %u\n", lCond->counterpart->data.tests.value_test->eq_test->data.referent, tc);

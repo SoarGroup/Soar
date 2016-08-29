@@ -503,7 +503,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     {
         goto abort_execute_action;
     }
-    if (!lId->is_identifier())
+    if (!lId->is_sti())
     {
         print_with_symbols(thisAgent,
                            "Error: RHS makes a preference for %y (not an identifier)\n",
@@ -1035,11 +1035,11 @@ void create_instantiation(agent* thisAgent, production* prod,
                 {
                     tempwme->id->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->attr->is_identifier() && tempwme->attr->id->level == 0)
+                if (tempwme->attr->is_sti() && tempwme->attr->id->level == 0)
                 {
                     tempwme->attr->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->value->is_identifier() && tempwme->value->id->level == 0)
+                if (tempwme->value->is_sti() && tempwme->value->id->level == 0)
                 {
                     tempwme->value->id->level = glbDeepCopyWMELevel;
                 }
