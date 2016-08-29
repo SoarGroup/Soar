@@ -928,7 +928,7 @@ bool Symbol_Manager::remove_if_sti(agent* thisAgent, void* item, void* userdata)
     char msg[256];
     sym = static_cast<symbol_struct*>(item);
 
-    if (sym->is_sti())
+    if (sym->is_identifier())
     {
         SNPRINTF(msg, 256,
             "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
@@ -944,13 +944,9 @@ bool Symbol_Manager::remove_if_sti(agent* thisAgent, void* item, void* userdata)
     }
     else
     {
-        if (!sym->is_identifier())
-        {
-            dprint(DT_DEBUG, "ERROR: HASHTABLE ITEM %y IS NOT AN IDENTIFIER!  (refcount = %u)\n", sym, sym->reference_count);
-            print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-            return true;
-        }
-        return false;
+        dprint(DT_DEBUG, "ERROR: HASHTABLE ITEM %y IS NOT AN IDENTIFIER!  (refcount = %u)\n", sym, sym->reference_count);
+        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+        return true;
     }
     return false;
 }

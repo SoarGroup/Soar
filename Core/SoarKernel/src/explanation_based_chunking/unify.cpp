@@ -168,7 +168,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
         } else {
             assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
             rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-            if (rs->o_id && !rs->referent->is_sti())
+            if (rs->o_id && !rs->referent->is_identifier())
             {
                 add_identity_unification(rs->o_id, 0);
             }
@@ -204,7 +204,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_identifier() ? "is identifier " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
     }
     if (o_ids_to_replace.attr)
     {
@@ -224,7 +224,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lAttr->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lAttr->data.referent->is_identifier() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
     }
     if (o_ids_to_replace.value)
     {
@@ -244,6 +244,6 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lValue->data.referent->is_identifier() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
     }
 }

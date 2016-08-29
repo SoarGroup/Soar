@@ -2837,7 +2837,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         return;
     }
-    if (pOnlySTIs && !t->data.referent->is_sti())
+    if (pOnlySTIs && !t->data.referent->is_identifier())
     {
         return;
     }

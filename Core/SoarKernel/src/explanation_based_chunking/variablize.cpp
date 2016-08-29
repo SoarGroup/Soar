@@ -152,14 +152,14 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     }
     else
     {
-        if (rs->referent->is_sti())
+        if (rs->referent->is_identifier())
         {
             /* I think this can only occur now when trying to variablize a locally promoted STI. */
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
             return;
         }
     }
-    if (!found_variablization && rs->referent->is_sti())
+    if (!found_variablization && rs->referent->is_identifier())
     {
         /* -- First instance of an unbound rhs var -- */
         dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
@@ -184,7 +184,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     }
     else
     {
-        assert(!rs->referent->is_sti());
+        assert(!rs->referent->is_identifier());
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
         dprint_variablization_table(DT_RHS_VARIABLIZATION);
     }
@@ -272,7 +272,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     }
     else
     {
-        dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
+        dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_identifier() ?
             "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
         return false;
@@ -307,7 +307,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
             tt = reinterpret_cast<test>(c->first);
             if (test_has_referent(tt))
             {
-                if (tt->data.referent->is_sti())
+                if (tt->data.referent->is_identifier())
                 {
                     if (!variablize_test_by_lookup(tt, pSkipTopLevelEqualities))
                     {
