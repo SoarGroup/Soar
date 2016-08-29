@@ -20,25 +20,28 @@
 #include "symbol_manager.h"
 #include "working_memory_activation.h"
 
-void SMem_Manager::link_sti_to_lti(Symbol* id)
+uint64_t SMem_Manager::link_sti_to_lti(Symbol* id, bool ignore_previous_link)
 {
-    if (id->is_identifier())
-    {
-        if (id->id->LTI_ID == NIL)
+    assert (id->is_identifier());
+    if (id->id->LTI_ID == NIL)
         {
             id->id->LTI_ID = get_new_lti_id();
             id->id->smem_valid = thisAgent->EpMem->epmem_validation;
         } else {
-            /* Already linked?  Should not be possible */
+        if (ignore_previous_link)
+        {
+            id->id->LTI_ID = get_new_lti_id();
+            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
+        } else {
+            /* Already linked but we're not supposed to ignore
+             * Shouldn't be possible atm */
             assert(lti_exists(id->id->LTI_ID));
             assert(false);
         }
-    } else {
-
-        id->id->LTI_ID = 0;
-        id->id->smem_valid = 0;
     }
+    return id->id->LTI_ID;
 }
+
 void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())

@@ -457,7 +457,12 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
             {
                 if ((*c_new)->lti_id == NIL)
                 {
-                    (*c_new)->lti_id =get_new_lti_id();
+                    if ((*c_new)->soar_id != NIL)
+                    {
+                        (*c_new)->lti_id = link_sti_to_lti((*c_new)->soar_id);
+                    } else {
+                        (*c_new)->lti_id = get_new_lti_id();
+                    }
 
 //                    // deal differently with variable vs. lti
 //                    if ((*c_new)->lti_number == NIL)
@@ -1361,13 +1366,11 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     if (value_lti == NIL)
                     {
-                        value_lti = get_new_lti_id();
-                        (*v)->val_lti.val_value->lti_id = value_lti;
-
                         if ((*v)->val_lti.val_value->soar_id != NIL)
                         {
-                            (*v)->val_lti.val_value->soar_id->id->LTI_ID = value_lti;
-                            (*v)->val_lti.val_value->soar_id->id->smem_valid = thisAgent->EpMem->epmem_validation;
+                            (*v)->val_lti.val_value->lti_id  = link_sti_to_lti((*v)->val_lti.val_value->soar_id);
+                        } else {
+                            (*v)->val_lti.val_value->lti_id = get_new_lti_id();
                         }
                     }
 
@@ -1569,7 +1572,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
-//    link_sti_to_lti(pIdentifierSTI);
+    link_sti_to_lti(pIdentifierSTI, (pIdentifierSTI->id->LTI_ID == NIL));
 
     // encode this level
     {
