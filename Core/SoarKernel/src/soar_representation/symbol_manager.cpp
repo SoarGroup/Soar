@@ -971,7 +971,12 @@ bool Symbol_Manager::reset_id_counters()
 
     if (identifier_hash_table->count != 0)
     {
+        thisAgent->outputManager->printa_sf(thisAgent, "Soar internal error.  %d unallocated short-term identifiers.  Likely a memory leak.  Forcing deletion.\n", identifier_hash_table->count);
         /* MToDo | We should be able to just release the hash table and reset the Symbol_Manager now that LTIs are gone */
+        free_hash_table(thisAgent, identifier_hash_table);
+        thisAgent->memoryManager->free_memory_pool(MP_identifier);
+        identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
+        thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
         assert(false);
     }
     for (i = 0; i < 26; i++)

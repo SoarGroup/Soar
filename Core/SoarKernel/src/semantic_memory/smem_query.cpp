@@ -650,7 +650,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
             ////////////////////////////////////////////////////////////////////////////
             timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
-
+            clear_instance_mappings();
             install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
         }
         else

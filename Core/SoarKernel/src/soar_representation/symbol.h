@@ -219,77 +219,11 @@ struct idSymbol    : public Symbol
     void* rl_trace;
 };
 
-//inline bool Symbol::is_identifier()
-//{
-//    return (symbol_type == IDENTIFIER_SYMBOL_TYPE);
-//};
-//inline bool Symbol::is_variable()
-//{
-//    return (symbol_type == VARIABLE_SYMBOL_TYPE);
-//};
-//inline bool Symbol::is_constant()
-//{
-//    return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) ||
-//            (symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-//            (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE));
-//};
-inline bool Symbol::is_lti()
-{
-    return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->LTI_ID != NIL));
-};
-//inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
-//{
-//    return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc));
-//};
-//inline bool Symbol::is_in_tc(tc_number tc)
-//{
-//    if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE))
-//    {
-//        return (tc_num == tc);
-//    }
-//    else
-//    {
-//        return false;
-//    }
-//};
-//inline bool Symbol::is_string()
-//{
-//    return (symbol_type == STR_CONSTANT_SYMBOL_TYPE);
-//}
-//
-//inline bool Symbol::is_int()
-//{
-//    return (symbol_type == INT_CONSTANT_SYMBOL_TYPE);
-//}
-//
-//inline bool Symbol::is_float()
-//{
-//    return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE);
-//}
-//
-inline bool Symbol::is_state()
-{
-    return (is_sti() && id->isa_goal);
-}
+inline bool     Symbol::is_lti()            { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && (id->LTI_ID != NIL)); };
+inline bool     Symbol::is_state()          { return (is_sti() && id->isa_goal);}
+inline bool     Symbol::is_top_state()      { return (is_state() && (id->higher_goal == NULL)); }
+inline Symbol*  Symbol::get_parent_state()  { return id->higher_goal; }
 
-inline bool Symbol::is_top_state()
-{
-    return (is_state() && (id->higher_goal == NULL));
-}
-//inline tc_number Symbol::get_tc_num()
-//{
-//    return tc_num;
-//}
-//
-//inline void Symbol::set_tc_num(tc_number n)
-//{
-//    tc_num = n;
-//}
-inline Symbol* Symbol::get_parent_state()
-{
-    return id->higher_goal;
-}
 inline bool Symbol::get_id_name(std::string& n)
 {
     std::stringstream ss;

@@ -1432,9 +1432,8 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
 instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
 {
-    dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
+    dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
 
-    // make fake instantiation
     instantiation* inst;
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->prod = NULL;
@@ -1528,6 +1527,8 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
             prev_cond = cond;
         }
     }
+
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fmake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* Might not be needed yet, but could be if we add identity information to fake instantiation */
     thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);

@@ -5705,7 +5705,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
             }
             else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.epmem_sym_next)
             {
-                if (((*w_p)->value->is_identifier()) &&
+                if (((*w_p)->value->is_sti()) &&
                         (path == 0))
                 {
                     next = (*w_p)->value;
@@ -5718,7 +5718,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
             }
             else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.epmem_sym_prev)
             {
-                if (((*w_p)->value->is_identifier()) &&
+                if (((*w_p)->value->is_sti()) &&
                         (path == 0))
                 {
                     previous = (*w_p)->value;
@@ -5731,7 +5731,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
             }
             else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.epmem_sym_query)
             {
-                if (((*w_p)->value->is_identifier()) &&
+                if (((*w_p)->value->is_sti()) &&
                         ((path == 0) || (path == 3)) &&
                         (query == NULL))
 
@@ -5746,7 +5746,7 @@ void inline _epmem_respond_to_cmd_parse(agent* thisAgent, epmem_wme_list* cmds, 
             }
             else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.epmem_sym_negquery)
             {
-                if (((*w_p)->value->is_identifier()) &&
+                if (((*w_p)->value->is_sti()) &&
                         ((path == 0) || (path == 3)) &&
                         (neg_query == NULL))
 
