@@ -909,7 +909,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 
     if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
     {
-        lti_id = lexer->current_lexeme.int_val;
+        lti_id = lexer.current_lexeme.int_val;
     }
     else
     {
@@ -938,7 +938,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 
         lexer.get_lexeme();//Consume the integer lti id.
 
-        smem_slot_map children;
+        ltm_slot_map children;
 
         if (lexer.current_lexeme.type == UP_ARROW_LEXEME)
         {
@@ -1011,7 +1011,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                         temp_val->val_const.val_type = value_lti_t;
                         temp_val->val_lti = temp_lti;
                         temp_val->val_lti.val_type = value_lti_t;
-                        ltm_object* temp_ltm = new smem_ltm;
+                        ltm_object* temp_ltm = new ltm_object;
                         temp_ltm->lti_id = (*triple_ptr_iter)->value->id->LTI_ID;
                         temp_ltm->soar_id = (*triple_ptr_iter)->value;
                         temp_val->val_lti.val_value = temp_ltm;
