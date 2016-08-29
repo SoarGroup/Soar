@@ -80,8 +80,6 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
     buf[sizeof(buf) - 1] = '\0';
 
     v = thisAgent->symbolManager->make_variable(buf);
-    dprint(DT_PARSER, "Adding variable lexeme to parser strings %y\n", v);
-    push(thisAgent, (v), thisAgent->parser_syms);
     /* --- indicate that there is no corresponding "real" variable yet --- */
     v->var->current_binding_value = NIL;
 
@@ -305,33 +303,28 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         case STR_CONSTANT_LEXEME:
         {
             newSymbol = thisAgent->symbolManager->make_str_constant(lexeme->string());
-            push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding str lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case VARIABLE_LEXEME:
         {
             newSymbol = thisAgent->symbolManager->make_variable(lexeme->string());
-            push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding var lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case INT_CONSTANT_LEXEME:
         {
             newSymbol = thisAgent->symbolManager->make_int_constant(lexeme->int_val);
-            push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding int lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case FLOAT_CONSTANT_LEXEME:
         {
             newSymbol =  thisAgent->symbolManager->make_float_constant(lexeme->float_val);
-            push(thisAgent, (newSymbol), thisAgent->parser_syms);
-            dprint(DT_PARSER, "Adding float lexeme to parser strings %y\n", newSymbol);
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
-            dprint(DT_PARSER, "Illegal identifier found in make_symbol_for_lexeme: %c%d\n", lexeme->id_letter, lexeme->id_number);
+        {    thisAgent->outputManager->printa_sf(thisAgent, "What appears to be an illegal identifier found: %c%d.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
+            std::string lStr;
+            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "%c%d", lexeme->id_letter, lexeme->id_number);
+            newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
             /* In case we still need for reading in new LTIs */
 //            dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
 //            if (!allow_lti)
@@ -369,7 +362,8 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
 //                return newSymbol;
 //            }
 //            break;
-            return NULL;
+            return newSymbol;
+        }
         default:
         {
             char msg[BUFFER_MSG_SIZE];
