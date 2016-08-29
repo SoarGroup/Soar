@@ -2390,7 +2390,8 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
     {
         next_rt = rt->next;
 
-        if (test_is_constant_relational_test(rt->type))
+//        if (test_is_constant_relational_test(rt->type))
+        if (rt->data.constant_referent)
         {
             thisAgent->symbolManager->symbol_remove_ref(&rt->data.constant_referent);
         }
@@ -3022,7 +3023,6 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
    Before calling this routine, variables should be bound densely for
    parent and higher conditions, and sparsely for the current condition.
 ------------------------------------------------------------------------ */
-
 void add_rete_tests_for_test(agent* thisAgent, test t,
                              rete_node_level current_depth,
                              byte field_num,
@@ -3088,69 +3088,11 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
             new_rt->data.variable_referent = where;
+            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
             break;
-//        case SMEM_LINK_TEST:
-//            referent = t->data.referent;
-//
-//            /* --- if constant test and alpha=NIL, install alpha test --- */
-//            if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
-//                (*alpha_constant == NIL))
-//            {
-//                *alpha_constant = referent;
-//                return;
-//            }
-//
-//            /* --- if constant, make = constant test --- */
-//            if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-//            {
-//                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-//                new_rt->right_field_num = field_num;
-//                where.levels_up = 0;
-//                where.field_num = field_num;
-//                new_rt->data.variable_referent = where;
-//                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST;
-//                new_rt->data.constant_referent = referent;
-//                thisAgent->symbolManager->symbol_add_ref(referent);
-//                new_rt->next = *rt;
-//                *rt = new_rt;
-//                return;
-//            }
-//
-////            /* --- variable: if binding is for current field, do nothing --- */
-////            if (! find_var_location(referent, current_depth, &where))
-////            {
-////                char msg[BUFFER_MSG_SIZE];
-////                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-////                    referent);
-////                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-////                    referent->to_string(true));
-////                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-////                abort_with_fatal_error(thisAgent, msg);
-////            }
-////            if ((where.levels_up == 0) && (where.field_num == field_num))
-////            {
-////                return;
-////            }
-//
-//            /* MToDo | May want to make this a constant test, even though it has a variable. The test itself
-//             *         doesn't require a binding from another condition like a normal relational variable binding */
-//            /* --- else make variable equality test --- */
-//            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-//            new_rt->right_field_num = field_num;
-//            new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST;
-//            /* Field is 0 by default, but we want it to be whereever the real equality test is */
-//            where.levels_up = 0;
-//            where.field_num = field_num;
-//            new_rt->data.variable_referent = where;
-//            new_rt->data.constant_referent = referent;
-//            thisAgent->symbolManager->symbol_add_ref(referent);
-//            new_rt->next = *rt;
-//            *rt = new_rt;
-//            return;
-//            break;
         case SMEM_LINK_TEST:
             /* --- if constant, make constant test --- */
             if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -3181,6 +3123,8 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
                 test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
+            new_rt->data.constant_referent = t->data.referent;
+            thisAgent->symbolManager->symbol_add_ref(t->data.referent);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3219,6 +3163,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
                 test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
+            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3245,6 +3190,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_GOAL_RETE_TEST;
             new_rt->right_field_num = 0;
+            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3253,6 +3199,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_IMPASSE_RETE_TEST;
             new_rt->right_field_num = 0;
+            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -4357,7 +4304,6 @@ abort_var_bound_in_reconstructed_conds:
     }
     return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
-
 
 test var_test_bound_in_reconstructed_conds(
     agent* thisAgent,

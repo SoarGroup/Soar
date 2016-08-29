@@ -887,9 +887,14 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                     }
                 }
             }
-            referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
+            if (test_type == SMEM_LINK_TEST)
+            {
+                referent = rt->data.constant_referent;
+            } else {
+                referent = var_bound_in_reconstructed_conds(thisAgent, cond,
+                    rt->data.variable_referent.field_num,
+                    rt->data.variable_referent.levels_up);
+            }
             New = make_test(thisAgent, referent, test_type);
         }
         else

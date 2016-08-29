@@ -170,8 +170,10 @@ typedef struct rete_test_struct
     byte type;                     /* test type (ID_IS_GOAL_RETE_TEST, etc.) */
     union rete_test_data_union
     {
-        var_location variable_referent;   /* for relational tests to a variable */
-        Symbol* constant_referent;        /* for relational tests to a constant */
+        struct {
+            var_location variable_referent;   /* for relational tests to a variable */
+            Symbol* constant_referent;        /* for relational tests to a constant */
+        };
         list* disjunction_list;           /* list of symbols in disjunction test */
     } data;
     struct rete_test_struct* next; /* next in list of tests at the node */
