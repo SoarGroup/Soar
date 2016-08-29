@@ -144,7 +144,7 @@ class SMem_Manager
         void            clear_instance_mappings();
         Symbol*         get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
         uint64_t        get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_ID);
-        void            link_sti_to_lti(Symbol* id);
+        uint64_t        link_sti_to_lti(Symbol* id, bool ignore_previous_link = false);
 
         /* Methods for queries */
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);

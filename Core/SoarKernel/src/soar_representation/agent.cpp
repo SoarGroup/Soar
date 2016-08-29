@@ -265,7 +265,6 @@ agent* create_soar_agent(char* agent_name)                                      
     // This was moved here so that system parameters could
     // be set before the agent was initialized.
     init_sysparams(thisAgent);
-    thisAgent->parser_syms = NIL;
 
     /* Initializing all the timer structures.  Must be initialized after sysparams */
 #ifndef NO_TIMING_STUFF
