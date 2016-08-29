@@ -93,7 +93,7 @@ extern rhs_value copy_rhs_value_no_refcount(agent* thisAgent, rhs_value rv);
 extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
 extern void deallocate_action_list(agent* thisAgent, action* actions);
 
-void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, ::list** var_list, bool add_LTIs = false);
+void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, ::list** var_list);
 void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc, list** var_list);
 
 extern char first_letter_from_rhs_value(rhs_value rv);

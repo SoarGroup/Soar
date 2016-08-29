@@ -140,7 +140,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
         dprint(DT_REORDERER, "...marking vars and LTIs in %a\n", a);
-        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars, true);
+        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
     if (remaining_actions)
@@ -206,7 +206,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     return result_flag;
 }
 
-bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
+bool all_vars_in_rhs_value_bound(rhs_value rv, tc_number tc)
 {
     cons* c;
     list* fl;
@@ -217,7 +217,7 @@ bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
         /* --- function calls --- */
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
-            if (! all_vars_LTIs_in_rhs_value_bound(static_cast<char*>(c->first), tc))
+            if (! all_vars_in_rhs_value_bound(static_cast<char*>(c->first), tc))
             {
                 return false;
             }
@@ -227,7 +227,7 @@ bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
     {
         /* --- ordinary (symbol) rhs values --- */
         sym = rhs_value_to_symbol(rv);
-        if (sym->is_variable() || sym->is_lti())
+        if (sym->is_variable())
         {
             return (sym->tc_num == tc);
         }
@@ -239,30 +239,30 @@ bool legal_to_execute_action(action* a, tc_number tc)
 {
     if (a->type == MAKE_ACTION)
     {
-        if (! all_vars_LTIs_in_rhs_value_bound(a->id, tc))
+        if (! all_vars_in_rhs_value_bound(a->id, tc))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->attr) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->attr, tc)))
+                (! all_vars_in_rhs_value_bound(a->attr, tc)))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->value) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->value, tc)))
+                (! all_vars_in_rhs_value_bound(a->value, tc)))
         {
             return false;
         }
         if (preference_is_binary(a->preference_type) &&
                 rhs_value_is_funcall(a->referent) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->referent, tc)))
+                (! all_vars_in_rhs_value_bound(a->referent, tc)))
         {
             return false;
         }
         return true;
     }
     /* --- otherwise it's a function call; make sure args are all bound  --- */
-    return all_vars_LTIs_in_rhs_value_bound(a->value, tc);
+    return all_vars_in_rhs_value_bound(a->value, tc);
 }
 
 /* =====================================================================

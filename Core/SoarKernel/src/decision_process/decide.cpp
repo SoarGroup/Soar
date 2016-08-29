@@ -579,20 +579,6 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
 
     //dprint(DT_LINKS, "*** Garbage collecting id: %y", id);
 
-    /* Clean up level information for LTIs.  This fixes a bug
-     * that could occur if that LTI was later retrieved at a
-     * different level.  It forces Soar to set the level of the
-     * LTI to the level in the next instantiation that uses it.*/
-
-    /* MToDo | This is probably no longer necessary now that we no
-     * longer have LTIs
-     */
-    if (id->is_lti())
-    {
-        id->id->level = SMEM_LTI_UNKNOWN_LEVEL;
-        id->id->promotion_level = SMEM_LTI_UNKNOWN_LEVEL;
-        id->id->could_be_a_link_from_below = false;
-    }
     /* Note--for goal/impasse id's, this does not remove the impasse wme's.
         This is handled by remove_existing_such-and-such... */
 

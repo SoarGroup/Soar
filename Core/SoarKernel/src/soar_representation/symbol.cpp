@@ -99,7 +99,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             }
             if (id->is_lti())
             {
-                SNPRINTF(dest, dest_size, "%c%llu (->@%llu)", id->name_letter, static_cast<long long unsigned>(id->name_number), static_cast<long long unsigned>(id->LTI_ID));
+                SNPRINTF(dest, dest_size, "%c%llu (@%llu)", id->name_letter, static_cast<long long unsigned>(id->name_number), static_cast<long long unsigned>(id->LTI_ID));
             } else
             {
                 SNPRINTF(dest, dest_size, "%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
