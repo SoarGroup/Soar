@@ -492,6 +492,9 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
             {
                 if ((*c_new)->slots != NIL)
                 {
+                    /* Third parameter determines whether smem will update LTM based on LTI_ID in an STI.
+                     * For that to be useful here, parser must be changed to also accepts STIs for smem -add.
+                     * May want to change to false until that is possible */
                    store_LTM_in_DB((*c_new)->lti_id, (*c_new)->slots, false);
                 }
             }
@@ -1152,7 +1155,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 //        }
 //        if (good_command && lexer.current_lexeme.type == R_PAREN_LEXEME)
 //        {
-//            store_ltm(lti_id, &(children), true, NULL, false);
+//            store_LTM_in_DB(lti_id, &(children), true, NULL, false);
 //        }
 //        else if (good_command)
 //        {
@@ -1551,7 +1554,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
     }
 }
 
-void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_type, tc_number tc)
+void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_type, bool update_LTI_Links, tc_number tc)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -1566,7 +1569,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
-    link_sti_to_lti(pIdentifierSTI);
+//    link_sti_to_lti(pIdentifierSTI);
 
     // encode this level
     {
@@ -1596,16 +1599,21 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
             {
                 v->val_lti.val_type = value_lti_t;
 
-                /* This seems like bad usage.  Following line will create entry in map.  Works
-                 * because next code will make an entry anyway.  Should use iterator and find. */
-                // try to find existing ltm
+                /* This seems like funky map usage.  Following line will create entry in map if it doesn't
+                 * exist.  This works because following code will use created entry anyway.  Should use
+                 * iterator and find, then create if necessary. */
                 c = & sym_to_ltm[(*w)->value ];
 
                 // if doesn't exist, add; else use existing
                 if (!(*c))
                 {
                     (*c) = new ltm_object;
-                    (*c)->lti_id = (*w)->value->id->LTI_ID;
+                    if (update_LTI_Links)
+                    {
+                        (*c)->lti_id = (*w)->value->id->LTI_ID;
+                    } else {
+                        (*c)->lti_id = NIL;
+                    }
                     (*c)->slots = NULL;
                     (*c)->soar_id = (*w)->value;
 
@@ -1651,6 +1659,6 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
     // recurse as necessary
     for (symbol_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
-        store_LTM((*shorty), store_recursive, tc);
+        store_LTM((*shorty), store_recursive, update_LTI_Links, tc);
     }
 }

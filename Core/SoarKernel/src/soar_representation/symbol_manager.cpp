@@ -660,8 +660,8 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.epmem_sym_before = make_str_constant("before");
     soarSymbols.epmem_sym_after = make_str_constant("after");
     soarSymbols.epmem_sym_prohibit = make_str_constant("prohibit");
-    soarSymbols.epmem_sym_yes = make_str_constant("yes");
-    soarSymbols.epmem_sym_no = make_str_constant("no");
+    soarSymbols.yes = make_str_constant("yes");
+    soarSymbols.no = make_str_constant("no");
 
 
     soarSymbols.smem_sym = make_str_constant("smem");
@@ -675,6 +675,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_failure = make_str_constant("failure");
     soarSymbols.smem_sym_bad_cmd = make_str_constant("bad-cmd");
     soarSymbols.smem_sym_depth = make_str_constant("depth");
+    soarSymbols.smem_sym_update = make_str_constant("update");
 
     soarSymbols.smem_sym_retrieve = make_str_constant("retrieve");
     soarSymbols.smem_sym_query = make_str_constant("query");
@@ -768,8 +769,8 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.epmem_sym_before));
     symbol_remove_ref(&(soarSymbols.epmem_sym_after));
     symbol_remove_ref(&(soarSymbols.epmem_sym_prohibit));
-    symbol_remove_ref(&(soarSymbols.epmem_sym_yes));
-    symbol_remove_ref(&(soarSymbols.epmem_sym_no));
+    symbol_remove_ref(&(soarSymbols.yes));
+    symbol_remove_ref(&(soarSymbols.no));
 
     symbol_remove_ref(&(soarSymbols.smem_sym));
     symbol_remove_ref(&(soarSymbols.smem_sym_cmd));

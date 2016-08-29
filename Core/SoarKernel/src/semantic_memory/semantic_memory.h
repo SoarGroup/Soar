@@ -137,7 +137,7 @@ class SMem_Manager
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
-        void            store_LTM(Symbol* id, smem_storage_type store_type = store_level, tc_number tc = NIL);
+        void            store_LTM(Symbol* id, smem_storage_type store_type, bool update_LTI_Links, tc_number tc = NIL);
         void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
 
         /* Methods for creating an instance of a LTM using STIs */

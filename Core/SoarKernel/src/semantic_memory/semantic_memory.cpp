@@ -140,6 +140,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* retrieve;
     Symbol* math;
     uint64_t depth;
+    bool update_LTI_Links = true;
     symbol_list prohibit;
     symbol_list store;
 
@@ -368,6 +369,19 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                             path = cmd_bad;
                         }
                     }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_update)
+                    {
+                        if (((*w_p)->value->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
+                            (((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes) ||
+                                ((*w_p)->value == thisAgent->symbolManager->soarSymbols.no)))
+                        {
+                            update_LTI_Links = ((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes);
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
                     else
                     {
                         path = cmd_bad;
@@ -449,7 +463,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                     {
-                        store_LTM((*sym_p), store_level);
+                        store_LTM((*sym_p), store_level, update_LTI_Links);
 
                         // status: success
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
