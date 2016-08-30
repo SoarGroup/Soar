@@ -255,8 +255,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     bool triggered = false;
 
     // if no children, then retrieve children
-    if (    (!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)
-         || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
+    if ((install_type == fake_install) || (!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)) //(The first bit is if this is being called by the remove command.)
     {
         if (visited == NULL)
         {

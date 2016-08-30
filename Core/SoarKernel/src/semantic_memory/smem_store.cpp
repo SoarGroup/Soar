@@ -882,7 +882,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 {
     /* MToDo | Fix after we fully remove shared symbol.  Then we can use either a separate symbol table or what we currently
      *         store in the db. */
-    return true;
+    //return true;
 
         //TODO: need to fix so that err_msg and result_message are actually used or not passed.
     bool good_command = true;
@@ -929,12 +929,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
     if (good_command)
     {
         //Symbol* lti = lti_soar_make(lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-        //Symbol* lti = get_sti_for_lti(lti_id, SMEM_LTI_UNKNOWN_LEVEL);
-        Symbol* lti;
-        lti = thisAgent->symbolManager->make_new_identifier('W', SMEM_LTI_UNKNOWN_LEVEL, NIL);
-        lti->id->level = SMEM_LTI_UNKNOWN_LEVEL;
-        lti->id->promotion_level = SMEM_LTI_UNKNOWN_LEVEL;
-        lti->id->LTI_ID = lti_id;
+        Symbol* lti = get_sti_for_lti(lti_id, SMEM_LTI_UNKNOWN_LEVEL);
 
         lexer.get_lexeme();//Consume the integer lti id.
 
@@ -990,7 +985,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                         temp_val->val_const.val_type = value_const_t;
                         temp_val->val_const.val_value = (*triple_ptr_iter)->value;
                     }
-                    (*temp_slot).push_back(temp_val);
+                    temp_slot->push_back(temp_val);
                 }
                 else //If the attribute is not in the map and we need to make a slot.
                 {
@@ -1031,7 +1026,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                         temp_val->val_const.val_type = value_const_t;
                         temp_val->val_const.val_value = (*triple_ptr_iter)->value;
                     }
-                    (*temp_slot).push_back(temp_val);
+                    temp_slot->push_back(temp_val);
                     children[(*triple_ptr_iter)->attr] = temp_slot;
                 }
             }
@@ -1094,10 +1089,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                             if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
                                 //value = thisAgent->symbolManager->find_identifier(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
-                                value = thisAgent->symbolManager->make_new_identifier('W', SMEM_LTI_UNKNOWN_LEVEL, NIL);
-                                value->id->level = SMEM_LTI_UNKNOWN_LEVEL;
-                                value->id->promotion_level = SMEM_LTI_UNKNOWN_LEVEL;
-                                value->id->LTI_ID = lexer.current_lexeme.int_val;
+                                get_sti_for_lti(lexer.current_lexeme.int_val, SMEM_LTI_UNKNOWN_LEVEL);
                                 lexer.get_lexeme();
                             }
                             else
