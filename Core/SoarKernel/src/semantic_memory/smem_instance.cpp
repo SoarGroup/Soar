@@ -282,7 +282,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             // identifier vs. constant
             if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
             {
-                value_sym = get_sti_for_lti(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 0);
+                value_sym = get_sti_for_lti(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 'L');
                 if (depth > 1)
                 {
                     children.insert(value_sym);
