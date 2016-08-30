@@ -139,7 +139,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        dprint(DT_REORDERER, "...marking vars and LTIs in %a\n", a);
+        dprint(DT_REORDERER, "...marking vars in %a\n", a);
         add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
@@ -161,7 +161,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 assert(ungrounded_syms && lSym);
                 symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                 lNewUngroundedSym->sym = lSym;
-                if (lSym->is_identifier())
+                if (lSym->is_sti())
                 {
                     lNewUngroundedSym->matched_sym = lSym;
                 } else {

@@ -707,7 +707,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
-            if (w->value->is_identifier())
+            if (w->value->is_sti())
             {
                 //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                 ids_to_walk.push_back(w->value);
@@ -720,7 +720,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
             {
-                if (pref->value->is_identifier())
+                if (pref->value->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
                     ids_to_walk.push_back(pref->value);
@@ -728,7 +728,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
                 if (preference_is_binary(pref->type))
                 {
-                    if (pref->referent->is_identifier())
+                    if (pref->referent->is_sti())
                     {
                         //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
                         ids_to_walk.push_back(pref->referent);
@@ -738,7 +738,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
             if (s->impasse_id)
             {
-                if (s->impasse_id->is_identifier())
+                if (s->impasse_id->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
                     ids_to_walk.push_back(s->impasse_id);
@@ -747,7 +747,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
             for (w = s->wmes; w != NIL; w = w->next)
             {
-                if (w->value->is_identifier())
+                if (w->value->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                     ids_to_walk.push_back(w->value);

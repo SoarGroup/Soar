@@ -22,7 +22,7 @@
 
 uint64_t SMem_Manager::link_sti_to_lti(Symbol* id, bool ignore_previous_link)
 {
-    assert (id->is_identifier());
+    assert (id->is_sti());
     if (id->id->LTI_ID == NIL)
         {
             id->id->LTI_ID = get_new_lti_id();
@@ -255,7 +255,9 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     bool triggered = false;
 
     // if no children, then retrieve children
-    if ((install_type == fake_install) || (!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)) //(The first bit is if this is being called by the remove command.)
+    // if ((!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)
+    //      || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
+    /* I think we always want to return the children now since it is always an instance */
     {
         if (visited == NULL)
         {

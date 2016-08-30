@@ -640,7 +640,7 @@ void recursive_wme_copy(agent* thisAgent,
     Symbol* new_value = curwme->value;
 
     /* Handling the case where the attribute is an id symbol */
-    if (curwme->attr->is_identifier())
+    if (curwme->attr->is_sti())
     {
         /* Have I already made a new identifier for this identifier */
         std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
@@ -762,7 +762,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     /* Getting the argument symbol */
     Symbol* baseid = static_cast<Symbol*>(args->first);
-    if (!baseid->is_identifier())
+    if (!baseid->is_sti())
     {
         return thisAgent->symbolManager->make_str_constant("*symbol not id*");
     }

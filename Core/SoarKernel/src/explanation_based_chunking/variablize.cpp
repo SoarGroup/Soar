@@ -94,7 +94,7 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if ((*sym)->is_identifier())
+        if ((*sym)->is_sti())
         {
             char prefix_char = static_cast<char>(tolower((*sym)->id->name_letter));
             if (((prefix_char == 's') || (prefix_char == 'S')) && !(*sym)->id->isa_goal)

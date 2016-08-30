@@ -165,7 +165,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-    assert(thisID->id->is_identifier());
+    assert(thisID->id->is_sti());
     /* Note:  When we both implement repair via promotion tracking and if we switch to a
      *        model of smem in which we can't get unexpected operational conditions
      *        because of portalling LTIs, then we won't need the first check any more */

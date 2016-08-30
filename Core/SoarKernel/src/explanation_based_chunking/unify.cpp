@@ -204,7 +204,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else
     {
-        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
+        dprint(DT_IDENTITY_PROP, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is identifier " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
     }
     if (o_ids_to_replace.attr)
     {

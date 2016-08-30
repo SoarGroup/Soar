@@ -58,7 +58,7 @@ wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
     wme_list* return_val = new wme_list;
 
     // augs only exist for identifiers
-    if (id->is_identifier())
+    if (id->is_sti())
     {
         if (tc != NIL)
         {
@@ -425,7 +425,9 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
-                        install_memory(state, retrieve->id->LTI_ID, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
+                        clear_instance_mappings();
+//                        install_memory(state, retrieve->id->LTI_ID, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
+                        install_memory(state, retrieve->id->LTI_ID, NULL, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
                         thisAgent->SMem->statistics->expansions->set_value(thisAgent->SMem->statistics->expansions->get_value() + 1);
