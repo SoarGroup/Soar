@@ -4,8 +4,8 @@
 srand 23
 smem --enable
 chunk always
-smem --add {(@T1 ^D X )}
-smem --add {(@T2 ^D Y )}
+smem --add {(<t1> ^D X )}
+smem --add {(<t2> ^D Y )}
 
 sp {propose*query-lti
    (state <s> ^superstate.superstate nil

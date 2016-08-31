@@ -1,12 +1,7 @@
-sp {answer*apply*check-smem*success*onc*t4-1
+sp {answer*apply*chunk*check-smem*success*OpNoChange*t5-1
     (state <s1> ^superstate nil)
     -->
-    (<s1> ^copied-result @L1 +)
-}
-
-sp {answer*onc*t3-1
-    (state <s1> ^copied-result-top @L1)
-    (<s1> ^superstate nil)
-    -->
-    (@L1 ^operator @L2 +)
+    (<s1> ^operator <l1> +)
+    (<s1> ^substate-retrieved <l2> +)
+    (<l2> ^operator <l1> +)
 }
