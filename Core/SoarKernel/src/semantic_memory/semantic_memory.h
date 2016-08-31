@@ -65,6 +65,12 @@ class SMem_Manager
         bool        parse_cues(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
         bool        process_smem_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
 
+
+        /* Methods for creating an instance of a LTM using STIs */
+        void        clear_instance_mappings();
+        void        add_identity_for_recalled_sti(test pTest, uint64_t pI_ID);
+        uint64_t    get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_ID);
+
         /* Methods for saving/printing/visualizing semantic memory */
         bool        backup_db(const char* file_name, std::string* err);
         void        visualize_store(std::string* return_val);
@@ -141,9 +147,7 @@ class SMem_Manager
         void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
 
         /* Methods for creating an instance of a LTM using STIs */
-        void            clear_instance_mappings();
         Symbol*         get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
-        uint64_t        get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_ID);
         uint64_t        link_sti_to_lti(Symbol* id, bool ignore_previous_link = false);
 
         /* Methods for queries */

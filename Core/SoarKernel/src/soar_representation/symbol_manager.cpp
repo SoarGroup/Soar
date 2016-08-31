@@ -446,10 +446,12 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->epmem_id = EPMEM_NODEID_BAD;
     sym->epmem_valid = NIL;
     sym->epmem_time_wme = NIL;
+    sym->epmem_info = NULL;
 
     sym->smem_header = NIL;
     sym->smem_cmd_header = NIL;
     sym->smem_result_header = NIL;
+    sym->smem_info = NULL;
     sym->LTI_ID = NIL;
     sym->smem_valid = NIL;
 

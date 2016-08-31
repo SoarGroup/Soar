@@ -145,7 +145,7 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void cleanup_for_instantiation(uint64_t pI_id);
+        void cleanup_after_instantiation_creation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         void clear_variablization_maps();
 

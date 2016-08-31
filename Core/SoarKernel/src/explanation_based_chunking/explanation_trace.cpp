@@ -324,8 +324,7 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                             {
                                 /* This is the special case */
                                 check_test->identity = new_test->identity;
-                                dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
-                                    thisAgent->explanationBasedChunker->get_ovar_for_o_id(check_test->identity));
+                                dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %u\n", check_test, check_test->identity);
                                 deallocate_test(thisAgent, new_test);
                                 return;
                             }

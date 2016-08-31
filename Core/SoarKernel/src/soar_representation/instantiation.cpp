@@ -1096,7 +1096,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- build chunks/justifications if necessary --- */
     thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
 
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
@@ -1430,7 +1430,75 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
+void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue)
+{
+    preference* pref;
+
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
+    pref->o_supported = true;
+    thisAgent->symbolManager->symbol_add_ref(pref->id);
+    thisAgent->symbolManager->symbol_add_ref(pref->attr);
+    thisAgent->symbolManager->symbol_add_ref(pref->value);
+//    pref->o_ids.id = thisAgent->SMem->get_identity_for_recalled_sti(pref->id, inst->i_id);
+//    pref->o_ids.attr = thisAgent->SMem->get_identity_for_recalled_sti(pref->attr, inst->i_id);
+//    pref->o_ids.value = thisAgent->SMem->get_identity_for_recalled_sti(pref->value, inst->i_id);
+
+    pref->inst = inst;
+    pref->inst_next = pref->inst_prev = NULL;
+    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
+}
+
+void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
+{
+    condition * cond;
+
+    cond = make_condition(thisAgent,
+        make_test(thisAgent, pWME->id , EQUALITY_TEST),
+        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
+        make_test(thisAgent, pWME->value, EQUALITY_TEST));
+//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.id_test, inst->i_id);
+//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.attr_test, inst->i_id);
+//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.value_test, inst->i_id);
+    cond->prev = prev_cond;
+    cond->next = NULL;
+    if (prev_cond != NULL)
+    {
+        prev_cond->next = cond;
+    }
+    else
+    {
+        inst->top_of_instantiated_conditions = cond;
+        inst->bottom_of_instantiated_conditions = cond;
+    }
+    cond->test_for_acceptable_preference = pWME->acceptable;
+    cond->bt.wme_ = pWME;
+    cond->inst = inst;
+
+    #ifndef DO_TOP_LEVEL_REF_CTS
+    if (inst->match_goal_level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        wme_add_ref(pWME);
+    }
+
+    cond->bt.level = pWME->id->id->level;
+    cond->bt.trace = pWME->preference;
+    assert(cond->bt.wme_->preference == cond->bt.trace);
+    if (cond->bt.trace)
+    {
+        #ifndef DO_TOP_LEVEL_REF_CTS
+        if (inst->match_goal_level > TOP_GOAL_LEVEL)
+        #endif
+        {
+            preference_add_ref(cond->bt.trace);
+        }
+    }
+
+    cond->bt.CDPS = NULL;
+    prev_cond = cond;
+}
+
+instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions)
 {
     dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
 
@@ -1440,8 +1508,8 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     inst->next = inst->prev = NULL;
     inst->rete_token = NULL;
     inst->rete_wme = NULL;
-    inst->match_goal = state;
-    inst->match_goal_level = state->id->level;
+    inst->match_goal = pState;
+    inst->match_goal_level = pState->id->level;
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
@@ -1460,7 +1528,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     {
         preference* pref;
 
-        for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
+        for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
         {
             pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
             pref->o_supported = true;
@@ -1480,7 +1548,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
         condition* cond = NULL;
         condition* prev_cond = NULL;
 
-        for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
+        for (wme_set::iterator c_it = pConds->begin(); c_it != pConds->end(); c_it++)
         {
             // construct the condition
             cond = make_condition(thisAgent,
@@ -1531,7 +1599,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     dprint(DT_PRINT_INSTANTIATIONS,  "%fmake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* Might not be needed yet, but could be if we add identity information to fake instantiation */
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
 
     return inst;
 }
@@ -1650,7 +1718,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 #endif
     cond->bt.level = ap_wme->id->id->level;
 
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+    /* Clean up symbol to identity mappings for this instantiation*/
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
 
     /* --- return the fake preference --- */
     return pref;
