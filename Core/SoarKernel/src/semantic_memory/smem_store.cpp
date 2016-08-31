@@ -48,12 +48,6 @@ void SMem_Manager::deallocate_ltm(ltm_object* pLTM, bool free_ltm )
                         {
                             thisAgent->symbolManager->symbol_remove_ref(&(*v)->val_const.val_value);
                         }
-                        else
-                        {
-                            // we never deallocate the lti ltm, as we assume
-                            // it will exist elsewhere for deallocation
-                            // delete (*s)->val_lti.val_value;
-                        }
 
                         delete(*v);
                     }
@@ -463,32 +457,6 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
                     } else {
                         (*c_new)->lti_id = get_new_lti_id();
                     }
-
-//                    // deal differently with variable vs. lti
-//                    if ((*c_new)->lti_number == NIL)
-//                    {
-//                        // add a new lti id (we have a guarantee this won't be in Soar's WM)
-//                        char counter_index = ((*c_new)->lti_letter - static_cast<char>('A'));
-//                        uint64_t* letter_ct = thisAgent->symbolManager->get_id_counter(counter_index);
-//
-//                        (*c_new)->lti_number = (*letter_ct)++;
-//                        (*c_new)->lti_id =add_new_lti_id();
-//                    }
-//                    else
-//                    {
-//                        // should ALWAYS be the case (it's a newbie and we've initialized lti_id to NIL)
-//                        if ((*c_new)->lti_id == NIL)
-//                        {
-//                            // get existing
-//                            (*c_new)->lti_id = lti_exists((*c_new)->lti_number);
-//
-//                            // if doesn't exist, add it
-//                            if ((*c_new)->lti_id == NIL)
-//                            {
-//                                (*c_new)->lti_id =add_new_lti_id();
-//                            }
-//                        }
-//                    }
                 }
             }
 
@@ -929,7 +897,6 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
     if (good_command)
     {
         //Symbol* lti = lti_soar_make(lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-        Symbol* lti = get_sti_for_lti(lti_id, SMEM_LTI_UNKNOWN_LEVEL);
 
         lexer.get_lexeme();//Consume the integer lti id.
 
@@ -939,7 +906,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
         {
             //Now that we know we have a good lti, we can do a NCBR so that we know what attributes and values we can delete.
             //"--force" will ignore attempts to delete that which isn't there, while the default will be to stop and report back.
-            install_memory(NIL, lti_id, lti, false, meta_wmes, retrieval_wmes, fake_install);
+            install_memory(NIL, lti_id, NULL, false, meta_wmes, retrieval_wmes, fake_install);
             //First, we'll create the slot_map according to retrieval_wmes, then we'll remove what we encounter during parsing.
             symbol_triple_list::iterator triple_ptr_iter;
             ltm_slot* temp_slot;
@@ -1203,7 +1170,6 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
             thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->value);
             delete *triple_iterator;
         }
-        thisAgent->symbolManager->symbol_remove_ref(&lti);
     }
     return good_command;
 }
@@ -1278,7 +1244,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
     }
 }
 
-void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate)
+void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, Symbol* print_id, bool activate, bool preserve_previous_link)
 {
     // if remove children, disconnect ltm -> no existing edges
     // else, need to query number of existing edges
@@ -1379,7 +1345,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                     {
                         if ((*v)->val_lti.val_value->soar_id != NIL)
                         {
-                            (*v)->val_lti.val_value->lti_id  = link_sti_to_lti((*v)->val_lti.val_value->soar_id);
+                            (*v)->val_lti.val_value->lti_id = link_sti_to_lti((*v)->val_lti.val_value->soar_id, preserve_previous_link);
                         } else {
                             (*v)->val_lti.val_value->lti_id = get_new_lti_id();
                         }
@@ -1568,7 +1534,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
     }
 }
 
-void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_type, bool update_LTI_Links, tc_number tc)
+void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_type, bool update_smem, tc_number tc)
 {
     // transitive closure only matters for recursive storage
     if ((store_type == store_recursive) && (tc == NIL))
@@ -1583,7 +1549,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
-    link_sti_to_lti(pIdentifierSTI, (pIdentifierSTI->id->LTI_ID == NIL));
+    link_sti_to_lti(pIdentifierSTI, update_smem);
 
     // encode this level
     {
@@ -1622,7 +1588,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
                 if (!(*c))
                 {
                     (*c) = new ltm_object;
-                    if (update_LTI_Links)
+                    if (update_smem)
                     {
                         (*c)->lti_id = (*w)->value->id->LTI_ID;
                     } else {
@@ -1645,7 +1611,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
             s->push_back(v);
         }
 
-        store_LTM_in_DB(pIdentifierSTI->id->LTI_ID, &(slots), true, pIdentifierSTI);
+        store_LTM_in_DB(pIdentifierSTI->id->LTI_ID, &(slots), true, pIdentifierSTI, true, update_smem);
 
         // clean up
         {
@@ -1673,6 +1639,6 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
     // recurse as necessary
     for (symbol_list::iterator shorty = shorties.begin(); shorty != shorties.end(); shorty++)
     {
-        store_LTM((*shorty), store_recursive, update_LTI_Links, tc);
+        store_LTM((*shorty), store_recursive, update_smem, tc);
     }
 }

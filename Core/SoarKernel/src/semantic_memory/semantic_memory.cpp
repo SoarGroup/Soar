@@ -425,8 +425,6 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
-                        clear_instance_mappings();
-//                        install_memory(state, retrieve->id->LTI_ID, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
                         install_memory(state, retrieve->id->LTI_ID, NULL, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat

@@ -18,28 +18,26 @@
 #include "preference.h"
 #include "production.h"
 #include "symbol_manager.h"
+#include "test.h"
 #include "working_memory_activation.h"
 
-uint64_t SMem_Manager::link_sti_to_lti(Symbol* id, bool ignore_previous_link)
+uint64_t SMem_Manager::link_sti_to_lti(Symbol* pID, bool preserve_previous_link)
 {
-    assert (id->is_sti());
-    if (id->id->LTI_ID == NIL)
-        {
-            id->id->LTI_ID = get_new_lti_id();
-            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        } else {
-        if (ignore_previous_link)
-        {
-            id->id->LTI_ID = get_new_lti_id();
-            id->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        } else {
-            /* Already linked but we're not supposed to ignore
-             * Shouldn't be possible atm */
-            assert(lti_exists(id->id->LTI_ID));
-            assert(false);
-        }
+    dprint(DT_DEBUG, "Attempting to link sti %y %d (preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
+    if (!pID->is_sti()) {
+        dprint_noprefix(DT_DEBUG, "not STI, returning NIL.\n");
+        return NIL;
     }
-    return id->id->LTI_ID;
+    if ((pID->id->LTI_ID != NIL) && preserve_previous_link)
+        {
+        pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
+        dprint_noprefix(DT_DEBUG, "LTI ID exists and preserve is true.  Returning existing LTI ID.\n");
+        return pID->id->LTI_ID;
+        }
+    pID->id->LTI_ID = get_new_lti_id();
+    pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
+    dprint_noprefix(DT_DEBUG, "Returning new LTI ID %u.\n", pID->id->LTI_ID);
+    return pID->id->LTI_ID;
 }
 
 void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
@@ -49,18 +47,17 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
         return;
     }
 
+    clear_instance_mappings();
     instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
     for (preference* pref = inst->preferences_generated; pref;)
     {
         // add the preference to temporary memory
-
-        if (add_preference_to_tm(thisAgent, pref))
+        if (!pref->in_tm && add_preference_to_tm(thisAgent, pref))
         {
             // and add it to the list of preferences to be removed
             // when the goal is removed
             insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
             pref->on_goal_list = true;
-
             if (meta)
             {
                 // if this is a meta wme, then it is completely local
@@ -159,22 +156,32 @@ void SMem_Manager::clear_instance_mappings()
     sti_to_identity_map.clear();
 }
 
-
-uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSTI, uint64_t pI_ID)
+uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_ID)
 {
     sym_to_id_map::iterator lIter;
 
-    lIter = sti_to_identity_map.find(pSTI);
+    if (!pSym->is_sti()) return NIL;
+
+    lIter = sti_to_identity_map.find(pSym);
 
     if (lIter != sti_to_identity_map.end())
     {
-        return (lIter->second);
+        return lIter->second;
     } else {
-        uint64_t return_val;
-        return_val = thisAgent->explanationBasedChunker->get_or_create_o_id(pSTI, pI_ID);
-        sti_to_identity_map[pSTI] = return_val;
-        return return_val;
+        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_o_id(pSym, pI_ID);
+        sti_to_identity_map[pSym] = lID;
+        return lID;
     }
+}
+
+void SMem_Manager::add_identity_for_recalled_sti(test pTest, uint64_t pI_ID)
+{
+    sym_to_id_map::iterator lIter;
+    Symbol* lSTI;
+
+    if (pTest->identity) return;
+
+    pTest->identity = get_identity_for_recalled_sti(pTest->data.referent, pI_ID);
 }
 
 Symbol* SMem_Manager::get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar)
@@ -217,6 +224,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     {
         if (sti == NIL)
         {
+            clear_instance_mappings();
             sti = get_sti_for_lti(pLTI_ID, result_header->id->level);
             sti_created_here = true;
         } else {

@@ -1430,7 +1430,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
-void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue)
+void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
 {
     preference* pref;
 
@@ -1439,12 +1439,13 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-//    pref->o_ids.id = thisAgent->SMem->get_identity_for_recalled_sti(pref->id, inst->i_id);
-//    pref->o_ids.attr = thisAgent->SMem->get_identity_for_recalled_sti(pref->attr, inst->i_id);
-//    pref->o_ids.value = thisAgent->SMem->get_identity_for_recalled_sti(pref->value, inst->i_id);
+    pref->o_ids.id = thisAgent->SMem->get_identity_for_recalled_sti(pref->id, inst->i_id);
+    pref->o_ids.attr = thisAgent->SMem->get_identity_for_recalled_sti(pref->attr, inst->i_id);
+    pref->o_ids.value = thisAgent->SMem->get_identity_for_recalled_sti(pref->value, inst->i_id);
 
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NULL;
+    pref->in_tm = inTM;
     insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
 }
 
@@ -1456,9 +1457,9 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
         make_test(thisAgent, pWME->id , EQUALITY_TEST),
         make_test(thisAgent, pWME->attr, EQUALITY_TEST),
         make_test(thisAgent, pWME->value, EQUALITY_TEST));
-//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.id_test, inst->i_id);
-//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.attr_test, inst->i_id);
-//    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.value_test, inst->i_id);
+    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.id_test, inst->i_id);
+    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.attr_test, inst->i_id);
+    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.value_test, inst->i_id);
     cond->prev = prev_cond;
     cond->next = NULL;
     if (prev_cond != NULL)
@@ -1523,82 +1524,39 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
+    thisAgent->SMem->clear_instance_mappings();
     // create preferences
     inst->preferences_generated = NULL;
     {
-        preference* pref;
+        /* May need to change this depending on whether it's a query or retrieval */
+        /* Add these wmes to pActions.  Same for conds */
+        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, (*(pActions->begin()))->id, true);
+        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*(pConds->begin()))->value, true);
 
         for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
         {
-            pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
-            pref->o_supported = true;
-            thisAgent->symbolManager->symbol_add_ref(pref->id);
-            thisAgent->symbolManager->symbol_add_ref(pref->attr);
-            thisAgent->symbolManager->symbol_add_ref(pref->value);
-
-            pref->inst = inst;
-            pref->inst_next = pref->inst_prev = NULL;
-
-            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
+            add_pref_to_arch_inst(thisAgent, inst, (*a_it)->id, (*a_it)->attr, (*a_it)->value);
         }
     }
 
-    // create conditions
+    // create pConds
     {
         condition* cond = NULL;
         condition* prev_cond = NULL;
 
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->smem_link_wme);
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->cmd_wme);
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->result_wme);
+
         for (wme_set::iterator c_it = pConds->begin(); c_it != pConds->end(); c_it++)
         {
-            // construct the condition
-            cond = make_condition(thisAgent,
-                make_test(thisAgent, (*c_it)->id, EQUALITY_TEST),
-                make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST),
-                make_test(thisAgent, (*c_it)->value, EQUALITY_TEST));
-            cond->prev = prev_cond;
-            cond->next = NULL;
-            if (prev_cond != NULL)
-            {
-                prev_cond->next = cond;
-            }
-            else
-            {
-                inst->top_of_instantiated_conditions = cond;
-                inst->bottom_of_instantiated_conditions = cond;
-            }
-            cond->test_for_acceptable_preference = (*c_it)->acceptable;
-            cond->bt.wme_ = (*c_it);
-            cond->inst = inst;
-
-#ifndef DO_TOP_LEVEL_REF_CTS
-            if (inst->match_goal_level > TOP_GOAL_LEVEL)
-#endif
-            {
-                wme_add_ref((*c_it));
-            }
-
-            cond->bt.level = (*c_it)->id->id->level;
-            cond->bt.trace = (*c_it)->preference;
-
-            if (cond->bt.trace)
-            {
-#ifndef DO_TOP_LEVEL_REF_CTS
-                if (inst->match_goal_level > TOP_GOAL_LEVEL)
-#endif
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-            }
-
-            cond->bt.CDPS = NULL;
-            assert(cond->bt.wme_->preference = cond->bt.trace);
-            prev_cond = cond;
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, (*c_it));
         }
     }
 
     dprint(DT_PRINT_INSTANTIATIONS,  "%fmake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
-    /* Might not be needed yet, but could be if we add identity information to fake instantiation */
+    /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
 
     return inst;

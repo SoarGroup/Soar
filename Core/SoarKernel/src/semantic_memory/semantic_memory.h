@@ -144,11 +144,11 @@ class SMem_Manager
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
         void            store_LTM(Symbol* id, smem_storage_type store_type, bool update_LTI_Links, tc_number tc = NIL);
-        void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true);
+        void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true, bool preserve_previous_link = false);
 
         /* Methods for creating an instance of a LTM using STIs */
         Symbol*         get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
-        uint64_t        link_sti_to_lti(Symbol* id, bool ignore_previous_link = false);
+        uint64_t        link_sti_to_lti(Symbol* id, bool preserve_previous_link = false);
 
         /* Methods for queries */
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
