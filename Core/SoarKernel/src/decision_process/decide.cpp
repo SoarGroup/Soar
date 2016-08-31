@@ -2015,11 +2015,11 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         }
 
         impasseID->id->smem_header = thisAgent->symbolManager->make_new_identifier('S', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, impasseID->id->smem_header);
+        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, impasseID->id->smem_header);
         impasseID->id->smem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
-        soar_module::add_module_wme(thisAgent, impasseID->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, impasseID->id->smem_cmd_header);
+        impasseID->id->smem_info->cmd_wme = soar_module::add_module_wme(thisAgent, impasseID->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, impasseID->id->smem_cmd_header);
         impasseID->id->smem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, impasseID->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, impasseID->id->smem_result_header);
+        impasseID->id->smem_info->result_wme = soar_module::add_module_wme(thisAgent, impasseID->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, impasseID->id->smem_result_header);
 
     }
     else
