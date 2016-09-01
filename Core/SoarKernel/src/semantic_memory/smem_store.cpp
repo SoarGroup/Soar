@@ -458,6 +458,13 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
                         (*c_new)->lti_id = get_new_lti_id();
                     }
                 }
+                else
+                {
+                    if (!lti_exists((*c_new)->lti_id))
+                    {
+                        get_specific_lti_id((*c_new)->lti_id);
+                    }
+                }
             }
 
             // add all newbie contents (append, as opposed to replace, children)
