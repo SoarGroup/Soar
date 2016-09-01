@@ -126,7 +126,7 @@ void smem_path_param::set_value(const char* new_value)
 
     const char* db_path;
     db_path = thisAgent->SMem->settings->path->get_value();
-    bool attempt_connection_here = thisAgent->SMem->DB->get_status() == soar_module::disconnected;
+    bool attempt_connection_here = !thisAgent->SMem->connected();
     if (attempt_connection_here)
     {
         thisAgent->SMem->DB->connect(db_path);
@@ -189,49 +189,38 @@ smem_db_predicate<T>::smem_db_predicate(agent* new_agent): soar_module::agent_pr
 template <typename T>
 bool smem_db_predicate<T>::operator()(T /*val*/)
 {
-    return (this->thisAgent->SMem->DB->get_status() == soar_module::connected);
+    return (this->thisAgent->SMem->connected());
 }
 
 
 smem_stat_container::smem_stat_container(agent* new_agent): soar_module::stat_container(new_agent)
 {
-    // db-lib-version
     db_lib_version = new smem_db_lib_version_stat(thisAgent, "db-lib-version", NULL, new soar_module::predicate< const char* >());
     add(db_lib_version);
 
-    // mem-usage
     mem_usage = new smem_mem_usage_stat(thisAgent, "mem-usage", 0, new soar_module::predicate<int64_t>());
     add(mem_usage);
 
-    // mem-high
     mem_high = new smem_mem_high_stat(thisAgent, "mem-high", 0, new soar_module::predicate<int64_t>());
     add(mem_high);
 
-    //
+    retrievals = new soar_module::integer_stat("retrieves", 0, new soar_module::f_predicate<int64_t>());
+    add(retrievals);
 
-    // expansions
-    expansions = new soar_module::integer_stat("retrieves", 0, new soar_module::f_predicate<int64_t>());
-    add(expansions);
+    queries = new soar_module::integer_stat("queries", 0, new soar_module::f_predicate<int64_t>());
+    add(queries);
 
-    // cue-based-retrievals
-    cbr = new soar_module::integer_stat("queries", 0, new soar_module::f_predicate<int64_t>());
-    add(cbr);
-
-    // stores
     stores = new soar_module::integer_stat("stores", 0, new soar_module::f_predicate<int64_t>());
     add(stores);
 
-    // activations
     act_updates = new soar_module::integer_stat("act_updates", 0, new soar_module::f_predicate<int64_t>());
     add(act_updates);
 
-    // chunks
-    chunks = new soar_module::integer_stat("nodes", 0, new smem_db_predicate< int64_t >(thisAgent));
-    add(chunks);
+    nodes = new soar_module::integer_stat("nodes", 0, new smem_db_predicate< int64_t >(thisAgent));
+    add(nodes);
 
-    // slots
-    slots = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
-    add(slots);
+    edges = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
+    add(edges);
 }
 
 //
@@ -243,16 +232,12 @@ const char* smem_db_lib_version_stat::get_value()
     return thisAgent->SMem->DB->lib_version();
 }
 
-//
-
 smem_mem_usage_stat::smem_mem_usage_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_usage_stat::get_value()
 {
     return thisAgent->SMem->DB->memory_usage();
 }
-
-//
 
 smem_mem_high_stat::smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 

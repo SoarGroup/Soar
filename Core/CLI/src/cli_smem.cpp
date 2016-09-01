@@ -161,7 +161,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             }
             if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
             {
-                if (thisAgent->SMem->DB->get_status() == soar_module::connected)
+                if (thisAgent->SMem->connected())
                 {
                     lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
                 }
@@ -260,7 +260,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         {
             tempString << pAttr->c_str() << " = " << pVal->c_str();
             PrintCLIMessage(&tempString);
-            if (thisAgent->SMem->DB->get_status() == soar_module::connected)
+            if (thisAgent->SMem->connected())
             {
                 if (((!strcmp(pAttr->c_str(), "database")) && (thisAgent->SMem->settings->database->get_value() != last_db_mode)) ||
                         (!strcmp(pAttr->c_str(), "path")))
@@ -290,12 +290,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage_Item("SQLite Version:", thisAgent->SMem->statistics->db_lib_version, 40);
             PrintCLIMessage_Item("Memory Usage:", thisAgent->SMem->statistics->mem_usage, 40);
             PrintCLIMessage_Item("Memory Highwater:", thisAgent->SMem->statistics->mem_high, 40);
-            PrintCLIMessage_Item("Retrieves:", thisAgent->SMem->statistics->expansions, 40);
-            PrintCLIMessage_Item("Queries:", thisAgent->SMem->statistics->cbr, 40);
+            PrintCLIMessage_Item("Retrieves:", thisAgent->SMem->statistics->retrievals, 40);
+            PrintCLIMessage_Item("Queries:", thisAgent->SMem->statistics->queries, 40);
             PrintCLIMessage_Item("Stores:", thisAgent->SMem->statistics->stores, 40);
             PrintCLIMessage_Item("Activation Updates:", thisAgent->SMem->statistics->act_updates, 40);
-            PrintCLIMessage_Item("Nodes:", thisAgent->SMem->statistics->chunks, 40);
-            PrintCLIMessage_Item("Edges:", thisAgent->SMem->statistics->slots, 40);
+            PrintCLIMessage_Item("Nodes:", thisAgent->SMem->statistics->nodes, 40);
+            PrintCLIMessage_Item("Edges:", thisAgent->SMem->statistics->edges, 40);
         }
         else
         {

@@ -1227,7 +1227,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
         }
 
         // update local statistic
-        statistics->slots->set_value(statistics->slots->get_value() - pair_count);
+        statistics->edges->set_value(statistics->edges->get_value() - pair_count);
     }
 
     // disconnect
@@ -1522,7 +1522,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
 
         // update local edge count
         {
-            statistics->slots->set_value(statistics->slots->get_value() + (const_new.size() + lti_new.size()));
+            statistics->edges->set_value(statistics->edges->get_value() + (const_new.size() + lti_new.size()));
         }
     }
 }
