@@ -3694,13 +3694,11 @@ namespace cli
                     {'g', "get",        OPTARG_NONE},
                     {'h', "history",    OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'i', "init",       OPTARG_NONE},
-                    {'p', "print",      OPTARG_NONE},
                     {'q', "query",      OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'r', "remove",     OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'s', "set",        OPTARG_NONE},
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
-                    {'v', "viz",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
 
@@ -3784,27 +3782,6 @@ namespace cli
 
                         return cli.DoSMem(option);
 
-                    case 'p':
-                    {
-                        // case: print does zero or 1/2 non-option arguments
-                        if (!opt.CheckNumNonOptArgs(0, 2))
-                        {
-                            return cli.SetError(opt.GetError().c_str());
-                        }
-
-                        if (opt.GetNonOptionArguments() == 0)
-                        {
-                            return cli.DoSMem(option);
-                        }
-
-                        if (opt.GetNonOptionArguments() == 1)
-                        {
-                            return cli.DoSMem(option, &(argv[2]), 0);
-                        }
-
-                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));
-                    }
-
                     case 'q':
                     {
                         // case: query requires one non-option argument, but can have a depth argument
@@ -3880,26 +3857,6 @@ namespace cli
                         return cli.DoSMem(option, &(argv[2]));
                     }
 
-                    case 'v':
-                    {
-                        // case: viz does zero or 1/2 non-option arguments
-                        if (!opt.CheckNumNonOptArgs(0, 2))
-                        {
-                            return cli.SetError(opt.GetError().c_str());
-                        }
-
-                        if (opt.GetNonOptionArguments() == 0)
-                        {
-                            return cli.DoSMem(option);
-                        }
-
-                        if (opt.GetNonOptionArguments() == 1)
-                        {
-                            return cli.DoSMem(option, &(argv[2]), 0);
-                        }
-
-                        return cli.DoSMem(option, &(argv[2]), &(argv[3]));
-                    }
                 }
 
                 // bad: no option, but more than one argument

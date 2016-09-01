@@ -19,6 +19,7 @@
 #include "output_manager.h"
 #include "print.h"
 #include "rhs.h"
+#include "semantic_memory.h"
 #include "slot.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
@@ -595,7 +596,37 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
-            do_print_for_production_name(thisAgent, &lexeme, arg, intern, print_filename, full_prod);
+            if (lexeme.string()[0] == '@')
+            {
+                uint64_t lLti_id = 0;
+                if (lexeme.string()[1] != '\0')
+                {
+                    lLti_id = strtol (&(lexeme.string()[1]),NULL,10);
+                    if (lLti_id)
+                    {
+                        lLti_id = thisAgent->SMem->lti_exists(lLti_id);
+                        if (lLti_id == NIL)
+                        {
+                            print(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
+                            break;
+                        }
+                    }
+                }
+                thisAgent->SMem->attach();
+                std::string smem_print_output;
+
+                if (lLti_id == NIL)
+                {
+                    thisAgent->SMem->print_store(&(smem_print_output));
+                }
+                else
+                {
+                    thisAgent->SMem->print_smem_object(lLti_id, depth, &(smem_print_output));
+                }
+                print(thisAgent, smem_print_output.c_str());
+            } else {
+                do_print_for_production_name(thisAgent, &lexeme, arg, intern, print_filename, full_prod);
+            }
             break;
 
         case INT_CONSTANT_LEXEME:

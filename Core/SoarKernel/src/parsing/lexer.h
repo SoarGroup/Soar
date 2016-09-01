@@ -117,11 +117,6 @@ namespace soar
         static Lexeme get_lexeme_from_string (agent* thisAgent, const char* input);
 
         /**
-         *  Print an out the current source line and column; useful for
-         *  error messages. TODO: it's a no-op for now.
-         */
-        void print_location_of_most_recent_lexeme ();
-        /**
          * Return the current level of parentheses nesting (0 means
          * no open paren's have been encountered).
          */

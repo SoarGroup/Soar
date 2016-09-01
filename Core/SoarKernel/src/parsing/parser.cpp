@@ -478,7 +478,6 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
 
         default:
             print(thisAgent,  "Expected variable or constant for test\n");
-            lexer->print_location_of_most_recent_lexeme();
             return NIL;
     }
 }
@@ -497,7 +496,6 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type != LESS_LESS_LEXEME)
     {
         print(thisAgent,  "Expected << to begin disjunction test\n");
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
 
@@ -522,7 +520,6 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
                 break;
             default:
                 print(thisAgent,  "Expected constant or >> while reading disjunction test\n");
-                lexer->print_location_of_most_recent_lexeme();
                 deallocate_test(thisAgent, t);
                 return NIL;
         }
@@ -883,7 +880,6 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
     {
         print(thisAgent,  "Expected ^ followed by attribute\n");
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if (!lexer->get_lexeme()) return NULL;
@@ -1001,7 +997,6 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
         print(thisAgent,  "Expected ( to begin condition element\n");
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if (!lexer->get_lexeme()) return NULL;
@@ -1075,7 +1070,6 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                 free_growable_string(thisAgent, gs);
                 //TODO: should we append this to the previous XML message or create a new message for it?
-                lexer->print_location_of_most_recent_lexeme();
                 deallocate_test(thisAgent, id_test);    /* AGR 527c */
                 return NIL;                  /* AGR 527c */
             }
@@ -1250,7 +1244,6 @@ condition* parse_cond(agent* thisAgent, Lexer* lexer)
         if (lexer->current_lexeme.type != R_BRACE_LEXEME)
         {
             print(thisAgent,  "Expected } to end conjunctive condition\n");
-            lexer->print_location_of_most_recent_lexeme();
             deallocate_condition_list(thisAgent, c);
             return NIL;
         }
@@ -1456,7 +1449,6 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if (!fun_name)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     rf = lookup_rhs_function(thisAgent, fun_name);
@@ -1470,7 +1462,6 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     if (!rf)
     {
         print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
 
@@ -1479,14 +1470,12 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         print(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if ((! is_stand_alone_action) && (! rf->can_be_rhs_value))
     {
         print(thisAgent,  "Function %s can only be used as a stand-alone action\n",
               lexer->current_lexeme.string());
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
 
@@ -1519,7 +1508,6 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         print(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
               rf->name->sc->name, rf->num_args_expected);
-        lexer->print_location_of_most_recent_lexeme();
         deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
         return NIL;
     }
@@ -1562,7 +1550,6 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
         return rv;
     }
     print(thisAgent,  "Illegal value for RHS value\n");
-    lexer->print_location_of_most_recent_lexeme();
     return NULL;
 }
 
@@ -1923,7 +1910,6 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
             id->to_string(true, szPrintId, 256);
             print(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
-            lexer->print_location_of_most_recent_lexeme();
         }
 
         if (preference_type == REJECT_PREFERENCE_TYPE)
@@ -1992,7 +1978,6 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
     {
         print(thisAgent,  "Expected ^ in RHS make action\n");
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     old_id = id;
@@ -2112,7 +2097,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
         print(thisAgent,  "Expected ( to begin RHS action\n");
-        lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if (!lexer->get_lexeme()) return NULL;
@@ -2283,7 +2267,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     if (!lexSuccess || lexer.current_lexeme.type != STR_CONSTANT_LEXEME)
     {
         print(thisAgent,  "Expected symbol for production name\n");
-        lexer.print_location_of_most_recent_lexeme();
         return NIL;
     }
     name = thisAgent->symbolManager->make_str_constant(lexer.current_lexeme.string());
@@ -2411,7 +2394,6 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     if (lexer.current_lexeme.type != RIGHT_ARROW_LEXEME)
     {
         print(thisAgent,  "Expected --> in production\n");
-        lexer.print_location_of_most_recent_lexeme();
         abort_parse_production(thisAgent, name, &documentation, &lhs);
         return NIL;
     }

@@ -136,7 +136,6 @@ bool Lexer::determine_type_of_constituent_string () {
         current_lexeme.int_val = strtol (current_lexeme.string(),NULL,10);
         if (errno) {
             print (thisAgent, "Error: bad integer (probably too large)\n");
-            print_location_of_most_recent_lexeme();
             current_lexeme.int_val = 0;
         }
         return (errno == 0);
@@ -148,7 +147,6 @@ bool Lexer::determine_type_of_constituent_string () {
         current_lexeme.float_val = strtod (current_lexeme.string(),NULL);
         if (errno) {
             print (thisAgent, "Error: bad floating point number\n");
-            print_location_of_most_recent_lexeme();
             current_lexeme.float_val = 0.0;
         }
         return (errno == 0);
@@ -161,7 +159,6 @@ bool Lexer::determine_type_of_constituent_string () {
         current_lexeme.type = IDENTIFIER_LEXEME;
         if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[1]))) {
             print (thisAgent, "Error: bad number for identifier (probably too large)\n");
-            print_location_of_most_recent_lexeme();
             current_lexeme.id_number = 0;
             errno = 1;
             this->lex_error = true;
@@ -176,7 +173,6 @@ bool Lexer::determine_type_of_constituent_string () {
                 (current_lexeme.lex_string[current_lexeme.length()-1] == '>') )
             {
                 print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string());
-                print_location_of_most_recent_lexeme();
                 xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
             }
         }
@@ -405,7 +401,6 @@ void Lexer::lex_vbar () {
     do {
         if (current_char==EOF) {
             print (thisAgent, "Error:  opening '|' without closing '|'\n");
-            print_location_of_most_recent_lexeme();
             /* BUGBUG if reading from top level, don't want to signal EOF */
             current_lexeme.type = EOF_LEXEME;
             current_lexeme.lex_string = std::string(1, EOF);
@@ -429,7 +424,6 @@ void Lexer::lex_quote () {
     do {
         if (current_char==EOF) {
             print (thisAgent, "Error:  opening '\"' without closing '\"'\n");
-            print_location_of_most_recent_lexeme();
             /* BUGBUG if reading from top level, don't want to signal EOF */
             current_lexeme.type = EOF_LEXEME;
             current_lexeme.lex_string = std::string(1, EOF);
@@ -470,8 +464,6 @@ bool Lexer::get_lexeme () {
     if (lex_error)
     {
         print(thisAgent,  "Parsing error.\n");
-        // Doesn't do anything any more it seems
-        // lexer->print_location_of_most_recent_lexeme();
         return false;
     }
     return true;
@@ -639,30 +631,6 @@ bool Lexer::init ()
     return true;
 }
 
-void Lexer::print_location_of_most_recent_lexeme () {
-    //TODO: below was commented out because file input isn't used anymore.
-    //write something else to track input line, column and offset
-
-    // int i;
-
-    // if (current_file->line_of_start_of_last_lexeme ==
-    //     current_file->current_line) {
-    //   /* --- error occurred on current line, so print out the line --- */
-    //   if (current_file->buffer[strlen(current_file->buffer)-1]=='\n')
-    //     print_string (thisAgent, current_file->buffer);
-    //   else
-    //     print (thisAgent, "%s\n",current_file->buffer);
-    //   for (i=0; i<current_file->column_of_start_of_last_lexeme; i++)
-    //     print_string (thisAgent, "-");
-    //   print_string (thisAgent, "^\n");
-    // } else {
-    //   /* --- error occurred on a previous line, so just give the position --- */
-    //   print (thisAgent, "File %s, line %lu, column %lu.\n", current_file->filename,
-    //          current_file->line_of_start_of_last_lexeme,
-    //          current_file->column_of_start_of_last_lexeme + 1);
-    // }
-}
-
 int Lexer::current_parentheses_level () {
     return parentheses_level;
 }
@@ -720,17 +688,13 @@ void Lexer::determine_possible_symbol_types_for_string (const char *s,
     }
 
     /* --- make sure it's entirely constituent characters --- */
-    for (ch=s; *ch!=0; ch++)
-        if (! constituent_char[static_cast<unsigned char>(*ch)])
-            return;
-
     /* --- check for rereadability --- */
     all_alphanum = true;
     for (ch=s; *ch!='\0'; ch++) {
         if (!isalnum(*ch)) {
             all_alphanum = false;
-            break;
         }
+        if (!constituent_char[static_cast<unsigned char>(*ch)]) return;
     }
     if ( all_alphanum ||
         (length_of_s > length_of_longest_special_lexeme) ||

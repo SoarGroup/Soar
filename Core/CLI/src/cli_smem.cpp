@@ -131,66 +131,21 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         PrintCLIMessage_Item("", my_param, 0);
         return true;
     }
-    else if (pOp == 'h')
-    {
-        uint64_t lti_id = NIL;
-        uint64_t depth = 1;
-        bool history = true;
-        thisAgent->SMem->attach();
-
-        if (thisAgent->SMem->DB->get_status() != soar_module::connected)
-        {
-            return SetError("Semantic memory database not connected.");
-        }
-
-        if (pAttr)
-        {
-            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (lexeme.type == IDENTIFIER_LEXEME)
-            {
-                lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
-            }
-            if (lti_id == NIL)
-            {
-                return SetError("LTI not found");
-            }
-        }
-
-        std::string viz;
-
-        thisAgent->SMem->print_smem_object(lti_id, depth, &(viz), history);
-
-        if (viz.empty())
-        {
-            return SetError("Could not find information on LTI.");
-        }
-
-        PrintCLIMessage_Header("Semantic Memory", 40);
-        PrintCLIMessage(&viz);
-        return true;
-    }
     else if (pOp == 'i')
     {
         /* Don't think we need clear out anything else any more */
-//        epmem_reinit_cmd(thisAgent);
-        /* MToDo | Previously, this did a reint_cmd, which simply did a close() */
-//        thisAgent->SMem->close();
-        thisAgent->SMem->reinit();
 
-//        ExciseBitset options(0);
-//        options.set(EXCISE_ALL, true);
-//        DoExcise(options, 0);
+        thisAgent->SMem->reinit();
 
         PrintCLIMessage("Semantic memory system re-initialized.");
         return true;
     }
-    else if (pOp == 'p')
+    else if (pOp == 'h')
     {
         uint64_t lti_id = NIL;
-        unsigned int depth = 1;
 
         thisAgent->SMem->attach();
-        if (thisAgent->SMem->DB->get_status() != soar_module::connected)
+        if (!thisAgent->SMem->connected())
         {
             return SetError("Semantic memory database not connected.");
         }
@@ -209,11 +164,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
                 if (thisAgent->SMem->DB->get_status() == soar_module::connected)
                 {
                     lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
-
-                    if ((lti_id != NIL) && pVal)
-                    {
-                        from_c_string(depth, pVal->c_str());
-                    }
                 }
             }
 
@@ -225,21 +175,10 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         std::string viz;
 
-        if (lti_id == NIL)
-        {
-            thisAgent->SMem->print_store(&(viz));
-            if (!viz.empty())
-            {
-                PrintCLIMessage_Header("Semantic Memory", 40);
-        }
-        }
-        else
-        {
-            thisAgent->SMem->print_smem_object(lti_id, depth, &(viz));
-        }
+        thisAgent->SMem->print_smem_object(lti_id, 1, &(viz));
         if (viz.empty())
         {
-            return SetError("Semantic memory is empty.");
+            return SetError("No history found.");
         }
 
         PrintCLIMessage(&viz);
@@ -411,55 +350,6 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
             PrintCLIMessage_Item("", my_timer, 0);
         }
-
-        return true;
-    }
-    else if (pOp == 'v')
-    {
-        uint64_t lti_id = NIL;
-        unsigned int depth = 1;
-
-        // visualizing the store requires an open semantic database
-        thisAgent->SMem->attach();
-
-        if (pAttr)
-        {
-            soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pAttr->c_str());
-            if (lexeme.type == IDENTIFIER_LEXEME)
-            {
-                if (thisAgent->SMem->DB->get_status() == soar_module::connected)
-                {
-                    lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
-
-                    if ((lti_id != NIL) && pVal)
-                    {
-                        from_c_string(depth, pVal->c_str());
-                    }
-                }
-            }
-
-            if (lti_id == NIL)
-            {
-                return SetError("Invalid long-term identifier.");
-            }
-        }
-
-        std::string viz;
-
-        if (lti_id == NIL)
-        {
-            thisAgent->SMem->visualize_store(&(viz));
-        }
-        else
-        {
-            thisAgent->SMem->visualize_lti(lti_id, depth, &(viz));
-        }
-
-        if (viz.empty())
-        {
-            return SetError("Nothing to visualize.");
-        }
-        PrintCLIMessage(&viz);
 
         return true;
     }
