@@ -14,7 +14,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-        /* Crashes because of new smem */
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(Blocks_World_Hierarchical);
         CPPUNIT_TEST(BUNCPS_0);

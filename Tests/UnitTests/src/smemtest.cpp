@@ -14,41 +14,35 @@ class SMemTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(SMemTest);    // The name of this class
         
 #ifdef DO_SMEM_TESTS
-        CPPUNIT_TEST(testSimpleCueBasedRetrieval);
-        /* Crashes because of new smem */
-//        CPPUNIT_TEST(testSimpleNonCueBasedRetrieval);
+
         CPPUNIT_TEST(testSimpleStore);
+        CPPUNIT_TEST(testSimpleStoreMultivaluedAttribute);
+        CPPUNIT_TEST(testSimpleCueBasedRetrieval);
+        CPPUNIT_TEST(testSimpleNonCueBasedRetrieval);
+        CPPUNIT_TEST(testSimpleNonCueBasedRetrievalOfNonExistingLTI);
         CPPUNIT_TEST(testTrivialMathQuery);
         CPPUNIT_TEST(testBadMathQuery);
-        CPPUNIT_TEST(testMaxQuery);
-        CPPUNIT_TEST(testMaxMixedTypes);
-        CPPUNIT_TEST(testMaxMultivalued);
-        CPPUNIT_TEST(testMin);
-        CPPUNIT_TEST(testMaxNegQuery);
+        CPPUNIT_TEST(testSimpleFloat);
         CPPUNIT_TEST(testGreater);
-        CPPUNIT_TEST(testLess);
         CPPUNIT_TEST(testGreaterOrEqual);
+        CPPUNIT_TEST(testLess);
         CPPUNIT_TEST(testLessOrEqual);
         CPPUNIT_TEST(testLessWithNeg);
         CPPUNIT_TEST(testLessNoSolution);
-        CPPUNIT_TEST(testSimpleStoreMultivaluedAttribute);
-        CPPUNIT_TEST(testSimpleFloat);
-        CPPUNIT_TEST(testMaxDoublePrecision_Irrational);
-        /* Fails because of new smem */
+        CPPUNIT_TEST(testMin);
+        CPPUNIT_TEST(testMaxQuery);
         CPPUNIT_TEST(testMaxDoublePrecision);
-        /* Fails because of new smem */
-        CPPUNIT_TEST(testSimpleNonCueBasedRetrievalOfNonExistingLTI);
-        /* Fails because of new smem */
-        CPPUNIT_TEST(testNegQuery);
+        CPPUNIT_TEST(testMaxDoublePrecision_Irrational);
+        CPPUNIT_TEST(testMaxMixedTypes);
+        CPPUNIT_TEST(testMaxMultivalued);
         CPPUNIT_TEST(testNegStringFloat);
+        CPPUNIT_TEST(testMaxNegQuery);
+        CPPUNIT_TEST(testNegQuery);
         CPPUNIT_TEST(testNegQueryNoHash);
-        /* Crashes because of new smem */
-//        CPPUNIT_TEST(testISupport);
-        /* Crashes because of new smem */
-//        CPPUNIT_TEST(testISupportWithLearning);
+        CPPUNIT_TEST(testISupport);
+        CPPUNIT_TEST(testISupportWithLearning);
         #ifndef SKIP_SLOW_TESTS
-        /* Crashes because of new smem */
-//        CPPUNIT_TEST(testSmemArithmetic);
+            CPPUNIT_TEST(testSmemArithmetic);
         #endif
 #endif
 
@@ -99,7 +93,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SMemTest);
 
 void SMemTest::source(const std::string& path)
 {
-    pAgent->LoadProductions((std::string("test_agents/smem-math-tests/") + path).c_str());
+    pAgent->LoadProductions((std::string("test_agents/smemtests/") + path).c_str());
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
 }
 
@@ -132,151 +126,152 @@ void SMemTest::tearDown()
 
 void SMemTest::testSimpleCueBasedRetrieval()
 {
-    source("SMemFunctionalTests_testSimpleCueBasedRetrieval.soar");
+    source("SimpleCueBasedRetrieval.soar");
     pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testSimpleNonCueBasedRetrieval()
 {
-    source("SMemFunctionalTests_testSimpleNonCueBasedRetrieval.soar");
+    source("SimpleNonCueBasedRetrieval.soar");
     pAgent->RunSelf(6, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testSimpleStore()
 {
-    source("SMemFunctionalTests_testSimpleStore.soar");
+    source("SimpleStore.soar");
     pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testTrivialMathQuery()
 {
-    source("SMemFunctionalTests_testTrivialMathQuery.soar");
+    source("TrivialMathQuery.soar");
     pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testBadMathQuery()
 {
-    source("SMemFunctionalTests_testBadMathQuery.soar");
+    source("BadMathQuery.soar");
     pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testMaxQuery()
 {
-    source("SMemFunctionalTests_testMax.soar");
+    source("Max.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMaxMixedTypes()
 {
-    source("SMemFunctionalTests_testMaxMixedTypes.soar");
+    source("MaxMixedTypes.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMaxMultivalued()
 {
-    source("SMemFunctionalTests_testMaxMultivalued.soar");
+    source("MaxMultivalued.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMin()
 {
-    source("SMemFunctionalTests_testMin.soar");
+    source("Min.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMaxNegQuery()
 {
-    source("SMemFunctionalTests_testMaxNegation.soar");
+    source("MaxNegation.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
 void SMemTest::testGreater()
 {
-    source("SMemFunctionalTests_testGreater.soar");
+    source("Greater.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testLess()
 {
-    source("SMemFunctionalTests_testLess.soar");
+    source("Less.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testGreaterOrEqual()
 {
-    source("SMemFunctionalTests_testGreaterOrEqual.soar");
+    source("GreaterOrEqual.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testLessOrEqual()
 {
-    source("SMemFunctionalTests_testLessOrEqual.soar");
+    source("LessOrEqual.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testLessWithNeg()
 {
-    source("SMemFunctionalTests_testLessWithNeg.soar");
+    source("LessWithNeg.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testLessNoSolution()
 {
-    source("SMemFunctionalTests_testLessNoSolution.soar");
+    source("LessNoSolution.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testSimpleStoreMultivaluedAttribute()
 {
-    source("SMemFunctionalTests_testLess.soar");
-    pAgent->RunSelf(2, sml::sml_DECISION);
+    source("SimpleStoreMultivaluedAttribute.soar");
+    pAgent->RunSelf(3, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testSimpleFloat()
 {
-    source("SMemFunctionalTests_testLessWithNeg.soar");
-    pAgent->RunSelf(2, sml::sml_DECISION);
+    source("SimpleFloat.soar");
+    pAgent->RunSelf(6, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMaxDoublePrecision_Irrational()
 {
-    source("SMemFunctionalTests_testLessNoSolution.soar");
-    pAgent->RunSelf(2, sml::sml_DECISION);
+    source("MaxDoublePrecision-Irrational.soar");
+    pAgent->RunSelf(6, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testMaxDoublePrecision()
 {
-    source("SMemFunctionalTests_testMirroring.soar");
-    pAgent->RunSelf(5, sml::sml_DECISION);
+    source("MaxDoublePrecision.soar");
+    pAgent->RunSelf(6, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testSimpleNonCueBasedRetrievalOfNonExistingLTI()
 {
-    source("SMemFunctionalTests_testMergeAdd.soar");
-    pAgent->RunSelf(5, sml::sml_DECISION);
+    source("SimpleNonCueBasedRetrievalOfNonExistingLTI.soar");
+    pAgent->RunSelf(3, sml::sml_DECISION);
+    CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testNegQuery()
 {
-    source("SMemFunctionalTests_testMergeNone.soar");
-    pAgent->RunSelf(5, sml::sml_DECISION);
+    source("NegQuery.soar");
+    pAgent->RunSelf(250, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testNegStringFloat()
 {
-    source("SMemFunctionalTests_testNegStringFloat.soar");
+    source("NegStringFloat.soar");
     pAgent->RunSelf(6, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 void SMemTest::testNegQueryNoHash()
 {
-    source("SMemFunctionalTests_testNegQueryNoHash.soar");
+    source("NegQueryNoHash.soar");
     pAgent->RunSelf(2, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
@@ -293,12 +288,10 @@ void SMemTest::testSmemArithmetic()
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
 }
 
-
-
 void SMemTest::testISupport()
 {
     source("smem-i-support.soar");
-    pAgent->RunSelf(10, sml::sml_DECISION);
+    pAgent->RunSelf(5, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 
@@ -307,7 +300,7 @@ void SMemTest::testISupportWithLearning()
     source("smem-i-support.soar");
     std::string result = pAgent->ExecuteCommandLine("chunk always") ;
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
-    pAgent->RunSelf(10, sml::sml_DECISION);
+    pAgent->RunSelf(5, sml::sml_DECISION);
     CPPUNIT_ASSERT(succeeded);
 }
 

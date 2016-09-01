@@ -1475,7 +1475,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
             {
                 if (t->data.referent->tc_num != tc)
                 {
-                    print(thisAgent,
+                    thisAgent->outputManager->printa_sf(thisAgent,
                           "Error: production %s has an unbound referent in negated relational test %t.\n",
                           thisAgent->name_of_production_being_reordered, t);
                     return false;

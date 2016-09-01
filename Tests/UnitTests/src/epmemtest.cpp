@@ -14,8 +14,8 @@ class EpmemTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(EpmemTest);   // The name of this class
 
 #ifdef DO_EPMEM_TESTS
-        /* Crashes because of new smem */
-//        CPPUNIT_TEST(testEpmemUnit);
+        /* Fails because of new smem */
+        CPPUNIT_TEST(testEpmemUnit);
         CPPUNIT_TEST(testHamiltonian);
         CPPUNIT_TEST(testSVS);
         CPPUNIT_TEST(testSVSHard);

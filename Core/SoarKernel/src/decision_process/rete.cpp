@@ -2390,12 +2390,10 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
     {
         next_rt = rt->next;
 
-//        if (test_is_constant_relational_test(rt->type))
-        if (rt->data.constant_referent)
+        if (test_is_constant_relational_test(rt->type) || (rt->type == RELATIONAL_SMEM_LINK_TEST))
         {
             thisAgent->symbolManager->symbol_remove_ref(&rt->data.constant_referent);
-        }
-        else if (rt->type == DISJUNCTION_RETE_TEST)
+        } else if (rt->type == DISJUNCTION_RETE_TEST)
         {
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(rt->data.disjunction_list);
         }
@@ -3248,10 +3246,14 @@ bool single_rete_tests_are_identical(agent* thisAgent, rete_test* rt1, rete_test
     {
         return false;
     }
-
     if (test_is_variable_relational_test(rt1->type))
-        return (var_locations_equal(rt1->data.variable_referent,
-                                    rt2->data.variable_referent));
+    {
+        if (rt1->type == RELATIONAL_SMEM_LINK_TEST)
+            return (var_locations_equal(rt1->data.variable_referent, rt2->data.variable_referent)
+                    && (rt1->data.constant_referent == rt2->data.constant_referent));
+
+        return (var_locations_equal(rt1->data.variable_referent, rt2->data.variable_referent));
+    }
 
     if (test_is_constant_relational_test(rt1->type))
     {
@@ -7715,6 +7717,10 @@ void retesave_rete_test(rete_test* rt, FILE* f)
     {
         retesave_one_byte(rt->data.variable_referent.field_num, f);
         retesave_two_bytes(rt->data.variable_referent.levels_up, f);
+        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST)
+        {
+            retesave_eight_bytes(rt->data.constant_referent->retesave_symindex, f);
+        }
     }
     else if (rt->type == DISJUNCTION_RETE_TEST)
     {
@@ -7747,6 +7753,14 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     {
         rt->data.variable_referent.field_num = reteload_one_byte(f);
         rt->data.variable_referent.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
+        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST)
+        {
+            rt->data.constant_referent = reteload_symbol_from_index(thisAgent, f);
+            if (rt->data.constant_referent)
+            {
+                thisAgent->symbolManager->symbol_add_ref(rt->data.constant_referent);
+            }
+        }
     }
     else if (rt->type == DISJUNCTION_RETE_TEST)
     {
