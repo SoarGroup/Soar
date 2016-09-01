@@ -523,10 +523,7 @@ void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
 // opens the SQLite database and performs all initialization required for the current mode
 void SMem_Manager::init_db()
 {
-    if (DB->get_status() != soar_module::disconnected)
-    {
-        return;
-    }
+    if (connected()) return;
 
     ////////////////////////////////////////////////////////////////////////////
     timers->init->start();
@@ -742,11 +739,11 @@ void SMem_Manager::init_db()
                 variable_create(var_max_cycle, 1);
 
                 // number of nodes
-                statistics->chunks->set_value(0);
+                statistics->nodes->set_value(0);
                 variable_create(var_num_nodes, 0);
 
                 // number of edges
-                statistics->slots->set_value(0);
+                statistics->edges->set_value(0);
                 variable_create(var_num_edges, 0);
 
                 // threshold (from user parameter value)
@@ -766,11 +763,11 @@ void SMem_Manager::init_db()
 
             // number of nodes
             variable_get(var_num_nodes, &(temp));
-            statistics->chunks->set_value(temp);
+            statistics->nodes->set_value(temp);
 
             // number of edges
             variable_get(var_num_edges, &(temp));
-            statistics->slots->set_value(temp);
+            statistics->edges->set_value(temp);
 
             // threshold
             variable_get(var_act_thresh, &(temp));
@@ -842,14 +839,14 @@ void SMem_Manager::store_globals_in_db()
     variable_set(var_max_cycle, smem_max_cycle);
 
     // store num nodes/edges for future use of the smem database
-    variable_set(var_num_nodes, statistics->chunks->get_value());
-    variable_set(var_num_edges, statistics->slots->get_value());
+    variable_set(var_num_nodes, statistics->nodes->get_value());
+    variable_set(var_num_edges, statistics->edges->get_value());
 }
 
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void SMem_Manager::close()
 {
-    if (DB->get_status() == soar_module::connected)
+    if (connected())
     {
         store_globals_in_db();
 
@@ -870,7 +867,7 @@ void SMem_Manager::close()
 
 void SMem_Manager::attach()
 {
-    if (DB->get_status() == soar_module::disconnected)
+    if (!connected())
     {
         init_db();
     }
@@ -880,7 +877,7 @@ bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 {
     bool return_val = false;
 
-    if (DB->get_status() == soar_module::connected)
+    if (connected())
     {
         store_globals_in_db();
 
@@ -983,9 +980,8 @@ uint64_t SMem_Manager::lti_exists(uint64_t pLTI_ID)
 {
     uint64_t return_val = NIL;
 
-    if (DB->get_status() != soar_module::disconnected)
-    {   // getting lti ids requires an open semantic database
-        // soar_letter=? AND number=?
+    if (connected())
+    {
         SQL->lti_id_exists->bind_int(1, static_cast<uint64_t>(pLTI_ID));
 
         if (SQL->lti_id_exists->execute() == soar_module::row)
@@ -1002,7 +998,7 @@ uint64_t SMem_Manager::get_max_lti_id()
 {
     uint64_t return_val = 0;
 
-    if (DB->get_status() != soar_module::disconnected)
+    if (connected())
     {
         if (SQL->lti_id_max->execute() == soar_module::row)
         {
@@ -1032,7 +1028,7 @@ uint64_t SMem_Manager::get_new_lti_id()
 
 //    assert(lti_id_counter == smem_db->last_insert_rowid());
 
-    statistics->chunks->set_value(statistics->chunks->get_value() + 1);
+    statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 
     return lti_id_counter;
 }

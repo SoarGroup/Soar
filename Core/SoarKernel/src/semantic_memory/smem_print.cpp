@@ -280,7 +280,7 @@ void SMem_Manager::visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::stri
     {
         new_lti = new smem_vis_lti;
         new_lti->lti_id = pLTI_ID;
-        new_lti->level = 0;
+        new_lti->level = NO_WME_LEVEL;
         get_lti_name(pLTI_ID, new_lti->lti_name);
 
         bfs.push(new_lti);

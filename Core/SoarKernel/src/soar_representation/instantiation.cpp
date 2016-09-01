@@ -322,43 +322,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
 
         result = rhs_value_to_symbol(rv);
-        /*
-         Long-Winded Case-by-Case [Hopeful] Explanation
-
-         This has to do with long-term identifiers (LTIs) that exist within productions (including chunks/justifications).
-         The real issue is that identifiers, upon creation, require a goal level (used for promotion/demotion/garbage collection).
-         At the time of parsing a rule, we don't have this information, so we give it an invalid "unknown" value.
-         This is OK on the condition side of a rule, since the rete (we think) will just consider it another symbol used for matching.
-         However, it becomes hairy when LTIs are on the action side of a rule, with respect to the state of the LTI in working memory and the rule LHS.
-         Consider the following cases:
-
-         1. Identifier is LTI, does NOT exist as a LHS symbol
-         - we do NOT support this!!!  bad things will likely happen due to potential for adding an identifier to working memory
-         with an unknown goal level.
-         - Note:  The re-orderer has been changed so that we can allow LTIs in the identifier element if it is indirectly
-                  linked to an identifier with a level
-
-         2. Attribute/Value is LTI, does NOT exist as a LHS symbol (!!!!!IMPORTANT CASE!!!!!)
-         - the caller of this function will supply new_id_level (probably based upon the level of the id).
-         - if this is valid (i.e. greater than 0), we use it.  else, ignore.
-         - we have a huge assert on add_wme_to_wm that will kill soar if we try to add an identifier to working memory with an invalid level.
-
-         3. Identifier/Attribute/Value is LTI, DOES exist as LHS symbol
-         - in this situation, we are *guaranteed* that the resulting LTI (since it is in WM) has a valid goal level.
-         - it should be noted that if a value, the level of the LTI may change during promotion/demotion/garbage collection,
-         but this is natural Soar behavior and outside our purvue.
-
-         */
-        if ((result->is_lti()) &&
-                (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
-                (new_id_level > 0))
-        {
-            dprint(DT_UNKNOWN_LEVEL, "Setting level for LTI %y from SMEM_LTI_UNKNOWN_LEVEL to %d.\n", result, new_id_level);
-            assert(false);
-            result->id->level = new_id_level;
-            result->id->promotion_level = new_id_level;
-        }
-
+        assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -1029,21 +993,20 @@ void create_instantiation(agent* thisAgent, production* prod,
             if (glbDeepCopyWMEs != 0)
             {
                 wme* tempwme = glbDeepCopyWMEs;
-//                pref = make_preference(thisAgent, a->preference_type,
-//                    tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
-                if (tempwme->id->id->level == 0)
+                if (tempwme->id->id->level == NO_WME_LEVEL)
                 {
                     tempwme->id->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->attr->is_sti() && tempwme->attr->id->level == 0)
+                if (tempwme->attr->is_sti() && tempwme->attr->id->level == NO_WME_LEVEL)
                 {
                     tempwme->attr->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->value->is_sti() && tempwme->value->id->level == 0)
+                if (tempwme->value->is_sti() && tempwme->value->id->level == NO_WME_LEVEL)
                 {
                     tempwme->value->id->level = glbDeepCopyWMELevel;
                 }
 
+//                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
                 pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
                 glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);

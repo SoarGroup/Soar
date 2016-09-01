@@ -111,8 +111,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(allow_probabilistic_operators);
     allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
     add(allow_multiple_prefs);
-    allow_temporal_constraint = new soar_module::boolean_param("allow-higher-level-ltm", setting_on(SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT), new soar_module::f_predicate<boolean>());
-    add(allow_temporal_constraint);
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
@@ -236,10 +234,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
     }
-    else if (pChangedParam == allow_temporal_constraint)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = pChangedParam->get_value();
-    }
 }
 
 void ebc_param_container::update_params(bool pEBC_settings[])
@@ -280,5 +274,4 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     allow_opaque_knowledge->set_value(pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] ? on : off);
     allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
     allow_multiple_prefs->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
-    allow_temporal_constraint->set_value(pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] ? on : off);
 }

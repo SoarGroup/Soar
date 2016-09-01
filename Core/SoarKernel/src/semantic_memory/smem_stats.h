@@ -17,13 +17,13 @@ class smem_stat_container: public soar_module::stat_container
         smem_mem_usage_stat* mem_usage;
         smem_mem_high_stat* mem_high;
 
-        soar_module::integer_stat* expansions;
-        soar_module::integer_stat* cbr;
+        soar_module::integer_stat* retrievals;
+        soar_module::integer_stat* queries;
         soar_module::integer_stat* stores;
         soar_module::integer_stat* act_updates;
 
-        soar_module::integer_stat* chunks;
-        soar_module::integer_stat* slots;
+        soar_module::integer_stat* nodes;
+        soar_module::integer_stat* edges;
 
         smem_stat_container(agent* thisAgent);
 };

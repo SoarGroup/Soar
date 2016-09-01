@@ -428,7 +428,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         install_memory(state, retrieve->id->LTI_ID, NULL, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
-                        thisAgent->SMem->statistics->expansions->set_value(thisAgent->SMem->statistics->expansions->get_value() + 1);
+                        thisAgent->SMem->statistics->retrievals->set_value(thisAgent->SMem->statistics->retrievals->get_value() + 1);
                     }
                 }
                 // query
@@ -445,7 +445,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
-                    thisAgent->SMem->statistics->cbr->set_value(thisAgent->SMem->statistics->cbr->get_value() + 1);
+                    thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
                 }
                 else if (path == cmd_store)
                 {
@@ -587,7 +587,7 @@ void SMem_Manager::reset(Symbol* state)
 
 void SMem_Manager::reinit()
 {
-    if (thisAgent->SMem->DB->get_status() == soar_module::connected)
+    if (thisAgent->SMem->connected())
     {
         if (thisAgent->SMem->settings->append_db->get_value() == off)
         {

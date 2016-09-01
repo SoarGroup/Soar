@@ -321,53 +321,18 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
             return newSymbol;
         }
         case IDENTIFIER_LEXEME:
-        {    thisAgent->outputManager->printa_sf(thisAgent, "What appears to be an illegal identifier found: %c%d.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             std::string lStr;
             thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "%c%d", lexeme->id_letter, lexeme->id_number);
             newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
-            /* In case we still need for reading in new LTIs */
-//            dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
-//            if (!allow_lti)
-//            {
-//                /* This seems to only be set when being called by the watch wme cli command.  It looks
-//                 * like the logic in that command could easily be altered so that this abort is not
-//                 * necessary.  The watch command should just fail.  I don't see any reason to completely shut down
-//                 * Soar. */
-//                char msg[BUFFER_MSG_SIZE];
-//                strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_lexeme\n", BUFFER_MSG_SIZE);
-//                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-//                abort_with_fatal_error(thisAgent, msg);
-//            }
-//            else
-//            {
-//                uint64_t lti_id = thisAgent->SMem->lti_get_id(lexeme->id_letter, lexeme->id_number);
-//
-//                if (lti_id == NIL)
-//                {
-//                    /* An identifier was found in a rule that is not yet in smem.  We store
-//                     * the identifier in a list so that we can add it to smem later, after we
-//                     * know the current source command is complete */
-//                    dprint(DT_PARSER_PROMOTE, "Identifier %c%d found (%s).\n", lexeme->id_letter, lexeme->id_number, allow_lti ? "true" : "false");
-//                    newSymbol = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
-//                    if (newSymbol == NIL)
-//                    {
-//                        newSymbol = thisAgent->symbolManager->make_new_identifier(lexeme->id_letter, SMEM_LTI_UNKNOWN_LEVEL, lexeme->id_number);
-//                    }
-//                    thisAgent->LTIs_sourced->add_lexed_LTI(newSymbol);
-//                }
-//                else
-//                {
-//                    newSymbol =  thisAgent->SMem->lti_soar_make(lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
-//                }
-//                return newSymbol;
-//            }
-//            break;
+
             return newSymbol;
         }
         default:
         {
             char msg[BUFFER_MSG_SIZE];
-            SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_lexeme\n, lexeme->string()=%s\n", lexeme->string());
+            SNPRINTF(msg, BUFFER_MSG_SIZE, "Internal error:  Illegal lexeme type found in make_symbol_for_lexeme: %s\n", lexeme->string());
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
             break;

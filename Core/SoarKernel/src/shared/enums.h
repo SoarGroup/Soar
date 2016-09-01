@@ -535,7 +535,7 @@ enum smem_cue_element_type { attr_t, value_const_t, value_lti_t, smem_cue_elemen
 enum smem_variable_key { var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode };
 
 #define SMEM_ACT_MAX static_cast<uint64_t>( static_cast<uint64_t>( 0 - 1 ) / static_cast<uint64_t>(2) )
-#define SMEM_LTI_UNKNOWN_LEVEL 0
+#define NO_WME_LEVEL 0
 #define SMEM_AUGMENTATIONS_NULL 0
 #define SMEM_AUGMENTATIONS_NULL_STR "0"
 #define SMEM_ACT_HISTORY_ENTRIES 10
