@@ -848,11 +848,7 @@ void init_ltm_value_constant(ltm_value_const& constant)
  */
 bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_msg, std::string** result_message, bool force)
 {
-    /* MToDo | Fix after we fully remove shared symbol.  Then we can use either a separate symbol table or what we currently
-     *         store in the db. */
-    //return true;
-
-        //TODO: need to fix so that err_msg and result_message are actually used or not passed.
+    //TODO: need to fix so that err_msg and result_message are actually used or not passed.
     bool good_command = true;
 
     //parsing ltms requires an open semantic database
@@ -896,8 +892,6 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 
     if (good_command)
     {
-        //Symbol* lti = lti_soar_make(lti_id, lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL);
-
         lexer.get_lexeme();//Consume the integer lti id.
 
         ltm_slot_map children;
@@ -1055,8 +1049,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                             lexer.get_lexeme();
                             if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
-                                //value = thisAgent->symbolManager->find_identifier(lexer.current_lexeme.id_letter, lexer.current_lexeme.id_number);
-                                get_sti_for_lti(lexer.current_lexeme.int_val, SMEM_LTI_UNKNOWN_LEVEL);
+                                value = get_sti_for_lti(lexer.current_lexeme.int_val, NO_WME_LEVEL);
                                 lexer.get_lexeme();
                             }
                             else

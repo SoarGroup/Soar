@@ -661,10 +661,7 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
 
 
 /* Before calling make_production, we must call this function to make sure
- * the production is valid.  This was separated out so EBC can try to fix
- * unconnected conditions caused by LTI being at a higher level. */
-extern void debug_trace_set(int dt_num, bool pEnable);
-
+ * the production is valid. */
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     /* This is called for justifications even though it does nothing because in the future

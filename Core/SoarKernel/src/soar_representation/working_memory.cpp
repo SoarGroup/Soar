@@ -147,9 +147,9 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
     dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_sti()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->attr->is_sti()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->value->is_sti()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
+    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
 
     push(thisAgent, w, thisAgent->wmes_to_add);
 
@@ -168,11 +168,6 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
         post_link_addition(thisAgent, w->id, w->attr);
-        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
-//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-//        {
-//            post_link_addition(thisAgent, w->id, w->value);
-//        }
     }
     #endif
 }
@@ -192,11 +187,6 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
         post_link_removal(thisAgent, w->id, w->attr);
-        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
-//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-//        {
-//            post_link_addition(thisAgent, w->id, w->value);
-//        }
     }
     #endif
     if (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)

@@ -4072,7 +4072,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
         /* This initialization is necessary (for at least safety reasons, for all
         msc's, regardless of the mode */
-        msc->level = 0;
+        msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
 #ifdef DEBUG_WATERFALL
         print_with_symbols(thisAgent, "\n %y is a refracted instantiation",
@@ -6197,7 +6197,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->p_node = node;
     msc->inst = NIL;  /* just for safety */
     /* initialize goal regardless of run mode */
-    msc->level = 0;
+    msc->level = NO_WME_LEVEL;
     msc->goal = NIL;
 
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
@@ -6616,10 +6616,10 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = inst;
         msc->p_node = node;
-        msc->tok = NIL;     /* just for safety */
-        msc->w = NIL;       /* just for safety */
-        msc->level = 0;     /* just for safety */
-        msc->goal = NIL;    /* just for safety */
+        msc->tok = NIL;                 /* just for safety */
+        msc->w = NIL;                   /* just for safety */
+        msc->level = NO_WME_LEVEL;      /* just for safety */
+        msc->goal = NIL;                /* just for safety */
         insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
                               next_of_node, prev_of_node);
 

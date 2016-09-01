@@ -85,7 +85,7 @@ void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "        ovar_to_o_id_map Map\n");
+    outputManager->printa_sf(thisAgent, "     Instantiation Identity Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
     if (instantiation_identities->size() == 0)
@@ -98,7 +98,7 @@ void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
 
     for (iter_inst = instantiation_identities->begin(); iter_inst != instantiation_identities->end(); ++iter_inst)
     {
-        outputManager->printa_sf(thisAgent, "o_id's for i%u: \n", iter_inst->first);
+        outputManager->printa_sf(thisAgent, "Identities for i%u: \n", iter_inst->first);
         for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
         {
             outputManager->printa_sf(thisAgent, "   %y = o%u\n", iter_sym->first, iter_sym->second);
@@ -113,7 +113,7 @@ void Explanation_Based_Chunker::print_o_id_substitution_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "     o_id_substitution_map Map\n");
+    outputManager->printa_sf(thisAgent, "     Identity to Identity Set Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
     if (unification_map->size() == 0)
@@ -137,7 +137,7 @@ void Explanation_Based_Chunker::print_o_id_to_ovar_debug_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "     o_id_to_ovar_debug_map Map\n");
+    outputManager->printa_sf(thisAgent, " Identity to Original Sym Debug Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
     if (id_to_rule_sym_debug_map->size() == 0)
@@ -158,7 +158,7 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "   Attachment Points in conditions\n");
+    outputManager->printa_sf(thisAgent, "   Attachment Points in Conditions\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
     if (attachment_points->size() == 0)
@@ -325,6 +325,5 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "allow-opaque                %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
     outputManager->printa_sf(thisAgent, "allow-uncertain-operators   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
     outputManager->printa_sf(thisAgent, "allow-multiple-prefs        %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_multiple_prefs->get_value()), "Tests a WME that has multiple reasons it exists");
-    outputManager->printa_sf(thisAgent, "allow-pre-existing-ltm      %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_temporal_constraint->get_value()), "Augments/tests a retrieved LTM that existed in higher goal");
 
 }

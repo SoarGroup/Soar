@@ -43,7 +43,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
 
-    dprint(DT_REPAIR, "Finding path to connect LTI %y (level %d) to a goal state.\n", pNonOperationalSym, pNonOperationalSym->id->level);
+    dprint(DT_REPAIR, "Finding path to connect %y (level %d) to a goal state.\n", pNonOperationalSym, pNonOperationalSym->id->level);
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
@@ -78,7 +78,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
                         lNewPath = new Path_to_Goal_State(w->value, lCurrentPath->get_path(), w);
                         if (w->value == pNonOperationalSym)
                         {
-                            dprint(DT_REPAIR, "...found path to LTI %y: %w.\n", pNonOperationalSym, w);
+                            dprint(DT_REPAIR, "...found path to %y: %w.\n", pNonOperationalSym, w);
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
@@ -180,7 +180,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
 
     assert(lMatchedSym->is_sti());
 
-    /* Copy in any identities for the LTI that was used in the unconnected conditions */
+    /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
     std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
     std::unordered_map< Symbol*, uint64_t >::iterator iter_id;
 
@@ -386,7 +386,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
-    /* Generate connecting wme's for each unconnected LTI and add to a set */
+    /* Generate connecting wme's for each unconnected identifier and add to a set */
     dprint(DT_REPAIR, "Step 3: Adding WMEs to connect each dangling symbol...\n");
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {

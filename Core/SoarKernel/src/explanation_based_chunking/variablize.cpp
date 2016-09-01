@@ -30,12 +30,12 @@ Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found o%u in variablization table: %y\n", index_id, iter->second);
+        dprint(DT_VM_MAPS, "...found %u in variablization table: %y\n", index_id, iter->second);
         return iter->second;
     }
     else
     {
-        dprint(DT_VM_MAPS, "...did not find o%u in variablization table.\n", index_id);
+        dprint(DT_VM_MAPS, "...did not find %u in variablization table.\n", index_id);
         dprint_variablization_table(DT_VM_MAPS);
         return NULL;
     }
@@ -161,7 +161,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     }
     if (!found_variablization && rs->referent->is_sti())
     {
-        /* -- First instance of an unbound rhs var -- */
+        /* -- First time we've encountered an unbound rhs var. -- */
         dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
         prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
         prefix[1] = 0;
@@ -173,7 +173,6 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     if (found_variablization)
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
-//        dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
         if (pShouldCachedMatchValue)
         {
             add_matched_sym_for_rhs_var(found_variablization, rs->referent);
@@ -233,10 +232,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test t)
         if ((t->type == EQUALITY_TEST) &&
             (t->identity && !t->data.referent->is_variable()))
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", t);
-            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t's eq_test is: %t\n", t, t->eq_test);
             variablize_lhs_symbol(&(t->data.referent), t->identity);
-            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's new eq_test is: %t\n", t, t->eq_test);
         }
     }
 }
