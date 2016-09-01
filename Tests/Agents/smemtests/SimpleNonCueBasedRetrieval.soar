@@ -1,0 +1,50 @@
+smem --set learning on
+
+# Add some data with multiple levels
+smem --add {
+  (<x> ^name foo
+  	   ^location <loc>)
+  (<loc> ^x 1 ^y 2 ^z 3) 
+}
+
+sp {propose*first-query
+  (state <s> ^superstate nil 
+  		    -^first)
+--> 
+  (<s> ^operator.name first-query)
+}
+
+sp {apply*first-query
+  (state <s> ^operator.name first-query
+             ^smem.command <sc>)
+-->
+  (<sc> ^query.name foo)
+  (<s> ^first done)
+}
+
+sp {propose*second-query
+  (state <s> ^superstate nil 
+  			 ^first done
+  			-^second)
+--> 
+  (<s> ^operator.name second-query)
+}
+
+sp {apply*second-query
+  (state <s> ^operator.name second-query
+             ^smem.command <sc>
+             ^smem.result.retrieved.location <loc>)
+  (<sc> ^query <first-query>)
+-->
+  (<sc> ^query <first-query> -)
+  (<sc> ^retrieve <loc>)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^x 1 ^y 2 ^z 3)
+-->
+  (exec succeeded)
+}
+
+
