@@ -1012,8 +1012,13 @@ uint64_t SMem_Manager::get_max_lti_id()
 
 uint64_t SMem_Manager::get_new_lti_id()
 {
+    uint64_t lti_id = ++lti_id_counter;
+    while (lti_exists(lti_id))
+    {
+        lti_id = ++lti_id_counter;
+    }
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    SQL->lti_add->bind_int(1, static_cast<uint64_t>(++lti_id_counter));
+    SQL->lti_add->bind_int(1, static_cast<uint64_t>(lti_id));
     SQL->lti_add->bind_int(2, static_cast<uint64_t>(0));
     SQL->lti_add->bind_double(3, static_cast<double>(0));
     SQL->lti_add->bind_int(4, static_cast<uint64_t>(0));
@@ -1026,4 +1031,22 @@ uint64_t SMem_Manager::get_new_lti_id()
     statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 
     return lti_id_counter;
+}
+
+uint64_t SMem_Manager::get_specific_lti_id(uint64_t lti_id)
+{
+    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
+    SQL->lti_add->bind_int(1, static_cast<uint64_t>(lti_id));
+    SQL->lti_add->bind_int(2, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_double(3, static_cast<double>(0));
+    SQL->lti_add->bind_int(4, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_int(5, static_cast<uint64_t>(0));
+    SQL->lti_add->bind_int(6, static_cast<uint64_t>(0));
+    SQL->lti_add->execute(soar_module::op_reinit);
+
+//    assert(lti_id_counter == smem_db->last_insert_rowid());
+
+    statistics->nodes->set_value(statistics->nodes->get_value() + 1);
+
+    return lti_id;
 }
