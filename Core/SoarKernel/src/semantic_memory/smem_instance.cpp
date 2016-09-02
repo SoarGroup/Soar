@@ -23,20 +23,20 @@
 
 uint64_t SMem_Manager::link_sti_to_lti(Symbol* pID, bool preserve_previous_link)
 {
-    dprint(DT_DEBUG, "Attempting to link sti %y %d (preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
+    dprint(DT_SMEM_INSTANCE, "Attempting to link sti %y %d (preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
     if (!pID->is_sti()) {
-        dprint_noprefix(DT_DEBUG, "not STI, returning NIL.\n");
+        dprint_noprefix(DT_SMEM_INSTANCE, "not STI, returning NIL.\n");
         return NIL;
     }
     if ((pID->id->LTI_ID != NIL) && preserve_previous_link)
         {
         pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        dprint_noprefix(DT_DEBUG, "LTI ID exists and preserve is true.  Returning existing LTI ID.\n");
+        dprint_noprefix(DT_SMEM_INSTANCE, "LTI ID exists and preserve is true.  Returning existing LTI ID.\n");
         return pID->id->LTI_ID;
         }
     pID->id->LTI_ID = get_new_lti_id();
     pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-    dprint_noprefix(DT_DEBUG, "Returning new LTI ID %u.\n", pID->id->LTI_ID);
+    dprint_noprefix(DT_SMEM_INSTANCE, "Returning new LTI ID %u.\n", pID->id->LTI_ID);
     return pID->id->LTI_ID;
 }
 
@@ -46,6 +46,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     {
         return;
     }
+    dprint(DT_SMEM_INSTANCE, "install_buffered_triple_list called in state %y\n", state);
 
     clear_instance_mappings();
     instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
@@ -154,6 +155,7 @@ void SMem_Manager::clear_instance_mappings()
 {
     lti_to_sti_map.clear();
     sti_to_identity_map.clear();
+    dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size());
 }
 
 uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_ID)
@@ -188,11 +190,13 @@ Symbol* SMem_Manager::get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel,
 {
     id_to_sym_map::iterator lIter;
 
+    dprint(DT_SMEM_INSTANCE, "Getting sti for lti ID %u at level %d.\n", pLTI_ID, pLevel);
     lIter = lti_to_sti_map.find(pLTI_ID);
 
     if (lIter != lti_to_sti_map.end())
     {
         thisAgent->symbolManager->symbol_add_ref(lIter->second);
+        dprint(DT_SMEM_INSTANCE, "-> returning existing symbol %y.\n",lIter->second);
         return (lIter->second);
     } else {
         Symbol* return_val;
@@ -201,6 +205,7 @@ Symbol* SMem_Manager::get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel,
         return_val->id->promotion_level = pLevel;
         return_val->id->LTI_ID = pLTI_ID;
         lti_to_sti_map[pLTI_ID] = return_val;
+        dprint(DT_SMEM_INSTANCE, "-> returning newly created symbol %y.\n",return_val);
         return return_val;
     }
 }
@@ -217,7 +222,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     {
         result_header = state->id->smem_result_header;
     }
-
+    dprint(DT_SMEM_INSTANCE, "Install memory called for %y %u %y.\n", state, pLTI_ID, sti);
     // get identifier if not known
     bool sti_created_here = false;
     if (install_type == wm_install)

@@ -149,6 +149,7 @@ typedef struct EXPORT agent_struct
     struct ms_change_struct* ms_assertions;   /* changes to match set */
     struct ms_change_struct* ms_retractions;
 
+    /* Various classes for this agent that manage different aspects of Soar */
     Symbol_Manager*             symbolManager;
     WM_Manager*                 WM;
     RL_Manager*                 RL;
@@ -159,10 +160,6 @@ typedef struct EXPORT agent_struct
     Output_Manager*             outputManager;
     Explanation_Memory*         explanationMemory;
     GraphViz_Visualizer*        visualizationManager;
-
-
-    // Used by the parser to promote LTIs in rules after database is loaded
-    LTI_Promotion_Set*  LTIs_sourced;
 
     /* ----------------------- Top-level stuff -------------------------- */
 

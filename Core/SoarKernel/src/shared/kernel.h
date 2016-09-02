@@ -75,11 +75,6 @@
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 
-    /* -- Enables tracing functions that print SQL processing and errors -- */
-//    #define DEBUG_SQL_ERRORS
-//    #define DEBUG_SQL_QUERIES
-//    #define DEBUG_SQL_PROFILE
-
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
@@ -93,21 +88,6 @@
 //#define DETAILED_TIMING_STATS
 #endif
 
-/* -------------------------------------------------- */
-/*     Global constants, type declarations, etc.      */
-/* -------------------------------------------------- */
-
-#define BUFFER_MSG_SIZE 128
-#define COLUMNS_PER_LINE 80
-#define TOP_GOAL_LEVEL 1
-#define ATTRIBUTE_IMPASSE_LEVEL 32767
-#define LOWEST_POSSIBLE_GOAL_LEVEL 32767
-#define NIL (0)
-#define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
-#define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
-
-//typedef uint64_t tc_number;  /* Moving this here breaks windows non-scu build for some reason */
-typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
@@ -115,6 +95,8 @@ typedef unsigned char byte;
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
 #define DISCARD_CHUNK_VARNAMES false
+
+/* -- Tracing functions that print SQL processing and errors can be found in soar_db.cpp! -- */
 
 /* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
@@ -128,20 +110,6 @@ typedef unsigned char byte;
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
 //#define REAL_TIME_BEHAVIOR
 //#define ATTENTION_LAPSE
-
-/* ---------------- SQL Callback functions for sql debug modes-------------- */
-#ifdef DEBUG_SQL_PROFILE
-static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
-{
-    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
-}
-#endif
-#ifdef DEBUG_SQL_QUERIES
-static void trace_sql(void* /*arg*/, const char* query)
-{
-    fprintf(stderr, "Query: %s\n", query);
-}
-#endif
 
 /* ---------------- Macros for safe counters -------------- */
 

@@ -11,6 +11,7 @@
 #include "smem_timers.h"
 #include "smem_settings.h"
 
+#include "dprint.h"
 #include "symbol.h"
 #include "working_memory.h"
 
@@ -307,6 +308,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
 
+    dprint(DT_SMEM_INSTANCE, "process_query called with %y %y %y %y\n", state, query, negquery, mathQuery);
     //This is used when doing math queries that need to look at more that just the first valid element
     bool needFullSearch = false;
 

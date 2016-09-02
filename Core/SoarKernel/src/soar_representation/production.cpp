@@ -17,6 +17,7 @@
 #include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
+#include "preference.h"
 #include "print.h"
 #include "production_reorder.h"
 #include "rete.h"

@@ -15,6 +15,7 @@
 #include "agent.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "preference.h"
 #include "print.h"
 #include "production.h"
 #include "symbol_manager.h"

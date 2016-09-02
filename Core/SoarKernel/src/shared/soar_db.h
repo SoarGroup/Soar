@@ -15,6 +15,11 @@
 #include <list>
 #include <assert.h>
 
+/* -- Tracing functions that print SQL processing and errors -- */
+//    #define DEBUG_SQL_ERRORS
+//    #define DEBUG_SQL_QUERIES
+//    #define DEBUG_SQL_PROFILE
+
 namespace soar_module
 {
     ///////////////////////////////////////////////////////////////////////////

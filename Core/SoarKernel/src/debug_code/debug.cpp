@@ -160,6 +160,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
     mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
+    mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
 
 #ifdef DEBUG_OUTPUT_ON
     debug_set_mode_info(mode_info, true);

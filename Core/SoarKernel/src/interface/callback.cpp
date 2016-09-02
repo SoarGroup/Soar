@@ -22,13 +22,15 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "callback.h"
 
 #include "agent.h"
+#include "run_soar.h"
 #include "print.h"
 
 #include <stdlib.h>
+
+#define NUMBER_OF_MONITORABLE_CALLBACKS (NUMBER_OF_CALLBACKS - 2)
 
 const char* soar_callback_names[] =
 {

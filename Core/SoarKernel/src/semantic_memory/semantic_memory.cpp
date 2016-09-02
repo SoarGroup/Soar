@@ -414,6 +414,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 // retrieve
                 if (path == cmd_retrieve)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to retrieve command.\n");
                     if (retrieve->id->LTI_ID == NIL)
                     {
                         // retrieve is not pointing to an lti!
@@ -434,6 +435,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 // query
                 else if (path == cmd_query)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to query command.\n");
                     id_set prohibit_lti;
                     symbol_list::iterator sym_p;
 
@@ -441,7 +443,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-
+                    clear_instance_mappings();
                     process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
@@ -449,6 +451,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                 }
                 else if (path == cmd_store)
                 {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store command.\n");
                     symbol_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -490,6 +493,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
+
+                dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
                 install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
 
@@ -540,6 +545,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
     if (do_wm_phase)
     {
+        dprint(DT_SMEM_INSTANCE, "SMem Manager initiating working memory phase.\n");
         do_working_memory_phase(thisAgent);
     }
 }

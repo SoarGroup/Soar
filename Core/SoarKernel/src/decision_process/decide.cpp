@@ -1192,7 +1192,7 @@ void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, pr
                          Run Preference Semantics
 
    Run_preference_semantics (slot *s, preference **result_candidates) examines
-   the preferences for a given slot, and returns an impasse type for thez
+   the preferences for a given slot, and returns an impasse type for the
    slot.  The argument "result_candidates" is set to a list of candidate
    values for the slot--if the returned impasse type is NONE_IMPASSE_TYPE,
    this is the set of winners; otherwise it is the set of tied, conflicted,
@@ -1296,7 +1296,7 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (s->preferences[i])
             {
-                print(thisAgent, "\n   %ss:\n", preference_name[i]);
+                print(thisAgent, "\n   %ss:\n", preference_name(i));
                 for (p = s->preferences[i]; p; p = p->next)
                 {
                     print(thisAgent, "   ");
@@ -3366,7 +3366,7 @@ void do_buffered_wm_and_ownership_changes(agent* thisAgent)
  and throw away the rest.
  ----------------------------------------------------------------------- */
 
-void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
+void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
 {
     instantiation* inst, *next_inst;
     preference* pref, *next_pref;
@@ -3649,12 +3649,7 @@ void do_preference_phase(agent* thisAgent)
 
     // Temporary list to buffer deallocation of some preferences until
     // the inner elaboration loop is over.
-#ifdef USE_MEM_POOL_ALLOCATORS
-    pref_buffer_list bufdeallo = pref_buffer_list(
-                                     soar_module::soar_memory_pool_allocator<preference*>(thisAgent));
-#else
-    pref_buffer_list bufdeallo;
-#endif
+    preference_list bufdeallo;
 
     // inner elaboration cycle
     for (;;)
@@ -3772,7 +3767,7 @@ void do_preference_phase(agent* thisAgent)
     } // end inner elaboration loop
 
     // Deallocate preferences delayed during inner elaboration loop.
-    for (pref_buffer_list::iterator iter = bufdeallo.begin();
+    for (preference_list::iterator iter = bufdeallo.begin();
             iter != bufdeallo.end(); ++iter)
     {
         preference_remove_ref(thisAgent, *iter);

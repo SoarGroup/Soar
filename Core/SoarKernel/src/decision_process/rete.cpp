@@ -11,6 +11,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "output_manager.h"
+#include "preference.h"
 #include "print.h"
 #include "production.h"
 #include "reinforcement_learning.h"

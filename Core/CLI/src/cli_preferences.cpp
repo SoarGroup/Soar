@@ -254,7 +254,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
                 {
                     if (s->isa_context_slot)
                     {
-                        print(thisAgent,  "\n%ss:\n", preference_name[i]);
+                        print(thisAgent,  "\n%ss:\n", preference_name(i));
                     }
                     for (p = s->preferences[i]; p; p = p->next)
                     {
@@ -313,7 +313,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
                         {
                             if (s->preferences[i])
                             {
-                                // print(thisAgent, "\n%ss:\n", preference_name[i]);
+                                // print(thisAgent, "\n%ss:\n", Soar_Instance::Get_Soar_Instance().preference_name(i));
                                 for (p = s->preferences[i]; p; p = p->next)
                                 {
                                     if (p->value == id)
@@ -350,7 +350,7 @@ int soar_ecPrintPreferences(agent* thisAgent, char* szId, char* szAttr, bool obj
     {
         if (s->preferences[i])
         {
-            print(thisAgent,  "\n%ss:\n", preference_name[i]);
+            print(thisAgent,  "\n%ss:\n", preference_name(i));
             for (p = s->preferences[i]; p; p = p->next)
             {
                 print_preference_and_source(thisAgent, p, print_prod, wtt);
