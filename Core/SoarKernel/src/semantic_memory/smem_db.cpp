@@ -1046,7 +1046,7 @@ uint64_t SMem_Manager::get_specific_lti_id(uint64_t lti_id)
 
 //    assert(lti_id_counter == smem_db->last_insert_rowid());
 
-    statistics->chunks->set_value(statistics->chunks->get_value() + 1);
+    statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 
     return lti_id;
 }
