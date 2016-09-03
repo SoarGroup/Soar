@@ -279,6 +279,12 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
         case IMPASSE_ID_TEST:
             dealloc_and_return(thisAgent, t2, true);
             break;
+        case SMEM_LINK_UNARY_TEST:
+            dealloc_and_return(thisAgent, t2, true);
+            break;
+        case SMEM_LINK_UNARY_NOT_TEST:
+            dealloc_and_return(thisAgent, t2, true);
+            break;
         case DISJUNCTION_TEST:
             for (c1 = t1->data.disjunction_list, c2 = t2->data.disjunction_list;
                     ((c1 != NIL) && (c2 != NIL));

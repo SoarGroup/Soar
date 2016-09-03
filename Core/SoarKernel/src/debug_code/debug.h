@@ -21,9 +21,6 @@ extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool
 
 extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
 extern void debug_init_db(agent* thisAgent);
-extern void debug_print_db_err(TraceMode mode = DT_DEBUG);
-extern void debug_print_epmem_table(const char* table_name, TraceMode mode = DT_DEBUG);
-extern void debug_print_smem_table(const char* table_name, TraceMode mode = DT_DEBUG);
 
 extern void debug_store_refcount(Symbol* sym, bool isAdd);
 extern void debug_destroy_for_refcount(agent* delete_agent);

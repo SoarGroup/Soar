@@ -176,6 +176,8 @@ void substitute_for_placeholders_in_test(agent* thisAgent, test* t)
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             return;
         case CONJUNCTIVE_TEST:
             for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
@@ -367,7 +369,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
     TestType test_type;
     test t;
     Symbol* referent;
-    bool is_unary = false;
+
     test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
 
     /* --- read optional relation symbol --- */
@@ -409,23 +411,13 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             break;
 
         case AT_LEXEME:
-            if (!lexer->get_lexeme())
-            {
-                is_unary = true;
-                test_type = SMEM_LINK_UNARY_TEST;
-            } else {
-                test_type = SMEM_LINK_TEST;
-            }
+            test_type = SMEM_LINK_TEST;
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case NOT_AT_LEXEME:
-            if (!lexer->get_lexeme())
-            {
-                is_unary = true;
-                test_type = SMEM_LINK_UNARY_NOT_TEST;
-            } else {
-                test_type = SMEM_LINK_NOT_TEST;
-            }
+            test_type = SMEM_LINK_NOT_TEST;
+            if (!lexer->get_lexeme()) return NULL;
             break;
 
         case STR_CONSTANT_LEXEME:
@@ -439,9 +431,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             break;
     }
 
-    if (is_unary) return make_test(thisAgent, NULL, test_type);
-
-    /* --- read variable or constant --- */
+     /* --- read variable or constant --- */
     switch (lexer->current_lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
@@ -525,6 +515,16 @@ test parse_simple_test(agent* thisAgent, Lexer* lexer)
     if (lexer->current_lexeme.type == LESS_LESS_LEXEME)
     {
         return parse_disjunction_test(thisAgent, lexer);
+    }
+    if (lexer->current_lexeme.type == UNARY_AT_LEXEME)
+    {
+        if (!lexer->get_lexeme()) return NULL;
+        return make_test(thisAgent, NULL, SMEM_LINK_UNARY_TEST);
+    }
+    if (lexer->current_lexeme.type == UNARY_NOT_AT_LEXEME)
+    {
+        if (!lexer->get_lexeme()) return NULL;
+        return make_test(thisAgent, NULL, SMEM_LINK_UNARY_NOT_TEST);
     }
     return parse_relational_test(thisAgent, lexer);
 }

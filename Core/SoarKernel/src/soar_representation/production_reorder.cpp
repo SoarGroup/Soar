@@ -722,6 +722,8 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             break;
         case CONJUNCTIVE_TEST:
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -1388,6 +1390,8 @@ bool test_tests_for_root(test t, list* roots)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
         case DISJUNCTION_TEST:
             return false;
             break;
@@ -1459,6 +1463,8 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
         case EQUALITY_TEST:
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
         case DISJUNCTION_TEST:
             break;
 

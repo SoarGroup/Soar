@@ -355,9 +355,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 {
                                     if (t->type != EQUALITY_TEST)
                                     {
-                                        destString += test_type_to_string_brief(t->type);
+                                        destString += test_type_to_string(t->type);
                                     }
-                                    destString += "[";
+                                    destString += " [";
                                     destString += std::to_string(t->identity);
                                     destString += "]";
                                 } else {
@@ -373,9 +373,9 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         if (ct->type != EQUALITY_TEST)
                                         {
-                                            destString += test_type_to_string_brief(ct->type);
+                                            destString += test_type_to_string(ct->type);
                                         }
-                                        destString += "[";
+                                        destString += " [";
                                         destString += std::to_string(ct->identity);
                                         destString += "]";
                                     } else {
@@ -456,7 +456,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 {
                                     if (t->type != EQUALITY_TEST)
                                     {
-                                        destString += test_type_to_string_brief(t->type);
+                                        destString += test_type_to_string(t->type);
+                                        destString += ' ';
                                     }
                                     sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(t->identity);
                                     if (sym) destString += sym->to_string(true); else destString += '#';
@@ -473,7 +474,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         if (ct->type != EQUALITY_TEST)
                                         {
-                                            destString += test_type_to_string_brief(ct->type);
+                                            destString += test_type_to_string(ct->type);
+                                            destString += ' ';
                                         }
                                         sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(ct->identity);
                                         if (sym) destString += sym->to_string(true); else destString += '#';

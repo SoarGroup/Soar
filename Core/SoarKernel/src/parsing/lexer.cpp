@@ -197,6 +197,21 @@ void Lexer::lex_eof () {
 }
 
 void Lexer::lex_at () {
+    read_constituent_string();
+    if (current_lexeme.length()==2)
+    {
+        if (current_lexeme.lex_string[1]=='+')
+        {
+            current_lexeme.type = UNARY_AT_LEXEME;
+            return;
+        }
+        if (current_lexeme.lex_string[1]=='-')
+        {
+            current_lexeme.type = UNARY_NOT_AT_LEXEME;
+            return;
+        }
+    }
+
     store_and_advance();
     current_lexeme.type = AT_LEXEME;
 }
@@ -223,15 +238,14 @@ void Lexer::lex_rbrace () {
 
 void Lexer::lex_exclamation_point () {
 
-    read_constituent_string();
-    if (current_lexeme.length()==2) 
+    if (production_string[0]=='@')
     {
-        if (current_lexeme.lex_string[1]=='@')
-        { 
-            current_lexeme.type = NOT_AT_LEXEME; 
-            return; 
-        }
+        store_and_advance();
+        store_and_advance();
+        current_lexeme.type = NOT_AT_LEXEME;
+        return;
     }
+
 
     store_and_advance();
     current_lexeme.type = EXCLAMATION_POINT_LEXEME;
