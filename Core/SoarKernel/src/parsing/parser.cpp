@@ -356,10 +356,10 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                       Parse Relational Test
 
    <relational_test> ::= [<relation>] <single_test>
-   <relation> ::= <> | < | > | <= | >= | = | <=>
+   <relation> ::= <> | < | > | <= | >= | = | <=> | @ | !@
    <single_test> ::= <variable> | <constant>
    <constant> ::= str_constant | int_constant | float_constant
-   <variable> ::= variable | lti
+   <variable> ::= variable
 ----------------------------------------------------------------- */
 
 test parse_relational_test(agent* thisAgent, Lexer* lexer)
@@ -367,7 +367,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
     TestType test_type;
     test t;
     Symbol* referent;
-
+    bool is_unary = false;
     test_type = NOT_EQUAL_TEST; /* unnecessary, but gcc -Wall warns without it */
 
     /* --- read optional relation symbol --- */
@@ -408,9 +408,24 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             if (!lexer->get_lexeme()) return NULL;
             break;
 
-        case LESS_AT_GREATER_LEXEME:
-            test_type = SMEM_LINK_TEST;
-            if (!lexer->get_lexeme()) return NULL;
+        case AT_LEXEME:
+            if (!lexer->get_lexeme())
+            {
+                is_unary = true;
+                test_type = SMEM_LINK_UNARY_TEST;
+            } else {
+                test_type = SMEM_LINK_TEST;
+            }
+            break;
+
+        case NOT_AT_LEXEME:
+            if (!lexer->get_lexeme())
+            {
+                is_unary = true;
+                test_type = SMEM_LINK_UNARY_NOT_TEST;
+            } else {
+                test_type = SMEM_LINK_NOT_TEST;
+            }
             break;
 
         case STR_CONSTANT_LEXEME:
@@ -423,6 +438,8 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             test_type = EQUALITY_TEST;
             break;
     }
+
+    if (is_unary) return make_test(thisAgent, NULL, test_type);
 
     /* --- read variable or constant --- */
     switch (lexer->current_lexeme.type)

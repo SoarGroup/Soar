@@ -220,33 +220,33 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
             {
                 dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                if (test_type == SMEM_LINK_TEST)
-                {
+//                if ((test_type == SMEM_LINK_TEST) || (test_type == SMEM_LINK_NOT_TEST))
+//                {
+//                    chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+//                } else {
                     chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
-                } else {
-                    chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
-                }
+//                }
             }
             else if (test_is_variable_relational_test(rt->type))
             {
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
                 dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
-                if (test_type == SMEM_LINK_TEST)
-                {
+//                if ((test_type == SMEM_LINK_TEST) || (test_type == SMEM_LINK_NOT_TEST))
+//                {
+//                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+//                        rt->data.variable_referent.field_num,
+//                        rt->data.variable_referent.levels_up);
+//                    chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+//                    chunk_test->identity = ref_test->identity;
+//                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+//                } else {
                     test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                         rt->data.variable_referent.field_num,
                         rt->data.variable_referent.levels_up);
                     chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
                     chunk_test->identity = ref_test->identity;
                     dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
-                } else {
-                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                        rt->data.variable_referent.field_num,
-                        rt->data.variable_referent.levels_up);
-                    chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
-                    chunk_test->identity = ref_test->identity;
-                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
-                }
+//                }
             }
         }
         if (chunk_test)

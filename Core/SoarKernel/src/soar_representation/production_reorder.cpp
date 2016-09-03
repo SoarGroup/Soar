@@ -367,7 +367,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             {
                 next_c = c->rest;
                 subtest = static_cast<test>(c->first);
-                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_TEST))
+                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_TEST) && (subtest->type != SMEM_LINK_NOT_TEST)
+                    && (subtest->type != SMEM_LINK_UNARY_TEST) && (subtest->type != SMEM_LINK_UNARY_NOT_TEST))
                 {
                     /* -- create saved_test, splice this cons out of conjunct_list -- */
                     thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);

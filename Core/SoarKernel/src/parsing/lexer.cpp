@@ -222,8 +222,20 @@ void Lexer::lex_rbrace () {
 }
 
 void Lexer::lex_exclamation_point () {
+
+    read_constituent_string();
+    if (current_lexeme.length()==2) 
+    {
+        if (current_lexeme.lex_string[1]=='@')
+        { 
+            current_lexeme.type = NOT_AT_LEXEME; 
+            return; 
+        }
+    }
+
     store_and_advance();
     current_lexeme.type = EXCLAMATION_POINT_LEXEME;
+
 }
 
 void Lexer::lex_comma () {
@@ -288,10 +300,6 @@ void Lexer::lex_less () {
     if (current_lexeme.length()==3) {
         if ((current_lexeme.lex_string[1]=='=')&&(current_lexeme.lex_string[2]=='>'))
         { current_lexeme.type = LESS_EQUAL_GREATER_LEXEME; return; }
-    }
-    if (current_lexeme.length()==3) {
-        if ((current_lexeme.lex_string[1]=='@')&&(current_lexeme.lex_string[2]=='>'))
-        { current_lexeme.type = LESS_AT_GREATER_LEXEME; return; }
     }
     determine_type_of_constituent_string();
 }

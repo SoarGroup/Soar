@@ -286,6 +286,9 @@ enum TestType
     IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
     EQUALITY_TEST = 11,
     SMEM_LINK_TEST = 12,
+    SMEM_LINK_NOT_TEST = 13,
+    SMEM_LINK_UNARY_TEST = 14,
+    SMEM_LINK_UNARY_NOT_TEST = 15,
     NUM_TEST_TYPES
 };
 

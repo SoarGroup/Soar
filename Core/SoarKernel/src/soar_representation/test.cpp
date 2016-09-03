@@ -847,6 +847,14 @@ void add_rete_test_list_to_tests(agent* thisAgent,
         {
             New = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
         }
+        else if (rt->type == UNARY_SMEM_LINK_RETE_TEST)
+        {
+            New = make_test(thisAgent, NIL, SMEM_LINK_UNARY_TEST);
+        }
+        else if (rt->type == UNARY_SMEM_LINK_NOT_RETE_TEST)
+        {
+            New = make_test(thisAgent, NIL, SMEM_LINK_UNARY_NOT_TEST);
+        }
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
             New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
@@ -889,7 +897,7 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                     }
                 }
             }
-            if (test_type == SMEM_LINK_TEST)
+            if ((test_type == SMEM_LINK_TEST) || (test_type == SMEM_LINK_NOT_TEST))
             {
                 referent = rt->data.constant_referent;
             } else {

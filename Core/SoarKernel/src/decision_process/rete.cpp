@@ -2391,7 +2391,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
     {
         next_rt = rt->next;
 
-        if (test_is_constant_relational_test(rt->type) || (rt->type == RELATIONAL_SMEM_LINK_TEST))
+        if (test_is_constant_relational_test(rt->type) || (rt->type == RELATIONAL_SMEM_LINK_TEST) || (rt->type == RELATIONAL_SMEM_LINK_NOT_TEST))
         {
             thisAgent->symbolManager->symbol_remove_ref(&rt->data.constant_referent);
         } else if (rt->type == DISJUNCTION_RETE_TEST)
@@ -2633,7 +2633,7 @@ void bind_variables_in_test(agent* thisAgent,
         push(thisAgent, referent, *varlist);
         return;
     }
-    else if (t->type == SMEM_LINK_TEST)
+    else if ((t->type == SMEM_LINK_TEST) || (t->type == SMEM_LINK_NOT_TEST))
     {
         referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -3093,6 +3093,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             return;
             break;
         case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
             /* --- if constant, make constant test --- */
             if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
             {
@@ -3189,6 +3190,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_GOAL_RETE_TEST;
             new_rt->right_field_num = 0;
+            new_rt->data.variable_referent = where;
             new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
@@ -3198,6 +3200,27 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_IMPASSE_RETE_TEST;
             new_rt->right_field_num = 0;
+            new_rt->data.variable_referent = where;
+            new_rt->data.constant_referent = NULL;
+            new_rt->next = *rt;
+            *rt = new_rt;
+            return;
+
+        case SMEM_LINK_UNARY_TEST:
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+            new_rt->type = UNARY_SMEM_LINK_RETE_TEST;
+            new_rt->right_field_num = field_num;
+            new_rt->data.variable_referent = where;
+            new_rt->data.constant_referent = NULL;
+            new_rt->next = *rt;
+            *rt = new_rt;
+            return;
+
+        case SMEM_LINK_UNARY_NOT_TEST:
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+            new_rt->type = UNARY_SMEM_LINK_NOT_RETE_TEST;
+            new_rt->right_field_num = field_num;
+            new_rt->data.variable_referent = where;
             new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
@@ -3249,7 +3272,7 @@ bool single_rete_tests_are_identical(agent* thisAgent, rete_test* rt1, rete_test
     }
     if (test_is_variable_relational_test(rt1->type))
     {
-        if (rt1->type == RELATIONAL_SMEM_LINK_TEST)
+        if ((rt1->type == RELATIONAL_SMEM_LINK_TEST) || (rt1->type == RELATIONAL_SMEM_LINK_NOT_TEST))
             return (var_locations_equal(rt1->data.variable_referent, rt2->data.variable_referent)
                     && (rt1->data.constant_referent == rt2->data.constant_referent));
 
@@ -3261,11 +3284,8 @@ bool single_rete_tests_are_identical(agent* thisAgent, rete_test* rt1, rete_test
         return (rt1->data.constant_referent == rt2->data.constant_referent);
     }
 
-    if (rt1->type == ID_IS_GOAL_RETE_TEST)
-    {
-        return true;
-    }
-    if (rt1->type == ID_IS_IMPASSE_RETE_TEST)
+    if ((rt1->type == ID_IS_GOAL_RETE_TEST) || (rt1->type == ID_IS_IMPASSE_RETE_TEST) ||
+        (rt1->type == UNARY_SMEM_LINK_RETE_TEST) || (rt1->type == UNARY_SMEM_LINK_NOT_RETE_TEST))
     {
         return true;
     }
@@ -4771,6 +4791,24 @@ bool id_is_impasse_rete_test_routine(agent* /*thisAgent*/, rete_test* /*rt*/, to
     return w->id->id->isa_impasse;
 }
 
+bool unary_smem_link_not_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
+{
+    Symbol* s1;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+    return static_cast<bool>(!s1->is_lti());
+}
+
+bool unary_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
+{
+    Symbol* s1;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+    return static_cast<bool>(s1->is_lti());
+}
+
 bool disjunction_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/, wme* w)
 {
     Symbol* sym;
@@ -4860,6 +4898,16 @@ bool constant_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
     s1 = field_from_wme(w, rt->right_field_num);
     s2 = rt->data.constant_referent;
     return static_cast<bool>(s1->is_lti() &&  s2->is_int() && s1->id->LTI_ID == s2->ic->value);
+}
+
+bool constant_smem_link_not_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* /*left*/,
+        wme* w)
+{
+    Symbol* s1, *s2;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+    s2 = rt->data.constant_referent;
+    return static_cast<bool>(!s1->is_lti() ||  !s2->is_int() || (s1->id->LTI_ID != s2->ic->value));
 }
 
 bool variable_equal_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left, wme* w)
@@ -5025,7 +5073,6 @@ bool variable_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
 {
     Symbol* s1, *s2;
     int i;
-    bool return_val = false;
 
     s1 = field_from_wme(w, rt->right_field_num);
 
@@ -5041,6 +5088,35 @@ bool variable_smem_link_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, t
     }
     s2 = field_from_wme(w, rt->data.variable_referent.field_num);
     return (s1->is_lti() && s2->is_lti() && (s1->id->LTI_ID == s2->id->LTI_ID));
+}
+
+bool variable_smem_link_not_rete_test_routine(agent* /*thisAgent*/, rete_test* rt, token* left,
+        wme* w)
+{
+    Symbol* s1, *s2;
+    int i;
+    bool return_val = false;
+
+    s1 = field_from_wme(w, rt->right_field_num);
+
+    if (rt->data.variable_referent.levels_up != 0)
+    {
+        i = rt->data.variable_referent.levels_up - 1;
+        while (i != 0)
+        {
+            left = left->parent;
+            i--;
+        }
+        w = left->w;
+    }
+    s2 = field_from_wme(w, rt->data.variable_referent.field_num);
+    if (!s1->is_lti() || !s2->is_lti())
+    {
+        return_val = true;
+    } else if (s1->id->LTI_ID != s2->id->LTI_ID) {
+        return_val = true;
+    }
+    return return_val;
 }
 
 
@@ -7718,7 +7794,8 @@ void retesave_rete_test(rete_test* rt, FILE* f)
     {
         retesave_one_byte(rt->data.variable_referent.field_num, f);
         retesave_two_bytes(rt->data.variable_referent.levels_up, f);
-        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST)
+        if ((rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST) ||
+            (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_NOT_TEST))
         {
             retesave_eight_bytes(rt->data.constant_referent->retesave_symindex, f);
         }
@@ -7754,7 +7831,9 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     {
         rt->data.variable_referent.field_num = reteload_one_byte(f);
         rt->data.variable_referent.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
-        if (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST)
+
+        if ((rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST) ||
+            (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_NOT_TEST))
         {
             rt->data.constant_referent = reteload_symbol_from_index(thisAgent, f);
             if (rt->data.constant_referent)
@@ -9879,6 +9958,8 @@ void init_rete(agent* thisAgent)
     rete_test_routines[DISJUNCTION_RETE_TEST] = disjunction_rete_test_routine;
     rete_test_routines[ID_IS_GOAL_RETE_TEST] = id_is_goal_rete_test_routine;
     rete_test_routines[ID_IS_IMPASSE_RETE_TEST] = id_is_impasse_rete_test_routine;
+    rete_test_routines[UNARY_SMEM_LINK_RETE_TEST] = unary_smem_link_rete_test_routine;
+    rete_test_routines[UNARY_SMEM_LINK_NOT_RETE_TEST] = unary_smem_link_not_rete_test_routine;
     rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
                        RELATIONAL_EQUAL_RETE_TEST] =
                            constant_equal_rete_test_routine;
@@ -9903,6 +9984,9 @@ void init_rete(agent* thisAgent)
     rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
                        RELATIONAL_SMEM_LINK_TEST] =
                            constant_smem_link_rete_test_routine;
+    rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
+                       RELATIONAL_SMEM_LINK_NOT_TEST] =
+                           constant_smem_link_not_rete_test_routine;
     rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
                        RELATIONAL_EQUAL_RETE_TEST] =
                            variable_equal_rete_test_routine;
@@ -9927,4 +10011,7 @@ void init_rete(agent* thisAgent)
     rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
                        RELATIONAL_SMEM_LINK_TEST] =
                            variable_smem_link_rete_test_routine;
+    rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
+                       RELATIONAL_SMEM_LINK_NOT_TEST] =
+                           variable_smem_link_not_rete_test_routine;
 }

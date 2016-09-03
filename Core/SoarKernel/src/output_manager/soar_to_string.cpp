@@ -61,6 +61,9 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type)
 {
     switch (test_type)
     {
+        case EQUALITY_TEST:
+            return "= ";
+            break;
         case NOT_EQUAL_TEST:
             return "<> ";
             break;
@@ -76,14 +79,13 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type)
         case GREATER_OR_EQUAL_TEST:
             return ">= ";
             break;
-        case SAME_TYPE_TEST:
-            return "<=> ";
-            break;
         case SMEM_LINK_TEST:
-            return "<@> ";
+        case SMEM_LINK_UNARY_TEST:
+            return "@ ";
             break;
-        case CONJUNCTIVE_TEST:
-            return "{ }";
+        case SMEM_LINK_NOT_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
+            return "!@ ";
             break;
         case GOAL_ID_TEST:
             return "IS_G_ID ";
@@ -91,8 +93,11 @@ const char* Output_Manager::test_type_to_string_brief(byte test_type)
         case IMPASSE_ID_TEST:
             return "IS_IMPASSE ";
             break;
-        case EQUALITY_TEST:
-            return "= ";
+        case SAME_TYPE_TEST:
+            return "<=> ";
+            break;
+        case CONJUNCTIVE_TEST:
+            return "{ }";
             break;
     }
     return "UNDEFINED TEST TYPE";
@@ -857,7 +862,7 @@ void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
         case LESS_EQUAL_GREATER_LEXEME:
             lex_type_string = "LESS_EQUAL_GREATER_LEXEME";
             break;
-        case LESS_AT_GREATER_LEXEME:
+        case NOT_AT_LEXEME:
             lex_type_string = "LESS_AT_GREATER_LEXEME";
             break;
         case LESS_LESS_LEXEME:
