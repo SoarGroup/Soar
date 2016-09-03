@@ -34,7 +34,7 @@ uint64_t SMem_Manager::link_sti_to_lti(Symbol* pID, bool preserve_previous_link)
         dprint_noprefix(DT_SMEM_INSTANCE, "LTI ID exists and preserve is true.  Returning existing LTI ID.\n");
         return pID->id->LTI_ID;
         }
-    pID->id->LTI_ID = get_new_lti_id();
+    pID->id->LTI_ID = add_new_LTI();
     pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
     dprint_noprefix(DT_SMEM_INSTANCE, "Returning new LTI ID %u.\n", pID->id->LTI_ID);
     return pID->id->LTI_ID;

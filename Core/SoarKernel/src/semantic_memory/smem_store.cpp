@@ -119,10 +119,14 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             lexer->get_lexeme();
 
             good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
-            /* May want to verify that this is a legitimate id in the smem database */
-            l_ltm->lti_id = lexer->current_lexeme.int_val;
-
-        } else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
+            if (good_at)
+            {
+                // l_ltm->lti_id = lti_exists(lexer->current_lexeme.int_val);
+                // good_at = (l_ltm->lti_id != NIL);
+                l_ltm->lti_id = lexer->current_lexeme.int_val;
+            }
+        }
+        else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
         {
             /* MToDo | May want to keep this case in case we want to support smem --add using existing STIs and their underlying LTI IDs.
              * For now, we'll just set to a bad parse. In the future, we find identifier with letter/number and use LTI_ID */
@@ -287,20 +291,32 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                                         if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
                                         {
-                                            /* May want to verify that this is a legitimate id in the smem database */
                                             l_ltm_temp->lti_id = static_cast<uint64_t>(lexer->current_lexeme.int_val);
+                                            /* May want to verify that this is a legitimate id in the smem database */
+                                            //l_ltm_temp->lti_id = lti_exists(static_cast<uint64_t>(lexer->current_lexeme.int_val));
+                                            //if (l_ltm_temp->lti_id == NIL)
+                                            //{
+                                            //    good_at = false;
+                                            //    delete l_ltm_temp;
+                                            //    delete l_ltm_value;
+                                            //    l_ltm_temp = NULL;
+                                            //    l_ltm_value = NULL;
+                                            //}
 
                                         } else {
                                             l_ltm_temp->lti_id = NIL;
                                         }
-                                        // associate with value
-                                        l_ltm_value->val_lti.val_value = l_ltm_temp;
+                                        if (l_ltm_temp)
+                                        {
+                                            // associate with value
+                                            l_ltm_value->val_lti.val_value = l_ltm_temp;
 
-                                        // add to ltms
-                                        (*str_to_LTMs)[temp_key2] = l_ltm_temp;
+                                            // add to ltms
+                                            (*str_to_LTMs)[temp_key2] = l_ltm_temp;
 
-                                        // possibly a newbie (could be a self-loop)
-                                        newbies->insert(l_ltm_temp);
+                                            // possibly a newbie (could be a self-loop)
+                                            newbies->insert(l_ltm_temp);
+                                        }
                                     }
                                 }
                             }
@@ -455,14 +471,14 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
                     {
                         (*c_new)->lti_id = link_sti_to_lti((*c_new)->soar_id);
                     } else {
-                        (*c_new)->lti_id = get_new_lti_id();
+                        (*c_new)->lti_id = add_new_LTI();
                     }
                 }
                 else
                 {
                     if (!lti_exists((*c_new)->lti_id))
                     {
-                        get_specific_lti_id((*c_new)->lti_id);
+                        add_specific_LTI((*c_new)->lti_id);
                     }
                 }
             }
@@ -1347,7 +1363,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                         {
                             (*v)->val_lti.val_value->lti_id = link_sti_to_lti((*v)->val_lti.val_value->soar_id, preserve_previous_link);
                         } else {
-                            (*v)->val_lti.val_value->lti_id = get_new_lti_id();
+                            (*v)->val_lti.val_value->lti_id = add_new_LTI();
                         }
                     }
 

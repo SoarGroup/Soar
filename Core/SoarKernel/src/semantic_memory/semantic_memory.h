@@ -124,8 +124,8 @@ class SMem_Manager
         Symbol*         rhash_(byte symbol_type, smem_hash_id hash_value);
 
         /* Methods for LTIs */
-        uint64_t        get_new_lti_id();
-        uint64_t        get_specific_lti_id(uint64_t lti_id);
+        uint64_t        add_new_LTI();
+        uint64_t        add_specific_LTI(uint64_t lti_id);
         void            get_lti_name(uint64_t pLTI_ID, std::string &lti_name) { lti_name.append("@");  lti_name.append(std::to_string(pLTI_ID)); }
         uint64_t        get_max_lti_id();
         double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
