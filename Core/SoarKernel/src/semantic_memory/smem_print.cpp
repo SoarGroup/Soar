@@ -578,7 +578,7 @@ id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* re
 
             /* The following line prints the children indented.  It seems redundant when printing the
              * smem store, but perhaps it's useful for printing something rooted in an lti? */
-            // next.insert(temp_lti_id);
+             next.insert(temp_lti_id);
         }
         else
         {
@@ -689,7 +689,7 @@ void SMem_Manager::print_store(std::string* return_val)
     soar_module::sqlite_statement* q = thisAgent->SMem->SQL->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        print_smem_object(q->column_int(0), q->column_double(1), return_val);
+        print_smem_object(q->column_int(0), 1, return_val);
     }
     q->reinitialize();
 }
