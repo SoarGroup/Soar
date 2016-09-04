@@ -21,9 +21,9 @@
 #include "test.h"
 #include "working_memory_activation.h"
 
-uint64_t SMem_Manager::link_sti_to_lti(Symbol* pID, bool preserve_previous_link)
+uint64_t SMem_Manager::make_STI_instance_of_new_LTI(Symbol* pID, bool preserve_previous_link)
 {
-    dprint(DT_SMEM_INSTANCE, "Attempting to link sti %y %d (preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
+    dprint(DT_SMEM_INSTANCE, "Attempting to make %y an instance of new LTI (previous lti_id %u, preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
     if (!pID->is_sti()) {
         dprint_noprefix(DT_SMEM_INSTANCE, "not STI, returning NIL.\n");
         return NIL;
@@ -31,12 +31,12 @@ uint64_t SMem_Manager::link_sti_to_lti(Symbol* pID, bool preserve_previous_link)
     if ((pID->id->LTI_ID != NIL) && preserve_previous_link)
         {
         pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        dprint_noprefix(DT_SMEM_INSTANCE, "LTI ID exists and preserve is true.  Returning existing LTI ID.\n");
+        dprint_noprefix(DT_SMEM_INSTANCE, "LTI ID already existed in STI and preserve is true.  Returning existing LTI ID.\n");
         return pID->id->LTI_ID;
         }
     pID->id->LTI_ID = add_new_LTI();
     pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-    dprint_noprefix(DT_SMEM_INSTANCE, "Returning new LTI ID %u.\n", pID->id->LTI_ID);
+    dprint_noprefix(DT_SMEM_INSTANCE, "Returning newly generated LTI ID %u.\n", pID->id->LTI_ID);
     return pID->id->LTI_ID;
 }
 
@@ -46,17 +46,18 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     {
         return;
     }
-    dprint(DT_SMEM_INSTANCE, "install_buffered_triple_list called in state %y\n", state);
+    dprint(DT_SMEM_INSTANCE, "install_buffered_triple_list called in state %y.  Creating architectural instantiation.\n", state);
 
-    clear_instance_mappings();
     instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
     for (preference* pref = inst->preferences_generated; pref;)
     {
+
         // add the preference to temporary memory
         if (!pref->in_tm && add_preference_to_tm(thisAgent, pref))
         {
             // and add it to the list of preferences to be removed
             // when the goal is removed
+            dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
             insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
             pref->on_goal_list = true;
             if (meta)
@@ -69,6 +70,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
         }
         else
         {
+            dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
             if (pref->reference_count == 0)
             {
                 preference* previous = pref;
@@ -138,14 +140,16 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
 
 void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
 {
+    dprint(DT_SMEM_INSTANCE, "Installing meta wme buffer.\n");
     install_buffered_triple_list(state, cue_wmes, meta_wmes, true);
+    dprint(DT_SMEM_INSTANCE, "Installing retrieved wme buffer.\n");
     install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false);
 }
 
 void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
     my_list.push_back(new symbol_triple(id, attr, value));
-
+    dprint(DT_SMEM_INSTANCE, "Adding (%y ^%y %y) to recall buffer.\n", id, attr, value);
     thisAgent->symbolManager->symbol_add_ref(id);
     thisAgent->symbolManager->symbol_add_ref(attr);
     thisAgent->symbolManager->symbol_add_ref(value);
@@ -158,7 +162,7 @@ void SMem_Manager::clear_instance_mappings()
     dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size());
 }
 
-uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_ID)
+uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
 {
     sym_to_id_map::iterator lIter;
 
@@ -176,21 +180,21 @@ uint64_t SMem_Manager::get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_I
     }
 }
 
-void SMem_Manager::add_identity_for_recalled_sti(test pTest, uint64_t pI_ID)
+void SMem_Manager::add_identity_to_iSTI_test(test pTest, uint64_t pI_ID)
 {
     sym_to_id_map::iterator lIter;
     Symbol* lSTI;
 
     if (pTest->identity) return;
 
-    pTest->identity = get_identity_for_recalled_sti(pTest->data.referent, pI_ID);
+    pTest->identity = get_identity_for_iSTI(pTest->data.referent, pI_ID);
 }
 
-Symbol* SMem_Manager::get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar)
+Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar)
 {
     id_to_sym_map::iterator lIter;
 
-    dprint(DT_SMEM_INSTANCE, "Getting sti for lti ID %u at level %d.\n", pLTI_ID, pLevel);
+    dprint(DT_SMEM_INSTANCE, "Getting current iSTI for lti ID %u at level %d.\n", pLTI_ID, pLevel);
     lIter = lti_to_sti_map.find(pLTI_ID);
 
     if (lIter != lti_to_sti_map.end())
@@ -229,8 +233,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     {
         if (sti == NIL)
         {
-            clear_instance_mappings();
-            sti = get_sti_for_lti(pLTI_ID, result_header->id->level);
+            sti = get_current_iSTI_for_LTI(pLTI_ID, result_header->id->level);
             sti_created_here = true;
         } else {
             assert(sti->id->LTI_ID && sti->id->level && (sti->id->level <= result_header->id->level));
@@ -242,6 +245,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         lti_activate(pLTI_ID, true);
     }
 
+    dprint(DT_SMEM_INSTANCE, "...installing meta wmes for %y\n", sti);
     // point retrieved to lti
     if (install_type == wm_install)
     {
@@ -265,13 +269,10 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         thisAgent->symbolManager->symbol_remove_ref(&sti);
     }
 
+    dprint(DT_SMEM_INSTANCE, "...installing children of %y\n", sti);
     bool triggered = false;
 
-    // if no children, then retrieve children
-    // if ((!sti->id->impasse_wmes && !sti->id->input_wmes && !sti->id->slots)
-    //      || (install_type == fake_install)) //(The final bit is if this is being called by the remove command.)
-    /* I think we always want to return the children now since it is always an instance */
-    {
+    /* This previously would only return the children if there were no impasse wmes, input wmes and slots for sti */
         if (visited == NULL)
         {
             triggered = true;
@@ -295,15 +296,20 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             // identifier vs. constant
             if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
             {
-                value_sym = get_sti_for_lti(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 'L');
+                dprint(DT_SMEM_INSTANCE, "Child LTI augmentation found.  Getting STI for lti_id %u...", static_cast<uint64_t>(expand_q->column_int(4)));
+                value_sym = get_current_iSTI_for_LTI(static_cast<uint64_t>(expand_q->column_int(4)), sti->id->level, 'L');
+                dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
                 if (depth > 1)
                 {
+                    dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
                     children.insert(value_sym);
                 }
             }
             else
             {
+                dprint(DT_SMEM_INSTANCE, "Child constant augmentation found.  Getting constant for value hash %d %u...", static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
                 value_sym = rhash_(static_cast<byte>(expand_q->column_int(2)), static_cast<smem_hash_id>(expand_q->column_int(3)));
+                dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
             }
 
             // add wme
@@ -319,6 +325,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         //Attempt to find children for the case of depth.
         std::set<Symbol*>::iterator iterator;
         std::set<Symbol*>::iterator end = children.end();
+        dprint(DT_SMEM_INSTANCE, "...processing add list of children of %y\n", sti);
         for (iterator = children.begin(); iterator != end; ++iterator)
         {
             if (visited->find((*iterator)->id->LTI_ID) == visited->end())
@@ -327,7 +334,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
                 install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
-    }
+        dprint(DT_SMEM_INSTANCE, "Done installng memory called for %y %u %y.\n", state, pLTI_ID, sti);
 
     if (triggered)
     {

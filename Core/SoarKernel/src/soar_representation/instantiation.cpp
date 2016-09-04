@@ -1402,9 +1402,9 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->o_ids.id = thisAgent->SMem->get_identity_for_recalled_sti(pref->id, inst->i_id);
-    pref->o_ids.attr = thisAgent->SMem->get_identity_for_recalled_sti(pref->attr, inst->i_id);
-    pref->o_ids.value = thisAgent->SMem->get_identity_for_recalled_sti(pref->value, inst->i_id);
+    pref->o_ids.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->o_ids.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->o_ids.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
 
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NULL;
@@ -1420,9 +1420,9 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
         make_test(thisAgent, pWME->id , EQUALITY_TEST),
         make_test(thisAgent, pWME->attr, EQUALITY_TEST),
         make_test(thisAgent, pWME->value, EQUALITY_TEST));
-    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.id_test, inst->i_id);
-    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.attr_test, inst->i_id);
-    thisAgent->SMem->add_identity_for_recalled_sti(cond->data.tests.value_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
     cond->prev = prev_cond;
     cond->next = NULL;
     if (prev_cond != NULL)
@@ -1492,9 +1492,10 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->preferences_generated = NULL;
     {
         /* May need to change this depending on whether it's a query or retrieval */
-        /* Add these wmes to pActions.  Same for conds */
-        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, (*(pActions->begin()))->id, true);
-        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*(pConds->begin()))->value, true);
+        /* Add these wmes to pActions.  Same for conds
+         * I don't think these are right value elements!*/
+//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, (*(pActions->begin()))->id, true);
+//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*(pConds->begin()))->value, true);
 
         for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
         {

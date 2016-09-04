@@ -469,7 +469,7 @@ bool SMem_Manager::process_smem_add_object(const char* ltms_str, std::string** e
                 {
                     if ((*c_new)->soar_id != NIL)
                     {
-                        (*c_new)->lti_id = link_sti_to_lti((*c_new)->soar_id);
+                        (*c_new)->lti_id = make_STI_instance_of_new_LTI((*c_new)->soar_id);
                     } else {
                         (*c_new)->lti_id = add_new_LTI();
                     }
@@ -547,6 +547,7 @@ bool SMem_Manager::parse_cues(const char* ltms_str, std::string** err_msg, std::
 
     //Parsing requires an open semantic database.
     attach();
+    clear_instance_mappings();
 
     soar::Lexer lexer(thisAgent, ltms_str);
 
@@ -876,6 +877,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
 
     //parsing ltms requires an open semantic database
     attach();
+    clear_instance_mappings();
 
     soar::Lexer lexer(thisAgent, ltms_str);
 
@@ -1072,7 +1074,7 @@ bool SMem_Manager::process_smem_remove(const char* ltms_str, std::string** err_m
                             lexer.get_lexeme();
                             if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                             {
-                                value = get_sti_for_lti(lexer.current_lexeme.int_val, NO_WME_LEVEL);
+                                value = get_current_iSTI_for_LTI(lexer.current_lexeme.int_val, NO_WME_LEVEL);
                                 lexer.get_lexeme();
                             }
                             else
@@ -1313,6 +1315,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
             else
             {
                 // lti_id, attribute_s_id
+                assert(pLTI_ID && attr_hash);
                 SQL->web_attr_child->bind_int(1, pLTI_ID);
                 SQL->web_attr_child->bind_int(2, attr_hash);
                 if (SQL->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
@@ -1334,6 +1337,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                     else
                     {
                         // lti_id, attribute_s_id, val_const
+                        assert(pLTI_ID && attr_hash && value_hash);
                         SQL->web_const_child->bind_int(1, pLTI_ID);
                         SQL->web_const_child->bind_int(2, attr_hash);
                         SQL->web_const_child->bind_int(3, value_hash);
@@ -1361,10 +1365,11 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                     {
                         if ((*v)->val_lti.val_value->soar_id != NIL)
                         {
-                            (*v)->val_lti.val_value->lti_id = link_sti_to_lti((*v)->val_lti.val_value->soar_id, preserve_previous_link);
+                            (*v)->val_lti.val_value->lti_id = make_STI_instance_of_new_LTI((*v)->val_lti.val_value->soar_id, preserve_previous_link);
                         } else {
                             (*v)->val_lti.val_value->lti_id = add_new_LTI();
                         }
+                        value_lti = (*v)->val_lti.val_value->lti_id;
                     }
 
                     if (remove_old_children)
@@ -1374,6 +1379,7 @@ void SMem_Manager::store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, boo
                     else
                     {
                         // lti_id, attribute_s_id, val_lti
+                        assert(pLTI_ID && attr_hash && value_lti);
                         SQL->web_lti_child->bind_int(1, pLTI_ID);
                         SQL->web_lti_child->bind_int(2, attr_hash);
                         SQL->web_lti_child->bind_int(3, value_lti);
@@ -1565,7 +1571,7 @@ void SMem_Manager::store_LTM(Symbol* pIdentifierSTI, smem_storage_type store_typ
 
     // make the target an lti, so intermediary data structure has lti_id
     // (takes care of short-term id self-referencing)
-    link_sti_to_lti(pIdentifierSTI, update_smem);
+    make_STI_instance_of_new_LTI(pIdentifierSTI, update_smem);
 
     // encode this level
     {

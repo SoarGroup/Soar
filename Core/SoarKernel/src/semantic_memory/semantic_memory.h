@@ -68,8 +68,8 @@ class SMem_Manager
 
         /* Methods for creating an instance of a LTM using STIs */
         void        clear_instance_mappings();
-        void        add_identity_for_recalled_sti(test pTest, uint64_t pI_ID);
-        uint64_t    get_identity_for_recalled_sti(Symbol* pSym, uint64_t pI_ID);
+        void        add_identity_to_iSTI_test(test pTest, uint64_t pI_ID);
+        uint64_t    get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID);
 
         /* Methods for saving/printing/visualizing semantic memory */
         bool        backup_db(const char* file_name, std::string* err);
@@ -148,8 +148,8 @@ class SMem_Manager
         void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true, bool preserve_previous_link = false);
 
         /* Methods for creating an instance of a LTM using STIs */
-        Symbol*         get_sti_for_lti(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
-        uint64_t        link_sti_to_lti(Symbol* id, bool preserve_previous_link = false);
+        Symbol*         get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
+        uint64_t        make_STI_instance_of_new_LTI(Symbol* id, bool preserve_previous_link = false);
 
         /* Methods for queries */
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
