@@ -1418,6 +1418,10 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     {
         fun_name = thisAgent->symbolManager->find_str_constant("-");
     }
+    else if (lexer->current_lexeme.type == AT_LEXEME)
+    {
+        fun_name = thisAgent->symbolManager->find_str_constant("@");
+    }
     else
     {
         fun_name = thisAgent->symbolManager->find_str_constant(lexer->current_lexeme.string());

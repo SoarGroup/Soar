@@ -331,6 +331,34 @@ Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_
 }
 
 
+Symbol*
+lti_id_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    Symbol* sym, * returnSym;
+
+    if (!args)
+    {
+        print(thisAgent,  "Error: '@' function called with no arguments.\n");
+        return NIL;
+    }
+
+    sym = static_cast<Symbol*>(args->first);
+    if (!sym->is_lti())
+    {
+        print_with_symbols(thisAgent, "Error: %y is not linked to a semantic identifier.\n", sym);
+        return NIL;
+    }
+
+    if (args->rest)
+    {
+        print(thisAgent,  "Error: '@' takes exactly 1 argument.\n");
+        return NIL;
+    }
+
+    returnSym = thisAgent->symbolManager->make_int_constant(sym->id->LTI_ID);
+    return returnSym;
+}
+
 /* ---------------------------------------------------------------------
   Capitalize a Symbol
 ------------------------------------------------------------------------ */
@@ -844,6 +872,8 @@ void init_built_in_rhs_functions(agent* thisAgent)
                      0, true, false, 0);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code,
                      0, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), lti_id_rhs_function_code,
+                     1, true, false, 0);
     /*
       Replaced with a gSKI rhs function
       add_rhs_function (thisAgent, make_str_constant (thisAgent, "interrupt"),
