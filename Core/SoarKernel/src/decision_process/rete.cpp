@@ -2391,7 +2391,7 @@ void deallocate_rete_test_list(agent* thisAgent, rete_test* rt)
     {
         next_rt = rt->next;
 
-        if (test_is_constant_relational_test(rt->type) || (rt->type == RELATIONAL_SMEM_LINK_TEST) || (rt->type == RELATIONAL_SMEM_LINK_NOT_TEST))
+        if (test_is_constant_relational_test(rt->type))
         {
             thisAgent->symbolManager->symbol_remove_ref(&rt->data.constant_referent);
         } else if (rt->type == DISJUNCTION_RETE_TEST)
@@ -2619,21 +2619,6 @@ void bind_variables_in_test(agent* thisAgent,
         return;
     }
     if (t->type == EQUALITY_TEST)
-    {
-        referent = t->data.referent;
-        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-        {
-            return;
-        }
-        if (!dense && var_is_bound(referent))
-        {
-            return;
-        }
-        push_var_binding(thisAgent, referent, depth, field_num);
-        push(thisAgent, referent, *varlist);
-        return;
-    }
-    else if ((t->type == SMEM_LINK_TEST) || (t->type == SMEM_LINK_NOT_TEST))
     {
         referent = t->data.referent;
         if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
@@ -2975,24 +2960,6 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
     return parent_nvn;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* **********************************************************************
 
    SECTION 8:  Building the Rete Net:  Condition-To-Node Converstion
@@ -3087,47 +3054,12 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
             new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
             break;
         case SMEM_LINK_TEST:
         case SMEM_LINK_NOT_TEST:
-            /* --- if constant, make constant test --- */
-            if (t->data.referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-            {
-                thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-                new_rt->right_field_num = field_num;
-                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                    test_type_to_relational_test_type(t->type);
-                new_rt->data.constant_referent = t->data.referent;
-                thisAgent->symbolManager->symbol_add_ref(t->data.referent);
-                new_rt->next = *rt;
-                *rt = new_rt;
-                return;
-            }
-            /* --- else make variable test --- */
-            if (! find_var_location(t->data.referent, current_depth, &where))
-            {
-                char msg[BUFFER_MSG_SIZE];
-                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                    t->data.referent);
-                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                    t->data.referent->to_string(true));
-                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                abort_with_fatal_error(thisAgent, msg);
-            }
-            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-            new_rt->right_field_num = field_num;
-            new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                test_type_to_relational_test_type(t->type);
-            new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = t->data.referent;
-            thisAgent->symbolManager->symbol_add_ref(t->data.referent);
-            new_rt->next = *rt;
-            *rt = new_rt;
-            return;
         case NOT_EQUAL_TEST:
         case LESS_TEST:
         case GREATER_TEST:
@@ -3163,7 +3095,6 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
                 test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3190,8 +3121,6 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_GOAL_RETE_TEST;
             new_rt->right_field_num = 0;
-            new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3200,8 +3129,6 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = ID_IS_IMPASSE_RETE_TEST;
             new_rt->right_field_num = 0;
-            new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3210,8 +3137,6 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = UNARY_SMEM_LINK_RETE_TEST;
             new_rt->right_field_num = field_num;
-            new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3220,8 +3145,6 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->type = UNARY_SMEM_LINK_NOT_RETE_TEST;
             new_rt->right_field_num = field_num;
-            new_rt->data.variable_referent = where;
-            new_rt->data.constant_referent = NULL;
             new_rt->next = *rt;
             *rt = new_rt;
             return;
@@ -3272,10 +3195,6 @@ bool single_rete_tests_are_identical(agent* thisAgent, rete_test* rt1, rete_test
     }
     if (test_is_variable_relational_test(rt1->type))
     {
-        if ((rt1->type == RELATIONAL_SMEM_LINK_TEST) || (rt1->type == RELATIONAL_SMEM_LINK_NOT_TEST))
-            return (var_locations_equal(rt1->data.variable_referent, rt2->data.variable_referent)
-                    && (rt1->data.constant_referent == rt2->data.constant_referent));
-
         return (var_locations_equal(rt1->data.variable_referent, rt2->data.variable_referent));
     }
 
@@ -7794,11 +7713,6 @@ void retesave_rete_test(rete_test* rt, FILE* f)
     {
         retesave_one_byte(rt->data.variable_referent.field_num, f);
         retesave_two_bytes(rt->data.variable_referent.levels_up, f);
-        if ((rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST) ||
-            (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_NOT_TEST))
-        {
-            retesave_eight_bytes(rt->data.constant_referent->retesave_symindex, f);
-        }
     }
     else if (rt->type == DISJUNCTION_RETE_TEST)
     {
@@ -7832,15 +7746,6 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
         rt->data.variable_referent.field_num = reteload_one_byte(f);
         rt->data.variable_referent.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
 
-        if ((rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_TEST) ||
-            (rt->type == VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_SMEM_LINK_NOT_TEST))
-        {
-            rt->data.constant_referent = reteload_symbol_from_index(thisAgent, f);
-            if (rt->data.constant_referent)
-            {
-                thisAgent->symbolManager->symbol_add_ref(rt->data.constant_referent);
-            }
-        }
     }
     else if (rt->type == DISJUNCTION_RETE_TEST)
     {
@@ -10012,6 +9917,6 @@ void init_rete(agent* thisAgent)
                        RELATIONAL_SMEM_LINK_TEST] =
                            variable_smem_link_rete_test_routine;
     rete_test_routines[VARIABLE_RELATIONAL_RETE_TEST +
-                       RELATIONAL_SMEM_LINK_NOT_TEST] =
-                           variable_smem_link_not_rete_test_routine;
-}
+                           RELATIONAL_SMEM_LINK_NOT_TEST] =
+                               variable_smem_link_not_rete_test_routine;
+    }

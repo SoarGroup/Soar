@@ -367,8 +367,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             {
                 next_c = c->rest;
                 subtest = static_cast<test>(c->first);
-                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_TEST) && (subtest->type != SMEM_LINK_NOT_TEST)
-                    && (subtest->type != SMEM_LINK_UNARY_TEST) && (subtest->type != SMEM_LINK_UNARY_NOT_TEST))
+                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_UNARY_TEST) && (subtest->type != SMEM_LINK_UNARY_NOT_TEST))
                 {
                     /* -- create saved_test, splice this cons out of conjunct_list -- */
                     thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
@@ -471,7 +470,10 @@ TestType reverse_direction_of_relational_test(agent* thisAgent, byte type)
     switch (type)
     {
         case NOT_EQUAL_TEST:
-            return NOT_EQUAL_TEST;
+        case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
+            return static_cast<TestType>(type);
         case LESS_TEST:
             return GREATER_TEST;
         case GREATER_TEST:
@@ -480,8 +482,6 @@ TestType reverse_direction_of_relational_test(agent* thisAgent, byte type)
             return GREATER_OR_EQUAL_TEST;
         case GREATER_OR_EQUAL_TEST:
             return LESS_OR_EQUAL_TEST;
-        case SAME_TYPE_TEST:
-            return SAME_TYPE_TEST;
         default:
         {
             char msg[BUFFER_MSG_SIZE];
@@ -660,6 +660,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
             print(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
+            dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
