@@ -21,25 +21,6 @@
 #include "test.h"
 #include "working_memory_activation.h"
 
-uint64_t SMem_Manager::make_STI_instance_of_new_LTI(Symbol* pID, bool preserve_previous_link)
-{
-    dprint(DT_SMEM_INSTANCE, "Attempting to make %y an instance of new LTI (previous lti_id %u, preserve = %s): ", pID, pID->is_sti() ? pID->id->LTI_ID : 0, preserve_previous_link ? "true" : "false");
-    if (!pID->is_sti()) {
-        dprint_noprefix(DT_SMEM_INSTANCE, "not STI, returning NIL.\n");
-        return NIL;
-    }
-    if ((pID->id->LTI_ID != NIL) && preserve_previous_link)
-        {
-        pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-        dprint_noprefix(DT_SMEM_INSTANCE, "LTI ID already existed in STI and preserve is true.  Returning existing LTI ID.\n");
-        return pID->id->LTI_ID;
-        }
-    pID->id->LTI_ID = add_new_LTI();
-    pID->id->smem_valid = thisAgent->EpMem->epmem_validation;
-    dprint_noprefix(DT_SMEM_INSTANCE, "Returning newly generated LTI ID %u.\n", pID->id->LTI_ID);
-    return pID->id->LTI_ID;
-}
-
 void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
 {
     if (my_list.empty())
@@ -159,7 +140,8 @@ void SMem_Manager::clear_instance_mappings()
 {
     lti_to_sti_map.clear();
     sti_to_identity_map.clear();
-    dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size());
+    iSti_to_lti_map.clear();
+    dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size(), iSti_to_lti_map.size());
 }
 
 uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
@@ -212,6 +194,47 @@ Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_leve
         dprint(DT_SMEM_INSTANCE, "-> returning newly created symbol %y.\n",return_val);
         return return_val;
     }
+}
+
+
+uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTable, bool pOverwriteOldLinkToLTM)
+{
+    uint64_t returnVal = 0;
+
+    if (useLookupTable)
+    {
+        sym_to_id_map::iterator lIter;
+
+        dprint(DT_SMEM_INSTANCE, "Getting current LTI ID for STI %y.\n", pISTI);
+        lIter = iSti_to_lti_map.find(pISTI);
+
+        if (lIter != iSti_to_lti_map.end())
+        {
+            dprint(DT_SMEM_INSTANCE, "-> returning existing lti id %u.\n", lIter->second);
+            returnVal = lIter->second;
+        } else {
+            uint64_t lNewID = add_new_LTI();
+            iSti_to_lti_map[pISTI]  = lNewID;
+            dprint(DT_SMEM_INSTANCE, "-> returning newly generated lti id %u.\n",lNewID);
+            returnVal = lNewID;
+        }
+    } else {
+        if (!pISTI->id->LTI_ID)
+        {
+            uint64_t lNewID = add_new_LTI();
+            dprint(DT_SMEM_INSTANCE, "-> returning newly generated lti id %u.\n",lNewID);
+            returnVal = lNewID;
+        } else {
+            dprint(DT_SMEM_INSTANCE, "-> returning existing lti id %u.\n", pISTI->id->LTI_ID);
+            returnVal = pISTI->id->LTI_ID;
+        }
+    }
+    if (pOverwriteOldLinkToLTM || !pISTI->id->LTI_ID)
+    {
+        pISTI->id->LTI_ID = returnVal;
+    }
+    return returnVal;
+
 }
 
 void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type, uint64_t depth, std::set<uint64_t>* visited)

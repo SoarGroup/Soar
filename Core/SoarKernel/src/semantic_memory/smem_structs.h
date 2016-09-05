@@ -24,7 +24,7 @@ typedef struct smem_data_struct
 } smem_data;
 
 typedef struct ltm_object_struct
-{   Symbol*                 soar_id;
+{
     uint64_t                lti_id;
     ltm_slot_map*           slots;
 } ltm_object;

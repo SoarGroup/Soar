@@ -61,9 +61,9 @@ class SMem_Manager
 
         /* Methods for smem CLI commands*/
         uint64_t    lti_exists(uint64_t pLTI_ID);
-        bool        process_smem_add_object(const char* str_to_LTMs, std::string** err_msg);
-        bool        parse_cues(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
-        bool        process_smem_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
+        bool        CLI_add(const char* str_to_LTMs, std::string** err_msg);
+        bool        CLI_query(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
+        bool        CLI_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
 
 
         /* Methods for creating an instance of a LTM using STIs */
@@ -96,6 +96,7 @@ class SMem_Manager
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
         sym_to_id_map                   sti_to_identity_map;
+        sym_to_id_map                   iSti_to_lti_map;
 
         /* Methods for smem link interface */
         void            clear_result(Symbol* state);
@@ -144,12 +145,14 @@ class SMem_Manager
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
-        void            store_LTM(Symbol* id, smem_storage_type store_type, bool update_LTI_Links, tc_number tc = NIL);
-        void            store_LTM_in_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children = true, Symbol* print_id = NULL, bool activate = true, bool preserve_previous_link = false);
+        void            store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
+        void            update(Symbol* pSTI, smem_storage_type store_type, tc_number tc = NIL);
+        void            STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool pCreateNewLTM, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
+        void            LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate);
 
         /* Methods for creating an instance of a LTM using STIs */
         Symbol*         get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
-        uint64_t        make_STI_instance_of_new_LTI(Symbol* id, bool preserve_previous_link = false);
+        uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
 
         /* Methods for queries */
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);

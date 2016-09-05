@@ -116,7 +116,8 @@ typedef struct predefined_sym_struct {
         Symbol*             smem_sym_store;
         Symbol*             smem_sym_math_query;
         Symbol*             smem_sym_depth;
-        Symbol*             smem_sym_update;
+        Symbol*             smem_sym_store_new;
+        Symbol*             smem_sym_overwrite;;
 
         Symbol*             smem_sym_math_query_less;
         Symbol*             smem_sym_math_query_greater;

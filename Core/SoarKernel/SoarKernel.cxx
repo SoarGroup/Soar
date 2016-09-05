@@ -43,6 +43,7 @@
 #include "src/reinforcement_learning/reinforcement_learning.cpp"
 #include "src/semantic_memory/semantic_memory.cpp"
 #include "src/semantic_memory/smem_activation.cpp"
+#include "src/semantic_memory/smem_cli_commands.cpp"
 #include "src/semantic_memory/smem_db.cpp"
 #include "src/semantic_memory/smem_print.cpp"
 #include "src/semantic_memory/smem_query.cpp"

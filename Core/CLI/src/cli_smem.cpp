@@ -60,7 +60,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'a')
     {
         std::string* err = new std::string("");
-        bool result = thisAgent->SMem->process_smem_add_object(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->CLI_add(pAttr->c_str(), &(err));
 
         if (!result)
         {
@@ -195,7 +195,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             from_c_string(number_to_retrieve, pVal->c_str());
         }
 
-        bool result = thisAgent->SMem->parse_cues(pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
+        bool result = thisAgent->SMem->CLI_query(pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
 
         if (!result)
         {
@@ -220,7 +220,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
         }
 
-        bool result = thisAgent->SMem->process_smem_remove(pAttr->c_str(), &(err), &(retrieved), force);
+        bool result = thisAgent->SMem->CLI_remove(pAttr->c_str(), &(err), &(retrieved), force);
 
         if (!result)
         {

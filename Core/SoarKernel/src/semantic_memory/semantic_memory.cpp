@@ -140,11 +140,11 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* retrieve;
     Symbol* math;
     uint64_t depth;
-    bool update_LTI_Links = true;
+    bool update_LTI_Links = false;
     symbol_list prohibit;
     symbol_list store;
 
-    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store } path;
+    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store_new, cmd_store } path;
 
     unsigned int time_slot = ((store_only) ? (1) : (0));
     uint64_t wme_count;
@@ -358,24 +358,38 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_depth)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_store_new)
                     {
-                        if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                ((path == blank_slate) || (path == cmd_store_new)))
                         {
-                            depth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
+                            store.push_back((*w_p)->value);
+                            path = cmd_store_new;
                         }
                         else
                         {
                             path = cmd_bad;
                         }
                     }
-                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_update)
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_overwrite)
                     {
                         if (((*w_p)->value->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
                             (((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes) ||
-                                ((*w_p)->value == thisAgent->symbolManager->soarSymbols.no)))
+                                ((*w_p)->value == thisAgent->symbolManager->soarSymbols.no)) &&
+                                ((path == blank_slate) || (path == cmd_store_new)))
                         {
                             update_LTI_Links = ((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes);
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_depth)
+                    {
+                        if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+                        {
+                            depth = ((*w_p)->value->ic->value > 0) ? (*w_p)->value->ic->value : 1;
                         }
                         else
                         {
@@ -449,6 +463,42 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
                 }
+                else if (path == cmd_store_new)
+                {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store-new command.\n");
+                    symbol_list::iterator sym_p;
+
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->SMem->timers->storage->start();
+                    ////////////////////////////////////////////////////////////////////////////
+
+                    // start transaction (if not lazy)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
+                    {
+                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+                    }
+
+                    for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
+                    {
+                        store_new((*sym_p), store_level, update_LTI_Links);
+
+                        // status: success
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+
+                        // add one to the store stat
+                        thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
+                    }
+
+                    // commit transaction (if not lazy)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
+                    {
+                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+                    }
+
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->SMem->timers->storage->stop();
+                    ////////////////////////////////////////////////////////////////////////////
+                }
                 else if (path == cmd_store)
                 {
                     dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store command.\n");
@@ -466,7 +516,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                     {
-                        store_LTM((*sym_p), store_level, update_LTI_Links);
+                        update((*sym_p), store_level, update_LTI_Links);
 
                         // status: success
                         add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
