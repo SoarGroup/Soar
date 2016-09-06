@@ -217,12 +217,12 @@ void Explanation_Based_Chunker::print_tables(TraceMode mode)
 
 inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
 
-inline const char* concatJustified(const char* left_string, std::string right_string, int pWidth)
+inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {
     std::string return_string = left_string;
     return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
     return_string += right_string;
-    return return_string.c_str();
+    return return_string;
 }
 
 void Explanation_Based_Chunker::print_chunking_summary()
@@ -235,13 +235,13 @@ void Explanation_Based_Chunker::print_chunking_summary()
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa(thisAgent,    "                     Chunking Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55));
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55));
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Interrupt after learning from watched rule", std::string(ebc_params->interrupt_on_chunk->get_value() ? "Yes" : "No"), 55));
-    outputManager->printa_sf(thisAgent, "%s\n\n", concatJustified("Interrupt after learning failure", std::string(ebc_params->interrupt_on_failure->get_value() ? "Yes" : "No"), 55));
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks learned", std::to_string(thisAgent->explanationMemory->get_stat_succeeded()), 55));
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks attempted", std::to_string(thisAgent->explanationMemory->get_stat_chunks_attempted()), 55));
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Justifications learned", std::to_string(thisAgent->explanationMemory->get_stat_justifications()), 55));
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Interrupt after learning from watched rule", std::string(ebc_params->interrupt_on_chunk->get_value() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n\n", concatJustified("Interrupt after learning failure", std::string(ebc_params->interrupt_on_failure->get_value() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks learned", std::to_string(thisAgent->explanationMemory->get_stat_succeeded()), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks attempted", std::to_string(thisAgent->explanationMemory->get_stat_chunks_attempted()), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Justifications learned", std::to_string(thisAgent->explanationMemory->get_stat_justifications()), 55).c_str());
 
     if (ebc_settings[SETTING_EBC_ONLY] )
     {
@@ -302,9 +302,9 @@ void Explanation_Based_Chunker::print_chunking_settings()
     tempString += ebc_params->naming_style->get_value() == ruleFormat ?  "RULE" : "rule";
     tempString += "]";
     outputManager->printa_sf(thisAgent, "%s %-%s\n",
-        concatJustified("naming-style", tempString, 51),"Simple numeric chunk names or informational rule-based name");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string(), 45), "Maximum chunks that can be learned (per phase)");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string(), 45), "Maximum duplicate chunks (per rule, per phase)");
+        concatJustified("naming-style", tempString, 51).c_str(),"Simple numeric chunk names or informational rule-based name");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string(), 45).c_str(), "Maximum chunks that can be learned (per phase)");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string(), 45).c_str(), "Maximum duplicate chunks (per rule, per phase)");
     outputManager->printa_sf(thisAgent, "------------------- Debugging ---------------------\n");
     outputManager->printa_sf(thisAgent, "interrupt                   %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from a watched rule");
     outputManager->printa_sf(thisAgent, "interrupt-on-failure        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_failure->get_value()), "Stop Soar after learning failure");
