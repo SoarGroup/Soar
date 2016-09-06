@@ -21,8 +21,10 @@
 #include "print.h"
 #include "mem.h"
 #include "parser.h"
+#include "production.h"
 #include "rete.h"
 #include "rhs.h"
+#include "symbol.h"
 #include "test.h"
 #include "condition.h"
 

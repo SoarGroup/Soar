@@ -13,9 +13,11 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "misc.h"
+#include "semantic_memory.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"

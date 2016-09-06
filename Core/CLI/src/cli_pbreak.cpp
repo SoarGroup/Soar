@@ -15,15 +15,15 @@
 
 #include <assert.h>
 
+#include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
 #include "sml_Names.h"
 
-#include "sml_KernelSML.h"
-
-#include "rete.h"
-#include "sml_AgentSML.h"
-#include "symbol.h"
-#include "production.h"
 #include "agent.h"
+#include "production.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "rete.h"
 
 using namespace cli;
 using namespace sml;

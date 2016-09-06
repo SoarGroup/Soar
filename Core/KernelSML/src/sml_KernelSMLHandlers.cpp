@@ -30,6 +30,8 @@
 
 #include "agent.h"
 #include "io_link.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #ifndef NO_SVS
     #include "svs_interface.h"
