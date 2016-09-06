@@ -11,6 +11,8 @@
 
 #include "lexer.h"
 
+#include <algorithm>
+
 void SMem_Manager::visualize_store(std::string* return_val)
 {
     // header
