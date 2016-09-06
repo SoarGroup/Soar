@@ -3765,7 +3765,7 @@ epmem_time_id epmem_previous_episode(agent* thisAgent, epmem_time_id memory_id)
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-//#define QUERY_DEBUG 1
+#define QUERY_DEBUG 0
 
 void epmem_print_retrieval_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[])
 {

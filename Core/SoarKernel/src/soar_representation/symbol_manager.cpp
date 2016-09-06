@@ -901,20 +901,17 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-            if (sym->id->LTI_ID == NIL)
-            {
-                SNPRINTF(msg, 256,
-                    "\t%c%llu --> %llu\n",
-                    sym->id->name_letter,
-                    static_cast<long long unsigned>(sym->id->name_number),
-                    static_cast<long long unsigned>(sym->reference_count));
-                print(thisAgent,  msg);
-//                xml_generate_warning(thisAgent, msg);
+            SNPRINTF(msg, 256,
+                "\t%c%llu --> %llu\n",
+                sym->id->name_letter,
+                static_cast<long long unsigned>(sym->id->name_number),
+                static_cast<long long unsigned>(sym->reference_count));
+            print(thisAgent,  msg);
+            //                xml_generate_warning(thisAgent, msg);
 
-                if (f)
-                {
-                    fprintf(f, "%s", msg) ;
-                }
+            if (f)
+            {
+                fprintf(f, "%s", msg) ;
             }
         }
     }
@@ -923,49 +920,6 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
         print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
         return true;
     }
-    return false;
-}
-
-bool Symbol_Manager::remove_if_sti(agent* thisAgent, void* item, void* userdata)
-{
-    Symbol* sym;
-    char msg[256];
-    sym = static_cast<symbol_struct*>(item);
-
-    if (sym->is_sti())
-    {
-        SNPRINTF(msg, 256,
-            "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
-            sym->id->name_letter,
-            static_cast<long long unsigned>(sym->id->name_number),
-            static_cast<long long unsigned>(sym->reference_count));
-        dprint(DT_DEBUG, "Warning:  Symbol %y still exists because refcount = %u.  Deallocating anyway.\n", sym, sym->reference_count);
-        deallocate_symbol(sym);
-
-        msg[255] = 0; /* ensure null termination */
-        print(thisAgent,  msg);
-//        xml_generate_warning(thisAgent, msg);
-    }
-    else
-    {
-        dprint(DT_DEBUG, "ERROR: HASHTABLE ITEM %y IS NOT AN IDENTIFIER!  (refcount = %u)\n", sym, sym->reference_count);
-        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-        return true;
-    }
-    return false;
-}
-
-bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
-{
-    Symbol* id = static_cast<symbol_struct*>(item);
-
-    dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
-    if (id->id->LTI_ID != NIL)
-    {
-        uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
-        (*counter)++;
-    }
-
     return false;
 }
 
