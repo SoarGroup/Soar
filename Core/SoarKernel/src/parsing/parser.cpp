@@ -20,6 +20,8 @@
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "mem.h"
+#include "output_manager.h"
+#include "preference.h"
 #include "print.h"
 #include "production.h"
 #include "reinforcement_learning.h"
@@ -333,7 +335,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         case IDENTIFIER_LEXEME:
             dprint(DT_PARSER, "Adding identifier lexeme to parser strings %c%d\n", lexeme->id_letter, lexeme->id_number);
             if (!allow_lti)
-            {
+        {
                 /* This seems to only be set when being called by the watch wme cli command.  It looks
                  * like the logic in that command could easily be altered so that this abort is not
                  * necessary.  The watch command should just fail.  I don't see any reason to completely shut down
@@ -364,8 +366,8 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
                 {
                     newSymbol =  thisAgent->SMem->lti_soar_make(lti_id, lexeme->id_letter, lexeme->id_number, SMEM_LTI_UNKNOWN_LEVEL);
                 }
-                return newSymbol;
-            }
+            return newSymbol;
+        }
             break;
         default:
         {
@@ -458,7 +460,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
     // Check for long term identifier notation
     bool id_lti = parse_lti(thisAgent, lexer);
 
-    /* --- read variable or constant --- */
+     /* --- read variable or constant --- */
     switch (lexer->current_lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
@@ -2162,7 +2164,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     else
     {
-        var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
+    var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
     }
 
     if (!lexer->get_lexeme()) return NULL;
