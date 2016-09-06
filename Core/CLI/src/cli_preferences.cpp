@@ -8,23 +8,26 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
-#include "agent.h"
-#include "exploration.h"
-#include "lexer.h"
-#include "print.h"
-#include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
-#include "slot.h"
-#include "trace.h"
-#include "working_memory.h"
+#include "sml_Names.h"
+#include "sml_Utils.h"
+
+#include "agent.h"
 #include "decide.h"
+#include "exploration.h"
+#include "lexer.h"
 #include "output_manager.h"
 #include "preference.h"
+#include "print.h"
+#include "slot.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "trace.h"
+#include "working_memory.h"
 
 using namespace cli;
 using namespace sml;

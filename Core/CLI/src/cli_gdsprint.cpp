@@ -20,6 +20,7 @@
 #include "agent.h"
 #include "working_memory.h"
 #include "decide.h"
+#include "symbol.h"
 
 using namespace cli;
 using namespace sml;
