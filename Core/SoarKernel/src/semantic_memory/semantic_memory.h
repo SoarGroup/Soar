@@ -68,6 +68,7 @@ class SMem_Manager
 
         /* Methods for creating an instance of a LTM using STIs */
         void        clear_instance_mappings();
+        Symbol*     get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
         void        add_identity_to_iSTI_test(test pTest, uint64_t pI_ID);
         uint64_t    get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID);
 
@@ -151,7 +152,6 @@ class SMem_Manager
         void            LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate);
 
         /* Methods for creating an instance of a LTM using STIs */
-        Symbol*         get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
         uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
 
         /* Methods for queries */

@@ -978,7 +978,7 @@ void epmem_graph_statement_container::create_graph_tables()
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_range (rit_id INTEGER,start_episode_id INTEGER,end_episode_id INTEGER,wi_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant (wc_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER, value_s_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier (wi_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER,child_n_id INTEGER, last_episode_id INTEGER)");
-    add_structure("CREATE TABLE IF NOT EXISTS epmem_lti (n_id INTEGER PRIMARY KEY, soar_letter INTEGER, soar_number INTEGER, promotion_episode_id INTEGER)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_lti (n_id INTEGER PRIMARY KEY, lti_id INTEGER, promotion_episode_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)");
 }
 
@@ -1012,7 +1012,7 @@ void epmem_graph_statement_container::create_graph_indices()
     add_structure("CREATE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_attribute_last ON epmem_wmes_identifier (parent_n_id,attribute_s_id,last_episode_id)");
     add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_identifier_parent_attribute_child ON epmem_wmes_identifier (parent_n_id,attribute_s_id,child_n_id)");
 
-    add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_lti_letter_num ON epmem_lti (soar_letter,soar_number)");
+    add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_lti_letter_num ON epmem_lti (lti_id)");
 
 }
 
@@ -1143,8 +1143,9 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
             "ORDER BY f.wc_id ASC", new_agent->EpMem->epmem_timers->ncb_node);
     add(get_wmes_with_constant_values);
 
+//    "SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, epmem_lti.soar_letter, epmem_lti.lti_id "
     get_wmes_with_identifier_values = new soar_module::sqlite_statement(new_db,
-            "SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, epmem_lti.soar_letter, epmem_lti.soar_number "
+            "SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, epmem_lti.lti_id "
             "FROM epmem_wmes_identifier f "
             "LEFT JOIN epmem_lti ON (f.child_n_id=epmem_lti.n_id AND epmem_lti.promotion_episode_id <= ?) "
             "WHERE f.wi_id IN "
@@ -1155,7 +1156,7 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
             "ORDER BY f.parent_n_id ASC, f.child_n_id ASC", new_agent->EpMem->epmem_timers->ncb_edge);
     add(get_wmes_with_identifier_values);
 
-    find_lti = new soar_module::sqlite_statement(new_db, "SELECT n_id FROM epmem_lti WHERE soar_letter=? AND soar_number=?");
+    find_lti = new soar_module::sqlite_statement(new_db, "SELECT n_id FROM epmem_lti WHERE lti_id=?");
     add(find_lti);
 
     find_lti_promotion_time = new soar_module::sqlite_statement(new_db, "SELECT promotion_episode_id FROM epmem_lti WHERE n_id=?");
@@ -2494,10 +2495,11 @@ inline void _epmem_store_level(agent* thisAgent,
         {
             continue;
         }
-
+        /* Not sure why this is excluding LTIs or whether that makes sense any more. */
         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)) &&
-                (!(*w_p)->value->id->LTI_ID))
+                (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation))
+                && (!(*w_p)->value->id->LTI_ID)
+                )
         {
             // prevent exclusions from being recorded
             if (thisAgent->EpMem->epmem_params->exclusions->in_set((*w_p)->attr))
@@ -2615,8 +2617,7 @@ inline void _epmem_store_level(agent* thisAgent,
 
                     // try to find
                     {
-                        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>((*w_p)->value->id->name_letter));
-                        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(2, static_cast<uint64_t>((*w_p)->value->id->name_number));
+                        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>((*w_p)->value->id->LTI_ID));
 
                         if (thisAgent->EpMem->epmem_stmts_graph->find_lti->execute() == soar_module::row)
                         {
@@ -3279,7 +3280,7 @@ bool epmem_valid_episode(agent* thisAgent, epmem_time_id memory_id)
     return return_val;
 }
 
-inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id child_n_id, bool val_is_short_term, char val_letter, uint64_t val_num, epmem_id_mapping* id_record, symbol_triple_list& retrieval_wmes)
+inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id child_n_id, bool val_is_short_term, uint64_t val_num, epmem_id_mapping* id_record, symbol_triple_list& retrieval_wmes)
 {
     std::map< epmem_node_id, std::pair< Symbol*, bool > >::iterator id_p = ids->find(child_n_id);
     bool existing_identifier = (id_p != ids->end());
@@ -3313,24 +3314,24 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
             epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, id_p->second.first);
         }
         /* MToDo | Need to re-do so that this creates STIs linked to the LTI in question */
-//        else
-//        {
-//            Symbol* value = thisAgent->SMem->lti_soar_make(thisAgent->SMem->lti_get_id(val_letter, val_num), val_letter, val_num, parent->id->level);
-//
-//            if (id_record)
-//            {
-//                epmem_id_mapping::iterator rec_p = id_record->find(child_n_id);
-//                if (rec_p != id_record->end())
-//                {
-//                    rec_p->second = value;
-//                }
-//            }
-//
-//            epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, value);
-//            thisAgent->symbolManager->symbol_remove_ref(&value);
-//
-//            ids->insert(std::make_pair(child_n_id, std::make_pair(value, !((value->id->impasse_wmes) || (value->id->input_wmes) || (value->id->slots)))));
-//        }
+        else
+        {
+            Symbol* value = thisAgent->SMem->get_current_iSTI_for_LTI(val_num, parent->id->level);
+
+            if (id_record)
+            {
+                epmem_id_mapping::iterator rec_p = id_record->find(child_n_id);
+                if (rec_p != id_record->end())
+                {
+                    rec_p->second = value;
+                }
+            }
+
+            epmem_buffer_add_wme(thisAgent, retrieval_wmes, parent, attr, value);
+            thisAgent->symbolManager->symbol_remove_ref(&value);
+
+            ids->insert(std::make_pair(child_n_id, std::make_pair(value, !((value->id->impasse_wmes) || (value->id->input_wmes) || (value->id->slots)))));
+        }
     }
 }
 
@@ -3436,7 +3437,6 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
             epmem_node_id child_n_id; // attribute
 
             bool val_is_short_term = false;
-            char val_letter = NIL;
             int64_t val_num = NIL;
 
             // used to lookup shared identifiers
@@ -3456,7 +3456,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
             my_q->bind_int(5, memory_id);
             while (my_q->execute() == soar_module::row)
             {
-                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.soar_letter, epmem_lti.soar_number
+                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.lti_id
                 parent_n_id = my_q->column_int(0);
                 child_n_id = my_q->column_int(2);
                 attr = epmem_reverse_hash(thisAgent, my_q->column_int(1));
@@ -3465,8 +3465,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                 val_is_short_term = (my_q->column_type(3) == soar_module::null_t);
                 if (!val_is_short_term)
                 {
-                    val_letter = static_cast<char>(my_q->column_int(3));
-                    val_num = static_cast<uint64_t>(my_q->column_int(4));
+                    val_num = static_cast<uint64_t>(my_q->column_int(3));
                 }
 
                 // get a reference to the parent
@@ -3476,7 +3475,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                     // if existing lti with kids don't touch
                     if (dont_abide_by_ids_second || id_p->second.second)
                     {
-                        _epmem_install_id_wme(thisAgent, id_p->second.first, attr, &(ids), child_n_id, val_is_short_term, val_letter, val_num, id_record, retrieval_wmes);
+                        _epmem_install_id_wme(thisAgent, id_p->second.first, attr, &(ids), child_n_id, val_is_short_term, val_num, id_record, retrieval_wmes);
                         num_wmes++;
                     }
 
@@ -3490,13 +3489,10 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                     orphan->attribute = attr;
                     orphan->child_n_id = child_n_id;
 
-                    orphan->val_letter = NIL;
                     orphan->val_num = NIL;
-
                     orphan->val_is_short_term = val_is_short_term;
                     if (!val_is_short_term)
                     {
-                        orphan->val_letter = val_letter;
                         orphan->val_num = val_num;
                     }
 
@@ -3527,7 +3523,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                         {
                             if (dont_abide_by_ids_second || id_p->second.second)
                             {
-                                _epmem_install_id_wme(thisAgent, id_p->second.first, orphan->attribute, &(ids), orphan->child_n_id, orphan->val_is_short_term, orphan->val_letter, orphan->val_num, id_record, retrieval_wmes);
+                                _epmem_install_id_wme(thisAgent, id_p->second.first, orphan->attribute, &(ids), orphan->child_n_id, orphan->val_is_short_term, orphan->val_num, id_record, retrieval_wmes);
                                 num_wmes++;
                             }
 
@@ -3769,7 +3765,7 @@ epmem_time_id epmem_previous_episode(agent* thisAgent, epmem_time_id memory_id)
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define QUERY_DEBUG 0
+#define QUERY_DEBUG 1
 
 void epmem_print_retrieval_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[])
 {
@@ -3946,8 +3942,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
     else if (value->id->LTI_ID)     // WME is an LTI
     {
         // if we can find the LTI node id, cache it; otherwise, return failure
-        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id->name_letter));
-        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(2, static_cast<uint64_t>(value->id->name_number));
+        thisAgent->EpMem->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id->LTI_ID));
         if (thisAgent->EpMem->epmem_stmts_graph->find_lti->execute() == soar_module::row)
         {
             literal->value_is_id = EPMEM_RIT_STATE_EDGE;
@@ -5266,7 +5261,7 @@ void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string*
             my_q->bind_int(5, memory_id);
             while (my_q->execute() == soar_module::row)
             {
-                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.soar_letter, epmem_lti.soar_number
+                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.lti_id
                 parent_n_id = my_q->column_int(0);
                 child_n_id = my_q->column_int(2);
 
@@ -5280,9 +5275,7 @@ void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string*
                 else
                 {
                     temp_s2.assign("@");
-                    temp_s2.push_back(static_cast< char >(my_q->column_int(3)));
-
-                    temp_i = static_cast< uint64_t >(my_q->column_int(4));
+                    temp_i = static_cast< uint64_t >(my_q->column_int(3));
                     to_string(temp_i, temp_s3);
                     temp_s2.append(temp_s3);
 
@@ -5399,7 +5392,6 @@ void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::str
             std::string temp, temp2, temp3, temp4;
 
             bool val_is_short_term;
-            char val_letter;
             uint64_t val_num;
 
             // 0 is magic
@@ -5417,7 +5409,7 @@ void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::str
             my_q->bind_int(5, memory_id);
             while (my_q->execute() == soar_module::row)
             {
-                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.soar_letter, epmem_lti.soar_number
+                // parent_n_id, attribute_s_id, child_n_id, epmem_lti.lti_id
                 parent_n_id = my_q->column_int(0);
                 child_n_id = my_q->column_int(2);
 
@@ -5447,9 +5439,8 @@ void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::str
                     if (lti_p == ltis.end())
                     {
                         // "L#"
-                        val_letter = static_cast<char>(my_q->column_int(3));
-                        to_string(val_letter, temp4);
-                        val_num = static_cast<uint64_t>(my_q->column_int(4));
+                        temp4 = "@";
+                        val_num = static_cast<uint64_t>(my_q->column_int(3));
                         to_string(val_num, temp2);
                         temp4.append(temp2);
 
@@ -5959,6 +5950,8 @@ void epmem_respond_to_cmd(agent* thisAgent)
             if (good_cue)
             {
                 dprint(DT_EPMEM_CMD, "--- ...good cue.\n");
+                thisAgent->SMem->clear_instance_mappings();
+
                 // retrieve
                 if (path == 1)
                 {

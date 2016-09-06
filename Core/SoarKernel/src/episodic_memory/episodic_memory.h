@@ -445,7 +445,6 @@ typedef struct epmem_edge_struct
     epmem_node_id child_n_id;                           // value
 
     bool val_is_short_term;
-    char val_letter;
     uint64_t val_num;
 
 } epmem_edge;
