@@ -190,6 +190,7 @@ Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_leve
         return_val->id->level = pLevel;
         return_val->id->promotion_level = pLevel;
         return_val->id->LTI_ID = pLTI_ID;
+        return_val->id->smem_valid = smem_validation;
         lti_to_sti_map[pLTI_ID] = return_val;
         dprint(DT_SMEM_INSTANCE, "-> returning newly created symbol %y.\n",return_val);
         return return_val;
@@ -232,6 +233,7 @@ uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTab
     if (pOverwriteOldLinkToLTM || !pISTI->id->LTI_ID)
     {
         pISTI->id->LTI_ID = returnVal;
+        pISTI->id->smem_valid = smem_validation;
     }
     return returnVal;
 

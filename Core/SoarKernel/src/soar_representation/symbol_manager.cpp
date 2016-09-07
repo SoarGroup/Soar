@@ -453,6 +453,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->smem_result_header = NIL;
     sym->smem_info = NULL;
     sym->LTI_ID = NIL;
+    sym->LTI_epmem_valid = NIL;
     sym->smem_valid = NIL;
 
     sym->rl_trace = NIL;

@@ -296,6 +296,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
                             /* Not sure what we'd want to use here.  Will create an identifier for now with lti_id */
                             value = thisAgent->symbolManager->make_new_identifier('L', 1);
                             value->id->LTI_ID = lexer.current_lexeme.int_val;
+                            value->id->smem_valid = smem_validation;
                         }
                         lexer.get_lexeme();
                     }

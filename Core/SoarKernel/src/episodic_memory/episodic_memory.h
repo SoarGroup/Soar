@@ -287,6 +287,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 {
     public:
         soar_module::sqlite_statement* add_node;
+        soar_module::sqlite_statement* update_node;
         soar_module::sqlite_statement* add_time;
 
         //
@@ -319,11 +320,11 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
         soar_module::sqlite_statement* get_wmes_with_identifier_values;
         soar_module::sqlite_statement* get_wmes_with_constant_values;
 
-        //
-
-        soar_module::sqlite_statement* find_lti;
-        soar_module::sqlite_statement* find_lti_promotion_time;
-
+//        //
+//
+//        soar_module::sqlite_statement* find_lti;
+//        soar_module::sqlite_statement* find_lti_promotion_time;
+//
         //
 
         soar_module::sqlite_statement* update_epmem_wmes_identifier_last_episode_id;
@@ -332,7 +333,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
         soar_module::sqlite_statement_pool* pool_find_edge_queries[2][2];
         soar_module::sqlite_statement_pool* pool_find_interval_queries[2][2][3];
-        soar_module::sqlite_statement_pool* pool_find_lti_queries[2][3];
+//        soar_module::sqlite_statement_pool* pool_find_lti_queries[2][3];
         soar_module::sqlite_statement_pool* pool_dummy;
 
         //
@@ -440,12 +441,11 @@ typedef struct epmem_id_reservation_struct
 typedef struct epmem_edge_struct
 {
 
-    epmem_node_id parent_n_id;                          // id
-    Symbol* attribute;                          // attr
-    epmem_node_id child_n_id;                           // value
+    epmem_node_id   parent_n_id;
+    Symbol*         attribute;
+    epmem_node_id   child_n_id;
 
-    bool val_is_short_term;
-    uint64_t val_num;
+    uint64_t        child_lti_id;
 
 } epmem_edge;
 

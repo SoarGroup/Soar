@@ -215,6 +215,7 @@ struct idSymbol    : public Symbol
 
     epmem_node_id epmem_id;
     uint64_t LTI_ID;
+    uint64_t LTI_epmem_valid;
 
     void* rl_trace;
 };
