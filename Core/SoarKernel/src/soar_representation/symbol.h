@@ -186,18 +186,12 @@ struct idSymbol    : public Symbol
     Symbol* reward_header;
     struct rl_data_struct* rl_info;
 
-    Symbol* epmem_header;
-    Symbol* epmem_cmd_header;
-    Symbol* epmem_result_header;
-    struct wme_struct* epmem_time_wme;
-    struct epmem_data_struct* epmem_info;
+    struct epmem_data_struct*   epmem_info;
+    epmem_node_id               epmem_id;
 
-
-    Symbol* smem_header;
-    Symbol* smem_cmd_header;
-    Symbol* smem_result_header;
-    struct smem_data_struct* smem_info;
-
+    struct smem_data_struct*    smem_info;
+    uint64_t                    LTI_ID;
+    uint64_t                    LTI_epmem_valid;
 
     struct gds_struct* gds;
 
@@ -212,10 +206,6 @@ struct idSymbol    : public Symbol
     struct wme_struct* input_wmes;
 
     int depth;
-
-    epmem_node_id epmem_id;
-    uint64_t LTI_ID;
-    uint64_t LTI_epmem_valid;
 
     void* rl_trace;
 };

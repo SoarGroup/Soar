@@ -181,7 +181,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             tc = get_new_tc_number(thisAgent);
 
             // initialize BFS at command
-            syms.push(state->id->smem_cmd_header);
+            syms.push(state->id->smem_info->cmd_wme->value); // smem_cmd_header
             levels.push(0);
 
             while (!syms.empty())
@@ -433,12 +433,12 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     if (retrieve->id->LTI_ID == NIL)
                     {
                         // retrieve is not pointing to an lti!
-                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
                     }
                     else
                     {
                         // status: success
-                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
                         install_memory(state, retrieve->id->LTI_ID, NULL, true, meta_wmes, retrieval_wmes, wm_install, depth);
@@ -483,7 +483,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         store_new((*sym_p), store_level, update_LTI_Links);
 
                         // status: success
-                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
                         thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
@@ -519,7 +519,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         update((*sym_p), store_level, update_LTI_Links);
 
                         // status: success
-                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
                         thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
@@ -538,7 +538,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             }
             else
             {
-                add_triple_to_recall_buffer(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_cmd_header);
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_info->cmd_wme->value);
             }
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())

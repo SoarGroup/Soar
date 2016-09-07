@@ -19,6 +19,7 @@
 #include "production.h"
 #include "symbol_manager.h"
 #include "test.h"
+#include "working_memory.h"
 #include "working_memory_activation.h"
 
 void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
@@ -249,7 +250,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     Symbol* result_header = NULL;
     if (install_type == wm_install)
     {
-        result_header = state->id->smem_result_header;
+        result_header = state->id->smem_info->result_wme->value;
     }
     dprint(DT_SMEM_INSTANCE, "Install memory called for %y %u %y.\n", state, pLTI_ID, sti);
     // get identifier if not known

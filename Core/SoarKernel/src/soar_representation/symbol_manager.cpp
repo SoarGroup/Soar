@@ -440,17 +440,10 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->rl_info = NIL;
     sym->reward_header = NIL;
 
-    sym->epmem_header = NIL;
-    sym->epmem_cmd_header = NIL;
-    sym->epmem_result_header = NIL;
+    sym->epmem_info = NULL;
     sym->epmem_id = EPMEM_NODEID_BAD;
     sym->epmem_valid = NIL;
-    sym->epmem_time_wme = NIL;
-    sym->epmem_info = NULL;
 
-    sym->smem_header = NIL;
-    sym->smem_cmd_header = NIL;
-    sym->smem_result_header = NIL;
     sym->smem_info = NULL;
     sym->LTI_ID = NIL;
     sym->LTI_epmem_valid = NIL;
@@ -828,7 +821,6 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
 //        std::string caller_string = get_stacktrace("dea_sym");
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
-
     switch (sym->symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:
