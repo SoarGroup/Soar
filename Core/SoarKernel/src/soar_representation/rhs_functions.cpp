@@ -715,7 +715,7 @@ void recursive_wme_copy(agent* thisAgent,
 
     /* Making the new wme (Note just reusing the wme data structure, these
        wme's actually get converted into preferences later).*/
-    wme* oldGlobalWme = glbDeepCopyWMEs;
+    wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
 
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
@@ -730,8 +730,8 @@ void recursive_wme_copy(agent* thisAgent,
         thisAgent->symbolManager->symbol_add_ref(new_value);
     }
 
-    glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
-    glbDeepCopyWMEs->next = oldGlobalWme;
+    thisAgent->WM->glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
+    thisAgent->WM->glbDeepCopyWMEs->next = oldGlobalWme;
 
 }
 

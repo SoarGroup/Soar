@@ -68,13 +68,6 @@ typedef std::list< instantiation* > inst_mpool_list;
 typedef std::list< condition* > cond_mpool_list;
 #endif
 
-/* TEMPORARY HACK (Ideally this should be doable through
- the external kernel interface but for now using a
- couple of global STL lists to get this information
- from the rhs function to this preference adding code)*/
-wme* glbDeepCopyWMEs = NULL;
-
-
 void init_instantiation_pool(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
@@ -936,7 +929,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
         /* If glbDeepCopyWMEs exists it must have been the rhs function executed, so
          * save the goal stack level for preferences that it generates. */
-        if (pref && glbDeepCopyWMEs)
+        if (pref && thisAgent->WM->glbDeepCopyWMEs)
         {
             glbDeepCopyWMELevel = pref->id->id->level;
         }
@@ -990,9 +983,9 @@ void create_instantiation(agent* thisAgent, production* prod,
 
              Getting the next pref from the set of possible prefs
              added by the deep copy rhs function */
-            if (glbDeepCopyWMEs != 0)
+            if (thisAgent->WM->glbDeepCopyWMEs != 0)
             {
-                wme* tempwme = glbDeepCopyWMEs;
+                wme* tempwme = thisAgent->WM->glbDeepCopyWMEs;
                 if (tempwme->id->id->level == NO_WME_LEVEL)
                 {
                     tempwme->id->id->level = glbDeepCopyWMELevel;
@@ -1008,7 +1001,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
 //                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
                 pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
-                glbDeepCopyWMEs = tempwme->next;
+                thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
             }
             else

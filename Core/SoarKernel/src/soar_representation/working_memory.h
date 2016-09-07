@@ -68,6 +68,12 @@ class WM_Manager
         tc_number wma_tc_counter;
         wma_d_cycle wma_d_cycle_count;
 
+        /* TEMPORARY HACK (Ideally this should be doable through
+         the external kernel interface but for now using a
+         couple of global STL lists to get this information
+         from the rhs function to this preference adding code)*/
+        wme* glbDeepCopyWMEs = NULL;
+
     private:
 
         agent* thisAgent;
