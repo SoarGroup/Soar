@@ -51,7 +51,7 @@
 
 #include "smem_math_query.h"
 
-void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth = 0)
+void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth = 1)
 {
     /*
      * This populates the input argument store_set (a ltm set) with a given lti_id's contents.
@@ -161,6 +161,7 @@ void SMem_Manager::clear_store_set(ltm_set* store_set)
     for (set_it = begin_set_it; set_it != end_set_it; ++set_it)
     {
         ltm_object* current_ltm = *set_it;
+        dprint(DT_DEBUG, "LTI ID: %u\n", (*set_it)->lti_id);
         ltm_slot_map* current_ltm_slot_map = current_ltm->slots;
         ltm_slot_map::iterator begin_map_it = current_ltm_slot_map->begin();
         ltm_slot_map::iterator end_map_it = current_ltm_slot_map->end();
@@ -168,6 +169,7 @@ void SMem_Manager::clear_store_set(ltm_set* store_set)
         for (map_it = begin_map_it; map_it != end_map_it; ++map_it)
         {
             Symbol* attr = map_it->first;
+            dprint(DT_DEBUG, "Attribute: %y\n", attr);
             ltm_slot* current_slot  = map_it->second;
             ltm_slot::iterator begin_slot_it = current_slot->begin();
             ltm_slot::iterator end_slot_it = current_slot->end();
@@ -176,10 +178,12 @@ void SMem_Manager::clear_store_set(ltm_set* store_set)
             {
                 if ((*slot_it)->val_lti.val_type == value_lti_t)
                 {
+                    dprint(DT_DEBUG, "LTI Value: %u\n", (*slot_it)->val_lti.val_value->lti_id);
                     delete ((*slot_it)->val_lti.val_value);
                 }
                 else
                 {
+                    dprint(DT_DEBUG, "Value: %y\n", ((*slot_it)->val_const.val_value));
                     thisAgent->symbolManager->symbol_remove_ref(&((*slot_it)->val_const.val_value));
                 }
                 delete (*slot_it);

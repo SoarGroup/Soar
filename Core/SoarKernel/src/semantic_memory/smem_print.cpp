@@ -694,10 +694,16 @@ void SMem_Manager::print_store(std::string* return_val)
         print_smem_object(q->column_int(0), 1, return_val);
     }
     q->reinitialize();
+    ltm_set store_set;
+    create_store_set(&store_set);
+    clear_store_set(&store_set);
 }
 
 void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history)
 {
+    ltm_set store_set;
+    create_store_set(&store_set, pLTI_ID,depth);
+    clear_store_set(&store_set);
     id_set visited;
     std::pair< id_set::iterator, bool > visited_ins_result;
 
