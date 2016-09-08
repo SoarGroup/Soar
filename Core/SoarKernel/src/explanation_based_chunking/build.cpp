@@ -43,6 +43,8 @@
 
 using namespace soar_TraceNames;
 
+#define EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY
+
 /* =====================================================================
 
                            Results Calculation

@@ -166,14 +166,17 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
     assert(thisID->id->is_sti());
-    /* Note:  When we both implement repair via promotion tracking and if we switch to a
-     *        model of smem in which we can't get unexpected operational conditions
-     *        because of portalling LTIs, then we won't need the first check any more */
-     
-    if ((thisID->id->level <= grounds_level) || ((thisID->id->isa_goal) && (cond->bt.level <= grounds_level)))
+    /* We can check here whether a condition is being added that has a promoted identifier in it*/
+    //    bool promoted = ((thisID->id->level <= grounds_level) || ((thisID->id->isa_goal) && (cond->bt.level > grounds_level)));
+
+#ifdef EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY
+    if (thisID->id->level <= grounds_level)
     {
-        /* Just testing whether id level can ever be wrong.  We can't sub */
-        assert(thisID->id->level <= cond->bt.level);
+#else
+    if (thisID->id->isa_goal && (cond->bt.level <= grounds_level))
+    {
+        assert(thisID->id->level >= cond->bt.level);
+#endif
         return true;
     }
     return false;

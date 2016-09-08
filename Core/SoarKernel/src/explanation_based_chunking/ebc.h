@@ -66,7 +66,7 @@ typedef struct backtrace_struct
 {
     int result;                    /* 1 when this is a result of the chunk */
     condition* trace_cond;         /* The (local) condition being traced */
-    char   prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
+    char       prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
     condition* grounds;            /* The list of conds for the LHS of chunk */
     condition* potentials;         /* The list of conds which aren't linked */
     condition* locals;             /* Conds in the subgoal -- need to BT */
