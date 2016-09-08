@@ -74,6 +74,9 @@ class SMem_Manager
 
         /* Methods for saving/printing/visualizing semantic memory */
         bool        backup_db(const char* file_name, std::string* err);
+        void        create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth);
+        void        create_store_set(ltm_set* store_set);
+        void        clear_store_set(ltm_set* store_set);
         void        visualize_store(std::string* return_val);
         void        visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::string* return_val);
         void        print_store(std::string* return_val);
