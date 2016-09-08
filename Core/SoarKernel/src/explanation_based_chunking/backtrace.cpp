@@ -165,21 +165,21 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
+    bool isOperational;
+
     assert(thisID->id->is_sti());
+    assert(thisID->id->level >= cond->bt.level);
+
     /* We can check here whether a condition is being added that has a promoted identifier in it*/
     //    bool promoted = ((thisID->id->level <= grounds_level) || ((thisID->id->isa_goal) && (cond->bt.level > grounds_level)));
 
-#ifdef EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY
-    if (thisID->id->level <= grounds_level)
-    {
-#else
-    if (thisID->id->isa_goal && (cond->bt.level <= grounds_level))
-    {
-        assert(thisID->id->level >= cond->bt.level);
-#endif
-        return true;
-    }
-    return false;
+    #ifdef EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY
+        isOperational =  (thisID->id->level <= grounds_level);
+    #else
+        isOperational =  (cond->bt.level <= grounds_level);
+    #endif
+
+    return isOperational;
 }
 
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
@@ -306,7 +306,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 value->tc_num = tc;
             }
         }
-        else if (condition_is_operational(c, grounds_level))
+        else if (thisID->id->isa_goal && condition_is_operational(c, grounds_level))
         {
             /* --- id is a higher goal id that was tested: so add id to the TC --- */
             thisID->tc_num = tc;
