@@ -362,6 +362,13 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
     {
+        /* If there are problems on the LHS, we need the ungrounded_syms
+         * from them, before we return.  So we call, reorder_lhs too.
+         * Note ungrounded_syms is null when not called for a chunk. */
+        if (ungrounded_syms)
+        {
+            reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
+        }
         return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
