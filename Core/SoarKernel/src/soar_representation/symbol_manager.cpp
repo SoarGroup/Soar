@@ -400,7 +400,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->tc_num = 0;
     sym->name_letter = name_letter;
 
-    // For long-term identifiers
     if (name_number == NIL)
     {
         name_number = id_counter[name_letter - 'A']++;

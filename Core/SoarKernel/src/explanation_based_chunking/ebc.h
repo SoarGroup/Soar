@@ -262,11 +262,8 @@ class Explanation_Based_Chunker
         /* Dependency analysis methods */
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
-        void add_to_potentials(condition* cond);
         void add_to_locals(condition* cond);
         void trace_locals(goal_stack_level grounds_level);
-        void trace_grounded_potentials();
-        bool trace_ungrounded_potentials(goal_stack_level grounds_level);
         void backtrace_through_instantiation(
                 instantiation* inst,
                 goal_stack_level grounds_level,

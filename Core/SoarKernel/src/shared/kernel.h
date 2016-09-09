@@ -30,7 +30,7 @@
  * */
 
 /* =============================== */
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -46,7 +46,6 @@
     #endif
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-    #define EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY      /* Also defined in explanation_based_chunking/backtrace.cpp */
 
     /* Experimental setting that forces Soar to consider the attribute element
      * of a wme/pref when incrementing/decrementing link counts, which are use
