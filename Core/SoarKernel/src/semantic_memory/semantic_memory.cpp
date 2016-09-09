@@ -140,14 +140,14 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
     }
 }
 
-void SMem_Manager::create_store_set(ltm_set* store_set)
+void SMem_Manager::create_full_store_set(ltm_set* store_set)
 {
     //This makes a set that contains the entire contents of smem.
     soar_module::sqlite_statement* q;
     q = thisAgent->SMem->SQL->vis_lti;
     while (q->execute() == soar_module::row)
     {
-        create_store_set(store_set,q->column_int(0));
+        create_store_set(store_set, q->column_int(0));
     }
     q->reinitialize();
 }
@@ -155,35 +155,25 @@ void SMem_Manager::create_store_set(ltm_set* store_set)
 void SMem_Manager::clear_store_set(ltm_set* store_set)
 {
     //this doesn't delete the set itself. This deletes the contents.
-    ltm_set::iterator begin_set_it = store_set->begin();
-    ltm_set::iterator end_set_it = store_set->end();
     ltm_set::iterator set_it;
-    for (set_it = begin_set_it; set_it != end_set_it; ++set_it)
+    for (set_it = store_set->begin(); set_it != store_set->end(); ++set_it)
     {
         ltm_object* current_ltm = *set_it;
-        dprint(DT_DEBUG, "LTI ID: %u\n", (*set_it)->lti_id);
         ltm_slot_map* current_ltm_slot_map = current_ltm->slots;
-        ltm_slot_map::iterator begin_map_it = current_ltm_slot_map->begin();
-        ltm_slot_map::iterator end_map_it = current_ltm_slot_map->end();
         ltm_slot_map::iterator map_it;
-        for (map_it = begin_map_it; map_it != end_map_it; ++map_it)
+        for (map_it = current_ltm_slot_map->begin(); map_it != current_ltm_slot_map->end(); ++map_it)
         {
             Symbol* attr = map_it->first;
-            dprint(DT_DEBUG, "Attribute: %y\n", attr);
             ltm_slot* current_slot  = map_it->second;
-            ltm_slot::iterator begin_slot_it = current_slot->begin();
-            ltm_slot::iterator end_slot_it = current_slot->end();
             ltm_slot::iterator slot_it;
-            for (slot_it = begin_slot_it; slot_it != end_slot_it; ++slot_it)
+            for (slot_it = current_slot->begin(); slot_it != current_slot->end(); ++slot_it)
             {
                 if ((*slot_it)->val_lti.val_type == value_lti_t)
                 {
-                    dprint(DT_DEBUG, "LTI Value: %u\n", (*slot_it)->val_lti.val_value->lti_id);
                     delete ((*slot_it)->val_lti.val_value);
                 }
                 else
                 {
-                    dprint(DT_DEBUG, "Value: %y\n", ((*slot_it)->val_const.val_value));
                     thisAgent->symbolManager->symbol_remove_ref(&((*slot_it)->val_const.val_value));
                 }
                 delete (*slot_it);

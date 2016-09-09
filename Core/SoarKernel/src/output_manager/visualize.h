@@ -47,6 +47,7 @@ class GraphViz_Visualizer
         std::string         graphviz_output;
 
         void visualize_wm();
+        void visualize_smem(uint64_t lti_id = 0, int depth = 1);
 
         bool is_viz_print_enabled() { return m_viz_print; }
         bool is_viz_launch_img_enabled() { return m_viz_launch_image; }
@@ -74,6 +75,7 @@ class GraphViz_Visualizer
         void viz_graph_start(bool pLeftRight = true);
         void viz_graph_end();
         void viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType);
+        void viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType);
         void viz_object_end(visualizationObjectType objectType);
         void viz_table_start();
         void viz_table_end();
