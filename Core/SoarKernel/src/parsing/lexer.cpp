@@ -197,6 +197,11 @@ void Lexer::lex_eof () {
 }
 
 void Lexer::lex_at () {
+    //store state
+    int old_cur_char = current_char;
+    int old_prev_char = prev_char;
+    const char* old_prod_string = production_string;
+
     read_constituent_string();
     if (current_lexeme.length()==2)
     {
@@ -211,6 +216,10 @@ void Lexer::lex_at () {
             return;
         }
     }
+
+    current_char = old_cur_char;
+    prev_char = old_prev_char;
+    production_string = old_prod_string;
 
     store_and_advance();
     current_lexeme.type = AT_LEXEME;
