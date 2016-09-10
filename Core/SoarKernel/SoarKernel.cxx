@@ -43,6 +43,7 @@
 #include "src/semantic_memory/semantic_memory.cpp"
 #include "src/semantic_memory/smem_activation.cpp"
 #include "src/semantic_memory/smem_db.cpp"
+#include "src/semantic_memory/smem_export.cpp"
 #include "src/semantic_memory/smem_install.cpp"
 #include "src/semantic_memory/smem_lti.cpp"
 #include "src/semantic_memory/smem_print.cpp"

@@ -469,6 +469,40 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
 
         return true;
     }
+    else if (pOp == 'x')
+    {
+        std::string* err = new std::string("smem_export.soar");
+        uint64_t lti_id = NIL;
+
+        std::string export_text;
+        bool result = thisAgent->SMem->export_smem(0, export_text, &(err));
+
+        if (!result)
+        {
+            SetError(*err);
+        }
+        else
+        {
+            if (!DoCLog(LOG_NEW, err, 0, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_ADD, 0, &export_text, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_CLOSE, 0, 0, true))
+            {
+                return false;
+            }
+
+            PrintCLIMessage("Exported semantic memory to file.");
+        }
+        delete err;
+        return result;
+    }
 
     return SetError("Unknown option.");
 }

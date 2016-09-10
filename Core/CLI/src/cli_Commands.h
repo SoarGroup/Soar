@@ -3700,6 +3700,7 @@ namespace cli
                     {'s', "set",        OPTARG_NONE},
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
+                    {'x', "export",     OPTARG_NONE},
                     {'v', "viz",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
@@ -3776,6 +3777,7 @@ namespace cli
                     case 'i':
                     case 'e':
                     case 'd':
+                    case 'x':
                         // case: init takes no arguments
                         if (!opt.CheckNumNonOptArgs(0, 0))
                         {

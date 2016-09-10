@@ -53,6 +53,7 @@ class SMem_Manager
         bool connected();
         bool mirroring_enabled();
         void attach();
+        bool export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg);
 
         bool parse_chunks(const char* chunks, std::string** err_msg);
         bool parse_cues(const char* chunks, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
@@ -66,6 +67,10 @@ class SMem_Manager
         smem_lti_id lti_get_id(char name_letter, uint64_t name_number);
         Symbol* lti_soar_make(smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level);
         void lti_soar_promote_STI(Symbol* id);
+        /* Methods that brings in a portion or all of smem into an ltm_set data structure */
+        void        create_store_set(smem_chunk_set* store_set, uint64_t lti_id, uint64_t depth = 1);
+        void        create_full_store_set(smem_chunk_set* store_set);
+        void        clear_store_set(smem_chunk_set* store_set);
 
         void reset(Symbol* state);
         void reset_id_counters();
