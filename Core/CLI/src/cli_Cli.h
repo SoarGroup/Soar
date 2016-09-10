@@ -563,7 +563,7 @@ namespace cli
              * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
              * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
              */
-            virtual bool DoSMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
             /**
              * @brief soarnews command

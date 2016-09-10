@@ -57,6 +57,8 @@ class SMem_Manager
         bool connected();
         void reset(Symbol* state);
         void reset_id_counters() { lti_id_counter = get_max_lti_id(); };
+        bool backup_db(const char* file_name, std::string* err);
+        bool export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg);
         void close();
 
         /* Methods for smem CLI commands*/
@@ -72,13 +74,12 @@ class SMem_Manager
         void        add_identity_to_iSTI_test(test pTest, uint64_t pI_ID);
         uint64_t    get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID);
 
-        /* Methods for saving/printing/visualizing semantic memory */
-        bool        backup_db(const char* file_name, std::string* err);
-        void        create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth);
+        /* Methods that brings in a portion or all of smem into an ltm_set data structure */
+        void        create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth = 1);
         void        create_full_store_set(ltm_set* store_set);
         void        clear_store_set(ltm_set* store_set);
-        void        visualize_store(std::string* return_val);
-        void        visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::string* return_val);
+
+        /* Methods for printing/visualizing semantic memory */
         void        print_store(std::string* return_val);
         void        print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history = false);
 
@@ -135,7 +136,7 @@ class SMem_Manager
         uint64_t        get_max_lti_id();
         double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
         double          lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0);
-        id_set          print_lti(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
+        id_set          print_LTM(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 
         /* Methods for retrieving an LTM structure to be installed in STM */
         void            add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value);

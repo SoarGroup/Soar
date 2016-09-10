@@ -169,7 +169,7 @@ namespace cli
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
             virtual bool DoSelect(const std::string* pOp = 0);
             virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
-            virtual bool DoSMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
+            virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoSoarNews();
             virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
             virtual bool DoSP(const std::string& production);

@@ -249,7 +249,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoSMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0)
+        virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0)
         {
             return false;
         }

@@ -3699,6 +3699,7 @@ namespace cli
                     {'s', "set",        OPTARG_NONE},
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
+                    {'x', "export",     OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
 
@@ -3781,6 +3782,22 @@ namespace cli
                         }
 
                         return cli.DoSMem(option);
+
+                    case 'x':
+                    {
+                        // case: export does 1-2 non-option arguments
+                        if (!opt.CheckNumNonOptArgs(1, 2))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        if (opt.GetNonOptionArguments() == 1)
+                        {
+                            return cli.DoSMem(option, &(argv[2]), 0);
+                        }
+
+                        return cli.DoSMem(option, &(argv[2]), &(argv[3]), 0);
+                    }
 
                     case 'q':
                     {

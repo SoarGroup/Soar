@@ -385,7 +385,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         {
             for (std::list<uint64_t>::const_iterator id = match_ids.begin(), end = match_ids.end(); id != end; ++id)
             {
-               print_lti((*id), 1, *result_message); //"1" is the depth.
+               print_LTM((*id), 1, *result_message); //"1" is the depth.
             }
         }
         else
@@ -444,7 +444,6 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
 
 bool SMem_Manager::CLI_remove(const char* ltms_str, std::string** err_msg, std::string** result_message, bool force)
 {
-    //TODO: need to fix so that err_msg and result_message are actually used or not passed.
     bool good_command = true;
 
     //parsing ltms requires an open semantic database
@@ -808,6 +807,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             lexer->get_lexeme();
 
             good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+//            good_at = lexer->
             if (good_at)
             {
                 // l_ltm->lti_id = lti_exists(lexer->current_lexeme.int_val);
