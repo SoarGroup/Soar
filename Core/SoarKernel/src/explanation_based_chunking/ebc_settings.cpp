@@ -31,6 +31,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
     pEBC_settings[SETTING_EBC_ALLOW_PROB] = true;
     pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
+    pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
 
     pMaxChunks = 50;
