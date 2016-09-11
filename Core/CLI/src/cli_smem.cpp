@@ -12,7 +12,11 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "sml_Names.h"
+#include "sml_AgentSML.h"
+
 #include "agent.h"
+#include "episodic_memory.h"
 #include "lexer.h"
 #include "misc.h"
 #include "semantic_memory.h"
@@ -20,8 +24,7 @@
 #include "smem_stats.h"
 #include "smem_timers.h"
 #include "slot.h"
-#include "sml_Names.h"
-#include "sml_AgentSML.h"
+#include "soar_db.h"
 
 using namespace cli;
 using namespace sml;
