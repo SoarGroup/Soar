@@ -14,8 +14,7 @@ def ConfigureJNI(env):
     if not base:
         if sys.platform == 'darwin':
             # Apple's OS X has its own special java base directory
-            base = '/System/Library/Frameworks/JavaVM.framework'
-
+            base = os.popen('/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/java_home').read().rstrip()
         else:
             # Search for the java compiler
             p = env.WhereIs('javac')
@@ -35,6 +34,7 @@ def ConfigureJNI(env):
             # JDK 7+
             headers = [os.path.join(base, 'include')]
             headers.append(os.path.join(base, 'include/darwin'))
+            print headers
             libs = [os.path.join(base, 'lib')]
     else:
         headers = [os.path.join(base, 'include')]

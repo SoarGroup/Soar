@@ -35,6 +35,8 @@
     #include "svs_interface.h"
 #endif
 #include "xml.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 
 #include <iostream>
 #include <fstream>

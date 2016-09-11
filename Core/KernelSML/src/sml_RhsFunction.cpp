@@ -16,6 +16,9 @@
 #include "sml_KernelSML.h"
 
 #include "symbol.h"
+#include "mem.h"
+#include "agent.h"
+#include "symbol_manager.h"
 
 #include <iostream>
 

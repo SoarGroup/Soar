@@ -20,6 +20,7 @@
 #include "production.h"
 #include "symbol.h"
 #include "rete.h"
+#include "symbol_manager.h"
 
 using namespace cli;
 using namespace sml;

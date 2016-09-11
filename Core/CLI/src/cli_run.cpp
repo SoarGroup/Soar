@@ -20,6 +20,7 @@
 
 #include "misc.h"
 #include "agent.h"
+#include "symbol.h"
 
 using namespace cli;
 using namespace sml;

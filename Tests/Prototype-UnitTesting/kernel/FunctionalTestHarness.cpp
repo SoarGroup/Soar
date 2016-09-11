@@ -12,6 +12,7 @@
 
 #include "sml_EmbeddedConnectionSynch.h"
 #include "sml_AgentSML.h"
+#include "symbol_manager.h"
 
 FunctionalTestHarness::FunctionalTestHarness()
 : haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),
@@ -182,7 +183,7 @@ Symbol* FunctionalTestHarness::succeededHandler()
 void FunctionalTestHarness::installRHS()
 {
 	// set up the agent with common RHS functions
-	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
+	::rhs_function* halt_function = lookup_rhs_function(internal_agent, internal_agent->symbolManager->make_str_constant("halt"));
 	halt_routine = halt_function->f;
 	
 	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
@@ -193,13 +194,13 @@ void FunctionalTestHarness::installRHS()
 	halt_function->f = call_routine;
 	
 	add_rhs_function(internal_agent,
-					 make_str_constant(internal_agent, "failed"),
+					 internal_agent->symbolManager->make_str_constant("failed"),
 					 call_routine,
 					 0, false, true,
 					 &failedData);
 	
 	add_rhs_function(internal_agent,
-					 make_str_constant(internal_agent, "succeeded"),
+					 internal_agent->symbolManager->make_str_constant("succeeded"),
 					 call_routine,
 					 0, false, true,
 					 &succeededData);
@@ -207,10 +208,10 @@ void FunctionalTestHarness::installRHS()
 
 void FunctionalTestHarness::removeRHS()
 {
-	remove_rhs_function(internal_agent, find_str_constant(internal_agent, "failed"));
-	remove_rhs_function(internal_agent, find_str_constant(internal_agent, "succeeded"));
+	remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("failed"));
+	remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("succeeded"));
 	
-	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
+	::rhs_function* halt_function = lookup_rhs_function(internal_agent, internal_agent->symbolManager->make_str_constant("halt"));
 	
 	halt_function->user_data = NULL;
 	halt_function->f = halt_routine;

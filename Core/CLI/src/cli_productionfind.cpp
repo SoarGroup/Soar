@@ -25,6 +25,8 @@
 #include "rhs.h"
 #include "test.h"
 #include "condition.h"
+#include "symbol.h"
+#include "production.h"
 
 using namespace cli;
 using namespace sml;

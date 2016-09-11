@@ -29,6 +29,10 @@
 #include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "production.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "soar_module.h"
 
 using namespace cli;
 using namespace sml;

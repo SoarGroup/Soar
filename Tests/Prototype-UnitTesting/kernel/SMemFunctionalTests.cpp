@@ -10,6 +10,7 @@
 
 #include "SoarHelper.hpp"
 
+#include "symbol_manager.h"
 #include "working_memory.h"
 
 void SMemFunctionalTests::testSimpleCueBasedRetrieval()

@@ -26,6 +26,7 @@
 #include "symbol.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "symbol_manager.h"
 
 using namespace cli;
 using namespace sml;

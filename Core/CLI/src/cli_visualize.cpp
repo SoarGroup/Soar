@@ -22,6 +22,8 @@
 #include "sml_Utils.h"
 #include "print.h"
 #include "visualize.h"
+#include "episodic_memory.h"
+#include "semantic_memory.h"
 
 #include <string>
 

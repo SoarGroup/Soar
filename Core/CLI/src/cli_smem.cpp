@@ -22,6 +22,8 @@
 #include "slot.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
+#include "soar_db.h"
+#include "episodic_memory.h"
 
 using namespace cli;
 using namespace sml;

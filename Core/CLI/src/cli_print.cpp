@@ -27,6 +27,10 @@
 #include "trace.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "production.h"
+#include "reinforcement_learning.h"
 
 using namespace cli;
 using namespace sml;

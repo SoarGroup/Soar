@@ -24,6 +24,7 @@
 #include "symbol.h"
 #include "production.h"
 #include "agent.h"
+#include "symbol_manager.h"
 
 using namespace cli;
 using namespace sml;
