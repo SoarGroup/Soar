@@ -321,7 +321,7 @@ void reset_statistics(agent* thisAgent)
 
     thisAgent->WM->wma_timers->reset();
     thisAgent->EpMem->epmem_timers->reset();
-    thisAgent->SMem->smem_timers->reset();
+    thisAgent->SMem->timers->reset();
 
     thisAgent->WM->wma_d_cycle_count = 0;
 }
@@ -1037,7 +1037,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
                 thisAgent->total_dc_epmem_time_sec = total_epmem_time;
 
-                double total_smem_time = thisAgent->SMem->smem_timers->total->value();
+                double total_smem_time = thisAgent->SMem->timers->total->value();
                 if (thisAgent->total_dc_smem_time_sec >= 0)
                 {
                     double delta_smem_time = total_smem_time - thisAgent->total_dc_smem_time_sec;
@@ -1585,7 +1585,7 @@ void init_agent_memory(agent* thisAgent)
 
     thisAgent->WM->wma_timers->reset();
     thisAgent->EpMem->epmem_timers->reset();
-    thisAgent->SMem->smem_timers->reset();
+    thisAgent->SMem->timers->reset();
 
     // This is an important part of the state of the agent for io purposes
     // (see io.cpp for details)

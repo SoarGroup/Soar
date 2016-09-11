@@ -22,6 +22,7 @@
 #include "ebc.h"
 #include "mem.h"
 #include "output_manager.h"
+#include "preference.h"
 #include "print.h"
 #include "production.h"
 #include "repair.h"
@@ -139,8 +140,8 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        dprint(DT_REORDERER, "...marking vars and LTIs in %a\n", a);
-        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars, true);
+        dprint(DT_REORDERER, "...marking vars in %a\n", a);
+        add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
     if (remaining_actions)
@@ -161,7 +162,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 assert(ungrounded_syms && lSym);
                 symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                 lNewUngroundedSym->sym = lSym;
-                if (lSym->is_identifier())
+                if (lSym->is_sti())
                 {
                     lNewUngroundedSym->matched_sym = lSym;
                 } else {
@@ -206,7 +207,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     return result_flag;
 }
 
-bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
+bool all_vars_in_rhs_value_bound(rhs_value rv, tc_number tc)
 {
     cons* c;
     list* fl;
@@ -217,7 +218,7 @@ bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
         /* --- function calls --- */
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
-            if (! all_vars_LTIs_in_rhs_value_bound(static_cast<char*>(c->first), tc))
+            if (! all_vars_in_rhs_value_bound(static_cast<char*>(c->first), tc))
             {
                 return false;
             }
@@ -227,7 +228,7 @@ bool all_vars_LTIs_in_rhs_value_bound(rhs_value rv, tc_number tc)
     {
         /* --- ordinary (symbol) rhs values --- */
         sym = rhs_value_to_symbol(rv);
-        if (sym->is_variable() || sym->is_lti())
+        if (sym->is_variable())
         {
             return (sym->tc_num == tc);
         }
@@ -239,30 +240,30 @@ bool legal_to_execute_action(action* a, tc_number tc)
 {
     if (a->type == MAKE_ACTION)
     {
-        if (! all_vars_LTIs_in_rhs_value_bound(a->id, tc))
+        if (! all_vars_in_rhs_value_bound(a->id, tc))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->attr) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->attr, tc)))
+                (! all_vars_in_rhs_value_bound(a->attr, tc)))
         {
             return false;
         }
         if (rhs_value_is_funcall(a->value) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->value, tc)))
+                (! all_vars_in_rhs_value_bound(a->value, tc)))
         {
             return false;
         }
         if (preference_is_binary(a->preference_type) &&
                 rhs_value_is_funcall(a->referent) &&
-                (! all_vars_LTIs_in_rhs_value_bound(a->referent, tc)))
+                (! all_vars_in_rhs_value_bound(a->referent, tc)))
         {
             return false;
         }
         return true;
     }
     /* --- otherwise it's a function call; make sure args are all bound  --- */
-    return all_vars_LTIs_in_rhs_value_bound(a->value, tc);
+    return all_vars_in_rhs_value_bound(a->value, tc);
 }
 
 /* =====================================================================
@@ -366,7 +367,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             {
                 next_c = c->rest;
                 subtest = static_cast<test>(c->first);
-                if (subtest->type != EQUALITY_TEST)
+                if ((subtest->type != EQUALITY_TEST) && (subtest->type != SMEM_LINK_UNARY_TEST) && (subtest->type != SMEM_LINK_UNARY_NOT_TEST))
                 {
                     /* -- create saved_test, splice this cons out of conjunct_list -- */
                     thisAgent->memoryManager->allocate_with_pool(MP_saved_test, &saved);
@@ -469,7 +470,10 @@ TestType reverse_direction_of_relational_test(agent* thisAgent, byte type)
     switch (type)
     {
         case NOT_EQUAL_TEST:
-            return NOT_EQUAL_TEST;
+        case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
+            return static_cast<TestType>(type);
         case LESS_TEST:
             return GREATER_TEST;
         case GREATER_TEST:
@@ -478,8 +482,6 @@ TestType reverse_direction_of_relational_test(agent* thisAgent, byte type)
             return GREATER_OR_EQUAL_TEST;
         case GREATER_OR_EQUAL_TEST:
             return LESS_OR_EQUAL_TEST;
-        case SAME_TYPE_TEST:
-            return SAME_TYPE_TEST;
         default:
         {
             char msg[BUFFER_MSG_SIZE];
@@ -647,7 +649,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     }
 
-    dprint_header(DT_REORDERER, PrintBefore, "Final Conditons:\n");
+    dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
@@ -657,9 +659,9 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "\nWarning:  in production %s,\n",
-                  thisAgent->name_of_production_being_reordered);
-            print(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
+            print(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
+            dprint_saved_test_list(DT_DEBUG, tests_to_restore);
+            // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
             // TODO: XML tagged output -- how to create this string?
@@ -667,9 +669,8 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
             // XML generation
             growable_string gs = make_blank_growable_string(thisAgent);
-            add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
+            add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
             add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-            add_to_growable_string(thisAgent, &gs, "\n      ignoring test(s) whose referent is unbound:");
             //TODO: fill in XML print_saved_test_list. Possibile methods include:
             //   1) write a version which adds to a growable string
             //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
@@ -722,6 +723,8 @@ list* collect_vars_tested_by_test_that_are_bound(agent* thisAgent, test t,
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             break;
         case CONJUNCTIVE_TEST:
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -785,8 +788,9 @@ void fill_in_vars_requiring_bindings(agent* thisAgent, condition* cond_list, tc_
     for (c = cond_list; c != NIL; c = c->next)
     {
         if (c->type != POSITIVE_CONDITION)
-            c->reorder.vars_requiring_bindings =
-                collect_vars_tested_by_cond_that_are_bound(thisAgent, c, tc, NIL);
+        {
+            c->reorder.vars_requiring_bindings =  collect_vars_tested_by_cond_that_are_bound(thisAgent, c, tc, NIL);
+        }
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
             fill_in_vars_requiring_bindings(thisAgent, c->data.ncc.top, tc);
@@ -860,7 +864,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot, false);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
     /* --- now see what else we can add by throwing in the id slot --- */
@@ -877,7 +881,7 @@ list* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
-            add_bound_variables_in_test_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot, false);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
 
@@ -1387,6 +1391,8 @@ bool test_tests_for_root(test t, list* roots)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
         case DISJUNCTION_TEST:
             return false;
             break;
@@ -1458,6 +1464,8 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
         case EQUALITY_TEST:
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
         case DISJUNCTION_TEST:
             break;
 
@@ -1476,7 +1484,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
             {
                 if (t->data.referent->tc_num != tc)
                 {
-                    print(thisAgent,
+                    thisAgent->outputManager->printa_sf(thisAgent,
                           "Error: production %s has an unbound referent in negated relational test %t.\n",
                           thisAgent->name_of_production_being_reordered, t);
                     return false;

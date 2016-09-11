@@ -137,6 +137,8 @@ sp {apply*inc*done
 -->
    (write (crlf) |done: a=| <m> |, v=| <m> (crlf))
    #(write (cmd smem -p))
+   (write |Success!| (crlf))
+   (exec succeeded)
    (halt)
 }
 

@@ -11,19 +11,24 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
-#include "agent.h"
-#include "decide.h"
-
-#include "lexer.h"
-#include "memory_manager.h"
-#include "output_manager.h"
-#include "print.h"
-#include "rhs.h"
-#include "slot.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
 #include "sml_Utils.h"
+
+#include "agent.h"
+#include "decide.h"
+#include "lexer.h"
+#include "memory_manager.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "reinforcement_learning.h"
+#include "rhs.h"
+#include "semantic_memory.h"
+#include "slot.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "trace.h"
 #include "working_memory.h"
 #include "xml.h"
@@ -231,7 +236,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return;
     }
@@ -392,7 +397,7 @@ void mark_depths_augs_of_id(agent* thisAgent, Symbol* id, int depth, tc_number t
     Then we go through the list again and copy all the pointers to that array.
     Then we qsort the array and print it out.  94.12.13 */
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return;
     }
@@ -599,7 +604,37 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     switch (lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
-            do_print_for_production_name(thisAgent, &lexeme, arg, intern, print_filename, full_prod);
+            if (lexeme.string()[0] == '@')
+            {
+                uint64_t lLti_id = 0;
+                if (lexeme.string()[1] != '\0')
+                {
+                    lLti_id = strtol (&(lexeme.string()[1]),NULL,10);
+                    if (lLti_id)
+                    {
+                        lLti_id = thisAgent->SMem->lti_exists(lLti_id);
+                        if (lLti_id == NIL)
+                        {
+                            print(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
+                            break;
+                        }
+                    }
+                }
+                thisAgent->SMem->attach();
+                std::string smem_print_output;
+
+                if (lLti_id == NIL)
+                {
+                    thisAgent->SMem->print_store(&(smem_print_output));
+                }
+                else
+                {
+                    thisAgent->SMem->print_smem_object(lLti_id, depth, &(smem_print_output));
+                }
+                print(thisAgent, smem_print_output.c_str());
+            } else {
+                do_print_for_production_name(thisAgent, &lexeme, arg, intern, print_filename, full_prod);
+            }
             break;
 
         case INT_CONSTANT_LEXEME:

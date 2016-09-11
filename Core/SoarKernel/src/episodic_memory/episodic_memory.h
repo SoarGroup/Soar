@@ -287,6 +287,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 {
     public:
         soar_module::sqlite_statement* add_node;
+        soar_module::sqlite_statement* update_node;
         soar_module::sqlite_statement* add_time;
 
         //
@@ -319,12 +320,11 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
         soar_module::sqlite_statement* get_wmes_with_identifier_values;
         soar_module::sqlite_statement* get_wmes_with_constant_values;
 
-        //
-
-        soar_module::sqlite_statement* promote_id;
-        soar_module::sqlite_statement* find_lti;
-        soar_module::sqlite_statement* find_lti_promotion_time;
-
+//        //
+//
+//        soar_module::sqlite_statement* find_lti;
+//        soar_module::sqlite_statement* find_lti_promotion_time;
+//
         //
 
         soar_module::sqlite_statement* update_epmem_wmes_identifier_last_episode_id;
@@ -333,7 +333,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
         soar_module::sqlite_statement_pool* pool_find_edge_queries[2][2];
         soar_module::sqlite_statement_pool* pool_find_interval_queries[2][2][3];
-        soar_module::sqlite_statement_pool* pool_find_lti_queries[2][3];
+//        soar_module::sqlite_statement_pool* pool_find_lti_queries[2][3];
         soar_module::sqlite_statement_pool* pool_dummy;
 
         //
@@ -398,6 +398,12 @@ typedef struct epmem_data_struct
 
     epmem_time_id last_memory;                              // last retrieved memory
 
+    Symbol* epmem_header;
+    Symbol* epmem_cmd_header;
+    Symbol* epmem_result_header;
+
+    struct wme_struct* epmem_time_wme;
+
     epmem_wme_stack* epmem_wmes;                            // preferences generated in last epmem
 } epmem_data;
 
@@ -441,13 +447,11 @@ typedef struct epmem_id_reservation_struct
 typedef struct epmem_edge_struct
 {
 
-    epmem_node_id parent_n_id;                          // id
-    Symbol* attribute;                          // attr
-    epmem_node_id child_n_id;                           // value
+    epmem_node_id   parent_n_id;
+    Symbol*         attribute;
+    epmem_node_id   child_n_id;
 
-    bool val_is_short_term;
-    char val_letter;
-    uint64_t val_num;
+    uint64_t        child_lti_id;
 
 } epmem_edge;
 
@@ -474,7 +478,6 @@ extern void epmem_clear_transient_structures(agent* thisAgent);
 // perform epmem actions
 extern void epmem_go(agent* thisAgent, bool allow_store = true);
 extern bool epmem_backup_db(agent* thisAgent, const char* file_name, std::string* err);
-extern void epmem_schedule_promotion(agent* thisAgent, Symbol* id);
 extern void epmem_init_db(agent* thisAgent, bool readonly = false);
 // visualization
 extern void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::string* buf);
@@ -646,7 +649,6 @@ class EpMem_Manager
         epmem_common_statement_container* epmem_stmts_common;
         epmem_graph_statement_container* epmem_stmts_graph;
 
-
         epmem_id_removal_map* epmem_node_removals;
         std::vector<epmem_time_id>* epmem_node_mins;
         std::vector<bool>* epmem_node_maxes;
@@ -661,7 +663,6 @@ class EpMem_Manager
         epmem_symbol_stack* epmem_id_removes;
 
         epmem_symbol_set* epmem_wme_adds;
-        epmem_symbol_set* epmem_promotions;
 
         epmem_rit_state epmem_rit_state_graph[2];
 

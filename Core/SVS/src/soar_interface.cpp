@@ -92,7 +92,7 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
     slot* s;
     wme* w;
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return false;
     }
@@ -154,7 +154,7 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
     wme* w1;
     string a;
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return false;
     }

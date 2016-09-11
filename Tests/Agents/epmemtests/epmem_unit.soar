@@ -65,6 +65,7 @@ sp {apply*test*fail
 -->
     (<s> ^test-status fail)
     (<stats> ^test <test>)
+    (interrupt)
 }
 
 sp {apply*test*finish

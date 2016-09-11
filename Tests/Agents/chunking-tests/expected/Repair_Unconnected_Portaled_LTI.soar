@@ -1,9 +1,0 @@
-sp {answer*make-chunk*OpNoChange*t2-1
-    (state <s2> ^foo <t1>)
-    (<t1> ^foo bar)
-    (<s2> ^state-info <i1>)
-    (<i1> ^level 1)
-    (<i1> ^top-state <s1>)
-    -->
-    (<s1> ^result true +)
-}

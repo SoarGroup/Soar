@@ -15,9 +15,11 @@
 
 #include "agent.h"
 #include "debug.h"
+#include "episodic_memory.h"
 #include "misc.h"
 #include "output_manager.h"
 #include "output_settings.h"
+#include "semantic_memory.h"
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 #include "soar_instance.h"
@@ -174,11 +176,11 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             std::string table_name = argv->at(2);
             if (database_name[0] == 'e')
             {
-                debug_print_epmem_table(table_name.c_str());
+                thisAgent->EpMem->epmem_db->print_table(table_name.c_str());
             }
             else if (database_name[0] == 's')
             {
-                debug_print_smem_table(table_name.c_str());
+                thisAgent->SMem->DB->print_table(table_name.c_str());
             }
             else
             {
@@ -200,17 +202,10 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     }
     else if (numArgs == 0)
     {
-        if (sub_command[0] == 'd')
-        {
-            debug_print_db_err();
-        }
-        else
-        {
-            tempString.str("");
-            tempString << "Debug| Invalid command: " << sub_command << ".";
-            SetError(tempString.str().c_str());
-            goto print_syntax;
-        }
+        tempString.str("");
+        tempString << "Debug| Invalid command: " << sub_command << ".";
+        SetError(tempString.str().c_str());
+        goto print_syntax;
 
         return result;
     }

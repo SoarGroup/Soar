@@ -95,8 +95,8 @@ typedef struct predefined_sym_struct {
         Symbol*             epmem_sym_before;
         Symbol*             epmem_sym_after;
         Symbol*             epmem_sym_prohibit;
-        Symbol*             epmem_sym_yes;
-        Symbol*             epmem_sym_no;
+        Symbol*             yes;
+        Symbol*             no;
 
         Symbol*             smem_sym;
         Symbol*             smem_sym_cmd;
@@ -116,6 +116,8 @@ typedef struct predefined_sym_struct {
         Symbol*             smem_sym_store;
         Symbol*             smem_sym_math_query;
         Symbol*             smem_sym_depth;
+        Symbol*             smem_sym_store_new;
+        Symbol*             smem_sym_overwrite;;
 
         Symbol*             smem_sym_math_query_less;
         Symbol*             smem_sym_math_query_greater;

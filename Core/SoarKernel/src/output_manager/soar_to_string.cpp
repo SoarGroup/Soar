@@ -34,7 +34,7 @@ bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destSt
     assert(thisAgent && w);
 
     sprinta_sf(thisAgent, destString, "(t%u(r%u): %y(l%d) ^%y %y(l%d)%s",
-        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_identifier() ? w->value->id->level : 0,
+        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_sti() ? w->value->id->level : 0,
         (w->acceptable ? " +)" : ")"));
 
     /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
@@ -57,42 +57,54 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
     return;
 }
 
-const char* Output_Manager::test_type_to_string_brief(byte test_type)
+const char* Output_Manager::test_type_to_string(byte test_type)
 {
     switch (test_type)
     {
+        case EQUALITY_TEST:
+            return "=";
+            break;
         case NOT_EQUAL_TEST:
-            return "<> ";
+            return "<>";
             break;
         case LESS_TEST:
-            return "< ";
+            return "<";
             break;
         case GREATER_TEST:
-            return "> ";
+            return ">";
             break;
         case LESS_OR_EQUAL_TEST:
-            return "<= ";
+            return "<=";
             break;
         case GREATER_OR_EQUAL_TEST:
-            return ">= ";
+            return ">=";
+            break;
+        case SMEM_LINK_TEST:
+            return "@";
+            break;
+        case SMEM_LINK_UNARY_TEST:
+            return "@+";
+            break;
+        case SMEM_LINK_NOT_TEST:
+            return "!@";
+            break;
+        case SMEM_LINK_UNARY_NOT_TEST:
+            return "@-";
+            break;
+        case GOAL_ID_TEST:
+            return "state";
+            break;
+        case IMPASSE_ID_TEST:
+            return "impasse";
             break;
         case SAME_TYPE_TEST:
-            return "<=> ";
+            return "<=>";
             break;
         case CONJUNCTIVE_TEST:
             return "{ }";
             break;
-        case GOAL_ID_TEST:
-            return "IS_G_ID ";
-            break;
-        case IMPASSE_ID_TEST:
-            return "IS_IMPASSE ";
-            break;
-        case EQUALITY_TEST:
-            return "= ";
-            break;
     }
-    return "UNDEFINED TEST TYPE";
+    return "?-test";
 }
 
 void Output_Manager::test_to_string(test t, std::string &destString, bool show_equality)
@@ -100,55 +112,63 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
     cons* c;
     if (!t)
     {
-        destString += "[BLANK TEST]";
+        destString += "{empty test}";
 
         return;
     }
 
-    if (t->type == EQUALITY_TEST)
+    switch (t->type)
     {
-        if (show_equality)
-        {
-            destString += test_type_to_string_brief(t->type);
-        }
-        destString += t->data.referent->to_string(false);
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        destString += "{ ";
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
+        case EQUALITY_TEST:
+            if (show_equality)
+            {
+                destString += test_type_to_string(t->type);
+            }
+            destString += t->data.referent->to_string(false);
+            break;
+        case CONJUNCTIVE_TEST:
+            destString += "{ ";
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
 
-            this->test_to_string(static_cast<test>(c->first), destString, show_equality);
+                this->test_to_string(static_cast<test>(c->first), destString, show_equality);
+                destString += ' ';
+            }
+            destString += '}';
+            break;
+        case NOT_EQUAL_TEST:
+        case LESS_TEST:
+        case GREATER_TEST:
+        case LESS_OR_EQUAL_TEST:
+        case GREATER_OR_EQUAL_TEST:
+        case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
+            destString += test_type_to_string(t->type);
             destString += ' ';
-        }
-        destString += '}';
+            destString += t->data.referent->to_string(false);
+            break;
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+            destString += test_type_to_string(t->type);
+            break;
+        case DISJUNCTION_TEST:
+            destString += "<< ";
+            for (c = t->data.disjunction_list; c != NIL; c = c->rest)
+            {
+                destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+                destString += ' ';
+            }
+            destString += ">>";
+            break;
+        default:
+            destString += "{INVALID TEST!}";
+            assert(false);
+            break;
     }
-    else if (test_has_referent(t))
-    {
-        destString += test_type_to_string_brief(t->type);
-        destString += t->data.referent->to_string(false);
-    }
-    else if (t->type == DISJUNCTION_TEST)
-    {
-        destString += "<< ";
-        for (c = t->data.disjunction_list; c != NIL; c = c->rest)
-        {
-            destString += static_cast<symbol_struct*>(c->first)->to_string(false);
-            destString += ' ';
-        }
-        destString += ">>";
-    }
-    else if (t->type == GOAL_ID_TEST)
-    {
-        destString += "state";
-    }
-    else if (t->type == IMPASSE_ID_TEST)
-    {
-        destString += "impasse";
-    } else {
-        destString += "[INVALID TEST!!!]";
-    }
+
     return;
 }
 
@@ -708,191 +728,3 @@ void Output_Manager::print_variables(TraceMode mode)
     do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->variable_hash_table, om_print_sym, &mode);
 }
 
-void debug_print_db_err(TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-    if (!thisAgent) return;
-
-    print_sysparam_trace(thisAgent, 0, "Debug| Printing database status/errors...\n");
-//  if (thisAgent->debug_params->epmem_commands->get_value() == on)
-//  {
-//    if (!db_err_epmem_db)
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access epmem database because wmg not yet initialized.\n");
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| EpMem DB: %d - %s\n", sqlite3_errcode( db_err_epmem_db->get_db() ),
-//          sqlite3_errmsg( db_err_epmem_db->get_db() ));
-//    }
-//  }
-//  if (thisAgent->debug_params->smem_commands->get_value() == on)
-//  {
-//    if (!db_err_smem_db)
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access smem database because wmg not yet initialized.\n");
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| SMem DB: %d - %s\n", sqlite3_errcode( db_err_smem_db->get_db() ),
-//          sqlite3_errmsg( db_err_smem_db->get_db() ));
-//    }
-//  }
-}
-
-void debug_print_epmem_table(const char* table_name, TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-//    if (!thisAgent) return;
-
-//  if (!db_err_epmem_db)
-//  {
-//    if ((thisAgent->epmem_db) && ( thisAgent->epmem_db->get_status() == soar_module::connected ))
-//    {
-//      db_err_epmem_db = m_defaultAgent->epmem_db;
-//      thisAgent->debug_params->epmem_commands->set_value(on);
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access epmem database because database not yet initialized.\n");
-//      return;
-//    }
-//  }
-//
-//  db_err_epmem_db->print_table(table_name);
-}
-
-void debug_print_smem_table(const char* table_name, TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-//    if (!thisAgent) return;
-
-//  if (!db_err_smem_db)
-//  {
-//    if (thisAgent->smem_db && ( thisAgent->smem_db->get_status() == soar_module::connected ))
-//    {
-//      db_err_smem_db = m_defaultAgent->smem_db;
-//      thisAgent->debug_params->smem_commands->set_value(on);
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access smem database because database not yet initialized.\n");
-//      return;
-//    }
-//  }
-//  db_err_smem_db->print_table(table_name);
-}
-
-void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
-{
-    std::string lex_type_string;
-
-    if (!is_debug_mode_enabled(mode)) return;
-
-    switch (lexer->current_lexeme.type)
-    {
-        case EOF_LEXEME:
-            lex_type_string = "EOF_LEXEME";
-            break;
-        case IDENTIFIER_LEXEME:
-            lex_type_string = "IDENTIFIER_LEXEME";
-            break;
-        case VARIABLE_LEXEME:
-            lex_type_string = "VARIABLE_LEXEME";
-            break;
-        case STR_CONSTANT_LEXEME:
-            lex_type_string = "STR_CONSTANT_LEXEME";
-            break;
-        case INT_CONSTANT_LEXEME:
-            lex_type_string = "INT_CONSTANT_LEXEME";
-            break;
-        case FLOAT_CONSTANT_LEXEME:
-            lex_type_string = "FLOAT_CONSTANT_LEXEME";
-            break;
-        case L_PAREN_LEXEME:
-            lex_type_string = "L_PAREN_LEXEME";
-            break;
-        case R_PAREN_LEXEME:
-            lex_type_string = "R_PAREN_LEXEME";
-            break;
-        case L_BRACE_LEXEME:
-            lex_type_string = "L_BRACE_LEXEME";
-            break;
-        case R_BRACE_LEXEME:
-            lex_type_string = "R_BRACE_LEXEME";
-            break;
-        case PLUS_LEXEME:
-            lex_type_string = "PLUS_LEXEME";
-            break;
-        case MINUS_LEXEME:
-            lex_type_string = "MINUS_LEXEME";
-            break;
-        case RIGHT_ARROW_LEXEME:
-            lex_type_string = "RIGHT_ARROW_LEXEME";
-            break;
-        case GREATER_LEXEME:
-            lex_type_string = "GREATER_LEXEME";
-            break;
-        case LESS_LEXEME:
-            lex_type_string = "LESS_LEXEME";
-            break;
-        case EQUAL_LEXEME:
-            lex_type_string = "EQUAL_LEXEME";
-            break;
-        case LESS_EQUAL_LEXEME:
-            lex_type_string = "LESS_EQUAL_LEXEME";
-            break;
-        case GREATER_EQUAL_LEXEME:
-            lex_type_string = "GREATER_EQUAL_LEXEME";
-            break;
-        case NOT_EQUAL_LEXEME:
-            lex_type_string = "NOT_EQUAL_LEXEME";
-            break;
-        case LESS_EQUAL_GREATER_LEXEME:
-            lex_type_string = "LESS_EQUAL_GREATER_LEXEME";
-            break;
-        case LESS_LESS_LEXEME:
-            lex_type_string = "LESS_LESS_LEXEME";
-            break;
-        case GREATER_GREATER_LEXEME:
-            lex_type_string = "GREATER_GREATER_LEXEME";
-            break;
-        case AMPERSAND_LEXEME:
-            lex_type_string = "AMPERSAND_LEXEME";
-            break;
-        case AT_LEXEME:
-            lex_type_string = "AT_LEXEME";
-            break;
-        case TILDE_LEXEME:
-            lex_type_string = "TILDE_LEXEME";
-            break;
-        case UP_ARROW_LEXEME:
-            lex_type_string = "UP_ARROW_LEXEME";
-            break;
-        case EXCLAMATION_POINT_LEXEME:
-            lex_type_string = "EXCLAMATION_POINT_LEXEME";
-            break;
-        case COMMA_LEXEME:
-            lex_type_string = "COMMA_LEXEME";
-            break;
-        case PERIOD_LEXEME:
-            lex_type_string = "PERIOD_LEXEME";
-            break;
-        case QUOTED_STRING_LEXEME:
-            lex_type_string = "QUOTED_STRING_LEXEME";
-            break;
-        case DOLLAR_STRING_LEXEME:
-            lex_type_string = "DOLLAR_STRING_LEXEME";
-            break;
-        case NULL_LEXEME:
-            lex_type_string = "NULL_LEXEME";
-            break;
-        default:
-            break;
-    }
-    print_sf( "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string());
-
-}

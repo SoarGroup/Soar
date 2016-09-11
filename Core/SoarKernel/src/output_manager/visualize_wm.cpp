@@ -76,7 +76,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
             lAug = (*it2);
-            if (lAug->value->is_identifier() && (lAug->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol))
+            if (lAug->value->is_sti() && (lAug->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
@@ -127,5 +127,4 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         }
     }
-
 }

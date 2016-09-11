@@ -304,11 +304,6 @@ void OM_DB::init_db()
     // attempt connection
     m_Debug_DB->connect(db_path);
 
-#ifdef DEBUG_EPMEM_SQL
-    sqlite3_profile(m_Debug_DB->get_db(), &profile_sql, NULL);
-    sqlite3_trace(m_Debug_DB->get_db(), trace_sql, NULL);
-#endif
-
     if (m_Debug_DB->get_status() == soar_module::problem)
     {
         m_OM->print_sf("Database Error: %s\n", m_Debug_DB->get_errmsg());

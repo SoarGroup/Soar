@@ -17,6 +17,7 @@
 #include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
+#include "preference.h"
 #include "print.h"
 #include "production_reorder.h"
 #include "rete.h"
@@ -143,32 +144,25 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 
 ===================================================================== */
 
-void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                      list** var_list, bool add_LTIs)
+void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
 {
-    if (c->type != POSITIVE_CONDITION)
-    {
-        return;
-    }
-    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list, add_LTIs);
-    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list, add_LTIs);
-    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list, add_LTIs);
+    if (c->type != POSITIVE_CONDITION)  return;
+    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list);
+    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list);
+    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list);
 }
 
-void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list, bool add_LTIs = false)
+void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
 {
     condition* c;
 
     for (c = cond_list; c != NIL; c = c->next)
     {
-        add_bound_variables_in_condition(thisAgent, c, tc, var_list, add_LTIs);
+        add_bound_variables_in_condition(thisAgent, c, tc, var_list);
     }
 }
 
-void add_all_variables_in_condition(agent* thisAgent,
-                                    condition* c, tc_number tc,
-                                    list** var_list)
+void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
 {
     if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -182,8 +176,7 @@ void add_all_variables_in_condition(agent* thisAgent,
     }
 }
 
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list)
+void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
 {
     condition* c;
 
@@ -222,8 +215,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
-                      list** id_list, list** var_list)
+void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, list** id_list, list** var_list)
 {
     if ((sym->symbol_type == VARIABLE_SYMBOL_TYPE) || (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE))
     {
@@ -231,15 +223,11 @@ void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
     }
 }
 
-void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
-                    list** id_list, list** var_list)
+void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  list** id_list, list** var_list)
 {
     cons* c;
 
-    if (!t)
-    {
-        return;
-    }
+    if (!t) return;
     add_symbol_to_tc(thisAgent, t->eq_test->data.referent, tc, id_list, var_list);
 
 }
@@ -257,10 +245,8 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
                       list** id_list, list** var_list)
 {
-    if (a->type != MAKE_ACTION)
-    {
-        return;
-    }
+    if (a->type != MAKE_ACTION) return;
+
     add_symbol_to_tc(thisAgent, rhs_value_to_symbol(a->id), tc, id_list, var_list);
     if (rhs_value_is_symbol(a->value))
     {
@@ -372,10 +358,17 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
     thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
-    add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
+    add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
     {
+        /* If there are problems on the LHS, we need the ungrounded_syms
+         * from them, before we return.  So we call, reorder_lhs too.
+         * Note ungrounded_syms is null when not called for a chunk. */
+        if (ungrounded_syms)
+        {
+            reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
+        }
         return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))

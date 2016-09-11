@@ -51,14 +51,14 @@
 
 #include "smem_math_query.h"
 
-smem_wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
+wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 {
     slot* s;
     wme* w;
-    smem_wme_list* return_val = new smem_wme_list;
+    wme_list* return_val = new wme_list;
 
     // augs only exist for identifiers
-    if (id->is_identifier())
+    if (id->is_sti())
     {
         if (tc != NIL)
         {
@@ -105,7 +105,7 @@ smem_wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 
 void SMem_Manager::go(bool store_only)
 {
-    thisAgent->SMem->smem_timers->total->start();
+    thisAgent->SMem->timers->total->start();
 
 #ifndef SMEM_EXPERIMENT
 
@@ -115,7 +115,7 @@ void SMem_Manager::go(bool store_only)
 
 #endif // SMEM_EXPERIMENT
 
-    thisAgent->SMem->smem_timers->total->stop();
+    thisAgent->SMem->timers->total->stop();
 }
 
 void SMem_Manager::respond_to_cmd(bool store_only)
@@ -127,9 +127,9 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     // (could go in the opposite direction as well)
     Symbol* state = thisAgent->bottom_goal;
 
-    smem_wme_list* wmes;
-    smem_wme_list* cmds;
-    smem_wme_list::iterator w_p;
+    wme_list* wmes;
+    wme_list* cmds;
+    wme_list::iterator w_p;
 
     symbol_triple_list meta_wmes;
     symbol_triple_list retrieval_wmes;
@@ -140,10 +140,11 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* retrieve;
     Symbol* math;
     uint64_t depth;
-    smem_sym_list prohibit;
-    smem_sym_list store;
+    bool update_LTI_Links = false;
+    symbol_list prohibit;
+    symbol_list store;
 
-    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store } path;
+    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store_new, cmd_store } path;
 
     unsigned int time_slot = ((store_only) ? (1) : (0));
     uint64_t wme_count;
@@ -158,7 +159,6 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     std::queue<int> levels;
 
     bool do_wm_phase = false;
-    bool mirroring_on = (thisAgent->SMem->smem_params->mirroring->get_value() == on);
 
     //Free this up as soon as we start a phase that allows queries
     if(!store_only){
@@ -169,7 +169,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     while (state != NULL)
     {
         ////////////////////////////////////////////////////////////////////////////
-        thisAgent->SMem->smem_timers->api->start();
+        thisAgent->SMem->timers->api->start();
         ////////////////////////////////////////////////////////////////////////////
 
         // make sure this state has had some sort of change to the cmd
@@ -181,7 +181,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             tc = get_new_tc_number(thisAgent);
 
             // initialize BFS at command
-            syms.push(state->id->smem_cmd_header);
+            syms.push(state->id->smem_info->cmd_wme->value); // smem_cmd_header
             levels.push(0);
 
             while (!syms.empty())
@@ -321,7 +321,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                                 ((path == blank_slate) || (path == cmd_query)) &&
-                                ((*w_p)->value->id->smem_lti != NIL))
+                                ((*w_p)->value->id->LTI_ID != NIL))
                         {
                             prohibit.push_back((*w_p)->value);
                             path = cmd_query;
@@ -352,6 +352,33 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         {
                             store.push_back((*w_p)->value);
                             path = cmd_store;
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_store_new)
+                    {
+                        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
+                                ((path == blank_slate) || (path == cmd_store_new)))
+                        {
+                            store.push_back((*w_p)->value);
+                            path = cmd_store_new;
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_overwrite)
+                    {
+                        if (((*w_p)->value->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
+                            (((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes) ||
+                                ((*w_p)->value == thisAgent->symbolManager->soarSymbols.no)) &&
+                                ((path == blank_slate) || (path == cmd_store_new)))
+                        {
+                            update_LTI_Links = ((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes);
                         }
                         else
                         {
@@ -389,7 +416,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->SMem->smem_timers->api->stop();
+            thisAgent->SMem->timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
 
             // process command
@@ -397,88 +424,129 @@ void SMem_Manager::respond_to_cmd(bool store_only)
             {
                 // performing any command requires an initialized database
                 attach();
+                clear_instance_mappings();
 
                 // retrieve
                 if (path == cmd_retrieve)
                 {
-                    if (retrieve->id->smem_lti == NIL)
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to retrieve command.\n");
+                    if (retrieve->id->LTI_ID == NIL)
                     {
                         // retrieve is not pointing to an lti!
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, retrieve);
                     }
                     else
                     {
                         // status: success
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, retrieve);
 
                         // install memory directly onto the retrieve identifier
-                        install_memory(state, retrieve->id->smem_lti, retrieve, true, meta_wmes, retrieval_wmes, wm_install, depth);
+                        install_memory(state, retrieve->id->LTI_ID, NULL, true, meta_wmes, retrieval_wmes, wm_install, depth);
 
                         // add one to the expansions stat
-                        thisAgent->SMem->smem_stats->expansions->set_value(thisAgent->SMem->smem_stats->expansions->get_value() + 1);
+                        thisAgent->SMem->statistics->retrievals->set_value(thisAgent->SMem->statistics->retrievals->get_value() + 1);
                     }
                 }
                 // query
                 else if (path == cmd_query)
                 {
-                    smem_lti_set prohibit_lti;
-                    smem_sym_list::iterator sym_p;
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to query command.\n");
+                    id_set prohibit_lti;
+                    symbol_list::iterator sym_p;
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
-                        prohibit_lti.insert((*sym_p)->id->smem_lti);
+                        prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-
                     process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
-                    thisAgent->SMem->smem_stats->cbr->set_value(thisAgent->SMem->smem_stats->cbr->get_value() + 1);
+                    thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
                 }
-                else if (path == cmd_store)
+                else if (path == cmd_store_new)
                 {
-                    smem_sym_list::iterator sym_p;
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store-new command.\n");
+                    symbol_list::iterator sym_p;
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->SMem->smem_timers->storage->start();
+                    thisAgent->SMem->timers->storage->start();
                     ////////////////////////////////////////////////////////////////////////////
 
                     // start transaction (if not lazy)
-                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
                     {
-                        soar_store((*sym_p), ((mirroring_on) ? (store_recursive) : (store_level)));
+                        store_new((*sym_p), store_level, update_LTI_Links);
 
                         // status: success
-                        buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
 
                         // add one to the store stat
-                        thisAgent->SMem->smem_stats->stores->set_value(thisAgent->SMem->smem_stats->stores->get_value() + 1);
+                        thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
                     }
 
                     // commit transaction (if not lazy)
-                    if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
-                    thisAgent->SMem->smem_timers->storage->stop();
+                    thisAgent->SMem->timers->storage->stop();
+                    ////////////////////////////////////////////////////////////////////////////
+                }
+                else if (path == cmd_store)
+                {
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to store command.\n");
+                    symbol_list::iterator sym_p;
+
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->SMem->timers->storage->start();
+                    ////////////////////////////////////////////////////////////////////////////
+
+                    // start transaction (if not lazy)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
+                    {
+                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+                    }
+
+                    for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
+                    {
+                        update((*sym_p), store_level, update_LTI_Links);
+
+                        // status: success
+                        add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*sym_p));
+
+                        // add one to the store stat
+                        thisAgent->SMem->statistics->stores->set_value(thisAgent->SMem->statistics->stores->get_value() + 1);
+                    }
+
+                    // commit transaction (if not lazy)
+                    if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
+                    {
+                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+                    }
+
+                    ////////////////////////////////////////////////////////////////////////////
+                    thisAgent->SMem->timers->storage->stop();
                     ////////////////////////////////////////////////////////////////////////////
                 }
             }
             else
             {
-                buffer_add_wme(meta_wmes, state->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_cmd_header);
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_bad_cmd, state->id->smem_info->cmd_wme->value);
             }
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
+
+                dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
-                process_buffered_wmes(state, cue_wmes, meta_wmes, retrieval_wmes);
+                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
 
                 // clear cache
                 {
@@ -515,7 +583,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         else
         {
             ////////////////////////////////////////////////////////////////////////////
-            thisAgent->SMem->smem_timers->api->stop();
+            thisAgent->SMem->timers->api->stop();
             ////////////////////////////////////////////////////////////////////////////
         }
 
@@ -525,54 +593,10 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         state = state->id->higher_goal;
     }
 
-    if (store_only && mirroring_on && (!thisAgent->SMem->smem_changed_ids->empty()))
-    {
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->SMem->smem_timers->storage->start();
-        ////////////////////////////////////////////////////////////////////////////
-
-        // start transaction (if not lazy)
-        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
-        {
-            thisAgent->SMem->smem_stmts->begin->execute(soar_module::op_reinit);
-        }
-
-        for (symbol_set::iterator it = thisAgent->SMem->smem_changed_ids->begin(); it != thisAgent->SMem->smem_changed_ids->end(); it++)
-        {
-            // require that the lti has at least one augmentation
-            if ((*it)->id->slots)
-            {
-                soar_store((*it), store_recursive);
-
-                // add one to the mirrors stat
-                thisAgent->SMem->smem_stats->mirrors->set_value(thisAgent->SMem->smem_stats->mirrors->get_value() + 1);
-            }
-            Symbol* lSym = (*it);
-
-            thisAgent->symbolManager->symbol_remove_ref(&lSym);
-        }
-
-        // commit transaction (if not lazy)
-        if (thisAgent->SMem->smem_params->lazy_commit->get_value() == off)
-        {
-            thisAgent->SMem->smem_stmts->commit->execute(soar_module::op_reinit);
-        }
-
-        // clear symbol set
-        thisAgent->SMem->smem_changed_ids->clear();
-
-        ////////////////////////////////////////////////////////////////////////////
-        thisAgent->SMem->smem_timers->storage->stop();
-        ////////////////////////////////////////////////////////////////////////////
-    }
-
     if (do_wm_phase)
     {
-        thisAgent->SMem->smem_ignore_changes = true;
-
+        dprint(DT_SMEM_INSTANCE, "SMem Manager initiating working memory phase.\n");
         do_working_memory_phase(thisAgent);
-
-        thisAgent->SMem->smem_ignore_changes = false;
     }
 }
 
@@ -617,23 +641,11 @@ void SMem_Manager::reset(Symbol* state)
     }
 }
 
-
-void SMem_Manager::reinit_cmd()
-{
-    close();
-//    smem_init_db(thisAgent);
-}
-
-void SMem_Manager::reset_stats()
-{
-    smem_stats->reset();
-}
-
 void SMem_Manager::reinit()
 {
-    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
+    if (thisAgent->SMem->connected())
     {
-        if (thisAgent->SMem->smem_params->append_db->get_value() == off)
+        if (thisAgent->SMem->settings->append_db->get_value() == off)
         {
             close();
             init_db();
@@ -646,21 +658,13 @@ SMem_Manager::SMem_Manager(agent* myAgent)
     thisAgent = myAgent;
     thisAgent->SMem = this;
 
-    smem_params = new smem_param_container(thisAgent);
-    smem_stats = new smem_stat_container(thisAgent);
-    smem_timers = new smem_timer_container(thisAgent);
+    settings = new smem_param_container(thisAgent);
+    statistics = new smem_stat_container(thisAgent);
+    timers = new smem_timer_container(thisAgent);
 
-    smem_db = new soar_module::sqlite_database();
+    DB = new soar_module::sqlite_database();
 
     smem_validation = 0;
-    thisAgent->LTIs_sourced = new LTI_Promotion_Set();
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-    smem_changed_ids = new symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
-#else
-    smem_changed_ids = new symbol_set();
-#endif
-    smem_ignore_changes = false;
 
 };
 
@@ -671,10 +675,8 @@ void SMem_Manager::clean_up_for_agent_deletion()
     // cleanup exploration
 
     close();
-    delete smem_changed_ids;
-    delete smem_params;
-    delete smem_stats;
-    delete smem_timers;
-    delete smem_db;
-    delete thisAgent->LTIs_sourced;
+    delete settings;
+    delete statistics;
+    delete timers;
+    delete DB;
 }

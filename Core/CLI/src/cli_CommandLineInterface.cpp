@@ -25,8 +25,12 @@
 
 #include "agent.h"
 #include "print.h"
+#include "production.h"
 #include "lexer.h"
 #include "slot.h"
+#include "soar_module.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 #include "production.h"

@@ -400,7 +400,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->tc_num = 0;
     sym->name_letter = name_letter;
 
-    // For long-term identifiers
     if (name_number == NIL)
     {
         name_number = id_counter[name_letter - 'A']++;
@@ -440,18 +439,13 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->rl_info = NIL;
     sym->reward_header = NIL;
 
-    sym->epmem_header = NIL;
-    sym->epmem_cmd_header = NIL;
-    sym->epmem_result_header = NIL;
+    sym->epmem_info = NULL;
     sym->epmem_id = EPMEM_NODEID_BAD;
     sym->epmem_valid = NIL;
-    sym->epmem_time_wme = NIL;
 
-    sym->smem_header = NIL;
-    sym->smem_cmd_header = NIL;
-    sym->smem_result_header = NIL;
-    sym->smem_lti = NIL;
-    sym->smem_time_id = EPMEM_MEMID_NONE;
+    sym->smem_info = NULL;
+    sym->LTI_ID = NIL;
+    sym->LTI_epmem_valid = NIL;
     sym->smem_valid = NIL;
 
     sym->rl_trace = NIL;
@@ -661,8 +655,8 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.epmem_sym_before = make_str_constant("before");
     soarSymbols.epmem_sym_after = make_str_constant("after");
     soarSymbols.epmem_sym_prohibit = make_str_constant("prohibit");
-    soarSymbols.epmem_sym_yes = make_str_constant("yes");
-    soarSymbols.epmem_sym_no = make_str_constant("no");
+    soarSymbols.yes = make_str_constant("yes");
+    soarSymbols.no = make_str_constant("no");
 
 
     soarSymbols.smem_sym = make_str_constant("smem");
@@ -676,7 +670,8 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_failure = make_str_constant("failure");
     soarSymbols.smem_sym_bad_cmd = make_str_constant("bad-cmd");
     soarSymbols.smem_sym_depth = make_str_constant("depth");
-
+    soarSymbols.smem_sym_store_new = make_str_constant("store-new");
+    soarSymbols.smem_sym_overwrite = make_str_constant("link-to-new-LTM");
     soarSymbols.smem_sym_retrieve = make_str_constant("retrieve");
     soarSymbols.smem_sym_query = make_str_constant("query");
     soarSymbols.smem_sym_negquery = make_str_constant("neg-query");
@@ -769,8 +764,8 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.epmem_sym_before));
     symbol_remove_ref(&(soarSymbols.epmem_sym_after));
     symbol_remove_ref(&(soarSymbols.epmem_sym_prohibit));
-    symbol_remove_ref(&(soarSymbols.epmem_sym_yes));
-    symbol_remove_ref(&(soarSymbols.epmem_sym_no));
+    symbol_remove_ref(&(soarSymbols.yes));
+    symbol_remove_ref(&(soarSymbols.no));
 
     symbol_remove_ref(&(soarSymbols.smem_sym));
     symbol_remove_ref(&(soarSymbols.smem_sym_cmd));
@@ -783,6 +778,8 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.smem_sym_failure));
     symbol_remove_ref(&(soarSymbols.smem_sym_bad_cmd));
     symbol_remove_ref(&(soarSymbols.smem_sym_depth));
+    symbol_remove_ref(&(soarSymbols.smem_sym_store_new));
+    symbol_remove_ref(&(soarSymbols.smem_sym_overwrite));
 
     symbol_remove_ref(&(soarSymbols.smem_sym_retrieve));
     symbol_remove_ref(&(soarSymbols.smem_sym_query));
@@ -823,7 +820,6 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
 //        std::string caller_string = get_stacktrace("dea_sym");
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
-
     switch (sym->symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:
@@ -897,20 +893,17 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-            if (sym->id->smem_lti == NIL)
-            {
-                SNPRINTF(msg, 256,
-                    "\t%c%llu --> %llu\n",
-                    sym->id->name_letter,
-                    static_cast<long long unsigned>(sym->id->name_number),
-                    static_cast<long long unsigned>(sym->reference_count));
-                print(thisAgent,  msg);
-//                xml_generate_warning(thisAgent, msg);
+            SNPRINTF(msg, 256,
+                "\t%c%llu --> %llu\n",
+                sym->id->name_letter,
+                static_cast<long long unsigned>(sym->id->name_number),
+                static_cast<long long unsigned>(sym->reference_count));
+            print(thisAgent,  msg);
+            //                xml_generate_warning(thisAgent, msg);
 
-                if (f)
-                {
-                    fprintf(f, "%s", msg) ;
-                }
+            if (f)
+            {
+                fprintf(f, "%s", msg) ;
             }
         }
     }
@@ -922,82 +915,19 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     return false;
 }
 
-bool Symbol_Manager::remove_if_sti(agent* thisAgent, void* item, void* userdata)
-{
-    Symbol* sym;
-    char msg[256];
-    sym = static_cast<symbol_struct*>(item);
-
-    if (sym->is_sti())
-    {
-        SNPRINTF(msg, 256,
-            "\tWarning:  Symbol %c%llu still exists because refcount = %llu.  Deallocating anyway.\n",
-            sym->id->name_letter,
-            static_cast<long long unsigned>(sym->id->name_number),
-            static_cast<long long unsigned>(sym->reference_count));
-        dprint(DT_DEBUG, "Warning:  Symbol %y still exists because refcount = %u.  Deallocating anyway.\n", sym, sym->reference_count);
-        deallocate_symbol(sym);
-
-        msg[255] = 0; /* ensure null termination */
-        print(thisAgent,  msg);
-//        xml_generate_warning(thisAgent, msg);
-    }
-    else
-    {
-        if (!sym->is_identifier())
-        {
-            dprint(DT_DEBUG, "ERROR: HASHTABLE ITEM %y IS NOT AN IDENTIFIER!  (refcount = %u)\n", sym, sym->reference_count);
-            print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-            return true;
-        }
-        return false;
-    }
-    return false;
-}
-
-bool smem_count_ltis(agent* /*thisAgent*/, void* item, void* userdata)
-{
-    Symbol* id = static_cast<symbol_struct*>(item);
-
-    dprint(DT_DEALLOCATE_SYMBOLS, "Symbol with refcount leak: %y\n", id);
-    if (id->id->smem_lti != NIL)
-    {
-        uint64_t* counter = reinterpret_cast<uint64_t*>(userdata);
-        (*counter)++;
-    }
-
-    return false;
-}
-
 bool Symbol_Manager::reset_id_counters()
 {
     int i;
 
     if (identifier_hash_table->count != 0)
     {
-        // As long as all of the existing identifiers are long term identifiers (lti), there's no problem
-        uint64_t ltis = 0;
-        do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, smem_count_ltis, &ltis);
-        if (static_cast<uint64_t>(identifier_hash_table->count) != ltis)
-        {
-            print(thisAgent,  "Internal warning:  wanted to reset identifier generator numbers, but\n");
-            print(thisAgent,  "there are still some identifiers allocated.  (Probably a memory leak.)\n");
-//            xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)");
-
-//            print_internal_symbols(thisAgent);
-            do_for_all_items_in_hash_table( thisAgent, identifier_hash_table, print_identifier_ref_info, 0);
-
-            #ifndef SOAR_RELEASE_VERSION
-                print(thisAgent,  "(Deleting identifiers not in semantic memory.)\n");
-//                xml_generate_warning(thisAgent, "(Deleting identifiers not in semantic memory.)");
-                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, Symbol_Manager::remove_if_sti, NULL);
-            #else
-                return false;
-            #endif
-        }
-
-        // Getting here means that there are still identifiers but that
-        // they are all long-term and (hopefully) exist only in production memory.
+        thisAgent->outputManager->printa_sf(thisAgent, "Soar internal error.  %d unallocated short-term identifiers.  Likely a memory leak.  Forcing deletion.\n", identifier_hash_table->count);
+        /* MToDo | We should be able to just release the hash table and reset the Symbol_Manager now that LTIs are gone */
+        free_hash_table(thisAgent, identifier_hash_table);
+        thisAgent->memoryManager->free_memory_pool(MP_identifier);
+        identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
+        thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
+        assert(false);
     }
     for (i = 0; i < 26; i++)
     {

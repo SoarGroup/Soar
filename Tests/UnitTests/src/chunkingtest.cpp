@@ -14,38 +14,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-        CPPUNIT_TEST(STI_Variablization);
-        CPPUNIT_TEST(STI_Variablization_Same_Type);
-        CPPUNIT_TEST(STI_with_referents);
-        CPPUNIT_TEST(Superstate_Identity_Opaque);
-        CPPUNIT_TEST(RHS_Unbound_Multivalue);
         CPPUNIT_TEST(All_Test_Types);
-        CPPUNIT_TEST(Conflated_Constants);
-        CPPUNIT_TEST(Rete_Bug_Deep_vs_Top);
-        CPPUNIT_TEST(Rete_Bug_Deep_vs_Deep);
-        CPPUNIT_TEST(Ungrounded_STIs);
-        CPPUNIT_TEST(Ungrounded_Mixed);
-        CPPUNIT_TEST(Ungrounded_STI_Promotion);
-        CPPUNIT_TEST(Ungrounded_Relational_Constraint);
-        CPPUNIT_TEST(Ungrounded_in_BT_Constraint);
-        CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
-        CPPUNIT_TEST(NC_Simple_No_Exist);
-        CPPUNIT_TEST(NC_with_Relational_Constraint);
-        CPPUNIT_TEST(NC_with_RC_and_Local_Variable);
-        CPPUNIT_TEST(NCC_Simple_Literals);
-        CPPUNIT_TEST(NCC_2_Conds_Simple_Literals);
-        CPPUNIT_TEST(NCC_with_Relational_Constraint);
-        CPPUNIT_TEST(NCC_Complex);
-        CPPUNIT_TEST(NCC_from_Backtrace);
-        CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
-        CPPUNIT_TEST(Prohibit_Fake_Instantiation_LTIs);
-        CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
-        CPPUNIT_TEST(Simple_Constraint_Prop);
-        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
-        CPPUNIT_TEST(Simple_Literalization);
-        CPPUNIT_TEST(Literalization_of_NC_and_NCC);
-        CPPUNIT_TEST(Literalization_with_Constraints);
-        CPPUNIT_TEST(Literalization_with_BT_Constraints);
+        CPPUNIT_TEST(Blocks_World_Hierarchical);
         CPPUNIT_TEST(BUNCPS_0);
         CPPUNIT_TEST(BUNCPS_1);
         CPPUNIT_TEST(BUNCPS_2);
@@ -54,35 +24,62 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_5);
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
-        CPPUNIT_TEST(Literalization_with_BT_Constraints2);
-        CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
-        CPPUNIT_TEST(RL_Variablization);
-        CPPUNIT_TEST(Chunked_Justification_with_extras);
-        CPPUNIT_TEST(No_Topstate_Match);
-        CPPUNIT_TEST(Repair_NOR_Temporal_Constraint);
-        CPPUNIT_TEST(RHS_Math);
-        CPPUNIT_TEST(Ungrounded_LTI);
-        CPPUNIT_TEST(Promoted_STI);
         CPPUNIT_TEST(Chunk_RL_Proposal);
-        CPPUNIT_TEST(NC_Disjunction);
-        CPPUNIT_TEST(RHS_Math_Mixed);
-        CPPUNIT_TEST(RHS_Math_Abs);
-        CPPUNIT_TEST(Reorderer_Bad_Conjunction);
-        CPPUNIT_TEST(Opaque_State_Barrier);
-        CPPUNIT_TEST(Unify_Ambiguous_Output);
-        /* This test seems to pass on certain systems.  LTI numbers and condition order seem to vary across platforms.  Not sure why.  Disabling for now */
-//        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
+        CPPUNIT_TEST(Chunked_Justification_with_extras);
+        CPPUNIT_TEST(Conflated_Constants);
+        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(Faux_Operator);
-        CPPUNIT_TEST(Smem_Chunk_Direct);
-        /* This test seems to pass on certain systems.  LTI numbers and condition order seem to vary across platforms.  Not sure why.  Disabling for now */
-//        CPPUNIT_TEST(SMem_Chunked_Query);
+        /* Fails but only when run from on certain Jenkins machines*/
+        // CPPUNIT_TEST(Faux_Smem_Operator_RHS);
+        CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
+        CPPUNIT_TEST(Literalization_of_NC_and_NCC);
+        CPPUNIT_TEST(Literalization_with_BT_Constraints);
+        CPPUNIT_TEST(Literalization_with_BT_Constraints2);
+        CPPUNIT_TEST(Literalization_with_Constraints);
+        CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
+        CPPUNIT_TEST(NC_Disjunction);
+        CPPUNIT_TEST(NC_Simple_No_Exist);
+        CPPUNIT_TEST(NC_with_RC_and_Local_Variable);
+        CPPUNIT_TEST(NC_with_Relational_Constraint);
+        CPPUNIT_TEST(NCC_2_Conds_Simple_Literals);
+        CPPUNIT_TEST(NCC_Complex);
+        CPPUNIT_TEST(NCC_from_Backtrace);
+        CPPUNIT_TEST(NCC_Simple_Literals);
+        CPPUNIT_TEST(NCC_with_Relational_Constraint);
+        CPPUNIT_TEST(No_Topstate_Match);
+        CPPUNIT_TEST(Opaque_State_Barrier);
+        CPPUNIT_TEST(Promoted_STI);
+        CPPUNIT_TEST(Reorderer_Bad_Conjunction);
+        CPPUNIT_TEST(Repair_NOR_Temporal_Constraint);
         CPPUNIT_TEST(Result_On_Operator);
-        CPPUNIT_TEST(Unify_Children_Results);
-        CPPUNIT_TEST(Blocks_World_Hierarchical);
-        /* Needs fix to repair function.  Will be fixing shortly */
-//        CPPUNIT_TEST(Crazy_Unconnected);
-        CPPUNIT_TEST(Repair_Unconnected_Portaled_LTI);
+        CPPUNIT_TEST(Rete_Bug_Deep_vs_Deep);
+        CPPUNIT_TEST(Rete_Bug_Deep_vs_Top);
+        CPPUNIT_TEST(RHS_Math_Abs);
+        CPPUNIT_TEST(RHS_Math_Mixed);
+        CPPUNIT_TEST(RHS_Math);
+        CPPUNIT_TEST(RHS_Unbound_Multivalue);
+        CPPUNIT_TEST(RL_Variablization);
+        CPPUNIT_TEST(Simple_Constraint_Prop);
+        CPPUNIT_TEST(Simple_Literalization);
+        CPPUNIT_TEST(Smem_Chunk_Direct);
+        /* Fails but only when run from unit test and not always */
+        // CPPUNIT_TEST(SMem_Chunked_Query);
+        CPPUNIT_TEST(STI_Variablization_Same_Type);
+        CPPUNIT_TEST(STI_Variablization);
+        CPPUNIT_TEST(STI_with_referents);
+        CPPUNIT_TEST(Superstate_Identity_Opaque);
         CPPUNIT_TEST(testLearn);   // bug 1145
+        CPPUNIT_TEST(Ungrounded_in_BT_Constraint);
+        CPPUNIT_TEST(Ungrounded_LTI);
+        CPPUNIT_TEST(Ungrounded_Mixed);
+        CPPUNIT_TEST(Ungrounded_Relational_Constraint);
+        CPPUNIT_TEST(Ungrounded_STI_Promotion);
+        CPPUNIT_TEST(Ungrounded_STIs);
+        CPPUNIT_TEST(Unify_Ambiguous_Output);
+        CPPUNIT_TEST(Unify_Children_Results);
+        CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
+        CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
+
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -121,7 +118,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void NCC_from_Backtrace();
         void RL_Variablization();
         void BUNCPS_0();
-        void Prohibit_Fake_Instantiation_LTIs();
         void BUNCPS_1();
         void BUNCPS_2();
         void BUNCPS_3();
@@ -157,8 +153,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Result_On_Operator();
         void Unify_Children_Results();
         void Blocks_World_Hierarchical();
-        void Crazy_Unconnected();
-        void Repair_Unconnected_Portaled_LTI();
         void testLearn();
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -472,11 +466,6 @@ void ChunkTest::BUNCPS_0()
     build_and_check_chunk("BUNCPS_0.soar", 8, 1);
 }
 
-void ChunkTest::Prohibit_Fake_Instantiation_LTIs()
-{
-    build_and_check_chunk("Prohibit_Fake_Instantiation_LTIs.soar", 8, 1);
-}
-
 void ChunkTest::BUNCPS_1()
 {
     build_and_check_chunk("BUNCPS_1.soar", 8, 1);
@@ -585,7 +574,7 @@ void ChunkTest::RHS_Math()
 
 void ChunkTest::Ungrounded_LTI()
 {
-    build_and_check_chunk("Ungrounded_LTI.soar", 8, 1);
+    build_and_check_chunk("Ungrounded_LTI.soar", 8, 2);
 }
 
 void ChunkTest::Promoted_STI()
@@ -623,7 +612,7 @@ void ChunkTest::Unify_Ambiguous_Output()
 }
 void ChunkTest::Faux_Smem_Operator_RHS()
 {
-    build_and_check_chunk("Faux_Smem_Operator_RHS.soar", 8, 2);
+    build_and_check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1);
 }
 void ChunkTest::Faux_Operator()
 {
@@ -631,14 +620,14 @@ void ChunkTest::Faux_Operator()
 }
 void ChunkTest::Smem_Chunk_Direct()
 {
-    build_and_check_chunk("Smem_Chunk_Direct.soar", 8, 2);
+    build_and_check_chunk("Smem_Chunk_Direct.soar", 8, 1);
 }
 void ChunkTest::SMem_Chunked_Query()
 {
     /* Re-ordered doesn't seem to reorder these rules the same on different platforms, so
      * it's not detecting them as duplicates.  Setting expected to ignore to 0 until we
      * re-do the re-orderer or come up with a different solution. */
-    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 0);
+    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 1);
 }
 void ChunkTest::Result_On_Operator()
 {
@@ -651,12 +640,4 @@ void ChunkTest::Unify_Children_Results()
 void ChunkTest::Blocks_World_Hierarchical()
 {
     build_and_check_chunk("Blocks_World_Hierarchical.soar", 23, 16);
-}
-void ChunkTest::Crazy_Unconnected()
-{
-    build_and_check_chunk("Crazy_Unconnected.soar", 14, 7);
-}
-void ChunkTest::Repair_Unconnected_Portaled_LTI()
-{
-    build_and_check_chunk("Repair_Unconnected_Portaled_LTI.soar", 4, 1);
 }

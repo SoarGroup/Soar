@@ -40,12 +40,6 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
-#else
-typedef std::list< preference* > pref_buffer_list;
-#endif
-
 /* ------------------------------------------------------------------------
                                Preferences
 
@@ -112,9 +106,6 @@ typedef std::list< preference* > pref_buffer_list;
           (hence there's no way we'll ever want to BT through it)
 ------------------------------------------------------------------------ */
 
-
-extern const char* preference_name[NUM_PREFERENCE_TYPES];
-
 typedef struct preference_struct
 {
     PreferenceType                  type;               /* acceptable, better, etc. */
@@ -174,6 +165,29 @@ extern void deallocate_preference(agent* thisAgent, preference* pref);
 extern bool add_preference_to_tm(agent* thisAgent, preference* pref);
 extern void remove_preference_from_tm(agent* thisAgent, preference* pref);
 extern bool remove_preference_from_clones(agent* thisAgent, preference* pref);
-extern void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, pref_buffer_list& bufdeallo);
+extern void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo);
+inline bool preference_is_unary(byte p) { return (p < 9);}
+inline bool preference_is_binary(byte p) { return (p > 8); }
+
+inline const char* preference_name(byte pNum)
+{
+
+    if (pNum == ACCEPTABLE_PREFERENCE_TYPE) return "acceptable";
+    if (pNum == REQUIRE_PREFERENCE_TYPE) return "require";
+    if (pNum == REJECT_PREFERENCE_TYPE) return "reject";
+    if (pNum == PROHIBIT_PREFERENCE_TYPE) return "prohibit";
+    if (pNum == RECONSIDER_PREFERENCE_TYPE) return "reconsider";
+    if (pNum == UNARY_INDIFFERENT_PREFERENCE_TYPE) return "unary indifferent";
+    if (pNum == UNARY_PARALLEL_PREFERENCE_TYPE) return "unary parallel";
+    if (pNum == BEST_PREFERENCE_TYPE) return "best";
+    if (pNum == WORST_PREFERENCE_TYPE) return "worst";
+    if (pNum == BINARY_INDIFFERENT_PREFERENCE_TYPE) return "binary indifferent";
+    if (pNum == BINARY_PARALLEL_PREFERENCE_TYPE) return "binary parallel";
+    if (pNum == BETTER_PREFERENCE_TYPE) return "better";
+    if (pNum == WORSE_PREFERENCE_TYPE) return "worse";
+    if (pNum == NUMERIC_INDIFFERENT_PREFERENCE_TYPE) return "numeric indifferent";
+
+    return "illegal preference type";
+}
 
 #endif

@@ -69,12 +69,6 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     thresh = new soar_module::integer_param("thresh", 100, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
     add(thresh);
 
-    // merge
-    merge = new soar_module::constant_param<merge_choices>("merge", merge_add, new soar_module::f_predicate<merge_choices>());
-    merge->add_mapping(merge_none, "none");
-    merge->add_mapping(merge_add, "add");
-    add(merge);
-
     // activate_on_query
     activate_on_query = new soar_module::boolean_param("activate-on-query", on, new soar_module::f_predicate<boolean>());
     add(activate_on_query);
@@ -104,9 +98,6 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     /* Moved from init_agent */
     base_incremental_threshes->set_string("10");
 
-    // mirroring
-    mirroring = new soar_module::boolean_param("mirroring", off, new smem_db_predicate< boolean >(thisAgent));
-    add(mirroring);
 }
 
 //
@@ -116,7 +107,7 @@ that smem_update_schema_one_to_two can convert.  It tests for the existence of a
 bool SMem_Manager::is_version_one_db()
 {
     double check_num_tables;
-    smem_db->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
+    DB->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
     if (check_num_tables == 0)
     {
         return false;
@@ -134,16 +125,16 @@ void smem_path_param::set_value(const char* new_value)
     value->assign(new_value);
 
     const char* db_path;
-    db_path = thisAgent->SMem->smem_params->path->get_value();
-    bool attempt_connection_here = thisAgent->SMem->smem_db->get_status() == soar_module::disconnected;
+    db_path = thisAgent->SMem->settings->path->get_value();
+    bool attempt_connection_here = !thisAgent->SMem->connected();
     if (attempt_connection_here)
     {
-        thisAgent->SMem->smem_db->connect(db_path);
+        thisAgent->SMem->DB->connect(db_path);
     }
 
-    if (thisAgent->SMem->smem_db->get_status() == soar_module::problem)
+    if (thisAgent->SMem->DB->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->SMem->smem_db->get_errmsg());
+        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->SMem->DB->get_errmsg());
     }
     else
     {
@@ -157,16 +148,16 @@ void smem_path_param::set_value(const char* new_value)
         {
             bool sql_is_new;
             std::string schema_version;
-            if (thisAgent->SMem->smem_db->sql_is_new_db(sql_is_new))
+            if (thisAgent->SMem->DB->sql_is_new_db(sql_is_new))
             {
                 if (!sql_is_new)
                 {
                     // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement(thisAgent->SMem->smem_db, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+                    temp_q = new soar_module::sqlite_statement(thisAgent->SMem->DB, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
                     temp_q->prepare();
                     if (temp_q->get_status() == soar_module::ready)
                     {
-                        if (!thisAgent->SMem->smem_db->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
+                        if (!thisAgent->SMem->DB->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
                         {
                             if (thisAgent->SMem->is_version_one_db())
                             {
@@ -186,7 +177,7 @@ void smem_path_param::set_value(const char* new_value)
     }
     if (attempt_connection_here)
     {
-        thisAgent->SMem->smem_db->disconnect();
+        thisAgent->SMem->DB->disconnect();
     }
 }
 
@@ -198,55 +189,38 @@ smem_db_predicate<T>::smem_db_predicate(agent* new_agent): soar_module::agent_pr
 template <typename T>
 bool smem_db_predicate<T>::operator()(T /*val*/)
 {
-    return (this->thisAgent->SMem->smem_db->get_status() == soar_module::connected);
+    return (this->thisAgent->SMem->connected());
 }
 
 
 smem_stat_container::smem_stat_container(agent* new_agent): soar_module::stat_container(new_agent)
 {
-    // db-lib-version
     db_lib_version = new smem_db_lib_version_stat(thisAgent, "db-lib-version", NULL, new soar_module::predicate< const char* >());
     add(db_lib_version);
 
-    // mem-usage
     mem_usage = new smem_mem_usage_stat(thisAgent, "mem-usage", 0, new soar_module::predicate<int64_t>());
     add(mem_usage);
 
-    // mem-high
     mem_high = new smem_mem_high_stat(thisAgent, "mem-high", 0, new soar_module::predicate<int64_t>());
     add(mem_high);
 
-    //
+    retrievals = new soar_module::integer_stat("retrieves", 0, new soar_module::f_predicate<int64_t>());
+    add(retrievals);
 
-    // expansions
-    expansions = new soar_module::integer_stat("retrieves", 0, new soar_module::f_predicate<int64_t>());
-    add(expansions);
+    queries = new soar_module::integer_stat("queries", 0, new soar_module::f_predicate<int64_t>());
+    add(queries);
 
-    // cue-based-retrievals
-    cbr = new soar_module::integer_stat("queries", 0, new soar_module::f_predicate<int64_t>());
-    add(cbr);
-
-    // stores
     stores = new soar_module::integer_stat("stores", 0, new soar_module::f_predicate<int64_t>());
     add(stores);
 
-    // activations
     act_updates = new soar_module::integer_stat("act_updates", 0, new soar_module::f_predicate<int64_t>());
     add(act_updates);
 
-    // mirrors
-    mirrors = new soar_module::integer_stat("mirrors", 0, new soar_module::f_predicate<int64_t>());
-    add(mirrors);
+    nodes = new soar_module::integer_stat("nodes", 0, new smem_db_predicate< int64_t >(thisAgent));
+    add(nodes);
 
-    //
-
-    // chunks
-    chunks = new soar_module::integer_stat("nodes", 0, new smem_db_predicate< int64_t >(thisAgent));
-    add(chunks);
-
-    // slots
-    slots = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
-    add(slots);
+    edges = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
+    add(edges);
 }
 
 //
@@ -255,38 +229,29 @@ smem_db_lib_version_stat::smem_db_lib_version_stat(agent* new_agent, const char*
 
 const char* smem_db_lib_version_stat::get_value()
 {
-    return thisAgent->SMem->smem_db->lib_version();
+    return thisAgent->SMem->DB->lib_version();
 }
-
-//
 
 smem_mem_usage_stat::smem_mem_usage_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_usage_stat::get_value()
 {
-    return thisAgent->SMem->smem_db->memory_usage();
+    return thisAgent->SMem->DB->memory_usage();
 }
-
-//
 
 smem_mem_high_stat::smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_high_stat::get_value()
 {
-    return thisAgent->SMem->smem_db->memory_highwater();
+    return thisAgent->SMem->DB->memory_highwater();
 }
 
 bool SMem_Manager::enabled()
 {
-    return (smem_params->learning->get_value() == on);
+    return (settings->learning->get_value() == on);
 }
 
 bool SMem_Manager::connected()
 {
-    return (smem_db->get_status() == soar_module::connected);
-}
-
-bool SMem_Manager::mirroring_enabled()
-{
-    return (smem_params->mirroring->get_value() == on);
+    return (DB->get_status() == soar_module::connected);
 }

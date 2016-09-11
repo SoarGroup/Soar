@@ -1191,7 +1191,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 
     CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
-    if (pWME->value->is_identifier())
+    if (pWME->value->is_sti())
     {
         this->RemoveID(pWME->value->to_string(true)) ;
     }

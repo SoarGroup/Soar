@@ -13,9 +13,11 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "misc.h"
+#include "semantic_memory.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
@@ -194,7 +196,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         }
         if (options.test(Cli::VISUALIZE_SMEM))
         {
-            smem_lti_id lti_id = NIL;
+            uint64_t lti_id = NIL;
 
             // visualizing the store requires an open semantic database
             thisAgent->SMem->attach();
@@ -204,9 +206,9 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pObject2.c_str());
                 if (lexeme.type == IDENTIFIER_LEXEME)
                 {
-                    if (thisAgent->SMem->smem_db->get_status() == soar_module::connected)
+                    if (thisAgent->SMem->connected())
                     {
-                        lti_id = thisAgent->SMem->lti_get_id(lexeme.id_letter, lexeme.id_number);
+                        lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
                     }
                 }
 
@@ -216,14 +218,15 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 }
             }
 
-            if (lti_id == NIL)
-            {
-                thisAgent->SMem->visualize_store(&thisAgent->visualizationManager->graphviz_output);
-            }
-            else
-            {
-                thisAgent->SMem->visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
-            }
+//            if (lti_id == NIL)
+//            {
+//                thisAgent->SMem->visualize_store(&thisAgent->visualizationManager->graphviz_output);
+//            }
+//            else
+//            {
+//                thisAgent->SMem->visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
+//            }
+            thisAgent->visualizationManager->visualize_smem(lti_id, pDepth);
             lValidVisualizationGenerated = true;
         }
         if (options.test(Cli::VISUALIZE_WM))

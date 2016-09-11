@@ -579,16 +579,6 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
 
     //dprint(DT_LINKS, "*** Garbage collecting id: %y", id);
 
-    /* Clean up level information for LTIs.  This fixes a bug
-     * that could occur if that LTI was later retrieved at a
-     * different level.  It forces Soar to set the level of the
-     * LTI to the level in the next instantiation that uses it.*/
-    if (id->is_lti())
-    {
-        id->id->level = SMEM_LTI_UNKNOWN_LEVEL;
-        id->id->promotion_level = SMEM_LTI_UNKNOWN_LEVEL;
-        id->id->could_be_a_link_from_below = false;
-    }
     /* Note--for goal/impasse id's, this does not remove the impasse wme's.
         This is handled by remove_existing_such-and-such... */
 
@@ -717,7 +707,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         //dprint(DT_UNKNOWN_LEVEL, "      Adding IDs from input wme's to walk list:");
         for (w = id->id->input_wmes; w != NIL; w = w->next)
         {
-            if (w->value->is_identifier())
+            if (w->value->is_sti())
             {
                 //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                 ids_to_walk.push_back(w->value);
@@ -730,7 +720,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
         {
             for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
             {
-                if (pref->value->is_identifier())
+                if (pref->value->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->value);
                     ids_to_walk.push_back(pref->value);
@@ -738,7 +728,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
                 if (preference_is_binary(pref->type))
                 {
-                    if (pref->referent->is_identifier())
+                    if (pref->referent->is_sti())
                     {
                         //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", pref->referent);
                         ids_to_walk.push_back(pref->referent);
@@ -748,7 +738,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
             if (s->impasse_id)
             {
-                if (s->impasse_id->is_identifier())
+                if (s->impasse_id->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", s->impasse_id);
                     ids_to_walk.push_back(s->impasse_id);
@@ -757,7 +747,7 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
 
             for (w = s->wmes; w != NIL; w = w->next)
             {
-                if (w->value->is_identifier())
+                if (w->value->is_sti())
                 {
                     //dprint_noprefix(DT_UNKNOWN_LEVEL, " %y", w->value);
                     ids_to_walk.push_back(w->value);
@@ -1202,7 +1192,7 @@ void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, pr
                          Run Preference Semantics
 
    Run_preference_semantics (slot *s, preference **result_candidates) examines
-   the preferences for a given slot, and returns an impasse type for thez
+   the preferences for a given slot, and returns an impasse type for the
    slot.  The argument "result_candidates" is set to a list of candidate
    values for the slot--if the returned impasse type is NONE_IMPASSE_TYPE,
    this is the set of winners; otherwise it is the set of tied, conflicted,
@@ -1306,7 +1296,7 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (s->preferences[i])
             {
-                print(thisAgent, "\n   %ss:\n", preference_name[i]);
+                print(thisAgent, "\n   %ss:\n", preference_name(i));
                 for (p = s->preferences[i]; p; p = p->next)
                 {
                     print(thisAgent, "   ");
@@ -1986,26 +1976,30 @@ void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, 
 Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symbol* attr,
                            byte impasse_type, goal_stack_level level)
 {
-    Symbol* id;
+    Symbol* impasseID;
 
-    id = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level);
-    post_link_addition(thisAgent, NIL, id);   /* add the special link */
+    impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level);
+    post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
-    add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
+    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
                     NIL);
 
     if (isa_goal)
     {
-        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL);
-        id->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, id->id->reward_header);
+        thisAgent->memoryManager->allocate_with_pool(MP_rl_info, &(impasseID->id->rl_info));
+        thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(impasseID->id->smem_info));
+        thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
-        id->id->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.epmem_sym, id->id->epmem_header);
-        id->id->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
-        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, id->id->epmem_cmd_header);
-        id->id->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_result, id->id->epmem_result_header);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL);
+        impasseID->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header);
+
+        impasseID->id->epmem_info->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header);
+        impasseID->id->epmem_info->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
+        soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, impasseID->id->epmem_info->epmem_cmd_header);
+        impasseID->id->epmem_info->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_result, impasseID->id->epmem_info->epmem_result_header);
 
         {
             int64_t my_time = static_cast<int64_t>(thisAgent->EpMem->epmem_stats->time->get_value());
@@ -2016,26 +2010,26 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             }
 
             Symbol* my_time_sym = thisAgent->symbolManager->make_int_constant(my_time);
-            id->id->epmem_time_wme = soar_module::add_module_wme(thisAgent, id->id->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
+            impasseID->id->epmem_info->epmem_time_wme = soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
             thisAgent->symbolManager->symbol_remove_ref(&my_time_sym);
         }
 
-        id->id->smem_header = thisAgent->symbolManager->make_new_identifier('S', level);
-        soar_module::add_module_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.smem_sym, id->id->smem_header);
-        id->id->smem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
-        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, id->id->smem_cmd_header);
-        id->id->smem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, id->id->smem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, id->id->smem_result_header);
+        Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('S', level);
+        Symbol* lsmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
+        Symbol* lsmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header);
+        impasseID->id->smem_info->cmd_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, lsmem_cmd_header);
+        impasseID->id->smem_info->result_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, lsmem_result_header);
 
     }
     else
     {
-        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL);
     }
 
     if (attr)
     {
-        add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL);
     }
 
     switch (impasse_type)
@@ -2043,20 +2037,20 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         case NONE_IMPASSE_TYPE:
             break;    /* this happens only when creating the top goal */
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
         case CONFLICT_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case TIE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case NO_CHANGE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL);
-            add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
     }
 
@@ -2064,9 +2058,9 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 //     std::cerr << "rl-trace: Init level " << level << std::endl;
 //   else
 //     std::cerr << "rl-trace: Restore level " << level << std::endl;
-    id->id->rl_trace = &thisAgent->RL->rl_trace[level];
+    impasseID->id->rl_trace = &thisAgent->RL->rl_trace[level];
 
-    return id;
+    return impasseID;
 }
 
 /* ------------------------------------------------------------------
@@ -2795,16 +2789,17 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
 
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_cmd_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_result_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_cmd_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_result_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_header);
+
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
     goal->id->smem_info->smem_wmes->~preference_list();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_cmd_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_result_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_header);
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->cmd_wme->value); // smem_command_header
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->result_wme->value); // smem_result_header
+    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->smem_link_wme->value); // smem_header
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
 #ifndef NO_SVS
@@ -2893,7 +2888,6 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->operator_slot = make_slot(thisAgent, id, thisAgent->symbolManager->soarSymbols.operator_symbol);
     id->id->allow_bottom_up_chunks = true;
 
-    thisAgent->memoryManager->allocate_with_pool(MP_rl_info, &(id->id->rl_info));
     id->id->rl_info->previous_q = 0;
     id->id->rl_info->reward = 0;
     id->id->rl_info->rho = 1.0;
@@ -2912,7 +2906,6 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) rl_rule_list();
 #endif
 
-    thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(id->id->epmem_info));
     id->id->epmem_info->last_ol_time = 0;
     id->id->epmem_info->last_cmd_time = 0;
     id->id->epmem_info->last_cmd_count = 0;
@@ -2924,7 +2917,6 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack();
 #endif
 
-    thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(id->id->smem_info));
     id->id->smem_info->last_cmd_time[0] = 0;
     id->id->smem_info->last_cmd_time[1] = 0;
     id->id->smem_info->last_cmd_count[0] = 0;
@@ -3375,7 +3367,7 @@ void do_buffered_wm_and_ownership_changes(agent* thisAgent)
  and throw away the rest.
  ----------------------------------------------------------------------- */
 
-void assert_new_preferences(agent* thisAgent, pref_buffer_list& bufdeallo)
+void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
 {
     instantiation* inst, *next_inst;
     preference* pref, *next_pref;
@@ -3658,12 +3650,7 @@ void do_preference_phase(agent* thisAgent)
 
     // Temporary list to buffer deallocation of some preferences until
     // the inner elaboration loop is over.
-#ifdef USE_MEM_POOL_ALLOCATORS
-    pref_buffer_list bufdeallo = pref_buffer_list(
-                                     soar_module::soar_memory_pool_allocator<preference*>(thisAgent));
-#else
-    pref_buffer_list bufdeallo;
-#endif
+    preference_list bufdeallo;
 
     // inner elaboration cycle
     for (;;)
@@ -3781,7 +3768,7 @@ void do_preference_phase(agent* thisAgent)
     } // end inner elaboration loop
 
     // Deallocate preferences delayed during inner elaboration loop.
-    for (pref_buffer_list::iterator iter = bufdeallo.begin();
+    for (preference_list::iterator iter = bufdeallo.begin();
             iter != bufdeallo.end(); ++iter)
     {
         preference_remove_ref(thisAgent, *iter);
@@ -4023,418 +4010,424 @@ void elaborate_gds(agent* thisAgent)
         print(thisAgent, "      ");
         print_instantiation_with_wmes(thisAgent, curr_pi->inst , TIMETAG_WME_TRACE, -1);
 #endif
-
-        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+        /* This next check avoids a crash that happens when Soar tries to elaborate the GDS
+         * for an instantiation at the top level.
+         * - My guess is that this should have never been called for that instantiation, but I don't
+         * know enough about the GDS code to know if that's true.
+         * - The problem agent does crash all versions of Soar at least as far back as 9.3.2 - Maz */
+        if (inst->match_goal_level > 1)
         {
-
-            if (cond->type != POSITIVE_CONDITION)
-            {
-                continue;
-            }
-
-            /* We'll deal with negative instantiations after we get the
-            * positive ones figured out */
-
-            wme_matching_this_cond = cond->bt.wme_;
-            wme_goal_level         = cond->bt.level;
-            pref_for_this_wme      = wme_matching_this_cond->preference;
-
-#ifdef DEBUG_GDS
-            print(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
-                  wme_goal_level);
-            print_wme(thisAgent, wme_matching_this_cond);
-
-            if (pref_for_this_wme)
-            {
-                print(thisAgent, "       pref_for_this_wme                        : ");
-                print_preference(thisAgent, pref_for_this_wme);
-            }
-#endif
-
-
-            /* WME is in a supergoal or is arch-supported WME
-            *  (except for fake instantiations, which do have prefs, so
-            *  they get handled under "wme is local and i-supported")
-            */
-            if ((pref_for_this_wme == NIL) ||
-                    (wme_goal_level < inst->match_goal_level))
+            for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
             {
 
-#ifdef DEBUG_GDS
-                if (pref_for_this_wme == NIL)
+                if (cond->type != POSITIVE_CONDITION)
                 {
-                    print(thisAgent, "         this wme has no preferences (it's an arch-created wme)\n");
-                }
-                else if (wme_goal_level < inst->match_goal_level)
-                {
-                    print(thisAgent, "         this wme is in the supergoal\n");
-                }
-                print_with_symbols(thisAgent, "inst->match_goal [%y]\n" , inst->match_goal);
-#endif
-
-                if (wme_matching_this_cond->gds != NIL)
-                {
-                    /* Then we want to check and see if the old GDS value
-                    * should be changed */
-                    if (wme_matching_this_cond->gds->goal == NIL)
-                    {
-                        /* The goal is NIL: meaning that the goal for the GDS
-                        * is no longer around */
-                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
-                                             wme_matching_this_cond, wme,
-                                             gds_next, gds_prev);
-
-                        /* We have to check for GDS removal anytime we take a
-                        * WME off the GDS wme list, not just when a WME is
-                        * removed from memory. */
-                        if (!wme_matching_this_cond->gds->wmes_in_gds)
-                        {
-                            if (wme_matching_this_cond->gds->goal)
-                            {
-                                wme_matching_this_cond->gds->goal->id->gds = NIL;
-                            }
-                            thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
-
-#ifdef DEBUG_GDS
-                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
-#endif
-                        }
-
-                        /* JC ADDED: Separate adding wme to GDS as a function */
-                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
-
-                        //                  wme_matching_this_cond->gds = inst->match_goal->id->gds;
-                        //                  insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                        //                     wme_matching_this_cond, gds_next,
-                        //                     gds_prev);
-#ifdef DEBUG_GDS
-                        print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
-#endif
-
-                    }
-                    else if (wme_matching_this_cond->gds->goal->id->level >
-                             inst->match_goal_level)
-                    {
-                        /* if the WME currently belongs to the GDS of a goal below
-                        * the current one */
-                        /* 1. Take WME off old (current) GDS list
-                        * 2. Check to see if old GDS WME list is empty.  If so,
-                        *         remove(free) it.
-                        * 3. Add WME to new GDS list
-                        * 4. Update WME pointer to new GDS list
-                        */
-                        if (inst->match_goal_level == 1)
-                        {
-                            print(thisAgent, "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
-                        }
-
-                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
-                                             wme_matching_this_cond, wme,
-                                             gds_next, gds_prev);
-                        if (!wme_matching_this_cond->gds->wmes_in_gds)
-                        {
-                            if (wme_matching_this_cond->gds->goal)
-                            {
-                                wme_matching_this_cond->gds->goal->id->gds = NIL;
-                            }
-                            thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
-
-#ifdef DEBUG_GDS
-                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
-#endif
-                        }
-                        /* JC ADDED: Separate adding wme to GDS as a function */
-                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
-
-                        //                  wme_matching_this_cond->gds = inst->match_goal->id->gds;
-                        //                  insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                        //                     wme_matching_this_cond, gds_next,
-                        //                     gds_prev);
-#ifdef DEBUG_GDS
-                        print(thisAgent, "\n       ....switching from old to new GDS list....\n");
-#endif
-                        wme_matching_this_cond->gds = inst->match_goal->id->gds;
-                    }
-                }
-                else
-                {
-                    /* We know that the WME should be in the GDS of the current
-                    * goal if the WME's GDS does not already exist.
-                    * (i.e., if NIL GDS) */
-
-                    /* JC ADDED: Separate adding wme to GDS as a function */
-                    add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
-
-                    //               wme_matching_this_cond->gds = inst->match_goal->id->gds;
-                    //               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                    //                  wme_matching_this_cond, gds_next, gds_prev);
-
-                    if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
-                    {
-                        print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
-                    }
-#ifdef DEBUG_GDS
-                    print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
-#endif
-                } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
-
-
-#ifdef DEBUG_GDS
-                print(thisAgent, "            Added WME to GDS for goal = %d",
-                      wme_matching_this_cond->gds->goal->id->level);
-                print_with_symbols(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
-#endif
-            } /* end "wme in supergoal or arch-supported" */
-            else
-            {
-                /* wme must be local */
-
-                /* if wme's pref is o-supported, then just ignore it and
-                * move to next condition */
-                if (pref_for_this_wme->o_supported == true)
-                {
-#ifdef DEBUG_GDS
-                    print(thisAgent, "         this wme is local and o-supported\n");
-#endif
                     continue;
                 }
 
+                /* We'll deal with negative instantiations after we get the
+                 * positive ones figured out */
+
+                wme_matching_this_cond = cond->bt.wme_;
+                wme_goal_level         = cond->bt.level;
+                pref_for_this_wme      = wme_matching_this_cond->preference;
+
+#ifdef DEBUG_GDS
+                print(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
+                    wme_goal_level);
+                print_wme(thisAgent, wme_matching_this_cond);
+
+                if (pref_for_this_wme)
+                {
+                    print(thisAgent, "       pref_for_this_wme                        : ");
+                    print_preference(thisAgent, pref_for_this_wme);
+                }
+#endif
+
+
+                /* WME is in a supergoal or is arch-supported WME
+                 *  (except for fake instantiations, which do have prefs, so
+                 *  they get handled under "wme is local and i-supported")
+                 */
+                if ((pref_for_this_wme == NIL) ||
+                    (wme_goal_level < inst->match_goal_level))
+                {
+
+#ifdef DEBUG_GDS
+                    if (pref_for_this_wme == NIL)
+                    {
+                        print(thisAgent, "         this wme has no preferences (it's an arch-created wme)\n");
+                    }
+                    else if (wme_goal_level < inst->match_goal_level)
+                    {
+                        print(thisAgent, "         this wme is in the supergoal\n");
+                    }
+                    print_with_symbols(thisAgent, "inst->match_goal [%y]\n" , inst->match_goal);
+#endif
+
+                    if (wme_matching_this_cond->gds != NIL)
+                    {
+                        /* Then we want to check and see if the old GDS value
+                         * should be changed */
+                        if (wme_matching_this_cond->gds->goal == NIL)
+                        {
+                            /* The goal is NIL: meaning that the goal for the GDS
+                             * is no longer around */
+                            fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
+                                wme_matching_this_cond, wme,
+                                gds_next, gds_prev);
+
+                            /* We have to check for GDS removal anytime we take a
+                             * WME off the GDS wme list, not just when a WME is
+                             * removed from memory. */
+                            if (!wme_matching_this_cond->gds->wmes_in_gds)
+                            {
+                                if (wme_matching_this_cond->gds->goal)
+                                {
+                                    wme_matching_this_cond->gds->goal->id->gds = NIL;
+                                }
+                                thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
+
+#ifdef DEBUG_GDS
+                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+#endif
+                            }
+
+                            /* JC ADDED: Separate adding wme to GDS as a function */
+                            add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
+
+                            //                  wme_matching_this_cond->gds = inst->match_goal->id->gds;
+                            //                  insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                            //                     wme_matching_this_cond, gds_next,
+                            //                     gds_prev);
+#ifdef DEBUG_GDS
+                            print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+#endif
+
+                        }
+                        else if (wme_matching_this_cond->gds->goal->id->level >
+                    inst->match_goal_level)
+                        {
+                            /* if the WME currently belongs to the GDS of a goal below
+                             * the current one */
+                            /* 1. Take WME off old (current) GDS list
+                             * 2. Check to see if old GDS WME list is empty.  If so,
+                             *         remove(free) it.
+                             * 3. Add WME to new GDS list
+                             * 4. Update WME pointer to new GDS list
+                             */
+                            if (inst->match_goal_level == 1)
+                            {
+                                print(thisAgent, "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                            }
+
+                            fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
+                                wme_matching_this_cond, wme,
+                                gds_next, gds_prev);
+                            if (!wme_matching_this_cond->gds->wmes_in_gds)
+                            {
+                                if (wme_matching_this_cond->gds->goal)
+                                {
+                                    wme_matching_this_cond->gds->goal->id->gds = NIL;
+                                }
+                                thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
+
+#ifdef DEBUG_GDS
+                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+#endif
+                            }
+                            /* JC ADDED: Separate adding wme to GDS as a function */
+                            add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
+
+                            //                  wme_matching_this_cond->gds = inst->match_goal->id->gds;
+                            //                  insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                            //                     wme_matching_this_cond, gds_next,
+                            //                     gds_prev);
+#ifdef DEBUG_GDS
+                            print(thisAgent, "\n       ....switching from old to new GDS list....\n");
+#endif
+                            wme_matching_this_cond->gds = inst->match_goal->id->gds;
+                        }
+                    }
+                    else
+                    {
+                        /* We know that the WME should be in the GDS of the current
+                         * goal if the WME's GDS does not already exist.
+                         * (i.e., if NIL GDS) */
+
+                        /* JC ADDED: Separate adding wme to GDS as a function */
+                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
+
+                        //               wme_matching_this_cond->gds = inst->match_goal->id->gds;
+                        //               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                        //                  wme_matching_this_cond, gds_next, gds_prev);
+
+                        if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
+                        {
+                            print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                        }
+#ifdef DEBUG_GDS
+                        print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
+#endif
+                    } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
+
+
+#ifdef DEBUG_GDS
+                    print(thisAgent, "            Added WME to GDS for goal = %d",
+                        wme_matching_this_cond->gds->goal->id->level);
+                    print_with_symbols(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
+#endif
+                } /* end "wme in supergoal or arch-supported" */
                 else
                 {
-                    /* wme's pref is i-supported, so remember it's instantiation
-                    * for later examination */
+                    /* wme must be local */
 
-                    /* this test avoids "backtracing" through the top state */
-                    if (inst->match_goal_level == 1)
+                    /* if wme's pref is o-supported, then just ignore it and
+                     * move to next condition */
+                    if (pref_for_this_wme->o_supported == true)
                     {
 #ifdef DEBUG_GDS
-                        print(thisAgent, "         don't back up through top state\n");
-                        if (inst->prod)
-                            if (inst->prod_name)
-                            {
-                                print_with_symbols(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod_name);
-                            }
+                        print(thisAgent, "         this wme is local and o-supported\n");
 #endif
                         continue;
                     }
 
-                    else   /* (inst->match_goal_level != 1) */
+                    else
                     {
-#ifdef DEBUG_GDS
-                        print(thisAgent, "         this wme is local and i-supported\n");
-#endif
-                        s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
-                        if (s == NIL)
+                        /* wme's pref is i-supported, so remember it's instantiation
+                         * for later examination */
+
+                        /* this test avoids "backtracing" through the top state */
+                        if (inst->match_goal_level == 1)
                         {
-                            /* this must be an arch-wme from a fake instantiation */
-
 #ifdef DEBUG_GDS
-                            print(thisAgent, "here's the wme with no slot:\t");
-                            print_wme(thisAgent, pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
-#endif
-
-                            /* this is the same code as above, just using the
-                            * differently-named pointer.  it probably should
-                            * be a subroutine */
-                            {
-                                wme* fake_inst_wme_cond;
-
-                                fake_inst_wme_cond = pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_;
-                                if (fake_inst_wme_cond->gds != NIL)
+                            print(thisAgent, "         don't back up through top state\n");
+                            if (inst->prod)
+                                if (inst->prod_name)
                                 {
-                                    /* Then we want to check and see if the old GDS
-                                    * value should be changed */
-                                    if (fake_inst_wme_cond->gds->goal == NIL)
-                                    {
-                                        /* The goal is NIL: meaning that the goal for
-                                        * the GDS is no longer around */
-
-                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                             fake_inst_wme_cond, wme,
-                                                             gds_next, gds_prev);
-
-                                        /* We have to check for GDS removal anytime we take
-                                        * a WME off the GDS wme list, not just when a WME
-                                        * is removed from memory. */
-                                        if (!fake_inst_wme_cond->gds->wmes_in_gds)
-                                        {
-                                            if (fake_inst_wme_cond->gds->goal)
-                                            {
-                                                fake_inst_wme_cond->gds->goal->id->gds = NIL;
-                                            }
-                                            thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
-
-#ifdef DEBUG_GDS
-                                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
-#endif
-                                        }
-
-                                        /* JC ADDED: Separate adding wme to GDS as a function */
-                                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
-
-                                        //                                 fake_inst_wme_cond->gds = inst->match_goal->id->gds;
-                                        //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                        //                                                       fake_inst_wme_cond, gds_next, gds_prev);
-#ifdef DEBUG_GDS
-                                        print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
-#endif
-                                    }
-                                    else if (fake_inst_wme_cond->gds->goal->id->level > inst->match_goal_level)
-                                    {
-                                        /* if the WME currently belongs to the GDS of a
-                                        *goal below the current one */
-                                        /* 1. Take WME off old (current) GDS list
-                                        * 2. Check to see if old GDS WME list is empty.
-                                        *    If so, remove(free) it.
-                                        * 3. Add WME to new GDS list
-                                        * 4. Update WME pointer to new GDS list
-                                        */
-                                        if (inst->match_goal_level == 1)
-                                        {
-                                            print(thisAgent, "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
-                                        }
-
-                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
-                                                             fake_inst_wme_cond, wme,
-                                                             gds_next, gds_prev);
-                                        if (!fake_inst_wme_cond->gds->wmes_in_gds)
-                                        {
-                                            if (fake_inst_wme_cond->gds->goal)
-                                            {
-                                                fake_inst_wme_cond->gds->goal->id->gds = NIL;
-                                            }
-                                            thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
-
-#ifdef DEBUG_GDS
-                                            print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
-#endif
-                                        }
-
-                                        /* JC ADDED: Separate adding wme to GDS as a function */
-                                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
-
-                                        //                                 fake_inst_wme_cond->gds = inst->match_goal->id->gds;
-                                        //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                        //                                    fake_inst_wme_cond, gds_next,
-                                        //                                    gds_prev);
-#ifdef DEBUG_GDS
-                                        print(thisAgent, "\n       .....switching from old to new GDS list....\n");
-#endif
-                                        fake_inst_wme_cond->gds = inst->match_goal->id->gds;
-                                    }
+                                    print_with_symbols(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod_name);
                                 }
-                                else
-                                {
-                                    /* We know that the WME should be in the GDS of
-                                    * the current goal if the WME's GDS does not
-                                    * already exist. (i.e., if NIL GDS) */
-
-                                    /* JC ADDED: Separate adding wme to GDS as a function */
-                                    add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
-
-                                    //                              fake_inst_wme_cond->gds = inst->match_goal->id->gds;
-                                    //                              insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                    //                                                    fake_inst_wme_cond,
-                                    //                                                    gds_next, gds_prev);
-
-                                    if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
-                                    {
-                                        print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
-                                    }
-#ifdef DEBUG_GDS
-                                    print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
 #endif
-                                }
-#ifdef DEBUG_GDS
-                                print(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
-                                print_with_symbols(thisAgent, " [%y]\n",
-                                                   fake_inst_wme_cond->gds->goal);
-#endif
-                            }  /* matches { wme *fake_inst_wme_cond  */
+                            continue;
                         }
-                        else
+
+                        else   /* (inst->match_goal_level != 1) */
                         {
-                            /* this was the original "local & i-supported" action */
-                            for (pref = s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
-                                    pref; pref = pref->next)
+#ifdef DEBUG_GDS
+                            print(thisAgent, "         this wme is local and i-supported\n");
+#endif
+                            s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
+                            if (s == NIL)
                             {
+                                /* this must be an arch-wme from a fake instantiation */
 
 #ifdef DEBUG_GDS
-                                print(thisAgent, "           looking at pref for the wme: ");
-                                print_preference(thisAgent, pref);
+                                print(thisAgent, "here's the wme with no slot:\t");
+                                print_wme(thisAgent, pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
 #endif
 
+                                /* this is the same code as above, just using the
+                                 * differently-named pointer.  it probably should
+                                 * be a subroutine */
+                                {
+                                    wme* fake_inst_wme_cond;
 
-                                /* REW: 2004-05-27: Bug fix
-                                   We must check that the value with acceptable pref for the slot
-                                   is the same as the value for the wme in the condition, since
-                                   operators can have acceptable preferences for values other than
-                                   the WME value.  We dont want to backtrack thru acceptable prefs
-                                   for other operators */
+                                    fake_inst_wme_cond = pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_;
+                                    if (fake_inst_wme_cond->gds != NIL)
+                                    {
+                                        /* Then we want to check and see if the old GDS
+                                         * value should be changed */
+                                        if (fake_inst_wme_cond->gds->goal == NIL)
+                                        {
+                                            /* The goal is NIL: meaning that the goal for
+                                             * the GDS is no longer around */
 
-                                if (pref->value == wme_matching_this_cond->value)
+                                            fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                fake_inst_wme_cond, wme,
+                                                gds_next, gds_prev);
+
+                                            /* We have to check for GDS removal anytime we take
+                                             * a WME off the GDS wme list, not just when a WME
+                                             * is removed from memory. */
+                                            if (!fake_inst_wme_cond->gds->wmes_in_gds)
+                                            {
+                                                if (fake_inst_wme_cond->gds->goal)
+                                                {
+                                                    fake_inst_wme_cond->gds->goal->id->gds = NIL;
+                                                }
+                                                thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
+
+#ifdef DEBUG_GDS
+                                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+#endif
+                                            }
+
+                                            /* JC ADDED: Separate adding wme to GDS as a function */
+                                            add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
+
+                                            //                                 fake_inst_wme_cond->gds = inst->match_goal->id->gds;
+                                            //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                            //                                                       fake_inst_wme_cond, gds_next, gds_prev);
+#ifdef DEBUG_GDS
+                                            print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+#endif
+                                        }
+                                        else if (fake_inst_wme_cond->gds->goal->id->level > inst->match_goal_level)
+                                        {
+                                            /* if the WME currently belongs to the GDS of a
+                                             *goal below the current one */
+                                            /* 1. Take WME off old (current) GDS list
+                                             * 2. Check to see if old GDS WME list is empty.
+                                             *    If so, remove(free) it.
+                                             * 3. Add WME to new GDS list
+                                             * 4. Update WME pointer to new GDS list
+                                             */
+                                            if (inst->match_goal_level == 1)
+                                            {
+                                                print(thisAgent, "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                                            }
+
+                                            fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
+                                                fake_inst_wme_cond, wme,
+                                                gds_next, gds_prev);
+                                            if (!fake_inst_wme_cond->gds->wmes_in_gds)
+                                            {
+                                                if (fake_inst_wme_cond->gds->goal)
+                                                {
+                                                    fake_inst_wme_cond->gds->goal->id->gds = NIL;
+                                                }
+                                                thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
+
+#ifdef DEBUG_GDS
+                                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+#endif
+                                            }
+
+                                            /* JC ADDED: Separate adding wme to GDS as a function */
+                                            add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
+
+                                            //                                 fake_inst_wme_cond->gds = inst->match_goal->id->gds;
+                                            //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                            //                                    fake_inst_wme_cond, gds_next,
+                                            //                                    gds_prev);
+#ifdef DEBUG_GDS
+                                            print(thisAgent, "\n       .....switching from old to new GDS list....\n");
+#endif
+                                            fake_inst_wme_cond->gds = inst->match_goal->id->gds;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /* We know that the WME should be in the GDS of
+                                         * the current goal if the WME's GDS does not
+                                         * already exist. (i.e., if NIL GDS) */
+
+                                        /* JC ADDED: Separate adding wme to GDS as a function */
+                                        add_wme_to_gds(thisAgent, inst->match_goal->id->gds, fake_inst_wme_cond);
+
+                                        //                              fake_inst_wme_cond->gds = inst->match_goal->id->gds;
+                                        //                              insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                        //                                                    fake_inst_wme_cond,
+                                        //                                                    gds_next, gds_prev);
+
+                                        if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
+                                        {
+                                            print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                                        }
+#ifdef DEBUG_GDS
+                                        print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
+#endif
+                                    }
+#ifdef DEBUG_GDS
+                                    print(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
+                                    print_with_symbols(thisAgent, " [%y]\n",
+                                        fake_inst_wme_cond->gds->goal);
+#endif
+                                }  /* matches { wme *fake_inst_wme_cond  */
+                            }
+                            else
+                            {
+                                /* this was the original "local & i-supported" action */
+                                for (pref = s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
+                                    pref; pref = pref->next)
                                 {
 
+#ifdef DEBUG_GDS
+                                    print(thisAgent, "           looking at pref for the wme: ");
+                                    print_preference(thisAgent, pref);
+#endif
 
-                                    /* REW BUG: may have to go over all insts regardless
-                                    * of this visited_already flag... */
 
-                                    if (pref->inst->GDS_evaluated_already == false)
+                                    /* REW: 2004-05-27: Bug fix
+                                       We must check that the value with acceptable pref for the slot
+                                       is the same as the value for the wme in the condition, since
+                                       operators can have acceptable preferences for values other than
+                                       the WME value.  We dont want to backtrack thru acceptable prefs
+                                       for other operators */
+
+                                    if (pref->value == wme_matching_this_cond->value)
                                     {
 
-#ifdef DEBUG_GDS
-                                        print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
-#endif
-                                        //////////////////////////////////////////////////////
-                                        /* REW: 2003-12-07 */
-                                        /* If the preference comes from a lower level inst, then
-                                        ignore it. */
-                                        /* Preferences from lower levels must come from result
-                                        instantiations;
-                                        we just want to use the justification/chunk
-                                        instantiations at the match goal level*/
-                                        if (pref->inst->match_goal_level <= inst->match_goal_level)
+
+                                        /* REW BUG: may have to go over all insts regardless
+                                         * of this visited_already flag... */
+
+                                        if (pref->inst->GDS_evaluated_already == false)
                                         {
 
-
-
+#ifdef DEBUG_GDS
+                                            print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
+#endif
                                             //////////////////////////////////////////////////////
-                                            uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-                                            pref->inst->GDS_evaluated_already = true;
+                                            /* REW: 2003-12-07 */
+                                            /* If the preference comes from a lower level inst, then
+                                            ignore it. */
+                                            /* Preferences from lower levels must come from result
+                                            instantiations;
+                                            we just want to use the justification/chunk
+                                            instantiations at the match goal level*/
+                                            if (pref->inst->match_goal_level <= inst->match_goal_level)
+                                            {
+
+
+
+                                                //////////////////////////////////////////////////////
+                                                uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+                                                pref->inst->GDS_evaluated_already = true;
+                                                //////////////////////////////////////////////////////
+                                            }
+#ifdef DEBUG_GDS
+                                            else
+                                            {
+                                                print_with_symbols(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
+                                                pref->inst->GDS_evaluated_already = true;
+                                            }
+#endif
+                                            /* REW: 2003-12-07 */
+
                                             //////////////////////////////////////////////////////
                                         }
 #ifdef DEBUG_GDS
                                         else
                                         {
-                                            print_with_symbols(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
-                                            pref->inst->GDS_evaluated_already = true;
+                                            print(thisAgent, "           the inst producing this pref was already explored; skipping it\n");
                                         }
 #endif
-                                        /* REW: 2003-12-07 */
 
-                                        //////////////////////////////////////////////////////
                                     }
 #ifdef DEBUG_GDS
                                     else
                                     {
-                                        print(thisAgent, "           the inst producing this pref was already explored; skipping it\n");
+                                        print(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
                                     }
 #endif
-
-                                }
-#ifdef DEBUG_GDS
-                                else
-                                {
-                                    print(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
-                                }
-#endif
-                            }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
+                                }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
+                            }
                         }
                     }
                 }
-            }
-        }  /* for (cond = inst->top_of_instantiated_cond ...  *;*/
-
+            }  /* for (cond = inst->top_of_instantiated_cond ...  *;*/
+        }
 
         /* remove just used instantiation from list */
 

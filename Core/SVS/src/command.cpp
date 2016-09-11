@@ -96,7 +96,7 @@ void command::parse_substructure(size_t& size, uint64_t& max_time)
                 max_time = tt;
             }
             
-            if (v->is_identifier() && (v->get_tc_num() != tc))
+            if (v->is_sti() && (v->get_tc_num() != tc))
             {
                 v->set_tc_num(tc);
                 to_process.push(v);

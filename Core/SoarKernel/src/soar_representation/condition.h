@@ -110,15 +110,14 @@ void        copy_condition_list(agent* thisAgent, condition* top_cond, condition
 void        deallocate_condition(agent* thisAgent, condition*& cond);
 void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
-void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                     ::list** var_list, bool add_LTIs = false);
+void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, ::list** var_list);
 void        unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
 
 int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);
 bool        canonical_cond_greater(condition* c1, condition* c2);
 
-void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map = NULL);
-void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map = NULL);
+void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
+void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
 
 #endif

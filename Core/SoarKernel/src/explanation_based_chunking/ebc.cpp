@@ -39,14 +39,14 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
 
     /* Create data structures used for EBC */
-    o_id_to_var_map = new id_to_sym_map_type();
-    instantiation_identities = new inst_to_id_map_type();
-    id_to_rule_sym_debug_map = new id_to_sym_map_type();
+    o_id_to_var_map = new id_to_sym_map();
+    instantiation_identities = new inst_to_id_map();
+    id_to_rule_sym_debug_map = new id_to_sym_map();
     constraints = new constraint_list();
-    attachment_points = new attachment_points_map_type();
-    unification_map = new id_to_id_map_type();
+    attachment_points = new attachment_points_map();
+    unification_map = new id_to_id_map();
     cond_merge_map = new triple_merge_map();
-    rhs_var_to_match_map = new sym_to_sym_map_type();
+    rhs_var_to_match_map = new sym_to_sym_map();
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */

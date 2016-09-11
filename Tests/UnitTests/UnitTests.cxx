@@ -11,6 +11,5 @@
 #include "src/multiagenttest.cpp"
 #include "src/sanitytest.cpp"
 #include "src/simplelistener.cpp"
-#include "src/smemmathtest.cpp"
 #include "src/smemtest.cpp"
 #include "src/tokenizertest.cpp"

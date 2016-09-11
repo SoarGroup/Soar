@@ -21,8 +21,6 @@ class smem_param_container: public soar_module::param_container
         enum cache_choices { cache_S, cache_M, cache_L };
         enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
         enum opt_choices { opt_safety, opt_speed };
-
-        enum merge_choices { merge_none, merge_add };
         enum act_choices { act_recency, act_frequency, act_base };
 
         soar_module::boolean_param* learning;
@@ -39,7 +37,6 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::integer_param* thresh;
 
-        soar_module::constant_param<merge_choices>* merge;
         soar_module::boolean_param* activate_on_query;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
@@ -48,8 +45,6 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<base_update_choices>* base_update;
 
         soar_module::int_set_param* base_incremental_threshes;
-
-        soar_module::boolean_param* mirroring;
 
         smem_param_container(agent* new_agent);
 };

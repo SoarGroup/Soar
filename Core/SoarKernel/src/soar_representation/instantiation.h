@@ -11,12 +11,6 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-/* TEMPORARY HACK (Ideally this should be doable through
-   the external kernel interface but for now using a
-   couple of global STL lists to get this information
-   from the rhs function to this preference adding code)*/
-extern wme* glbDeepCopyWMEs;
-
 typedef struct pi_struct
 {
     struct pi_struct* next, *prev;

@@ -19,9 +19,11 @@
 
 #include "sml_KernelSML.h"
 
+#include "agent.h"
 #include "rete.h"
 #include "sml_AgentSML.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "production.h"
 #include "agent.h"
 #include "symbol_manager.h"

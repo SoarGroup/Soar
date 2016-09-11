@@ -6,21 +6,19 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "run_soar.h"
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
 
-#include "sml_Names.h"
-
-#include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
+#include "sml_Names.h"
+#include "sml_Utils.h"
 
 #include "agent.h"
 #include "production.h"
+#include "run_soar.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 

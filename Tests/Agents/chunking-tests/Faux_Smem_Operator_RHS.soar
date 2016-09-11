@@ -4,7 +4,7 @@
 srand 23
 chunk always
 smem --set learning on
-smem -a {(L1 ^operator L2)}
+smem -a {(<l1> ^operator <l2>)}
 
 sp {propose*get-smem-top
    (state <s> ^superstate nil)
@@ -29,26 +29,31 @@ sp {apply*check-smem
 }
 
 sp {apply*check-smem*success-top
-      (state <s> ^operator.name get-fake
-              ^smem <smem>)
+      (state <s> ^superstate nil
+                 ^operator.name get-fake
+                 ^smem <smem>)
    (<smem> ^command <command> ^result <result>)
    (<command> ^query <q>)
    (<result> ^retrieved <retrieved> ^success <q>)
+   (<retrieved> ^<operator> <fake-op>)
 -->
-   (<s> ^copied-result-top <retrieved>)
+   (<s> ^<operator> <fake-op>
+        ^top-retrieve <retrieved>)
    (<command> ^query <q> -)
    (write  |Copied fake operator | <retrieved> (crlf))
 }
 
-sp {apply*check-smem*success
+sp {apply*chunk*check-smem*success
    (state <s> ^operator.name get-fake
               ^superstate <ss>
               ^smem <smem>)
    (<smem> ^command <command> ^result <result>)
    (<command> ^query <q>)
    (<result> ^retrieved <retrieved> ^success <q>)
--->
-   (<ss> ^copied-result <retrieved>)
+   (<retrieved> ^<operator> <fake-op>)
+   -->
+   (<ss> ^<operator> <fake-op>
+         ^substate-retrieved <retrieved>)
    (<command> ^query <q> -)
    (write (crlf) |Copied fake operator to top state | <retrieved> (crlf))
 }

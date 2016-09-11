@@ -24,6 +24,7 @@
 #include "sml_Utils.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 #include "symbol_manager.h"

@@ -331,6 +331,34 @@ Symbol* accept_rhs_function_code(agent* thisAgent, list* /*args*/, void* /*user_
 }
 
 
+Symbol*
+lti_id_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+    Symbol* sym, * returnSym;
+
+    if (!args)
+    {
+        print(thisAgent,  "Error: '@' function called with no arguments.\n");
+        return NIL;
+    }
+
+    sym = static_cast<Symbol*>(args->first);
+    if (!sym->is_lti())
+    {
+        print_with_symbols(thisAgent, "Error: %y is not linked to a semantic identifier.\n", sym);
+        return NIL;
+    }
+
+    if (args->rest)
+    {
+        print(thisAgent,  "Error: '@' takes exactly 1 argument.\n");
+        return NIL;
+    }
+
+    returnSym = thisAgent->symbolManager->make_int_constant(sym->id->LTI_ID);
+    return returnSym;
+}
+
 /* ---------------------------------------------------------------------
   Capitalize a Symbol
 ------------------------------------------------------------------------ */
@@ -640,7 +668,7 @@ void recursive_wme_copy(agent* thisAgent,
     Symbol* new_value = curwme->value;
 
     /* Handling the case where the attribute is an id symbol */
-    if (curwme->attr->is_identifier())
+    if (curwme->attr->is_sti())
     {
         /* Have I already made a new identifier for this identifier */
         std::unordered_map<Symbol*, Symbol*>::iterator it = processedSymbols.find(curwme->attr);
@@ -687,7 +715,7 @@ void recursive_wme_copy(agent* thisAgent,
 
     /* Making the new wme (Note just reusing the wme data structure, these
        wme's actually get converted into preferences later).*/
-    wme* oldGlobalWme = glbDeepCopyWMEs;
+    wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
 
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
@@ -702,8 +730,8 @@ void recursive_wme_copy(agent* thisAgent,
         thisAgent->symbolManager->symbol_add_ref(new_value);
     }
 
-    glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
-    glbDeepCopyWMEs->next = oldGlobalWme;
+    thisAgent->WM->glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
+    thisAgent->WM->glbDeepCopyWMEs->next = oldGlobalWme;
 
 }
 
@@ -762,7 +790,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     /* Getting the argument symbol */
     Symbol* baseid = static_cast<Symbol*>(args->first);
-    if (!baseid->is_identifier())
+    if (!baseid->is_sti())
     {
         return thisAgent->symbolManager->make_str_constant("*symbol not id*");
     }
@@ -844,6 +872,8 @@ void init_built_in_rhs_functions(agent* thisAgent)
                      0, true, false, 0);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code,
                      0, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), lti_id_rhs_function_code,
+                     1, true, false, 0);
     /*
       Replaced with a gSKI rhs function
       add_rhs_function (thisAgent, make_str_constant (thisAgent, "interrupt"),

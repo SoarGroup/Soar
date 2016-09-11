@@ -67,10 +67,6 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testSVS);
 #endif
         CPPUNIT_TEST(testPreferenceSemantics);                  // bug 234
-        /* The following test no longer works with EBC.  We might be able to
-         * salvage at some point to still test NCC matching.  This test also
-         * seemed to often reveal unrelated bugs, so we'd like to keep it */
-//        CPPUNIT_TEST(testNegatedConjunctiveChunkLoopBug510);    // bug 510
         CPPUNIT_TEST(testNegatedConjunctiveTestUnbound);        // bug 517
         CPPUNIT_TEST(testStopSoarVsInterrupt);                  // bug 782
         CPPUNIT_TEST(testMatchTimeInterrupt);                   // bug 873
@@ -86,6 +82,10 @@ class FullTests : public CPPUNIT_NS::TestCase
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testCommandToFile);
 #endif
+        /* The following test no longer works with EBC.  We might be able to
+         * salvage at some point to still test NCC matching.  This test also
+         * seemed to often reveal unrelated bugs, so we'd like to keep it */
+        // CPPUNIT_TEST(testNegatedConjunctiveChunkLoopBug510);    // bug 510
         /* -- testShutdownHandlerShutdown has been disabled for at least a couple years.
          *    Fails and causes issues with other tests connecting to Soar.
          *

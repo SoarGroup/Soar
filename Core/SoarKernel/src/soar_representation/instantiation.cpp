@@ -68,13 +68,6 @@ typedef std::list< instantiation* > inst_mpool_list;
 typedef std::list< condition* > cond_mpool_list;
 #endif
 
-/* TEMPORARY HACK (Ideally this should be doable through
- the external kernel interface but for now using a
- couple of global STL lists to get this information
- from the rhs function to this preference adding code)*/
-wme* glbDeepCopyWMEs = NULL;
-
-
 void init_instantiation_pool(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
@@ -322,42 +315,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
 
         result = rhs_value_to_symbol(rv);
-        /*
-         Long-Winded Case-by-Case [Hopeful] Explanation
-
-         This has to do with long-term identifiers (LTIs) that exist within productions (including chunks/justifications).
-         The real issue is that identifiers, upon creation, require a goal level (used for promotion/demotion/garbage collection).
-         At the time of parsing a rule, we don't have this information, so we give it an invalid "unknown" value.
-         This is OK on the condition side of a rule, since the rete (we think) will just consider it another symbol used for matching.
-         However, it becomes hairy when LTIs are on the action side of a rule, with respect to the state of the LTI in working memory and the rule LHS.
-         Consider the following cases:
-
-         1. Identifier is LTI, does NOT exist as a LHS symbol
-         - we do NOT support this!!!  bad things will likely happen due to potential for adding an identifier to working memory
-         with an unknown goal level.
-         - Note:  The re-orderer has been changed so that we can allow LTIs in the identifier element if it is indirectly
-                  linked to an identifier with a level
-
-         2. Attribute/Value is LTI, does NOT exist as a LHS symbol (!!!!!IMPORTANT CASE!!!!!)
-         - the caller of this function will supply new_id_level (probably based upon the level of the id).
-         - if this is valid (i.e. greater than 0), we use it.  else, ignore.
-         - we have a huge assert on add_wme_to_wm that will kill soar if we try to add an identifier to working memory with an invalid level.
-
-         3. Identifier/Attribute/Value is LTI, DOES exist as LHS symbol
-         - in this situation, we are *guaranteed* that the resulting LTI (since it is in WM) has a valid goal level.
-         - it should be noted that if a value, the level of the LTI may change during promotion/demotion/garbage collection,
-         but this is natural Soar behavior and outside our purvue.
-
-         */
-        if ((result->is_lti()) &&
-                (result->id->level == SMEM_LTI_UNKNOWN_LEVEL) &&
-                (new_id_level > 0))
-        {
-            dprint(DT_UNKNOWN_LEVEL, "Setting level for LTI %y from SMEM_LTI_UNKNOWN_LEVEL to %d.\n", result, new_id_level);
-            result->id->level = new_id_level;
-            result->id->promotion_level = new_id_level;
-        }
-
+        assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -502,7 +460,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     {
         goto abort_execute_action;
     }
-    if (!lId->is_identifier())
+    if (!lId->is_sti())
     {
         print_with_symbols(thisAgent,
                            "Error: RHS makes a preference for %y (not an identifier)\n",
@@ -971,7 +929,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 
         /* If glbDeepCopyWMEs exists it must have been the rhs function executed, so
          * save the goal stack level for preferences that it generates. */
-        if (pref && glbDeepCopyWMEs)
+        if (pref && thisAgent->WM->glbDeepCopyWMEs)
         {
             glbDeepCopyWMELevel = pref->id->id->level;
         }
@@ -1025,26 +983,25 @@ void create_instantiation(agent* thisAgent, production* prod,
 
              Getting the next pref from the set of possible prefs
              added by the deep copy rhs function */
-            if (glbDeepCopyWMEs != 0)
+            if (thisAgent->WM->glbDeepCopyWMEs != 0)
             {
-                wme* tempwme = glbDeepCopyWMEs;
-//                pref = make_preference(thisAgent, a->preference_type,
-//                    tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
-                if (tempwme->id->id->level == 0)
+                wme* tempwme = thisAgent->WM->glbDeepCopyWMEs;
+                if (tempwme->id->id->level == NO_WME_LEVEL)
                 {
                     tempwme->id->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->attr->is_identifier() && tempwme->attr->id->level == 0)
+                if (tempwme->attr->is_sti() && tempwme->attr->id->level == NO_WME_LEVEL)
                 {
                     tempwme->attr->id->level = glbDeepCopyWMELevel;
                 }
-                if (tempwme->value->is_identifier() && tempwme->value->id->level == 0)
+                if (tempwme->value->is_sti() && tempwme->value->id->level == NO_WME_LEVEL)
                 {
                     tempwme->value->id->level = glbDeepCopyWMELevel;
                 }
 
+//                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
                 pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
-                glbDeepCopyWMEs = tempwme->next;
+                thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
             }
             else
@@ -1095,7 +1052,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- build chunks/justifications if necessary --- */
     thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
 
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
@@ -1429,19 +1386,87 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions)
+void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
 {
-    dprint_header(DT_MILESTONES, PrintBoth, "make_fake_instantiation() called.\n");
+    preference* pref;
 
-    // make fake instantiation
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
+    pref->o_supported = true;
+    thisAgent->symbolManager->symbol_add_ref(pref->id);
+    thisAgent->symbolManager->symbol_add_ref(pref->attr);
+    thisAgent->symbolManager->symbol_add_ref(pref->value);
+    pref->o_ids.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->o_ids.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->o_ids.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
+
+    pref->inst = inst;
+    pref->inst_next = pref->inst_prev = NULL;
+    pref->in_tm = inTM;
+    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
+}
+
+void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
+{
+    condition * cond;
+
+    cond = make_condition(thisAgent,
+        make_test(thisAgent, pWME->id , EQUALITY_TEST),
+        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
+        make_test(thisAgent, pWME->value, EQUALITY_TEST));
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
+    cond->prev = prev_cond;
+    cond->next = NULL;
+    if (prev_cond != NULL)
+    {
+        prev_cond->next = cond;
+    }
+    else
+    {
+        inst->top_of_instantiated_conditions = cond;
+        inst->bottom_of_instantiated_conditions = cond;
+    }
+    cond->test_for_acceptable_preference = pWME->acceptable;
+    cond->bt.wme_ = pWME;
+    cond->inst = inst;
+
+    #ifndef DO_TOP_LEVEL_REF_CTS
+    if (inst->match_goal_level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        wme_add_ref(pWME);
+    }
+
+    cond->bt.level = pWME->id->id->level;
+    cond->bt.trace = pWME->preference;
+    assert(cond->bt.wme_->preference == cond->bt.trace);
+    if (cond->bt.trace)
+    {
+        #ifndef DO_TOP_LEVEL_REF_CTS
+        if (inst->match_goal_level > TOP_GOAL_LEVEL)
+        #endif
+        {
+            preference_add_ref(cond->bt.trace);
+        }
+    }
+
+    cond->bt.CDPS = NULL;
+    prev_cond = cond;
+}
+
+instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions)
+{
+    dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
+
     instantiation* inst;
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->prod = NULL;
     inst->next = inst->prev = NULL;
     inst->rete_token = NULL;
     inst->rete_wme = NULL;
-    inst->match_goal = state;
-    inst->match_goal_level = state->id->level;
+    inst->match_goal = pState;
+    inst->match_goal_level = pState->id->level;
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
@@ -1455,81 +1480,41 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* state,
     inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
+    thisAgent->SMem->clear_instance_mappings();
     // create preferences
     inst->preferences_generated = NULL;
     {
-        preference* pref;
+        /* May need to change this depending on whether it's a query or retrieval */
+        /* Add these wmes to pActions.  Same for conds
+         * I don't think these are right value elements!*/
+//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, (*(pActions->begin()))->id, true);
+//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*(pConds->begin()))->value, true);
 
-        for (symbol_triple_list::iterator a_it = actions->begin(); a_it != actions->end(); a_it++)
+        for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
         {
-            pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL);
-            pref->o_supported = true;
-            thisAgent->symbolManager->symbol_add_ref(pref->id);
-            thisAgent->symbolManager->symbol_add_ref(pref->attr);
-            thisAgent->symbolManager->symbol_add_ref(pref->value);
-
-            pref->inst = inst;
-            pref->inst_next = pref->inst_prev = NULL;
-
-            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
+            add_pref_to_arch_inst(thisAgent, inst, (*a_it)->id, (*a_it)->attr, (*a_it)->value);
         }
     }
 
-    // create conditions
+    // create pConds
     {
         condition* cond = NULL;
         condition* prev_cond = NULL;
 
-        for (wme_set::iterator c_it = conditions->begin(); c_it != conditions->end(); c_it++)
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->smem_link_wme);
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->cmd_wme);
+        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->result_wme);
+
+        for (wme_set::iterator c_it = pConds->begin(); c_it != pConds->end(); c_it++)
         {
-            // construct the condition
-            cond = make_condition(thisAgent,
-                make_test(thisAgent, (*c_it)->id, EQUALITY_TEST),
-                make_test(thisAgent, (*c_it)->attr, EQUALITY_TEST),
-                make_test(thisAgent, (*c_it)->value, EQUALITY_TEST));
-            cond->prev = prev_cond;
-            cond->next = NULL;
-            if (prev_cond != NULL)
-            {
-                prev_cond->next = cond;
-            }
-            else
-            {
-                inst->top_of_instantiated_conditions = cond;
-                inst->bottom_of_instantiated_conditions = cond;
-            }
-            cond->test_for_acceptable_preference = (*c_it)->acceptable;
-            cond->bt.wme_ = (*c_it);
-            cond->inst = inst;
-
-#ifndef DO_TOP_LEVEL_REF_CTS
-            if (inst->match_goal_level > TOP_GOAL_LEVEL)
-#endif
-            {
-                wme_add_ref((*c_it));
-            }
-
-            cond->bt.level = (*c_it)->id->id->level;
-            cond->bt.trace = (*c_it)->preference;
-
-            if (cond->bt.trace)
-            {
-#ifndef DO_TOP_LEVEL_REF_CTS
-                if (inst->match_goal_level > TOP_GOAL_LEVEL)
-#endif
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-            }
-
-            cond->bt.CDPS = NULL;
-            assert(cond->bt.wme_->preference = cond->bt.trace);
-            prev_cond = cond;
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, (*c_it));
         }
     }
 
-    /* Might not be needed yet, but could be if we add identity information to fake instantiation */
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation(inst->i_id);
+    dprint(DT_PRINT_INSTANTIATIONS,  "%fmake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
+
+    /* Clean up symbol to identity mappings for this instantiation*/
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
 
     return inst;
 }
@@ -1648,7 +1633,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 #endif
     cond->bt.level = ap_wme->id->id->level;
 
-    thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
+    /* Clean up symbol to identity mappings for this instantiation*/
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
 
     /* --- return the fake preference --- */
     return pref;

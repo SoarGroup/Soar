@@ -126,7 +126,7 @@ class Output_Manager
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
-        const char* test_type_to_string_brief(byte test_type);
+        const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
 
@@ -250,7 +250,6 @@ class Output_Manager
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);
 
-        void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
         void print_identifiers(TraceMode mode);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);

@@ -265,7 +265,6 @@ agent* create_soar_agent(char* agent_name)                                      
     // This was moved here so that system parameters could
     // be set before the agent was initialized.
     init_sysparams(thisAgent);
-    thisAgent->parser_syms = NIL;
 
     /* Initializing all the timer structures.  Must be initialized after sysparams */
 #ifndef NO_TIMING_STUFF
@@ -315,16 +314,9 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->explanationMemory;
     delete delete_agent->explanationBasedChunker;
     delete delete_agent->visualizationManager;
-    delete delete_agent->debug_params;
-    delete delete_agent->output_settings;
-
-
     delete_agent->explanationMemory = NULL;
     delete_agent->explanationBasedChunker = NULL;
     delete_agent->visualizationManager = NULL;
-    delete_agent->debug_params = NULL;
-    delete_agent->output_settings = NULL;
-
     #ifndef NO_SVS
         delete delete_agent->svs;
         delete_agent->svs = NULL;
@@ -335,6 +327,10 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->EpMem->clean_up_for_agent_deletion();
     delete_agent->SMem->clean_up_for_agent_deletion();
 
+    delete delete_agent->debug_params;
+    delete delete_agent->output_settings;
+    delete_agent->debug_params = NULL;
+    delete_agent->output_settings = NULL;
     stats_close(delete_agent);
     delete delete_agent->stats_db;
     delete_agent->stats_db = NULL;
@@ -409,7 +405,6 @@ bool reinitialize_agent(agent* thisAgent)
     /* Re-init episodic and semantic memory databases */
     epmem_reinit(thisAgent);
     thisAgent->SMem->reinit();
-    thisAgent->LTIs_sourced->clear();
 
     thisAgent->explanationBasedChunker->reinit();
     #ifdef BUILD_WITH_EXPLAINER

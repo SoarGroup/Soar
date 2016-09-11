@@ -5,6 +5,21 @@
 
 #include "soar_db.h"
 
+/* ---------------- SQL Callback functions for sql debug modes-------------- */
+
+#ifdef DEBUG_SQL_PROFILE
+static void profile_sql(void* context, const char* sql, sqlite3_uint64 ns)
+{
+    fprintf(stderr, "Execution Time of %llu ms for: %s\n", ns / 1000000, sql);
+}
+#endif
+#ifdef DEBUG_SQL_QUERIES
+static void trace_sql(void* /*arg*/, const char* query)
+{
+    fprintf(stderr, "Query: %s\n", query);
+}
+#endif
+
 namespace soar_module
 {
     void sqlite_database::connect(const char* file_name, int flags)
@@ -18,10 +33,12 @@ namespace soar_module
             set_errno(sqlite_err);
             set_errmsg(NULL);
             
-#ifdef DEBUG_SQL_QUERIES
-            //sqlite3_profile(my_db, &profile, NULL);
-            sqlite3_trace(my_db, trace, NULL);
-#endif
+            #ifdef DEBUG_SQL_PROFILE
+                sqlite3_profile(my_db, &profile_sql, NULL);
+            #endif
+            #ifdef DEBUG_SQL_QUERIES
+                sqlite3_trace(my_db, trace_sql, NULL);
+            #endif
         }
         else
         {

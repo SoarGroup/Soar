@@ -43,7 +43,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
 
-    dprint(DT_REPAIR, "Finding path to connect LTI %y (level %d) to a goal state.\n", pNonOperationalSym, pNonOperationalSym->id->level);
+    dprint(DT_REPAIR, "Finding path to connect %y (level %d) to a goal state.\n", pNonOperationalSym, pNonOperationalSym->id->level);
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
@@ -72,13 +72,13 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                 {
-                    if (w->preference && w->value->is_identifier() && (w->value->tc_num != ground_lti_tc))
+                    if (w->preference && w->value->is_sti() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
                         lNewPath = new Path_to_Goal_State(w->value, lCurrentPath->get_path(), w);
                         if (w->value == pNonOperationalSym)
                         {
-                            dprint(DT_REPAIR, "...found path to LTI %y: %w.\n", pNonOperationalSym, w);
+                            dprint(DT_REPAIR, "...found path to %y: %w.\n", pNonOperationalSym, w);
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
@@ -178,9 +178,9 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
     uint64_t lMatchedIdentity = 0;
 
-    assert(lMatchedSym->is_identifier());
+    assert(lMatchedSym->is_sti());
 
-    /* Copy in any identities for the LTI that was used in the unconnected conditions */
+    /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
     std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
     std::unordered_map< Symbol*, uint64_t >::iterator iter_id;
 
@@ -191,7 +191,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if (lMatchedSym->is_identifier())
+        if (lMatchedSym->is_sti())
         {
             char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
             if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
@@ -290,7 +290,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
     {
         if (lCond->type == POSITIVE_CONDITION)
         {
-            if (lCond->data.tests.id_test->eq_test->data.referent->is_identifier())
+            if (lCond->data.tests.id_test->eq_test->data.referent->is_sti())
             {
                 if (lCond->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
@@ -303,7 +303,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 }
             } else {
                 if (lCond->counterpart &&
-                    lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_identifier() &&
+                    lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_sti() &&
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
                     dprint(DT_REPAIR, "Marking state found %y in id element counterpart with tc_num %u\n", lCond->counterpart->data.tests.id_test->eq_test->data.referent, tc);
@@ -314,7 +314,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                     }
                 }
             }
-            if (lCond->data.tests.value_test->eq_test->data.referent->is_identifier())
+            if (lCond->data.tests.value_test->eq_test->data.referent->is_sti())
             {
                 if (lCond->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
@@ -327,7 +327,7 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 }
             } else {
                 if (lCond->counterpart &&
-                    lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_identifier() &&
+                    lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_sti() &&
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->id->isa_goal)
                 {
                     dprint(DT_REPAIR, "Marking state found %y in value element counterpart with tc_num %u\n", lCond->counterpart->data.tests.value_test->eq_test->data.referent, tc);
@@ -371,10 +371,10 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
         if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->matched_sym->id->level;
-            add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
         } else {
             dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n", lDanglingSymInfo->matched_sym->id->level, targetLevel);
         }
+        add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
     }
 
     tc_number tc;
@@ -386,7 +386,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
-    /* Generate connecting wme's for each unconnected LTI and add to a set */
+    /* Generate connecting wme's for each unconnected identifier and add to a set */
     dprint(DT_REPAIR, "Step 3: Adding WMEs to connect each dangling symbol...\n");
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {

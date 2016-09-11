@@ -30,7 +30,7 @@
  * */
 
 /* =============================== */
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -39,15 +39,18 @@
 
 #ifndef SOAR_RELEASE_VERSION
 
+    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+//    #define MEM_POOLS_ENABLED 1
+    #ifdef MEM_POOLS_ENABLED
+        #define USE_MEM_POOL_ALLOCATORS 1
+    #endif
+
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
     /* Experimental setting that forces Soar to consider the attribute element
      * of a wme/pref when incrementing/decrementing link counts, which are use
      * for garbage collection. */
     //    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
-
-    /* -- Enables tracing functions that print SQL processing and errors -- */
-    //#define DEBUG_EPMEM_SQL
 
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
@@ -72,11 +75,6 @@
      * o-supported element and lead to the elaboration of the GDS */
     //#define DEBUG_GDS_HIGH
 
-    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-    #define MEM_POOLS_ENABLED 1
-    #ifdef MEM_POOLS_ENABLED
-        #define USE_MEM_POOL_ALLOCATORS 1
-    #endif
 #else
     //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
     #define MEM_POOLS_ENABLED 1
@@ -90,21 +88,6 @@
 //#define DETAILED_TIMING_STATS
 #endif
 
-/* -------------------------------------------------- */
-/*     Global constants, type declarations, etc.      */
-/* -------------------------------------------------- */
-
-#define BUFFER_MSG_SIZE 128
-#define COLUMNS_PER_LINE 80
-#define TOP_GOAL_LEVEL 1
-#define ATTRIBUTE_IMPASSE_LEVEL 32767
-#define LOWEST_POSSIBLE_GOAL_LEVEL 32767
-#define NIL (0)
-#define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
-#define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
-
-//typedef uint64_t tc_number;  /* Moving this here breaks windows non-scu build for some reason */
-typedef unsigned char byte;
 
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
@@ -112,6 +95,8 @@ typedef unsigned char byte;
 #define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
 #define DISCARD_CHUNK_VARNAMES false
+
+/* -- Tracing functions that print SQL processing and errors can be found in soar_db.cpp! -- */
 
 /* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
@@ -125,6 +110,8 @@ typedef unsigned char byte;
 /* ---------------- Experimental modes.  Probably don't work any more -------------- */
 //#define REAL_TIME_BEHAVIOR
 //#define ATTENTION_LAPSE
+
+/* ---------------- Macros for safe counters -------------- */
 
 #define increment_counter(counter) counter++; if (counter == 0) counter = 1;
 #define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;

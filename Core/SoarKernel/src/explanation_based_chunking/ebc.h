@@ -66,7 +66,7 @@ typedef struct backtrace_struct
 {
     int result;                    /* 1 when this is a result of the chunk */
     condition* trace_cond;         /* The (local) condition being traced */
-    char   prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
+    char       prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
     condition* grounds;            /* The list of conds for the LHS of chunk */
     condition* potentials;         /* The list of conds which aren't linked */
     condition* locals;             /* Conds in the subgoal -- need to BT */
@@ -145,7 +145,7 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void cleanup_for_instantiation(uint64_t pI_id);
+        void cleanup_after_instantiation_creation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         void clear_variablization_maps();
 
@@ -209,15 +209,15 @@ class Explanation_Based_Chunker
          *    formation and variablization.  The data stored within
          *    them is temporary and cleared after use. -- */
 
-        inst_to_id_map_type*            instantiation_identities;
-        id_to_sym_map_type*             o_id_to_var_map;
-        id_to_sym_map_type*             id_to_rule_sym_debug_map;
+        inst_to_id_map*            instantiation_identities;
+        id_to_sym_map*             o_id_to_var_map;
+        id_to_sym_map*             id_to_rule_sym_debug_map;
 
-        id_to_id_map_type*              unification_map;
+        id_to_id_map*              unification_map;
         identity_triple*                local_singleton_superstate_identity;
 
         constraint_list*                constraints;
-        attachment_points_map_type*     attachment_points;
+        attachment_points_map*     attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
@@ -225,7 +225,7 @@ class Explanation_Based_Chunker
 
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
-        sym_to_sym_map_type*            rhs_var_to_match_map;
+        sym_to_sym_map*            rhs_var_to_match_map;
 
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
@@ -262,11 +262,8 @@ class Explanation_Based_Chunker
         /* Dependency analysis methods */
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
-        void add_to_potentials(condition* cond);
         void add_to_locals(condition* cond);
         void trace_locals(goal_stack_level grounds_level);
-        void trace_grounded_potentials();
-        bool trace_ungrounded_potentials(goal_stack_level grounds_level);
         void backtrace_through_instantiation(
                 instantiation* inst,
                 goal_stack_level grounds_level,

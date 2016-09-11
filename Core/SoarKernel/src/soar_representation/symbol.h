@@ -109,21 +109,21 @@ typedef struct EXPORT symbol_struct
     };
 #endif
 
-    bool        is_identifier();
-    bool        is_variable();
-    bool        is_constant();
+    bool        is_sti()        { return (symbol_type == IDENTIFIER_SYMBOL_TYPE); }
+    bool        is_variable()   { return (symbol_type == VARIABLE_SYMBOL_TYPE); }
+    bool        is_constant()   { return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) || (symbol_type == INT_CONSTANT_SYMBOL_TYPE) || (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)); }
+    bool        is_string()     { return (symbol_type == STR_CONSTANT_SYMBOL_TYPE); }
+    bool        is_int()        { return (symbol_type == INT_CONSTANT_SYMBOL_TYPE); }
+    bool        is_float()      { return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE); }
+    tc_number   get_tc_num()            { return tc_num; }
+    void        set_tc_num(tc_number n) { tc_num = n; }
+    bool        is_constant_or_marked_variable(tc_number tc) { return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc)); }
+    bool        is_in_tc(tc_number tc)
+                { if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE)) return (tc_num == tc); else return false;}
+
     bool        is_lti();
-    bool        is_sti();
-    bool        is_variablizable();
-    bool        is_constant_or_marked_variable(tc_number tc);
-    bool        is_in_tc(tc_number tc);
-    bool        is_string();
-    bool        is_int();
-    bool        is_float();
     bool        is_state();
     bool        is_top_state();
-    tc_number   get_tc_num();
-    void        set_tc_num(tc_number n);
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
@@ -186,18 +186,12 @@ struct idSymbol    : public Symbol
     Symbol* reward_header;
     struct rl_data_struct* rl_info;
 
-    Symbol* epmem_header;
-    Symbol* epmem_cmd_header;
-    Symbol* epmem_result_header;
-    struct wme_struct* epmem_time_wme;
-    struct epmem_data_struct* epmem_info;
+    struct epmem_data_struct*   epmem_info;
+    epmem_node_id               epmem_id;
 
-
-    Symbol* smem_header;
-    Symbol* smem_cmd_header;
-    Symbol* smem_result_header;
-    struct smem_data_struct* smem_info;
-
+    struct smem_data_struct*    smem_info;
+    uint64_t                    LTI_ID;
+    uint64_t                    LTI_epmem_valid;
 
     struct gds_struct* gds;
 
@@ -213,106 +207,18 @@ struct idSymbol    : public Symbol
 
     int depth;
 
-    epmem_node_id epmem_id;
-//    uint64_t epmem_valid;
-
-    smem_lti_id smem_lti;
-    epmem_time_id smem_time_id;
-//    uint64_t smem_valid;
-
-    /*Agent::RL_Trace*/ void* rl_trace;
+    void* rl_trace;
 };
 
-inline bool Symbol::is_identifier()
-{
-    return (symbol_type == IDENTIFIER_SYMBOL_TYPE);
-};
-inline bool Symbol::is_variable()
-{
-    return (symbol_type == VARIABLE_SYMBOL_TYPE);
-};
-inline bool Symbol::is_constant()
-{
-    return ((symbol_type == STR_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-            (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE));
-};
-inline bool Symbol::is_sti()
-{
-    return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti == NIL));
-};
-inline bool Symbol::is_lti()
-{
-    return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-            (id->smem_lti != NIL));
-};
+inline bool     Symbol::is_lti()            { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && (id->LTI_ID != NIL)); };
+inline bool     Symbol::is_state()          { return (is_sti() && id->isa_goal);}
+inline bool     Symbol::is_top_state()      { return (is_state() && (id->higher_goal == NULL)); }
+inline Symbol*  Symbol::get_parent_state()  { return id->higher_goal; }
 
-inline bool Symbol::is_variablizable()
-{
-
-    return (!is_variable());
-
-};
-
-inline bool Symbol::is_constant_or_marked_variable(tc_number tc)
-{
-    return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc));
-};
-
-inline bool Symbol::is_in_tc(tc_number tc)
-{
-    if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE))
-    {
-        return (tc_num == tc);
-    }
-    else
-    {
-        return false;
-    }
-};
-
-inline bool Symbol::is_string()
-{
-    return (symbol_type == STR_CONSTANT_SYMBOL_TYPE);
-}
-
-inline bool Symbol::is_int()
-{
-    return (symbol_type == INT_CONSTANT_SYMBOL_TYPE);
-}
-
-inline bool Symbol::is_float()
-{
-    return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE);
-}
-
-inline bool Symbol::is_state()
-{
-    return (is_identifier() && id->isa_goal);
-}
-
-inline bool Symbol::is_top_state()
-{
-    return (is_state() && (id->higher_goal == NULL));
-}
-inline tc_number Symbol::get_tc_num()
-{
-    return tc_num;
-}
-
-inline void Symbol::set_tc_num(tc_number n)
-{
-    tc_num = n;
-}
-inline Symbol* Symbol::get_parent_state()
-{
-    return id->higher_goal;
-}
 inline bool Symbol::get_id_name(std::string& n)
 {
     std::stringstream ss;
-    if (!is_identifier())
+    if (!is_sti())
     {
         return false;
     }

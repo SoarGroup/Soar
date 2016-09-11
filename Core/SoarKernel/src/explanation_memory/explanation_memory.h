@@ -64,7 +64,7 @@ class Explanation_Memory
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);

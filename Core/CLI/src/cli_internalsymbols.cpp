@@ -15,10 +15,10 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
 #include "sml_KernelSML.h"
-#include "symbol.h"
+
 #include "agent.h"
+#include "symbol.h"
 #include "symbol_manager.h"
 
 using namespace cli;

@@ -14,37 +14,6 @@
 #include <stdlib.h>
 #include "dprint.h"
 
-/* ======================================================================
-        Preference Memory routines
-   ====================================================================== */
-
-
-/* Note that these must be in the same order as the #define variables
- * in gdatastructs.h */
-
-const char* preference_name[] =
-{
-    "acceptable",
-    "require",
-    "reject",
-    "prohibit",
-    "reconsider",
-    "unary indifferent",
-    "unary parallel",
-    "best",
-    "worst",
-    "binary indifferent",
-    "binary parallel",
-    "better",
-    "worse",
-    "numeric indifferent"
-};
-
-
-/*                     Preference Management Routines
-
-====================================================================== */
-
 /* ----------------------------------------------------------------------
    Make_preference() creates a new preference structure of the given type
    with the given id/attribute/value/referent.  (Referent is only used
@@ -537,7 +506,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
    done.
 ------------------------------------------------------------------------ */
 
-void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, pref_buffer_list& bufdeallo)
+void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo)
 {
     preference* pref, *next_pref, *p, *next_p;
     slot* s;
@@ -581,4 +550,3 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
         pref = next_pref;
     }
 }
-
