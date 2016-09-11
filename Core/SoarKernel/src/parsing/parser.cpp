@@ -432,7 +432,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             break;
     }
 
-     /* --- read variable or constant --- */
+    /* --- read variable or constant --- */
     switch (lexer->current_lexeme.type)
     {
         case STR_CONSTANT_LEXEME:
@@ -2109,7 +2109,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     /* --- the action is a regular make action --- */
     assert(lexer->current_lexeme.type == VARIABLE_LEXEME);
 
-    var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
+        var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
 
     if (!lexer->get_lexeme()) return NULL;
     all_actions = NIL;

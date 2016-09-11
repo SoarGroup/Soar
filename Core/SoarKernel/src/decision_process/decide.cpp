@@ -4359,11 +4359,11 @@ void elaborate_gds(agent* thisAgent)
 
 
                                     /* REW: 2004-05-27: Bug fix
-                                       We must check that the value with acceptable pref for the slot
-                                       is the same as the value for the wme in the condition, since
-                                       operators can have acceptable preferences for values other than
-                                       the WME value.  We dont want to backtrack thru acceptable prefs
-                                       for other operators */
+                                   We must check that the value with acceptable pref for the slot
+                                   is the same as the value for the wme in the condition, since
+                                   operators can have acceptable preferences for values other than
+                                   the WME value.  We dont want to backtrack thru acceptable prefs
+                                   for other operators */
 
                                     if (pref->value == wme_matching_this_cond->value)
                                     {
@@ -4378,14 +4378,11 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                             print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
 #endif
-                                            //////////////////////////////////////////////////////
-                                            /* REW: 2003-12-07 */
-                                            /* If the preference comes from a lower level inst, then
-                                            ignore it. */
-                                            /* Preferences from lower levels must come from result
-                                            instantiations;
-                                            we just want to use the justification/chunk
-                                            instantiations at the match goal level*/
+                                            /* If the preference comes from a lower level inst, then  ignore it.
+                                             *   - Preferences from lower levels must come from result  instantiations
+                                             *   - We just want to use the justification/chunk instantiations at the 
+                                             *     match goal level */
+                                             
                                             if (pref->inst->match_goal_level <= inst->match_goal_level)
                                             {
 
@@ -4403,9 +4400,6 @@ void elaborate_gds(agent* thisAgent)
                                                 pref->inst->GDS_evaluated_already = true;
                                             }
 #endif
-                                            /* REW: 2003-12-07 */
-
-                                            //////////////////////////////////////////////////////
                                         }
 #ifdef DEBUG_GDS
                                         else

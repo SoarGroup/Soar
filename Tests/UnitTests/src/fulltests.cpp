@@ -189,21 +189,21 @@ void FullTests::runAllTestTypes()
     m_Options.set(USE_CLIENT_THREAD);
     m_Options.set(FULLY_OPTIMIZED);
     runTest();
-    std::cout << "1";
-    std::cout.flush();
+//    std::cout << "1";
+//    std::cout.flush();
 
     // test 2
     m_Options.reset();
     m_Options.set(USE_CLIENT_THREAD);
     runTest();
-    std::cout << "2";
-    std::cout.flush();
+//    std::cout << "2";
+//    std::cout.flush();
 
     // test 3
     m_Options.reset();
     runTest();
-    std::cout << "3";
-    std::cout.flush();
+//    std::cout << "3";
+//    std::cout.flush();
 
     if (!g_NoRemote)
     {
@@ -211,8 +211,8 @@ void FullTests::runAllTestTypes()
         m_Options.reset();
         m_Options.set(REMOTE);
         runTest();
-        std::cout << "4";
-        std::cout.flush();
+//        std::cout << "4";
+//        std::cout.flush();
     }
 }
 
