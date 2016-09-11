@@ -1,0 +1,53 @@
+#import <XCTest/XCTest.h>
+
+#include "TestHelpers.hpp"
+#include "ChunkingTests.hpp"
+
+#import "XCTestDefines.h"
+
+TEST_SETUP(ChunkingTests)
+
+XC_TEST(testSTI_Variablization)
+XC_TEST(testSTI_Variablization_Same_Type)
+XC_TEST(testSuperstate_Identity_Opaque)
+XC_TEST(testRHS_Unbound_Multivalue)
+XC_TEST(testAll_Test_Types)
+XC_TEST(testConflated_Constants)
+XC_TEST(testRete_Bug_Deep_vs_Top)
+XC_TEST(testRete_Bug_Deep_vs_Deep)
+XC_TEST(testUngrounded_STIs)
+XC_TEST(testUngrounded_Mixed)
+XC_TEST(testUngrounded_STI_Promotion)
+XC_TEST(testUngrounded_Relational_Constraint)
+XC_TEST(testUngrounded_in_BT_Constraint)
+XC_TEST(testVrblzd_Constraint_on_Ungrounded)
+XC_TEST(testNC_Simple_No_Exist)
+XC_TEST(testNC_with_Relational_Constraint)
+XC_TEST(testNC_with_RC_and_Local_Variable)
+XC_TEST(testNCC_Simple_Literals)
+XC_TEST(testNCC_2_Conds_Simple_Literals)
+XC_TEST(testNCC_with_Relational_Constraint)
+XC_TEST(testNCC_Complex)
+XC_TEST(testNCC_from_Backtrace)
+XC_TEST(testJustification_RC_not_Ungrounded_STIs)
+XC_TEST(testProhibit_Fake_Instantiation_LTIs)
+XC_TEST(testMaintain_Instantiation_Specific_Identity)
+XC_TEST(testSimple_Constraint_Prop)
+XC_TEST(testConstraint_Prop_from_Base_Conds)
+XC_TEST(testSimple_Literalization)
+XC_TEST(testLiteralization_of_NC_and_NCC)
+XC_TEST(testLiteralization_with_Constraints)
+XC_TEST(testLiteralization_with_BT_Constraints)
+XC_TEST(testBUNCPS_0)
+XC_TEST(testBUNCPS_1)
+XC_TEST(testBUNCPS_2)
+XC_TEST(testBUNCPS_3)
+XC_TEST(testBUNCPS_4)
+XC_TEST(testBUNCPS_5)
+XC_TEST(testBUNCPS_6_Four_Level)
+XC_TEST(testBUNCPS_7_with_Constraints)
+XC_TEST(testLiteralization_with_BT_Constraints2)
+XC_TEST(testUnify_through_Two_Traces_Four_Deep)
+XC_TEST(testRL_Variablization)
+
+@end
