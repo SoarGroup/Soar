@@ -731,9 +731,9 @@ TEST_DEFINITION(testAgent)
 
     // Register for a String event
     bool stringEventHandlerReceived(false);
-    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_EDIT_PRODUCTION, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("edit-production my*production", NULL));
-    CPPUNIT_ASSERT_MESSAGE("edit-production my*production", m_pAgent->GetLastCommandLineResult());
+    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("cli tcl on", NULL));
+    CPPUNIT_ASSERT_MESSAGE("puts hello world", m_pAgent->GetLastCommandLineResult());
     CPPUNIT_ASSERT(stringEventHandlerReceived);
     stringEventHandlerReceived = false;
     CPPUNIT_ASSERT(m_pKernel->UnregisterForStringEvent(stringCall));

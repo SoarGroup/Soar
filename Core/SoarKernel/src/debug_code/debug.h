@@ -43,8 +43,6 @@ class debug_param_container: public soar_module::param_container
 {
     public:
 
-        soar_module::boolean_param* epmem_commands, *smem_commands, *sql_commands, *use_new_chunking;
-
         debug_param_container(agent* new_agent);
 
 };

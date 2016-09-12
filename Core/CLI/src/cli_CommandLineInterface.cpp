@@ -54,7 +54,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
-    m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
+    m_Parser.AddCommand(new cli::TclCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));
     m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
@@ -62,7 +62,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommandsCommand(*this));
-    m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExciseCommand(*this));
     m_Parser.AddCommand(new cli::ExplainCommand(*this));
@@ -73,7 +72,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
     m_Parser.AddCommand(new cli::InitSoarCommand(*this));
-    m_Parser.AddCommand(new cli::InternalSymbolsCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
@@ -106,7 +104,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::SelectCommand(*this));
     m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
-    m_Parser.AddCommand(new cli::SoarNewsCommand(*this));
     m_Parser.AddCommand(new cli::SourceCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
     m_Parser.AddCommand(new cli::SRandCommand(*this));

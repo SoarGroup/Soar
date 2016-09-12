@@ -385,24 +385,24 @@ namespace cli
             CLogCommand& operator=(const CLogCommand&);
     };
 
-    class CliExtensionMessageCommand : public cli::ParserCommand
+    class TclCommand : public cli::ParserCommand
     {
 
         public:
-            CliExtensionMessageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~CliExtensionMessageCommand() {}
+            TclCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~TclCommand() {}
             virtual const char* GetString() const
             {
-                return "cli";
+                return "tcl";
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: cli extension-name command [args]";
+                return "Syntax: tcl [ on | off ]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
-                if (argv.size() < 3)
+                if (argv.size() < 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
@@ -413,13 +413,13 @@ namespace cli
                     concat_message += ' ' ;
                     concat_message += argv[i] ;
                 }
-                return cli.DoCLIMessage(concat_message);
+                return cli.DoTclCommand(concat_message);
             }
 
         private:
             cli::Cli& cli;
 
-            CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
+            TclCommand& operator=(const TclCommand&);
     };
 
     class CommandToFileCommand : public cli::ParserCommand
@@ -533,7 +533,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: debug [command] [arguments]";
+                return "Syntax: debug [internal-symbols | get | set] [arguments*]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -746,36 +746,6 @@ namespace cli
             cli::Cli& cli;
 
             EchoCommandsCommand& operator=(const EchoCommandsCommand&);
-    };
-
-    class EditProductionCommand : public cli::ParserCommand
-    {
-        public:
-            EditProductionCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~EditProductionCommand() {}
-            virtual const char* GetString() const
-            {
-                return "edit-production";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: edit-production production_name";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                if (argv.size() != 2)
-                {
-                    return cli.SetError("Need to include the name of the production to edit.");
-                }
-
-                return cli.DoEditProduction(argv[1]);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            EditProductionCommand& operator=(const EditProductionCommand&);
     };
 
     class EpMemCommand : public cli::ParserCommand
@@ -1532,31 +1502,6 @@ namespace cli
             cli::Cli& cli;
 
             InitSoarCommand& operator=(const InitSoarCommand&);
-    };
-
-    class InternalSymbolsCommand : public cli::ParserCommand
-    {
-        public:
-            InternalSymbolsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~InternalSymbolsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "internal-symbols";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: internal-symbols";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoInternalSymbols();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            InternalSymbolsCommand& operator=(const InternalSymbolsCommand&);
     };
 
     class LearnCommand : public cli::ParserCommand
@@ -3890,31 +3835,6 @@ namespace cli
             cli::Cli& cli;
 
             SMemCommand& operator=(const SMemCommand&);
-    };
-
-    class SoarNewsCommand : public cli::ParserCommand
-    {
-        public:
-            SoarNewsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SoarNewsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "soarnews";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: soarnews";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoSoarNews();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            SoarNewsCommand& operator=(const SoarNewsCommand&);
     };
 
     class SourceCommand : public cli::ParserCommand

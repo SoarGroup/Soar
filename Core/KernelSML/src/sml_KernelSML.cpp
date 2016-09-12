@@ -161,37 +161,6 @@ void KernelSML::SetStopPoint(bool forever, smlRunStepSize runStepSize, smlPhase 
     }
 }
 
-
-//////////////////////////////////////
-/*************************************************************
-* @brief    Notify listeners that this event has occured.
-*************************************************************/
-std::string KernelSML::FireEditProductionEvent(char const* pProduction)
-{
-
-    const int kBufferLength = 10000;
-    char response[kBufferLength] ;
-    response[0] = 0 ;
-    
-    StringListenerCallbackData callbackData;
-    
-    callbackData.pData = pProduction;
-    callbackData.maxLengthReturnStringBuffer = kBufferLength;
-    callbackData.pReturnStringBuffer = response;
-    
-    m_StringListener.OnKernelEvent(smlEVENT_EDIT_PRODUCTION, 0, &callbackData);
-    
-    // This next bit of code is completely redundant, the strcpy below is basically a no-op:
-    
-    //if ( response[0] == 0 )
-    //{
-    //  // return zero length string for success
-    //  strcpy(response, "") ;
-    //}
-    
-    return response ;
-}
-
 /*************************************************************
 * @brief    Notify listeners that this event has occured.
 *************************************************************/
@@ -235,7 +204,7 @@ std::string KernelSML::FireCliExtensionMessageEvent(char const* pCliExtCommand)
     callbackData.maxLengthReturnStringBuffer = kBufferLength;
     callbackData.pReturnStringBuffer = response;
     
-    m_StringListener.OnKernelEvent(smlEVENT_CLI_EXTENSION_MESSAGE, 0, &callbackData);
+    m_StringListener.OnKernelEvent(smlEVENT_TCL_LIBRARY_MESSAGE, 0, &callbackData);
     
     return response ;
     

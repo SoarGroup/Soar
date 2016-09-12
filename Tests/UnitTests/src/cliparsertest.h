@@ -41,7 +41,7 @@ class CliAdapter : public cli::Cli
         {
             return false;
         }
-        virtual bool DoCLIMessage(const std::string& pMessage)
+        virtual bool DoTclCommand(const std::string& pMessage)
         {
             return false;
         };
@@ -70,10 +70,6 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands)
-        {
-            return false;
-        }
-        virtual bool DoEditProduction(std::string productionName)
         {
             return false;
         }
@@ -114,10 +110,6 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoInitSoar()
-        {
-            return false;
-        }
-        virtual bool DoInternalSymbols()
         {
             return false;
         }
@@ -250,10 +242,6 @@ class CliAdapter : public cli::Cli
             return false;
         }
         virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0)
-        {
-            return false;
-        }
-        virtual bool DoSoarNews()
         {
             return false;
         }

@@ -118,7 +118,7 @@ namespace cli
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
             virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoCLIMessage(const std::string& pMessage);
+            virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
             virtual bool DoDebug(std::vector< std::string >* argv = 0);
@@ -126,7 +126,6 @@ namespace cli
             virtual bool DoDirs();
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
             virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands);
-            virtual bool DoEditProduction(std::string productionName);
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0);
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
             virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2);
@@ -137,7 +136,6 @@ namespace cli
             virtual bool DoHelp(const std::vector<std::string>& argv);
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0);
             virtual bool DoInitSoar();
-            virtual bool DoInternalSymbols();
             virtual bool DoLearn(const LearnBitset& options);
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();
@@ -170,7 +168,6 @@ namespace cli
             virtual bool DoSelect(const std::string* pOp = 0);
             virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
-            virtual bool DoSoarNews();
             virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
             virtual bool DoSP(const std::string& production);
             virtual bool DoSRand(uint32_t* pSeed = 0);

@@ -40,11 +40,6 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     {
         Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
         PrintCLIMessage_Header("Debug", 40);
-        PrintCLIMessage_Section("Settings", 40);
-        PrintCLIMessage_Item("epmem:", thisAgent->debug_params->epmem_commands, 40);
-        PrintCLIMessage_Item("smem:", thisAgent->debug_params->smem_commands, 40);
-        PrintCLIMessage_Item("sql:", thisAgent->debug_params->sql_commands, 40);
-        PrintCLIMessage_Item("use_new_chunking:", thisAgent->debug_params->use_new_chunking, 40);
         PrintCLIMessage_Section("Debug Database Storage", 40);
         PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 40);
         PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 40);
@@ -202,10 +197,18 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     }
     else if (numArgs == 0)
     {
-        tempString.str("");
-        tempString << "Debug| Invalid command: " << sub_command << ".";
-        SetError(tempString.str().c_str());
-        goto print_syntax;
+        if (sub_command[0] == 'i')
+        {
+            thisAgent->symbolManager->print_internal_symbols();
+            return true;
+        }
+        else
+        {
+            tempString.str("");
+            tempString << "Debug| Invalid command: " << sub_command << ".";
+            SetError(tempString.str().c_str());
+            goto print_syntax;
+        }
 
         return result;
     }

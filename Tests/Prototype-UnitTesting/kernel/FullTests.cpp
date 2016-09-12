@@ -593,9 +593,9 @@ void FullTests_Parent::testAgent()
 	
 	// Register for a String event
 	bool stringEventHandlerReceived(false);
-	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_EDIT_PRODUCTION, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("edit-production my*production", NULL));
-	no_agent_assertTrue_msg("edit-production my*production", agent->GetLastCommandLineResult());
+	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("cli tcl on", NULL));
+	no_agent_assertTrue_msg("puts hello world", agent->GetLastCommandLineResult());
 	no_agent_assertTrue(stringEventHandlerReceived);
 	stringEventHandlerReceived = false;
 	no_agent_assertTrue(m_pKernel->UnregisterForStringEvent(stringCall));

@@ -30,6 +30,8 @@ typedef struct wme_struct wme;
 #include "run_soar.h"
 #include "soar_instance.h"
 
+std::string searchForFile(std::string& pFileName);
+
 namespace soar_thread
 {
     class Mutex ;
@@ -250,11 +252,6 @@ namespace sml
             {
                 m_AgentListener.OnEvent(eventID, pAgentSML) ;
             }
-            
-            /*************************************************************
-            * @brief    Notify listeners that this event has occured.
-            *************************************************************/
-            std::string FireEditProductionEvent(char const* pProduction);
             
             /*************************************************************
             * @brief    Notify listeners that this event has occured.

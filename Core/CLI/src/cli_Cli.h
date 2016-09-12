@@ -59,7 +59,7 @@ namespace cli
             /**
              * @brief cli command
              */
-            virtual bool DoCLIMessage(const std::string& pMessage) = 0;
+            virtual bool DoTclCommand(const std::string& pMessage) = 0;
 
             /**
              * @brief cd command
@@ -123,14 +123,6 @@ namespace cli
             /**
              * @brief edit-production command
              * @param productionName Production to edit
-             */
-            virtual bool DoEditProduction(std::string productionName) = 0;
-
-            /**
-             * @brief epmem command
-             * @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
-             * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-             * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
              */
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0) = 0;
 
@@ -249,11 +241,6 @@ namespace cli
              * @brief init-soar command
              */
             virtual bool DoInitSoar() = 0;
-
-            /**
-             * @brief internal-symbols command
-             */
-            virtual bool DoInternalSymbols() = 0;
 
             enum eLearnOptions
             {
@@ -564,11 +551,6 @@ namespace cli
              * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
              */
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
-
-            /**
-             * @brief soarnews command
-             */
-            virtual bool DoSoarNews() = 0;
 
             enum eSourceOptions
             {

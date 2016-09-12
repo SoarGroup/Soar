@@ -20,22 +20,23 @@
 #include "sml_EventThread.h"
 #include "sml_Events.h"
 #include "sml_ClientAnalyzedXML.h"
+#include "sml_KernelSML.h"
+#include "sml_EmbeddedConnection.h" // For access to direct methods
+#include "sml_ClientDirect.h"
 
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"  // To get to sleep
 #include "EmbeddedSMLInterface.h" // for static reference
 
-#include "sml_EmbeddedConnection.h" // For access to direct methods
-#include "sml_ClientDirect.h"
+#include "memory_manager.h"
 #include "misc.h"
-#include "soar_instance.h"
 #include "output_manager.h"
+#include "soar_instance.h"
+
+#include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-
-#include <assert.h>
-#include "memory_manager.h"
 
 using namespace sml ;
 using namespace soarxml;
@@ -122,9 +123,9 @@ static std::string LoadLibraryHandler(smlStringEventId /*id*/, void* /*pUserData
 * @brief Called when a command needs to be passed to a library
 *    that extends the Soar command line interface.
 *************************************************************/
-static std::string CliExtensionMessageHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
+static std::string TclLibraryMessageHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
 {
-    return Soar_Instance::Get_Soar_Instance().Message_Library(pString);
+    return Soar_Instance::Get_Soar_Instance().Tcl_Message_Library(pString);
 }
 
 void Kernel::InitEvents()
@@ -136,7 +137,7 @@ void Kernel::InitEvents()
     if (!this->GetConnection()->IsRemoteConnection())
     {
         RegisterForStringEvent(smlEVENT_LOAD_LIBRARY, &LoadLibraryHandler, NULL);
-        RegisterForStringEvent(smlEVENT_CLI_EXTENSION_MESSAGE, &CliExtensionMessageHandler, NULL);
+        RegisterForStringEvent(smlEVENT_TCL_LIBRARY_MESSAGE, &TclLibraryMessageHandler, NULL);
     }
 }
 
@@ -2487,9 +2488,6 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     // The windows shared library
     libraryName = libraryName + ".dll";
 
-    // Now load the library itself.
-    HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
-
 #else
     std::string newLibraryName = "lib" + libraryName;
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -2498,9 +2496,20 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     newLibraryName.append(".so");
 #endif
     void* hLibrary = 0;
-    hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 #endif // !_WIN32
 
+    std::string directory = searchForFile(newLibraryName);
+
+    if (!directory.empty())
+    {
+#ifdef _WIN32
+        // Now load the library itself.
+        HMODULE hLibrary = LoadLibrary(directory.c_str()) ;
+
+#else
+        hLibrary = dlopen(directory.c_str(), RTLD_LAZY);
+#endif
+    }
     std::string resultString;
 
     if (!hLibrary)
