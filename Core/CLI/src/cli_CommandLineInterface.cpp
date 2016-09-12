@@ -12,6 +12,8 @@
 #include "cli_Commands.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
+#include "cli_soar.h"
+#include "cli_output.h"
 #include "cli_visualize.h"
 
 // SML includes
@@ -85,6 +87,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
     m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
+    m_Parser.AddCommand(new cli::OutputCommand(*this));
     m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
     m_Parser.AddCommand(new cli::PortCommand(*this));
@@ -104,6 +107,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::SelectCommand(*this));
     m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
+    m_Parser.AddCommand(new cli::SoarCommand(*this));
     m_Parser.AddCommand(new cli::SourceCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
     m_Parser.AddCommand(new cli::SRandCommand(*this));

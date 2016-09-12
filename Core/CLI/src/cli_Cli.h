@@ -57,11 +57,6 @@ namespace cli
             virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             /**
-             * @brief cli command
-             */
-            virtual bool DoTclCommand(const std::string& pMessage) = 0;
-
-            /**
              * @brief cd command
              * @param pDirectory Pointer to the directory to pass in to. Pass null to return
              *        to the initial (home) directory.
@@ -373,6 +368,12 @@ namespace cli
             virtual bool DoOSupportMode(int mode = -1) = 0;
 
             /**
+             * @brief output command
+             * @param options The various options set on the command line
+             */
+            virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+
+            /**
              * @brief pbreak command
              * @param pProduction The production
              */
@@ -552,6 +553,12 @@ namespace cli
              */
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
+            /**
+             * @brief soar command
+             * @param options The various options set on the command line
+             */
+            virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+
             enum eSourceOptions
             {
                 SOURCE_ALL,
@@ -610,6 +617,11 @@ namespace cli
              * @param reasonForStopping optional reason for stopping
              */
             virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0) = 0;
+
+            /**
+             * @brief tcl command
+             */
+            virtual bool DoTclCommand(const std::string& pMessage) = 0;
 
             /**
              * @brief time command

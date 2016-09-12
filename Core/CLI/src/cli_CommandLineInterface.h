@@ -149,6 +149,7 @@ namespace cli
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
             virtual bool DoOSupportMode(int mode = -1);
+            virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
             virtual bool DoPort();
@@ -168,6 +169,7 @@ namespace cli
             virtual bool DoSelect(const std::string* pOp = 0);
             virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
+            virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
             virtual bool DoSP(const std::string& production);
             virtual bool DoSRand(uint32_t* pSeed = 0);

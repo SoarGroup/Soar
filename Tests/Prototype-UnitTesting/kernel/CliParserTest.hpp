@@ -53,10 +53,6 @@ public:
     {
         return false;
     }
-	virtual bool DoTclCommand(const std::string& pMessage)
-	{
-		return false;
-	};
 	virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false)
 	{
 		return false;
@@ -177,6 +173,10 @@ public:
 	{
 		return false;
 	}
+    virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0)
+    {
+        return false;
+    }
 	virtual bool DoPbreak(const char& mode, const std::string& production)
 	{
 		return false;
@@ -257,6 +257,10 @@ public:
 	{
 		return false;
 	}
+    virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0)
+    {
+        return false;
+    }
 	virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0)
 	{
 		return false;
@@ -277,6 +281,10 @@ public:
 	{
 		return false;
 	}
+    virtual bool DoTclCommand(const std::string& pMessage)
+    {
+        return false;
+    };
 	virtual bool DoTime(std::vector<std::string>& argv)
 	{
 		return false;
