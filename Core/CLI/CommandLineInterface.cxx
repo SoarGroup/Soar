@@ -1,4 +1,3 @@
-#include <cli_tcl.cpp>
 #include "src/cli_addwme.cpp"
 #include "src/cli_alias.cpp"
 #include "src/cli_allocate.cpp"
@@ -10,7 +9,6 @@
 #include "src/cli_defaultwmedepth.cpp"
 #include "src/cli_echo.cpp"
 #include "src/cli_echocommands.cpp"
-#include "src/cli_editproduction.cpp"
 #include "src/cli_epmem.cpp"
 #include "src/cli_excise.cpp"
 #include "src/cli_explain.cpp"
@@ -40,7 +38,6 @@
 #include "src/cli_print.cpp"
 #include "src/cli_productionfind.cpp"
 #include "src/cli_pwatch.cpp"
-#include "src/cli_pwd.cpp"
 #include "src/cli_rand.cpp"
 #include "src/cli_removewme.cpp"
 #include "src/cli_replayinput.cpp"
@@ -56,6 +53,7 @@
 #include "src/cli_stats.cpp"
 #include "src/cli_stopsoar.cpp"
 #include "src/cli_svs.cpp"
+#include "src/cli_tcl.cpp"
 #include "src/cli_time.cpp"
 #include "src/cli_timers.cpp"
 #include "src/cli_unalias.cpp"
