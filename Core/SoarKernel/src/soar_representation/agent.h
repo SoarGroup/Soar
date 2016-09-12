@@ -151,6 +151,7 @@ typedef struct EXPORT agent_struct
 
     /* Various classes for this agent that manage different aspects of Soar */
     Symbol_Manager*             symbolManager;
+    SoarDecider*                Decider;
     WM_Manager*                 WM;
     RL_Manager*                 RL;
     SMem_Manager*               SMem;

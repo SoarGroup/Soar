@@ -18,10 +18,12 @@
  */
 
 
+#include <decider.h>
 #include "agent.h"
 #include "callback.h"
 #include "debug.h"
 #include "decide.h"
+#include "decider.h"
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -290,6 +292,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->visualizationManager = new GraphViz_Visualizer(thisAgent);
     thisAgent->RL = new RL_Manager(thisAgent);
     thisAgent->WM = new WM_Manager(thisAgent);
+    thisAgent->Decider = new SoarDecider(thisAgent);
 
     /* Something used for one of Alex's unit tests.  Should remove. */
     thisAgent->lastCue = NULL;
@@ -326,6 +329,7 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->WM->clean_up_for_agent_deletion();
     delete_agent->EpMem->clean_up_for_agent_deletion();
     delete_agent->SMem->clean_up_for_agent_deletion();
+    delete_agent->Decider->clean_up_for_agent_deletion();
 
     delete delete_agent->debug_params;
     delete delete_agent->output_settings;
@@ -385,10 +389,12 @@ void destroy_soar_agent(agent* delete_agent)
 
     /* Release module managers */
     delete delete_agent->WM;
+    delete delete_agent->Decider;
     delete delete_agent->RL;
     delete delete_agent->EpMem;
     delete delete_agent->SMem;
     delete delete_agent->symbolManager;
+
 
     delete delete_agent->dyn_counters;
 

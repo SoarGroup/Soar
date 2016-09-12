@@ -113,16 +113,6 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         }
         return result;
     }
-    else if (pOp == 's')
-    {
-        thisAgent->explanationMemory->print_global_stats();
-        return true;
-    }
-    else if (pOp == 'h')
-    {
-        PrintCLIMessage_Header("History", 40);
-        return true;
-    }
 
     return true;
 }

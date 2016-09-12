@@ -199,11 +199,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
-    thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM] = 100;
-    thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = 15;
-    thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
-    thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
-
 #ifdef ATTENTION_LAPSE
     /* RMJ */
     thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM] = false;

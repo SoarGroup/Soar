@@ -52,6 +52,7 @@ class Soar_Instance;
 class Memory_Manager;
 class Symbol_Manager;
 
+class SoarDecider;
 class WM_Manager;
 class wma_param_container;
 class wma_stat_container;

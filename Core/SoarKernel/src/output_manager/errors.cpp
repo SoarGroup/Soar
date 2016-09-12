@@ -129,7 +129,7 @@ void Output_Manager::display_ambiguous_command_error(agent* thisAgent, const std
 
         if (p == matched_objects_str.end())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, ", or %s?", last_p.c_str());
+            thisAgent->outputManager->printa_sf(thisAgent, ", or %s?\n", last_p.c_str());
         } else {
             thisAgent->outputManager->printa_sf(thisAgent, " %s", last_p.c_str());
         }

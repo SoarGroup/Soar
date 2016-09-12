@@ -270,6 +270,16 @@ class Output_Manager
 
 };
 
+inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
+
+inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
+{
+    std::string return_string = left_string;
+    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    return_string += right_string;
+    return return_string;
+}
+
 /* ------------------------------------
  *    Format strings for Soar printing:
  *
