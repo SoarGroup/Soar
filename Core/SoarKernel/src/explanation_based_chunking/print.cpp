@@ -17,7 +17,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {

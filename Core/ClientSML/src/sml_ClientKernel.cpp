@@ -34,7 +34,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include <assert.h>
+#include "assert.hpp"
 #include "memory_manager.h"
 
 using namespace sml ;

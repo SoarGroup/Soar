@@ -15,7 +15,7 @@
 #include "working_memory.h"
 #include "print.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 void Explanation_Based_Chunker::clear_data()
 {

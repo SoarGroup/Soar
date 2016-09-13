@@ -17,7 +17,7 @@
 #include "sml_ClientAnalyzedXML.h"
 #include "sml_AnalyzeXML.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 using namespace soarxml;

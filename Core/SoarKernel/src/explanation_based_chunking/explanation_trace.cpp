@@ -24,7 +24,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,

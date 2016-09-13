@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <list>
 #include <functional>
-#include <assert.h>
+#include "assert.hpp"
 #include <cmath>
 
 class Path_to_Goal_State;

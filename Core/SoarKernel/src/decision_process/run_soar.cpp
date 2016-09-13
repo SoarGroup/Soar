@@ -45,7 +45,7 @@
 #include "svs_interface.h"
 #endif
 
-#include <assert.h>
+#include "assert.hpp"
 #include <time.h>
 
 /* REW: begin 08.20.97   these defined in consistency.c  */

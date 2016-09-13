@@ -27,7 +27,7 @@
 #include "sock_Socket.h"
 
 #include <cstdlib>
-#include <assert.h>
+#include "assert.hpp"
 
 #include <signal.h>
 #include <iostream>

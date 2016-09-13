@@ -1,7 +1,7 @@
 #include <string>
 #include <utility>
 #include <algorithm>
-#include <assert.h>
+#include "assert.hpp"
 #include "portability.h"
 #include "soar_module.h"
 #include "symbol.h"

@@ -17,7 +17,7 @@
 
 #include "sml_Utils.h"
 #include "sock_ClientNamedPipe.h"
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sock ;
 

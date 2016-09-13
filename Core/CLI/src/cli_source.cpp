@@ -25,7 +25,7 @@
 
 #include <algorithm>
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace cli;
 using namespace sml;

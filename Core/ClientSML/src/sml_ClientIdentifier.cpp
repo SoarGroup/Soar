@@ -15,7 +15,7 @@
 #include "sml_Connection.h"
 #include "sml_ClientAgent.h"
 #include "sml_StringOps.h"
-#include <assert.h>
+#include "assert.hpp"
 
 #include "sml_ClientDirect.h"
 #include "sml_EmbeddedConnection.h" // For direct methods

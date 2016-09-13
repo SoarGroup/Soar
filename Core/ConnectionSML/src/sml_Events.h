@@ -42,7 +42,7 @@
 
 #include <map>
 #include <string>
-#include <assert.h>
+#include "assert.hpp"
 #include "Export.h"
 
 namespace sml

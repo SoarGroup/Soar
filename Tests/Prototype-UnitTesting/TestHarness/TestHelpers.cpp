@@ -22,6 +22,7 @@
 
 #endif
 
+#include <unistd.h>
 #include <exception>
 #include <sstream>
 
@@ -34,6 +35,14 @@ bool isfile(const char* path)
 	struct stat st;
 	return (stat(path, &st) == 0 && !S_ISDIR(st.st_mode));
 #endif
+}
+
+void setCWDToEnv()
+{
+    if (getenv("LIBSOAR") != nullptr)
+    {
+        chdir(getenv("LIBSOAR"));
+    }
 }
 
 void printDebugInformation(std::stringstream& output, sml::Agent* agent)

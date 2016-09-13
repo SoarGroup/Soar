@@ -27,7 +27,7 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <assert.h>
+#include "assert.hpp"
 #include <sstream>
 #include <stdlib.h>
 

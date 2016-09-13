@@ -3777,15 +3777,6 @@ namespace cli
                     case 'e':
                     case 'd':
                     case 'x':
-                        // case: init takes no arguments
-                        if (!opt.CheckNumNonOptArgs(0, 0))
-                        {
-                            return cli.SetError(opt.GetError().c_str());
-                        }
-
-                        return cli.DoSMem(option);
-
-                    case 'x':
                     {
                         // case: export does 1-2 non-option arguments
                         if (!opt.CheckNumNonOptArgs(1, 2))

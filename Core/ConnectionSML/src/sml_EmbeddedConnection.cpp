@@ -24,7 +24,7 @@
 
 #include <string>
 #include <iostream>
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 using namespace soarxml ;

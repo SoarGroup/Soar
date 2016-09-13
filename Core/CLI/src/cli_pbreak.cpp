@@ -13,7 +13,7 @@
 
 #include "cli_Commands.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"

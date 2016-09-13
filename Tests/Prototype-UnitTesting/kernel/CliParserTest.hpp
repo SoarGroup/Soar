@@ -337,6 +337,10 @@ public:
 	{
 		return false;
 	}
+    virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0)
+    {
+        return false;
+    }
 };
 
 class CliEcho : public CliAdapter

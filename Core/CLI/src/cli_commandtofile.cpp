@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-#include <assert.h>
+#include "assert.hpp"
 
 #include "cli_Commands.h"
 

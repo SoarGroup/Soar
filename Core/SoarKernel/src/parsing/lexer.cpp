@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-#include <assert.h>
+#include "assert.hpp"
 
 using soar::Lexer;
 using soar::Lexeme;

@@ -13,7 +13,7 @@
 #include "sml_ClientXML.h"
 #include "ElementXML.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 using namespace soarxml;

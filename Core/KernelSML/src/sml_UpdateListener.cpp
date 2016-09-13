@@ -19,7 +19,7 @@
 #include "sml_AgentSML.h"
 #include "misc.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 

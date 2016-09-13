@@ -11,7 +11,9 @@
 
 TestRunner::TestRunner(TestCategory* c, std::function<void ()> f, std::condition_variable_any* v)
 : category(c), function(f), variable(v), kill(false), ready(false), done(false), failed(false)
-{}
+{
+    setCWDToEnv();
+}
 
 void TestRunner::run()
 {
@@ -20,8 +22,7 @@ void TestRunner::run()
 	variable->wait(lock, [this]{ return ready == true; });
 
 	category->runner = this;
-	
-	
+
 	try
 	{
 		category->before();

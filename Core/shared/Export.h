@@ -51,4 +51,16 @@
 #  define RHS_EXPORT
 #endif
 
+#if defined(EXPORT_INTERNALS)
+#   if defined(_MSC_VER)
+#       define EXPORT_INTERNAL __declspec(dllexport)
+#   elif defined(__GNUC__) && defined(GCC_HASCLASSVISIBILITY)
+#       define EXPORT_INTERNAL __attribute__ ((visibility("default")))
+#   else
+#       define EXPORT_INTERNAL
+#   endif
+#else
+#   define EXPORT_INTERNAL
+#endif
+
 #endif

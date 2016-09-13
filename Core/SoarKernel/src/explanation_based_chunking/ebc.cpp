@@ -22,7 +22,7 @@
 #include "test.h"
 #include "xml.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);

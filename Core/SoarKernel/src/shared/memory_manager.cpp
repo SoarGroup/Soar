@@ -5,7 +5,7 @@
 #include "stats.h"
 
 #include <stdlib.h>
-#include <assert.h>
+#include "assert.hpp"
 #include "run_soar.h"
 #include "memory_manager.h"
 #include <iostream>

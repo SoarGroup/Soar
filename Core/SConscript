@@ -84,6 +84,12 @@ if not GetOption('nosvs'):
     svs_objs, svs_inc = SConscript('SVS/SConscript')
     kernel_env.Prepend(CPPPATH = svs_inc)
 
+if compiler == 'msvc':
+    kernel_env.Append(CPPFLAGS = ['/D', 'EXPORT_INTERNALS'])
+else:
+    kernel_env.Append(CPPFLAGS = ['-D', 'EXPORT_INTERNALS'])
+
+
 if GetOption('static'):
 	soarlib = kernel_env.Library('Soar', [s[scu] for s in srcs] + svs_objs)
 else:

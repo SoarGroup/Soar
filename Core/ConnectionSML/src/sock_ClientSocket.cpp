@@ -16,7 +16,7 @@
 
 #include <sstream>
 #include <stdio.h>
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sock ;
 

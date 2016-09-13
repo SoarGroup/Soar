@@ -19,7 +19,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 bool Explanation_Based_Chunker::in_null_identity_set(test t)
 {

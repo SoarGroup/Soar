@@ -18,7 +18,7 @@
 #include "rhs.h"
 #include "xml.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {

@@ -17,7 +17,7 @@
 #include "sml_EmbeddedConnection.h" // For direct methods
 #include "sml_ClientDirect.h"
 
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 

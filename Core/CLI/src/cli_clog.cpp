@@ -2,7 +2,7 @@
 #include "portability.h"
 #include "cli_CommandLineInterface.h"
 #include <fstream>
-#include <assert.h>
+#include "assert.hpp"
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_Events.h"

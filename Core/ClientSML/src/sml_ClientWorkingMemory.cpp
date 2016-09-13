@@ -36,7 +36,7 @@
 
 #include "sml_EmbeddedConnection.h" // For access to direct methods
 #include "sml_ClientDirect.h"
-#include <assert.h>
+#include "assert.hpp"
 
 using namespace sml ;
 using namespace soarxml;

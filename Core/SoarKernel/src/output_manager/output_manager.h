@@ -15,9 +15,10 @@
 
 #include "kernel.h"
 
-#include <assert.h>
+#include "assert.hpp"
 #include <string>
 #include <list>
+#include <mem.h>
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000

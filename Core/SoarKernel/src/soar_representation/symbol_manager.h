@@ -128,7 +128,7 @@ typedef struct predefined_sym_struct {
 
 } predefined_symbols;
 
-class Symbol_Manager {
+class EXPORT_INTERNAL Symbol_Manager {
 
         friend Output_Manager;
 
