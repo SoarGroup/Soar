@@ -2517,7 +2517,12 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
 #ifdef _WIN32
         return "Library not found.";
 #else
+     if(dlerror())
+     {
         return std::string(dlerror());
+     } else {
+         return std::string("Library not found.");
+     }
 #endif
     }
     else
