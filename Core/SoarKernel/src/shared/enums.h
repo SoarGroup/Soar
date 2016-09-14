@@ -77,6 +77,8 @@ enum Decider_settings {
     DECIDER_MAX_GOAL_DEPTH,
     DECIDER_MAX_MEMORY_USAGE,
     DECIDER_MAX_NIL_OUTPUT_CYCLES,
+    DECIDER_O_SUPPORT_MODE,
+    DECIDER_STOP_PHASE,
     num_decider_settings
 };
 enum EBCLearnChoices { ebc_always, ebc_never, ebc_only, ebc_except };

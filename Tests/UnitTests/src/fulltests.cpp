@@ -283,8 +283,8 @@ void FullTests::createSoar()
     CPPUNIT_ASSERT(m_pKernel->UnregisterForAgentEvent(agentCreationCallback));
 
     // a number of tests below depend on running full decision cycles.
-    m_pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
-    CPPUNIT_ASSERT_MESSAGE("set-stop-phase --before --input", m_pAgent->GetLastCommandLineResult());
+    m_pAgent->ExecuteCommandLine("soar stop-phase input") ;
+    CPPUNIT_ASSERT_MESSAGE("soar stop-phase input", m_pAgent->GetLastCommandLineResult());
 
     CPPUNIT_ASSERT(m_pKernel->GetNumberAgents() == 1);
 

@@ -20,6 +20,7 @@
 #include "callback.h"
 #include "consistency.h"
 #include "decide.h"
+#include "decider.h"
 #include "episodic_memory.h"
 #include "ebc.h"
 #include "explanation_memory.h"
@@ -209,7 +210,6 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
-    thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }
 
 /* ===================================================================
@@ -974,7 +974,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
-            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
+            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES]))
             {
                 thisAgent->run_last_output_count = 0 ;
                 thisAgent->run_generated_output_count++ ;
@@ -1010,9 +1010,9 @@ void do_one_top_level_phase(agent* thisAgent)
                     thisAgent->max_dc_time_usec = dc_time_usec;
                     thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
                 }
-                if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0)
+                if (thisAgent->Decider->settings[DECIDER_MAX_DC_TIME] > 0)
                 {
-                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT]))
+                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->Decider->settings[DECIDER_MAX_DC_TIME]))
                     {
                         thisAgent->stop_soar = true;
                         thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
@@ -1336,7 +1336,7 @@ void run_for_n_modifications_of_output(agent* thisAgent, int64_t n)
                 count++;
             }
         }
-        if (count >= thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])
+        if (count >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES])
         {
             break;
             //thisAgent->stop_soar = true;

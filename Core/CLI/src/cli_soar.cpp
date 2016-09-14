@@ -36,22 +36,22 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
 
     if (!pOp)
     {
-        thisAgent->Decider->print_soar_status();
+        thisAgent->Decider->print_soar_status(m_pKernelSML);
         return true;
     }
     else if (pOp == 'G')
     {
         /* Single command argument */
-        soar_module::param* my_param = thisAgent->Decider->decider_params->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->Decider->params->get(pAttr->c_str());
         if (!my_param)
         {
             return SetError("Invalid soar sub-command.  Use 'soar ?' to see a list of valid sub-commands and settings.");
         }
 
         /* Process dummy parameters that are stand-in for commands */
-        if ((my_param == thisAgent->Decider->decider_params->help_cmd) || (my_param == thisAgent->Decider->decider_params->qhelp_cmd))
+        if ((my_param == thisAgent->Decider->params->help_cmd) || (my_param == thisAgent->Decider->params->qhelp_cmd))
         {
-            thisAgent->Decider->decider_params->print_soar_settings(thisAgent);
+            thisAgent->Decider->params->print_soar_settings(thisAgent);
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
@@ -62,7 +62,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'S')
     {
-        soar_module::param* my_param = thisAgent->Decider->decider_params->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->Decider->params->get(pAttr->c_str());
         if (!my_param)
         {
             return SetError("Invalid command.  Use 'soar ?' to see a list of valid settings.");
@@ -87,7 +87,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         const char* lCmdName = pAttr->c_str();
         if (!strcmp(lCmdName, "o-support-mode") || !strcmp(lCmdName, "stop-phase"))
         {
-            thisAgent->Decider->decider_params->update_enum_setting(thisAgent, my_param);
+            thisAgent->Decider->params->update_enum_setting(thisAgent, my_param, m_pKernelSML);
         } else if (
             !strcmp(lCmdName, "max-gp") ||
             !strcmp(lCmdName, "max-dc-time") ||
@@ -95,9 +95,14 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
             !strcmp(lCmdName, "max-goal-depth") ||
             !strcmp(lCmdName, "max-memory-usage") ||
             !strcmp(lCmdName, "max-nil-output-cycles")) {
-            thisAgent->Decider->decider_params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
+            uint64_t old_max_gp = thisAgent->Decider->settings[DECIDER_MAX_GP];
+            thisAgent->Decider->params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
+            if (old_max_gp != thisAgent->Decider->settings[DECIDER_MAX_GP])
+            {
+                m_GPMax = static_cast<size_t>(thisAgent->Decider->settings[DECIDER_MAX_GP]);
+            }
         } else {
-            thisAgent->Decider->decider_params->update_bool_setting(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
+            thisAgent->Decider->params->update_bool_setting(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
         }
         return result;
     }

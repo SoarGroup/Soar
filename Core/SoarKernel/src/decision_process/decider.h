@@ -26,10 +26,10 @@ class SoarDecider
         void clean_up_for_agent_deletion();
 
         /* Settings and cli command related functions */
-        decider_param_container*    decider_params;
-        uint64_t                    decider_settings[num_ebc_settings];
+        decider_param_container*    params;
+        uint64_t                    settings[num_decider_settings];
 
-        void                        print_soar_status();
+        void                        print_soar_status(sml::KernelSML* pKernelSML);
 
     private:
 

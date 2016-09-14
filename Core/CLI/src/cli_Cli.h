@@ -213,12 +213,6 @@ namespace cli
             virtual bool DoGP(const std::string& productionString) = 0;
 
             /**
-             * @brief gp-max command
-             * @param maximum The maximum number of productions to allow generation of
-             */
-            virtual bool DoGPMax(const int& maximum) = 0;
-
-            /**
              * @brief help command
              */
             virtual bool DoHelp(const std::vector<std::string>& argv) = 0;
@@ -295,36 +289,6 @@ namespace cli
              */
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0) = 0;
 
-            /**
-             * @brief max-dc-time command
-             * @param n The new max dc time value in microseconds, use
-             * 0 to query, negative to disable.
-             */
-            virtual bool DoMaxDCTime(const int n = 0) = 0;
-            /**
-             * @brief max-elaborations command
-             * @param n The new max elaborations value, use 0 to query
-             */
-            virtual bool DoMaxElaborations(const int n = 0) = 0;
-
-            /**
-             * @brief max-goal-depth command
-             * @param n The new max goal depth value, use 0 to query
-             */
-            virtual bool DoMaxGoalDepth(const int n = 0) = 0;
-
-            /**
-             * @brief max-memory-usage command
-             * @param n The new memory usage value, in bytes
-             */
-            virtual bool DoMaxMemoryUsage(const int n = 0) = 0;
-
-            /**
-             * @brief max-nil-output-cycles command
-             * @param n The new max nil output cycles value, use 0 to query
-             */
-            virtual bool DoMaxNilOutputCycles(const int n = 0) = 0;
-
             enum eMemoriesOptions
             {
                 MEMORIES_CHUNKS,
@@ -362,12 +326,6 @@ namespace cli
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM) = 0;
 
             /**
-             * @brief o-support-mode command
-             * @param mode The new o-support mode.  Use -1 to query.
-             */
-            virtual bool DoOSupportMode(int mode = -1) = 0;
-
-            /**
              * @brief output command
              * @param options The various options set on the command line
              */
@@ -383,11 +341,6 @@ namespace cli
              * @brief popd command
              */
             virtual bool DoPopD() = 0;
-
-            /**
-             * @brief port command
-             */
-            virtual bool DoPort() = 0;
 
             /**
              * @brief predict command
@@ -536,14 +489,6 @@ namespace cli
              * @param setting The new setting, pass 0 (null) for query
              */
             virtual bool DoSelect(const std::string* pOp = 0) = 0;
-
-            /**
-             * @brief set-stop-phase command
-             * @param setPhase
-             * @param before
-             * @param phase
-             */
-            virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase) = 0;
 
             /**
              * @brief smem command

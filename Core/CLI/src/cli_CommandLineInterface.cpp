@@ -70,7 +70,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
     m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
-    m_Parser.AddCommand(new cli::GPMaxCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
     m_Parser.AddCommand(new cli::InitSoarCommand(*this));
@@ -78,19 +77,12 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
     m_Parser.AddCommand(new cli::MatchesCommand(*this));
-    m_Parser.AddCommand(new cli::MaxDCTimeCommand(*this));
-    m_Parser.AddCommand(new cli::MaxElaborationsCommand(*this));
-    m_Parser.AddCommand(new cli::MaxGoalDepthCommand(*this));
-    m_Parser.AddCommand(new cli::MaxMemoryUsageCommand(*this));
-    m_Parser.AddCommand(new cli::MaxNilOutputCyclesCommand(*this));
     m_Parser.AddCommand(new cli::MemoriesCommand(*this));
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
-    m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
     m_Parser.AddCommand(new cli::OutputCommand(*this));
     m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
-    m_Parser.AddCommand(new cli::PortCommand(*this));
     m_Parser.AddCommand(new cli::PredictCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
     m_Parser.AddCommand(new cli::PrintCommand(*this));
@@ -105,7 +97,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
-    m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
     m_Parser.AddCommand(new cli::SoarCommand(*this));
     m_Parser.AddCommand(new cli::SourceCommand(*this));

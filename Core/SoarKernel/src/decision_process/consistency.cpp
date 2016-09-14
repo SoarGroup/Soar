@@ -18,19 +18,20 @@
  *
  */
 
-#include "run_soar.h"
 #include "consistency.h"
 
 #include "agent.h"
-#include "print.h"
 #include "decide.h"
-#include "symbol.h"
+#include "decider.h"
+#include "preference.h"
+#include "print.h"
 #include "production.h"
 #include "rete.h"
+#include "run_soar.h"
 #include "slot.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "xml.h"
-#include "preference.h"
 
 #include <stdlib.h>
 
@@ -753,8 +754,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
     /* Check for Max ELABORATIONS EXCEEDED */
 
-    if (thisAgent->e_cycles_this_d_cycle >=
-            static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
+    if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
@@ -1020,8 +1020,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
     /* Check for Max ELABORATIONS EXCEEDED */
 
-    if (thisAgent->e_cycles_this_d_cycle >=
-            static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
+    if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {

@@ -118,7 +118,6 @@ namespace cli
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
             virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
             virtual bool DoDebug(std::vector< std::string >* argv = 0);
@@ -132,7 +131,6 @@ namespace cli
             virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0);
             virtual bool DoGDSPrint();
             virtual bool DoGP(const std::string& productionString);
-            virtual bool DoGPMax(const int& maximum);
             virtual bool DoHelp(const std::vector<std::string>& argv);
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0);
             virtual bool DoInitSoar();
@@ -140,19 +138,12 @@ namespace cli
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
-            virtual bool DoMaxDCTime(const int n = 0);
-            virtual bool DoMaxElaborations(const int n = 0);
-            virtual bool DoMaxGoalDepth(const int n = 0);
-            virtual bool DoMaxMemoryUsage(const int n = 0);
-            virtual bool DoMaxNilOutputCycles(const int n = 0);
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
-            virtual bool DoOSupportMode(int mode = -1);
             virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
-            virtual bool DoPort();
             virtual bool DoPredict();
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);
             virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0);
@@ -167,7 +158,6 @@ namespace cli
             virtual bool DoRL(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
             virtual bool DoSelect(const std::string* pOp = 0);
-            virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
@@ -175,6 +165,8 @@ namespace cli
             virtual bool DoSRand(uint32_t* pSeed = 0);
             virtual bool DoStats(const StatsBitset& options, int sort = 0);
             virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0);
+            virtual bool DoSVS(const std::vector<std::string>& args);
+            virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoTime(std::vector<std::string>& argv);
             virtual bool DoTimers(bool* pSetting = 0);
             virtual bool DoUnalias(std::vector<std::string>& argv);
@@ -186,7 +178,6 @@ namespace cli
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoSVS(const std::vector<std::string>& args);
 
             // utility for kernel SML
             bool IsLogOpen();

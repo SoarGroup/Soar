@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 #include "soar_module.h"
+#include "sml_KernelSML.h"
 
 class decider_param_container: public soar_module::param_container
 {
@@ -32,11 +33,9 @@ class decider_param_container: public soar_module::param_container
 
         void print_soar_settings(agent* thisAgent);
 
-        void update_params(bool pDecider_settings[]);
         void update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam );
         void update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam);
-        void update_enum_setting(agent* thisAgent, soar_module::param* pChangedParam);
-
+        void update_enum_setting(agent* thisAgent, soar_module::param* pChangedParam, sml::KernelSML* pKernelSML);
 };
 
 
