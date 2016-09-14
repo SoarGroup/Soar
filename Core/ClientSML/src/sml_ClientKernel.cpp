@@ -2484,17 +2484,17 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
         libraryName.erase(pos) ;
     }
 
+    std::string newLibraryName;
 #ifdef _WIN32
     // The windows shared library
-    libraryName = libraryName + ".dll";
-
+    newLibraryName = libraryName + ".dll";
 #else
-    std::string newLibraryName = "lib" + libraryName;
-#if (defined(__APPLE__) && defined(__MACH__))
-    newLibraryName.append(".dylib");
-#else
-    newLibraryName.append(".so");
-#endif
+    newLibraryName = "lib" + libraryName;
+    #if (defined(__APPLE__) && defined(__MACH__))
+        newLibraryName.append(".dylib");
+    #else
+        newLibraryName.append(".so");
+    #endif
     void* hLibrary = 0;
 #endif // !_WIN32
 
